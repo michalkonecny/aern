@@ -11,9 +11,11 @@
 -}
 module Numeric.AERN.Near where
 
-import Data.Poset (Poset) -- from package altfloat
-
 import Numeric.AERN.BasicTypes
+import Numeric.AERN.Mutable
+
+import Data.Poset (Poset) -- from package altfloat
+import Control.Monad.ST (ST)
 
 {-|
 	A class of types whose values approximate some exact
@@ -28,23 +30,23 @@ class (CanBeMutable b, Poset b) => Near b where
     {-| extract the internal granularity of a value of b -}
     getGranularity :: b -> Granularity
     {-| extract the internal granularity of a mutable value b -}
-    getGranularityM :: Mutable b -> MutableMonad b Granularity
+    getGranularityM :: Mutable b s -> ST s Granularity
     {-| construct a b value from another one by altering its granularity, rounding upwards -}
     setGranularityUp :: Granularity -> b -> b
     {-| construct a b value from another one by altering its granularity, rounding downwards -}
     setGranularityDn :: Granularity -> b -> b
     {-| modify the granularity of a mutable value, rounding upwards -}
-    setGranularityUpM :: Granularity -> Mutable b -> MutableMonad b ()
+    setGranularityUpM :: Granularity -> Mutable b s -> ST s ()
     {-| modify the granularity of a mutable value, rounding downwards -}
-    setGranularityDnM :: Granularity -> Mutable b -> MutableMonad b ()
+    setGranularityDnM :: Granularity -> Mutable b s -> ST s ()
     {-| construct a b value from another one by altering its granularity, rounding upwards -}
     setMinGranularityUp :: Granularity -> b -> b
     {-| construct a b value from another one by altering its granularity, rounding downwards -}
     setMinGranularityDn :: Granularity -> b -> b
     {-| modify the granularity of a mutable value, rounding upwards -}
-    setMinGranularityUpM :: Granularity -> Mutable b -> MutableMonad b ()
+    setMinGranularityUpM :: Granularity -> Mutable b s -> ST s ()
     {-| modify the granularity of a mutable value, rounding downwards -}
-    setMinGranularityDnM :: Granularity -> Mutable b -> MutableMonad b ()
+    setMinGranularityDnM :: Granularity -> Mutable b s -> ST s ()
 
 --propSetGetGranularity :: 
 --propSetGetGranularityM ::
