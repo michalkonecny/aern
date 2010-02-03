@@ -13,25 +13,19 @@
 -}
 module Numeric.AERN.BasicTypes where
 
-import Control.Monad.ST
-import Data.STRef
+import Control.Monad.ST (ST)
 
 class CanBeMutable t where
-    {-| a mutable version of the type t -}
-    type Mutable t :: *
-    {-| a monad that the mutable version of t can be modified in -}
-    type MutableMonad t :: * -> *
+    {-| a mutable version of the type t; 
+        the extra parameter is the state of the ST monad run -}
+    type Mutable t :: * -> *
 
     {-| a thaw operation to make a variable with an initial value -}
-    makeMutable :: t -> MutableMonad t (Mutable t)
+    makeMutable :: t -> ST s (Mutable t s)
     {-| a read operation, yielding an immutable value -}
-    readMutable :: Mutable t -> MutableMonad t t
+    readMutable :: Mutable t s -> ST s t
     {-| a write/update operation -}
-    writeMutable :: Mutable t -> t -> MutableMonad t ()
-    {-| execute imperative program involving values of b 
-        and escape back to the pure world with the results -}
-    runMutable :: MutableMonad t [Mutable t] -> [t]  
--- ??    runMutable :: MutableMonad t a -> a  
+    writeMutable :: Mutable t s -> t -> ST s ()
 
 
 {-|
