@@ -14,7 +14,6 @@ module Numeric.AERN.Near where
 import Numeric.AERN.BasicTypes
 import Numeric.AERN.Mutable
 
-import Data.Poset (Poset) -- from package altfloat
 import Control.Monad.ST (ST)
 
 {-|
@@ -23,9 +22,10 @@ import Control.Monad.ST (ST)
 	
 	The exact values have to have some partial order associated
 	with them becuase some operations on them are supposed to 
-	round upwards or downwards.  
+	round upwards or downwards.  This partial order can be either
+    decidable or semi-decidable.
 -}
-class (CanBeMutable b, Poset b) => Near b where
+class (CanBeMutable b) => Near b where
     {--------- Granularity operations ------------}	
     {-| extract the internal granularity of a value of b -}
     getGranularity :: b -> Granularity
