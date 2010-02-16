@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.Laws
+    Module      :  Numeric.AERN.Basics.Laws
     Description :  algebraic laws for properties  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -8,7 +8,7 @@
     Stability   :  experimental
     Portability :  portable
 -}
-module Numeric.AERN.Laws 
+module Numeric.AERN.Basics.Laws 
 (
     idempotent, NP.commutative, NP.associative,
     reflexive, transitive, symmetric,
@@ -16,7 +16,7 @@ module Numeric.AERN.Laws
 )
 where
 
-import Numeric.AERN.MaybeBool
+import Numeric.AERN.Basics.MaybeBool
 import Data.Maybe (isNothing)
 
 import qualified Algebra.Laws as NP -- numeric-prelude

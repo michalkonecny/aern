@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.MaybeBool
+    Module      :  Numeric.AERN.Basics.MaybeBool
     Description :  utilities for semidecidable predicates  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -8,7 +8,7 @@
     Stability   :  experimental
     Portability :  portable
 -}
-module Numeric.AERN.MaybeBool 
+module Numeric.AERN.Basics.MaybeBool 
 
 where
 

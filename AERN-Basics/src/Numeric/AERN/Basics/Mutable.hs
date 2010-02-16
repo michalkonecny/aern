@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-|
-    Module      :  Numeric.AERN.Mutable
+    Module      :  Numeric.AERN.Basics.Mutable
     Description :  a type class for ST mutable structures 
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -9,7 +9,7 @@
     Stability   :  experimental
     Portability :  portable
 -}
-module Numeric.AERN.Mutable where
+module Numeric.AERN.Basics.Mutable where
 
 import Control.Monad.ST (ST)
 

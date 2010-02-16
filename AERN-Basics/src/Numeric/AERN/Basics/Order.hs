@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.Order
+    Module      :  Numeric.AERN.Basics.Order
     Description :  posets and lattices - classical and semi-decidable  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -8,12 +8,12 @@
     Stability   :  experimental
     Portability :  portable
 -}
-module Numeric.AERN.Order 
+module Numeric.AERN.Basics.Order 
 
 where
 
-import Numeric.AERN.Laws
-import Numeric.AERN.MaybeBool
+import Numeric.AERN.Basics.Laws
+import Numeric.AERN.Basics.MaybeBool
 
 import Prelude hiding (compare, EQ, LT, GT, (<), (<=), (>))
 import Test.QuickCheck
