@@ -8,11 +8,15 @@
     Stability   :  experimental
     Portability :  portable
 -}
-module Numeric.AERN.Order where
+module Numeric.AERN.Order 
+
+where
+
+import Numeric.AERN.Laws
+import Numeric.AERN.MaybeBool
 
 import Prelude hiding (compare, EQ, LT, GT, (<), (<=), (>))
 import Test.QuickCheck
-import Numeric.AERN.Laws
 
 propEqReflexive :: (Eq t) => t -> Bool
 propEqReflexive = reflexive (==)
@@ -40,12 +44,7 @@ class (Eq t) => Poset t where
     (>=)    :: t -> t -> Bool
     (>)     :: t -> t -> Bool
 
-    a `compare` b
-        | a == b = EQ
-        | a <= b = LT
-        | b <= a = GT
-        | otherwise = NC
-
+    -- defaults for all but compare:
     a <    b = a `compare` b == LT
     a >    b = a `compare` b == GT
     a <==> b = a `compare` b /= NC
@@ -72,7 +71,7 @@ partialOrderingTranspose a = a
     make sense only for pairs in a certain relation
     where such pairs are rare.
 -}
-class (Poset t) => PosetArbitraryRelatedPair t where
+class PosetArbitraryRelatedPair t where
     {-| generator of pairs that satisfy the chosen relation -}
     arbitraryPosetRelatedPair :: PartialOrdering -> Gen (t,t)    
     {-| generator of pairs distributed in such a way that all ordering relations 
@@ -94,9 +93,10 @@ propPosetTransitive = transitive (<=)
     
 
 {-|
-    A lattice.  Join and meet should be compatible with the partial order.
+    A lattice.  Join and meet should be compatible with some partial order.
+    Both operations should be idempotent, commutative and associative.
 -}
-class (Poset t) => Lattice t where
+class (Eq t) => Lattice t where
     join :: t -> t -> t
     meet :: t -> t -> t
 
@@ -107,7 +107,7 @@ class (Poset t) => Lattice t where
 (/\) :: (Lattice t) => t -> t -> t
 (/\) = meet
 
-propLatticePosetCompatible :: (Lattice t) => t -> t -> Bool
+propLatticePosetCompatible :: (Poset t, Lattice t) => t -> t -> Bool
 propLatticePosetCompatible e1 e2 =
     ((not (e1 <= e2)) || ((e1 \/ e2 == e2) && (e1 /\ e2 == e1)))
     &&
@@ -115,11 +115,17 @@ propLatticePosetCompatible e1 e2 =
     &&
     (((e1 <= e2) && (e1 /\ e2 == e1)) || (not (e1 \/ e2 == e2)))
 
-propLatticeJoinAboveBoth :: (Lattice t) => t -> t -> Bool
+propLatticeJoinAboveBoth :: (Poset t, Lattice t) => t -> t -> Bool
 propLatticeJoinAboveBoth e1 e2 =
     (e1 <= (e1 `join` e2))
     &&
     (e2 <= (e1 `join` e2))
+
+propLatticeMeetBelowBoth :: (Poset t, Lattice t) => t -> t -> Bool
+propLatticeMeetBelowBoth e1 e2 =
+    ((e1 `meet` e2) <= e1)
+    &&
+    ((e1 `meet` e2) <= e2)
 
 propLatticeJoinIdempotent :: (Lattice t) => t -> Bool
 propLatticeJoinIdempotent = idempotent join
@@ -129,12 +135,6 @@ propLatticeJoinCommutative = commutative join
 
 propLatticeJoinAssocative :: (Lattice t) => t -> t -> t -> Bool
 propLatticeJoinAssocative = associative join
-
-propLatticeMeetBelowBoth :: (Lattice t) => t -> t -> Bool
-propLatticeMeetBelowBoth e1 e2 =
-    ((e1 `meet` e2) <= e1)
-    &&
-    ((e1 `meet` e2) <= e2)
 
 propLatticeMeetIdempotent :: (Lattice t) => t -> Bool
 propLatticeMeetIdempotent = idempotent meet
@@ -152,38 +152,72 @@ propLatticeMeetAssocative = associative meet
 {-|
     A poset type with extrema.
 -}
-class (Poset t) => Extrema t where
+class Extrema t where
     top :: t
     bottom :: t
+
+propExtremaInPoset :: (Poset t, Extrema t) => t -> Bool
+propExtremaInPoset e =
+    (bottom <= e) && (e <= top)
+    
 
 {-|
     A type with semi-decidable equality
 -}
-class ApproxEq t where
+class SemidecidableEq t where
     maybeEqual :: t -> t -> Maybe Bool
+
+(==?) :: (SemidecidableEq t) => t -> t -> Maybe Bool
+(==?) = maybeEqual
+
+propApproxEqReflexive :: (SemidecidableEq t) => t -> Bool
+propApproxEqReflexive = semidecidableReflexive (==?)
+
+--propEqSymmetric :: (Eq t) => t -> t -> Bool
+--propEqSymmetric = commutative (==)
+--
+--propEqTransitive :: (Eq t) => t -> t -> t -> Bool
+--propEqTransitive = transitive (==)
+
 
 {-|
     A type with semi-decidable equality and partial order
 -}
-class (ApproxEq t) => ApproxPoset t where
+class (SemidecidableEq t) => SemidecidablePoset t where
     maybeCompare :: t -> t -> Maybe PartialOrdering
+    -- | Semidecidable `is comparable to`.
+    (<==>?)  :: t -> t -> Maybe Bool
+    -- | Semidecidable `is not comparable to`.
+    (</=>?)  :: t -> t -> Maybe Bool
+    (<?)     :: t -> t -> Maybe Bool
+    (<=?)    :: t -> t -> Maybe Bool
+    (>=?)    :: t -> t -> Maybe Bool
+    (>?)     :: t -> t -> Maybe Bool
+
+    -- defaults for all but maybeCompare:
+    a <?    b = fmap (== LT) (a `maybeCompare` b)  
+    a >?    b = fmap (== GT) (a `maybeCompare` b)
+    a <==>? b = fmap (/= NC) (a `maybeCompare` b)
+    a </=>? b = fmap (== NC) (a `maybeCompare` b)
+    a <=?   b = 
+        (a <? b) ||? (a ==? b)
+    a >=?   b =
+        (a >? b) ||? (a ==? b)
+
+propExtremaInSemidecidablePoset :: (SemidecidablePoset t, Extrema t) => t -> Bool
+propExtremaInSemidecidablePoset e =
+    (trueOrNothing $ bottom <=? e) 
+    && 
+    (trueOrNothing $ e <=? top)
+
+-- TODO: other properties of semidecidable posets    
 
 {-|
-    A type with semi-decidable equality, partial order
-    and directed-rounding lattice operations.
+    A type with directed-rounding lattice operations.
 -}
-class (ApproxPoset t) => ApproxLattice t where
+class ApproxLattice t where
     joinUp :: t -> t -> t
     joinDn :: t -> t -> t
     meetUp :: t -> t -> t
     meetDn :: t -> t -> t
-
-{-|
-    An approximate poset type with extrema 
-    (relative to the decidable fraction of the order).
--}
-class (ApproxPoset t) => ApproxExtrema t where
-    approxTop :: t
-    approxBottom :: t
-
     
