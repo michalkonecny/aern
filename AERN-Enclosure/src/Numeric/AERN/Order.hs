@@ -22,7 +22,7 @@ propEqReflexive :: (Eq t) => t -> Bool
 propEqReflexive = reflexive (==)
 
 propEqSymmetric :: (Eq t) => t -> t -> Bool
-propEqSymmetric = commutative (==)
+propEqSymmetric = symmetric (==)
 
 propEqTransitive :: (Eq t) => t -> t -> t -> Bool
 propEqTransitive = transitive (==)
@@ -170,14 +170,14 @@ class SemidecidableEq t where
 (==?) :: (SemidecidableEq t) => t -> t -> Maybe Bool
 (==?) = maybeEqual
 
-propApproxEqReflexive :: (SemidecidableEq t) => t -> Bool
-propApproxEqReflexive = semidecidableReflexive (==?)
+propSemidecidableEqReflexive :: (SemidecidableEq t) => t -> Bool
+propSemidecidableEqReflexive = semidecidableReflexive (==?)
 
---propEqSymmetric :: (Eq t) => t -> t -> Bool
---propEqSymmetric = commutative (==)
---
---propEqTransitive :: (Eq t) => t -> t -> t -> Bool
---propEqTransitive = transitive (==)
+propSemidecidableEqSymmetric :: (SemidecidableEq t) => t -> t -> Bool
+propSemidecidableEqSymmetric = semidecidableSymmetric (==?)
+
+propSemidecidableEqTransitive :: (SemidecidableEq t) => t -> t -> t -> Bool
+propSemidecidableEqTransitive = semidecidableTransitive (==?)
 
 
 {-|
