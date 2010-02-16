@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-|
-    Module      :  Numeric.AERN.BasicTypes
+    Module      :  Numeric.AERN.Basics.BasicTypes
     Description :  auxiliary types for exact real number processing 
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -11,7 +11,7 @@
 
     auxiliary types for exact real number processing
 -}
-module Numeric.AERN.BasicTypes where
+module Numeric.AERN.Basics.BasicTypes where
 
 {-|
   The bit size of the floating point numbers (or similar)

@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-|
-    Module      :  Numeric.AERN.Near
+    Module      :  Numeric.AERN.Basics.Near
     Description :  Finite values near some exact values.
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -9,10 +9,10 @@
     Stability   :  experimental
     Portability :  portable
 -}
-module Numeric.AERN.Near where
+module Numeric.AERN.Basics.Near where
 
-import Numeric.AERN.BasicTypes
-import Numeric.AERN.Mutable
+import Numeric.AERN.Basics.BasicTypes
+import Numeric.AERN.Basics.Mutable
 
 import Control.Monad.ST (ST)
 
