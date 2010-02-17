@@ -8,9 +8,10 @@
     Stability   :  experimental
     Portability :  portable
 -}
-module Numeric.AERN.Basics.Laws 
+module Numeric.AERN.Basics.Laws
 (
-    idempotent, NP.commutative, NP.associative,
+    idempotent, NP.commutative, NP.associative, 
+    modular, NP.leftDistributive,  NP.rightDistributive,
     reflexive, transitive, symmetric,
     semidecidableReflexive, semidecidableTransitive, semidecidableSymmetric 
 )
@@ -24,6 +25,9 @@ import qualified Algebra.Laws as NP -- numeric-prelude
 idempotent :: (Eq t) => (t -> t -> t) -> t -> Bool
 idempotent op e = 
     e `op` e == e
+
+modular (/\) (\/) e1 e2 e3 =
+    (e1 /\ e3) \/ (e2 /\ e3) == ((e1 /\ e3) \/ e2) /\ e3
 
 reflexive :: (t -> t -> Bool) -> t -> Bool
 reflexive rel e = 

@@ -25,6 +25,6 @@ class CanBeMutable t where
     {-| a write/update operation -}
     writeMutable :: Mutable t s -> t -> ST s ()
 
---propWriteRead ::
+--propWriteRead :: 
 --propWriteWriteRead ::
 --propWriteWriteReadConcurrent ::
