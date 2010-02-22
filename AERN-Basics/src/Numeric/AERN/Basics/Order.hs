@@ -73,6 +73,13 @@ partialOrderingTranspose a = a
 instance Poset Int where
     compare a b = toPartialOrdering $ Prelude.compare a b  
 
+instance Poset Double where
+    compare a b =
+        case (isNaN a, isNaN b) of
+           (False, False) -> toPartialOrdering $ Prelude.compare a b  
+           (True, True) -> EQ
+           _ -> NC 
+
 {-|
     Poset with the ability to randomly generate
     pairs of its own elements that are in 
