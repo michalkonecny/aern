@@ -28,7 +28,7 @@ import Test.QuickCheck
     (More-or-less copied from Data.Poset 
      in package altfloat-0.3 by Nick Bowler.) 
 -} 
-class (Eq t) => Enclosure t where
+class (Eq t) => EnclosurePoset t where
     compareEncl :: t -> t -> PartialOrdering
     -- | Is comparable to.
     (@<==>)  :: t -> t -> Bool
@@ -48,17 +48,17 @@ class (Eq t) => Enclosure t where
     a @>=   b = a @> b || a `compareEncl` b == EQ
 
 -- convenience Unicode math operator notation:
-(⊂) :: (Enclosure t) => t -> t -> Bool
+(⊂) :: (EnclosurePoset t) => t -> t -> Bool
 (⊂) = (@<)
-(⊆) :: (Enclosure t) => t -> t -> Bool
+(⊆) :: (EnclosurePoset t) => t -> t -> Bool
 (⊆) = (@<=)
-(⊇) :: (Enclosure t) => t -> t -> Bool
+(⊇) :: (EnclosurePoset t) => t -> t -> Bool
 (⊇) = (@>=)
-(⊃) :: (Enclosure t) => t -> t -> Bool
+(⊃) :: (EnclosurePoset t) => t -> t -> Bool
 (⊃) = (@>)
 
 
-propExtremaForEnclosures :: (Enclosure t, HasExtrema t) => t -> Bool
+propExtremaForEnclosures :: (EnclosurePoset t, HasExtrema t) => t -> Bool
 propExtremaForEnclosures e =
     (bottom ⊆ e) && (e ⊆ top)
 
