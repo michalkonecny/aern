@@ -65,36 +65,46 @@ propExtremaForSemidecidableEnclosures e =
 -- TODO: adapt all semidecidable poset properties for semideciable enclosures
 
 {-|
-    A set-based lattice with directed-rounding operations.  
+    A set-based lattice with outwards and inwards directed-rounding operations.  
 -}
-class (Eq t) => EnclosureApproxLattice t where
+class (Eq t) => EnclosureOuterLattice t where
     intersectionOut :: t -> t -> t
-    intersectionIn :: t -> t -> t
     unionOut :: t -> t -> t
+
+{-|
+    A set-based lattice with outwards and inwards directed-rounding operations.  
+-}
+class (Eq t) => EnclosureInnerLattice t where
+    intersectionIn :: t -> t -> t
     unionIn :: t -> t -> t
 
-(<@\/>) :: (EnclosureApproxLattice t) => t -> t -> t
+{-|
+    A set-based lattice with outwards and inwards directed-rounding operations.  
+-}
+class (EnclosureInnerLattice t, EnclosureOuterLattice t) => EnclosureOuterInnerLattice t where
+
+(<@\/>) :: (EnclosureOuterLattice t) => t -> t -> t
 (<@\/>) = unionOut
 
-(<∪>) :: (EnclosureApproxLattice t) => t -> t -> t
+(<∪>) :: (EnclosureOuterLattice t) => t -> t -> t
 (<∪>) = unionOut
 
-(>@\/<) :: (EnclosureApproxLattice t) => t -> t -> t
+(>@\/<) :: (EnclosureInnerLattice t) => t -> t -> t
 (>@\/<) = unionIn
 
-(>∪<) :: (EnclosureApproxLattice t) => t -> t -> t
+(>∪<) :: (EnclosureInnerLattice t) => t -> t -> t
 (>∪<) = unionIn
 
-(<@/\>) :: (EnclosureApproxLattice t) => t -> t -> t
+(<@/\>) :: (EnclosureOuterLattice t) => t -> t -> t
 (<@/\>) = intersectionOut
 
-(<∩>) :: (EnclosureApproxLattice t) => t -> t -> t
+(<∩>) :: (EnclosureOuterLattice t) => t -> t -> t
 (<∩>) = intersectionOut
 
-(>@/\<) :: (EnclosureApproxLattice t) => t -> t -> t
+(>@/\<) :: (EnclosureInnerLattice t) => t -> t -> t
 (>@/\<) = intersectionIn
 
-(>∩<) :: (EnclosureApproxLattice t) => t -> t -> t
+(>∩<) :: (EnclosureInnerLattice t) => t -> t -> t
 (>∩<) = intersectionIn
 
 {-|
