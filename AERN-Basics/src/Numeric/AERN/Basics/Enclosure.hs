@@ -76,6 +76,8 @@ class (Eq t) => EnclosureBasis t where
     disjoint :: t -> t -> Bool
     maybeIntersection :: t -> t -> Maybe t
 
+-- TODO: add symmetry for disjointness
+
 -- convenient notation:
 (@/\?) :: (EnclosureBasis t) => t -> t -> Maybe t
 (@/\?) = maybeIntersection

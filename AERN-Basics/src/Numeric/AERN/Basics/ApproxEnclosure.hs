@@ -12,6 +12,7 @@ module Numeric.AERN.Basics.ApproxEnclosure where
 
 import Numeric.AERN.Basics.Laws
 import Numeric.AERN.Basics.MaybeBool
+import Data.Maybe (isJust, isNothing)
 import Numeric.AERN.Basics.Order
 import Numeric.AERN.Basics.ApproxOrder
 import Numeric.AERN.Basics.Mutable
@@ -54,8 +55,6 @@ class (SemidecidableEq t) => SemidecidableEnclosure t where
 (⊃?) :: (SemidecidableEnclosure t) => t -> t -> Maybe Bool
 (⊃?) = (@>?)
 
-
-
 propExtremaForSemidecidableEnclosures :: (SemidecidableEnclosure t, HasExtrema t) => t -> Bool
 propExtremaForSemidecidableEnclosures e =
     (trueOrNothing $ bottom ⊆? e) 
@@ -63,6 +62,68 @@ propExtremaForSemidecidableEnclosures e =
     (trueOrNothing $ e ⊆? top)
 
 -- TODO: adapt all semidecidable poset properties for semideciable enclosures
+
+
+{-|
+   A type with a semidecidable disjointness test.
+-}
+class (Eq t) => EnclosureSemidecidableDisjoint t where
+    maybeDisjoint :: t -> t -> Maybe Bool
+
+-- TODO: add symmetry
+
+{-|
+    A set-based outer-rounded disjoint-intersection partial semi-lattice 
+    behaving similarly to a basis of a domain.
+    
+    Intersection should be idempotent
+    as well as commutative and associative where defined.  
+-}
+class (EnclosureSemidecidableDisjoint t) => EnclosureOuterRoundedBasis t where
+    maybeIntersectionOut :: t -> t -> Maybe t
+
+-- convenient notation:
+(<@/\>?) :: (EnclosureOuterRoundedBasis t) => t -> t -> Maybe t
+(<@/\>?) = maybeIntersectionOut
+
+(<∩>?) :: (EnclosureOuterRoundedBasis t) => t -> t -> Maybe t
+(<∩>?) = maybeIntersectionOut
+
+{-| when disjointness is dedicable, two elements are disjoint iff they have no intersection -}
+propEnclosureNonDisjointOuterIntersection :: (EnclosureOuterRoundedBasis t) => t -> t -> Bool
+propEnclosureNonDisjointOuterIntersection e1 e2 =
+    (notJustTrue (e1 `maybeDisjoint` e2) || (isJust $ e1 <∩>? e2))
+    &&
+    ((falseOrNothing (e1 `maybeDisjoint` e2)) || (isNothing $ e1 <∩>? e2))
+
+-- TODO: add outerPartialIntersection, outerIdempotency, partialOuterCommutativity and partialOuterAssociativity
+
+{-|
+    A set-based inner-rounded disjoint-intersection partial semi-lattice 
+    behaving similarly to a basis of a domain.
+    
+    Intersection should be idempotent
+    as well as commutative and associative where defined.  
+-}
+class (EnclosureSemidecidableDisjoint t) => EnclosureInnerRoundedBasis t where
+    maybeIntersectionIn :: t -> t -> Maybe t
+
+-- convenient notation:
+(>@/\<?) :: (EnclosureInnerRoundedBasis t) => t -> t -> Maybe t
+(>@/\<?) = maybeIntersectionIn
+
+(>∩<?) :: (EnclosureInnerRoundedBasis t) => t -> t -> Maybe t
+(>∩<?) = maybeIntersectionIn
+
+{-| when disjointness is dedicable, two elements are disjoint iff they have no intersection -}
+propEnclosureNonDisjointInnerIntersection :: (EnclosureInnerRoundedBasis t) => t -> t -> Bool
+propEnclosureNonDisjointInnerIntersection e1 e2 =
+    (notJustTrue (e1 `maybeDisjoint` e2) || (isJust $ e1 >∩<? e2))
+    &&
+    ((falseOrNothing (e1 `maybeDisjoint` e2)) || (isNothing $ e1 >∩<? e2))
+
+-- TODO: add innerPartialIntersection, innerIdempotency, partialInnerCommutativity and partialInnerAssociativity
+
 
 {-|
     A set-based lattice with outwards and inwards directed-rounding operations.  
