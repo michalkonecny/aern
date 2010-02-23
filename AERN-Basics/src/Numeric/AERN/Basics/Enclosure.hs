@@ -19,6 +19,7 @@ import Numeric.AERN.Basics.Order
 import Numeric.AERN.Basics.Mutable
 
 import Prelude hiding (LT, GT, EQ)
+import Data.Maybe (isJust)
 import Control.Monad.ST (ST)
 import Test.QuickCheck
 
@@ -65,6 +66,33 @@ propExtremaForEnclosures e =
 -- TODO: adapt all poset properties for enclosures
 
 {-|
+    A set-based disjoint-intersection partial semi-lattice 
+    behaving similarly to a basis of a domain.
+    
+    Intersection should be idempotent
+    as well as commutative and associative where defined.  
+-}
+class (Eq t) => EnclosureBasis t where
+    disjoint :: t -> t -> Bool
+    maybeIntersection :: t -> t -> Maybe t
+
+-- convenient notation:
+(@/\?) :: (EnclosureBasis t) => t -> t -> Maybe t
+(@/\?) = maybeIntersection
+
+(∩?) :: (EnclosureBasis t) => t -> t -> Maybe t
+(∩?) = maybeIntersection
+
+{-| two elements are disjoint iff they have no intersection -}
+propEnclosureNonDisjointIntersection :: (EnclosureBasis t) => t -> t -> Bool
+propEnclosureNonDisjointIntersection e1 e2 =
+    ((e1 `disjoint` e2) || (isJust $ e1 ∩? e2))
+    &&
+    ((not (e1 `disjoint` e2)) || (not $ isJust $ e1 ∩? e2))
+
+-- TODO: add idempotency, partialCommutativity and partialAssociativity
+
+{-|
     A set-based lattice.  Union and intersection should be compatible with inclusion.
     Both operations should be idempotent, commutative and associative.
 -}
@@ -72,6 +100,7 @@ class (Eq t) => EnclosureLattice t where
     union :: t -> t -> t
     intersection :: t -> t -> t
 
+-- convenient notation:
 (@\/) :: (EnclosureLattice t) => t -> t -> t
 (@\/) = union
 
@@ -84,8 +113,10 @@ class (Eq t) => EnclosureLattice t where
 (∩) :: (EnclosureLattice t) => t -> t -> t
 (∩) = intersection
 
+
 -- TODO: adapt all lattice properties for enclosure lattices
 
+-- TODO: add properties linking a basis with a lattice
 
 {-|
     A lattice that supports in-place operations.
