@@ -16,9 +16,17 @@ trueOrNothing :: Maybe Bool -> Bool
 trueOrNothing Nothing = True
 trueOrNothing (Just b) = b    
 
+falseOrNothing :: Maybe Bool -> Bool 
+falseOrNothing Nothing = True
+falseOrNothing (Just b) = not b  
+
 notJustTrue :: Maybe Bool -> Bool 
 notJustTrue Nothing = True
 notJustTrue (Just b) = not b
+
+isJustTrue :: Maybe Bool -> Bool 
+isJustTrue Nothing = False
+isJustTrue (Just b) = b
 
 (||?) :: Maybe Bool -> Maybe Bool -> Maybe Bool 
 (||?) b1@(Just True) _ = b1 
