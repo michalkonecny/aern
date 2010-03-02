@@ -39,11 +39,14 @@ Library
         numeric-prelude
   Exposed-modules:
     Numeric.AERN.Basics.MaybeBool
-    Numeric.AERN.Basics.Laws
     Numeric.AERN.Basics.Mutable
+    Numeric.AERN.Basics.Equality
+    Numeric.AERN.Basics.PartialOrdering
+    Numeric.AERN.Basics.Extrema
     Numeric.AERN.Basics.Order
     Numeric.AERN.Basics.ApproxOrder
     Numeric.AERN.Basics.Enclosure
     Numeric.AERN.Basics.ApproxEnclosure
     Numeric.AERN.Basics.Granularity
+    Numeric.AERN.Basics.Laws
     

@@ -16,7 +16,7 @@ trueOrNothing :: Maybe Bool -> Bool
 trueOrNothing Nothing = True
 trueOrNothing (Just b) = b    
 
-falseOrNothing :: Maybe Bool -> Bool 
+falseOrNothing :: Maybe Bool -> Bool
 falseOrNothing Nothing = True
 falseOrNothing (Just b) = not b  
 
