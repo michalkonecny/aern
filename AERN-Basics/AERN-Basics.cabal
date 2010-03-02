@@ -48,5 +48,6 @@ Library
     Numeric.AERN.Basics.Enclosure
     Numeric.AERN.Basics.ApproxEnclosure
     Numeric.AERN.Basics.Granularity
+    Numeric.AERN.Basics.Interval
     Numeric.AERN.Basics.Laws
     
