@@ -11,32 +11,15 @@
 module Numeric.AERN.Basics.ApproxOrder where
 
 import Numeric.AERN.Basics.Laws
+import Numeric.AERN.Basics.Equality
+import Numeric.AERN.Basics.PartialOrdering
+import Numeric.AERN.Basics.Extrema
 import Numeric.AERN.Basics.MaybeBool
-import Numeric.AERN.Basics.Order
 import Numeric.AERN.Basics.Mutable
 
 import Prelude hiding (LT, GT)
 import Control.Monad.ST (ST)
 import Test.QuickCheck
-
-{-|
-    A type with semi-decidable equality
--}
-class SemidecidableEq t where
-    maybeEqual :: t -> t -> Maybe Bool
-
-(==?) :: (SemidecidableEq t) => t -> t -> Maybe Bool
-(==?) = maybeEqual
-
-propSemidecidableEqReflexive :: (SemidecidableEq t) => t -> Bool
-propSemidecidableEqReflexive = semidecidableReflexive (==?)
-
-propSemidecidableEqSymmetric :: (SemidecidableEq t) => t -> t -> Bool
-propSemidecidableEqSymmetric = semidecidableSymmetric (==?)
-
-propSemidecidableEqTransitive :: (SemidecidableEq t) => t -> t -> t -> Bool
-propSemidecidableEqTransitive = semidecidableTransitive (==?)
-
 
 {-|
     A type with semi-decidable equality and partial order
@@ -82,14 +65,26 @@ class ApproxLattice t where
 (\/^) :: (ApproxLattice t) => t -> t -> t
 (\/^) = joinUp
 
+(∨^) :: (ApproxLattice t) => t -> t -> t
+(∨^) = joinUp
+
 (\/.) :: (ApproxLattice t) => t -> t -> t
 (\/.) = joinDn 
+    
+(∨.) :: (ApproxLattice t) => t -> t -> t
+(∨.) = joinDn 
     
 (/\^) :: (ApproxLattice t) => t -> t -> t
 (/\^) = meetUp
 
+(∧^) :: (ApproxLattice t) => t -> t -> t
+(∧^) = meetUp
+
 (/\.) :: (ApproxLattice t) => t -> t -> t
 (/\.) = meetDn 
+    
+(∧.) :: (ApproxLattice t) => t -> t -> t
+(∧.) = meetDn 
     
 -- TODO: properties of approximate lattices 
 --       with semidecidable partial order     

@@ -11,11 +11,10 @@
 -}
 module Numeric.AERN.Basics.Enclosure where
 
-import Numeric.AERN.Basics.Order
-
 import Numeric.AERN.Basics.Laws
+import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.MaybeBool
-import Numeric.AERN.Basics.Order
+import Numeric.AERN.Basics.Extrema
 import Numeric.AERN.Basics.Mutable
 
 import Prelude hiding (LT, GT, EQ)
@@ -123,7 +122,7 @@ class (Eq t) => EnclosureLattice t where
 {-|
     A lattice that supports in-place operations.
 -}
-class (Lattice t, CanBeMutable t) => EnclosureLatticeMutable t where
+class (EnclosureLattice t, CanBeMutable t) => EnclosureLatticeMutable t where
     {-| unionMutable a b c means a := b ∪ c; a can be the same as b and/or c -}
     unionMutable :: Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
     {-| intersectionMutable a b c means a := b ∩ c; a can be the same as b and/or c -}

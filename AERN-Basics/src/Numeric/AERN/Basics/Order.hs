@@ -13,6 +13,9 @@ module Numeric.AERN.Basics.Order
 where
 
 import Numeric.AERN.Basics.Laws
+import Numeric.AERN.Basics.Equality
+import Numeric.AERN.Basics.PartialOrdering
+import Numeric.AERN.Basics.Extrema
 import Numeric.AERN.Basics.MaybeBool
 import Numeric.AERN.Basics.Mutable
 
@@ -20,15 +23,6 @@ import qualified Prelude
 import Prelude hiding (compare, EQ, LT, GT, (<), (<=), (>=), (>))
 import Control.Monad.ST (ST)
 import Test.QuickCheck
-
-propEqReflexive :: (Eq t) => t -> Bool
-propEqReflexive = reflexive (==)
-
-propEqSymmetric :: (Eq t) => t -> t -> Bool
-propEqSymmetric = symmetric (==)
-
-propEqTransitive :: (Eq t) => t -> t -> t -> Bool
-propEqTransitive = transitive (==)
 
 {-|
     A partially ordered set.
@@ -54,21 +48,6 @@ class (Eq t) => Poset t where
     a </=> b = a `compare` b == NC
     a <=   b = a < b || a `compare` b == EQ
     a >=   b = a > b || a `compare` b == EQ
-
-{-| Like 'Prelude.Ordering' but with a non-comparable option -}
-data PartialOrdering = EQ | LT | GT | NC
-    deriving (Eq)
-    
-toPartialOrdering :: Ordering -> PartialOrdering
-toPartialOrdering Prelude.EQ = EQ 
-toPartialOrdering Prelude.LT = LT 
-toPartialOrdering Prelude.GT = GT 
-
-{-| flip an ordering relation -}
-partialOrderingTranspose :: PartialOrdering -> PartialOrdering
-partialOrderingTranspose LT = GT
-partialOrderingTranspose GT = LT
-partialOrderingTranspose a = a
 
 instance Poset Int where
     compare a b = toPartialOrdering $ Prelude.compare a b  
@@ -100,7 +79,7 @@ propPosetEqCompatible :: (Poset t) => t -> t -> Bool
 propPosetEqCompatible e1 e2 =
     (e1 /= e2 || compare e1 e2 == EQ)
     &&    
-    (e1 == e2 || compare e1 e2 /= EQ)    
+    (e1 == e2 || compare e1 e2 /= EQ)
 
 propPosetAntiSymmetric :: (Poset t) => t -> t -> Bool
 propPosetAntiSymmetric e1 e2 = 
@@ -192,13 +171,6 @@ class (Lattice t, CanBeMutable t) => LatticeMutable t where
     meetMutable :: Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
 
     -- TODO: add default implementations using read/write
-
-{-|
-    A type with extrema.
--}
-class HasExtrema t where
-    top :: t
-    bottom :: t
 
 propExtremaInPoset :: (Poset t, HasExtrema t) => t -> Bool
 propExtremaInPoset e =

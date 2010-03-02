@@ -11,10 +11,11 @@
 module Numeric.AERN.Basics.ApproxEnclosure where
 
 import Numeric.AERN.Basics.Laws
+import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.MaybeBool
 import Data.Maybe (isJust, isNothing)
-import Numeric.AERN.Basics.Order
-import Numeric.AERN.Basics.ApproxOrder
+import Numeric.AERN.Basics.PartialOrdering
+import Numeric.AERN.Basics.Extrema
 import Numeric.AERN.Basics.Mutable
 
 import Prelude hiding (LT, GT)
@@ -139,11 +140,6 @@ class (Eq t) => EnclosureInnerLattice t where
     intersectionIn :: t -> t -> t
     unionIn :: t -> t -> t
 
-{-|
-    A set-based lattice with outwards and inwards directed-rounding operations.  
--}
-class (EnclosureInnerLattice t, EnclosureOuterLattice t) => EnclosureOuterInnerLattice t where
-
 (<@\/>) :: (EnclosureOuterLattice t) => t -> t -> t
 (<@\/>) = unionOut
 
@@ -171,15 +167,11 @@ class (EnclosureInnerLattice t, EnclosureOuterLattice t) => EnclosureOuterInnerL
 {-|
     A lattice that supports in-place operations.
 -}
-class (Lattice t, CanBeMutable t) => EnclosureApproxLatticeMutable t where
+class (EnclosureOuterLattice t, CanBeMutable t) => EnclosureOuterLatticeMutable t where
     {-| unionOutMutable a b c means a := b <∪> c; a can be the same as b and/or c -}
     unionOutMutable :: Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
-    {-| unionInMutable a b c means a := b >∪< c; a can be the same as b and/or c -}
-    unionInMutable :: Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
     {-| intersectionOutMutable a b c means a := b <∩> c; a can be the same as b and/or c -}
     intersectionOutMutable :: Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
-    {-| intersectionInMutable a b c means a := b >∩< c; a can be the same as b and/or c -}
-    intersectionInMutable :: Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
 
     -- TODO: add default implementations using read/write
 
