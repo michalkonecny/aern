@@ -17,7 +17,7 @@ import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.NumericOrder.Poset
 import Numeric.AERN.Basics.Enclosure
-import Numeric.AERN.Basics.ApproxOrder
+import Numeric.AERN.Basics.NumericOrder.SemidecidablePoset
 import Numeric.AERN.Basics.ApproxEnclosure
 
 import qualified Prelude

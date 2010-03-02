@@ -39,12 +39,16 @@ Library
         numeric-prelude
   Exposed-modules:
     Numeric.AERN.Basics.MaybeBool
+    Numeric.AERN.Basics.Effort
     Numeric.AERN.Basics.Mutable
     Numeric.AERN.Basics.Equality
     Numeric.AERN.Basics.PartialOrdering
     Numeric.AERN.Basics.Extrema
-    Numeric.AERN.Basics.Order
-    Numeric.AERN.Basics.ApproxOrder
+    Numeric.AERN.Basics.NumericOrder
+    Numeric.AERN.Basics.NumericOrder.Poset
+    Numeric.AERN.Basics.NumericOrder.Lattice
+    Numeric.AERN.Basics.NumericOrder.SemidecidablePoset
+    Numeric.AERN.Basics.NumericOrder.RoundedLattice
     Numeric.AERN.Basics.Enclosure
     Numeric.AERN.Basics.ApproxEnclosure
     Numeric.AERN.Basics.Granularity
@@ -53,4 +57,5 @@ Library
     Numeric.AERN.Basics.Laws.SemidecidableRelation
     Numeric.AERN.Basics.Laws.Operation
     Numeric.AERN.Basics.Laws.RoundedOperation
+    Numeric.AERN.Basics.Laws.OperationRelation
     
