@@ -10,17 +10,16 @@
 -}
 module Numeric.AERN.Basics.ApproxEnclosure where
 
-import Numeric.AERN.Basics.Laws
-import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.MaybeBool
 import Data.Maybe (isJust, isNothing)
+import Numeric.AERN.Basics.Mutable
+import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Extrema
-import Numeric.AERN.Basics.Mutable
+import Numeric.AERN.Basics.Laws
 
 import Prelude hiding (LT, GT)
 import Control.Monad.ST (ST)
-import Test.QuickCheck
 
 {-|
     A type with semi-decidable equality and inclusion

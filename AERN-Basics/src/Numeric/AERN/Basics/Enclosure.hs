@@ -11,16 +11,15 @@
 -}
 module Numeric.AERN.Basics.Enclosure where
 
-import Numeric.AERN.Basics.Laws
-import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.MaybeBool
-import Numeric.AERN.Basics.Extrema
 import Numeric.AERN.Basics.Mutable
+import Numeric.AERN.Basics.MaybeBool
+import Numeric.AERN.Basics.PartialOrdering
+import Numeric.AERN.Basics.Extrema
+import Numeric.AERN.Basics.Laws
 
 import Prelude hiding (LT, GT, EQ)
 import Data.Maybe (isJust)
 import Control.Monad.ST (ST)
-import Test.QuickCheck
 
 {-|
     A partially ordered set using set inclusion notation.
@@ -130,10 +129,3 @@ class (EnclosureLattice t, CanBeMutable t) => EnclosureLatticeMutable t where
 
     -- TODO: add default implementations using read/write
     
-{-|
-    A type whose values have endpoints of another type.  
--}
-class Interval e where
-    type IntervalEndpoint e :: *
-    getEndpoints :: e -> (IntervalEndpoint e, IntervalEndpoint e)
-    fromEndpoints :: (IntervalEndpoint e, IntervalEndpoint e) -> e
