@@ -17,7 +17,8 @@ import Numeric.AERN.Basics.MaybeBool
 import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Extrema
-import Numeric.AERN.Basics.Laws
+import Numeric.AERN.Basics.Laws.Relation
+import Numeric.AERN.Basics.Laws.Operation
 
 import qualified Prelude 
 import Prelude hiding (compare, EQ, LT, GT, (<), (<=), (>=), (>))

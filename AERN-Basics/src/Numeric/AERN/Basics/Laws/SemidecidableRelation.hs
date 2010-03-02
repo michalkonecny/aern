@@ -1,6 +1,6 @@
 {-|
-    Module      :  Numeric.AERN.Basics.Laws
-    Description :  algebraic laws for properties  
+    Module      :  Numeric.AERN.Basics.Laws.Relation
+    Description :  common properties of semidecidable relations  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -8,11 +8,8 @@
     Stability   :  experimental
     Portability :  portable
 -}
-module Numeric.AERN.Basics.Laws
+module Numeric.AERN.Basics.Laws.SemidecidableRelation
 (
-    idempotent, NP.commutative, NP.associative, 
-    modular, NP.leftDistributive,  NP.rightDistributive,
-    reflexive, transitive, symmetric,
     semidecidableReflexive, semidecidableTransitive, semidecidableSymmetric 
 )
 where
@@ -21,25 +18,6 @@ import Numeric.AERN.Basics.MaybeBool
 import Data.Maybe (isNothing)
 
 import qualified Algebra.Laws as NP -- numeric-prelude
-
-idempotent :: (Eq t) => (t -> t -> t) -> t -> Bool
-idempotent op e = 
-    e `op` e == e
-
-modular (/\) (\/) e1 e2 e3 =
-    (e1 /\ e3) \/ (e2 /\ e3) == ((e1 /\ e3) \/ e2) /\ e3
-
-reflexive :: (t -> t -> Bool) -> t -> Bool
-reflexive rel e = 
-    e `rel` e == True
-
-symmetric :: (t -> t -> Bool) -> t -> t -> Bool
-symmetric = NP.commutative
-
-transitive :: (t -> t -> Bool) -> t -> t -> t -> Bool
-transitive rel e1 e2 e3 = 
-    (not (e1 `rel` e2)) || (not (e2 `rel` e3)) || (e1 `rel` e3)
-
 
 semidecidableReflexive :: (t -> t -> Maybe Bool) -> t -> Bool
 semidecidableReflexive rel e = 
@@ -61,4 +39,3 @@ semidecidableSymmetric rel e1 e2 =
     (isNothing $ e2 `rel` e1)
     ||
     (NP.commutative rel e1 e2)
-

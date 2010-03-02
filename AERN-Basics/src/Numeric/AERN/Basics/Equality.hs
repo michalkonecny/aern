@@ -10,7 +10,8 @@
 -}
 module Numeric.AERN.Basics.Equality where
 
-import Numeric.AERN.Basics.Laws
+import Numeric.AERN.Basics.Laws.Relation
+import Numeric.AERN.Basics.Laws.SemidecidableRelation
 
 propEqReflexive :: (Eq t) => t -> Bool
 propEqReflexive = reflexive (==)

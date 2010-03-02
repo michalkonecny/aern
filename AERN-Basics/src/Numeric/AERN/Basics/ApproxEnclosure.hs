@@ -16,7 +16,6 @@ import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Extrema
-import Numeric.AERN.Basics.Laws
 
 import Prelude hiding (LT, GT)
 import Control.Monad.ST (ST)
