@@ -10,6 +10,7 @@
 -}
 module Numeric.AERN.Basics.Equality where
 
+import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Laws.Relation
 import Numeric.AERN.Basics.Laws.SemidecidableRelation
 
@@ -26,10 +27,10 @@ propEqTransitive = transitive (==)
     A type with semi-decidable equality
 -}
 class SemidecidableEq t where
-    maybeEqual :: t -> t -> Maybe Bool
-
-(==?) :: (SemidecidableEq t) => t -> t -> Maybe Bool
-(==?) = maybeEqual
+    maybeEqual :: [EffortIndicator] -> t -> t -> Maybe Bool
+    maybeEqualDefaultEffort :: t -> [EffortIndicator]
+    (==?) :: t -> t -> Maybe Bool
+    a ==? b = maybeEqual (maybeEqualDefaultEffort a) a b
 
 propSemidecidableEqReflexive :: (SemidecidableEq t) => t -> Bool
 propSemidecidableEqReflexive = semidecidableReflexive (==?)

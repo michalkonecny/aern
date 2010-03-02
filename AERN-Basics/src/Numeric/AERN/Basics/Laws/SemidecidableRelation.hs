@@ -10,7 +10,8 @@
 -}
 module Numeric.AERN.Basics.Laws.SemidecidableRelation
 (
-    semidecidableReflexive, semidecidableTransitive, semidecidableSymmetric 
+    semidecidableReflexive, semidecidableTransitive, semidecidableSymmetric,
+    semidecidableOrderExtrema
 )
 where
 
@@ -39,3 +40,8 @@ semidecidableSymmetric rel e1 e2 =
     (isNothing $ e2 `rel` e1)
     ||
     (NP.commutative rel e1 e2)
+
+semidecidableOrderExtrema (<=?) bottom top e =
+    (trueOrNothing $ bottom <=? e) 
+    && 
+    (trueOrNothing $ e <=? top)

@@ -13,15 +13,15 @@
 module Numeric.AERN.Basics.Granularity where
 
 import Numeric.AERN.Basics.Mutable
-import Numeric.AERN.Basics.Order
+import Control.Monad.ST (ST)
+
+import Numeric.AERN.Basics.NumericOrder.Poset
 import Numeric.AERN.Basics.Enclosure
 import Numeric.AERN.Basics.ApproxOrder
 import Numeric.AERN.Basics.ApproxEnclosure
 
 import qualified Prelude
 import Prelude hiding (compare, (<=), (>=))
-import Control.Monad.ST (ST)
-import Test.QuickCheck
 
 class HasGranularity t where
     {-|

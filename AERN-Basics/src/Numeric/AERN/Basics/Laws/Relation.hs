@@ -10,7 +10,8 @@
 -}
 module Numeric.AERN.Basics.Laws.Relation
 (
-    reflexive, transitive, symmetric
+    reflexive, transitive, symmetric,
+    extrema
 )
 where
 
@@ -27,4 +28,6 @@ transitive :: (t -> t -> Bool) -> t -> t -> t -> Bool
 transitive rel e1 e2 e3 = 
     (not (e1 `rel` e2)) || (not (e2 `rel` e3)) || (e1 `rel` e3)
 
+extrema (<=) bottom top e =
+    bottom <= e && e <= top
 
