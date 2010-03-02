@@ -1,0 +1,103 @@
+Basics
+   Mutable
+   Equality ==?
+   PartialOrdering NC
+   Extrema top, bottom
+   NumericOrder
+     Poset <=
+     Lattice max, min
+     SemidecidablePoset
+    <=?, maybeCompareDefaultEffort
+     RoundedLattice maxUp, minmaxDefaultEffort
+   RefinementOrder
+     Poset |<=
+     Basis |_|? consistent
+     Lattice |_|, |^|
+     SemidecidablePoset |<=?
+     OuterRoundedBasis <|_|>? maybeConsistent
+     OuterRoundedLattice <|_|>
+     InnerRoundedBasis >|_|<?
+     InnerRoundedLattice >|_|<
+   Granularity setMinGranularity, getMaxGranularity
+   Interval (endpoints)
+     NumericOrder instances
+     RefinementOrder instances
+   Product (list, map) instances
+     NumericOrder instances
+     RefinementOrder instances
+   Laws
+     Relation (LawR) transitive, ...
+     SemidecidableRelation (LawSR) transitive, ...
+     Operation (LawO) associative, distributive
+     RoundedOperation (LawRndO) upDown, associative
+     OperationRelation (LawOR) supremum
+     RoundedOperationRelation (LawRndOR) ..ditto..
+
+RealArithmetic
+  NumericOrderRounding
+    Numerals int, ratio, double
+    RoundedRing +^, +_, *^, *_
+      addDefaultEffort
+      timesDefaultEffort
+    RoundedField /^, /_
+      divideDefaultEffort
+    RoundedElementary
+  Basis
+    Double
+      Granularity, Lattice, Numerals,
+      RoundedField instances
+    UnlimitedFloat
+    MPFR
+  RefinementOrderRounding
+    Numerals int, ratio, double
+    OuterRoundedRing <+>, <*>
+      outerAddDefaultEffort
+      outerTimesDefaultEffort
+    OuterRoundedField </>
+       outerDivideDefaultEffort
+    OuterRoundedElementary
+    InnerRoundedRing >+<, >*<
+    InnerRounded...
+  Interval
+    Generic (instances)
+      Numerals, OuterRoundedField
+      OuterRoundedElementaryDirect
+      OuterRoundedElementaryViaBasis
+    Double - for convenient import
+    UnlimitedFloat
+    MPFR
+  Product instances
+
+FunctionArithmetic
+  HasDomain
+  HasCodomain
+  NumericOrderRounding classes
+    BasicFunctions (const, projection, affine)
+    Evaluate
+    Compose
+    SplittableDomain
+  Basis
+    ChebPoly
+    ChebPolyMutable
+    Ariadne ?
+  RefinementOrderRounding classes
+    OuterBasicFunctions, Inner...
+    OuterEvaluate, InnerEvaluate
+    Composition
+    OuterSplittableDomain
+    Partition
+    Differentiation
+    Integration
+  Implementation
+    DomainTranslation
+    DomainEdges
+    PieceWise
+       instance of Partition
+    AutoDerivatives
+       instance of Differentiation
+    SymbolicFunction (expressions over literals)
+  Interval
+    ChebyPoly - for convenient import
+    ChebyPolyMutable
+    Ariadne ?
+  Product instances
