@@ -11,6 +11,7 @@
 module Numeric.AERN.Basics.PartialOrdering where
 
 import qualified Prelude
+import Test.QuickCheck
 
 {-| Like 'Prelude.Ordering' but with a non-comparable option -}
 data PartialOrdering = EQ | LT | GT | NC
@@ -26,4 +27,20 @@ partialOrderingTranspose :: PartialOrdering -> PartialOrdering
 partialOrderingTranspose LT = GT
 partialOrderingTranspose GT = LT
 partialOrderingTranspose a = a
+
+{-|
+    Poset with the ability to randomly generate
+    pairs of its own elements that are in 
+    a specific order relation (eg LT or NC).
+    
+    This is to help with checking properties that
+    make sense only for pairs in a certain relation
+    where such pairs are rare.
+-}
+class ArbitraryOrderedPair t where
+    {-| generator of pairs that satisfy the chosen relation -}
+    arbitraryPairRelatedBy :: PartialOrdering -> Gen (t,t)    
+    {-| generator of pairs distributed in such a way that all ordering relations 
+       permitted by this structure have similar probabilities of occurrence -}
+    arbitraryPairUniformRelation :: Gen (t,t)
 

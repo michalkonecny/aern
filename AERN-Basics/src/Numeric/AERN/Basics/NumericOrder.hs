@@ -1,6 +1,6 @@
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder
-    Description :  classical posets and lattices (<,max,min)  
+    Description :  classical and approximate lattices (<,max,min)  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 

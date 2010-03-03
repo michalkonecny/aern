@@ -1,12 +1,14 @@
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.RoundedLattice
-    Description :  posets and lattices with semideciable order and approximate ops  
+    Description :  lattices with directed-rounded operations  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    This module is hidden and reexported via its parent NumericOrder. 
 -}
 module Numeric.AERN.Basics.NumericOrder.RoundedLattice 
 where
