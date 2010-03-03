@@ -56,8 +56,6 @@ Library
     Numeric.AERN.Basics.RefinementOrder.SemidecidablePoset
     Numeric.AERN.Basics.RefinementOrder.RoundedBasis
     Numeric.AERN.Basics.RefinementOrder.RoundedLattice
-    Numeric.AERN.Basics.Enclosure
-    Numeric.AERN.Basics.ApproxEnclosure
     Numeric.AERN.Basics.Granularity
     Numeric.AERN.Basics.Interval
     Numeric.AERN.Basics.Laws.Relation
