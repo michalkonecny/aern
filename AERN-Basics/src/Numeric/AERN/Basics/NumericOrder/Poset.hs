@@ -19,7 +19,6 @@ import Numeric.AERN.Basics.Laws.Relation
 
 import qualified Prelude 
 import Prelude hiding (compare, EQ, LT, GT, (<), (<=), (>=), (>))
-import Test.QuickCheck
 
 
 {-|
@@ -57,22 +56,6 @@ instance Poset Double where
            (True, True) -> EQ
            _ -> NC 
 
-{-|
-    Poset with the ability to randomly generate
-    pairs of its own elements that are in 
-    a specific order relation (eg LT or NC).
-    
-    This is to help with checking properties that
-    make sense only for pairs in a certain relation
-    where such pairs are rare.
--}
-class PosetArbitraryRelatedPair t where
-    {-| generator of pairs that satisfy the chosen relation -}
-    arbitraryPosetRelatedPair :: PartialOrdering -> Gen (t,t)    
-    {-| generator of pairs distributed in such a way that all ordering relations 
-       permitted by this structure have similar probabilities of occurrence -}
-    arbitraryPosetPair :: Gen (t,t)    
-
 propPosetEqCompatible :: (Poset t) => t -> t -> Bool
 propPosetEqCompatible e1 e2 =
     (e1 /= e2 || compare e1 e2 == EQ)
@@ -87,6 +70,5 @@ propPosetTransitive :: (Poset t) => t -> t -> t -> Bool
 propPosetTransitive = transitive (<=)
     
 propExtremaInPoset :: (Poset t, HasExtrema t) => t -> Bool
-propExtremaInPoset e =
-    (bottom <= e) && (e <= top)
+propExtremaInPoset = extrema (<=) bottom top
     

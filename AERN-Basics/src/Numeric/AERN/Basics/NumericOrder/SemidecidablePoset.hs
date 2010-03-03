@@ -7,6 +7,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    This module is hidden and reexported via its parent NumericOrder. 
 -}
 
 module Numeric.AERN.Basics.NumericOrder.SemidecidablePoset 
