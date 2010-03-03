@@ -9,7 +9,7 @@
     Portability :  portable
     
     This module is meant to be imported qualified.
-    It is recommended to use the prefix NumOrd.
+    It is recommended to use the prefix RefOrd.
 -}
 module Numeric.AERN.Basics.RefinementOrder 
 (
