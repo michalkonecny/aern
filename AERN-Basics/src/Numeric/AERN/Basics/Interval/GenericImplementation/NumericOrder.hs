@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.Basics.Interval.GenericImplementation.NumericOrder
-    Description :  interval instances of numeric-ordered structures 
+    Description :  numeric-ordered operations for any CInterval instance 
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -18,15 +18,9 @@ import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Interval
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
-
-instance (NumOrd.SemidecidablePoset e) => (SemidecidableEq (Interval e))
-    where
-    maybeEqual = maybeEqualInterval
-    maybeEqualDefaultEffort = maybeEqualDefaultEffortInterval
 
 maybeEqualDefaultEffortInterval ::
-        (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
+        (CInterval i, SemidecidableEq (Endpoint i)) => 
         i -> [EffortIndicator]
 maybeEqualDefaultEffortInterval i =
     zipWith Prelude.max
@@ -50,11 +44,6 @@ maybeEqualInterval effort i1 i2 =
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
      
-instance (NumOrd.SemidecidablePoset e) => (NumOrd.SemidecidablePoset (Interval e))
-    where
-    maybeCompare = maybeCompareInterval
-    maybeCompareDefaultEffort = maybeCompareDefaultEffortInterval
-        
 maybeCompareDefaultEffortInterval ::
         (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
         i -> [EffortIndicator]
@@ -79,11 +68,6 @@ maybeCompareInterval effort i1 i2 =
     c = NumOrd.maybeCompare effort 
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
-
-instance (NumOrd.Lattice e) => (NumOrd.Lattice (Interval e))
-    where
-    min = minInterval 
-    max = maxInterval 
 
 minInterval ::
     (CInterval i, NumOrd.Lattice (Endpoint i)) =>
