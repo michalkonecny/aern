@@ -32,6 +32,20 @@ class SemidecidableEq t where
     (==?) :: t -> t -> Maybe Bool
     a ==? b = maybeEqual (maybeEqualDefaultEffort a) a b
 
+instance SemidecidableEq Int where
+    maybeEqual = maybeEqualEq
+    maybeEqualDefaultEffort _ = []
+    
+maybeEqualEq _ a b = Just $ a == b  
+
+instance SemidecidableEq Double where
+    maybeEqual _ a b =
+        case (isNaN a, isNaN b) of
+           (False, False) -> Just $ a == b  
+           (True, True) -> Just True
+           _ -> Just False
+    maybeEqualDefaultEffort _ = []
+           
 propSemidecidableEqReflexive :: (SemidecidableEq t) => t -> Bool
 propSemidecidableEqReflexive = semidecidableReflexive (==?)
 
