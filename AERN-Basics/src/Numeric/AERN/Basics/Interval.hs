@@ -1,6 +1,7 @@
+{-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.Basics.Interval
-    Description :  an interval datatype  
+    Description :  a class of interval types  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -15,15 +16,10 @@ module Numeric.AERN.Basics.Interval where
     Pairs of endpoints.  A user should not use this type directly
     but use the classes of which this is an instance.
 -}
-data Interval e =
-    Interval 
-    { 
-      lowerEndpoint :: e,
-      upperEndpoint :: e
-    }
-
-getEndpoints :: Interval e -> (e,e)
-getEndpoints (Interval lower upper) = (lower, upper)
-
-fromEndpoints :: (e, e) -> Interval e
-fromEndpoints (lower, upper) = Interval lower upper
+class Interval i where
+  type Endpoint i
+  getEndpoints :: i -> (Endpoint i, Endpoint i)
+  fromEndpoints :: (Endpoint i, Endpoint i) -> i
+  mapEndpoints :: (Endpoint i -> Endpoint i) -> (i -> i)
+  mapEndpointPair :: ((Endpoint i, Endpoint i) -> (Endpoint i, Endpoint i)) -> (i -> i)
+  
