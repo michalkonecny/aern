@@ -31,6 +31,7 @@ import Prelude hiding (compare, EQ, LT, GT, (<), (<=), (>=), (>))
 class (Eq t, SemidecidablePoset t, Show t) => Poset t where
     compare :: t -> t -> PartialOrdering
     
+    -- default implementation assuming the inherited semidecidable order is actually decidable:
     compare a b =
         case maybeCompare (maybeCompareDefaultEffort a) a b of
             Just r -> r

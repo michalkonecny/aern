@@ -20,7 +20,6 @@ class CInterval i where
     fromEndpoints :: (Endpoint i, Endpoint i) -> i
     mapEndpoints :: (Endpoint i -> Endpoint i) -> (i -> i)
     mapEndpointPair :: ((Endpoint i, Endpoint i) -> (Endpoint i, Endpoint i)) -> (i -> i)
-
   
 {-|
     Pairs of endpoints.  A user should not use this type directly
@@ -32,7 +31,12 @@ data Interval e =
         lowEndpoint :: e,
         highEndpoint :: e
     }
-   
+    deriving (Eq)
+    
+instance (Show e) => (Show (Interval e))
+    where
+    show (Interval l h) = "[" ++ show l ++ "," ++ show h ++ "]"
+
 instance CInterval (Interval e) where
     type Endpoint (Interval e) = e
     getEndpoints (Interval l h) = (l, h)
