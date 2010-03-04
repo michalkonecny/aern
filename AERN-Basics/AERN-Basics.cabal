@@ -58,6 +58,7 @@ Library
     Numeric.AERN.Basics.RefinementOrder.RoundedLattice
     Numeric.AERN.Basics.Granularity
     Numeric.AERN.Basics.Interval
+    Numeric.AERN.Basics.Interval.GenericImplementation.NumericOrder
     Numeric.AERN.Basics.Laws.Relation
     Numeric.AERN.Basics.Laws.SemidecidableRelation
     Numeric.AERN.Basics.Laws.Operation

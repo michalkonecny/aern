@@ -15,9 +15,10 @@ module Numeric.AERN.Basics.NumericOrder.Poset where
 
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Extrema
+import Numeric.AERN.Basics.NumericOrder.SemidecidablePoset
 import Numeric.AERN.Basics.Laws.Relation
 
-import qualified Prelude 
+import qualified Prelude
 import Prelude hiding (compare, EQ, LT, GT, (<), (<=), (>=), (>))
 
 
@@ -27,8 +28,16 @@ import Prelude hiding (compare, EQ, LT, GT, (<), (<=), (>=), (>))
     (More-or-less copied from Data.Poset 
      in package altfloat-0.3 by Nick Bowler.) 
 -} 
-class (Eq t) => Poset t where
+class (Eq t, SemidecidablePoset t, Show t) => Poset t where
     compare :: t -> t -> PartialOrdering
+    
+    compare a b =
+        case maybeCompare (maybeCompareDefaultEffort a) a b of
+            Just r -> r
+            _ -> error $
+                "poset comparison of " ++ show a
+                ++ " with " ++ show b ++ " is not decidable"
+    
     -- | Is comparable to.
     (<==>)  :: t -> t -> Bool
     -- | Is not comparable to.

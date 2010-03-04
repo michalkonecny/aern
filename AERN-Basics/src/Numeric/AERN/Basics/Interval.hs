@@ -9,12 +9,10 @@
     Stability   :  experimental
     Portability :  portable
 -}
-
 module Numeric.AERN.Basics.Interval where
 
 {-|
-    Pairs of endpoints.  A user should not use this type directly
-    but use the classes of which this is an instance.
+    A class of types that represent some intervals.
 -}
 class CInterval i where
     type Endpoint i
@@ -24,6 +22,10 @@ class CInterval i where
     mapEndpointPair :: ((Endpoint i, Endpoint i) -> (Endpoint i, Endpoint i)) -> (i -> i)
 
   
+{-|
+    Pairs of endpoints.  A user should not use this type directly
+    but use the classes of which this is an instance.
+-}
 data Interval e =
     Interval
     { 
@@ -40,3 +42,4 @@ instance CInterval (Interval e) where
         Interval l2 h2
         where
         (l2, h2) = f (l, h)
+

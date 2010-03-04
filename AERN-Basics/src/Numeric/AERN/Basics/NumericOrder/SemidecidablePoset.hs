@@ -21,7 +21,7 @@ import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Extrema
 import Numeric.AERN.Basics.Laws.SemidecidableRelation
 
-import Prelude hiding (LT, GT)
+import Prelude hiding (EQ, LT, GT)
 
 
 {-|
@@ -49,6 +49,21 @@ class (SemidecidableEq t) => SemidecidablePoset t where
         (a <? b) ||? (a ==? b)
     a >=?   b =
         (a >? b) ||? (a ==? b)
+
+instance SemidecidablePoset Int where
+    maybeCompare = maybeComparePreludeCompare    
+    maybeCompareDefaultEffort _ = []
+    
+maybeComparePreludeCompare _ a b =
+    Just $ toPartialOrdering $ Prelude.compare a b
+
+instance SemidecidablePoset Double where
+    maybeCompare _ a b =
+        case (isNaN a, isNaN b) of
+           (False, False) -> Just $ toPartialOrdering $ Prelude.compare a b  
+           (True, True) -> Just EQ
+           _ -> Just NC 
+    maybeCompareDefaultEffort _ = []
 
 propExtremaInSemidecidablePoset :: (SemidecidablePoset t, HasExtrema t) => t -> Bool
 propExtremaInSemidecidablePoset = semidecidableOrderExtrema (<=?) bottom top
