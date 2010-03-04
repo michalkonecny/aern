@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.Basics.Interval.GenericImplementation.NumericOrder
     Description :  interval instances of numeric-ordered structures 
@@ -12,24 +13,32 @@ module Numeric.AERN.Basics.Interval.GenericImplementation.NumericOrder where
 
 import Prelude hiding (EQ, LT, GT)
 
+import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Interval
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
-
 instance (NumOrd.SemidecidablePoset e) => (SemidecidableEq (Interval e))
     where
-    maybeEqual = maybeEqualIntervals
-    maybeEqualDefaultEffort = maybeEqualDefaultEffortIntervals
+    maybeEqual = maybeEqualInterval
+    maybeEqualDefaultEffort = maybeEqualDefaultEffortInterval
 
-maybeEqualDefaultEffortIntervals (Interval l h) =
-    zipWith max
+maybeEqualDefaultEffortInterval ::
+        (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
+        i -> [EffortIndicator]
+maybeEqualDefaultEffortInterval i =
+    zipWith Prelude.max
         (maybeEqualDefaultEffort l)
         (maybeEqualDefaultEffort h)
-        
-maybeEqualIntervals effort i1 i2 = 
+    where
+    (l,h) = getEndpoints i
+
+maybeEqualInterval ::
+        (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
+        [EffortIndicator] -> i -> i -> Maybe Bool
+maybeEqualInterval effort i1 i2 = 
     case (c l1 l2, c l1 h2, c h1 l2, c h1 h2) of
         (Just EQ, Just EQ, Just EQ, _) -> Just True
         (Just LT, Just LT, Just LT, Just LT) -> Just False  
@@ -41,18 +50,25 @@ maybeEqualIntervals effort i1 i2 =
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
      
-    
 instance (NumOrd.SemidecidablePoset e) => (NumOrd.SemidecidablePoset (Interval e))
     where
-    maybeCompare = maybeCompareIntervals
-    maybeCompareDefaultEffort = maybeCompareDefaultEffortIntervals
+    maybeCompare = maybeCompareInterval
+    maybeCompareDefaultEffort = maybeCompareDefaultEffortInterval
         
-maybeCompareDefaultEffortIntervals (Interval l h) =
-    zipWith max
+maybeCompareDefaultEffortInterval ::
+        (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
+        i -> [EffortIndicator]
+maybeCompareDefaultEffortInterval i =
+    zipWith Prelude.max
         (NumOrd.maybeCompareDefaultEffort l)
         (NumOrd.maybeCompareDefaultEffort h)
+    where
+    (l,h) = getEndpoints i
         
-maybeCompareIntervals effort i1 i2 = 
+maybeCompareInterval ::
+        (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
+        [EffortIndicator] -> i -> i -> Maybe PartialOrdering
+maybeCompareInterval effort i1 i2 = 
     case (c l1 l2, c l1 h2, c h1 l2, c h1 h2) of
         (Just EQ, Just EQ, Just EQ, _) -> Just EQ
         (Just LT, Just LT, Just LT, Just LT) -> Just LT  
@@ -64,4 +80,27 @@ maybeCompareIntervals effort i1 i2 =
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
 
--- TODO: add instances for Lattice and RoundedLattice
+instance (NumOrd.Lattice e) => (NumOrd.Lattice (Interval e))
+    where
+    min = minInterval 
+    max = maxInterval 
+
+minInterval ::
+    (CInterval i, NumOrd.Lattice (Endpoint i)) =>
+    i -> i -> i
+minInterval i1 i2 =
+    fromEndpoints (NumOrd.min l1 l2, NumOrd.min h1 h2)
+    where
+    (l1, h1) = getEndpoints i1
+    (l2, h2) = getEndpoints i2
+
+maxInterval ::
+    (CInterval i, NumOrd.Lattice (Endpoint i)) =>
+    i -> i -> i
+maxInterval i1 i2 =
+    fromEndpoints (NumOrd.max l1 l2, NumOrd.max h1 h2)
+    where
+    (l1, h1) = getEndpoints i1
+    (l2, h2) = getEndpoints i2
+
+    
