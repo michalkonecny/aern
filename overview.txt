@@ -1,27 +1,29 @@
 Basics
    Mutable
+   Effort (EffortIndicator type)
    Equality ==?
    PartialOrdering NC
    Extrema top, bottom
-   NumericOrder
-     Poset <=
-     Lattice max, min
+   NumericOrder (NumOrd)
+     Poset (<=)
+     Lattice (max, min)
      SemidecidablePoset
-    <=?, maybeCompareDefaultEffort
-     RoundedLattice maxUp, minmaxDefaultEffort
-   RefinementOrder
+       (<=?, maybeCompareDefaultEffort)
+     RoundedLattice (maxUp, minmaxDefaultEffort)
+   RefinementOrder (RefOrd)
      Poset |<=
-     Basis |_|? consistent
-     Lattice |_|, |^|
+     Basis |\/? consistent
+     Lattice |\/, |/\
      SemidecidablePoset |<=?
-     OuterRoundedBasis <|_|>? maybeConsistent
-     OuterRoundedLattice <|_|>
-     InnerRoundedBasis >|_|<?
-     InnerRoundedLattice >|_|<
+     OuterRoundedBasis <|\/>? maybeConsistent
+     OuterRoundedLattice <|\/>
+     InnerRoundedBasis >|\/<?
+     InnerRoundedLattice >|\/<
    Granularity setMinGranularity, getMaxGranularity
    Interval (endpoints)
-     NumericOrder instances
-     RefinementOrder instances
+     GenericImplementation
+       NumericOrder
+       RefinementOrder
    Product (list, map) instances
      NumericOrder instances
      RefinementOrder instances
@@ -59,10 +61,8 @@ RealArithmetic
     InnerRoundedRing >+<, >*<
     InnerRounded...
   Interval
-    Generic (instances)
-      Numerals, OuterRoundedField
-      OuterRoundedElementaryDirect
-      OuterRoundedElementaryViaBasis
+    GenericImplementation
+      OuterRoundedElementary
     Double - for convenient import
     UnlimitedFloat
     MPFR
