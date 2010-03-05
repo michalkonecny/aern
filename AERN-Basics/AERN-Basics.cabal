@@ -57,11 +57,12 @@ Library
     Numeric.AERN.Basics.RefinementOrder.RoundedBasis
     Numeric.AERN.Basics.RefinementOrder.RoundedLattice
     Numeric.AERN.Basics.Granularity
+    Numeric.AERN.Basics.CInterval
+    Numeric.AERN.Basics.CInterval.NumericOrder
+    Numeric.AERN.Basics.CInterval.RefinementOrder
     Numeric.AERN.Basics.Interval
     Numeric.AERN.Basics.Interval.NumericOrder
     Numeric.AERN.Basics.Interval.RefinementOrder
-    Numeric.AERN.Basics.Interval.GenericImplementation.NumericOrder
-    Numeric.AERN.Basics.Interval.GenericImplementation.RefinementOrder
     Numeric.AERN.Basics.Laws.Relation
     Numeric.AERN.Basics.Laws.SemidecidableRelation
     Numeric.AERN.Basics.Laws.Operation

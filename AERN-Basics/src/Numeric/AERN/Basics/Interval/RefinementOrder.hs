@@ -12,7 +12,7 @@ module Numeric.AERN.Basics.Interval.RefinementOrder where
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Interval.NumericOrder
-import Numeric.AERN.Basics.Interval.GenericImplementation.RefinementOrder
+import Numeric.AERN.Basics.CInterval.RefinementOrder
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd

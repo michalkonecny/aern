@@ -14,7 +14,7 @@ module Numeric.AERN.Basics.Interval.NumericOrder where
 import Numeric.AERN.Basics.Equality
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.Interval.GenericImplementation.NumericOrder
+import Numeric.AERN.Basics.CInterval.NumericOrder
 
 instance (NumOrd.SemidecidablePoset e) => (SemidecidableEq (Interval e))
     where

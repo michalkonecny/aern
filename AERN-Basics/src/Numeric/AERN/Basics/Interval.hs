@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.Basics.Interval
-    Description :  a class of interval types  
+    Description :  a minimal interval datatype  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -9,20 +9,16 @@
     Stability   :  experimental
     Portability :  portable
 -}
-module Numeric.AERN.Basics.Interval where
+module Numeric.AERN.Basics.Interval 
+(
+   Interval(..)
+)
+where
+
+import Numeric.AERN.Basics.CInterval
 
 {-|
-    A class of types that represent some intervals.
--}
-class CInterval i where
-    type Endpoint i
-    getEndpoints :: i -> (Endpoint i, Endpoint i)
-    fromEndpoints :: (Endpoint i, Endpoint i) -> i
-    mapEndpoints :: (Endpoint i -> Endpoint i) -> (i -> i)
-    mapEndpointPair :: ((Endpoint i, Endpoint i) -> (Endpoint i, Endpoint i)) -> (i -> i)
-  
-{-|
-    Pairs of endpoints.  A user should not use this type directly
+    Pairs of endpoints.  An end user should not use this type directly
     but use the classes of which this is an instance.
 -}
 data Interval e =

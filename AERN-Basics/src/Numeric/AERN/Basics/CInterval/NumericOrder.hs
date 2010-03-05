@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-|
-    Module      :  Numeric.AERN.Basics.Interval.GenericImplementation.NumericOrder
+    Module      :  Numeric.AERN.Basics.CInterval.NumericOrder
     Description :  numeric-ordered operations for any CInterval instance 
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -9,14 +9,14 @@
     Stability   :  experimental
     Portability :  portable
 -}
-module Numeric.AERN.Basics.Interval.GenericImplementation.NumericOrder where
+module Numeric.AERN.Basics.CInterval.NumericOrder where
 
 import Prelude hiding (EQ, LT, GT)
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.CInterval
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 maybeEqualDefaultEffortInterval ::
