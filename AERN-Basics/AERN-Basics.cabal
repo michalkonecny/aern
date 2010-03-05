@@ -24,9 +24,9 @@ Description:
 
     Type classes are provided to capture:
     
-    * the partial, sometimes semidecidable, natural ordering (<)
+    * the partial, sometimes semidecidable, natural ordering (<=) used in relation to "nearness"
     
-    * the partial, sometimes semidecidable, enclosure ordering (⊂)
+    * the partial, sometimes semidecidable, refinement ordering (⊑) used in relation to "enclosure"
     
 
 Extra-Source-Files:
