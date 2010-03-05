@@ -16,9 +16,10 @@ module Numeric.AERN.Basics.Laws.SemidecidableRelation
 where
 
 import Numeric.AERN.Basics.MaybeBool
+import Numeric.AERN.Basics.Laws.Operation
 import Data.Maybe (isNothing)
 
-import qualified Algebra.Laws as NP -- numeric-prelude
+--import qualified Algebra.Laws as NP -- numeric-prelude
 
 semidecidableReflexive :: (t -> t -> Maybe Bool) -> t -> Bool
 semidecidableReflexive rel e = 
@@ -39,7 +40,7 @@ semidecidableSymmetric rel e1 e2 =
     ||
     (isNothing $ e2 `rel` e1)
     ||
-    (NP.commutative rel e1 e2)
+    (commutative rel e1 e2)
 
 semidecidableOrderExtrema (<=?) bottom top e =
     (trueOrNothing $ bottom <=? e) 
