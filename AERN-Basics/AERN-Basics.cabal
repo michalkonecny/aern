@@ -35,8 +35,7 @@ Extra-Source-Files:
 Library
   hs-source-dirs: src
   Build-Depends:
-        base >= 4, base < 5, QuickCheck > 2, QuickCheck <= 3,
-        numeric-prelude
+        base >= 4, base < 5, QuickCheck > 2, QuickCheck <= 3
   Exposed-modules:
     Numeric.AERN.Basics.MaybeBool
     Numeric.AERN.Basics.Effort

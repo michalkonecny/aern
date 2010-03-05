@@ -10,20 +10,37 @@
 -}
 module Numeric.AERN.Basics.Laws.Operation
 (
-    idempotent, NP.commutative, NP.associative, 
+    idempotent, commutative, associative, 
     partialIdempotent, partialCommutative, partialAssociative, 
-    modular, NP.leftDistributive,  NP.rightDistributive
+    modular, leftDistributive,  rightDistributive
 )
 where
 
-import qualified Algebra.Laws as NP -- numeric-prelude
+--import qualified Algebra.Laws as NP -- numeric-prelude
 
 idempotent :: (Eq t) => (t -> t -> t) -> t -> Bool
 idempotent (*) e = 
     e * e == e
+    
+commutative :: (Eq t2) => (t -> t -> t2) -> t -> t -> Bool
+commutative (*) e1 e2 = 
+    e1 * e2 == e2 * e1
 
+associative :: (Eq t) => (t -> t -> t) -> t -> t -> t -> Bool
+associative (*) e1 e2 e3 = 
+    (e1 * e2) * e3 == e1 * (e2 * e3)
+
+modular :: (Eq t) => (t -> t -> t) -> (t -> t -> t) -> t -> t -> t -> Bool
 modular (/\) (\/) e1 e2 e3 =
     (e1 /\ e3) \/ (e2 /\ e3) == ((e1 /\ e3) \/ e2) /\ e3
+
+leftDistributive :: (Eq t) => (t -> t -> t) -> (t -> t -> t) -> t -> t -> t -> Bool
+leftDistributive (/\) (\/) e1 e2 e3 =
+    e1 \/ (e2 /\ e3) == (e1 \/ e2) /\ (e1 \/ e3)
+
+rightDistributive :: (Eq t) => (t -> t -> t) -> (t -> t -> t) -> t -> t -> t -> Bool
+rightDistributive (/\) (\/) e1 e2 e3 =
+    (e2 /\ e3) \/ e1 == (e2 \/ e1) /\ (e3 \/ e1)
 
 partialIdempotent :: (Eq t) => (t -> t -> Maybe t) -> t -> Bool
 partialIdempotent (*?) e = 
