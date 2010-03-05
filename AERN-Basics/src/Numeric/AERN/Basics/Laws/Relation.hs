@@ -15,18 +15,19 @@ module Numeric.AERN.Basics.Laws.Relation
 )
 where
 
-import qualified Algebra.Laws as NP -- numeric-prelude
+--import qualified Algebra.Laws as NP -- numeric-prelude
 
 reflexive :: (t -> t -> Bool) -> t -> Bool
-reflexive rel e = 
-    e `rel` e == True
+reflexive (~~) e = 
+    e ~~ e == True
 
 symmetric :: (t -> t -> Bool) -> t -> t -> Bool
-symmetric = NP.commutative
+symmetric (~~) e1 e2 = 
+    e1 ~~ e2 == e2 ~~ e1
 
 transitive :: (t -> t -> Bool) -> t -> t -> t -> Bool
-transitive rel e1 e2 e3 = 
-    (not (e1 `rel` e2)) || (not (e2 `rel` e3)) || (e1 `rel` e3)
+transitive (~~) e1 e2 e3 = 
+    (not (e1 ~~ e2)) || (not (e2 ~~ e3)) || (e1 ~~ e3)
 
 extrema (<=) bottom top e =
     bottom <= e && e <= top
