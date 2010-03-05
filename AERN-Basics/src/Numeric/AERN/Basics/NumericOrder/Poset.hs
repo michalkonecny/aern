@@ -59,13 +59,6 @@ class (Eq t, SemidecidablePoset t, Show t) => Poset t where
 instance Poset Int where
     compare a b = toPartialOrdering $ Prelude.compare a b  
 
-instance Poset Double where
-    compare a b =
-        case (isNaN a, isNaN b) of
-           (False, False) -> toPartialOrdering $ Prelude.compare a b  
-           (True, True) -> EQ
-           _ -> NC 
-
 propPosetEqCompatible :: (Poset t) => t -> t -> Bool
 propPosetEqCompatible e1 e2 =
     (e1 /= e2 || compare e1 e2 == EQ)

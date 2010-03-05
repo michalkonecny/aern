@@ -1,0 +1,43 @@
+Name:           AERN-Real
+Version:        2010.1
+Cabal-Version:  >= 1.2
+Build-Type:     Simple
+License:        BSD3
+License-File:   LICENCE
+Author:         Michal Konecny (Aston University)
+Copyright:      (c) 2010 Michal Konecny
+Maintainer:     mikkonecny@gmail.com
+Homepage:       http://code.google.com/p/aern/
+Stability:      experimental
+Category:       Data, Math
+Synopsis:       arbitrary precision real interval arithmetic
+Tested-with:    GHC ==6.12.1
+Description:
+    Type classes abstracting typical arithmetic operations for real number
+    over approximations for exact entities, including outer and inner-rounded
+    field operations and common elementary operations.
+    
+    A concrete implementation for the type classes is provided in the form
+    of interval arithmetic.  The arithmetic supports also anti-consistent
+    intervals (ie @[l,h]@ with @l >= h@) and maintains monotonicity in the
+    refinement order so that both inner and outer approximations of exact interval
+    expressions can be safely computed.
+
+    As interval endpoints, this library provides a choice of machine Double values
+    and a pure Haskell arbitrary precision floating-point numbers.
+    A separate package AERN-Real-MPFR facilitates (via package hmpfr) 
+    the use of the MPFR arbitrary precision floating point numbers as endpoints.
+
+Extra-Source-Files:
+    ChangeLog
+
+Library
+  hs-source-dirs: src
+  Build-Depends:
+        base >= 4, base < 5, QuickCheck > 2, QuickCheck <= 3,
+        numeric-prelude,
+        AERN-Basics == 2010.1
+  Exposed-modules:
+    Numeric.AERN.RealArithmetic.Basis.Double
+
+    

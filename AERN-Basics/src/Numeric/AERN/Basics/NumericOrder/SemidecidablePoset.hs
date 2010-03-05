@@ -57,14 +57,6 @@ instance SemidecidablePoset Int where
 maybeComparePreludeCompare _ a b =
     Just $ toPartialOrdering $ Prelude.compare a b
 
-instance SemidecidablePoset Double where
-    maybeCompare _ a b =
-        case (isNaN a, isNaN b) of
-           (False, False) -> Just $ toPartialOrdering $ Prelude.compare a b  
-           (True, True) -> Just EQ
-           _ -> Just NC 
-    maybeCompareDefaultEffort _ = []
-
 propExtremaInSemidecidablePoset :: (SemidecidablePoset t, HasExtrema t) => t -> Bool
 propExtremaInSemidecidablePoset = semidecidableOrderExtrema (<=?) bottom top
 
