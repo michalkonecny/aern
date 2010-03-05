@@ -32,3 +32,10 @@ instance NumOrd.SemidecidablePoset Double where
            _ -> Just NC 
     maybeCompareDefaultEffort _ = []
 
+instance NumOrd.Poset Double where
+    compare a b =
+        case (isNaN a, isNaN b) of
+           (False, False) -> toPartialOrdering $ Prelude.compare a b  
+           (True, True) -> EQ
+           _ -> NC 
+    
