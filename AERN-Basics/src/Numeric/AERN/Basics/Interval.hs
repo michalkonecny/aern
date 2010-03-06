@@ -18,7 +18,6 @@ module Numeric.AERN.Basics.Interval
 where
 
 import Numeric.AERN.Basics.Granularity
-import Numeric.AERN.Basics.Extrema
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.CInterval

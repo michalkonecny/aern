@@ -18,7 +18,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.MaybeBool
 import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.Extrema
+import Numeric.AERN.Basics.RefinementOrder.Extrema
 import Numeric.AERN.Basics.Laws.SemidecidableRelation
 
 import Prelude hiding (LT, GT)

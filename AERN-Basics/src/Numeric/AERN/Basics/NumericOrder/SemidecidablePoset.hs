@@ -18,7 +18,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.MaybeBool
 import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.Extrema
+import Numeric.AERN.Basics.NumericOrder.Extrema
 import Numeric.AERN.Basics.Laws.SemidecidableRelation
 
 import Prelude hiding (EQ, LT, GT)
@@ -58,7 +58,7 @@ maybeComparePreludeCompare _ a b =
     Just $ toPartialOrdering $ Prelude.compare a b
 
 propExtremaInSemidecidablePoset :: (SemidecidablePoset t, HasExtrema t) => t -> Bool
-propExtremaInSemidecidablePoset = semidecidableOrderExtrema (<=?) bottom top
+propExtremaInSemidecidablePoset = semidecidableOrderExtrema (<=?) least highest
 
 -- TODO: other properties of semidecidable posets    
 
