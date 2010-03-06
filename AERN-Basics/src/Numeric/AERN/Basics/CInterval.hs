@@ -14,6 +14,7 @@ module Numeric.AERN.Basics.CInterval where
 
 import Numeric.AERN.Basics.Granularity
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 {-|
     A class of types that represent some intervals.
@@ -86,4 +87,20 @@ setGranularityInInterval ::
     (Granularity (Endpoint i)) -> i -> i
 setGranularityInInterval gran i =
     mapBothEndpoints (setGranularityUp gran) (setGranularityDn gran) i
+    
+leastInterval ::
+     (CInterval i, NumOrd.HasExtrema (Endpoint i)) => i
+leastInterval = fromEndpoints (NumOrd.least, NumOrd.least)
+    
+highestInterval ::
+     (CInterval i, NumOrd.HasExtrema (Endpoint i)) => i
+highestInterval = fromEndpoints (NumOrd.highest, NumOrd.highest)
+
+bottomInterval ::
+     (CInterval i, NumOrd.HasExtrema (Endpoint i)) => i
+bottomInterval = fromEndpoints (NumOrd.least, NumOrd.highest)
+
+topInterval ::
+     (CInterval i, NumOrd.HasExtrema (Endpoint i)) => i
+topInterval = fromEndpoints (NumOrd.highest, NumOrd.least)
     

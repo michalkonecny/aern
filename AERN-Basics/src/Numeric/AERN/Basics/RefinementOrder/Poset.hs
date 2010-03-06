@@ -14,7 +14,7 @@
 module Numeric.AERN.Basics.RefinementOrder.Poset where
 
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.Extrema
+import Numeric.AERN.Basics.RefinementOrder.Extrema
 import Numeric.AERN.Basics.Laws.Relation
 
 import qualified Prelude 
@@ -68,8 +68,8 @@ propPosetAntiSymmetric e1 e2 =
     compare e2 e1 == (partialOrderingTranspose $ compare e1 e2) 
 
 propPosetTransitive :: (Poset t) => t -> t -> t -> Bool
-propPosetTransitive = transitive (|<=)
+propPosetTransitive = transitive (⊑)
     
 propExtremaInPoset :: (Poset t, HasExtrema t) => t -> Bool
-propExtremaInPoset = extrema (|<=) bottom top
+propExtremaInPoset = extrema (⊑) (⊥) (⊤)
     

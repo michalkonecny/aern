@@ -13,6 +13,7 @@
 -}
 module Numeric.AERN.Basics.NumericOrder 
 (
+    module Numeric.AERN.Basics.NumericOrder.Extrema,
     module Numeric.AERN.Basics.NumericOrder.Poset,
     module Numeric.AERN.Basics.NumericOrder.Lattice,
     module Numeric.AERN.Basics.NumericOrder.SemidecidablePoset,
@@ -20,6 +21,7 @@ module Numeric.AERN.Basics.NumericOrder
 )
 where
 
+import Numeric.AERN.Basics.NumericOrder.Extrema
 import Numeric.AERN.Basics.NumericOrder.Poset
 import Numeric.AERN.Basics.NumericOrder.Lattice
 import Numeric.AERN.Basics.NumericOrder.SemidecidablePoset
