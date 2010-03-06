@@ -1,4 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.Basics.Interval
     Description :  a minimal interval datatype  
@@ -15,6 +17,9 @@ module Numeric.AERN.Basics.Interval
 )
 where
 
+import Numeric.AERN.Basics.Granularity
+import Numeric.AERN.Basics.Extrema
+import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.CInterval
 
 {-|
@@ -38,8 +43,23 @@ instance CInterval (Interval e) where
     getEndpoints (Interval l h) = (l, h)
     fromEndpoints (l,h) = Interval l h     
     mapEndpoints f (Interval l h) = Interval (f l) (f h)
+    mapBothEndpoints fl fh (Interval l h) = Interval (fl l) (fh h)
     mapEndpointPair f (Interval l h) = 
         Interval l2 h2
         where
         (l2, h2) = f (l, h)
 
+instance (HasGranularity e, NumOrd.Lattice (Granularity e)) => 
+         HasGranularity (Interval e)
+    where
+    type Granularity (Interval e) = Granularity e
+    getGranularity = getGranularityInterval
+
+instance (CanSetGranularityRoundedByNumericOrder e, NumOrd.Lattice (Granularity e)) => 
+         CanSetGranularityRoundedByRefinementOrder (Interval e)
+    where
+    setGranularityOut = setGranularityOutInterval
+    setGranularityIn = setGranularityInInterval
+    setMinGranularityOut = setMinGranularityOutInterval
+    setMinGranularityIn = setMinGranularityInInterval
+    
