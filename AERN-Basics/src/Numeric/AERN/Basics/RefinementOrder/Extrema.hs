@@ -13,11 +13,21 @@ module Numeric.AERN.Basics.RefinementOrder.Extrema where
 {-|
     A type with extrema.
 -}
-class HasExtrema t where
+class (HasTop t, HasBottom t) => HasExtrema t
+
+{-|
+    A type with a top element.
+-}
+class HasTop t where
     top :: t
+
+{-|
+    A type with a top element.
+-}
+class HasBottom t where
     bottom :: t
     
-(⊤) :: (HasExtrema t) => t   
+(⊤) :: (HasTop t) => t   
 (⊤) = top
-(⊥) :: (HasExtrema t) => t   
+(⊥) :: (HasBottom t) => t   
 (⊥) = bottom

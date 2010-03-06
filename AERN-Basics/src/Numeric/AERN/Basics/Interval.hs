@@ -63,13 +63,19 @@ instance (CanSetGranularityRoundedByNumericOrder e, NumOrd.Lattice (Granularity 
     setMinGranularityOut = setMinGranularityOutInterval
     setMinGranularityIn = setMinGranularityInInterval
     
-instance (NumOrd.HasExtrema e) => (NumOrd.HasExtrema (Interval e))
+instance (NumOrd.HasLeast e) => (NumOrd.HasLeast (Interval e))
     where
     least = leastInterval
+    
+instance (NumOrd.HasHighest e) => (NumOrd.HasHighest (Interval e))
+    where
     highest = highestInterval
     
-instance (NumOrd.HasExtrema e) => (RefOrd.HasExtrema (Interval e))
+instance (NumOrd.HasExtrema e) => (RefOrd.HasTop (Interval e))
+    where
+    top = topInterval
+    
+instance (NumOrd.HasExtrema e) => (RefOrd.HasBottom (Interval e))
     where
     bottom = bottomInterval
-    top = topInterval
     
