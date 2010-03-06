@@ -35,7 +35,6 @@ Library
   hs-source-dirs: src
   Build-Depends:
         base >= 4, base < 5, QuickCheck > 2, QuickCheck <= 3,
-        numeric-prelude,
         AERN-Basics == 2010.1
   Exposed-modules:
     Numeric.AERN.RealArithmetic.Basis.Double
