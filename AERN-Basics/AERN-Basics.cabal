@@ -42,13 +42,14 @@ Library
     Numeric.AERN.Basics.Mutable
     Numeric.AERN.Basics.Equality
     Numeric.AERN.Basics.PartialOrdering
-    Numeric.AERN.Basics.Extrema
     Numeric.AERN.Basics.NumericOrder
+    Numeric.AERN.Basics.NumericOrder.Extrema
     Numeric.AERN.Basics.NumericOrder.Poset
     Numeric.AERN.Basics.NumericOrder.Lattice
     Numeric.AERN.Basics.NumericOrder.SemidecidablePoset
     Numeric.AERN.Basics.NumericOrder.RoundedLattice
     Numeric.AERN.Basics.RefinementOrder
+    Numeric.AERN.Basics.RefinementOrder.Extrema
     Numeric.AERN.Basics.RefinementOrder.Poset
     Numeric.AERN.Basics.RefinementOrder.Basis
     Numeric.AERN.Basics.RefinementOrder.Lattice

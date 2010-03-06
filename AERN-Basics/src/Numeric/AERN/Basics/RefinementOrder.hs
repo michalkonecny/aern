@@ -13,6 +13,7 @@
 -}
 module Numeric.AERN.Basics.RefinementOrder 
 (
+    module Numeric.AERN.Basics.RefinementOrder.Extrema,
     module Numeric.AERN.Basics.RefinementOrder.Poset,
     module Numeric.AERN.Basics.RefinementOrder.Basis,
     module Numeric.AERN.Basics.RefinementOrder.Lattice,
@@ -22,6 +23,7 @@ module Numeric.AERN.Basics.RefinementOrder
 )
 where
 
+import Numeric.AERN.Basics.RefinementOrder.Extrema
 import Numeric.AERN.Basics.RefinementOrder.Poset
 import Numeric.AERN.Basics.RefinementOrder.Basis
 import Numeric.AERN.Basics.RefinementOrder.Lattice

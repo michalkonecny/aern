@@ -14,7 +14,7 @@
 module Numeric.AERN.Basics.NumericOrder.Poset where
 
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.Extrema
+import Numeric.AERN.Basics.NumericOrder.Extrema
 import Numeric.AERN.Basics.NumericOrder.SemidecidablePoset
 import Numeric.AERN.Basics.Laws.Relation
 
@@ -73,5 +73,5 @@ propPosetTransitive :: (Poset t) => t -> t -> t -> Bool
 propPosetTransitive = transitive (<=)
     
 propExtremaInPoset :: (Poset t, HasExtrema t) => t -> Bool
-propExtremaInPoset = extrema (<=) bottom top
+propExtremaInPoset = extrema (<=) least highest
     

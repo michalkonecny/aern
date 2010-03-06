@@ -20,6 +20,7 @@ where
 import Numeric.AERN.Basics.Granularity
 import Numeric.AERN.Basics.Extrema
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.CInterval
 
 {-|
@@ -62,4 +63,14 @@ instance (CanSetGranularityRoundedByNumericOrder e, NumOrd.Lattice (Granularity 
     setGranularityIn = setGranularityInInterval
     setMinGranularityOut = setMinGranularityOutInterval
     setMinGranularityIn = setMinGranularityInInterval
+    
+instance (NumOrd.HasExtrema e) => (NumOrd.HasExtrema (Interval e))
+    where
+    least = leastInterval
+    highest = highestInterval
+    
+instance (NumOrd.HasExtrema e) => (RefOrd.HasExtrema (Interval e))
+    where
+    bottom = bottomInterval
+    top = topInterval
     

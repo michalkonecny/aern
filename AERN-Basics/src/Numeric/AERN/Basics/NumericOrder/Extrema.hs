@@ -1,6 +1,6 @@
 {-|
-    Module      :  Numeric.AERN.Basics.Extrema
-    Description :  a class of types that have top and bottom  
+    Module      :  Numeric.AERN.Basics.NumericOrder.Extrema
+    Description :  types that have top and bottom  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -8,11 +8,11 @@
     Stability   :  experimental
     Portability :  portable
 -}
-module Numeric.AERN.Basics.Extrema where
+module Numeric.AERN.Basics.NumericOrder.Extrema where
 
 {-|
     A type with extrema.
 -}
 class HasExtrema t where
-    top :: t
-    bottom :: t
+    highest :: t
+    least :: t
