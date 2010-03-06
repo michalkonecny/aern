@@ -89,11 +89,11 @@ setGranularityInInterval gran i =
     mapBothEndpoints (setGranularityUp gran) (setGranularityDn gran) i
     
 leastInterval ::
-     (CInterval i, NumOrd.HasExtrema (Endpoint i)) => i
+     (CInterval i, NumOrd.HasLeast (Endpoint i)) => i
 leastInterval = fromEndpoints (NumOrd.least, NumOrd.least)
     
 highestInterval ::
-     (CInterval i, NumOrd.HasExtrema (Endpoint i)) => i
+     (CInterval i, NumOrd.HasHighest (Endpoint i)) => i
 highestInterval = fromEndpoints (NumOrd.highest, NumOrd.highest)
 
 bottomInterval ::
