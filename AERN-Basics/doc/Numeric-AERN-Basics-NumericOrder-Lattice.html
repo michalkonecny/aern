@@ -1,0 +1,779 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>Numeric.AERN.Basics.NumericOrder.Lattice</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+><SCRIPT TYPE="text/javascript"
+>window.onload = function () {setSynopsis("mini_Numeric-AERN-Basics-NumericOrder-Lattice.html")};</SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>AERN-Basics-2010.1: foundational type classes for approximating exact real numbers</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>Numeric.AERN.Basics.NumericOrder.Lattice</FONT
+></TD
+><TD ALIGN="right"
+><TABLE CLASS="narrow" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="infohead"
+>Portability</TD
+><TD CLASS="infoval"
+>portable</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Stability</TD
+><TD CLASS="infoval"
+>experimental</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Maintainer</TD
+><TD CLASS="infoval"
+>mikkonecny@gmail.com</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>This module is hidden and reexported via its parent NumericOrder. 
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Eq.html#t%3AEq"
+>Eq</A
+> t =&gt; <A HREF="#t%3ALattice"
+>Lattice</A
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3Amin"
+>min</A
+> :: t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3Amax"
+>max</A
+> :: t -&gt; t -&gt; t</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropLatticePosetCompatible"
+>propLatticePosetCompatible</A
+> :: (<A HREF="Numeric-AERN-Basics-NumericOrder-Poset.html#t%3APoset"
+>Poset</A
+> t, <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t) =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropLatticeJoinAboveBoth"
+>propLatticeJoinAboveBoth</A
+> :: (<A HREF="Numeric-AERN-Basics-NumericOrder-Poset.html#t%3APoset"
+>Poset</A
+> t, <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t) =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropLatticeMeetBelowBoth"
+>propLatticeMeetBelowBoth</A
+> :: (<A HREF="Numeric-AERN-Basics-NumericOrder-Poset.html#t%3APoset"
+>Poset</A
+> t, <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t) =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropLatticeJoinIdempotent"
+>propLatticeJoinIdempotent</A
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropLatticeJoinCommutative"
+>propLatticeJoinCommutative</A
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropLatticeJoinAssocative"
+>propLatticeJoinAssocative</A
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropLatticeMeetIdempotent"
+>propLatticeMeetIdempotent</A
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropLatticeMeetCommutative"
+>propLatticeMeetCommutative</A
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropLatticeMeetAssocative"
+>propLatticeMeetAssocative</A
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropLatticeModular"
+>propLatticeModular</A
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropLatticeDistributive"
+>propLatticeDistributive</A
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+> (<A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t, <A HREF="Numeric-AERN-Basics-Mutable.html#t%3ACanBeMutable"
+>CanBeMutable</A
+> t) =&gt; <A HREF="#t%3ALatticeMutable"
+>LatticeMutable</A
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmaxMutable"
+>maxMutable</A
+> ::  <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+>ST</A
+> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+>()</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AminMutable"
+>minMutable</A
+> ::  <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+>ST</A
+> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+>()</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Documentation</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Eq.html#t%3AEq"
+>Eq</A
+> t =&gt; <A NAME="t:Lattice"
+><A NAME="t%3ALattice"
+></A
+></A
+><B
+>Lattice</B
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>A lattice.  Join and meet should be compatible with some partial order.
+    Both operations should be idempotent, commutative and associative.
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+>Methods</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A NAME="v:min"
+><A NAME="v%3Amin"
+></A
+></A
+><B
+>min</B
+> :: t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:max"
+><A NAME="v%3Amax"
+></A
+></A
+><B
+>max</B
+> :: t -&gt; t -&gt; t</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:Lattice')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:Lattice" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> e =&gt; <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> (<A HREF="Numeric-AERN-Basics-Interval.html#t%3AInterval"
+>Interval</A
+> e)</TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:propLatticePosetCompatible"
+><A NAME="v%3ApropLatticePosetCompatible"
+></A
+></A
+><B
+>propLatticePosetCompatible</B
+> :: (<A HREF="Numeric-AERN-Basics-NumericOrder-Poset.html#t%3APoset"
+>Poset</A
+> t, <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t) =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:propLatticeJoinAboveBoth"
+><A NAME="v%3ApropLatticeJoinAboveBoth"
+></A
+></A
+><B
+>propLatticeJoinAboveBoth</B
+> :: (<A HREF="Numeric-AERN-Basics-NumericOrder-Poset.html#t%3APoset"
+>Poset</A
+> t, <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t) =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:propLatticeMeetBelowBoth"
+><A NAME="v%3ApropLatticeMeetBelowBoth"
+></A
+></A
+><B
+>propLatticeMeetBelowBoth</B
+> :: (<A HREF="Numeric-AERN-Basics-NumericOrder-Poset.html#t%3APoset"
+>Poset</A
+> t, <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t) =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:propLatticeJoinIdempotent"
+><A NAME="v%3ApropLatticeJoinIdempotent"
+></A
+></A
+><B
+>propLatticeJoinIdempotent</B
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:propLatticeJoinCommutative"
+><A NAME="v%3ApropLatticeJoinCommutative"
+></A
+></A
+><B
+>propLatticeJoinCommutative</B
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:propLatticeJoinAssocative"
+><A NAME="v%3ApropLatticeJoinAssocative"
+></A
+></A
+><B
+>propLatticeJoinAssocative</B
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:propLatticeMeetIdempotent"
+><A NAME="v%3ApropLatticeMeetIdempotent"
+></A
+></A
+><B
+>propLatticeMeetIdempotent</B
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:propLatticeMeetCommutative"
+><A NAME="v%3ApropLatticeMeetCommutative"
+></A
+></A
+><B
+>propLatticeMeetCommutative</B
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:propLatticeMeetAssocative"
+><A NAME="v%3ApropLatticeMeetAssocative"
+></A
+></A
+><B
+>propLatticeMeetAssocative</B
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:propLatticeModular"
+><A NAME="v%3ApropLatticeModular"
+></A
+></A
+><B
+>propLatticeModular</B
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:propLatticeDistributive"
+><A NAME="v%3ApropLatticeDistributive"
+></A
+></A
+><B
+>propLatticeDistributive</B
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t =&gt; t -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+> (<A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#t%3ALattice"
+>Lattice</A
+> t, <A HREF="Numeric-AERN-Basics-Mutable.html#t%3ACanBeMutable"
+>CanBeMutable</A
+> t) =&gt; <A NAME="t:LatticeMutable"
+><A NAME="t%3ALatticeMutable"
+></A
+></A
+><B
+>LatticeMutable</B
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>A lattice that supports in-place operations.
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+>Methods</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A NAME="v:maxMutable"
+><A NAME="v%3AmaxMutable"
+></A
+></A
+><B
+>maxMutable</B
+> ::  <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+>ST</A
+> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+>()</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>maxMutable a b c means a := b <TT
+><A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#v%3Amax"
+>max</A
+></TT
+> c; a can be the same as b and/or c 
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:minMutable"
+><A NAME="v%3AminMutable"
+></A
+></A
+><B
+>minMutable</B
+> ::  <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+>ST</A
+> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+>()</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>minMutable a b c means a := b <TT
+><A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html#v%3Amin"
+>min</A
+></TT
+> c; a can be the same as b and/or c 
+</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

@@ -1,0 +1,471 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>Numeric.AERN.Basics.RefinementOrder.RoundedBasis</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+><SCRIPT TYPE="text/javascript"
+>window.onload = function () {setSynopsis("mini_Numeric-AERN-Basics-RefinementOrder-RoundedBasis.html")};</SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>AERN-Basics-2010.1: foundational type classes for approximating exact real numbers</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>Numeric.AERN.Basics.RefinementOrder.RoundedBasis</FONT
+></TD
+><TD ALIGN="right"
+><TABLE CLASS="narrow" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="infohead"
+>Portability</TD
+><TD CLASS="infoval"
+>portable</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Stability</TD
+><TD CLASS="infoval"
+>experimental</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Maintainer</TD
+><TD CLASS="infoval"
+>mikkonecny@gmail.com</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>This module is hidden and reexported via its parent RefinementOrder. 
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+>  <A HREF="#t%3AOuterRoundedBasis"
+>OuterRoundedBasis</A
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApartialJoinOut"
+>partialJoinOut</A
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> t</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApartialJoinOutDefaultEffort"
+>partialJoinOutDefaultEffort</A
+> :: t -&gt; [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>]</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3A%3C%7C%5C%2F%3E%3F"
+>(&lt;|\/&gt;?)</A
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> t</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3A%3C%2294%3E%3F"
+>(&lt;&#x2294;&gt;?)</A
+> :: <A HREF="Numeric-AERN-Basics-RefinementOrder-RoundedBasis.html#t%3AOuterRoundedBasis"
+>OuterRoundedBasis</A
+> t =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> t</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+>  <A HREF="#t%3AInnerRoundedBasis"
+>InnerRoundedBasis</A
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApartialJoinIn"
+>partialJoinIn</A
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> t</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApartialJoinInDefaultEffort"
+>partialJoinInDefaultEffort</A
+> :: t -&gt; [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>]</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3A%3E%7C%5C%2F%3C%3F"
+>(&gt;|\/&lt;?)</A
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> t</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3A%3E%2294%3C%3F"
+>(&gt;&#x2294;&lt;?)</A
+> :: <A HREF="Numeric-AERN-Basics-RefinementOrder-RoundedBasis.html#t%3AInnerRoundedBasis"
+>InnerRoundedBasis</A
+> t =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> t</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Documentation</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+>  <A NAME="t:OuterRoundedBasis"
+><A NAME="t%3AOuterRoundedBasis"
+></A
+></A
+><B
+>OuterRoundedBasis</B
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>A type with outward-rounding lattice operations.
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+>Methods</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A NAME="v:partialJoinOut"
+><A NAME="v%3ApartialJoinOut"
+></A
+></A
+><B
+>partialJoinOut</B
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> t</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:partialJoinOutDefaultEffort"
+><A NAME="v%3ApartialJoinOutDefaultEffort"
+></A
+></A
+><B
+>partialJoinOutDefaultEffort</B
+> :: t -&gt; [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>]</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:<|\/>?"
+><A NAME="v%3A%3C%7C%5C%2F%3E%3F"
+></A
+></A
+><B
+>(&lt;|\/&gt;?)</B
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> t</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:<⊔>?"
+><A NAME="v%3A%3C%2294%3E%3F"
+></A
+></A
+><B
+>(&lt;&#x2294;&gt;?)</B
+> :: <A HREF="Numeric-AERN-Basics-RefinementOrder-RoundedBasis.html#t%3AOuterRoundedBasis"
+>OuterRoundedBasis</A
+> t =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> t</TD
+></TR
+><TR
+><TD CLASS="doc"
+>convenience Unicode notation for <TT
+><A HREF="Numeric-AERN-Basics-RefinementOrder-RoundedBasis.html#v%3A%3C%7C%5C%2F%3E%3F"
+>&lt;|\/&gt;?</A
+></TT
+> 
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+>  <A NAME="t:InnerRoundedBasis"
+><A NAME="t%3AInnerRoundedBasis"
+></A
+></A
+><B
+>InnerRoundedBasis</B
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>A type with outward-rounding lattice operations.
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+>Methods</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A NAME="v:partialJoinIn"
+><A NAME="v%3ApartialJoinIn"
+></A
+></A
+><B
+>partialJoinIn</B
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> t</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:partialJoinInDefaultEffort"
+><A NAME="v%3ApartialJoinInDefaultEffort"
+></A
+></A
+><B
+>partialJoinInDefaultEffort</B
+> :: t -&gt; [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>]</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:>|\/<?"
+><A NAME="v%3A%3E%7C%5C%2F%3C%3F"
+></A
+></A
+><B
+>(&gt;|\/&lt;?)</B
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> t</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:>⊔<?"
+><A NAME="v%3A%3E%2294%3C%3F"
+></A
+></A
+><B
+>(&gt;&#x2294;&lt;?)</B
+> :: <A HREF="Numeric-AERN-Basics-RefinementOrder-RoundedBasis.html#t%3AInnerRoundedBasis"
+>InnerRoundedBasis</A
+> t =&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> t</TD
+></TR
+><TR
+><TD CLASS="doc"
+>convenience Unicode notation for <TT
+><A HREF="Numeric-AERN-Basics-RefinementOrder-RoundedBasis.html#v%3A%3E%7C%5C%2F%3C%3F"
+>&gt;|\/&lt;?</A
+></TT
+> 
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

@@ -1,0 +1,642 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>Numeric.AERN.Basics.NumericOrder.RoundedLattice</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+><SCRIPT TYPE="text/javascript"
+>window.onload = function () {setSynopsis("mini_Numeric-AERN-Basics-NumericOrder-RoundedLattice.html")};</SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>AERN-Basics-2010.1: foundational type classes for approximating exact real numbers</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>Numeric.AERN.Basics.NumericOrder.RoundedLattice</FONT
+></TD
+><TD ALIGN="right"
+><TABLE CLASS="narrow" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="infohead"
+>Portability</TD
+><TD CLASS="infoval"
+>portable</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Stability</TD
+><TD CLASS="infoval"
+>experimental</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Maintainer</TD
+><TD CLASS="infoval"
+>mikkonecny@gmail.com</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>This module is hidden and reexported via its parent NumericOrder. 
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+>  <A HREF="#t%3ARoundedLattice"
+>RoundedLattice</A
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmaxUpEff"
+>maxUpEff</A
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmaxDnEff"
+>maxDnEff</A
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AminUpEff"
+>minUpEff</A
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AminDnEff"
+>minDnEff</A
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AminmaxDefaultEffort"
+>minmaxDefaultEffort</A
+> :: t -&gt; [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>]</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmaxUp"
+>maxUp</A
+> :: t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmaxDn"
+>maxDn</A
+> :: t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AminUp"
+>minUp</A
+> :: t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AminDn"
+>minDn</A
+> :: t -&gt; t -&gt; t</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+> (<A HREF="Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#t%3ARoundedLattice"
+>RoundedLattice</A
+> t, <A HREF="Numeric-AERN-Basics-Mutable.html#t%3ACanBeMutable"
+>CanBeMutable</A
+> t) =&gt; <A HREF="#t%3ARoundedLatticeMutable"
+>RoundedLatticeMutable</A
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmaxUpMutable"
+>maxUpMutable</A
+> ::  [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+>ST</A
+> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+>()</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmaxDnMutable"
+>maxDnMutable</A
+> ::  [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+>ST</A
+> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+>()</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AminUpMutable"
+>minUpMutable</A
+> ::  [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+>ST</A
+> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+>()</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AminDnMutable"
+>minDnMutable</A
+> ::  [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+>ST</A
+> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+>()</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Documentation</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+>  <A NAME="t:RoundedLattice"
+><A NAME="t%3ARoundedLattice"
+></A
+></A
+><B
+>RoundedLattice</B
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>A type with directed-rounding lattice operations.
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+>Methods</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A NAME="v:maxUpEff"
+><A NAME="v%3AmaxUpEff"
+></A
+></A
+><B
+>maxUpEff</B
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:maxDnEff"
+><A NAME="v%3AmaxDnEff"
+></A
+></A
+><B
+>maxDnEff</B
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:minUpEff"
+><A NAME="v%3AminUpEff"
+></A
+></A
+><B
+>minUpEff</B
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:minDnEff"
+><A NAME="v%3AminDnEff"
+></A
+></A
+><B
+>minDnEff</B
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:minmaxDefaultEffort"
+><A NAME="v%3AminmaxDefaultEffort"
+></A
+></A
+><B
+>minmaxDefaultEffort</B
+> :: t -&gt; [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>]</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:maxUp"
+><A NAME="v%3AmaxUp"
+></A
+></A
+><B
+>maxUp</B
+> :: t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:maxDn"
+><A NAME="v%3AmaxDn"
+></A
+></A
+><B
+>maxDn</B
+> :: t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:minUp"
+><A NAME="v%3AminUp"
+></A
+></A
+><B
+>minUp</B
+> :: t -&gt; t -&gt; t</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:minDn"
+><A NAME="v%3AminDn"
+></A
+></A
+><B
+>minDn</B
+> :: t -&gt; t -&gt; t</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+> (<A HREF="Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#t%3ARoundedLattice"
+>RoundedLattice</A
+> t, <A HREF="Numeric-AERN-Basics-Mutable.html#t%3ACanBeMutable"
+>CanBeMutable</A
+> t) =&gt; <A NAME="t:RoundedLatticeMutable"
+><A NAME="t%3ARoundedLatticeMutable"
+></A
+></A
+><B
+>RoundedLatticeMutable</B
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>A type with directed-rounding lattice operations
+    that also supported in-place.
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+>Methods</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A NAME="v:maxUpMutable"
+><A NAME="v%3AmaxUpMutable"
+></A
+></A
+><B
+>maxUpMutable</B
+> ::  [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+>ST</A
+> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+>()</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>maxUpMutable e a b c means a := maxUp e b c; a can be the same as b and/or c 
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:maxDnMutable"
+><A NAME="v%3AmaxDnMutable"
+></A
+></A
+><B
+>maxDnMutable</B
+> ::  [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+>ST</A
+> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+>()</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>maxDnMutable e a b c means a := maxDn e b c; a can be the same as b and/or c 
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:minUpMutable"
+><A NAME="v%3AminUpMutable"
+></A
+></A
+><B
+>minUpMutable</B
+> ::  [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+>ST</A
+> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+>()</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>minUpMutable e a b c means a := minUp e b c; a can be the same as b and/or c 
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:minDnMutable"
+><A NAME="v%3AminDnMutable"
+></A
+></A
+><B
+>minDnMutable</B
+> ::  [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
+>Mutable</A
+> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+>ST</A
+> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+>()</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>minDnMutable e a b c means a := minDn e b c; a can be the same as b and/or c 
+</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

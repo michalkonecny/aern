@@ -1,0 +1,529 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>AERN-Basics-2010.1: foundational type classes for approximating exact real numbers</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>AERN-Basics-2010.1: foundational type classes for approximating exact real numbers</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>AERN-Basics-2010.1: foundational type classes for approximating exact real numbers</TD
+></TR
+><TR
+><TD CLASS="doc"
+><P
+>Type-classes abstracting various kinds of approximations for exact entities:
+</P
+><UL
+><LI
+> those that are <EM
+>near</EM
+> to the exact value due to limited granularity
+(eg floating point numbers with fixed granularity (aka precision)
+approximating real numbers or bounded-degree polynomials with floating point coefficients
+approximating continuous functions)
+</LI
+><LI
+> those that somehow <EM
+>enclose</EM
+> the exact entity, usually using a pair of <EM
+>endpoints</EM
+>
+</LI
+></UL
+><P
+>Type classes are provided to capture:
+</P
+><UL
+><LI
+> the partial, sometimes semidecidable, natural ordering (&lt;=) used in relation to <EM
+>nearness</EM
+>
+</LI
+><LI
+> the partial, sometimes semidecidable, refinement ordering (&#x2291;) used in relation to <EM
+>enclosure</EM
+>
+</LI
+></UL
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Modules</TD
+></TR
+><TR
+><TD
+><TABLE CLASS="vanilla2" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD STYLE="width: 50em"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'n:0')" ALT="show/hide"
+>Numeric</TD
+><TD
+></TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding: 0; padding-left: 2em" COLSPAN="3"
+><TABLE CLASS="vanilla2" CELLSPACING="0" CELLPADDING="0" ID="n:0" STYLE="display:block;"
+><TR
+><TD STYLE="width: 48em"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'n:1')" ALT="show/hide"
+>AERN</TD
+><TD
+></TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding: 0; padding-left: 2em" COLSPAN="3"
+><TABLE CLASS="vanilla2" CELLSPACING="0" CELLPADDING="0" ID="n:1" STYLE="display:block;"
+><TR
+><TD STYLE="width: 46em"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'n:2')" ALT="show/hide"
+>Basics</TD
+><TD
+></TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding: 0; padding-left: 2em" COLSPAN="3"
+><TABLE CLASS="vanilla2" CELLSPACING="0" CELLPADDING="0" ID="n:2" STYLE="display:block;"
+><TR
+><TD STYLE="width: 44em"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'n:3')" ALT="show/hide"
+><A HREF="Numeric-AERN-Basics-CInterval.html"
+>Numeric.AERN.Basics.CInterval</A
+></TD
+><TD CLASS="rdoc"
+>a class of interval datatypes  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding: 0; padding-left: 2em" COLSPAN="3"
+><TABLE CLASS="vanilla2" CELLSPACING="0" CELLPADDING="0" ID="n:3" STYLE="display:block;"
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-CInterval-NumericOrder.html"
+>Numeric.AERN.Basics.CInterval.NumericOrder</A
+></TD
+><TD CLASS="rdoc"
+>numeric-ordered operations for any CInterval instance 
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-CInterval-RefinementOrder.html"
+>Numeric.AERN.Basics.CInterval.RefinementOrder</A
+></TD
+><TD CLASS="rdoc"
+>refinement-ordered operations for any CInterval instance 
+</TD
+><TD
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 44em"
+><A HREF="Numeric-AERN-Basics-Effort.html"
+>Numeric.AERN.Basics.Effort</A
+></TD
+><TD
+></TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 44em"
+><A HREF="Numeric-AERN-Basics-Equality.html"
+>Numeric.AERN.Basics.Equality</A
+></TD
+><TD CLASS="rdoc"
+>properties of (semidecidable) equality 
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 44em"
+><A HREF="Numeric-AERN-Basics-Granularity.html"
+>Numeric.AERN.Basics.Granularity</A
+></TD
+><TD CLASS="rdoc"
+>finite subsets of continuum sets (eg floats)
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="width: 44em"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'n:4')" ALT="show/hide"
+><A HREF="Numeric-AERN-Basics-Interval.html"
+>Numeric.AERN.Basics.Interval</A
+></TD
+><TD CLASS="rdoc"
+>a minimal interval datatype  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding: 0; padding-left: 2em" COLSPAN="3"
+><TABLE CLASS="vanilla2" CELLSPACING="0" CELLPADDING="0" ID="n:4" STYLE="display:block;"
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-Interval-NumericOrder.html"
+>Numeric.AERN.Basics.Interval.NumericOrder</A
+></TD
+><TD CLASS="rdoc"
+>interval instances of numeric-ordered structures 
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-Interval-RefinementOrder.html"
+>Numeric.AERN.Basics.Interval.RefinementOrder</A
+></TD
+><TD CLASS="rdoc"
+>interval instances of refinement-ordered structures 
+</TD
+><TD
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD STYLE="width: 44em"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'n:5')" ALT="show/hide"
+>Laws</TD
+><TD
+></TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding: 0; padding-left: 2em" COLSPAN="3"
+><TABLE CLASS="vanilla2" CELLSPACING="0" CELLPADDING="0" ID="n:5" STYLE="display:block;"
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-Laws-Operation.html"
+>Numeric.AERN.Basics.Laws.Operation</A
+></TD
+><TD CLASS="rdoc"
+>common properties of binary operations 
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-Laws-OperationRelation.html"
+>Numeric.AERN.Basics.Laws.OperationRelation</A
+></TD
+><TD CLASS="rdoc"
+>common properties linking binary operations with relations 
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-Laws-Relation.html"
+>Numeric.AERN.Basics.Laws.Relation</A
+></TD
+><TD CLASS="rdoc"
+>common properties of relations  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-Laws-RoundedOperation.html"
+>Numeric.AERN.Basics.Laws.RoundedOperation</A
+></TD
+><TD CLASS="rdoc"
+>common properties of rounded binary operations 
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-Laws-SemidecidableRelation.html"
+>Numeric.AERN.Basics.Laws.SemidecidableRelation</A
+></TD
+><TD CLASS="rdoc"
+>common properties of semidecidable relations  
+</TD
+><TD
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 44em"
+><A HREF="Numeric-AERN-Basics-MaybeBool.html"
+>Numeric.AERN.Basics.MaybeBool</A
+></TD
+><TD CLASS="rdoc"
+>utilities for semidecidable predicates  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 44em"
+><A HREF="Numeric-AERN-Basics-Mutable.html"
+>Numeric.AERN.Basics.Mutable</A
+></TD
+><TD CLASS="rdoc"
+>a type class for ST mutable structures 
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="width: 44em"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'n:6')" ALT="show/hide"
+><A HREF="Numeric-AERN-Basics-NumericOrder.html"
+>Numeric.AERN.Basics.NumericOrder</A
+></TD
+><TD CLASS="rdoc"
+>classical and approximate lattices (&lt;,max,min)  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding: 0; padding-left: 2em" COLSPAN="3"
+><TABLE CLASS="vanilla2" CELLSPACING="0" CELLPADDING="0" ID="n:6" STYLE="display:block;"
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-NumericOrder-Extrema.html"
+>Numeric.AERN.Basics.NumericOrder.Extrema</A
+></TD
+><TD CLASS="rdoc"
+>types that have least and highest elements  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-NumericOrder-Lattice.html"
+>Numeric.AERN.Basics.NumericOrder.Lattice</A
+></TD
+><TD CLASS="rdoc"
+>lattices using numeric order notation  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-NumericOrder-Poset.html"
+>Numeric.AERN.Basics.NumericOrder.Poset</A
+></TD
+><TD CLASS="rdoc"
+>partially ordered sets using numeric order notation  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-NumericOrder-RoundedLattice.html"
+>Numeric.AERN.Basics.NumericOrder.RoundedLattice</A
+></TD
+><TD CLASS="rdoc"
+>lattices with directed-rounded operations  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html"
+>Numeric.AERN.Basics.NumericOrder.SemidecidablePoset</A
+></TD
+><TD CLASS="rdoc"
+>posets with semideciable order  
+</TD
+><TD
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 44em"
+><A HREF="Numeric-AERN-Basics-PartialOrdering.html"
+>Numeric.AERN.Basics.PartialOrdering</A
+></TD
+><TD CLASS="rdoc"
+>extension of Prelude.Ordering with non-comparable variant  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="width: 44em"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'n:7')" ALT="show/hide"
+><A HREF="Numeric-AERN-Basics-RefinementOrder.html"
+>Numeric.AERN.Basics.RefinementOrder</A
+></TD
+><TD CLASS="rdoc"
+>classical and approximate domain bases and lattices (&#x2291;,&#x2293;,&#x2294;)  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding: 0; padding-left: 2em" COLSPAN="3"
+><TABLE CLASS="vanilla2" CELLSPACING="0" CELLPADDING="0" ID="n:7" STYLE="display:block;"
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-RefinementOrder-Basis.html"
+>Numeric.AERN.Basics.RefinementOrder.Basis</A
+></TD
+><TD CLASS="rdoc"
+>domain bases using refinement order notation  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-RefinementOrder-Extrema.html"
+>Numeric.AERN.Basics.RefinementOrder.Extrema</A
+></TD
+><TD CLASS="rdoc"
+>types that have top and bottom  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-RefinementOrder-Lattice.html"
+>Numeric.AERN.Basics.RefinementOrder.Lattice</A
+></TD
+><TD CLASS="rdoc"
+>lattices using refinement order notation  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-RefinementOrder-Poset.html"
+>Numeric.AERN.Basics.RefinementOrder.Poset</A
+></TD
+><TD CLASS="rdoc"
+>partially ordered sets using refinement order notation  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-RefinementOrder-RoundedBasis.html"
+>Numeric.AERN.Basics.RefinementOrder.RoundedBasis</A
+></TD
+><TD CLASS="rdoc"
+>domain bases with outwards and inwards rounded operations  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-RefinementOrder-RoundedLattice.html"
+>Numeric.AERN.Basics.RefinementOrder.RoundedLattice</A
+></TD
+><TD CLASS="rdoc"
+>lattices with outwards and inwards rounded operations  
+</TD
+><TD
+></TD
+></TR
+><TR
+><TD STYLE="padding-left: 1.25em;width: 42em"
+><A HREF="Numeric-AERN-Basics-RefinementOrder-SemidecidablePoset.html"
+>Numeric.AERN.Basics.RefinementOrder.SemidecidablePoset</A
+></TD
+><TD CLASS="rdoc"
+>posets with semideciable order  
+</TD
+><TD
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>
