@@ -33,6 +33,7 @@ class OuterRoundedBasis t where
     
     a <|\/>? b = partialJoinOut (partialJoinOutDefaultEffort a) a b 
 
+{-| convenience Unicode notation for '<|\/>?' -}
 (<⊔>?) :: (OuterRoundedBasis t) => t -> t -> Maybe t
 (<⊔>?) = (<|\/>?)
 
@@ -49,6 +50,7 @@ class InnerRoundedBasis t where
     
     a >|\/<? b = partialJoinIn (partialJoinInDefaultEffort a) a b 
 
+{-| convenience Unicode notation for '>|\/<?' -}
 (>⊔<?) :: (InnerRoundedBasis t) => t -> t -> Maybe t
 (>⊔<?) = (>|\/<?)
 
