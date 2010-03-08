@@ -79,9 +79,9 @@ propLatticeDistributive e1 e2 e3 =
     A lattice that supports in-place operations.
 -}
 class (Lattice t, CanBeMutable t) => LatticeMutable t where
-    {-| maxMutable a b c means a := b `max` c; a can be the same as b and/or c -}
-    maxMutable :: Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
-    {-| minMutable a b c means a := b `min` c; a can be the same as b and/or c -}
-    minMutable :: Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
+    {-| joinMutable a b c means a := b |\/ c; a can be the same as b and/or c -}
+    joinMutable :: Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
+    {-| meetMutable a b c means a := b |/\ c; a can be the same as b and/or c -}
+    meetMutable :: Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
 
     -- TODO: add default implementations using read/write

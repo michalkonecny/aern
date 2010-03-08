@@ -58,7 +58,7 @@ propBasisJoinAssocative = partialAssociative (|\/?)
 -}
 class (Basis t, CanBeMutable t) => BasisMutable t where
     {-| joinMutable a b c means a := b |\/? c; a can be the same as b and/or c -}
-    joinMutable :: Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
+    maybeJoinMutable :: Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
 
     -- TODO: add default implementations using read/write
         
