@@ -19,6 +19,9 @@ import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.CInterval
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
+{-|
+    Default default effort indicators for testing numerical equality for interval types. 
+-}
 maybeEqualDefaultEffortInterval ::
         (CInterval i, SemidecidableEq (Endpoint i)) => 
         i -> [EffortIndicator]
@@ -29,6 +32,9 @@ maybeEqualDefaultEffortInterval i =
     where
     (l,h) = getEndpoints i
 
+{-|
+    Default numerical equality test for interval types.
+-}
 maybeEqualInterval ::
         (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
         [EffortIndicator] -> i -> i -> Maybe Bool
@@ -44,6 +50,9 @@ maybeEqualInterval effort i1 i2 =
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
      
+{-|
+    Default default effort indicators for numerically comparing interval types. 
+-}
 maybeCompareDefaultEffortInterval ::
         (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
         i -> [EffortIndicator]
@@ -54,6 +63,9 @@ maybeCompareDefaultEffortInterval i =
     where
     (l,h) = getEndpoints i
         
+{-|
+    Default numerical comparison for interval types.
+-}
 maybeCompareInterval ::
         (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
         [EffortIndicator] -> i -> i -> Maybe PartialOrdering
@@ -69,6 +81,9 @@ maybeCompareInterval effort i1 i2 =
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
 
+{-|
+    Default binary minimum for interval types.
+-}
 minInterval ::
     (CInterval i, NumOrd.Lattice (Endpoint i)) =>
     i -> i -> i
@@ -78,6 +93,9 @@ minInterval i1 i2 =
     (l1, h1) = getEndpoints i1
     (l2, h2) = getEndpoints i2
 
+{-|
+    Default binary maximum for interval types.
+-}
 maxInterval ::
     (CInterval i, NumOrd.Lattice (Endpoint i)) =>
     i -> i -> i
