@@ -1,0 +1,487 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>Numeric.AERN.Basics.NumericOrder.SemidecidablePoset</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+><SCRIPT TYPE="text/javascript"
+>window.onload = function () {setSynopsis("mini_Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html")};</SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>AERN-Basics-2010.1: foundational type classes for approximating exact real numbers</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>Numeric.AERN.Basics.NumericOrder.SemidecidablePoset</FONT
+></TD
+><TD ALIGN="right"
+><TABLE CLASS="narrow" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="infohead"
+>Portability</TD
+><TD CLASS="infoval"
+>portable</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Stability</TD
+><TD CLASS="infoval"
+>experimental</TD
+></TR
+><TR
+><TD CLASS="infohead"
+>Maintainer</TD
+><TD CLASS="infoval"
+>mikkonecny@gmail.com</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>This module is hidden and reexported via its parent NumericOrder. 
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+> <A HREF="Numeric-AERN-Basics-Equality.html#t%3ASemidecidableEq"
+>SemidecidableEq</A
+> t =&gt; <A HREF="#t%3ASemidecidablePoset"
+>SemidecidablePoset</A
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmaybeCompare"
+>maybeCompare</A
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="Numeric-AERN-Basics-PartialOrdering.html#t%3APartialOrdering"
+>PartialOrdering</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmaybeCompareDefaultEffort"
+>maybeCompareDefaultEffort</A
+> :: t -&gt; [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>]</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3A%3C%3D%3D%3E%3F"
+>(&lt;==&gt;?)</A
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3A%3C%2F%3D%3E%3F"
+>(&lt;/=&gt;?)</A
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3A%3C%3F"
+>(&lt;?)</A
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3A%3C%3D%3F"
+>(&lt;=?)</A
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3A%3E%3D%3F"
+>(&gt;=?)</A
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3A%3E%3F"
+>(&gt;?)</A
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropExtremaInSemidecidablePoset"
+>propExtremaInSemidecidablePoset</A
+> :: (<A HREF="Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#t%3ASemidecidablePoset"
+>SemidecidablePoset</A
+> t, <A HREF="Numeric-AERN-Basics-NumericOrder-Extrema.html#t%3AHasExtrema"
+>HasExtrema</A
+> t) =&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Documentation</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+> <A HREF="Numeric-AERN-Basics-Equality.html#t%3ASemidecidableEq"
+>SemidecidableEq</A
+> t =&gt; <A NAME="t:SemidecidablePoset"
+><A NAME="t%3ASemidecidablePoset"
+></A
+></A
+><B
+>SemidecidablePoset</B
+> t  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>A type with semi-decidable equality and partial order
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+>Methods</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A NAME="v:maybeCompare"
+><A NAME="v%3AmaybeCompare"
+></A
+></A
+><B
+>maybeCompare</B
+> :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>] -&gt; t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="Numeric-AERN-Basics-PartialOrdering.html#t%3APartialOrdering"
+>PartialOrdering</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:maybeCompareDefaultEffort"
+><A NAME="v%3AmaybeCompareDefaultEffort"
+></A
+></A
+><B
+>maybeCompareDefaultEffort</B
+> :: t -&gt; [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
+>EffortIndicator</A
+>]</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:<==>?"
+><A NAME="v%3A%3C%3D%3D%3E%3F"
+></A
+></A
+><B
+>(&lt;==&gt;?)</B
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>Semidecidable `is comparable to`.
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:</=>?"
+><A NAME="v%3A%3C%2F%3D%3E%3F"
+></A
+></A
+><B
+>(&lt;/=&gt;?)</B
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>Semidecidable `is not comparable to`.
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:<?"
+><A NAME="v%3A%3C%3F"
+></A
+></A
+><B
+>(&lt;?)</B
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:<=?"
+><A NAME="v%3A%3C%3D%3F"
+></A
+></A
+><B
+>(&lt;=?)</B
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:>=?"
+><A NAME="v%3A%3E%3D%3F"
+></A
+></A
+><B
+>(&gt;=?)</B
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:>?"
+><A NAME="v%3A%3E%3F"
+></A
+></A
+><B
+>(&gt;?)</B
+> :: t -&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:SemidecidablePoset')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:SemidecidablePoset" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#t%3ASemidecidablePoset"
+>SemidecidablePoset</A
+> <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Int.html#t%3AInt"
+>Int</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#t%3ASemidecidablePoset"
+>SemidecidablePoset</A
+> e =&gt; <A HREF="Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#t%3ASemidecidablePoset"
+>SemidecidablePoset</A
+> (<A HREF="Numeric-AERN-Basics-Interval.html#t%3AInterval"
+>Interval</A
+> e)</TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:propExtremaInSemidecidablePoset"
+><A NAME="v%3ApropExtremaInSemidecidablePoset"
+></A
+></A
+><B
+>propExtremaInSemidecidablePoset</B
+> :: (<A HREF="Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#t%3ASemidecidablePoset"
+>SemidecidablePoset</A
+> t, <A HREF="Numeric-AERN-Basics-NumericOrder-Extrema.html#t%3AHasExtrema"
+>HasExtrema</A
+> t) =&gt; t -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>
