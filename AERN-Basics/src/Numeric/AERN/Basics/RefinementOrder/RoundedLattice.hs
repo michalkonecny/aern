@@ -37,6 +37,13 @@ class OuterRoundedLattice t where
     a <|\/> b = joinOut (joinmeetOutDefaultEffort a) a b 
     a <|/\> b = meetOut (joinmeetOutDefaultEffort a) a b 
 
+{-| convenience Unicode notation for '<|\/>' -}
+(<⊔>) :: (OuterRoundedLattice t) => t -> t -> t
+(<⊔>) = (<|\/>)
+{-| convenience Unicode notation for '<|/\>' -}
+(<⊓>) :: (OuterRoundedLattice t) => t -> t -> t
+(<⊓>) = (<|/\>)
+
 -- properties of OuterRoundedLattice (TODO)
 
 {-|
@@ -53,6 +60,12 @@ class InnerRoundedLattice t where
     a >|\/< b = joinIn (joinmeetInDefaultEffort a) a b 
     a >|/\< b = meetIn (joinmeetInDefaultEffort a) a b 
 
+{-| convenience Unicode notation for '>|\/<' -}
+(>⊔<) :: (InnerRoundedLattice t) => t -> t -> t
+(>⊔<) = (>|\/<)
+{-| convenience Unicode notation for '>|/\<' -}
+(>⊓<) :: (InnerRoundedLattice t) => t -> t -> t
+(>⊓<) = (>|/\<)
 
 -- properties of InnerRoundedLattice (TODO)
     
