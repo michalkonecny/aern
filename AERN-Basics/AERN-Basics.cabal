@@ -35,7 +35,9 @@ Extra-Source-Files:
 Library
   hs-source-dirs: src
   Build-Depends:
-        base >= 4, base < 5, QuickCheck > 2, QuickCheck <= 3
+        base >= 4 && < 5,
+        QuickCheck >= 2.1 && < 2.2,
+        test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3
   Exposed-modules:
     Numeric.AERN.Basics.MaybeBool
     Numeric.AERN.Basics.Effort
