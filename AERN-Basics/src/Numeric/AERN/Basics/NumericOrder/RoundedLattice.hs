@@ -8,6 +8,8 @@
     Stability   :  experimental
     Portability :  portable
     
+    Lattices with directed-rounded operations.
+    
     This module is hidden and reexported via its parent NumericOrder. 
 -}
 module Numeric.AERN.Basics.NumericOrder.RoundedLattice 

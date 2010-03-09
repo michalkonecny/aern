@@ -8,6 +8,8 @@
     Stability   :  experimental
     Portability :  portable
     
+    Posets with semideciable order.
+    
     This module is hidden and reexported via its parent NumericOrder. 
 -}
 

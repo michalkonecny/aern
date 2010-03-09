@@ -8,6 +8,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    Interval instances of numeric-ordered structures.
 -}
 module Numeric.AERN.Basics.Interval.NumericOrder where
 

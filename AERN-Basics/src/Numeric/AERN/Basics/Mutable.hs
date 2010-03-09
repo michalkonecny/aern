@@ -8,6 +8,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    A type class for ST mutable structures.
 -}
 module Numeric.AERN.Basics.Mutable where
 

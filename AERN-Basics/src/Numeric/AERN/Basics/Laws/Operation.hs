@@ -7,6 +7,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    Common properties of binary operations.
 -}
 module Numeric.AERN.Basics.Laws.Operation
 (

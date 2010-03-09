@@ -8,6 +8,8 @@
     Stability   :  experimental
     Portability :  portable
     
+    Partially ordered sets using numeric order notation.
+    
     This module is hidden and reexported via its parent NumericOrder. 
 -}
 

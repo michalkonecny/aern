@@ -9,6 +9,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    A class of interval datatypes and associated functions related to granularity and extrema.
 -}
 module Numeric.AERN.Basics.CInterval where
 
@@ -51,6 +53,9 @@ propIntervalConsistentAntiConsistent i =
     where
     (l,h) = getEndpoints i
 
+{-|
+    Extract granularity from an interval's endpoints.
+-}
 getGranularityInterval :: 
     (CInterval i, HasGranularity (Endpoint i), 
      NumOrd.Lattice (Granularity (Endpoint i))) =>
@@ -60,6 +65,9 @@ getGranularityInterval i =
     where
     (l,h) = getEndpoints i
 
+{-|
+    Adjust granularity of an interval's endpoints, rounding outwards.
+-}
 setMinGranularityOutInterval :: 
     (CInterval i, CanSetGranularityRoundedByNumericOrder (Endpoint i), 
      NumOrd.Lattice (Granularity (Endpoint i))) =>
@@ -67,6 +75,9 @@ setMinGranularityOutInterval ::
 setMinGranularityOutInterval gran i =
     mapBothEndpoints (setMinGranularityDn gran) (setMinGranularityUp gran) i
 
+{-|
+    Adjust granularity of an interval's endpoints, rounding inwards.
+-}
 setMinGranularityInInterval :: 
     (CInterval i, CanSetGranularityRoundedByNumericOrder (Endpoint i), 
      NumOrd.Lattice (Granularity (Endpoint i))) =>
@@ -74,6 +85,9 @@ setMinGranularityInInterval ::
 setMinGranularityInInterval gran i =
     mapBothEndpoints (setMinGranularityUp gran) (setMinGranularityDn gran) i
 
+{-|
+    Set granularity of an interval's endpoints, rounding outwards.
+-}
 setGranularityOutInterval :: 
     (CInterval i, CanSetGranularityRoundedByNumericOrder (Endpoint i), 
      NumOrd.Lattice (Granularity (Endpoint i))) =>
@@ -81,6 +95,9 @@ setGranularityOutInterval ::
 setGranularityOutInterval gran i =
     mapBothEndpoints (setGranularityDn gran) (setGranularityUp gran) i
 
+{-|
+    Set granularity of an interval's endpoints, rounding inwards.
+-}
 setGranularityInInterval :: 
     (CInterval i, CanSetGranularityRoundedByNumericOrder (Endpoint i), 
      NumOrd.Lattice (Granularity (Endpoint i))) =>

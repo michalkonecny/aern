@@ -10,6 +10,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    A minimal interval datatype.
 -}
 module Numeric.AERN.Basics.Interval 
 (

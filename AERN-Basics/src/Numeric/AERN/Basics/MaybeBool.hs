@@ -7,6 +7,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    Utilities for semidecidable predicates.
 -}
 module Numeric.AERN.Basics.MaybeBool 
 

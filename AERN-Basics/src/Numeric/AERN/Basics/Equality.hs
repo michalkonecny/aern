@@ -7,6 +7,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    Properties of decidable and semidecidable equality.
 -}
 module Numeric.AERN.Basics.Equality where
 

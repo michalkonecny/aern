@@ -7,6 +7,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    Common properties linking binary operations with relations.
 -}
 module Numeric.AERN.Basics.Laws.OperationRelation 
 (
