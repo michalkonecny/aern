@@ -31,12 +31,21 @@ Description:
 Extra-Source-Files:
     ChangeLog
 
+Executable testAERN-Real
+  hs-source-dirs: src, tests
+  main-is: Main.hs
+  Build-Depends:
+        base >= 4 && < 5,
+        QuickCheck >= 2.1 && < 2.2,
+        test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
+        AERN-Basics == 2010.1
+
 Library
   hs-source-dirs: src
   Build-Depends:
-        base >= 4, base < 5, 
-        QuickCheck > 2.1, QuickCheck <= 2.2,
-        test-framework, test-framework-quickcheck2,
+        base >= 4 && < 5,
+        QuickCheck >= 2.1 && < 2.2,
+        test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
         AERN-Basics == 2010.1
   Exposed-modules:
     Numeric.AERN.RealArithmetic.Basis.Double
