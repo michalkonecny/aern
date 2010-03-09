@@ -23,6 +23,10 @@
 ><TD CLASS="title"
 >AERN-Basics-2010.1: foundational type classes for approximating exact real numbers</TD
 ><TD CLASS="topbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html"
+>Source code</A
+></TD
+><TD CLASS="topbut"
 ><A HREF="index.html"
 >Contents</A
 ></TD
@@ -214,9 +218,9 @@
 >Mutable</A
 > t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
 >Mutable</A
-> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+> t s -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Control-Monad-ST.html#t%3AST"
 >ST</A
-> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+> s <A HREF="http://hackage.haskell.org/packages/archive/ghc-prim/0.2.0.0/doc/html/GHC-Unit.html#t%3A%28%29"
 >()</A
 ></TD
 ></TR
@@ -232,9 +236,9 @@
 >Mutable</A
 > t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
 >Mutable</A
-> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+> t s -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Control-Monad-ST.html#t%3AST"
 >ST</A
-> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+> s <A HREF="http://hackage.haskell.org/packages/archive/ghc-prim/0.2.0.0/doc/html/GHC-Unit.html#t%3A%28%29"
 >()</A
 ></TD
 ></TR
@@ -250,9 +254,9 @@
 >Mutable</A
 > t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
 >Mutable</A
-> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+> t s -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Control-Monad-ST.html#t%3AST"
 >ST</A
-> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+> s <A HREF="http://hackage.haskell.org/packages/archive/ghc-prim/0.2.0.0/doc/html/GHC-Unit.html#t%3A%28%29"
 >()</A
 ></TD
 ></TR
@@ -268,9 +272,9 @@
 >Mutable</A
 > t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
 >Mutable</A
-> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+> t s -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Control-Monad-ST.html#t%3AST"
 >ST</A
-> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+> s <A HREF="http://hackage.haskell.org/packages/archive/ghc-prim/0.2.0.0/doc/html/GHC-Unit.html#t%3A%28%29"
 >()</A
 ></TD
 ></TR
@@ -293,7 +297,10 @@
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><SPAN CLASS="keyword"
 >class</SPAN
 >  <A NAME="t:RoundedLattice"
@@ -304,6 +311,13 @@
 >RoundedLattice</B
 > t  <SPAN CLASS="keyword"
 >where</SPAN
+></TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#RoundedLattice"
+>Source</A
+></TD
+></TR
+></TABLE
 ></TD
 ></TR
 ><TR
@@ -326,7 +340,10 @@
 ><TD CLASS="body"
 ><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:maxUpEff"
 ><A NAME="v%3AmaxUpEff"
 ></A
@@ -336,13 +353,23 @@
 > :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
 >EffortIndicator</A
 >] -&gt; t -&gt; t -&gt; t</TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#maxUpEff"
+>Source</A
+></TD
+></TR
+></TABLE
+></TD
 ></TR
 ><TR
 ><TD CLASS="s8"
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:maxDnEff"
 ><A NAME="v%3AmaxDnEff"
 ></A
@@ -352,13 +379,23 @@
 > :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
 >EffortIndicator</A
 >] -&gt; t -&gt; t -&gt; t</TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#maxDnEff"
+>Source</A
+></TD
+></TR
+></TABLE
+></TD
 ></TR
 ><TR
 ><TD CLASS="s8"
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:minUpEff"
 ><A NAME="v%3AminUpEff"
 ></A
@@ -368,13 +405,23 @@
 > :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
 >EffortIndicator</A
 >] -&gt; t -&gt; t -&gt; t</TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#minUpEff"
+>Source</A
+></TD
+></TR
+></TABLE
+></TD
 ></TR
 ><TR
 ><TD CLASS="s8"
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:minDnEff"
 ><A NAME="v%3AminDnEff"
 ></A
@@ -384,13 +431,23 @@
 > :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
 >EffortIndicator</A
 >] -&gt; t -&gt; t -&gt; t</TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#minDnEff"
+>Source</A
+></TD
+></TR
+></TABLE
+></TD
 ></TR
 ><TR
 ><TD CLASS="s8"
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:minmaxDefaultEffort"
 ><A NAME="v%3AminmaxDefaultEffort"
 ></A
@@ -400,13 +457,23 @@
 > :: t -&gt; [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
 >EffortIndicator</A
 >]</TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#minmaxDefaultEffort"
+>Source</A
+></TD
+></TR
+></TABLE
+></TD
 ></TR
 ><TR
 ><TD CLASS="s8"
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:maxUp"
 ><A NAME="v%3AmaxUp"
 ></A
@@ -414,13 +481,23 @@
 ><B
 >maxUp</B
 > :: t -&gt; t -&gt; t</TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#maxUp"
+>Source</A
+></TD
+></TR
+></TABLE
+></TD
 ></TR
 ><TR
 ><TD CLASS="s8"
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:maxDn"
 ><A NAME="v%3AmaxDn"
 ></A
@@ -428,13 +505,23 @@
 ><B
 >maxDn</B
 > :: t -&gt; t -&gt; t</TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#maxDn"
+>Source</A
+></TD
+></TR
+></TABLE
+></TD
 ></TR
 ><TR
 ><TD CLASS="s8"
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:minUp"
 ><A NAME="v%3AminUp"
 ></A
@@ -442,13 +529,23 @@
 ><B
 >minUp</B
 > :: t -&gt; t -&gt; t</TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#minUp"
+>Source</A
+></TD
+></TR
+></TABLE
+></TD
 ></TR
 ><TR
 ><TD CLASS="s8"
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:minDn"
 ><A NAME="v%3AminDn"
 ></A
@@ -456,6 +553,13 @@
 ><B
 >minDn</B
 > :: t -&gt; t -&gt; t</TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#minDn"
+>Source</A
+></TD
+></TR
+></TABLE
+></TD
 ></TR
 ></TABLE
 ></TD
@@ -468,7 +572,10 @@
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><SPAN CLASS="keyword"
 >class</SPAN
 > (<A HREF="Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#t%3ARoundedLattice"
@@ -483,6 +590,13 @@
 >RoundedLatticeMutable</B
 > t  <SPAN CLASS="keyword"
 >where</SPAN
+></TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#RoundedLatticeMutable"
+>Source</A
+></TD
+></TR
+></TABLE
 ></TD
 ></TR
 ><TR
@@ -506,7 +620,10 @@
 ><TD CLASS="body"
 ><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:maxUpMutable"
 ><A NAME="v%3AmaxUpMutable"
 ></A
@@ -521,10 +638,17 @@
 >Mutable</A
 > t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
 >Mutable</A
-> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+> t s -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Control-Monad-ST.html#t%3AST"
 >ST</A
-> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+> s <A HREF="http://hackage.haskell.org/packages/archive/ghc-prim/0.2.0.0/doc/html/GHC-Unit.html#t%3A%28%29"
 >()</A
+></TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#maxUpMutable"
+>Source</A
+></TD
+></TR
+></TABLE
 ></TD
 ></TR
 ><TR
@@ -537,7 +661,10 @@
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:maxDnMutable"
 ><A NAME="v%3AmaxDnMutable"
 ></A
@@ -552,10 +679,17 @@
 >Mutable</A
 > t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
 >Mutable</A
-> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+> t s -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Control-Monad-ST.html#t%3AST"
 >ST</A
-> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+> s <A HREF="http://hackage.haskell.org/packages/archive/ghc-prim/0.2.0.0/doc/html/GHC-Unit.html#t%3A%28%29"
 >()</A
+></TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#maxDnMutable"
+>Source</A
+></TD
+></TR
+></TABLE
 ></TD
 ></TR
 ><TR
@@ -568,7 +702,10 @@
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:minUpMutable"
 ><A NAME="v%3AminUpMutable"
 ></A
@@ -583,10 +720,17 @@
 >Mutable</A
 > t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
 >Mutable</A
-> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+> t s -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Control-Monad-ST.html#t%3AST"
 >ST</A
-> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+> s <A HREF="http://hackage.haskell.org/packages/archive/ghc-prim/0.2.0.0/doc/html/GHC-Unit.html#t%3A%28%29"
 >()</A
+></TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#minUpMutable"
+>Source</A
+></TD
+></TR
+></TABLE
 ></TD
 ></TR
 ><TR
@@ -599,7 +743,10 @@
 ></TD
 ></TR
 ><TR
-><TD CLASS="decl"
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
 ><A NAME="v:minDnMutable"
 ><A NAME="v%3AminDnMutable"
 ></A
@@ -614,10 +761,17 @@
 >Mutable</A
 > t s -&gt; <A HREF="Numeric-AERN-Basics-Mutable.html#t%3AMutable"
 >Mutable</A
-> t s -&gt; <A HREF="/usr/local/share/doc/ghc/html/libraries/base-4.2.0.0/Control-Monad-ST.html#t%3AST"
+> t s -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Control-Monad-ST.html#t%3AST"
 >ST</A
-> s <A HREF="/usr/local/share/doc/ghc/html/libraries/ghc-prim-0.2.0.0/GHC-Unit.html#t%3A%28%29"
+> s <A HREF="http://hackage.haskell.org/packages/archive/ghc-prim/0.2.0.0/doc/html/GHC-Unit.html#t%3A%28%29"
 >()</A
+></TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-RoundedLattice.html#minDnMutable"
+>Source</A
+></TD
+></TR
+></TABLE
 ></TD
 ></TR
 ><TR

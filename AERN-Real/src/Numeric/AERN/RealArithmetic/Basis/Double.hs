@@ -18,9 +18,31 @@ import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
+import Test.Framework (testGroup)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
+
 instance HasGranularity Double where
     type Granularity Double = Int
     getGranularity _ = 53
+
+propDoubleEqReflexive :: Double -> Bool
+propDoubleEqReflexive = propEqReflexive 
+
+propDoubleEqSymmetric :: Double -> Double -> Bool
+propDoubleEqSymmetric = propEqSymmetric
+
+propDoubleEqTransitive :: Double -> Double -> Double -> Bool
+propDoubleEqTransitive = propEqTransitive
+
+testsDoubleEq =
+    testGroup "Double (==)" 
+        [
+         testProperty "reflexive" propDoubleEqReflexive
+        ,
+         testProperty "symmetric" propDoubleEqSymmetric
+        ,
+         testProperty "transitive" propDoubleEqTransitive
+        ]
 
 instance SemidecidableEq Double where
     maybeEqual _ a b =
@@ -30,11 +52,22 @@ instance SemidecidableEq Double where
            _ -> Just False
     maybeEqualDefaultEffort _ = []
 
+propDoubleSemidecidableEqReflexive :: Double -> Bool
+propDoubleSemidecidableEqReflexive = propSemidecidableEqReflexive
+
+propDoubleSemidecidableEqSymmetric :: Double -> Double -> Bool
+propDoubleSemidecidableEqSymmetric = propSemidecidableEqSymmetric
+
+propDoubleSemidecidableEqTransitive :: Double -> Double -> Double -> Bool
+propDoubleSemidecidableEqTransitive = propSemidecidableEqTransitive
+
 instance NumOrd.HasLeast Double where
     least = - 1/0
 
 instance NumOrd.HasHighest Double where
     highest = 1/0
+
+
 
 instance NumOrd.SemidecidablePoset Double where
     maybeCompare _ a b =
