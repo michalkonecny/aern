@@ -7,6 +7,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    Extension of 'Prelude.Ordering' with non-comparable variant.
 -}
 module Numeric.AERN.Basics.PartialOrdering where
 

@@ -7,6 +7,10 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    Types that have top and bottom.
+    
+    This module is hidden and reexported via its parent RefinementOrder. 
 -}
 module Numeric.AERN.Basics.RefinementOrder.Extrema where
 

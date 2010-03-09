@@ -8,6 +8,8 @@
     Stability   :  experimental
     Portability :  portable
     
+    Lattices using refinement order notation.
+    
     This module is hidden and reexported via its parent RefinementOrder. 
 -}
 

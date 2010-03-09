@@ -7,6 +7,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    Common properties of rounded binary operations.
 -}
 
 module Numeric.AERN.Basics.Laws.RoundedOperation 

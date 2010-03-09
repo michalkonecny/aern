@@ -8,6 +8,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    Numeric-ordered operations for any 'CInterval' instance.
 -}
 module Numeric.AERN.Basics.CInterval.NumericOrder where
 

@@ -8,6 +8,8 @@
     Stability   :  experimental
     Portability :  portable
     
+    Domain bases with outwards and inwards rounded operations.
+    
     This module is hidden and reexported via its parent RefinementOrder. 
 -}
 module Numeric.AERN.Basics.RefinementOrder.RoundedBasis 

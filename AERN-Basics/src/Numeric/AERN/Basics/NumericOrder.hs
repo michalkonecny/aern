@@ -8,6 +8,9 @@
     Stability   :  experimental
     Portability :  portable
     
+    Type classes representing classical as well as approximate 
+    posets and lattices with the numerical order notation (<,max,min).
+    
     This module is meant to be imported qualified.
     It is recommended to use the prefix NumOrd.
 -}

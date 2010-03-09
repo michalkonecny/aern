@@ -2,13 +2,16 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.Basics.Granularity
-    Description :  finite subsets of continuum sets (eg floats)
+    Description :  granularity of finite subsets of continuum sets
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    Specifying granularity of finite subsets of continuum sets, eg 
+    granularity of floating point numbers (usually called precision).
 -}
 module Numeric.AERN.Basics.Granularity where
 

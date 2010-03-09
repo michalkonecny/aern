@@ -7,6 +7,8 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    Interval instances of refinement-ordered structures.
 -}
 module Numeric.AERN.Basics.Interval.RefinementOrder where
 

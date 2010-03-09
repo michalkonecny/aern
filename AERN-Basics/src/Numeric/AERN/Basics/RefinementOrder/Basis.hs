@@ -8,6 +8,8 @@
     Stability   :  experimental
     Portability :  portable
     
+    Domain bases using refinement order notation.
+    
     This module is hidden and reexported via its parent RefinementOrder. 
 -}
 
