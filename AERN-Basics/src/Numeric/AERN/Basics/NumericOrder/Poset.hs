@@ -67,8 +67,8 @@ propPosetEqCompatible e1 e2 =
     &&    
     (e1 == e2 || compare e1 e2 /= EQ)
 
-propPosetAntiSymmetric :: (Poset t) => t -> t -> Bool
-propPosetAntiSymmetric e1 e2 = 
+propPosetAntiSymmetric :: (Poset t) => UniformlyOrderedPair t -> Bool
+propPosetAntiSymmetric (UniformlyOrderedPair (e1, e2)) = 
     compare e2 e1 == (partialOrderingTranspose $ compare e1 e2) 
 
 propPosetTransitive :: (Poset t) => t -> t -> t -> Bool

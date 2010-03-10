@@ -16,6 +16,7 @@
 module Numeric.AERN.Basics.NumericOrder.Lattice where
 
 import Numeric.AERN.Basics.Mutable
+import Numeric.AERN.Basics.PartialOrdering
 import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.NumericOrder.Poset
@@ -33,40 +34,40 @@ class (Eq t) => Lattice t where
     min :: t -> t -> t
     max :: t -> t -> t
 
-propLatticePosetCompatible :: (Poset t, Lattice t) => t -> t -> Bool
-propLatticePosetCompatible = joinMeetOfOrderedPair (<=) min max 
+propLatticePosetCompatible :: (Poset t, Lattice t) => UniformlyOrderedPair t -> Bool
+propLatticePosetCompatible (UniformlyOrderedPair (e1,e2)) = joinMeetOfOrderedPair (<=) min max e1 e2 
 
-propLatticeJoinAboveBoth :: (Poset t, Lattice t) => t -> t -> Bool
-propLatticeJoinAboveBoth = joinAboveOperands (<=) max 
+propLatticeJoinAboveBoth :: (Poset t, Lattice t) => UniformlyOrderedPair t -> Bool
+propLatticeJoinAboveBoth (UniformlyOrderedPair (e1,e2)) = joinAboveOperands (<=) max e1 e2
 
 
-propLatticeMeetBelowBoth :: (Poset t, Lattice t) => t -> t -> Bool
-propLatticeMeetBelowBoth = meetBelowOperands (<=) min
+propLatticeMeetBelowBoth :: (Poset t, Lattice t) => UniformlyOrderedPair t -> Bool
+propLatticeMeetBelowBoth (UniformlyOrderedPair (e1,e2)) = meetBelowOperands (<=) min e1 e2
 
 propLatticeJoinIdempotent :: (Lattice t) => t -> Bool
 propLatticeJoinIdempotent = idempotent max
 
-propLatticeJoinCommutative :: (Lattice t) => t -> t -> Bool
-propLatticeJoinCommutative = commutative max
+propLatticeJoinCommutative :: (Lattice t) => UniformlyOrderedPair t -> Bool
+propLatticeJoinCommutative (UniformlyOrderedPair (e1,e2)) = commutative max e1 e2
 
-propLatticeJoinAssocative :: (Lattice t) => t -> t -> t -> Bool
-propLatticeJoinAssocative = associative max
+propLatticeJoinAssocative :: (Lattice t) => UniformlyOrderedTriple t -> Bool
+propLatticeJoinAssocative (UniformlyOrderedTriple (e1,e2,e3)) = associative max e1 e2 e3
 
 propLatticeMeetIdempotent :: (Lattice t) => t -> Bool
 propLatticeMeetIdempotent = idempotent min
 
-propLatticeMeetCommutative :: (Lattice t) => t -> t -> Bool
-propLatticeMeetCommutative = commutative min
+propLatticeMeetCommutative :: (Lattice t) => UniformlyOrderedPair t -> Bool
+propLatticeMeetCommutative (UniformlyOrderedPair (e1,e2)) = commutative min e1 e2
 
-propLatticeMeetAssocative :: (Lattice t) => t -> t -> t -> Bool
-propLatticeMeetAssocative = associative min
+propLatticeMeetAssocative :: (Lattice t) => UniformlyOrderedTriple t -> Bool
+propLatticeMeetAssocative (UniformlyOrderedTriple (e1,e2,e3)) = associative min e1 e2 e3
 
 {- optional properties: -}
-propLatticeModular :: (Lattice t) => t -> t -> t -> Bool
-propLatticeModular = modular max min
+propLatticeModular :: (Lattice t) => UniformlyOrderedTriple t -> Bool
+propLatticeModular (UniformlyOrderedTriple (e1,e2,e3)) = modular max min e1 e2 e3
 
-propLatticeDistributive :: (Lattice t) => t -> t -> t -> Bool
-propLatticeDistributive e1 e2 e3 = 
+propLatticeDistributive :: (Lattice t) => UniformlyOrderedTriple t -> Bool
+propLatticeDistributive (UniformlyOrderedTriple (e1,e2,e3)) = 
         (leftDistributive max min e1 e2 e3)
         && 
         (leftDistributive min max e1 e2 e3)
