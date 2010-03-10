@@ -59,19 +59,19 @@ class ArbitraryOrderedTuple t where
 
 {-| type for generating pairs distributed in such a way that all ordering relations 
     permitted by this structure have similar probabilities of occurrence -}
-data UniformlyOrderedPair t = UniformlyOrderedPair (t,t)
-data LTPair t = LTPair (t,t)
-data LEPair t = LEPair (t,t)
-data NCPair t = NCPair (t,t)
+data UniformlyOrderedPair t = UniformlyOrderedPair (t,t) deriving (Show)
+data LTPair t = LTPair (t,t) deriving (Show)
+data LEPair t = LEPair (t,t) deriving (Show)
+data NCPair t = NCPair (t,t) deriving (Show)
 
 {-| type for generating triples distributed in such a way that all ordering relation combinations 
     permitted by this structure have similar probabilities of occurrence -}
-data UniformlyOrderedTriple t = UniformlyOrderedTriple (t,t,t)
-data LTLTLTTriple t = LTLTLTTriple (t,t,t)
-data LELELETriple t = LELELETriple (t,t,t)
-data NCLTLTTriple t = NCLTLTTriple (t,t,t)
-data NCGTGTTriple t = NCGTGTTriple (t,t,t)
-data NCLTNCTriple t = NCLTNCTriple (t,t,t)
+data UniformlyOrderedTriple t = UniformlyOrderedTriple (t,t,t) deriving (Show)
+data LTLTLTTriple t = LTLTLTTriple (t,t,t) deriving (Show)
+data LELELETriple t = LELELETriple (t,t,t) deriving (Show)
+data NCLTLTTriple t = NCLTLTTriple (t,t,t) deriving (Show)
+data NCGTGTTriple t = NCGTGTTriple (t,t,t) deriving (Show)
+data NCLTNCTriple t = NCLTNCTriple (t,t,t) deriving (Show)
 
 instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedPair t) where
     arbitrary =
