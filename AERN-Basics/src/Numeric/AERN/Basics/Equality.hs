@@ -29,13 +29,20 @@ propEqTransitive = transitive (==)
     A type with semi-decidable equality
 -}
 class SemidecidableEq t where
-    maybeEqual :: [EffortIndicator] -> t -> t -> Maybe Bool
+    maybeEqualEff :: [EffortIndicator] -> t -> t -> Maybe Bool
     maybeEqualDefaultEffort :: t -> [EffortIndicator]
+    
+    maybeEqual :: t -> t -> Maybe Bool
+    maybeEqual a = maybeEqualEff (maybeEqualDefaultEffort a) a 
+    
     (==?) :: t -> t -> Maybe Bool
-    a ==? b = maybeEqual (maybeEqualDefaultEffort a) a b
+    (/=?) :: t -> t -> Maybe Bool
+    
+    a ==? b = maybeEqual a b
+    a /=? b = fmap not $ maybeEqual a b
 
 instance SemidecidableEq Int where
-    maybeEqual = maybeEqualEq
+    maybeEqualEff = maybeEqualEq
     maybeEqualDefaultEffort _ = []
     
 maybeEqualEq _ a b = Just $ a == b  

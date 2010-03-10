@@ -35,7 +35,7 @@ class (Eq t, SemidecidablePoset t, Show t) => Poset t where
     
     -- default implementation assuming the inherited semidecidable order is actually decidable:
     compare a b =
-        case maybeCompare (maybeCompareDefaultEffort a) a b of
+        case maybeCompare a b of
             Just r -> r
             _ -> error $
                 "poset comparison of " ++ show a
@@ -76,4 +76,3 @@ propPosetTransitive = transitive (<=)
     
 propExtremaInPoset :: (Poset t, HasExtrema t) => t -> Bool
 propExtremaInPoset = extrema (<=) least highest
-    
