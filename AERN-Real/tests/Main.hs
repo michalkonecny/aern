@@ -18,5 +18,6 @@ main = defaultMain tests
 
 tests = 
     [
-       testsDoubleEq
+       testsDoubleEq, testsDoubleSemidecidableEq,
+       testsDoublePoset, testsDoubleSemidecidablePoset
     ]

@@ -61,13 +61,23 @@ propDoubleSemidecidableEqSymmetric = propSemidecidableEqSymmetric
 propDoubleSemidecidableEqTransitive :: Double -> Double -> Double -> Bool
 propDoubleSemidecidableEqTransitive = propSemidecidableEqTransitive
 
+testsDoubleSemidecidableEq =
+    testGroup "Double (==?)" 
+        [
+         testProperty "reflexive" propDoubleSemidecidableEqReflexive
+        ,
+         testProperty "symmetric" propDoubleSemidecidableEqSymmetric
+        ,
+         testProperty "transitive" propDoubleSemidecidableEqTransitive
+        ]
+
 instance NumOrd.HasLeast Double where
     least = - 1/0
 
 instance NumOrd.HasHighest Double where
     highest = 1/0
 
-
+instance NumOrd.HasExtrema Double where
 
 instance NumOrd.SemidecidablePoset Double where
     maybeCompare _ a b =
@@ -77,12 +87,60 @@ instance NumOrd.SemidecidablePoset Double where
            _ -> Just NC 
     maybeCompareDefaultEffort _ = []
 
+--propDoubleSemidecidablePosetEqCompatible :: Double -> Double -> Bool
+--propDoubleSemidecidablePosetEqCompatible = NumOrd.propSemidecidablePosetEqCompatible
+--
+--propDoubleSemidecidablePosetAntiSymmetric :: Double -> Double -> Bool
+--propDoubleSemidecidablePosetAntiSymmetric = NumOrd.propSemidecidablePosetAntiSymmetric
+--
+--propDoubleSemidecidablePosetTransitive :: Double -> Double -> Double -> Bool
+--propDoubleSemidecidablePosetTransitive = NumOrd.propSemidecidablePosetTransitive
+
+propDoubleExtremaInSemidecidablePoset :: Double -> Bool
+propDoubleExtremaInSemidecidablePoset = NumOrd.propExtremaInSemidecidablePoset
+
+testsDoubleSemidecidablePoset =
+    testGroup "Double (>=?)" 
+        [
+--         testProperty "equality compatible" propDoubleSemidecidablePosetEqCompatible
+--        ,
+--         testProperty "anti symmetric" propDoubleSemidecidablePosetAntiSymmetric
+--        ,
+--         testProperty "transitive" propDoubleSemidecidablePosetTransitive
+--        ,
+         testProperty "extrema" propDoubleExtremaInSemidecidablePoset
+        ]
+
 instance NumOrd.Poset Double where
     compare a b =
         case (isNaN a, isNaN b) of
            (False, False) -> toPartialOrdering $ Prelude.compare a b  
            (True, True) -> EQ
            _ -> NC 
+
+propDoublePosetEqCompatible :: Double -> Double -> Bool
+propDoublePosetEqCompatible = NumOrd.propPosetEqCompatible
+
+propDoublePosetAntiSymmetric :: Double -> Double -> Bool
+propDoublePosetAntiSymmetric = NumOrd.propPosetAntiSymmetric
+
+propDoublePosetTransitive :: Double -> Double -> Double -> Bool
+propDoublePosetTransitive = NumOrd.propPosetTransitive
+
+propDoubleExtremaInPoset :: Double -> Bool
+propDoubleExtremaInPoset = NumOrd.propExtremaInPoset
+
+testsDoublePoset =
+    testGroup "Double (>=)" 
+        [
+         testProperty "equality compatible" propDoublePosetEqCompatible
+        ,
+         testProperty "anti symmetric" propDoublePosetAntiSymmetric
+        ,
+         testProperty "transitive" propDoublePosetTransitive
+        ,
+         testProperty "extrema" propDoubleExtremaInPoset
+        ]
 
 instance NumOrd.Lattice Double where
     max a b =
