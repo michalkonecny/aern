@@ -45,7 +45,7 @@ testsDoubleEq =
         ]
 
 instance SemidecidableEq Double where
-    maybeEqual _ a b =
+    maybeEqualEff _ a b =
         case (isNaN a, isNaN b) of
            (False, False) -> Just $ a == b  
            (True, True) -> Just True
@@ -80,21 +80,21 @@ instance NumOrd.HasHighest Double where
 instance NumOrd.HasExtrema Double where
 
 instance NumOrd.SemidecidablePoset Double where
-    maybeCompare _ a b =
+    maybeCompareEff _ a b =
         case (isNaN a, isNaN b) of
            (False, False) -> Just $ toPartialOrdering $ Prelude.compare a b  
            (True, True) -> Just EQ
            _ -> Just NC 
     maybeCompareDefaultEffort _ = []
 
---propDoubleSemidecidablePosetEqCompatible :: Double -> Double -> Bool
---propDoubleSemidecidablePosetEqCompatible = NumOrd.propSemidecidablePosetEqCompatible
---
---propDoubleSemidecidablePosetAntiSymmetric :: Double -> Double -> Bool
---propDoubleSemidecidablePosetAntiSymmetric = NumOrd.propSemidecidablePosetAntiSymmetric
---
---propDoubleSemidecidablePosetTransitive :: Double -> Double -> Double -> Bool
---propDoubleSemidecidablePosetTransitive = NumOrd.propSemidecidablePosetTransitive
+propDoubleSemidecidablePosetEqCompatible :: Double -> Double -> Bool
+propDoubleSemidecidablePosetEqCompatible = NumOrd.propSemidecidablePosetEqCompatible
+
+propDoubleSemidecidablePosetAntiSymmetric :: Double -> Double -> Bool
+propDoubleSemidecidablePosetAntiSymmetric = NumOrd.propSemidecidablePosetAntiSymmetric
+
+propDoubleSemidecidablePosetTransitive :: Double -> Double -> Double -> Bool
+propDoubleSemidecidablePosetTransitive = NumOrd.propSemidecidablePosetTransitive
 
 propDoubleExtremaInSemidecidablePoset :: Double -> Bool
 propDoubleExtremaInSemidecidablePoset = NumOrd.propExtremaInSemidecidablePoset
@@ -102,12 +102,12 @@ propDoubleExtremaInSemidecidablePoset = NumOrd.propExtremaInSemidecidablePoset
 testsDoubleSemidecidablePoset =
     testGroup "Double (>=?)" 
         [
---         testProperty "equality compatible" propDoubleSemidecidablePosetEqCompatible
---        ,
---         testProperty "anti symmetric" propDoubleSemidecidablePosetAntiSymmetric
---        ,
---         testProperty "transitive" propDoubleSemidecidablePosetTransitive
---        ,
+         testProperty "equality compatible" propDoubleSemidecidablePosetEqCompatible
+        ,
+         testProperty "anti symmetric" propDoubleSemidecidablePosetAntiSymmetric
+        ,
+         testProperty "transitive" propDoubleSemidecidablePosetTransitive
+        ,
          testProperty "extrema" propDoubleExtremaInSemidecidablePoset
         ]
 
