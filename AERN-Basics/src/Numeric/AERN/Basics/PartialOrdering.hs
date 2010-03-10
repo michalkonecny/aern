@@ -53,27 +53,94 @@ class ArbitraryOrderedTuple t where
     {-| generator of pairs that satisfy the chosen relation, 
         nothing if there are no pairs satisfying this relation in the structure -}
     arbitraryPairRelatedBy :: PartialOrdering -> Maybe (Gen (t,t))    
-    {-| generator of pairs distributed in such a way that all ordering relations 
-       permitted by this structure have similar probabilities of occurrence -}
-    arbitraryPairUniformRelation :: Gen (t,t)
-    arbitraryPairUniformRelation =
-        do
-        gen <- elements gens
-        gen
-        where
-        gens = catMaybes $ map arbitraryPairRelatedBy partialOrderingVariants  
     {-| generator of triples that satisfy the chosen relations: @e1 r1 e2, e2 r2 e3, e1 r3 e3@,
         nothing if there are no pairs satisfying this relation in the structure -}
     arbitraryTripleRelatedBy :: (PartialOrdering, PartialOrdering, PartialOrdering) -> Maybe (Gen (t,t,t))    
-    {-| generator of triples distributed in such a way that all ordering relation combinations 
-       permitted by this structure have similar probabilities of occurrence -}
-    arbitraryTripleUniformRelation :: Gen (t,t,t)
-    arbitraryTripleUniformRelation =
+
+{-| type for generating pairs distributed in such a way that all ordering relations 
+    permitted by this structure have similar probabilities of occurrence -}
+data UniformlyOrderedPair t = UniformlyOrderedPair (t,t)
+data LTPair t = LTPair (t,t)
+data LEPair t = LEPair (t,t)
+data NCPair t = NCPair (t,t)
+
+{-| type for generating triples distributed in such a way that all ordering relation combinations 
+    permitted by this structure have similar probabilities of occurrence -}
+data UniformlyOrderedTriple t = UniformlyOrderedTriple (t,t,t)
+data LTLTLTTriple t = LTLTLTTriple (t,t,t)
+data LELELETriple t = LELELETriple (t,t,t)
+data NCLTLTTriple t = NCLTLTTriple (t,t,t)
+data NCGTGTTriple t = NCGTGTTriple (t,t,t)
+data NCLTNCTriple t = NCLTNCTriple (t,t,t)
+
+instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedPair t) where
+    arbitrary =
         do
         gen <- elements gens
-        gen
+        pair <- gen
+        return $ UniformlyOrderedPair pair
+        where
+        gens = catMaybes $ map arbitraryPairRelatedBy partialOrderingVariants  
+
+instance (ArbitraryOrderedTuple t) => Arbitrary (LEPair t) where
+    arbitrary =
+        do
+        gen <- elements gens
+        pair <- gen
+        return $ LEPair pair
+        where
+        gens = catMaybes $ map arbitraryPairRelatedBy [LT, LT, LT, EQ]  
+
+instance (ArbitraryOrderedTuple t) => Arbitrary (LTPair t) where
+    arbitrary =
+        case arbitraryPairRelatedBy LT of
+            Nothing -> error $ "LTPair used with an incompatible type"
+            Just gen ->
+                do
+                pair <- gen
+                return $ LTPair pair
+
+instance (ArbitraryOrderedTuple t) => Arbitrary (NCPair t) where
+    arbitrary =
+        case arbitraryPairRelatedBy NC of
+            Nothing -> error $ "NCPair used with an incompatible type"
+            Just gen ->
+                do
+                pair <- gen
+                return $ NCPair pair
+
+instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedTriple t) where
+    arbitrary = 
+        do
+        gen <- elements gens
+        triple <- gen
+        return $ UniformlyOrderedTriple triple
         where
         gens = catMaybes $ map arbitraryTripleRelatedBy partialOrderingVariantsTriples
+
+instance (ArbitraryOrderedTuple t) => Arbitrary (LELELETriple t) where
+    arbitrary =
+        do
+        gen <- elements gens
+        triple <- gen
+        return $ LELELETriple triple
+        where
+        gens = 
+            catMaybes $ 
+                map arbitraryTripleRelatedBy 
+                    [(LT,LT,LT), (LT,LT,LT), (LT,LT,LT), (LT,LT,LT), (LT,LT,LT), 
+                     (EQ,LT,LT), (EQ,LT,LT),
+                     (LT,EQ,LT), (LT,EQ,LT),
+                     (EQ,EQ,EQ)]  
+
+instance (ArbitraryOrderedTuple t) => Arbitrary (LTLTLTTriple t) where
+    arbitrary =
+        case arbitraryTripleRelatedBy (LT, LT, LT) of
+            Nothing -> error $ "LTLTLTTriple used with an incompatible type"
+            Just gen ->
+                do
+                triple <- gen
+                return $ LTLTLTTriple triple
 
 {-|
     All 29 triples of poset orderings @(r1, r2, r3)@ for which
@@ -118,6 +185,7 @@ respectsTransitivity rels =
         (GT,GT,_ ) -> False -- but not e3 < e1
         --
         _ -> True -- all else is OK
+
 
 propArbitraryOrderedPair compare rel =
      case arbitraryPairRelatedBy rel of
