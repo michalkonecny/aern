@@ -68,16 +68,15 @@ propSemidecidablePosetEqCompatible e1 e2 =
     &&    
     (Just EQ /= (maybeCompare e1 e2) || nothingOr True (e1 ==? e2) )
 
---propSemidecidablePosetAntiSymmetric :: (SemidecidablePoset t) => t -> t -> Bool
---propSemidecidablePosetAntiSymmetric e1 e2 = 
---    compare e2 e1 == (partialOrderingTranspose $ compare e1 e2) 
+propSemidecidablePosetAntiSymmetric :: (SemidecidablePoset t) => t -> t -> Bool
+propSemidecidablePosetAntiSymmetric e1 e2 =
+    case (maybeCompare e2 e1, maybeCompare e1 e2) of
+        (Just b1, Just b2) -> b1 == partialOrderingTranspose b2
+        _ -> True 
 
 propSemidecidablePosetTransitive :: (SemidecidablePoset t) => t -> t -> t -> Bool
 propSemidecidablePosetTransitive = semidecidableTransitive (<=?)
 
-
 propExtremaInSemidecidablePoset :: (SemidecidablePoset t, HasExtrema t) => t -> Bool
 propExtremaInSemidecidablePoset = semidecidableOrderExtrema (<=?) least highest
-
--- TODO: other properties of semidecidable posets    
 
