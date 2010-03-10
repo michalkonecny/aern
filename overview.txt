@@ -6,6 +6,7 @@ Basics
    Extrema top, bottom
    NumericOrder (NumOrd)
      Poset (<=)
+     Distance
      Lattice (max, min)
      SemidecidablePoset
        (<=?, maybeCompareDefaultEffort)
@@ -15,6 +16,8 @@ Basics
      Basis |\/? consistent
      Lattice |\/, |/\
      SemidecidablePoset |<=?
+     Precision
+     Consistency
      OuterRoundedBasis <|\/>? maybeConsistent
      OuterRoundedLattice <|\/>
      InnerRoundedBasis >|\/<?
