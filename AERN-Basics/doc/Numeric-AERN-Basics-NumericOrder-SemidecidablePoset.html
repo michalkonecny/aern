@@ -122,8 +122,8 @@
 ><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
 ><TR
 ><TD CLASS="decl"
-><A HREF="#v%3AmaybeCompare"
->maybeCompare</A
+><A HREF="#v%3AmaybeCompareEff"
+>maybeCompareEff</A
 > :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
 >EffortIndicator</A
 >] -&gt; t -&gt; t -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Data-Maybe.html#t%3AMaybe"
@@ -139,6 +139,16 @@
 > :: t -&gt; [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
 >EffortIndicator</A
 >]</TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmaybeCompare"
+>maybeCompare</A
+> :: t -&gt; t -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="Numeric-AERN-Basics-PartialOrdering.html#t%3APartialOrdering"
+>PartialOrdering</A
+></TD
 ></TR
 ><TR
 ><TD CLASS="decl"
@@ -201,6 +211,48 @@
 ></TD
 ></TR
 ></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropSemidecidablePosetEqCompatible"
+>propSemidecidablePosetEqCompatible</A
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#t%3ASemidecidablePoset"
+>SemidecidablePoset</A
+> t =&gt; t -&gt; t -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropSemidecidablePosetAntiSymmetric"
+>propSemidecidablePosetAntiSymmetric</A
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#t%3ASemidecidablePoset"
+>SemidecidablePoset</A
+> t =&gt; t -&gt; t -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ApropSemidecidablePosetTransitive"
+>propSemidecidablePosetTransitive</A
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#t%3ASemidecidablePoset"
+>SemidecidablePoset</A
+> t =&gt; t -&gt; t -&gt; t -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Data-Bool.html#t%3ABool"
+>Bool</A
 ></TD
 ></TR
 ><TR
@@ -284,12 +336,12 @@
 ><TABLE CLASS="declbar"
 ><TR
 ><TD CLASS="declname"
-><A NAME="v:maybeCompare"
-><A NAME="v%3AmaybeCompare"
+><A NAME="v:maybeCompareEff"
+><A NAME="v%3AmaybeCompareEff"
 ></A
 ></A
 ><B
->maybeCompare</B
+>maybeCompareEff</B
 > :: [<A HREF="Numeric-AERN-Basics-Effort.html#t%3AEffortIndicator"
 >EffortIndicator</A
 >] -&gt; t -&gt; t -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Data-Maybe.html#t%3AMaybe"
@@ -298,7 +350,7 @@
 >PartialOrdering</A
 ></TD
 ><TD CLASS="declbut"
-><A HREF="src/Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#maybeCompare"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#maybeCompareEff"
 >Source</A
 ></TD
 ></TR
@@ -325,6 +377,34 @@
 >]</TD
 ><TD CLASS="declbut"
 ><A HREF="src/Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#maybeCompareDefaultEffort"
+>Source</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
+><A NAME="v:maybeCompare"
+><A NAME="v%3AmaybeCompare"
+></A
+></A
+><B
+>maybeCompare</B
+> :: t -&gt; t -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Data-Maybe.html#t%3AMaybe"
+>Maybe</A
+> <A HREF="Numeric-AERN-Basics-PartialOrdering.html#t%3APartialOrdering"
+>PartialOrdering</A
+></TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#maybeCompare"
 >Source</A
 ></TD
 ></TR
@@ -545,6 +625,90 @@
 ></TR
 ></TABLE
 ></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
+><A NAME="v:propSemidecidablePosetEqCompatible"
+><A NAME="v%3ApropSemidecidablePosetEqCompatible"
+></A
+></A
+><B
+>propSemidecidablePosetEqCompatible</B
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#t%3ASemidecidablePoset"
+>SemidecidablePoset</A
+> t =&gt; t -&gt; t -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#propSemidecidablePosetEqCompatible"
+>Source</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
+><A NAME="v:propSemidecidablePosetAntiSymmetric"
+><A NAME="v%3ApropSemidecidablePosetAntiSymmetric"
+></A
+></A
+><B
+>propSemidecidablePosetAntiSymmetric</B
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#t%3ASemidecidablePoset"
+>SemidecidablePoset</A
+> t =&gt; t -&gt; t -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#propSemidecidablePosetAntiSymmetric"
+>Source</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="topdecl"
+><TABLE CLASS="declbar"
+><TR
+><TD CLASS="declname"
+><A NAME="v:propSemidecidablePosetTransitive"
+><A NAME="v%3ApropSemidecidablePosetTransitive"
+></A
+></A
+><B
+>propSemidecidablePosetTransitive</B
+> :: <A HREF="Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#t%3ASemidecidablePoset"
+>SemidecidablePoset</A
+> t =&gt; t -&gt; t -&gt; t -&gt; <A HREF="http://hackage.haskell.org/packages/archive/base/4.2.0.0/doc/html/Data-Bool.html#t%3ABool"
+>Bool</A
+></TD
+><TD CLASS="declbut"
+><A HREF="src/Numeric-AERN-Basics-NumericOrder-SemidecidablePoset.html#propSemidecidablePosetTransitive"
+>Source</A
 ></TD
 ></TR
 ></TABLE
