@@ -47,7 +47,7 @@ maybeCompareIntervalRef effort i1 i2 =
         (Just _, Just _) -> Just NC  
         _ -> Nothing
     where
-    c = NumOrd.maybeCompare effort 
+    c = NumOrd.maybeCompareEff effort 
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
 

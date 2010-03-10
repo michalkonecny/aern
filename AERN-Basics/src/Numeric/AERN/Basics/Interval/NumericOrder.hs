@@ -20,12 +20,12 @@ import Numeric.AERN.Basics.CInterval.NumericOrder
 
 instance (NumOrd.SemidecidablePoset e) => (SemidecidableEq (Interval e))
     where
-    maybeEqual = maybeEqualInterval
+    maybeEqualEff = maybeEqualEffInterval
     maybeEqualDefaultEffort = maybeEqualDefaultEffortInterval
 
 instance (NumOrd.SemidecidablePoset e) => (NumOrd.SemidecidablePoset (Interval e))
     where
-    maybeCompare = maybeCompareInterval
+    maybeCompareEff = maybeCompareEffInterval
     maybeCompareDefaultEffort = maybeCompareDefaultEffortInterval
         
 instance (NumOrd.Lattice e) => (NumOrd.Lattice (Interval e))

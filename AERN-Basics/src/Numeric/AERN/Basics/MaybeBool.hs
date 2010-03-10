@@ -15,20 +15,18 @@ module Numeric.AERN.Basics.MaybeBool
 where
 
 trueOrNothing :: Maybe Bool -> Bool 
-trueOrNothing Nothing = True
-trueOrNothing (Just b) = b    
+trueOrNothing = nothingOr True
 
 falseOrNothing :: Maybe Bool -> Bool
-falseOrNothing Nothing = True
-falseOrNothing (Just b) = not b  
+falseOrNothing = nothingOr False
 
-notJustTrue :: Maybe Bool -> Bool 
-notJustTrue Nothing = True
-notJustTrue (Just b) = not b
+nothingOr :: (Eq a) => a -> Maybe a -> Bool 
+nothingOr _ Nothing = True
+nothingOr e1 (Just e2) = e1 == e2     
 
-isJustTrue :: Maybe Bool -> Bool 
-isJustTrue Nothing = False
-isJustTrue (Just b) = b
+justButNot :: (Eq a) => a -> Maybe a -> Bool
+justButNot _ Nothing = False
+justButNot e1 (Just e2) = e1 /= e2 
 
 (||?) :: Maybe Bool -> Maybe Bool -> Maybe Bool 
 (||?) b1@(Just True) _ = b1 

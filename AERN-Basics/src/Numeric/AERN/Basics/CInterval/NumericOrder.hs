@@ -37,10 +37,10 @@ maybeEqualDefaultEffortInterval i =
 {-|
     Default numerical equality test for interval types.
 -}
-maybeEqualInterval ::
+maybeEqualEffInterval ::
         (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
         [EffortIndicator] -> i -> i -> Maybe Bool
-maybeEqualInterval effort i1 i2 = 
+maybeEqualEffInterval effort i1 i2 = 
     case (c l1 l2, c l1 h2, c h1 l2, c h1 h2) of
         (Just EQ, Just EQ, Just EQ, _) -> Just True
         (Just LT, Just LT, Just LT, Just LT) -> Just False  
@@ -48,7 +48,7 @@ maybeEqualInterval effort i1 i2 =
         (Just NC, Just NC, Just NC, Just NC) -> Just False
         _ -> Nothing
     where
-    c = NumOrd.maybeCompare effort 
+    c = NumOrd.maybeCompareEff effort 
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
      
@@ -68,10 +68,10 @@ maybeCompareDefaultEffortInterval i =
 {-|
     Default numerical comparison for interval types.
 -}
-maybeCompareInterval ::
+maybeCompareEffInterval ::
         (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
         [EffortIndicator] -> i -> i -> Maybe PartialOrdering
-maybeCompareInterval effort i1 i2 = 
+maybeCompareEffInterval effort i1 i2 = 
     case (c l1 l2, c l1 h2, c h1 l2, c h1 h2) of
         (Just EQ, Just EQ, Just EQ, _) -> Just EQ
         (Just LT, Just LT, Just LT, Just LT) -> Just LT  
@@ -79,7 +79,7 @@ maybeCompareInterval effort i1 i2 =
         (Just NC, Just NC, Just NC, Just NC) -> Just NC
         _ -> Nothing
     where
-    c = NumOrd.maybeCompare effort 
+    c = NumOrd.maybeCompareEff effort 
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
 

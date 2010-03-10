@@ -30,9 +30,9 @@ semidecidableReflexive rel e =
 
 semidecidableTransitive :: (t -> t -> Maybe Bool) -> t -> t -> t -> Bool
 semidecidableTransitive rel e1 e2 e3 = 
-    (notJustTrue (e1 `rel` e2)) 
+    (Just True /= (e1 `rel` e2)) 
     || 
-    (notJustTrue (e2 `rel` e3)) 
+    (Just True /= (e2 `rel` e3)) 
     || 
     (trueOrNothing (e1 `rel` e3))
 
