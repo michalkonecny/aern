@@ -124,7 +124,7 @@ instance NumOrd.Poset Double where
 propDoublePosetEqCompatible :: Double -> Double -> Bool
 propDoublePosetEqCompatible = NumOrd.propPosetEqCompatible
 
-propDoublePosetAntiSymmetric :: Double -> Double -> Bool
+propDoublePosetAntiSymmetric :: UniformlyOrderedPair Double -> Bool
 propDoublePosetAntiSymmetric = NumOrd.propPosetAntiSymmetric
 
 propDoublePosetTransitive :: Double -> Double -> Double -> Bool
