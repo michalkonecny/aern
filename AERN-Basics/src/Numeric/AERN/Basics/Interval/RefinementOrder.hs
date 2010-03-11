@@ -9,6 +9,8 @@
     Portability :  portable
     
     Interval instances of refinement-ordered structures.
+    
+    This is a hidden module reexported via its parent.
 -}
 module Numeric.AERN.Basics.Interval.RefinementOrder where
 
