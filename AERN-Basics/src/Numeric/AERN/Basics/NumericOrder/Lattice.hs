@@ -15,6 +15,7 @@
 
 module Numeric.AERN.Basics.NumericOrder.Lattice where
 
+import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.PartialOrdering
 import Control.Monad.ST (ST)
@@ -34,12 +35,16 @@ class (Eq t) => Lattice t where
     min :: t -> t -> t
     max :: t -> t -> t
 
+propLatticeIllegalArgException :: (Lattice t) => t -> t -> Bool
+propLatticeIllegalArgException illegalArg d =
+    and $ map raisesAERNException 
+                [min d illegalArg, min illegalArg d, max d illegalArg, max illegalArg d] 
+
 propLatticePosetCompatible :: (Poset t, Lattice t) => UniformlyOrderedPair t -> Bool
 propLatticePosetCompatible (UniformlyOrderedPair (e1,e2)) = joinMeetOfOrderedPair (<=) min max e1 e2 
 
 propLatticeJoinAboveBoth :: (Poset t, Lattice t) => UniformlyOrderedPair t -> Bool
 propLatticeJoinAboveBoth (UniformlyOrderedPair (e1,e2)) = joinAboveOperands (<=) max e1 e2
-
 
 propLatticeMeetBelowBoth :: (Poset t, Lattice t) => UniformlyOrderedPair t -> Bool
 propLatticeMeetBelowBoth (UniformlyOrderedPair (e1,e2)) = meetBelowOperands (<=) min e1 e2

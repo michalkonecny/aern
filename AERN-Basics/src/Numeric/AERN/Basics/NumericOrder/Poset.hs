@@ -62,6 +62,11 @@ class (Eq t, SemidecidablePoset t, Show t) => Poset t where
 instance Poset Int where
     compare a b = toPartialOrdering $ Prelude.compare a b  
 
+propPosetIllegalArgException :: (Poset t) => t -> t -> Bool
+propPosetIllegalArgException illegalArg e =
+    and $ map raisesAERNException 
+                [compare e illegalArg, compare illegalArg e] 
+
 propPosetEqCompatible :: (Poset t) => t -> t -> Bool
 propPosetEqCompatible e1 e2 =
     (e1 /= e2 || compare e1 e2 == EQ)
@@ -77,9 +82,4 @@ propPosetTransitive = transitive (<=)
     
 propExtremaInPoset :: (Poset t, HasExtrema t) => t -> Bool
 propExtremaInPoset = extrema (<=) least highest
-
-propPosetIllegalArgException :: (Poset t) => t -> t -> Bool
-propPosetIllegalArgException illegalArg d =
-    and $ map raisesAERNException 
-                [compare d illegalArg, compare illegalArg d] 
 
