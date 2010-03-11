@@ -14,7 +14,7 @@
 -}
 module Numeric.AERN.Basics.Interval.RefinementOrder where
 
-import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.Interval.Basics
 import Numeric.AERN.Basics.Interval.NumericOrder
 import Numeric.AERN.Basics.CInterval.RefinementOrder
 
