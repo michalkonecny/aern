@@ -10,9 +10,9 @@
 -}
 module Main where
 
-import Test.Framework (defaultMain)
-
 import Numeric.AERN.RealArithmetic.Basis.Double
+
+import Test.Framework (defaultMain)
 
 main = defaultMain tests
 

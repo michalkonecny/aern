@@ -13,6 +13,9 @@ module Numeric.AERN.RealArithmetic.Basis.Double where
 
 import Prelude hiding (EQ,LT,GT)
 
+import Numeric.AERN.Basics.Exception
+import Control.Exception
+
 import Numeric.AERN.Basics.Granularity
 import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
@@ -51,8 +54,8 @@ instance SemidecidableEq Double where
     maybeEqualEff _ a b =
         case (isNaN a, isNaN b) of
            (False, False) -> Just $ a == b  
-           (True, True) -> Just True
-           _ -> Just False
+           _ -> throw (AERNException $ "illegal Double argument: maybeEqual " 
+                        ++ show a ++ " " ++ show b)
     maybeEqualDefaultEffort _ = []
 
 propDoubleSemidecidableEqReflexive :: Double -> Bool
@@ -118,8 +121,8 @@ instance NumOrd.Poset Double where
     compare a b =
         case (isNaN a, isNaN b) of
            (False, False) -> toPartialOrdering $ Prelude.compare a b  
-           (True, True) -> EQ
-           _ -> NC 
+           _ -> throw (AERNException $ "illegal Double argument: NumOrd.Poset.compare " 
+                        ++ show a ++ " " ++ show b) 
 
 propDoublePosetEqCompatible :: Double -> Double -> Bool
 propDoublePosetEqCompatible = NumOrd.propPosetEqCompatible
@@ -149,11 +152,13 @@ instance NumOrd.Lattice Double where
     max a b =
         case (isNaN a, isNaN b) of
            (False, False) -> Prelude.max a b  
-           _ -> 0/0 -- ie NaN 
+           _ -> throw (AERNException $ "illegal Double argument: NumOrd.Lattice.max " 
+                        ++ show a ++ " " ++ show b) 
     min a b =
         case (isNaN a, isNaN b) of
            (False, False) -> Prelude.min a b  
-           _ -> 0/0 -- ie NaN
+           _ -> throw (AERNException $ "illegal Double argument: NumOrd.Lattice.min " 
+                        ++ show a ++ " " ++ show b) 
     
 instance NumOrd.RoundedLattice Double where
     maxUpEff _ = max
@@ -181,15 +186,20 @@ instance ArbitraryOrderedTuple Double where
         do
         (d1,d2) <- fromJust $ arbitraryPairRelatedBy LT
         return (d2,d1)
-    arbitraryPairRelatedBy NC = Just gen
-        where
-        gen =
-            do
-            d <- arbitrary
-            case isNaN d of
-               True -> gen -- bad luck, try again
-               _ -> elements [(nan,d), (d,nan)]
-        nan = 0/0
+    arbitraryPairRelatedBy NC = Nothing
+--        Just gen
+--        where
+--        gen =
+--            do
+--            d <- arbitrary
+--            case isNaN d of
+--               True -> gen -- bad luck, try again
+--               _ -> elements [(nan,d), (d,nan)]
+--        nan = 0/0
+    {--------------- no NC allowed in triples ----------------}
+    arbitraryTripleRelatedBy (NC,_ ,_ ) = Nothing
+    arbitraryTripleRelatedBy (_ ,NC,_ ) = Nothing
+    arbitraryTripleRelatedBy (_ ,_ ,NC) = Nothing
     {--------------- triples with some equality --------------}
     arbitraryTripleRelatedBy (EQ, r2, r3) | r2 == r3 = Just $ -- e1 = e2
         do
@@ -203,25 +213,22 @@ instance ArbitraryOrderedTuple Double where
         do
         (d1,d2) <- fromJust $ arbitraryPairRelatedBy r1
         return (d1,d2,d1)
-    {--------------- triples with some NaN but no equality -------}
-    arbitraryTripleRelatedBy (NC, NC, NC) = Nothing -- Double consists of 2 linearly ordered components
-    arbitraryTripleRelatedBy (NC, NC, r3) = Just $ -- e2 = NaN
-        do
-        (d1,d3) <- fromJust $ arbitraryPairRelatedBy r3
-        return (d1,0/0,d3)
-    arbitraryTripleRelatedBy (NC, r2, NC) = Just $ -- e1 = NaN
-        do
-        (d2,d3) <- fromJust $ arbitraryPairRelatedBy r2
-        return (0/0,d2,d3)
-    arbitraryTripleRelatedBy (r1, NC, NC) = Just $ -- e3 = NaN
-        do
-        (d1,d2) <- fromJust $ arbitraryPairRelatedBy r1
-        return (d1,d2,0/0)
-    -- cannot have single NC because it forces NaN which forces two NCs 
-    -- (except equality which was sorted out earlier)
-    arbitraryTripleRelatedBy (NC,_ ,_ ) = Nothing
-    arbitraryTripleRelatedBy (_ ,NC,_ ) = Nothing
-    arbitraryTripleRelatedBy (_ ,_ ,NC) = Nothing
+--    {--------------- triples with some NaN but no equality -------}
+--    arbitraryTripleRelatedBy (NC, NC, NC) = Nothing -- Double consists of 2 linearly ordered components
+--    arbitraryTripleRelatedBy (NC, NC, r3) = Just $ -- e2 = NaN
+--        do
+--        (d1,d3) <- fromJust $ arbitraryPairRelatedBy r3
+--        return (d1,0/0,d3)
+--    arbitraryTripleRelatedBy (NC, r2, NC) = Just $ -- e1 = NaN
+--        do
+--        (d2,d3) <- fromJust $ arbitraryPairRelatedBy r2
+--        return (0/0,d2,d3)
+--    arbitraryTripleRelatedBy (r1, NC, NC) = Just $ -- e3 = NaN
+--        do
+--        (d1,d2) <- fromJust $ arbitraryPairRelatedBy r1
+--        return (d1,d2,0/0)
+--    -- cannot have single NC because it forces NaN which forces two NCs 
+--    -- (except equality which was sorted out earlier)
     {--------------- strictly ordered triples ----------}
     arbitraryTripleRelatedBy (LT, LT, LT) = Just gen
         where
