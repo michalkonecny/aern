@@ -10,12 +10,16 @@
     Portability :  portable
     
     Interval instances of numeric-ordered structures.
+    
+    This is a hidden module reexported via its parent.
 -}
 module Numeric.AERN.Basics.Interval.NumericOrder where
 
+import Numeric.AERN.Basics.CInterval.Equality
 import Numeric.AERN.Basics.Equality
+import Numeric.AERN.Basics.Interval.Basics
+
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.CInterval.NumericOrder
 
 instance (NumOrd.SemidecidablePoset e) => (SemidecidableEq (Interval e))

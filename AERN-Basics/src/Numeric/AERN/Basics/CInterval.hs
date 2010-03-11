@@ -14,7 +14,6 @@
 -}
 module Numeric.AERN.Basics.CInterval where
 
-import Numeric.AERN.Basics.Granularity
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
@@ -52,4 +51,5 @@ propCIntervalConsistentAntiConsistent i =
     l NumOrd.<= h || h NumOrd.<= l
     where
     (l,h) = getEndpoints i
+
 

@@ -46,12 +46,27 @@ Library
     Numeric.AERN.Basics.Equality
     Numeric.AERN.Basics.PartialOrdering
     Numeric.AERN.Basics.NumericOrder
+    Numeric.AERN.Basics.RefinementOrder
+    Numeric.AERN.Basics.Granularity
+    Numeric.AERN.Basics.CInterval
+    Numeric.AERN.Basics.CInterval.Equality
+    Numeric.AERN.Basics.CInterval.Granularity
+    Numeric.AERN.Basics.CInterval.NumericOrder
+    Numeric.AERN.Basics.CInterval.RefinementOrder
+    Numeric.AERN.Basics.Interval
+    Numeric.AERN.Basics.Laws.Relation
+    Numeric.AERN.Basics.Laws.SemidecidableRelation
+    Numeric.AERN.Basics.Laws.Operation
+    Numeric.AERN.Basics.Laws.RoundedOperation
+    Numeric.AERN.Basics.Laws.OperationRelation
+    Numeric.AERN.Misc.QuickCheck
+    
+  Other-modules:
     Numeric.AERN.Basics.NumericOrder.Extrema
     Numeric.AERN.Basics.NumericOrder.Poset
     Numeric.AERN.Basics.NumericOrder.Lattice
     Numeric.AERN.Basics.NumericOrder.SemidecidablePoset
     Numeric.AERN.Basics.NumericOrder.RoundedLattice
-    Numeric.AERN.Basics.RefinementOrder
     Numeric.AERN.Basics.RefinementOrder.Extrema
     Numeric.AERN.Basics.RefinementOrder.Poset
     Numeric.AERN.Basics.RefinementOrder.Basis
@@ -59,19 +74,8 @@ Library
     Numeric.AERN.Basics.RefinementOrder.SemidecidablePoset
     Numeric.AERN.Basics.RefinementOrder.RoundedBasis
     Numeric.AERN.Basics.RefinementOrder.RoundedLattice
-    Numeric.AERN.Basics.Granularity
-    Numeric.AERN.Basics.CInterval
-    Numeric.AERN.Basics.CInterval.Granularity
-    Numeric.AERN.Basics.CInterval.NumericOrder
-    Numeric.AERN.Basics.CInterval.RefinementOrder
-    Numeric.AERN.Basics.Interval
-    Numeric.AERN.Basics.Interval.Granularity
+    Numeric.AERN.Basics.Interval.Basics
     Numeric.AERN.Basics.Interval.NumericOrder
     Numeric.AERN.Basics.Interval.RefinementOrder
-    Numeric.AERN.Basics.Laws.Relation
-    Numeric.AERN.Basics.Laws.SemidecidableRelation
-    Numeric.AERN.Basics.Laws.Operation
-    Numeric.AERN.Basics.Laws.RoundedOperation
-    Numeric.AERN.Basics.Laws.OperationRelation
-    Numeric.AERN.Misc.QuickCheck
+
     
