@@ -8,8 +8,18 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
+    
+    Instances of Double required for serving as interval endpoints,
+    namely providing granularity, poset, lattice, rounded field and 
+    rounded elementary operations.
 -}
-module Numeric.AERN.RealArithmetic.Basis.Double where
+module Numeric.AERN.RealArithmetic.Basis.Double 
+(
+   testsDoubleEq, testsDoubleSemidecidableEq, 
+   testsDoublePoset, testsDoubleSemidecidablePoset, 
+   testsDoubleLattice
+)
+where
 
 import Prelude hiding (EQ,LT,GT)
 
