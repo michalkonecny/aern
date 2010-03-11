@@ -10,7 +10,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    A class of interval datatypes and associated functions related to granularity and extrema.
+    A class of interval datatypes.
 -}
 module Numeric.AERN.Basics.CInterval where
 
@@ -53,71 +53,3 @@ propIntervalConsistentAntiConsistent i =
     where
     (l,h) = getEndpoints i
 
-{-|
-    Extract granularity from an interval's endpoints.
--}
-getGranularityInterval :: 
-    (CInterval i, HasGranularity (Endpoint i), 
-     NumOrd.Lattice (Granularity (Endpoint i))) =>
-    i -> Granularity (Endpoint i)
-getGranularityInterval i =
-    NumOrd.min (getGranularity l) (getGranularity h)
-    where
-    (l,h) = getEndpoints i
-
-{-|
-    Adjust granularity of an interval's endpoints, rounding outwards.
--}
-setMinGranularityOutInterval :: 
-    (CInterval i, CanSetGranularityRoundedByNumericOrder (Endpoint i), 
-     NumOrd.Lattice (Granularity (Endpoint i))) =>
-    (Granularity (Endpoint i)) -> i -> i
-setMinGranularityOutInterval gran i =
-    mapBothEndpoints (setMinGranularityDn gran) (setMinGranularityUp gran) i
-
-{-|
-    Adjust granularity of an interval's endpoints, rounding inwards.
--}
-setMinGranularityInInterval :: 
-    (CInterval i, CanSetGranularityRoundedByNumericOrder (Endpoint i), 
-     NumOrd.Lattice (Granularity (Endpoint i))) =>
-    (Granularity (Endpoint i)) -> i -> i
-setMinGranularityInInterval gran i =
-    mapBothEndpoints (setMinGranularityUp gran) (setMinGranularityDn gran) i
-
-{-|
-    Set granularity of an interval's endpoints, rounding outwards.
--}
-setGranularityOutInterval :: 
-    (CInterval i, CanSetGranularityRoundedByNumericOrder (Endpoint i), 
-     NumOrd.Lattice (Granularity (Endpoint i))) =>
-    (Granularity (Endpoint i)) -> i -> i
-setGranularityOutInterval gran i =
-    mapBothEndpoints (setGranularityDn gran) (setGranularityUp gran) i
-
-{-|
-    Set granularity of an interval's endpoints, rounding inwards.
--}
-setGranularityInInterval :: 
-    (CInterval i, CanSetGranularityRoundedByNumericOrder (Endpoint i), 
-     NumOrd.Lattice (Granularity (Endpoint i))) =>
-    (Granularity (Endpoint i)) -> i -> i
-setGranularityInInterval gran i =
-    mapBothEndpoints (setGranularityUp gran) (setGranularityDn gran) i
-    
-leastInterval ::
-     (CInterval i, NumOrd.HasLeast (Endpoint i)) => i
-leastInterval = fromEndpoints (NumOrd.least, NumOrd.least)
-    
-highestInterval ::
-     (CInterval i, NumOrd.HasHighest (Endpoint i)) => i
-highestInterval = fromEndpoints (NumOrd.highest, NumOrd.highest)
-
-bottomInterval ::
-     (CInterval i, NumOrd.HasExtrema (Endpoint i)) => i
-bottomInterval = fromEndpoints (NumOrd.least, NumOrd.highest)
-
-topInterval ::
-     (CInterval i, NumOrd.HasExtrema (Endpoint i)) => i
-topInterval = fromEndpoints (NumOrd.highest, NumOrd.least)
-    

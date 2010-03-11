@@ -61,9 +61,11 @@ Library
     Numeric.AERN.Basics.RefinementOrder.RoundedLattice
     Numeric.AERN.Basics.Granularity
     Numeric.AERN.Basics.CInterval
+    Numeric.AERN.Basics.CInterval.Granularity
     Numeric.AERN.Basics.CInterval.NumericOrder
     Numeric.AERN.Basics.CInterval.RefinementOrder
     Numeric.AERN.Basics.Interval
+    Numeric.AERN.Basics.Interval.Granularity
     Numeric.AERN.Basics.Interval.NumericOrder
     Numeric.AERN.Basics.Interval.RefinementOrder
     Numeric.AERN.Basics.Laws.Relation

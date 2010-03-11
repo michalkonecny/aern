@@ -63,3 +63,11 @@ compareIntervalRef i1 i2 =
     where
     effort = maybeCompareDefaultEffortIntervalRef i1
 
+    
+bottomInterval ::
+     (CInterval i, NumOrd.HasExtrema (Endpoint i)) => i
+bottomInterval = fromEndpoints (NumOrd.least, NumOrd.highest)
+
+topInterval ::
+     (CInterval i, NumOrd.HasExtrema (Endpoint i)) => i
+topInterval = fromEndpoints (NumOrd.highest, NumOrd.least)

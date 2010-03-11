@@ -32,3 +32,13 @@ instance (NumOrd.Lattice e) => (NumOrd.Lattice (Interval e))
     where
     min = minInterval 
     max = maxInterval 
+
+instance (NumOrd.HasLeast e) => (NumOrd.HasLeast (Interval e))
+    where
+    least = leastInterval
+    
+instance (NumOrd.HasHighest e) => (NumOrd.HasHighest (Interval e))
+    where
+    highest = highestInterval
+    
+    
