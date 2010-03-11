@@ -34,7 +34,7 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Data.Maybe
 import Data.List (sort)
 import Test.QuickCheck
-import Test.Framework (testGroup)
+import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 instance HasGranularity Double where
@@ -50,6 +50,7 @@ propDoubleEqSymmetric = propEqSymmetric
 propDoubleEqTransitive :: Double -> Double -> Double -> Bool
 propDoubleEqTransitive = propEqTransitive
 
+testsDoubleEq :: Test
 testsDoubleEq =
     testGroup "Double (==)" 
         [
@@ -77,6 +78,7 @@ propDoubleSemidecidableEqSymmetric = propSemidecidableEqSymmetric
 propDoubleSemidecidableEqTransitive :: Double -> Double -> Double -> Bool
 propDoubleSemidecidableEqTransitive = propSemidecidableEqTransitive
 
+testsDoubleSemidecidableEq :: Test
 testsDoubleSemidecidableEq =
     testGroup "Double (==?)" 
         [
@@ -115,6 +117,7 @@ propDoubleSemidecidablePosetTransitive = NumOrd.propSemidecidablePosetTransitive
 propDoubleExtremaInSemidecidablePoset :: Double -> Bool
 propDoubleExtremaInSemidecidablePoset = NumOrd.propExtremaInSemidecidablePoset
 
+testsDoubleSemidecidablePoset :: Test
 testsDoubleSemidecidablePoset =
     testGroup "Double (>=?)" 
         [
@@ -152,6 +155,7 @@ propDoublePosetTransitive = NumOrd.propPosetTransitive
 propDoubleExtremaInPoset :: Double -> Bool
 propDoubleExtremaInPoset = NumOrd.propExtremaInPoset
 
+testsDoublePoset :: Test
 testsDoublePoset =
     testGroup "Double (>=)" 
         [
@@ -214,7 +218,7 @@ propDoubleLatticeMeetAssocative = NumOrd.propLatticeMeetAssocative
 propDoubleLatticeDistributive :: UniformlyOrderedTriple Double -> Bool
 propDoubleLatticeDistributive = NumOrd.propLatticeDistributive
 
-
+testsDoubleLattice :: Test
 testsDoubleLattice =
     testGroup "Double (min,max)" 
         [
