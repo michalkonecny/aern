@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-|
-    Module      :  Numeric.AERN.Basics.PartialOrdering
+    Module      :  Numeric.AERN.Basics.Exception
     Description :  extension of Prelude.Ordering with non-comparable variant  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
