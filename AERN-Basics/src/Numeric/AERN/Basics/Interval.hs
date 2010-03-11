@@ -54,6 +54,11 @@ instance CInterval (Interval e) where
         where
         (l2, h2) = f (l, h)
 
+-- random generation of intervals with no guarantee of consistency: 
+instance (Arbitrary e) => Arbitrary (Interval e)
+    where
+    arbitrary = arbitrary >>= return . fromEndpoints
+
 {-| type for random generation of consistent intervals -}        
 data ConsistentInterval e = ConsistentInterval (Interval e) deriving (Show)
         
