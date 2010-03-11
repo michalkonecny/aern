@@ -136,6 +136,12 @@ propDoublePosetTransitive = NumOrd.propPosetTransitive
 propDoubleExtremaInPoset :: Double -> Bool
 propDoubleExtremaInPoset = NumOrd.propExtremaInPoset
 
+propDoublePosetNaNException :: Double -> Bool
+propDoublePosetNaNException =
+    NumOrd.propPosetIllegalArgException nan
+    where
+    nan = 0/0  
+    
 testsDoublePoset =
     testGroup "Double (>=)" 
         [
@@ -146,6 +152,8 @@ testsDoublePoset =
          testProperty "transitive" propDoublePosetTransitive
         ,
          testProperty "extrema" propDoubleExtremaInPoset
+        ,
+         testProperty "NaN exception" propDoublePosetNaNException
         ]
 
 instance NumOrd.Lattice Double where
@@ -160,12 +168,17 @@ instance NumOrd.Lattice Double where
            _ -> throw (AERNException $ "illegal Double argument: NumOrd.Lattice.min " 
                         ++ show a ++ " " ++ show b) 
     
+
+    
 instance NumOrd.RoundedLattice Double where
     maxUpEff _ = max
     maxDnEff _ = max
     minUpEff _ = min
     minDnEff _ = min
     minmaxDefaultEffort _ = []
+
+
+
 
 instance ArbitraryOrderedTuple Double where
     {--------------- pairs --------------}
