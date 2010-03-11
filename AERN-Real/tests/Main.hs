@@ -11,6 +11,7 @@
 module Main where
 
 import Numeric.AERN.RealArithmetic.Basis.Double
+import Numeric.AERN.RealArithmetic.Interval.Double
 
 import Test.Framework (defaultMain)
 
@@ -18,7 +19,11 @@ main = defaultMain tests
 
 tests = 
     [
+       -- Double:
        testsDoubleEq, testsDoubleSemidecidableEq,
        testsDoublePoset, testsDoubleSemidecidablePoset,
-       testsDoubleLattice
+       testsDoubleLattice,
+       -- DI:
+       testsDISemidecidableEq,
+       testsDISemidecidablePoset
     ]
