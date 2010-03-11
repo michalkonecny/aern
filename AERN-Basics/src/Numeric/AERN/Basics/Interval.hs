@@ -1,6 +1,4 @@
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.Basics.Interval
     Description :  a minimal interval datatype  
@@ -20,8 +18,6 @@ module Numeric.AERN.Basics.Interval
 where
 
 import Numeric.AERN.Basics.Granularity
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.CInterval
 
 {-|
@@ -51,33 +47,4 @@ instance CInterval (Interval e) where
         where
         (l2, h2) = f (l, h)
 
-instance (HasGranularity e, NumOrd.Lattice (Granularity e)) => 
-         HasGranularity (Interval e)
-    where
-    type Granularity (Interval e) = Granularity e
-    getGranularity = getGranularityInterval
-
-instance (CanSetGranularityRoundedByNumericOrder e, NumOrd.Lattice (Granularity e)) => 
-         CanSetGranularityRoundedByRefinementOrder (Interval e)
-    where
-    setGranularityOut = setGranularityOutInterval
-    setGranularityIn = setGranularityInInterval
-    setMinGranularityOut = setMinGranularityOutInterval
-    setMinGranularityIn = setMinGranularityInInterval
-    
-instance (NumOrd.HasLeast e) => (NumOrd.HasLeast (Interval e))
-    where
-    least = leastInterval
-    
-instance (NumOrd.HasHighest e) => (NumOrd.HasHighest (Interval e))
-    where
-    highest = highestInterval
-    
-instance (NumOrd.HasExtrema e) => (RefOrd.HasTop (Interval e))
-    where
-    top = topInterval
-    
-instance (NumOrd.HasExtrema e) => (RefOrd.HasBottom (Interval e))
-    where
-    bottom = bottomInterval
     

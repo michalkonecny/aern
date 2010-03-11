@@ -28,5 +28,14 @@ instance (NumOrd.SemidecidablePoset e) => (RefOrd.SemidecidablePoset (Interval e
     maybeCompare = maybeCompareIntervalRef
     maybeCompareDefaultEffort = maybeCompareDefaultEffortIntervalRef
 
+    
+instance (NumOrd.HasExtrema e) => (RefOrd.HasTop (Interval e))
+    where
+    top = topInterval
+    
+instance (NumOrd.HasExtrema e) => (RefOrd.HasBottom (Interval e))
+    where
+    bottom = bottomInterval
+
 -- TODO: add instances for Basis, OuterRoundedBasis, InnerRoundedBasis
 --       Lattice, OuterRoundedLattice, InnerRoundedLattice    

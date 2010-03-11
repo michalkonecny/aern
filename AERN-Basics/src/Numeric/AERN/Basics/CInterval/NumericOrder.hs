@@ -107,4 +107,12 @@ maxInterval i1 i2 =
     (l1, h1) = getEndpoints i1
     (l2, h2) = getEndpoints i2
 
+leastInterval ::
+     (CInterval i, NumOrd.HasLeast (Endpoint i)) => i
+leastInterval = fromEndpoints (NumOrd.least, NumOrd.least)
+    
+highestInterval ::
+     (CInterval i, NumOrd.HasHighest (Endpoint i)) => i
+highestInterval = fromEndpoints (NumOrd.highest, NumOrd.highest)
+
     
