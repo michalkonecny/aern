@@ -11,6 +11,7 @@
 module Main where
 
 import Numeric.AERN.RealArithmetic.Basis.Double
+import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 
 import Test.Framework (defaultMain)
 
