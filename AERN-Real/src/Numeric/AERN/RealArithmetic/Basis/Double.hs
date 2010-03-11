@@ -124,6 +124,12 @@ instance NumOrd.Poset Double where
            _ -> throw (AERNException $ "illegal Double argument: NumOrd.Poset.compare " 
                         ++ show a ++ " " ++ show b) 
 
+propDoublePosetNaNException :: Double -> Bool
+propDoublePosetNaNException =
+    NumOrd.propPosetIllegalArgException nan
+    where
+    nan = 0/0  
+    
 propDoublePosetEqCompatible :: Double -> Double -> Bool
 propDoublePosetEqCompatible = NumOrd.propPosetEqCompatible
 
@@ -136,15 +142,11 @@ propDoublePosetTransitive = NumOrd.propPosetTransitive
 propDoubleExtremaInPoset :: Double -> Bool
 propDoubleExtremaInPoset = NumOrd.propExtremaInPoset
 
-propDoublePosetNaNException :: Double -> Bool
-propDoublePosetNaNException =
-    NumOrd.propPosetIllegalArgException nan
-    where
-    nan = 0/0  
-    
 testsDoublePoset =
     testGroup "Double (>=)" 
         [
+         testProperty "NaN exception" propDoublePosetNaNException
+        ,
          testProperty "equality compatible" propDoublePosetEqCompatible
         ,
          testProperty "anti symmetric" propDoublePosetAntiSymmetric
@@ -152,8 +154,6 @@ testsDoublePoset =
          testProperty "transitive" propDoublePosetTransitive
         ,
          testProperty "extrema" propDoubleExtremaInPoset
-        ,
-         testProperty "NaN exception" propDoublePosetNaNException
         ]
 
 instance NumOrd.Lattice Double where
@@ -168,7 +168,68 @@ instance NumOrd.Lattice Double where
            _ -> throw (AERNException $ "illegal Double argument: NumOrd.Lattice.min " 
                         ++ show a ++ " " ++ show b) 
     
+propDoubleLatticeNaNException :: Double -> Bool
+propDoubleLatticeNaNException =
+    NumOrd.propLatticeIllegalArgException nan
+    where
+    nan = 0/0  
+    
+propDoubleLatticePosetCompatible :: UniformlyOrderedPair Double -> Bool
+propDoubleLatticePosetCompatible = NumOrd.propLatticePosetCompatible
 
+propDoubleLatticeJoinAboveBoth :: UniformlyOrderedPair Double -> Bool
+propDoubleLatticeJoinAboveBoth = NumOrd.propLatticeJoinAboveBoth
+
+propDoubleLatticeMeetBelowBoth :: UniformlyOrderedPair Double -> Bool
+propDoubleLatticeMeetBelowBoth = NumOrd.propLatticeMeetBelowBoth
+
+propDoubleLatticeJoinIdempotent :: Double -> Bool
+propDoubleLatticeJoinIdempotent = NumOrd.propLatticeJoinIdempotent
+
+propDoubleLatticeJoinCommutative :: UniformlyOrderedPair Double -> Bool
+propDoubleLatticeJoinCommutative = NumOrd.propLatticeJoinCommutative
+
+propDoubleLatticeJoinAssocative :: UniformlyOrderedTriple Double -> Bool
+propDoubleLatticeJoinAssocative = NumOrd.propLatticeJoinAssocative
+
+propDoubleLatticeMeetIdempotent :: Double -> Bool
+propDoubleLatticeMeetIdempotent = NumOrd.propLatticeMeetIdempotent
+
+propDoubleLatticeMeetCommutative :: UniformlyOrderedPair Double -> Bool
+propDoubleLatticeMeetCommutative = NumOrd.propLatticeMeetCommutative
+
+propDoubleLatticeMeetAssocative :: UniformlyOrderedTriple Double -> Bool
+propDoubleLatticeMeetAssocative = NumOrd.propLatticeMeetAssocative
+
+propDoubleLatticeDistributive :: UniformlyOrderedTriple Double -> Bool
+propDoubleLatticeDistributive = NumOrd.propLatticeDistributive
+
+
+testsDoubleLattice =
+    testGroup "Double (min,max)" 
+        [
+         testProperty "NaN exception" propDoubleLatticeNaNException
+        ,
+         testProperty "poset compatible" propDoubleLatticePosetCompatible
+        ,
+         testProperty "join above" propDoubleLatticeJoinAboveBoth
+        ,
+         testProperty "meet below" propDoubleLatticeMeetBelowBoth
+        ,
+         testProperty "join idempotent" propDoubleLatticeJoinIdempotent
+        ,
+         testProperty "join commutative" propDoubleLatticeJoinCommutative
+        ,
+         testProperty "join associative" propDoubleLatticeJoinAssocative
+        ,
+         testProperty "meet idempotent" propDoubleLatticeMeetIdempotent
+        ,
+         testProperty "meet commutative" propDoubleLatticeMeetCommutative
+        ,
+         testProperty "meet associative" propDoubleLatticeMeetAssocative
+        ,
+         testProperty "distributive" propDoubleLatticeDistributive
+        ]
     
 instance NumOrd.RoundedLattice Double where
     maxUpEff _ = max
@@ -176,8 +237,6 @@ instance NumOrd.RoundedLattice Double where
     minUpEff _ = min
     minDnEff _ = min
     minmaxDefaultEffort _ = []
-
-
 
 
 instance ArbitraryOrderedTuple Double where

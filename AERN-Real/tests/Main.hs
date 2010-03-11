@@ -19,5 +19,6 @@ main = defaultMain tests
 tests = 
     [
        testsDoubleEq, testsDoubleSemidecidableEq,
-       testsDoublePoset, testsDoubleSemidecidablePoset
+       testsDoublePoset, testsDoubleSemidecidablePoset,
+       testsDoubleLattice
     ]
