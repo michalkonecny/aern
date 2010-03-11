@@ -73,4 +73,5 @@ Library
     Numeric.AERN.Basics.Laws.Operation
     Numeric.AERN.Basics.Laws.RoundedOperation
     Numeric.AERN.Basics.Laws.OperationRelation
+    Numeric.AERN.Misc.QuickCheck
     
