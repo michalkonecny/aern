@@ -49,5 +49,7 @@ Library
         AERN-Basics == 2010.1
   Exposed-modules:
     Numeric.AERN.RealArithmetic.Basis.Double
+    Numeric.AERN.RealArithmetic.Basis.Double.Equality
     Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
+    Numeric.AERN.RealArithmetic.Interval.Double
     

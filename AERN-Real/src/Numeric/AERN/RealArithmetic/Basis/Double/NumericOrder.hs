@@ -9,8 +9,9 @@
     Portability :  portable
     
     Numeric order poset and lattice instances for Double.
+    
+    This is a private module reexported publicly via its parent.
 -}
-
 module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 (
    testsDoublePoset, testsDoubleSemidecidablePoset, 
@@ -20,7 +21,7 @@ where
 
 import Prelude hiding (EQ,LT,GT)
 
-import Numeric.AERN.RealArithmetic.Basis.Double
+import Numeric.AERN.RealArithmetic.Basis.Double.Equality
 
 import Numeric.AERN.Basics.Exception
 import Control.Exception

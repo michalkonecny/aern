@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Basis.Double
-    Description :  Some instances for Double.  
+    Description :  Instances for Double as interval endpoints.  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -15,74 +15,19 @@
 -}
 module Numeric.AERN.RealArithmetic.Basis.Double 
 (
-   testsDoubleEq, testsDoubleSemidecidableEq 
+   module Numeric.AERN.RealArithmetic.Basis.Double.Equality,
+   module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 )
 where
 
+import Numeric.AERN.RealArithmetic.Basis.Double.Equality
+import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
+
 import Numeric.AERN.Basics.Granularity
-import Numeric.AERN.Basics.Equality
-
-import Numeric.AERN.Basics.Exception
-import Control.Exception
-
-import Data.Maybe
-import Data.List (sort)
-
-import Test.QuickCheck
-import Numeric.AERN.Misc.QuickCheck
-import Test.Framework (testGroup, Test)
-import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 instance HasGranularity Double where
     type Granularity Double = Int
     getGranularity _ = 53
 
-propDoubleEqReflexive :: Double -> Bool
-propDoubleEqReflexive = propEqReflexive 
-
-propDoubleEqSymmetric :: Double -> Double -> Bool
-propDoubleEqSymmetric = propEqSymmetric
-
-propDoubleEqTransitive :: Double -> Double -> Double -> Bool
-propDoubleEqTransitive = propEqTransitive
-
-testsDoubleEq :: Test
-testsDoubleEq =
-    testGroup "Double (==)" 
-        [
-         testProperty "reflexive" propDoubleEqReflexive
-        ,
-         testProperty "symmetric" propDoubleEqSymmetric
-        ,
-         testProperty "transitive" propDoubleEqTransitive
-        ]
-
-instance SemidecidableEq Double where
-    maybeEqualEff _ a b =
-        case (isNaN a, isNaN b) of
-           (False, False) -> Just $ a == b  
-           _ -> throw (AERNException $ "illegal Double argument: maybeEqual " 
-                        ++ show a ++ " " ++ show b)
-    maybeEqualDefaultEffort _ = []
-
-propDoubleSemidecidableEqReflexive :: Double -> Bool
-propDoubleSemidecidableEqReflexive = propSemidecidableEqReflexive
-
-propDoubleSemidecidableEqSymmetric :: Double -> Double -> Bool
-propDoubleSemidecidableEqSymmetric = propSemidecidableEqSymmetric
-
-propDoubleSemidecidableEqTransitive :: Double -> Double -> Double -> Bool
-propDoubleSemidecidableEqTransitive = propSemidecidableEqTransitive
-
-testsDoubleSemidecidableEq :: Test
-testsDoubleSemidecidableEq =
-    testGroup "Double (==?)" 
-        [
-         testProperty "reflexive" propDoubleSemidecidableEqReflexive
-        ,
-         testProperty "symmetric" propDoubleSemidecidableEqSymmetric
-        ,
-         testProperty "transitive" propDoubleSemidecidableEqTransitive
-        ]
 
     
