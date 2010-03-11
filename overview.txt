@@ -1,33 +1,41 @@
+Misc
+   QuickCheck
 Basics
    Mutable
+   Exception
    Effort (EffortIndicator type)
    Equality ==?
-   PartialOrdering NC
-   Extrema top, bottom
+   PartialOrdering (NC)
    NumericOrder (NumOrd)
+     Extrema (least, highest)
      Poset (<=)
-     Distance
+     Distance TODO
      Lattice (max, min)
      SemidecidablePoset
        (<=?, maybeCompareDefaultEffort)
      RoundedLattice (maxUp, minmaxDefaultEffort)
    RefinementOrder (RefOrd)
+     Extrema (top, bottom)
      Poset |<=
      Basis |\/? consistent
      Lattice |\/, |/\
      SemidecidablePoset |<=?
-     Precision
-     Consistency
+     Precision TODO
+     Consistency TODO
      OuterRoundedBasis <|\/>? maybeConsistent
      OuterRoundedLattice <|\/>
      InnerRoundedBasis >|\/<?
      InnerRoundedLattice >|\/<
    Granularity setMinGranularity, getMaxGranularity
-   Interval (endpoints)
-     GenericImplementation
+   CInterval class (endpoints)
+       Granularity instance helpers
        NumericOrder
        RefinementOrder
-   Product (list, map) instances
+   Interval datatype
+       Granularity instances
+       NumericOrder
+       RefinementOrder
+   Product (list, map) instances TODO
      NumericOrder instances
      RefinementOrder instances
    Laws
@@ -38,7 +46,7 @@ Basics
      OperationRelation (LawOR) supremum
      RoundedOperationRelation (LawRndOR) ..ditto..
 
-RealArithmetic
+RealArithmetic TODO
   NumericOrderRounding
     Numerals int, ratio, double
     RoundedRing +^, +_, *^, *_
