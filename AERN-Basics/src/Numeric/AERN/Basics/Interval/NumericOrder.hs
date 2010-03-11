@@ -45,4 +45,6 @@ instance (NumOrd.HasHighest e) => (NumOrd.HasHighest (Interval e))
     where
     highest = highestInterval
     
+instance (NumOrd.HasExtrema e) => (NumOrd.HasExtrema (Interval e))
+
     
