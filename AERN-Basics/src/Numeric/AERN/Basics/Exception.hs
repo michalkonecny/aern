@@ -29,9 +29,20 @@ data AERNException =
 
 instance Exception AERNException
 
-catchAERNExceptions :: a -> Either String a
-catchAERNExceptions e =
-    unsafePerformIO $
-        catch (return (Right e))
-            (\(AERNException msg) -> return (Left msg))
+evalCatchAERNExceptions :: t -> Either String t
+evalCatchAERNExceptions a =
+    unsafePerformIO $ catch (evaluateEmbed a) handler
+    where
+    handler (AERNException msg) = 
+        return (Left msg)
+    evaluateEmbed a =
+        do
+        aa <- evaluate a
+        return $ Right aa
+
+raisesAERNException :: t -> Bool
+raisesAERNException a =
+    case (evalCatchAERNExceptions a) of
+        (Left _) -> True
+        _ -> False
 
