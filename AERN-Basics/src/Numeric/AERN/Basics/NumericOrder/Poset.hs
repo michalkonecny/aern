@@ -15,6 +15,7 @@
 
 module Numeric.AERN.Basics.NumericOrder.Poset where
 
+import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.NumericOrder.Extrema
 import Numeric.AERN.Basics.NumericOrder.SemidecidablePoset
@@ -76,3 +77,9 @@ propPosetTransitive = transitive (<=)
     
 propExtremaInPoset :: (Poset t, HasExtrema t) => t -> Bool
 propExtremaInPoset = extrema (<=) least highest
+
+propPosetIllegalArgException :: (Poset t) => t -> t -> Bool
+propPosetIllegalArgException illegalArg d =
+    and $ map raisesAERNException 
+                [compare d illegalArg, compare illegalArg d] 
+
