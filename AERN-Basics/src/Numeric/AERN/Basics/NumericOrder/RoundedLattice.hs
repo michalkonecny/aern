@@ -66,9 +66,43 @@ propRoundedLatticePosetCompatible ::
 propRoundedLatticePosetCompatible (UniformlyOrderedPair (e1,e2)) = 
     (roundedJoinOfOrderedPair (<=) minUp e1 e2)
     && 
-    (roundedMeetOfOrderedPair (<=) maxDn e1 e2) 
+    (roundedMeetOfOrderedPair (<=) maxDn e1 e2)
 
--- properties of RoundedLattice (TODO)
+propRoundedLatticeJoinAboveBoth :: (Poset t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
+propRoundedLatticeJoinAboveBoth (UniformlyOrderedPair (e1,e2)) = joinAboveOperands (<=) maxUp e1 e2
+
+propRoundedLatticeMeetBelowBoth :: (Poset t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
+propRoundedLatticeMeetBelowBoth (UniformlyOrderedPair (e1,e2)) = meetBelowOperands (<=) minDn e1 e2
+
+propRoundedLatticeJoinIdempotent :: (Poset t, RoundedLattice t) => t -> Bool
+propRoundedLatticeJoinIdempotent = roundedIdempotent (<=) maxUp maxDn
+
+propRoundedLatticeJoinCommutative :: (Poset t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
+propRoundedLatticeJoinCommutative (UniformlyOrderedPair (e1,e2)) = roundedCommutative (<=) maxUp maxDn e1 e2
+
+propRoundedLatticeJoinAssocative :: (Poset t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
+propRoundedLatticeJoinAssocative (UniformlyOrderedTriple (e1,e2,e3)) = roundedAssociative (<=) maxUp maxDn e1 e2 e3
+
+propRoundedLatticeMeetIdempotent :: (Poset t, RoundedLattice t) => t -> Bool
+propRoundedLatticeMeetIdempotent = roundedIdempotent (<=) minUp minDn
+
+propRoundedLatticeMeetCommutative :: (Poset t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
+propRoundedLatticeMeetCommutative (UniformlyOrderedPair (e1,e2)) = roundedCommutative (<=) minUp minDn e1 e2
+
+propRoundedLatticeMeetAssocative :: (Poset t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
+propRoundedLatticeMeetAssocative (UniformlyOrderedTriple (e1,e2,e3)) = roundedAssociative (<=) minUp minDn e1 e2 e3
+
+{- optional properties: -}
+propRoundedLatticeModular :: (Poset t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
+propRoundedLatticeModular (UniformlyOrderedTriple (e1,e2,e3)) = roundedModular (<=) maxUp minUp maxDn minDn e1 e2 e3
+
+propRoundedLatticeDistributive :: (Poset t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
+propRoundedLatticeDistributive (UniformlyOrderedTriple (e1,e2,e3)) = 
+        (roundedLeftDistributive  (<=) maxUp minUp maxDn minDn e1 e2 e3)
+        && 
+        (roundedLeftDistributive  (<=) maxUp minUp maxDn minDn e1 e2 e3)
+
+-- further properties of RoundedLattice (TODO)
     
 {-|
     A type with directed-rounding lattice operations

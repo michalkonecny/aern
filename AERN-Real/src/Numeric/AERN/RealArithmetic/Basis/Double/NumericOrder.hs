@@ -15,7 +15,7 @@
 module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 (
    testsDoublePoset, testsDoubleSemidecidablePoset, 
-   testsDoubleLattice
+   testsDoubleLattice, testsDoubleRoundedLattice
 )
 where
 
@@ -195,11 +195,77 @@ testsDoubleLattice =
         ]
     
 instance NumOrd.RoundedLattice Double where
-    maxUpEff _ = max
-    maxDnEff _ = max
-    minUpEff _ = min
-    minDnEff _ = min
+    maxUpEff _ = NumOrd.max
+    maxDnEff _ = NumOrd.max
+    minUpEff _ = NumOrd.min
+    minDnEff _ = NumOrd.min
     minmaxDefaultEffort _ = []
+
+propDoubleRoundedLatticeNaNException :: Double -> Bool
+propDoubleRoundedLatticeNaNException =
+    NumOrd.propRoundedLatticeIllegalArgException nan
+    where
+    nan = 0/0  
+    
+propDoubleRoundedLatticePosetCompatible :: UniformlyOrderedPair Double -> Bool
+propDoubleRoundedLatticePosetCompatible = NumOrd.propRoundedLatticePosetCompatible
+
+propDoubleRoundedLatticeJoinAboveBoth :: UniformlyOrderedPair Double -> Bool
+propDoubleRoundedLatticeJoinAboveBoth = NumOrd.propRoundedLatticeJoinAboveBoth
+
+propDoubleRoundedLatticeMeetBelowBoth :: UniformlyOrderedPair Double -> Bool
+propDoubleRoundedLatticeMeetBelowBoth = NumOrd.propRoundedLatticeMeetBelowBoth
+
+propDoubleRoundedLatticeJoinIdempotent :: Double -> Bool
+propDoubleRoundedLatticeJoinIdempotent = NumOrd.propRoundedLatticeJoinIdempotent
+
+propDoubleRoundedLatticeJoinCommutative :: UniformlyOrderedPair Double -> Bool
+propDoubleRoundedLatticeJoinCommutative = NumOrd.propRoundedLatticeJoinCommutative
+
+propDoubleRoundedLatticeJoinAssocative :: UniformlyOrderedTriple Double -> Bool
+propDoubleRoundedLatticeJoinAssocative = NumOrd.propRoundedLatticeJoinAssocative
+
+propDoubleRoundedLatticeMeetIdempotent :: Double -> Bool
+propDoubleRoundedLatticeMeetIdempotent = NumOrd.propRoundedLatticeMeetIdempotent
+
+propDoubleRoundedLatticeMeetCommutative :: UniformlyOrderedPair Double -> Bool
+propDoubleRoundedLatticeMeetCommutative = NumOrd.propRoundedLatticeMeetCommutative
+
+propDoubleRoundedLatticeMeetAssocative :: UniformlyOrderedTriple Double -> Bool
+propDoubleRoundedLatticeMeetAssocative = NumOrd.propRoundedLatticeMeetAssocative
+
+propDoubleRoundedLatticeModular :: UniformlyOrderedTriple Double -> Bool
+propDoubleRoundedLatticeModular = NumOrd.propRoundedLatticeModular
+
+propDoubleRoundedLatticeDistributive :: UniformlyOrderedTriple Double -> Bool
+propDoubleRoundedLatticeDistributive = NumOrd.propRoundedLatticeDistributive
+
+testsDoubleRoundedLattice :: Test
+testsDoubleRoundedLattice =
+    testGroup "Double (min,max) treated as rounded" 
+        [
+         testProperty "NaN exception" propDoubleRoundedLatticeNaNException
+        ,
+         testProperty "poset compatible" propDoubleRoundedLatticePosetCompatible
+        ,
+         testProperty "join above" propDoubleRoundedLatticeJoinAboveBoth
+        ,
+         testProperty "meet below" propDoubleRoundedLatticeMeetBelowBoth
+        ,
+         testProperty "join idempotent" propDoubleRoundedLatticeJoinIdempotent
+        ,
+         testProperty "join commutative" propDoubleRoundedLatticeJoinCommutative
+        ,
+         testProperty "join associative" propDoubleRoundedLatticeJoinAssocative
+        ,
+         testProperty "meet idempotent" propDoubleRoundedLatticeMeetIdempotent
+        ,
+         testProperty "meet commutative" propDoubleRoundedLatticeMeetCommutative
+        ,
+         testProperty "meet associative" propDoubleRoundedLatticeMeetAssocative
+        ,
+         testProperty "distributive" propDoubleRoundedLatticeDistributive
+        ]
 
 
 instance ArbitraryOrderedTuple Double where
