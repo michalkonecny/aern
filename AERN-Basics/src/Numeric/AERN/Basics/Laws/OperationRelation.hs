@@ -12,30 +12,78 @@
 -}
 module Numeric.AERN.Basics.Laws.OperationRelation 
 (
-    joinMeetOfOrderedPair, joinAboveOperands, meetBelowOperands,
-    partialJoinOfOrderedPair, partialJoinAboveOperands
+    joinOfOrderedPair, meetOfOrderedPair, joinAboveOperands, meetBelowOperands,
+    partialJoinOfOrderedPair, partialJoinAboveOperands,
+    roundedJoinOfOrderedPair, roundedMeetOfOrderedPair
 )
 where
 
-joinMeetOfOrderedPair (<=) (/\) (\/) e1 e2 =
-    ((not (e1 <= e2)) || ((e1 \/ e2 == e2) && (e1 /\ e2 == e1)))
-    &&
-    (((e1 <= e2) && (e1 \/ e2 == e2)) || (not (e1 /\ e2 == e1)))
-    &&
-    (((e1 <= e2) && (e1 /\ e2 == e1)) || (not (e1 \/ e2 == e2)))
+import Numeric.AERN.Misc.Bool
+import Numeric.AERN.Misc.Maybe
 
+joinOfOrderedPair ::
+    (Eq t) =>
+    (t -> t -> Bool) ->
+    (t -> t -> t) ->
+    t -> t -> Bool    
+joinOfOrderedPair (<=) (\/) e1 e2 =
+    (e1 <= e2) <===> (e1 \/ e2 == e2)
+
+meetOfOrderedPair ::
+    (Eq t) =>
+    (t -> t -> Bool) ->
+    (t -> t -> t) ->
+    t -> t -> Bool    
+meetOfOrderedPair (<=) (/\) e1 e2 =
+    (e1 <= e2) <===> (e1 /\ e2 == e1)
+
+joinAboveOperands ::
+    (Eq t) =>
+    (t -> t -> Bool) ->
+    (t -> t -> t) ->
+    t -> t -> Bool    
 joinAboveOperands (<=) (\/) e1 e2 =
     (e1 <= (e1 \/ e2)) && (e2 <= (e1 \/ e2))
 
+meetBelowOperands ::
+    (Eq t) =>
+    (t -> t -> Bool) ->
+    (t -> t -> t) ->
+    t -> t -> Bool    
 meetBelowOperands (<=) (/\) e1 e2 =
     ((e1 /\ e2) <= e1) && ((e1 /\ e2) <= e2)
 
+partialJoinOfOrderedPair ::
+    (Eq t) =>
+    (t -> t -> Bool) ->
+    (t -> t -> Maybe t) ->
+    t -> t -> Bool    
 partialJoinOfOrderedPair (<=) (\/?) e1 e2 =
-    ((not (e1 <= e2)) || (e1 \/? e2 == Just e2))
-    &&
-    ((e1 <= e2) || (not (e1 \/? e2 == Just e2)))
+    (defined (e1 \/? e2)) ===>
+    joinOfOrderedPair (<=) (assumeTotal2 (\/?)) e1 e2 
 
+partialJoinAboveOperands ::
+    (Eq t) =>
+    (t -> t -> Bool) ->
+    (t -> t -> Maybe t) ->
+    t -> t -> Bool    
 partialJoinAboveOperands (<=) (\/?) e1 e2 =
-    case e1 \/? e2 of 
-        Nothing -> True
-        Just e ->  (e1 <= e) && (e2 <= e)
+    (defined (e1 \/? e2)) ===>
+    joinAboveOperands (<=) (assumeTotal2 (\/?)) e1 e2
+
+roundedJoinOfOrderedPair ::
+    (Eq t) =>
+    (t -> t -> Bool) ->
+    (t -> t -> t) ->
+    t -> t -> Bool    
+roundedJoinOfOrderedPair (<=) (\/.) e1 e2 =
+    (e1 <= e2) ===> (e1 \/. e2 <= e2)
+
+roundedMeetOfOrderedPair ::
+    (Eq t) =>
+    (t -> t -> Bool) ->
+    (t -> t -> t) ->
+    t -> t -> Bool    
+roundedMeetOfOrderedPair (<=) (/\^) e1 e2 =
+    (e1 <= e2) ===> (e1 <= (e1 /\^ e2))
+

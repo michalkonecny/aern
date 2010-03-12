@@ -15,9 +15,12 @@
 
 module Numeric.AERN.Basics.RefinementOrder.Poset where
 
+import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.RefinementOrder.Extrema
 import Numeric.AERN.Basics.Laws.Relation
+
+import Numeric.AERN.Misc.Bool
 
 import qualified Prelude 
 import Prelude hiding (compare, EQ, LT, GT)
@@ -59,11 +62,14 @@ class (Eq t) => Poset t where
 (⊐) :: (Poset t) => t -> t -> Bool
 (⊐) = (|>)
 
+propPosetIllegalArgException :: (Poset t) => t -> t -> Bool
+propPosetIllegalArgException illegalArg e =
+    and $ map raisesAERNException 
+                [compare e illegalArg, compare illegalArg e]
+
 propPosetEqCompatible :: (Poset t) => t -> t -> Bool
 propPosetEqCompatible e1 e2 =
-    (e1 /= e2 || compare e1 e2 == EQ)
-    &&    
-    (e1 == e2 || compare e1 e2 /= EQ)
+    (e1 == e2) <===> (compare e1 e2 == EQ)
 
 propPosetAntiSymmetric :: (Poset t) => t -> t -> Bool
 propPosetAntiSymmetric e1 e2 = 

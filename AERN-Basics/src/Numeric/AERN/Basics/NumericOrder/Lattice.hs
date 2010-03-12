@@ -41,7 +41,10 @@ propLatticeIllegalArgException illegalArg d =
                 [min d illegalArg, min illegalArg d, max d illegalArg, max illegalArg d] 
 
 propLatticePosetCompatible :: (Poset t, Lattice t) => UniformlyOrderedPair t -> Bool
-propLatticePosetCompatible (UniformlyOrderedPair (e1,e2)) = joinMeetOfOrderedPair (<=) min max e1 e2 
+propLatticePosetCompatible (UniformlyOrderedPair (e1,e2)) = 
+    (joinOfOrderedPair (<=) max e1 e2)
+    && 
+    (meetOfOrderedPair (<=) min e1 e2) 
 
 propLatticeJoinAboveBoth :: (Poset t, Lattice t) => UniformlyOrderedPair t -> Bool
 propLatticeJoinAboveBoth (UniformlyOrderedPair (e1,e2)) = joinAboveOperands (<=) max e1 e2

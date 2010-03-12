@@ -8,9 +8,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Instances of Double required for serving as interval endpoints,
-    namely providing granularity, poset, lattice, rounded field and 
-    rounded elementary operations.
+    miscellaneous utilities for QuickCheck
 -}
 module Numeric.AERN.Misc.QuickCheck where
 

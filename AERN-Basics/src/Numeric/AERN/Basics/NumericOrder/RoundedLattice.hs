@@ -15,15 +15,24 @@
 module Numeric.AERN.Basics.NumericOrder.RoundedLattice 
 where
 
+import Prelude hiding ((<=))
+
+import Numeric.AERN.Basics.Exception
+
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Basics.MaybeBool
+import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
---import Numeric.AERN.Basics.NumericOrder.Extrema
---import Numeric.AERN.Basics.Laws.SemidecidableRelation
+import Numeric.AERN.Basics.NumericOrder.Poset 
+import Numeric.AERN.Basics.NumericOrder.SemidecidablePoset 
+
+import Numeric.AERN.Basics.NumericOrder.Extrema
+import Numeric.AERN.Basics.Laws.SemidecidableRelation
+import Numeric.AERN.Basics.Laws.RoundedOperation
+import Numeric.AERN.Basics.Laws.OperationRelation
 
 {-|
     A type with directed-rounding lattice operations.
@@ -44,6 +53,20 @@ class RoundedLattice t where
     maxDn a b = maxDnEff (minmaxDefaultEffort a) a b 
     minUp a b = minUpEff (minmaxDefaultEffort a) a b 
     minDn a b = minDnEff (minmaxDefaultEffort a) a b 
+
+
+propRoundedLatticeIllegalArgException :: (RoundedLattice t) => t -> t -> Bool
+propRoundedLatticeIllegalArgException illegalArg d =
+    and $ map raisesAERNException $ 
+                concat [[op d illegalArg, op illegalArg d] | op <- [maxUp, maxDn, minUp, minDn]] 
+
+propRoundedLatticePosetCompatible :: 
+    (Poset t, RoundedLattice t) => 
+    UniformlyOrderedPair t -> Bool
+propRoundedLatticePosetCompatible (UniformlyOrderedPair (e1,e2)) = 
+    (roundedJoinOfOrderedPair (<=) minUp e1 e2)
+    && 
+    (roundedMeetOfOrderedPair (<=) maxDn e1 e2) 
 
 -- properties of RoundedLattice (TODO)
     

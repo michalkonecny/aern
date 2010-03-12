@@ -17,7 +17,7 @@ module Numeric.AERN.Basics.RefinementOrder.SemidecidablePoset
 where
 
 import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Basics.MaybeBool
+import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.RefinementOrder.Extrema
