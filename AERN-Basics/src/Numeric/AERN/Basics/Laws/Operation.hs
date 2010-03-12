@@ -18,46 +18,48 @@ module Numeric.AERN.Basics.Laws.Operation
 )
 where
 
+import Numeric.AERN.Basics.Laws.Utilities
+
 --import qualified Algebra.Laws as NP -- numeric-prelude
 
-idempotent :: (Eq t) => (t -> t -> t) -> t -> Bool
-idempotent (*) e = 
-    e * e == e
+idempotent :: (Rel t) -> (Op t) -> t -> Bool
+idempotent (==) (*) e = 
+    (e * e) == e
     
-commutative :: (Eq t2) => (t -> t -> t2) -> t -> t -> Bool
-commutative (*) e1 e2 = 
-    e1 * e2 == e2 * e1
+commutative :: (Rel t) -> (Op t) -> t -> t -> Bool
+commutative (==) (*) e1 e2 = 
+    (e1 * e2) == (e2 * e1)
 
-associative :: (Eq t) => (t -> t -> t) -> t -> t -> t -> Bool
-associative (*) e1 e2 e3 = 
-    (e1 * e2) * e3 == e1 * (e2 * e3)
+associative :: (Rel t) -> (Op t) -> t -> t -> t -> Bool
+associative (==) (*) e1 e2 e3 = 
+    ((e1 * e2) * e3) == (e1 * (e2 * e3))
 
-modular :: (Eq t) => (t -> t -> t) -> (t -> t -> t) -> t -> t -> t -> Bool
-modular (/\) (\/) e1 e2 e3 =
-    (e1 /\ e3) \/ (e2 /\ e3) == ((e1 /\ e3) \/ e2) /\ e3
+modular :: (Rel t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
+modular (==) (/\) (\/) e1 e2 e3 =
+    ((e1 /\ e3) \/ (e2 /\ e3)) == (((e1 /\ e3) \/ e2) /\ e3)
 
-leftDistributive :: (Eq t) => (t -> t -> t) -> (t -> t -> t) -> t -> t -> t -> Bool
-leftDistributive (/\) (\/) e1 e2 e3 =
-    e1 \/ (e2 /\ e3) == (e1 \/ e2) /\ (e1 \/ e3)
+leftDistributive :: (Rel t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
+leftDistributive (==) (/\) (\/) e1 e2 e3 =
+    (e1 \/ (e2 /\ e3)) == ((e1 \/ e2) /\ (e1 \/ e3))
 
-rightDistributive :: (Eq t) => (t -> t -> t) -> (t -> t -> t) -> t -> t -> t -> Bool
-rightDistributive (/\) (\/) e1 e2 e3 =
-    (e2 /\ e3) \/ e1 == (e2 \/ e1) /\ (e3 \/ e1)
+rightDistributive :: (Rel t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
+rightDistributive (==) (/\) (\/) e1 e2 e3 =
+    ((e2 /\ e3) \/ e1) == ((e2 \/ e1) /\ (e3 \/ e1))
 
-partialIdempotent :: (Eq t) => (t -> t -> Maybe t) -> t -> Bool
-partialIdempotent (*?) e = 
+partialIdempotent :: (Rel t) -> (PartOp t) -> t -> Bool
+partialIdempotent (==) (*?) e = 
     case e *? e of 
         Just r -> r == e
         _ -> True
 
-partialCommutative :: (Eq t) => (t -> t -> Maybe t) -> t -> t -> Bool
-partialCommutative (*?) e1 e2 = 
+partialCommutative :: (Rel t) -> (PartOp t) -> t -> t -> Bool
+partialCommutative (==) (*?) e1 e2 = 
     case (e1 *? e2, e2 *? e1) of 
         (Just e12, Just e21) -> e12 == e21 
         _ -> True
 
-partialAssociative :: (Eq t) => (t -> t -> Maybe t) -> t -> t -> t -> Bool
-partialAssociative (*?) e1 e2 e3 = 
+partialAssociative :: (Rel t) -> (PartOp t) -> t -> t -> t -> Bool
+partialAssociative (==) (*?) e1 e2 e3 = 
     case (e1 *? e2, e2 *? e3) of 
         (Just e12, Just e23) -> 
             case (e12 *? e3, e1 *? e23) of

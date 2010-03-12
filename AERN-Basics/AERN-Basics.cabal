@@ -53,6 +53,7 @@ Library
     Numeric.AERN.Basics.CInterval.NumericOrder
     Numeric.AERN.Basics.CInterval.RefinementOrder
     Numeric.AERN.Basics.Interval
+    Numeric.AERN.Basics.Laws.Utilities
     Numeric.AERN.Basics.Laws.Relation
     Numeric.AERN.Basics.Laws.SemidecidableRelation
     Numeric.AERN.Basics.Laws.Operation

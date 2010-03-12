@@ -25,6 +25,10 @@ assumeTotal2 :: (t2 -> t1 -> Maybe t) -> (t2 -> t1 -> t)
 assumeTotal2 f a b =
     case f a b of Just res -> res
 
+completeWith :: t -> (t2 -> t1 -> Maybe t) -> (t2 -> t1 -> t)
+completeWith e (*?) e2 e1 =
+    case e2 *? e1 of Just r -> r; Nothing -> e  
+
 trueOrNothing :: Maybe Bool -> Bool 
 trueOrNothing = nothingOr True
 
