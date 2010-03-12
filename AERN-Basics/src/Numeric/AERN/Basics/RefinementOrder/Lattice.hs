@@ -41,9 +41,9 @@ class (Eq t) => Lattice t where
 
 propLatticePosetCompatible :: (Poset t, Lattice t) => t -> t -> Bool
 propLatticePosetCompatible e1 e2 = 
-    (joinOfOrderedPair (|<=) (|\/) e1 e2) 
+    (joinOfOrderedPair (==) (|<=) (|\/) e1 e2) 
     && 
-    (meetOfOrderedPair (|<=) (|/\) e1 e2) 
+    (meetOfOrderedPair (==) (|<=) (|/\) e1 e2) 
 
 propLatticeJoinAboveBoth :: (Poset t, Lattice t) => t -> t -> Bool
 propLatticeJoinAboveBoth = joinAboveOperands (|<=) (|\/)
@@ -53,32 +53,32 @@ propLatticeMeetBelowBoth :: (Poset t, Lattice t) => t -> t -> Bool
 propLatticeMeetBelowBoth = meetBelowOperands (|<=) (|/\)
 
 propLatticeJoinIdempotent :: (Lattice t) => t -> Bool
-propLatticeJoinIdempotent = idempotent (|\/)
+propLatticeJoinIdempotent = idempotent (==) (|\/)
 
 propLatticeJoinCommutative :: (Lattice t) => t -> t -> Bool
-propLatticeJoinCommutative = commutative (|\/)
+propLatticeJoinCommutative = commutative (==) (|\/)
 
 propLatticeJoinAssocative :: (Lattice t) => t -> t -> t -> Bool
-propLatticeJoinAssocative = associative (|\/)
+propLatticeJoinAssocative = associative (==) (|\/)
 
 propLatticeMeetIdempotent :: (Lattice t) => t -> Bool
-propLatticeMeetIdempotent = idempotent (|/\)
+propLatticeMeetIdempotent = idempotent (==) (|/\)
 
 propLatticeMeetCommutative :: (Lattice t) => t -> t -> Bool
-propLatticeMeetCommutative = commutative (|/\)
+propLatticeMeetCommutative = commutative (==) (|/\)
 
 propLatticeMeetAssocative :: (Lattice t) => t -> t -> t -> Bool
-propLatticeMeetAssocative = associative (|/\)
+propLatticeMeetAssocative = associative (==) (|/\)
 
 {- optional properties: -}
 propLatticeModular :: (Lattice t) => t -> t -> t -> Bool
-propLatticeModular = modular (|\/) (|/\)
+propLatticeModular = modular (==) (|\/) (|/\)
 
 propLatticeDistributive :: (Lattice t) => t -> t -> t -> Bool
 propLatticeDistributive e1 e2 e3 = 
-        (leftDistributive (|\/) (|/\) e1 e2 e3)
+        (leftDistributive (==) (|\/) (|/\) e1 e2 e3)
         && 
-        (leftDistributive (|/\) (|\/) e1 e2 e3)
+        (leftDistributive (==) (|/\) (|\/) e1 e2 e3)
 
 {-|
     A lattice that supports in-place operations.

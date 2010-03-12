@@ -40,19 +40,19 @@ class (Eq t) => Basis t where
 (⊔?) = (|\/?)
 
 propBasisPosetCompatible :: (Poset t, Basis t) => t -> t -> Bool
-propBasisPosetCompatible = partialJoinOfOrderedPair (|<=) (|\/?) 
+propBasisPosetCompatible = partialJoinOfOrderedPair (==) (|<=) (|\/?) 
 
 propBasisJoinAboveBoth :: (Poset t, Basis t) => t -> t -> Bool
 propBasisJoinAboveBoth = partialJoinAboveOperands (|<=) (|\/?)
 
 propBasisJoinIdempotent :: (Basis t) => t -> Bool
-propBasisJoinIdempotent = partialIdempotent (|\/?)
+propBasisJoinIdempotent = partialIdempotent (==) (|\/?)
 
 propBasisJoinCommutative :: (Basis t) => t -> t -> Bool
-propBasisJoinCommutative = partialCommutative (|\/?)
+propBasisJoinCommutative = partialCommutative (==) (|\/?)
 
 propBasisJoinAssocative :: (Basis t) => t -> t -> t -> Bool
-propBasisJoinAssocative = partialAssociative (|\/?)
+propBasisJoinAssocative = partialAssociative  (==) (|\/?)
 
 
 {-|
