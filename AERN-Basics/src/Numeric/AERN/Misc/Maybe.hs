@@ -1,6 +1,6 @@
 {-|
-    Module      :  Numeric.AERN.Basics.MaybeBool
-    Description :  utilities for semidecidable predicates  
+    Module      :  Numeric.AERN.Misc.Maybe
+    Description :  utilities for semidecidable predicates and partial operations
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -8,11 +8,22 @@
     Stability   :  experimental
     Portability :  portable
     
-    Utilities for semidecidable predicates.
+    Utilities for semidecidable predicates and partial operations.
 -}
-module Numeric.AERN.Basics.MaybeBool 
+module Numeric.AERN.Misc.Maybe where
 
-where
+import Data.Maybe
+
+defined :: (Maybe t) -> Bool
+defined = isJust
+
+assumeTotal1 :: (t1 -> Maybe t) -> (t1 -> t)
+assumeTotal1 f a =
+    case f a of Just res -> res
+
+assumeTotal2 :: (t2 -> t1 -> Maybe t) -> (t2 -> t1 -> t)
+assumeTotal2 f a b =
+    case f a b of Just res -> res
 
 trueOrNothing :: Maybe Bool -> Bool 
 trueOrNothing = nothingOr True

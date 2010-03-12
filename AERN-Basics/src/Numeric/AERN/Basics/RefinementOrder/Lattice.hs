@@ -40,7 +40,10 @@ class (Eq t) => Lattice t where
 (⊔) = (|\/)
 
 propLatticePosetCompatible :: (Poset t, Lattice t) => t -> t -> Bool
-propLatticePosetCompatible = joinMeetOfOrderedPair (|<=) (|/\) (|\/) 
+propLatticePosetCompatible e1 e2 = 
+    (joinOfOrderedPair (|<=) (|\/) e1 e2) 
+    && 
+    (meetOfOrderedPair (|<=) (|/\) e1 e2) 
 
 propLatticeJoinAboveBoth :: (Poset t, Lattice t) => t -> t -> Bool
 propLatticeJoinAboveBoth = joinAboveOperands (|<=) (|\/)

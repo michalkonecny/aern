@@ -17,32 +17,28 @@ module Numeric.AERN.Basics.Laws.SemidecidableRelation
 )
 where
 
-import Numeric.AERN.Basics.MaybeBool
+import Numeric.AERN.Misc.Bool
+import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Basics.Laws.Operation
+import Numeric.AERN.Basics.Laws.Relation
 import Data.Maybe (isNothing)
 
 --import qualified Algebra.Laws as NP -- numeric-prelude
 
 semidecidableReflexive :: (t -> t -> Maybe Bool) -> t -> Bool
-semidecidableReflexive rel e = 
-    trueOrNothing $ e `rel` e 
+semidecidableReflexive (~~?) e = 
+    trueOrNothing $ e ~~? e 
     
 
 semidecidableTransitive :: (t -> t -> Maybe Bool) -> t -> t -> t -> Bool
-semidecidableTransitive rel e1 e2 e3 = 
-    (Just True /= (e1 `rel` e2)) 
-    || 
-    (Just True /= (e2 `rel` e3)) 
-    || 
-    (trueOrNothing (e1 `rel` e3))
+semidecidableTransitive (~~?) e1 e2 e3 =
+    (and $ map defined [e1 ~~? e2, e2 ~~? e3, e1 ~~? e3]) ===>
+    transitive (assumeTotal2 (~~?)) e1 e2 e3
 
 semidecidableSymmetric :: (t -> t -> Maybe Bool) -> t -> t -> Bool
-semidecidableSymmetric rel e1 e2 =
-    (isNothing $ e1 `rel` e2)
-    ||
-    (isNothing $ e2 `rel` e1)
-    ||
-    (commutative rel e1 e2)
+semidecidableSymmetric (~~?) e1 e2 =
+    (and $ map defined [e1 ~~? e2, e2 ~~? e1]) ===>
+    symmetric (assumeTotal2 (~~?)) e1 e2
 
 semidecidableOrderExtrema (<=?) bottom top e =
     (trueOrNothing $ bottom <=? e) 

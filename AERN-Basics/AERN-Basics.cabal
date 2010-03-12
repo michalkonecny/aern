@@ -39,7 +39,6 @@ Library
         QuickCheck >= 2.1 && < 2.2,
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3
   Exposed-modules:
-    Numeric.AERN.Basics.MaybeBool
     Numeric.AERN.Basics.Exception
     Numeric.AERN.Basics.Effort
     Numeric.AERN.Basics.Mutable
@@ -59,6 +58,8 @@ Library
     Numeric.AERN.Basics.Laws.Operation
     Numeric.AERN.Basics.Laws.RoundedOperation
     Numeric.AERN.Basics.Laws.OperationRelation
+    Numeric.AERN.Misc.Bool
+    Numeric.AERN.Misc.Maybe
     Numeric.AERN.Misc.QuickCheck
     
   Other-modules:

@@ -17,11 +17,13 @@ module Numeric.AERN.Basics.NumericOrder.SemidecidablePoset
 where
 
 import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Basics.MaybeBool
 import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.NumericOrder.Extrema
 import Numeric.AERN.Basics.Laws.SemidecidableRelation
+
+import Numeric.AERN.Misc.Maybe
+import Numeric.AERN.Misc.Bool
 
 import Prelude hiding (EQ, LT, GT)
 
@@ -64,9 +66,8 @@ maybeComparePreludeCompare _ a b =
 
 propSemidecidablePosetEqCompatible :: (SemidecidablePoset t) => t -> t -> Bool
 propSemidecidablePosetEqCompatible e1 e2 =
-    (Just True == (e1 /=? e2) || (nothingOr EQ $ maybeCompare e1 e2))
-    &&    
-    (Just EQ /= (maybeCompare e1 e2) || nothingOr True (e1 ==? e2) )
+    (defined (e1 ==? e2) && (defined (maybeCompare e1 e2))) ===>
+    ((assumeTotal2 (==?) e1 e2) <===> (assumeTotal2 maybeCompare e1 e2 == EQ))
 
 propSemidecidablePosetAntiSymmetric :: (SemidecidablePoset t) => t -> t -> Bool
 propSemidecidablePosetAntiSymmetric e1 e2 =

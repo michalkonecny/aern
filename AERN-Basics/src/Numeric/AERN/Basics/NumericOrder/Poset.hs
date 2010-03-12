@@ -21,6 +21,8 @@ import Numeric.AERN.Basics.NumericOrder.Extrema
 import Numeric.AERN.Basics.NumericOrder.SemidecidablePoset
 import Numeric.AERN.Basics.Laws.Relation
 
+import Numeric.AERN.Misc.Bool
+
 import qualified Prelude
 import Prelude hiding (compare, EQ, LT, GT, (<), (<=), (>=), (>))
 
@@ -69,9 +71,7 @@ propPosetIllegalArgException illegalArg e =
 
 propPosetEqCompatible :: (Poset t) => t -> t -> Bool
 propPosetEqCompatible e1 e2 =
-    (e1 /= e2 || compare e1 e2 == EQ)
-    &&    
-    (e1 == e2 || compare e1 e2 /= EQ)
+    (e1 == e2) <===> (compare e1 e2 == EQ)
 
 propPosetAntiSymmetric :: (Poset t) => UniformlyOrderedPair t -> Bool
 propPosetAntiSymmetric (UniformlyOrderedPair (e1, e2)) = 

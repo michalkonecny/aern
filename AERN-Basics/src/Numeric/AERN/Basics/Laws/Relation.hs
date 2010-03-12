@@ -17,6 +17,8 @@ module Numeric.AERN.Basics.Laws.Relation
 )
 where
 
+import Numeric.AERN.Misc.Bool
+
 --import qualified Algebra.Laws as NP -- numeric-prelude
 
 reflexive :: (t -> t -> Bool) -> t -> Bool
@@ -29,7 +31,7 @@ symmetric (~~) e1 e2 =
 
 transitive :: (t -> t -> Bool) -> t -> t -> t -> Bool
 transitive (~~) e1 e2 e3 = 
-    (not (e1 ~~ e2)) || (not (e2 ~~ e3)) || (e1 ~~ e3)
+    ((e1 ~~ e2) && (e2 ~~ e3)) ===> (e1 ~~ e3)
 
 extrema (<=) bottom top e =
     bottom <= e && e <= top
