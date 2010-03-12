@@ -22,7 +22,7 @@ tests =
        -- Double:
        testsDoubleEq, testsDoubleSemidecidableEq,
        testsDoublePoset, testsDoubleSemidecidablePoset,
-       testsDoubleLattice,
+       testsDoubleLattice, testsDoubleRoundedLattice,
        -- DI:
        testsDISemidecidableEq,
        testsDISemidecidablePoset

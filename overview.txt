@@ -71,9 +71,10 @@ RealArithmetic TODO
     OuterRoundedElementary
     InnerRoundedRing >+<, >*<
     InnerRounded...
+  CInterval
+    Numerals, OuterRoundedField
+    OuterRoundedElementary, etc
   Interval
-    GenericImplementation
-      OuterRoundedElementary
     Double - for convenient import
     UnlimitedFloat
     MPFR
