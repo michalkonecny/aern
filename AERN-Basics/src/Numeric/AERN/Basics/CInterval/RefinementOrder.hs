@@ -32,10 +32,10 @@ maybeCompareDefaultEffortIntervalRef =
 {-|
   For two intervals, attempt to decide the inclusion partial order.
 -}
-maybeCompareIntervalRef ::
+maybeCompareEffIntervalRef ::
         (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
         [EffortIndicator] -> i -> i -> Maybe PartialOrdering
-maybeCompareIntervalRef effort i1 i2 = 
+maybeCompareEffIntervalRef effort i1 i2 = 
     case (c l1 l2, c h1 h2) of
         (Just EQ, Just EQ) -> Just EQ
         (Just LT, Just GT) -> Just LT  
@@ -58,7 +58,7 @@ compareIntervalRef ::
         (CInterval i, NumOrd.Poset (Endpoint i)) => 
         i -> i -> PartialOrdering
 compareIntervalRef i1 i2 =
-    case maybeCompareIntervalRef effort i1 i2 of
+    case maybeCompareEffIntervalRef effort i1 i2 of
         Just r -> r 
     where
     effort = maybeCompareDefaultEffortIntervalRef i1
