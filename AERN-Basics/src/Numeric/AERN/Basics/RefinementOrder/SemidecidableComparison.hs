@@ -68,6 +68,10 @@ class SemidecidableComparison t where
 (⊐?) :: (SemidecidableComparison t) => t -> t -> Maybe Bool
 (⊐?) = (|>?)
 
+propSemidecidableComparisonReflexiveEQ :: (SemidecidableComparison t) => t -> Bool
+propSemidecidableComparisonReflexiveEQ e = 
+    case maybeCompare e e of Just EQ -> True; Nothing -> True; _ -> False 
+
 propSemidecidableComparisonAntiSymmetric :: (SemidecidableComparison t) => t -> t -> Bool
 propSemidecidableComparisonAntiSymmetric e1 e2 =
     case (maybeCompare e2 e1, maybeCompare e1 e2) of

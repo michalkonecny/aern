@@ -72,6 +72,10 @@ propComparisonIllegalArgException illegalArg e =
     and $ map raisesAERNException 
                 [compare e illegalArg, compare illegalArg e] 
 
+propComparisonReflexiveEQ :: (Comparison t) => t -> Bool
+propComparisonReflexiveEQ e = 
+    compare e e Prelude.== EQ 
+
 propComparisonAntiSymmetric :: (Comparison t) => UniformlyOrderedPair t -> Bool
 propComparisonAntiSymmetric (UniformlyOrderedPair (e1, e2)) = 
     compare e2 e1 Prelude.== (partialOrderingTranspose $ compare e1 e2) 
