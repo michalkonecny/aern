@@ -32,7 +32,6 @@ import Numeric.AERN.Misc.QuickCheck
 import Numeric.AERN.Basics.CInterval
 import Numeric.AERN.Basics.Granularity
 import Numeric.AERN.Basics.CInterval.Granularity
-import Numeric.AERN.Basics.CInterval.Equality
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
