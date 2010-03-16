@@ -49,7 +49,6 @@ Library
     Numeric.AERN.Basics.RefinementOrder
     Numeric.AERN.Basics.Granularity
     Numeric.AERN.Basics.CInterval
-    Numeric.AERN.Basics.CInterval.Equality
     Numeric.AERN.Basics.CInterval.Granularity
     Numeric.AERN.Basics.CInterval.NumericOrder
     Numeric.AERN.Basics.CInterval.RefinementOrder

@@ -15,7 +15,6 @@
 -}
 module Numeric.AERN.Basics.Interval.NumericOrder where
 
-import Numeric.AERN.Basics.CInterval.Equality
 import Numeric.AERN.Basics.Interval.Basics
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
