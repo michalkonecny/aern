@@ -39,5 +39,7 @@ instance (NumOrd.HasExtrema e) => (RefOrd.HasBottom (Interval e))
     where
     bottom = bottomInterval
 
+instance (NumOrd.HasExtrema e) => (RefOrd.HasExtrema (Interval e))
+
 -- TODO: add instances for Basis, OuterRoundedBasis, InnerRoundedBasis
 --       Lattice, OuterRoundedLattice, InnerRoundedLattice    
