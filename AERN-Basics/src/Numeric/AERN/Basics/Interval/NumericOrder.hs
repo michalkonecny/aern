@@ -32,6 +32,8 @@ instance (NumOrd.SemidecidablePoset e) => (NumOrd.SemidecidablePoset (Interval e
     maybeCompareEff = maybeCompareEffInterval
     maybeCompareDefaultEffort = maybeCompareDefaultEffortInterval
         
+instance (NumOrd.Poset e) => (NumOrd.Poset (Interval e))
+        
 instance (NumOrd.Lattice e) => (NumOrd.Lattice (Interval e))
     where
     min = minInterval 

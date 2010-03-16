@@ -30,7 +30,6 @@ instance (NumOrd.SemidecidablePoset e) => (RefOrd.SemidecidablePoset (Interval e
     maybeCompareEff = maybeCompareEffIntervalRef
     maybeCompareDefaultEffort = maybeCompareDefaultEffortIntervalRef
 
-    
 instance (NumOrd.HasExtrema e) => (RefOrd.HasTop (Interval e))
     where
     top = topInterval
