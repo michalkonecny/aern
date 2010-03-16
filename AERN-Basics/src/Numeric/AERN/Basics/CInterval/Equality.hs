@@ -16,24 +16,23 @@ module Numeric.AERN.Basics.CInterval.Equality where
 import Prelude hiding (EQ, LT, GT)
 
 import Numeric.AERN.Basics.CInterval
-import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
-{-|
-    Default default effort indicators for testing numerical equality for interval types. 
--}
-maybeEqualDefaultEffortInterval ::
-        (CInterval i, SemidecidableEq (Endpoint i)) => 
-        i -> [EffortIndicator]
-maybeEqualDefaultEffortInterval i =
-    zipWith Prelude.max
-        (maybeEqualDefaultEffort l)
-        (maybeEqualDefaultEffort h)
-    where
-    (l,h) = getEndpoints i
+--{-|
+--    Default default effort indicators for testing numerical equality for interval types. 
+---}
+--maybeEqualDefaultEffortInterval ::
+--        (CInterval i, SemidecidableEq (Endpoint i)) => 
+--        i -> [EffortIndicator]
+--maybeEqualDefaultEffortInterval i =
+--    zipWith Prelude.max
+--        (maybeEqualDefaultEffort l)
+--        (maybeEqualDefaultEffort h)
+--    where
+--    (l,h) = getEndpoints i
 
 {-|
     Default numerical equality test for interval types.

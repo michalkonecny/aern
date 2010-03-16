@@ -20,7 +20,6 @@ import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Misc.Maybe
-import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
 --import Numeric.AERN.Basics.RefinementOrder.Extrema
 
