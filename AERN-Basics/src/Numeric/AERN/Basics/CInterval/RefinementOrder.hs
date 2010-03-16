@@ -16,7 +16,6 @@ module Numeric.AERN.Basics.CInterval.RefinementOrder where
 import Prelude hiding (EQ, LT, GT)
 
 import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.CInterval
 import Numeric.AERN.Basics.CInterval.NumericOrder

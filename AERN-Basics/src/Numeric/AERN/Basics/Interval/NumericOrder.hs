@@ -16,16 +16,10 @@
 module Numeric.AERN.Basics.Interval.NumericOrder where
 
 import Numeric.AERN.Basics.CInterval.Equality
-import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.Interval.Basics
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.CInterval.NumericOrder
-
-instance (NumOrd.SemidecidablePoset e) => (SemidecidableEq (Interval e))
-    where
-    maybeEqualEff = maybeEqualEffInterval
-    maybeEqualDefaultEffort = maybeEqualDefaultEffortInterval
 
 instance (NumOrd.SemidecidablePoset e) => (NumOrd.SemidecidablePoset (Interval e))
     where

@@ -24,7 +24,7 @@ import Numeric.AERN.Basics.Laws.Relation
 import Numeric.AERN.Misc.Bool
 
 import qualified Prelude
-import Prelude hiding (compare, EQ, LT, GT, (<), (<=), (>=), (>))
+import Prelude hiding (Eq, compare, EQ, LT, GT, (<), (<=), (>=), (>))
 
 
 {-|
@@ -33,7 +33,7 @@ import Prelude hiding (compare, EQ, LT, GT, (<), (<=), (>=), (>))
     (More-or-less copied from Data.Poset 
      in package altfloat-0.3 by Nick Bowler.) 
 -} 
-class (Eq t, SemidecidablePoset t, Show t) => Poset t where
+class (SemidecidablePoset t, Show t) => Poset t where
     compare :: t -> t -> PartialOrdering
     
     -- default implementation assuming the inherited semidecidable order is actually decidable:
@@ -44,6 +44,8 @@ class (Eq t, SemidecidablePoset t, Show t) => Poset t where
                 "poset comparison of " ++ show a
                 ++ " with " ++ show b ++ " is not decidable"
     
+    -- | non-reflexive inequality
+    (==)  :: t -> t -> Bool
     -- | Is comparable to.
     (<==>)  :: t -> t -> Bool
     -- | Is not comparable to.
@@ -53,13 +55,14 @@ class (Eq t, SemidecidablePoset t, Show t) => Poset t where
     (>=)    :: t -> t -> Bool
     (>)     :: t -> t -> Bool
 
-    -- defaults for all but compare:
-    a <    b = a `compare` b == LT
-    a >    b = a `compare` b == GT
-    a <==> b = a `compare` b /= NC
-    a </=> b = a `compare` b == NC
-    a <=   b = a < b || a `compare` b == EQ
-    a >=   b = a > b || a `compare` b == EQ
+    -- defaults using compare:
+    a ==   b = a `compare` b Prelude.== EQ
+    a <    b = a `compare` b Prelude.== LT
+    a >    b = a `compare` b Prelude.== GT
+    a <==> b = a `compare` b Prelude./= NC
+    a </=> b = a `compare` b Prelude.== NC
+    a <=   b = (a `compare` b) `elem` [EQ, LT, LE]
+    a >=   b = (a `compare` b) `elem` [EQ, GT, GE]
 
 instance Poset Int where
     compare a b = toPartialOrdering $ Prelude.compare a b  
@@ -69,16 +72,12 @@ propPosetIllegalArgException illegalArg e =
     and $ map raisesAERNException 
                 [compare e illegalArg, compare illegalArg e] 
 
-propPosetEqCompatible :: (Poset t) => t -> t -> Bool
-propPosetEqCompatible e1 e2 =
-    (e1 == e2) <===> (compare e1 e2 == EQ)
-
 propPosetAntiSymmetric :: (Poset t) => UniformlyOrderedPair t -> Bool
 propPosetAntiSymmetric (UniformlyOrderedPair (e1, e2)) = 
-    compare e2 e1 == (partialOrderingTranspose $ compare e1 e2) 
+    compare e2 e1 Prelude.== (partialOrderingTranspose $ compare e1 e2) 
 
 propPosetTransitive :: (Poset t) => t -> t -> t -> Bool
-propPosetTransitive = transitive (<=)
+propPosetTransitive e1 e2 e3 = transitive (<=) e1 e2 e3
     
 propExtremaInPoset :: (Poset t, HasExtrema t) => t -> Bool
 propExtremaInPoset = extrema (<=) least highest

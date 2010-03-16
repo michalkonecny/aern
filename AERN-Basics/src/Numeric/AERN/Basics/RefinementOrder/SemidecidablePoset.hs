@@ -18,7 +18,6 @@ where
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Misc.Maybe
-import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.RefinementOrder.Extrema
 import Numeric.AERN.Basics.Laws.SemidecidableRelation
@@ -32,13 +31,15 @@ import Prelude hiding (EQ, LT, GT)
 {-|
     A type with semi-decidable equality and partial order
 -}
-class (SemidecidableEq t) => SemidecidablePoset t where
+class SemidecidablePoset t where
     maybeCompareEff :: [EffortIndicator] -> t -> t -> Maybe PartialOrdering
     maybeCompareDefaultEffort :: t -> [EffortIndicator]
     
     maybeCompare :: t -> t -> Maybe PartialOrdering
     maybeCompare a = maybeCompareEff (maybeCompareDefaultEffort a) a
 
+    -- | Semidecidable equality
+    (|==?)  :: t -> t -> Maybe Bool
     -- | Semidecidable `is comparable to`.
     (|<==>?)  :: t -> t -> Maybe Bool
     -- | Semidecidable `is not comparable to`.
@@ -49,14 +50,13 @@ class (SemidecidableEq t) => SemidecidablePoset t where
     (|>?)     :: t -> t -> Maybe Bool
 
     -- defaults for all convenience operations:
+    a |==?   b = fmap (== EQ) (maybeCompare a b)
     a |<?    b = fmap (== LT) (maybeCompare a b)
     a |>?    b = fmap (== GT) (maybeCompare a b)
     a |<==>? b = fmap (/= NC) (maybeCompare a b)
     a |</=>? b = fmap (== NC) (maybeCompare a b)
-    a |<=?   b = 
-        (a |<? b) ||? (a ==? b)
-    a |>=?   b =
-        (a |>? b) ||? (a ==? b)
+    a |<=?   b = fmap (`elem` [EQ,LT,LE]) (maybeCompare a b)
+    a |>=?   b = fmap (`elem` [EQ,GT,GE]) (maybeCompare a b)
 
 -- convenience Unicode math operator notation:
 (⊏?) :: (SemidecidablePoset t) => t -> t -> Maybe Bool
@@ -67,11 +67,6 @@ class (SemidecidableEq t) => SemidecidablePoset t where
 (⊒?) = (|>=?)
 (⊐?) :: (SemidecidablePoset t) => t -> t -> Maybe Bool
 (⊐?) = (|>?)
-
-propSemidecidablePosetEqCompatible :: (SemidecidablePoset t) => t -> t -> Bool
-propSemidecidablePosetEqCompatible e1 e2 =
-    (defined (e1 ==? e2) && (defined (maybeCompare e1 e2))) ===>
-    ((assumeTotal2 (==?) e1 e2) <===> (assumeTotal2 maybeCompare e1 e2 == EQ))
 
 propSemidecidablePosetAntiSymmetric :: (SemidecidablePoset t) => t -> t -> Bool
 propSemidecidablePosetAntiSymmetric e1 e2 =

@@ -20,6 +20,8 @@ import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.CInterval
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
+import Test.QuickCheck
+
 {-|
     Default default effort indicators for numerically comparing interval types. 
 -}
@@ -80,7 +82,16 @@ leastInterval ::
 leastInterval = fromEndpoints (NumOrd.least, NumOrd.least)
     
 highestInterval ::
-     (CInterval i, NumOrd.HasHighest (Endpoint i)) => i
+    (CInterval i, NumOrd.HasHighest (Endpoint i)) => i
 highestInterval = fromEndpoints (NumOrd.highest, NumOrd.highest)
 
-    
+arbitraryIntervalPairRelatedBy :: 
+    (CInterval i, Arbitrary (Endpoint i), ArbitraryOrderedTuple (Endpoint i)) =>
+    PartialOrdering -> Maybe (Gen (i,i)) 
+arbitraryIntervalPairRelatedBy EQ =
+    Just $
+       do
+       endpoint <- arbitrary
+       let interval = fromEndpoints (endpoint, endpoint) 
+       return $ (interval, interval)
+       

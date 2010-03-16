@@ -23,7 +23,7 @@ import Numeric.AERN.Basics.Laws.Relation
 import Numeric.AERN.Misc.Bool
 
 import qualified Prelude 
-import Prelude hiding (compare, EQ, LT, GT)
+import Prelude hiding (Eq, (==), compare, EQ, LT, GT)
 import Test.QuickCheck
 
 
@@ -33,8 +33,11 @@ import Test.QuickCheck
     (More-or-less copied from Data.Poset 
      in package altfloat-0.3 by Nick Bowler.) 
 -} 
-class (Eq t) => Poset t where
+class Poset t where
     compare :: t -> t -> PartialOrdering
+    
+    -- | non-reflexive inequality
+    (|==)  :: t -> t -> Bool
     -- | Is comparable to.
     (|<==>)  :: t -> t -> Bool
     -- | Is not comparable to.
@@ -45,12 +48,13 @@ class (Eq t) => Poset t where
     (|>)     :: t -> t -> Bool
 
     -- defaults for all but compare:
-    a |<    b = a `compare` b == LT
-    a |>    b = a `compare` b == GT
-    a |<==> b = a `compare` b /= NC
-    a |</=> b = a `compare` b == NC
-    a |<=   b = a |< b || a `compare` b == EQ
-    a |>=   b = a |> b || a `compare` b == EQ
+    a |==   b = a `compare` b Prelude.== EQ
+    a |<    b = a `compare` b Prelude.== LT
+    a |>    b = a `compare` b Prelude.== GT
+    a |<==> b = a `compare` b Prelude./= NC
+    a |</=> b = a `compare` b Prelude.== NC
+    a |<=   b = a `compare` b `elem` [EQ, LT, LE]
+    a |>=   b = a `compare` b `elem` [EQ, GT, GE]
 
 -- convenience Unicode math operator notation:
 (⊏) :: (Poset t) => t -> t -> Bool
@@ -67,13 +71,9 @@ propPosetIllegalArgException illegalArg e =
     and $ map raisesAERNException 
                 [compare e illegalArg, compare illegalArg e]
 
-propPosetEqCompatible :: (Poset t) => t -> t -> Bool
-propPosetEqCompatible e1 e2 =
-    (e1 == e2) <===> (compare e1 e2 == EQ)
-
 propPosetAntiSymmetric :: (Poset t) => t -> t -> Bool
 propPosetAntiSymmetric e1 e2 = 
-    compare e2 e1 == (partialOrderingTranspose $ compare e1 e2) 
+    compare e2 e1 Prelude.== (partialOrderingTranspose $ compare e1 e2) 
 
 propPosetTransitive :: (Poset t) => t -> t -> t -> Bool
 propPosetTransitive = transitive (⊑)
