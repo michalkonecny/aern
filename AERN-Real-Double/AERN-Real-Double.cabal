@@ -13,40 +13,31 @@ Category:       Data, Math
 Synopsis:       arbitrary precision real interval arithmetic
 Tested-with:    GHC ==6.12.1
 Description:
-    Type classes abstracting typical arithmetic operations for real number
-    over approximations for exact entities, including outer and inner-rounded
-    field operations and common elementary operations.
-    
-    A concrete implementation for the type classes is provided in the form
-    of interval arithmetic.  The arithmetic supports also anti-consistent
-    intervals (ie @[l,h]@ with @l >= h@) and maintains monotonicity in the
-    refinement order so that both inner and outer approximations of exact interval
-    expressions can be safely computed.
-
-    As interval endpoints, this library provides a choice of machine Double values
-    and a pure Haskell arbitrary precision floating-point numbers.
-    A separate package AERN-Real-MPFR facilitates (via package hmpfr) 
-    the use of the MPFR arbitrary precision floating point numbers as endpoints.
+    This package provides bindings and tests for using machine Double
+    values as endpoints for the interval arithmetic defined in packages AERN-Basics and
+    AERN-Real.
 
 Extra-Source-Files:
-    ChangeLog
+    CHANGES
 
 Executable testAERN-Real-Double
   hs-source-dirs: src, tests
+  ghc-options:     -O2
   main-is: Main.hs
   Build-Depends:
         base >= 4 && < 5,
         QuickCheck >= 2.1 && < 2.2,
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
-        AERN-Basics == 2010.1
+        AERN-Basics == 2010.1, AERN-Real == 2010.1
 
 Library
   hs-source-dirs: src
+  ghc-options:     -O2
   Build-Depends:
         base >= 4 && < 5,
         QuickCheck >= 2.1 && < 2.2,
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
-        AERN-Basics == 2010.1
+        AERN-Basics == 2010.1, AERN-Real == 2010.1
   Exposed-modules:
     Numeric.AERN.RealArithmetic.Basis.Double
     Numeric.AERN.RealArithmetic.Interval.Double
