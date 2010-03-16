@@ -1,6 +1,6 @@
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.ApproxOrder
-    Description :  posets with semideciable order  
+    Description :  Comparisons with semideciable order  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -8,12 +8,12 @@
     Stability   :  experimental
     Portability :  portable
     
-    Posets with semideciable order.
+    Comparisons with semideciable order.
     
     This module is hidden and reexported via its parent NumericOrder. 
 -}
 
-module Numeric.AERN.Basics.NumericOrder.SemidecidablePoset 
+module Numeric.AERN.Basics.NumericOrder.SemidecidableComparison 
 where
 
 import Numeric.AERN.Basics.Effort
@@ -30,7 +30,7 @@ import Prelude hiding (EQ, LT, GT)
 {-|
     A type with semi-decidable equality and partial order
 -}
-class SemidecidablePoset t where
+class SemidecidableComparison t where
     maybeCompareEff :: [EffortIndicator] -> t -> t -> Maybe PartialOrdering
     maybeCompareDefaultEffort :: t -> [EffortIndicator]
     
@@ -57,22 +57,28 @@ class SemidecidablePoset t where
     a <=?   b = fmap (`elem` [EQ,LT,LE]) (maybeCompare a b)
     a >=?   b = fmap (`elem` [EQ,GT,GE]) (maybeCompare a b)
 
-instance SemidecidablePoset Int where
+instance SemidecidableComparison Int where
     maybeCompareEff = maybeComparePreludeCompare    
     maybeCompareDefaultEffort _ = []
     
 maybeComparePreludeCompare _ a b =
     Just $ toPartialOrdering $ Prelude.compare a b
 
-propSemidecidablePosetAntiSymmetric :: (SemidecidablePoset t) => t -> t -> Bool
-propSemidecidablePosetAntiSymmetric e1 e2 =
+propSemidecidableComparisonAntiSymmetric :: (SemidecidableComparison t) => t -> t -> Bool
+propSemidecidableComparisonAntiSymmetric e1 e2 =
     case (maybeCompare e2 e1, maybeCompare e1 e2) of
         (Just b1, Just b2) -> b1 == partialOrderingTranspose b2
         _ -> True 
 
-propSemidecidablePosetTransitive :: (SemidecidablePoset t) => t -> t -> t -> Bool
-propSemidecidablePosetTransitive = semidecidableTransitive (<=?)
+propSemidecidableComparisonTransitiveEQ :: (SemidecidableComparison t) => t -> t -> t -> Bool
+propSemidecidableComparisonTransitiveEQ = semidecidableTransitive (==?)
 
-propExtremaInSemidecidablePoset :: (SemidecidablePoset t, HasExtrema t) => t -> Bool
-propExtremaInSemidecidablePoset = semidecidableOrderExtrema (<=?) least highest
+propSemidecidableComparisonTransitiveLT :: (SemidecidableComparison t) => t -> t -> t -> Bool
+propSemidecidableComparisonTransitiveLT = semidecidableTransitive (<?)
+
+propSemidecidableComparisonTransitiveLE :: (SemidecidableComparison t) => t -> t -> t -> Bool
+propSemidecidableComparisonTransitiveLE = semidecidableTransitive (<=?)
+
+propExtremaInSemidecidableComparison :: (SemidecidableComparison t, HasExtrema t) => t -> Bool
+propExtremaInSemidecidableComparison = semidecidableOrderExtrema (<=?) least highest
 

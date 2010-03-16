@@ -21,11 +21,11 @@ import Numeric.AERN.Basics.CInterval.RefinementOrder
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
-instance (NumOrd.Poset e) => (RefOrd.Poset (Interval e))
+instance (NumOrd.Comparison e) => (RefOrd.Comparison (Interval e))
     where
     compare = compareIntervalRef
     
-instance (NumOrd.SemidecidablePoset e) => (RefOrd.SemidecidablePoset (Interval e))
+instance (NumOrd.SemidecidableComparison e) => (RefOrd.SemidecidableComparison (Interval e))
     where
     maybeCompareEff = maybeCompareEffIntervalRef
     maybeCompareDefaultEffort = maybeCompareDefaultEffortIntervalRef

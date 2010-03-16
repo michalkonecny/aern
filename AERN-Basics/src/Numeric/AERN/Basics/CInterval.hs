@@ -29,7 +29,7 @@ class CInterval i where
     mapEndpointPair :: ((Endpoint i, Endpoint i) -> (Endpoint i, Endpoint i)) -> (i -> i)
     
 propCIntervalConsistent :: 
-    (CInterval i, NumOrd.Poset (Endpoint i)) => 
+    (CInterval i, NumOrd.Comparison (Endpoint i)) => 
     i -> Bool
 propCIntervalConsistent i =
     l NumOrd.<= h
@@ -37,7 +37,7 @@ propCIntervalConsistent i =
     (l,h) = getEndpoints i
     
 propCIntervalAntiConsistent :: 
-    (CInterval i, NumOrd.Poset (Endpoint i)) => 
+    (CInterval i, NumOrd.Comparison (Endpoint i)) => 
     i -> Bool 
 propCIntervalAntiConsistent i =
     h NumOrd.<= l
@@ -45,7 +45,7 @@ propCIntervalAntiConsistent i =
     (l,h) = getEndpoints i
     
 propCIntervalConsistentAntiConsistent :: 
-    (CInterval i, NumOrd.Poset (Endpoint i)) => 
+    (CInterval i, NumOrd.Comparison (Endpoint i)) => 
     i -> Bool 
 propCIntervalConsistentAntiConsistent i =
     l NumOrd.<= h || h NumOrd.<= l

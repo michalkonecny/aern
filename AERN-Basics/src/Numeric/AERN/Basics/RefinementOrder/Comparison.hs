@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.Basics.RefinementOrder.Poset
+    Module      :  Numeric.AERN.Basics.RefinementOrder.Comparison
     Description :  partially ordered sets using refinement order notation  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -13,7 +13,7 @@
     This module is hidden and reexported via its parent RefinementOrder. 
 -}
 
-module Numeric.AERN.Basics.RefinementOrder.Poset where
+module Numeric.AERN.Basics.RefinementOrder.Comparison where
 
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.PartialOrdering
@@ -30,10 +30,10 @@ import Test.QuickCheck
 {-|
     A partially ordered set.
     
-    (More-or-less copied from Data.Poset 
+    (More-or-less copied from Data.Comparison 
      in package altfloat-0.3 by Nick Bowler.) 
 -} 
-class Poset t where
+class Comparison t where
     compare :: t -> t -> PartialOrdering
     
     -- | non-reflexive inequality
@@ -57,27 +57,33 @@ class Poset t where
     a |>=   b = a `compare` b `elem` [EQ, GT, GE]
 
 -- convenience Unicode math operator notation:
-(⊏) :: (Poset t) => t -> t -> Bool
+(⊏) :: (Comparison t) => t -> t -> Bool
 (⊏) = (|<)
-(⊑) :: (Poset t) => t -> t -> Bool
+(⊑) :: (Comparison t) => t -> t -> Bool
 (⊑) = (|<=)
-(⊒) :: (Poset t) => t -> t -> Bool
+(⊒) :: (Comparison t) => t -> t -> Bool
 (⊒) = (|>=)
-(⊐) :: (Poset t) => t -> t -> Bool
+(⊐) :: (Comparison t) => t -> t -> Bool
 (⊐) = (|>)
 
-propPosetIllegalArgException :: (Poset t) => t -> t -> Bool
-propPosetIllegalArgException illegalArg e =
+propComparisonIllegalArgException :: (Comparison t) => t -> t -> Bool
+propComparisonIllegalArgException illegalArg e =
     and $ map raisesAERNException 
                 [compare e illegalArg, compare illegalArg e]
 
-propPosetAntiSymmetric :: (Poset t) => t -> t -> Bool
-propPosetAntiSymmetric e1 e2 = 
+propComparisonAntiSymmetric :: (Comparison t) => t -> t -> Bool
+propComparisonAntiSymmetric e1 e2 = 
     compare e2 e1 Prelude.== (partialOrderingTranspose $ compare e1 e2) 
 
-propPosetTransitive :: (Poset t) => t -> t -> t -> Bool
-propPosetTransitive = transitive (⊑)
+propComparisonTransitiveEQ :: (Comparison t) => t -> t -> t -> Bool
+propComparisonTransitiveEQ = transitive (|==)
     
-propExtremaInPoset :: (Poset t, HasExtrema t) => t -> Bool
-propExtremaInPoset = extrema (⊑) (⊥) (⊤)
+propComparisonTransitiveLT :: (Comparison t) => t -> t -> t -> Bool
+propComparisonTransitiveLT = transitive (⊏)
+    
+propComparisonTransitiveLE :: (Comparison t) => t -> t -> t -> Bool
+propComparisonTransitiveLE = transitive (⊑)
+    
+propExtremaInComparison :: (Comparison t, HasExtrema t) => t -> Bool
+propExtremaInComparison = extrema (⊑) (⊥) (⊤)
     

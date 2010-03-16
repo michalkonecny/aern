@@ -48,7 +48,7 @@ partialOrderingTranspose a = a
 
 
 {-|
-    Poset with the ability to randomly generate
+    Comparison with the ability to randomly generate
     pairs and triples of its own elements that are in 
     a specific order relation (eg LT or NC).
     
@@ -183,7 +183,7 @@ instance (ArbitraryOrderedTuple t) => Arbitrary (LTLTLTTriple t) where
                 return $ LTLTLTTriple triple
 
 {-|
-    All 29 triples of poset orderings @(r1, r2, r3)@ for which
+    All 29 triples of Comparison orderings @(r1, r2, r3)@ for which
     there could be elements satisfying
     @e1 `r1` e2 && e2 `r2` e3 && e1 `r3` e3@
     (ie not breaking transitivity).

@@ -23,7 +23,7 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 maybeCompareDefaultEffortIntervalRef ::
-        (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
+        (CInterval i, NumOrd.SemidecidableComparison (Endpoint i)) => 
         i -> [EffortIndicator]
 maybeCompareDefaultEffortIntervalRef =
     maybeCompareDefaultEffortInterval
@@ -32,7 +32,7 @@ maybeCompareDefaultEffortIntervalRef =
   For two intervals, attempt to decide the inclusion partial order.
 -}
 maybeCompareEffIntervalRef ::
-        (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
+        (CInterval i, NumOrd.SemidecidableComparison (Endpoint i)) => 
         [EffortIndicator] -> i -> i -> Maybe PartialOrdering
 maybeCompareEffIntervalRef effort i1 i2 = 
     case (c l1 l2, c h1 h2) of
@@ -54,7 +54,7 @@ maybeCompareEffIntervalRef effort i1 i2 =
   For two intervals, decide the inclusion partial order.
 -}
 compareIntervalRef ::
-        (CInterval i, NumOrd.Poset (Endpoint i)) => 
+        (CInterval i, NumOrd.Comparison (Endpoint i)) => 
         i -> i -> PartialOrdering
 compareIntervalRef i1 i2 =
     case maybeCompareEffIntervalRef effort i1 i2 of
