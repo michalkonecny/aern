@@ -27,7 +27,7 @@ instance (NumOrd.Poset e) => (RefOrd.Poset (Interval e))
     
 instance (NumOrd.SemidecidablePoset e) => (RefOrd.SemidecidablePoset (Interval e))
     where
-    maybeCompare = maybeCompareIntervalRef
+    maybeCompareEff = maybeCompareEffIntervalRef
     maybeCompareDefaultEffort = maybeCompareDefaultEffortIntervalRef
 
     
