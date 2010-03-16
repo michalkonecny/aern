@@ -26,7 +26,7 @@ import Test.QuickCheck
     Default default effort indicators for numerically comparing interval types. 
 -}
 maybeCompareDefaultEffortInterval ::
-        (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
+        (CInterval i, NumOrd.SemidecidableComparison (Endpoint i)) => 
         i -> [EffortIndicator]
 maybeCompareDefaultEffortInterval i =
     zipWith Prelude.max
@@ -39,7 +39,7 @@ maybeCompareDefaultEffortInterval i =
     Default numerical comparison for interval types.
 -}
 maybeCompareEffInterval ::
-        (CInterval i, NumOrd.SemidecidablePoset (Endpoint i)) => 
+        (CInterval i, NumOrd.SemidecidableComparison (Endpoint i)) => 
         [EffortIndicator] -> i -> i -> Maybe PartialOrdering
 maybeCompareEffInterval effort i1 i2 = 
     case (c l1 l2, c l1 h2, c h1 l2, c h1 h2) of

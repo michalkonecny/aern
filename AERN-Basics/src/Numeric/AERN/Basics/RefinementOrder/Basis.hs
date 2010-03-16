@@ -18,7 +18,7 @@ module Numeric.AERN.Basics.RefinementOrder.Basis where
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
-import Numeric.AERN.Basics.RefinementOrder.Poset
+import Numeric.AERN.Basics.RefinementOrder.Comparison
 import Numeric.AERN.Basics.Laws.Operation
 import Numeric.AERN.Basics.Laws.OperationRelation
 
@@ -39,10 +39,10 @@ class (Eq t) => Basis t where
 (⊔?) :: (Basis t) => t -> t -> Maybe t
 (⊔?) = (|\/?)
 
-propBasisPosetCompatible :: (Poset t, Basis t) => t -> t -> Bool
-propBasisPosetCompatible = partialJoinOfOrderedPair (==) (|<=) (|\/?) 
+propBasisComparisonCompatible :: (Comparison t, Basis t) => t -> t -> Bool
+propBasisComparisonCompatible = partialJoinOfOrderedPair (==) (|<=) (|\/?) 
 
-propBasisJoinAboveBoth :: (Poset t, Basis t) => t -> t -> Bool
+propBasisJoinAboveBoth :: (Comparison t, Basis t) => t -> t -> Bool
 propBasisJoinAboveBoth = partialJoinAboveOperands (|<=) (|\/?)
 
 propBasisJoinIdempotent :: (Basis t) => t -> Bool

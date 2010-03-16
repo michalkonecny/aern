@@ -20,12 +20,12 @@ import Numeric.AERN.Basics.Interval.Basics
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.CInterval.NumericOrder
 
-instance (NumOrd.SemidecidablePoset e) => (NumOrd.SemidecidablePoset (Interval e))
+instance (NumOrd.SemidecidableComparison e) => (NumOrd.SemidecidableComparison (Interval e))
     where
     maybeCompareEff = maybeCompareEffInterval
     maybeCompareDefaultEffort = maybeCompareDefaultEffortInterval
         
-instance (NumOrd.Poset e) => (NumOrd.Poset (Interval e))
+instance (NumOrd.Comparison e) => (NumOrd.Comparison (Interval e))
         
 instance (NumOrd.Lattice e) => (NumOrd.Lattice (Interval e))
     where

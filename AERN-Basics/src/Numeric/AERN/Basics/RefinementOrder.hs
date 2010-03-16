@@ -9,7 +9,7 @@
     Portability :  portable
     
     Type classes representing classical as well as approximate 
-    posets, domain bases and lattices with the refinement order notation 
+    Comparisons, domain bases and lattices with the refinement order notation 
     (&#8849;⊑,&#8851;⊓,&#8852;⊔).
     
     This module is meant to be imported qualified.
@@ -18,19 +18,19 @@
 module Numeric.AERN.Basics.RefinementOrder 
 (
     module Numeric.AERN.Basics.RefinementOrder.Extrema,
-    module Numeric.AERN.Basics.RefinementOrder.Poset,
+    module Numeric.AERN.Basics.RefinementOrder.Comparison,
     module Numeric.AERN.Basics.RefinementOrder.Basis,
     module Numeric.AERN.Basics.RefinementOrder.Lattice,
-    module Numeric.AERN.Basics.RefinementOrder.SemidecidablePoset,
+    module Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison,
     module Numeric.AERN.Basics.RefinementOrder.RoundedBasis,
     module Numeric.AERN.Basics.RefinementOrder.RoundedLattice
 )
 where
 
 import Numeric.AERN.Basics.RefinementOrder.Extrema
-import Numeric.AERN.Basics.RefinementOrder.Poset
+import Numeric.AERN.Basics.RefinementOrder.Comparison
 import Numeric.AERN.Basics.RefinementOrder.Basis
 import Numeric.AERN.Basics.RefinementOrder.Lattice
-import Numeric.AERN.Basics.RefinementOrder.SemidecidablePoset
+import Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison
 import Numeric.AERN.Basics.RefinementOrder.RoundedBasis
 import Numeric.AERN.Basics.RefinementOrder.RoundedLattice

@@ -18,7 +18,7 @@ module Numeric.AERN.Basics.RefinementOrder.Lattice where
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
-import Numeric.AERN.Basics.RefinementOrder.Poset
+import Numeric.AERN.Basics.RefinementOrder.Comparison
 import Numeric.AERN.Basics.Laws.Operation
 import Numeric.AERN.Basics.Laws.OperationRelation
 
@@ -39,42 +39,42 @@ class Lattice t where
 (⊔) :: (Lattice t) => t -> t -> t
 (⊔) = (|\/)
 
-propLatticePosetCompatible :: (Poset t, Lattice t) => t -> t -> Bool
-propLatticePosetCompatible e1 e2 = 
+propLatticeComparisonCompatible :: (Comparison t, Lattice t) => t -> t -> Bool
+propLatticeComparisonCompatible e1 e2 = 
     (joinOfOrderedPair (|==) (|<=) (|\/) e1 e2) 
     && 
     (meetOfOrderedPair (|==) (|<=) (|/\) e1 e2) 
 
-propLatticeJoinAboveBoth :: (Poset t, Lattice t) => t -> t -> Bool
+propLatticeJoinAboveBoth :: (Comparison t, Lattice t) => t -> t -> Bool
 propLatticeJoinAboveBoth = joinAboveOperands (|<=) (|\/)
 
 
-propLatticeMeetBelowBoth :: (Poset t, Lattice t) => t -> t -> Bool
+propLatticeMeetBelowBoth :: (Comparison t, Lattice t) => t -> t -> Bool
 propLatticeMeetBelowBoth = meetBelowOperands (|<=) (|/\)
 
-propLatticeJoinIdempotent :: (Poset t, Lattice t) => t -> Bool
+propLatticeJoinIdempotent :: (Comparison t, Lattice t) => t -> Bool
 propLatticeJoinIdempotent = idempotent (|==) (|\/)
 
-propLatticeJoinCommutative :: (Poset t, Lattice t) => t -> t -> Bool
+propLatticeJoinCommutative :: (Comparison t, Lattice t) => t -> t -> Bool
 propLatticeJoinCommutative = commutative (|==) (|\/)
 
-propLatticeJoinAssocative :: (Poset t, Lattice t) => t -> t -> t -> Bool
+propLatticeJoinAssocative :: (Comparison t, Lattice t) => t -> t -> t -> Bool
 propLatticeJoinAssocative = associative (|==) (|\/)
 
-propLatticeMeetIdempotent :: (Poset t, Lattice t) => t -> Bool
+propLatticeMeetIdempotent :: (Comparison t, Lattice t) => t -> Bool
 propLatticeMeetIdempotent = idempotent (|==) (|/\)
 
-propLatticeMeetCommutative :: (Poset t, Lattice t) => t -> t -> Bool
+propLatticeMeetCommutative :: (Comparison t, Lattice t) => t -> t -> Bool
 propLatticeMeetCommutative = commutative (|==) (|/\)
 
-propLatticeMeetAssocative :: (Poset t, Lattice t) => t -> t -> t -> Bool
+propLatticeMeetAssocative :: (Comparison t, Lattice t) => t -> t -> t -> Bool
 propLatticeMeetAssocative = associative (|==) (|/\)
 
 {- optional properties: -}
-propLatticeModular :: (Poset t, Lattice t) => t -> t -> t -> Bool
+propLatticeModular :: (Comparison t, Lattice t) => t -> t -> t -> Bool
 propLatticeModular = modular (|==) (|\/) (|/\)
 
-propLatticeDistributive :: (Poset t, Lattice t) => t -> t -> t -> Bool
+propLatticeDistributive :: (Comparison t, Lattice t) => t -> t -> t -> Bool
 propLatticeDistributive e1 e2 e3 = 
         (leftDistributive (|==) (|\/) (|/\) e1 e2 e3)
         && 

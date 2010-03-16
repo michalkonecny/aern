@@ -25,8 +25,8 @@ import Control.Monad.ST (ST)
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.NumericOrder.Poset 
-import Numeric.AERN.Basics.NumericOrder.SemidecidablePoset 
+import Numeric.AERN.Basics.NumericOrder.Comparison 
+import Numeric.AERN.Basics.NumericOrder.SemidecidableComparison 
 
 import Numeric.AERN.Basics.NumericOrder.Extrema
 import Numeric.AERN.Basics.Laws.SemidecidableRelation
@@ -59,51 +59,51 @@ propRoundedLatticeIllegalArgException illegalArg d =
     and $ map raisesAERNException $ 
                 concat [[op d illegalArg, op illegalArg d] | op <- [maxUp, maxDn, minUp, minDn]] 
 
-propRoundedLatticePosetCompatible :: 
-    (SemidecidablePoset t, RoundedLattice t) => 
+propRoundedLatticeComparisonCompatible :: 
+    (SemidecidableComparison t, RoundedLattice t) => 
     UniformlyOrderedPair t -> Bool
-propRoundedLatticePosetCompatible (UniformlyOrderedPair (e1,e2)) = 
+propRoundedLatticeComparisonCompatible (UniformlyOrderedPair (e1,e2)) = 
     (roundedJoinOfOrderedPair (completeWith True (<=?)) minUp e1 e2)
     && 
     (roundedMeetOfOrderedPair (completeWith True (<=?)) maxDn e1 e2)
 
-propRoundedLatticeJoinAboveBoth :: (SemidecidablePoset t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
+propRoundedLatticeJoinAboveBoth :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
 propRoundedLatticeJoinAboveBoth (UniformlyOrderedPair (e1,e2)) = 
     joinAboveOperands (completeWith True (<=?)) maxUp e1 e2
 
-propRoundedLatticeMeetBelowBoth :: (SemidecidablePoset t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
+propRoundedLatticeMeetBelowBoth :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
 propRoundedLatticeMeetBelowBoth (UniformlyOrderedPair (e1,e2)) = 
     meetBelowOperands (completeWith True (<=?)) minDn e1 e2
 
-propRoundedLatticeJoinIdempotent :: (SemidecidablePoset t, RoundedLattice t) => t -> Bool
+propRoundedLatticeJoinIdempotent :: (SemidecidableComparison t, RoundedLattice t) => t -> Bool
 propRoundedLatticeJoinIdempotent = roundedIdempotent (completeWith True (<=?)) maxUp maxDn
 
-propRoundedLatticeJoinCommutative :: (SemidecidablePoset t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
+propRoundedLatticeJoinCommutative :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
 propRoundedLatticeJoinCommutative (UniformlyOrderedPair (e1,e2)) = 
     roundedCommutative (completeWith True (<=?)) maxUp maxDn e1 e2
 
-propRoundedLatticeJoinAssocative :: (SemidecidablePoset t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
+propRoundedLatticeJoinAssocative :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
 propRoundedLatticeJoinAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedAssociative (completeWith True (<=?)) maxUp maxDn e1 e2 e3
 
-propRoundedLatticeMeetIdempotent :: (SemidecidablePoset t, RoundedLattice t) => t -> Bool
+propRoundedLatticeMeetIdempotent :: (SemidecidableComparison t, RoundedLattice t) => t -> Bool
 propRoundedLatticeMeetIdempotent = 
     roundedIdempotent (completeWith True (<=?)) minUp minDn
 
-propRoundedLatticeMeetCommutative :: (SemidecidablePoset t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
+propRoundedLatticeMeetCommutative :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
 propRoundedLatticeMeetCommutative (UniformlyOrderedPair (e1,e2)) = 
     roundedCommutative (completeWith True (<=?)) minUp minDn e1 e2
 
-propRoundedLatticeMeetAssocative :: (SemidecidablePoset t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
+propRoundedLatticeMeetAssocative :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
 propRoundedLatticeMeetAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedAssociative (completeWith True (<=?)) minUp minDn e1 e2 e3
 
 {- optional properties: -}
-propRoundedLatticeModular :: (SemidecidablePoset t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
+propRoundedLatticeModular :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
 propRoundedLatticeModular (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedModular (completeWith True (<=?)) maxUp minUp maxDn minDn e1 e2 e3
 
-propRoundedLatticeDistributive :: (SemidecidablePoset t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
+propRoundedLatticeDistributive :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
 propRoundedLatticeDistributive (UniformlyOrderedTriple (e1,e2,e3)) = 
     (roundedLeftDistributive  (completeWith True (<=?)) maxUp minUp maxDn minDn e1 e2 e3)
     && 

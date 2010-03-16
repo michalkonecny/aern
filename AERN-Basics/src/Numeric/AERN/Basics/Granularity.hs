@@ -19,12 +19,12 @@ import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.NumericOrder.SemidecidablePoset ((<=?),(>=?))
-import Numeric.AERN.Basics.NumericOrder.Poset ((<=),(>=))
+import Numeric.AERN.Basics.NumericOrder.SemidecidableComparison ((<=?),(>=?))
+import Numeric.AERN.Basics.NumericOrder.Comparison ((<=),(>=))
 
 --import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
---import Numeric.AERN.Basics.RefinementOrder.SemidecidablePoset ((|<=?),(|>=?))
---import Numeric.AERN.Basics.RefinementOrder.Poset ((|<=),(|>=))
+--import Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison ((|<=?),(|>=?))
+--import Numeric.AERN.Basics.RefinementOrder.Comparison ((|<=),(|>=))
 
 import qualified Prelude
 import Prelude hiding (compare, (<=), (>=))
@@ -52,7 +52,7 @@ class (HasGranularity t) => (CanSetGranularityRoundedByNumericOrder t) where
     setMinGranularityDn :: Granularity t -> t -> t
 
 propSetGranularityUp ::
-        (NumOrd.Poset t, CanSetGranularityRoundedByNumericOrder t, Eq (Granularity t)) => 
+        (NumOrd.Comparison t, CanSetGranularityRoundedByNumericOrder t, Eq (Granularity t)) => 
         t -> Granularity t -> Bool
 propSetGranularityUp e gr =
         (gr == getGranularity e') && (e' >= e)
@@ -60,7 +60,7 @@ propSetGranularityUp e gr =
         e' = setGranularityUp gr e
  
 propSetGranularityDn :: 
-        (NumOrd.Poset t, CanSetGranularityRoundedByNumericOrder t, Eq (Granularity t)) => 
+        (NumOrd.Comparison t, CanSetGranularityRoundedByNumericOrder t, Eq (Granularity t)) => 
         t -> Granularity t -> Bool
 propSetGranularityDn e gr =
         (gr == getGranularity e') && (e' <= e)
@@ -68,7 +68,7 @@ propSetGranularityDn e gr =
         e' = setGranularityDn gr e
  
 propSetMinGranularityUp :: 
-        (NumOrd.Poset t, CanSetGranularityRoundedByNumericOrder t, NumOrd.Poset (Granularity t)) => 
+        (NumOrd.Comparison t, CanSetGranularityRoundedByNumericOrder t, NumOrd.Comparison (Granularity t)) => 
         t -> Granularity t -> Bool
 propSetMinGranularityUp e gr =
         (gr <= getGranularity e') && (e' >= e)
@@ -76,7 +76,7 @@ propSetMinGranularityUp e gr =
         e' = setMinGranularityUp gr e
  
 propSetMinGranularityDn :: 
-        (NumOrd.Poset t, CanSetGranularityRoundedByNumericOrder t, NumOrd.Poset (Granularity t)) => 
+        (NumOrd.Comparison t, CanSetGranularityRoundedByNumericOrder t, NumOrd.Comparison (Granularity t)) => 
         t -> Granularity t -> Bool
 propSetMinGranularityDn e gr =
         (gr <= getGranularity e') && (e' <= e)
