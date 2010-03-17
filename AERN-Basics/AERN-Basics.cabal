@@ -64,16 +64,18 @@ Library
     Numeric.AERN.Misc.QuickCheck
     
   Other-modules:
-    Numeric.AERN.Basics.NumericOrder.Extrema
-    Numeric.AERN.Basics.NumericOrder.Comparison
-    Numeric.AERN.Basics.NumericOrder.Lattice
     Numeric.AERN.Basics.NumericOrder.SemidecidableComparison
+    Numeric.AERN.Basics.NumericOrder.Comparison
+    Numeric.AERN.Basics.NumericOrder.Arbitrary
+    Numeric.AERN.Basics.NumericOrder.Extrema
+    Numeric.AERN.Basics.NumericOrder.Lattice
     Numeric.AERN.Basics.NumericOrder.RoundedLattice
-    Numeric.AERN.Basics.RefinementOrder.Extrema
-    Numeric.AERN.Basics.RefinementOrder.Comparison
-    Numeric.AERN.Basics.RefinementOrder.Basis
-    Numeric.AERN.Basics.RefinementOrder.Lattice
     Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison
+    Numeric.AERN.Basics.RefinementOrder.Comparison
+    Numeric.AERN.Basics.RefinementOrder.Arbitrary
+    Numeric.AERN.Basics.RefinementOrder.Basis
+    Numeric.AERN.Basics.RefinementOrder.Extrema
+    Numeric.AERN.Basics.RefinementOrder.Lattice
     Numeric.AERN.Basics.RefinementOrder.RoundedBasis
     Numeric.AERN.Basics.RefinementOrder.RoundedLattice
     Numeric.AERN.Basics.Interval.Basics

@@ -63,20 +63,20 @@ instance CInterval (Interval e) where
         (l2, h2) = f (l, h)
 
 -- random generation of intervals with no guarantee of consistency: 
-instance (ArbitraryOrderedTuple e) => Arbitrary (Interval e)
+instance (NumOrd.ArbitraryOrderedTuple e) => Arbitrary (Interval e)
     where
     arbitrary = 
         do
-        (UniformlyOrderedPair (l,h)) <- arbitrary 
+        (NumOrd.UniformlyOrderedPair (l,h)) <- arbitrary 
         return $ fromEndpoints (l,h)
 
 {-| type for random generation of consistent intervals -}       
 data ConsistentInterval e = ConsistentInterval (Interval e) deriving (Show)
         
-instance (ArbitraryOrderedTuple e) => (Arbitrary (ConsistentInterval e))
+instance (NumOrd.ArbitraryOrderedTuple e) => (Arbitrary (ConsistentInterval e))
     where
     arbitrary =
-      case arbitraryPairRelatedBy LT of
+      case NumOrd.arbitraryPairRelatedBy LT of
           Just gen ->
               do
               (l,h) <- gen
@@ -89,10 +89,10 @@ instance (ArbitraryOrderedTuple e) => (Arbitrary (ConsistentInterval e))
 {-| type for random generation of anti-consistent intervals -}        
 data AntiConsistentInterval e = AntiConsistentInterval (Interval e) deriving (Show)
         
-instance (ArbitraryOrderedTuple e) => (Arbitrary (AntiConsistentInterval e))
+instance (NumOrd.ArbitraryOrderedTuple e) => (Arbitrary (AntiConsistentInterval e))
     where
     arbitrary =
-      case arbitraryPairRelatedBy LT of
+      case NumOrd.arbitraryPairRelatedBy LT of
           Just gen ->
               do
               (l,h) <- gen 
@@ -105,7 +105,7 @@ instance (ArbitraryOrderedTuple e) => (Arbitrary (AntiConsistentInterval e))
     with the same probability -}        
 data ConsistentOrACInterval e = ConsistentOrACInterval (Interval e) deriving (Show)
         
-instance (ArbitraryOrderedTuple e) => (Arbitrary (ConsistentOrACInterval e))
+instance (NumOrd.ArbitraryOrderedTuple e) => (Arbitrary (ConsistentOrACInterval e))
     where
     arbitrary =
       do

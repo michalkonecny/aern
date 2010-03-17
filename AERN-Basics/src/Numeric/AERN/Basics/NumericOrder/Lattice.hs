@@ -21,6 +21,7 @@ import Numeric.AERN.Basics.PartialOrdering
 import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.NumericOrder.Comparison
+import Numeric.AERN.Basics.NumericOrder.Arbitrary
 import Numeric.AERN.Basics.Laws.Operation
 import Numeric.AERN.Basics.Laws.OperationRelation
 

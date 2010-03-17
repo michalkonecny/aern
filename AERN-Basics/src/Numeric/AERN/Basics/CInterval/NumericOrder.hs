@@ -86,7 +86,7 @@ highestInterval ::
 highestInterval = fromEndpoints (NumOrd.highest, NumOrd.highest)
 
 arbitraryIntervalPairRelatedBy :: 
-    (CInterval i, Arbitrary (Endpoint i), ArbitraryOrderedTuple (Endpoint i)) =>
+    (CInterval i, Arbitrary (Endpoint i), NumOrd.ArbitraryOrderedTuple (Endpoint i)) =>
     PartialOrdering -> Maybe (Gen (i,i)) 
 arbitraryIntervalPairRelatedBy EQ =
     Just $
