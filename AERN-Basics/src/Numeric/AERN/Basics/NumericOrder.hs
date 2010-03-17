@@ -16,16 +16,18 @@
 -}
 module Numeric.AERN.Basics.NumericOrder 
 (
-    module Numeric.AERN.Basics.NumericOrder.Extrema,
-    module Numeric.AERN.Basics.NumericOrder.Comparison,
-    module Numeric.AERN.Basics.NumericOrder.Lattice,
     module Numeric.AERN.Basics.NumericOrder.SemidecidableComparison,
+    module Numeric.AERN.Basics.NumericOrder.Comparison,
+    module Numeric.AERN.Basics.NumericOrder.Arbitrary,
+    module Numeric.AERN.Basics.NumericOrder.Extrema,
+    module Numeric.AERN.Basics.NumericOrder.Lattice,
     module Numeric.AERN.Basics.NumericOrder.RoundedLattice
 )
 where
 
-import Numeric.AERN.Basics.NumericOrder.Extrema
-import Numeric.AERN.Basics.NumericOrder.Comparison
-import Numeric.AERN.Basics.NumericOrder.Lattice
 import Numeric.AERN.Basics.NumericOrder.SemidecidableComparison
+import Numeric.AERN.Basics.NumericOrder.Comparison
+import Numeric.AERN.Basics.NumericOrder.Arbitrary
+import Numeric.AERN.Basics.NumericOrder.Extrema
+import Numeric.AERN.Basics.NumericOrder.Lattice
 import Numeric.AERN.Basics.NumericOrder.RoundedLattice

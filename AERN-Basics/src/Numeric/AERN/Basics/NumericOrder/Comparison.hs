@@ -18,6 +18,7 @@ module Numeric.AERN.Basics.NumericOrder.Comparison where
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.NumericOrder.Extrema
+import Numeric.AERN.Basics.NumericOrder.Arbitrary
 import Numeric.AERN.Basics.NumericOrder.SemidecidableComparison
 import Numeric.AERN.Basics.Laws.Relation
 
