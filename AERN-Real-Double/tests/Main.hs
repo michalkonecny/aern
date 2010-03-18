@@ -20,10 +20,10 @@ main = defaultMain tests
 tests = 
     [
        -- Double:
-       testsDoubleEq, testsDoubleSemidecidableEq,
-       testsDoublePoset, testsDoubleSemidecidablePoset,
+       testsDoubleComparison, testsDoubleSemidecidableComparison,
        testsDoubleLattice, testsDoubleRoundedLattice,
        -- DI:
-       testsDISemidecidableEq,
-       testsDISemidecidablePoset
+       testsDISemidecidableComparison,
+       testsDILattice,
+       testsDIRefinementSemidecidableComparison
     ]
