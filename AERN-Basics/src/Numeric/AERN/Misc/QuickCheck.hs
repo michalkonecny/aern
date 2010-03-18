@@ -12,6 +12,7 @@
 -}
 module Numeric.AERN.Misc.QuickCheck where
 
+import Data.List as List
 import Test.QuickCheck
 
 {-| Run the generator with size increased by 1 (useful for avoiding 
@@ -27,3 +28,13 @@ incrSize gen = sized (\size -> resize (size + 1) gen)
 arbitraryBoolRatio :: Int {-^ @n@ -} -> Int {-^ @m@ -} -> Gen Bool 
 arbitraryBoolRatio n m | 0 < n && n < m =
     frequency [(n, return True), (m - n, return False)]
+
+    
+arbitraryOrder :: (Ord t) => [t] -> Gen [t]
+arbitraryOrder elems =
+    do
+    nums <- mapM (const arbitrary) elems
+    return $ permuteBy (nums :: [Int]) elems
+    where
+    permuteBy nums elems =
+        map snd $ List.sort $ zip nums elems
