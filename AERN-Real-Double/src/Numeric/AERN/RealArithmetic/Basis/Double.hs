@@ -10,17 +10,15 @@
     Portability :  portable
     
     Instances of Double required for serving as interval endpoints,
-    namely providing granularity, poset, lattice, rounded field and 
+    namely providing granularity, Comparison, lattice, rounded field and 
     rounded elementary operations.
 -}
 module Numeric.AERN.RealArithmetic.Basis.Double 
 (
-   module Numeric.AERN.RealArithmetic.Basis.Double.Equality,
    module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 )
 where
 
-import Numeric.AERN.RealArithmetic.Basis.Double.Equality
 import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 
 import Numeric.AERN.Basics.Granularity

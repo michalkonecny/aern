@@ -13,11 +13,13 @@
 module Numeric.AERN.RealArithmetic.Interval.Double 
 (
    module Numeric.AERN.RealArithmetic.Interval.Double.Basics,
-   module Numeric.AERN.RealArithmetic.Interval.Double.NumericOrder
+   module Numeric.AERN.RealArithmetic.Interval.Double.NumericOrder,
+   module Numeric.AERN.RealArithmetic.Interval.Double.RefinementOrder
 )
 where
 
 import Numeric.AERN.RealArithmetic.Interval.Double.Basics
 import Numeric.AERN.RealArithmetic.Interval.Double.NumericOrder
+import Numeric.AERN.RealArithmetic.Interval.Double.RefinementOrder
 
 

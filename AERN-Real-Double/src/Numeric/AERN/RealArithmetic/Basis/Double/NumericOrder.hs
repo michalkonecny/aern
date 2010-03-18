@@ -8,25 +8,22 @@
     Stability   :  experimental
     Portability :  portable
     
-    Numeric order poset and lattice instances for Double.
+    Numeric order Comparison and lattice instances for Double.
     
     This is a private module reexported publicly via its parent.
 -}
 module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 (
-   testsDoublePoset, testsDoubleSemidecidablePoset, 
+   testsDoubleComparison, testsDoubleSemidecidableComparison, 
    testsDoubleLattice, testsDoubleRoundedLattice
 )
 where
 
 import Prelude hiding (EQ,LT,GT)
 
-import Numeric.AERN.RealArithmetic.Basis.Double.Equality
-
 import Numeric.AERN.Basics.Exception
 import Control.Exception
 
-import Numeric.AERN.Basics.Equality
 import Numeric.AERN.Basics.PartialOrdering
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
@@ -46,7 +43,7 @@ instance NumOrd.HasHighest Double where
 
 instance NumOrd.HasExtrema Double where
 
-instance NumOrd.SemidecidablePoset Double where
+instance NumOrd.SemidecidableComparison Double where
     maybeCompareEff _ a b =
         case (isNaN a, isNaN b) of
            (False, False) -> Just $ toPartialOrdering $ Prelude.compare a b  
@@ -54,69 +51,79 @@ instance NumOrd.SemidecidablePoset Double where
            _ -> Just NC 
     maybeCompareDefaultEffort _ = []
 
-propDoubleSemidecidablePosetEqCompatible :: Double -> Double -> Bool
-propDoubleSemidecidablePosetEqCompatible = NumOrd.propSemidecidablePosetEqCompatible
+propDoubleSemidecidableComparisonAntiSymmetric :: Double -> Double -> Bool
+propDoubleSemidecidableComparisonAntiSymmetric = NumOrd.propSemidecidableComparisonAntiSymmetric
 
-propDoubleSemidecidablePosetAntiSymmetric :: Double -> Double -> Bool
-propDoubleSemidecidablePosetAntiSymmetric = NumOrd.propSemidecidablePosetAntiSymmetric
+propDoubleSemidecidableComparisonTransitiveEQ :: Double -> Double -> Double -> Bool
+propDoubleSemidecidableComparisonTransitiveEQ = NumOrd.propSemidecidableComparisonTransitiveEQ
 
-propDoubleSemidecidablePosetTransitive :: Double -> Double -> Double -> Bool
-propDoubleSemidecidablePosetTransitive = NumOrd.propSemidecidablePosetTransitive
+propDoubleSemidecidableComparisonTransitiveLT :: Double -> Double -> Double -> Bool
+propDoubleSemidecidableComparisonTransitiveLT = NumOrd.propSemidecidableComparisonTransitiveLT
 
-propDoubleExtremaInSemidecidablePoset :: Double -> Bool
-propDoubleExtremaInSemidecidablePoset = NumOrd.propExtremaInSemidecidablePoset
+propDoubleSemidecidableComparisonTransitiveLE :: Double -> Double -> Double -> Bool
+propDoubleSemidecidableComparisonTransitiveLE = NumOrd.propSemidecidableComparisonTransitiveLE
 
-testsDoubleSemidecidablePoset :: Test
-testsDoubleSemidecidablePoset =
+propDoubleExtremaInSemidecidableComparison :: Double -> Bool
+propDoubleExtremaInSemidecidableComparison = NumOrd.propExtremaInSemidecidableComparison
+
+testsDoubleSemidecidableComparison :: Test
+testsDoubleSemidecidableComparison =
     testGroup "Double (>=?)" 
         [
-         testProperty "equality compatible" propDoubleSemidecidablePosetEqCompatible
+         testProperty "anti symmetric" propDoubleSemidecidableComparisonAntiSymmetric
         ,
-         testProperty "anti symmetric" propDoubleSemidecidablePosetAntiSymmetric
+         testProperty "transitive EQ" propDoubleSemidecidableComparisonTransitiveEQ
         ,
-         testProperty "transitive" propDoubleSemidecidablePosetTransitive
+         testProperty "transitive LE" propDoubleSemidecidableComparisonTransitiveLE
         ,
-         testProperty "extrema" propDoubleExtremaInSemidecidablePoset
+         testProperty "transitive LT" propDoubleSemidecidableComparisonTransitiveLT
+        ,
+         testProperty "extrema" propDoubleExtremaInSemidecidableComparison
         ]
 
-instance NumOrd.Poset Double where
+instance NumOrd.Comparison Double where
     compare a b =
         case (isNaN a, isNaN b) of
            (False, False) -> toPartialOrdering $ Prelude.compare a b  
-           _ -> throw (AERNException $ "illegal Double argument: NumOrd.Poset.compare " 
+           _ -> throw (AERNException $ "illegal Double argument: NumOrd.Comparison.compare " 
                         ++ show a ++ " " ++ show b) 
 
-propDoublePosetNaNException :: Double -> Bool
-propDoublePosetNaNException =
-    NumOrd.propPosetIllegalArgException nan
+propDoubleComparisonNaNException :: Double -> Bool
+propDoubleComparisonNaNException =
+    NumOrd.propComparisonIllegalArgException nan
     where
     nan = 0/0  
     
-propDoublePosetEqCompatible :: Double -> Double -> Bool
-propDoublePosetEqCompatible = NumOrd.propPosetEqCompatible
+propDoubleComparisonAntiSymmetric :: NumOrd.UniformlyOrderedPair Double -> Bool
+propDoubleComparisonAntiSymmetric = NumOrd.propComparisonAntiSymmetric
 
-propDoublePosetAntiSymmetric :: UniformlyOrderedPair Double -> Bool
-propDoublePosetAntiSymmetric = NumOrd.propPosetAntiSymmetric
+propDoubleComparisonTransitiveEQ :: Double -> Double -> Double -> Bool
+propDoubleComparisonTransitiveEQ = NumOrd.propComparisonTransitiveEQ
 
-propDoublePosetTransitive :: Double -> Double -> Double -> Bool
-propDoublePosetTransitive = NumOrd.propPosetTransitive
+propDoubleComparisonTransitiveLT :: Double -> Double -> Double -> Bool
+propDoubleComparisonTransitiveLT = NumOrd.propComparisonTransitiveLT
 
-propDoubleExtremaInPoset :: Double -> Bool
-propDoubleExtremaInPoset = NumOrd.propExtremaInPoset
+propDoubleComparisonTransitiveLE :: Double -> Double -> Double -> Bool
+propDoubleComparisonTransitiveLE = NumOrd.propComparisonTransitiveLE
 
-testsDoublePoset :: Test
-testsDoublePoset =
+propDoubleExtremaInComparison :: Double -> Bool
+propDoubleExtremaInComparison = NumOrd.propExtremaInComparison
+
+testsDoubleComparison :: Test
+testsDoubleComparison =
     testGroup "Double (>=)" 
         [
-         testProperty "NaN exception" propDoublePosetNaNException
+         testProperty "NaN exception" propDoubleComparisonNaNException
         ,
-         testProperty "equality compatible" propDoublePosetEqCompatible
+         testProperty "anti symmetric" propDoubleComparisonAntiSymmetric
         ,
-         testProperty "anti symmetric" propDoublePosetAntiSymmetric
+         testProperty "transitive EQ" propDoubleComparisonTransitiveEQ
         ,
-         testProperty "transitive" propDoublePosetTransitive
+         testProperty "transitive LT" propDoubleComparisonTransitiveLT
         ,
-         testProperty "extrema" propDoubleExtremaInPoset
+         testProperty "transitive LE" propDoubleComparisonTransitiveLE
+        ,
+         testProperty "extrema" propDoubleExtremaInComparison
         ]
 
 instance NumOrd.Lattice Double where
@@ -137,34 +144,34 @@ propDoubleLatticeNaNException =
     where
     nan = 0/0  
     
-propDoubleLatticePosetCompatible :: UniformlyOrderedPair Double -> Bool
-propDoubleLatticePosetCompatible = NumOrd.propLatticePosetCompatible
+propDoubleLatticeComparisonCompatible :: NumOrd.UniformlyOrderedPair Double -> Bool
+propDoubleLatticeComparisonCompatible = NumOrd.propLatticeComparisonCompatible
 
-propDoubleLatticeJoinAboveBoth :: UniformlyOrderedPair Double -> Bool
+propDoubleLatticeJoinAboveBoth :: NumOrd.UniformlyOrderedPair Double -> Bool
 propDoubleLatticeJoinAboveBoth = NumOrd.propLatticeJoinAboveBoth
 
-propDoubleLatticeMeetBelowBoth :: UniformlyOrderedPair Double -> Bool
+propDoubleLatticeMeetBelowBoth :: NumOrd.UniformlyOrderedPair Double -> Bool
 propDoubleLatticeMeetBelowBoth = NumOrd.propLatticeMeetBelowBoth
 
 propDoubleLatticeJoinIdempotent :: Double -> Bool
 propDoubleLatticeJoinIdempotent = NumOrd.propLatticeJoinIdempotent
 
-propDoubleLatticeJoinCommutative :: UniformlyOrderedPair Double -> Bool
+propDoubleLatticeJoinCommutative :: NumOrd.UniformlyOrderedPair Double -> Bool
 propDoubleLatticeJoinCommutative = NumOrd.propLatticeJoinCommutative
 
-propDoubleLatticeJoinAssocative :: UniformlyOrderedTriple Double -> Bool
+propDoubleLatticeJoinAssocative :: NumOrd.UniformlyOrderedTriple Double -> Bool
 propDoubleLatticeJoinAssocative = NumOrd.propLatticeJoinAssocative
 
 propDoubleLatticeMeetIdempotent :: Double -> Bool
 propDoubleLatticeMeetIdempotent = NumOrd.propLatticeMeetIdempotent
 
-propDoubleLatticeMeetCommutative :: UniformlyOrderedPair Double -> Bool
+propDoubleLatticeMeetCommutative :: NumOrd.UniformlyOrderedPair Double -> Bool
 propDoubleLatticeMeetCommutative = NumOrd.propLatticeMeetCommutative
 
-propDoubleLatticeMeetAssocative :: UniformlyOrderedTriple Double -> Bool
+propDoubleLatticeMeetAssocative :: NumOrd.UniformlyOrderedTriple Double -> Bool
 propDoubleLatticeMeetAssocative = NumOrd.propLatticeMeetAssocative
 
-propDoubleLatticeDistributive :: UniformlyOrderedTriple Double -> Bool
+propDoubleLatticeDistributive :: NumOrd.UniformlyOrderedTriple Double -> Bool
 propDoubleLatticeDistributive = NumOrd.propLatticeDistributive
 
 testsDoubleLattice :: Test
@@ -173,7 +180,7 @@ testsDoubleLattice =
         [
          testProperty "NaN exception" propDoubleLatticeNaNException
         ,
-         testProperty "poset compatible" propDoubleLatticePosetCompatible
+         testProperty "Comparison compatible" propDoubleLatticeComparisonCompatible
         ,
          testProperty "join above" propDoubleLatticeJoinAboveBoth
         ,
@@ -207,37 +214,37 @@ propDoubleRoundedLatticeNaNException =
     where
     nan = 0/0  
     
-propDoubleRoundedLatticePosetCompatible :: UniformlyOrderedPair Double -> Bool
-propDoubleRoundedLatticePosetCompatible = NumOrd.propRoundedLatticePosetCompatible
+propDoubleRoundedLatticeComparisonCompatible :: NumOrd.UniformlyOrderedPair Double -> Bool
+propDoubleRoundedLatticeComparisonCompatible = NumOrd.propRoundedLatticeComparisonCompatible
 
-propDoubleRoundedLatticeJoinAboveBoth :: UniformlyOrderedPair Double -> Bool
+propDoubleRoundedLatticeJoinAboveBoth :: NumOrd.UniformlyOrderedPair Double -> Bool
 propDoubleRoundedLatticeJoinAboveBoth = NumOrd.propRoundedLatticeJoinAboveBoth
 
-propDoubleRoundedLatticeMeetBelowBoth :: UniformlyOrderedPair Double -> Bool
+propDoubleRoundedLatticeMeetBelowBoth :: NumOrd.UniformlyOrderedPair Double -> Bool
 propDoubleRoundedLatticeMeetBelowBoth = NumOrd.propRoundedLatticeMeetBelowBoth
 
 propDoubleRoundedLatticeJoinIdempotent :: Double -> Bool
 propDoubleRoundedLatticeJoinIdempotent = NumOrd.propRoundedLatticeJoinIdempotent
 
-propDoubleRoundedLatticeJoinCommutative :: UniformlyOrderedPair Double -> Bool
+propDoubleRoundedLatticeJoinCommutative :: NumOrd.UniformlyOrderedPair Double -> Bool
 propDoubleRoundedLatticeJoinCommutative = NumOrd.propRoundedLatticeJoinCommutative
 
-propDoubleRoundedLatticeJoinAssocative :: UniformlyOrderedTriple Double -> Bool
+propDoubleRoundedLatticeJoinAssocative :: NumOrd.UniformlyOrderedTriple Double -> Bool
 propDoubleRoundedLatticeJoinAssocative = NumOrd.propRoundedLatticeJoinAssocative
 
 propDoubleRoundedLatticeMeetIdempotent :: Double -> Bool
 propDoubleRoundedLatticeMeetIdempotent = NumOrd.propRoundedLatticeMeetIdempotent
 
-propDoubleRoundedLatticeMeetCommutative :: UniformlyOrderedPair Double -> Bool
+propDoubleRoundedLatticeMeetCommutative :: NumOrd.UniformlyOrderedPair Double -> Bool
 propDoubleRoundedLatticeMeetCommutative = NumOrd.propRoundedLatticeMeetCommutative
 
-propDoubleRoundedLatticeMeetAssocative :: UniformlyOrderedTriple Double -> Bool
+propDoubleRoundedLatticeMeetAssocative :: NumOrd.UniformlyOrderedTriple Double -> Bool
 propDoubleRoundedLatticeMeetAssocative = NumOrd.propRoundedLatticeMeetAssocative
 
-propDoubleRoundedLatticeModular :: UniformlyOrderedTriple Double -> Bool
+propDoubleRoundedLatticeModular :: NumOrd.UniformlyOrderedTriple Double -> Bool
 propDoubleRoundedLatticeModular = NumOrd.propRoundedLatticeModular
 
-propDoubleRoundedLatticeDistributive :: UniformlyOrderedTriple Double -> Bool
+propDoubleRoundedLatticeDistributive :: NumOrd.UniformlyOrderedTriple Double -> Bool
 propDoubleRoundedLatticeDistributive = NumOrd.propRoundedLatticeDistributive
 
 testsDoubleRoundedLattice :: Test
@@ -246,7 +253,7 @@ testsDoubleRoundedLattice =
         [
          testProperty "NaN exception" propDoubleRoundedLatticeNaNException
         ,
-         testProperty "poset compatible" propDoubleRoundedLatticePosetCompatible
+         testProperty "Comparison compatible" propDoubleRoundedLatticeComparisonCompatible
         ,
          testProperty "join above" propDoubleRoundedLatticeJoinAboveBoth
         ,
@@ -268,97 +275,111 @@ testsDoubleRoundedLattice =
         ]
 
 
-instance ArbitraryOrderedTuple Double where
-    {--------------- pairs --------------}
-    arbitraryPairRelatedBy EQ = Just $
-        do
-        d <- arbitrary
-        return (d,d)
-    arbitraryPairRelatedBy LT = Just gen
-        where
-        gen =
-            do
-            (d1u, d2u) <- incrSize arbitrary
-            let [d1,d2] = sort [d1u,d2u]
-            if d1 < d2
-                then return (d1,d2)
-                else  gen -- bad luck, try again
-    arbitraryPairRelatedBy GT = Just $
-        do
-        (d1,d2) <- fromJust $ arbitraryPairRelatedBy LT
-        return (d2,d1)
-    arbitraryPairRelatedBy NC = Nothing
---        Just gen
+instance NumOrd.ArbitraryOrderedTuple Double where
+   arbitraryTupleRelatedBy indices constraints =
+       Nothing --TODO
+--       tryUntilJust 10 $ 
+         
+{-
+   1. convert all GT and GE to LT and LE
+   2. for each LE choose randomly between EQ and LT
+   3. collapse to EQ groups
+   4. find all linearisations, if none go back to 2
+   5. pick a random linearisation
+   6. generate numbers, sort them and assign to EQ groups
+-}         
+
+
+--    {--------------- pairs --------------}
+--    arbitraryPairRelatedBy EQ = Just $
+--        do
+--        d <- arbitrary
+--        return (d,d)
+--    arbitraryPairRelatedBy LT = Just gen
 --        where
 --        gen =
 --            do
---            d <- arbitrary
---            case isNaN d of
---               True -> gen -- bad luck, try again
---               _ -> elements [(nan,d), (d,nan)]
---        nan = 0/0
-    {--------------- no NC allowed in triples ----------------}
-    arbitraryTripleRelatedBy (NC,_ ,_ ) = Nothing
-    arbitraryTripleRelatedBy (_ ,NC,_ ) = Nothing
-    arbitraryTripleRelatedBy (_ ,_ ,NC) = Nothing
-    {--------------- triples with some equality --------------}
-    arbitraryTripleRelatedBy (EQ, r2, r3) | r2 == r3 = Just $ -- e1 = e2
-        do
-        (d2,d3) <- fromJust $ arbitraryPairRelatedBy r2
-        return (d2,d2,d3)
-    arbitraryTripleRelatedBy (r1, EQ, r3) | r1 == r3 = Just $
-        do
-        (d1,d3) <- fromJust $ arbitraryPairRelatedBy r3
-        return (d1,d3,d3)
-    arbitraryTripleRelatedBy (r1, r2, EQ) | r1 == partialOrderingTranspose r2 = Just $
-        do
-        (d1,d2) <- fromJust $ arbitraryPairRelatedBy r1
-        return (d1,d2,d1)
---    {--------------- triples with some NaN but no equality -------}
---    arbitraryTripleRelatedBy (NC, NC, NC) = Nothing -- Double consists of 2 linearly ordered components
---    arbitraryTripleRelatedBy (NC, NC, r3) = Just $ -- e2 = NaN
+--            (d1u, d2u) <- incrSize arbitrary
+--            let [d1,d2] = sort [d1u,d2u]
+--            if d1 < d2
+--                then return (d1,d2)
+--                else  gen -- bad luck, try again
+--    arbitraryPairRelatedBy GT = Just $
 --        do
---        (d1,d3) <- fromJust $ arbitraryPairRelatedBy r3
---        return (d1,0/0,d3)
---    arbitraryTripleRelatedBy (NC, r2, NC) = Just $ -- e1 = NaN
+--        (d1,d2) <- fromJust $ arbitraryPairRelatedBy LT
+--        return (d2,d1)
+--    arbitraryPairRelatedBy NC = Nothing
+----        Just gen
+----        where
+----        gen =
+----            do
+----            d <- arbitrary
+----            case isNaN d of
+----               True -> gen -- bad luck, try again
+----               _ -> elements [(nan,d), (d,nan)]
+----        nan = 0/0
+--    {--------------- no NC allowed in triples ----------------}
+--    arbitraryTripleRelatedBy (NC,_ ,_ ) = Nothing
+--    arbitraryTripleRelatedBy (_ ,NC,_ ) = Nothing
+--    arbitraryTripleRelatedBy (_ ,_ ,NC) = Nothing
+--    {--------------- triples with some equality --------------}
+--    arbitraryTripleRelatedBy (EQ, r2, r3) | r2 == r3 = Just $ -- e1 = e2
 --        do
 --        (d2,d3) <- fromJust $ arbitraryPairRelatedBy r2
---        return (0/0,d2,d3)
---    arbitraryTripleRelatedBy (r1, NC, NC) = Just $ -- e3 = NaN
+--        return (d2,d2,d3)
+--    arbitraryTripleRelatedBy (r1, EQ, r3) | r1 == r3 = Just $
+--        do
+--        (d1,d3) <- fromJust $ arbitraryPairRelatedBy r3
+--        return (d1,d3,d3)
+--    arbitraryTripleRelatedBy (r1, r2, EQ) | r1 == partialOrderingTranspose r2 = Just $
 --        do
 --        (d1,d2) <- fromJust $ arbitraryPairRelatedBy r1
---        return (d1,d2,0/0)
---    -- cannot have single NC because it forces NaN which forces two NCs 
---    -- (except equality which was sorted out earlier)
-    {--------------- strictly ordered triples ----------}
-    arbitraryTripleRelatedBy (LT, LT, LT) = Just gen
-        where
-        gen =
-            do
-            (d1u, d2u, d3u) <- incrSize arbitrary
-            let [d1,d2,d3] = sort [d1u,d2u,d3u] 
-            if d1 < d2 && d2 < d3 
-                then return (d1,d2,d3)
-                else gen -- bad luck, try again
-    arbitraryTripleRelatedBy (LT, GT, LT) = Just $
-        do
-        (d1,d2,d3) <- fromJust $ arbitraryTripleRelatedBy (LT, LT, LT)
-        return (d1,d3,d2)
-    arbitraryTripleRelatedBy (GT, LT, LT) = Just $
-        do
-        (d1,d2,d3) <- fromJust $ arbitraryTripleRelatedBy (LT, LT, LT)
-        return (d2,d1,d3)
-    arbitraryTripleRelatedBy (GT, LT, GT) = Just $
-        do
-        (d1,d2,d3) <- fromJust $ arbitraryTripleRelatedBy (LT, LT, LT)
-        return (d3,d1,d2)
-    arbitraryTripleRelatedBy (LT, GT, GT) = Just $
-        do
-        (d1,d2,d3) <- fromJust $ arbitraryTripleRelatedBy (LT, LT, LT)
-        return (d2,d3,d1)
-    arbitraryTripleRelatedBy (GT, GT, GT) = Just $
-        do
-        (d1,d2,d3) <- fromJust $ arbitraryTripleRelatedBy (LT, LT, LT)
-        return (d3,d2,d1)
-
+--        return (d1,d2,d1)
+----    {--------------- triples with some NaN but no equality -------}
+----    arbitraryTripleRelatedBy (NC, NC, NC) = Nothing -- Double consists of 2 linearly ordered components
+----    arbitraryTripleRelatedBy (NC, NC, r3) = Just $ -- e2 = NaN
+----        do
+----        (d1,d3) <- fromJust $ arbitraryPairRelatedBy r3
+----        return (d1,0/0,d3)
+----    arbitraryTripleRelatedBy (NC, r2, NC) = Just $ -- e1 = NaN
+----        do
+----        (d2,d3) <- fromJust $ arbitraryPairRelatedBy r2
+----        return (0/0,d2,d3)
+----    arbitraryTripleRelatedBy (r1, NC, NC) = Just $ -- e3 = NaN
+----        do
+----        (d1,d2) <- fromJust $ arbitraryPairRelatedBy r1
+----        return (d1,d2,0/0)
+----    -- cannot have single NC because it forces NaN which forces two NCs 
+----    -- (except equality which was sorted out earlier)
+--    {--------------- strictly ordered triples ----------}
+--    arbitraryTripleRelatedBy (LT, LT, LT) = Just gen
+--        where
+--        gen =
+--            do
+--            (d1u, d2u, d3u) <- incrSize arbitrary
+--            let [d1,d2,d3] = sort [d1u,d2u,d3u] 
+--            if d1 < d2 && d2 < d3 
+--                then return (d1,d2,d3)
+--                else gen -- bad luck, try again
+--    arbitraryTripleRelatedBy (LT, GT, LT) = Just $
+--        do
+--        (d1,d2,d3) <- fromJust $ arbitraryTripleRelatedBy (LT, LT, LT)
+--        return (d1,d3,d2)
+--    arbitraryTripleRelatedBy (GT, LT, LT) = Just $
+--        do
+--        (d1,d2,d3) <- fromJust $ arbitraryTripleRelatedBy (LT, LT, LT)
+--        return (d2,d1,d3)
+--    arbitraryTripleRelatedBy (GT, LT, GT) = Just $
+--        do
+--        (d1,d2,d3) <- fromJust $ arbitraryTripleRelatedBy (LT, LT, LT)
+--        return (d3,d1,d2)
+--    arbitraryTripleRelatedBy (LT, GT, GT) = Just $
+--        do
+--        (d1,d2,d3) <- fromJust $ arbitraryTripleRelatedBy (LT, LT, LT)
+--        return (d2,d3,d1)
+--    arbitraryTripleRelatedBy (GT, GT, GT) = Just $
+--        do
+--        (d1,d2,d3) <- fromJust $ arbitraryTripleRelatedBy (LT, LT, LT)
+--        return (d3,d2,d1)
+--
 

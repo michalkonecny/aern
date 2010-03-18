@@ -43,9 +43,9 @@ Library
     Numeric.AERN.RealArithmetic.Interval.Double
 
   Other-modules:
-    Numeric.AERN.RealArithmetic.Basis.Double.Equality
     Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
     Numeric.AERN.RealArithmetic.Interval.Double.Basics
     Numeric.AERN.RealArithmetic.Interval.Double.NumericOrder
+    Numeric.AERN.RealArithmetic.Interval.Double.RefinementOrder
     
     
