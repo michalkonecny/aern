@@ -40,41 +40,33 @@ class ArbitraryOrderedTuple t where
         nothing if in this structure there are no tuples satisfying these requirements -}
     arbitraryTupleRelatedBy ::
         (Ord ix) => 
-        Set.Set ix {-^ how many elements should be generated and with what names -} -> 
-        Map.Map (ix, ix) [PartialOrdering]
-           {-^ required orderings for some elements -} -> 
-        Maybe (Gen (Map.Map ix t)) {-^ generator for the indexed element tuples if the requirements make sense -}   
+        [ix] {-^ how many elements should be generated and with what names -} -> 
+        [((ix, ix),[PartialOrdering])]
+           {-^ required orderings for some pairs of elements -} -> 
+        Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}   
 
 arbitraryPairRelatedBy ::
     (ArbitraryOrderedTuple t) => PartialOrdering -> Maybe (Gen (t,t))
 arbitraryPairRelatedBy rel =
-    case arbitraryTupleRelatedBy set12 constraints of
+    case arbitraryTupleRelatedBy [1,2] [((1,2),[rel])] of
         Nothing -> Nothing
         Just gen -> Just $
             do
-            tupleMap <- gen 
-            return (lk tupleMap 1, lk tupleMap 2)
-    where
-    set12 = Set.fromList [1,2]
-    constraints = Map.fromList [((1,2),[rel])]
-    lk tupleMap ix = 
-        Map.findWithDefault (error "internal error in arbitraryPairRelatedBy") ix tupleMap 
+            [e1,e2] <- gen 
+            return (e1,e2)
 
 arbitraryTripleRelatedBy ::
     (ArbitraryOrderedTuple t) => 
     (PartialOrdering, PartialOrdering, PartialOrdering) -> Maybe (Gen (t,t,t))
 arbitraryTripleRelatedBy (r1, r2, r3) =
-    case arbitraryTupleRelatedBy set123 constraints of
+    case arbitraryTupleRelatedBy [1,2,3] constraints of
         Nothing -> Nothing
         Just gen -> Just $
             do
-            tupleMap <- gen
-            return (lk tupleMap 1, lk tupleMap 2, lk tupleMap 3)
+            [e1,e2,e3] <- gen
+            return (e1, e2, e3)
     where
-    set123 = Set.fromList [1,2,3]
-    constraints = Map.fromList [((1,2),[r1]), ((2,3),[r2]), ((1,3),[r3])]
-    lk tupleMap ix = 
-        Map.findWithDefault (error "internal error in arbitraryTripleRelatedBy") ix tupleMap 
+    constraints = [((1,2),[r1]), ((2,3),[r2]), ((1,3),[r3])]
 
 {-| type for generating pairs distributed in such a way that all ordering relations 
     permitted by this structure have similar probabilities of occurrence -}
