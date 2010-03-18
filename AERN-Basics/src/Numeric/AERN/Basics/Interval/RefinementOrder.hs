@@ -41,4 +41,10 @@ instance (NumOrd.HasExtrema e) => (RefOrd.HasBottom (Interval e))
 instance (NumOrd.HasExtrema e) => (RefOrd.HasExtrema (Interval e))
 
 -- TODO: add instances for Basis, OuterRoundedBasis, InnerRoundedBasis
---       Lattice, OuterRoundedLattice, InnerRoundedLattice    
+--       Lattice, OuterRoundedLattice, InnerRoundedLattice
+
+
+instance (NumOrd.ArbitraryOrderedTuple e) => RefOrd.ArbitraryOrderedTuple (Interval e) where
+   arbitraryTupleRelatedBy indices constraints =
+       Nothing --TODO
+    
