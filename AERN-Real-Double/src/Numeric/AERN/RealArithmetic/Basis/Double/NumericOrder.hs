@@ -33,6 +33,7 @@ import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import Numeric.AERN.Misc.List
+import Numeric.AERN.Misc.Debug
 
 import Data.Maybe
 import qualified Data.List as List
@@ -290,9 +291,15 @@ instance NumOrd.ArbitraryOrderedTuple Double where
               let sortedIndices = List.sortBy (turnIntoOrdering cMap) indices
               let sortedIndicesGrouped = List.groupBy (turnIntoEquality cMap) sortedIndices
               ds <- vectorOf (length sortedIndicesGrouped) arbitrary
-              return $ map snd $ List.sort $ concat $ zipWith zip sortedIndicesGrouped $ map repeat ds 
+              return $ 
+                  map snd $ 
+                      List.sort $ 
+                          concat $ 
+                              zipWith zip sortedIndicesGrouped $ 
+                                  map repeat $ 
+                                      List.sort ds 
        where
-       consistentUnambiguousConstraints = 
+       consistentUnambiguousConstraints =
            pickConsistentOrderings permittedInLinearOrder indices constraints
        turnIntoOrdering cMap a b =
            case (Map.lookup (a,b) cMap, Map.lookup (b,a) cMap) of
