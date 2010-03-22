@@ -12,7 +12,7 @@
 -}
 module Numeric.AERN.Misc.QuickCheck where
 
-import Data.List as List
+import qualified Data.List as List
 import Test.QuickCheck
 
 {-| Run the generator with size increased by 1 (useful for avoiding 
