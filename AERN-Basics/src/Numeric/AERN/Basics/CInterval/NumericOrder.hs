@@ -20,10 +20,15 @@ import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.CInterval
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
+import Numeric.AERN.Misc.List
+import Numeric.AERN.Misc.Debug
+
 import Test.QuickCheck
 
+import Data.Maybe
+
 {-|
-    Default default effort indicators for numerically comparing interval types. 
+    Default default effort indicators for numerically comparing 'CInterval' types. 
 -}
 maybeCompareDefaultEffortInterval ::
         (CInterval i, NumOrd.SemidecidableComparison (Endpoint i)) => 
@@ -36,7 +41,7 @@ maybeCompareDefaultEffortInterval i =
     (l,h) = getEndpoints i
         
 {-|
-    Default numerical comparison for interval types.
+    Default numerical comparison for 'CInterval' types.
 -}
 maybeCompareEffInterval ::
         (CInterval i, NumOrd.SemidecidableComparison (Endpoint i)) => 
@@ -46,15 +51,24 @@ maybeCompareEffInterval effort i1 i2 =
         (Just EQ, Just EQ, Just EQ, _) -> Just EQ
         (Just LT, Just LT, Just LT, Just LT) -> Just LT  
         (Just GT, Just GT, Just GT, Just GT) -> Just GT
-        (Just NC, Just NC, Just NC, Just NC) -> Just NC
-        _ -> Nothing
+        (Just relLL, Just relLH, Just EQ, Just relHH) --touching but not all equal
+            | relLL `elem` [LT, LEE, EQ] &&  
+              relHH `elem` [LT, LEE, EQ] && 
+              relLH `elem` [LT, LEE] 
+              -> Just LEE
+        (Just relLL, Just EQ, Just relHL, Just relHH) --touching but not all equal 
+            | relLL `elem` [GT, GEE, EQ] &&  
+              relHH `elem` [GT, GEE, EQ] && 
+              relHL `elem` [GT, GEE] 
+              -> Just GEE
+        _ -> Just NC
     where
     c = NumOrd.maybeCompareEff effort 
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
 
 {-|
-    Default binary minimum for interval types.
+    Default binary minimum for 'CInterval' types.
 -}
 minInterval ::
     (CInterval i, NumOrd.Lattice (Endpoint i)) =>
@@ -66,7 +80,7 @@ minInterval i1 i2 =
     (l2, h2) = getEndpoints i2
 
 {-|
-    Default binary maximum for interval types.
+    Default binary maximum for 'CInterval' types.
 -}
 maxInterval ::
     (CInterval i, NumOrd.Lattice (Endpoint i)) =>
@@ -85,13 +99,115 @@ highestInterval ::
     (CInterval i, NumOrd.HasHighest (Endpoint i)) => i
 highestInterval = fromEndpoints (NumOrd.highest, NumOrd.highest)
 
-arbitraryIntervalPairRelatedBy :: 
-    (CInterval i, Arbitrary (Endpoint i), NumOrd.ArbitraryOrderedTuple (Endpoint i)) =>
-    PartialOrdering -> Maybe (Gen (i,i)) 
-arbitraryIntervalPairRelatedBy EQ =
-    Just $
-       do
-       endpoint <- arbitrary
-       let interval = fromEndpoints (endpoint, endpoint) 
-       return $ (interval, interval)
-       
+{-|
+     A function that can serve as a default implementation of
+     the 'NumOrd.ArbitraryOrderedTuple' class for 'CInterval' types.
+-}
+arbitraryIntervalTupleRelatedBy :: 
+    (Ord ix, Show ix, CInterval i, NumOrd.ArbitraryOrderedTuple (Endpoint i)) =>
+    [ix] {-^ how many elements should be generated and with what names -} -> 
+    [((ix, ix),[PartialOrdering])]
+       {-^ required orderings for some pairs of elements -} -> 
+    Maybe (Gen [i]) {-^ generator for tuples if the requirements make sense -}   
+arbitraryIntervalTupleRelatedBy indices constraints =
+    case endpointGens of 
+        [] -> Nothing
+        _ -> Just $
+            do
+            gen <- elements endpointGens
+            endpointTuple <- gen
+            return $ endpointsToIntervals endpointTuple
+    where
+    endpointGens = 
+        catMaybes $
+           map (NumOrd.arbitraryTupleRelatedBy endpointIndices) endpointConstraintsVersions
+    endpointIndices = 
+        concat $ map (\ix -> [(ix,-1), (ix,1)]) indices
+    endpointsToIntervals [] = []
+    endpointsToIntervals (l : h : rest) =
+        (fromEndpoints (l,h)) : (endpointsToIntervals rest)
+    endpointConstraintsVersions =
+--        unsafePrintReturn 
+--        ("arbitraryIntervalTupleRelatedBy:"
+--         ++ "\n indices = " ++ show indices 
+--         ++ "\n constraints = " ++ show constraints 
+--         ++ "\n endpointIndices = " ++ show endpointIndices 
+--         ++ "\n endpointConstraintsVersions = "
+--        ) $
+        map concat $ combinations $ map intervalConstraintsToEndpointConstraints constraints
+    intervalConstraintsToEndpointConstraints :: 
+        ((ix, ix), [PartialOrdering]) -> [[(((ix,Int), (ix,Int)), [PartialOrdering])]]
+    intervalConstraintsToEndpointConstraints ((ix1, ix2),rels) =
+        concat $ map forEachRel rels
+        where
+        endpoints1Comparable = [(((ix1,-1),(ix1, 1)), [EQ,LT,LEE,GT,GEE])]
+        endpoints2Comparable = [(((ix2,-1),(ix2, 1)), [EQ,LT,LEE,GT,GEE])]
+        endpointsComparable = endpoints1Comparable ++ endpoints2Comparable
+        forEachRel EQ = -- both must be thin and equal 
+            [[(((ix1,-1),(ix1,1)), [EQ]), (((ix1,1),(ix2,1)), [EQ]), (((ix2,-1),(ix2,1)), [EQ])]]
+        forEachRel LT = -- both endpoints of ix1 must be less than both endpoints of ix2  
+            [
+                endpointsComparable ++ 
+                [(((ix1,side1),(ix2,side2)), [LT]) | side1 <- [-1,1], side2 <- [-1,1]]
+            ]
+        forEachRel GT = -- both endpoints of ix1 must be greater than both endpoints of ix2  
+            [
+                endpointsComparable ++ 
+                [(((ix1,side1),(ix2,side2)), [GT]) | side1 <- [-1,1], side2 <- [-1,1]]
+            ]
+        forEachRel LEE =
+            [
+                endpointsComparable ++
+                [(((ix1,1),(ix2,-1)), [EQ]), 
+                 (((ix1,1),(ix2,1)), [LT,LEE,EQ]), (((ix1,-1),(ix2,-1)), [LT,LEE,EQ]),
+                 (((ix1,-1),(ix2,1)), [LT,LEE])]
+            ]
+        forEachRel GEE =
+            [
+                endpointsComparable ++
+                [(((ix1,-1),(ix2,1)), [EQ]), 
+                 (((ix1,1),(ix2,1)), [GT,GEE,EQ]), (((ix1,-1),(ix2,-1)), [GT,GEE,EQ]),
+                 (((ix1,1),(ix2,-1)), [GT,GEE])]
+            ]
+        forEachRel NC =
+            -- either some pair of endpoints is NC:
+            [ endpointsComparable ++ [(((ix1,side1), (ix2, side2)),[NC])]  
+               | side1 <- [-1,1], side2 <- [-1,1]
+            ]
+            ++
+            -- or the interval ix1 is indide ix2 + ix1 does not coincide with ix2's endpoint
+            [
+                endpointsComparable ++
+                [(((ix1,-1),(ix2,-1)), [EQ, GT, GEE])] ++ 
+                [(((ix1,1),(ix2,-1)), [GT, GEE])] ++ 
+                [(((ix1,-1),(ix2,1)), [LT, LEE])] ++
+                [(((ix1,1),(ix2,1)), [EQ, LT, LEE])]
+            ]
+            ++
+            -- or the interval ix2 is indide ix1 + ix2 does not coincide with ix1's endpoint
+            [
+                endpointsComparable ++
+                [(((ix2,-1),(ix1,-1)), [EQ, GT, GEE])] ++ 
+                [(((ix2,1),(ix1,-1)), [GT, GEE])] ++ 
+                [(((ix2,-1),(ix1,1)), [LT, LEE])] ++
+                [(((ix2,1),(ix1,1)), [EQ, LT, LEE])]
+            ]
+            ++
+            -- or the interval ix1 overlaps ix2 and ix1 is slightly to the left of ix2
+            [
+                endpointsComparable ++
+                [(((ix1,-1),(ix2,-1)), [EQ, LT, LEE]), 
+                 (((ix1,1),(ix2,1)), [EQ,LT,LEE]),
+                 (((ix1,-1),(ix2,1)), [LT, LEE]),
+                 (((ix1,1),(ix2,-1)), [GT, GEE])]
+            ]
+            ++
+            -- or the interval ix1 overlaps ix2 and ix1 is slightly to the right of ix2
+            [
+                endpointsComparable ++
+                [(((ix2,-1),(ix1,-1)), [EQ, LT, LEE]), 
+                 (((ix2,1),(ix1,1)), [EQ,LT,LEE]),
+                 (((ix2,-1),(ix1,1)), [LT, LEE]),
+                 (((ix2,1),(ix1,-1)), [GT, GEE])]
+            ]
+            
