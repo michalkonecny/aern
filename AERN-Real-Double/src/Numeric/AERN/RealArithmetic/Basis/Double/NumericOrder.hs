@@ -32,8 +32,12 @@ import Numeric.AERN.Misc.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+import Numeric.AERN.Misc.List
+
 import Data.Maybe
-import Data.List (sort)
+import qualified Data.List as List
+import qualified Data.Map as Map
+--import qualified Data.Set as Set
 
 instance NumOrd.HasLeast Double where
     least = - 1/0
@@ -277,18 +281,28 @@ testsDoubleRoundedLattice =
 
 instance NumOrd.ArbitraryOrderedTuple Double where
    arbitraryTupleRelatedBy indices constraints =
-       Nothing --TODO
---       tryUntilJust 10 $ 
-         
-{-
-   1. convert all GT and GE to LT and LE
-   2. for each LE choose randomly between EQ and LT
-   3. collapse to EQ groups
-   4. find all linearisations, if none go back to 2
-   5. pick a random linearisation
-   6. generate numbers, sort them and assign to EQ groups
--}         
-
+       case consistentUnambiguousConstraints of
+          [] -> Nothing
+          _ -> Just $
+              do
+              unambiguousConstraints <- elements consistentUnambiguousConstraints
+              let cMap = Map.fromList unambiguousConstraints
+              let sortedIndices = List.sortBy (turnIntoOrdering cMap) indices
+              let sortedIndicesGrouped = List.groupBy (turnIntoEquality cMap) sortedIndices
+              ds <- vectorOf (length sortedIndicesGrouped) arbitrary
+              return $ map snd $ List.sort $ concat $ zipWith zip sortedIndicesGrouped $ map repeat ds 
+       where
+       consistentUnambiguousConstraints = 
+           pickConsistentOrderings permittedInLinearOrder indices constraints
+       turnIntoOrdering cMap a b =
+           case (Map.lookup (a,b) cMap, Map.lookup (b,a) cMap) of
+               (Just pord, _) -> fromPartialOrdering pord
+               (_, Just pord) -> fromPartialOrdering $ partialOrderingTranspose pord
+       turnIntoEquality cMap a b =
+           case (Map.lookup (a,b) cMap, Map.lookup (b,a) cMap) of
+               (Just pord, _) -> pord == EQ
+               (_, Just pord) -> pord == EQ
+       
 
 --    {--------------- pairs --------------}
 --    arbitraryPairRelatedBy EQ = Just $
