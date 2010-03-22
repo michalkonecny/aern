@@ -54,14 +54,19 @@ maybeCompareEffInterval effort i1 i2 =
         (Just relLL, Just relLH, Just EQ, Just relHH) --touching but not all equal
             | relLL `elem` [LT, LEE, EQ] &&  
               relHH `elem` [LT, LEE, EQ] && 
-              relLH `elem` [LT, LEE] 
+              relLH `elem` [LT, LEE]
               -> Just LEE
         (Just relLL, Just EQ, Just relHL, Just relHH) --touching but not all equal 
             | relLL `elem` [GT, GEE, EQ] &&  
               relHH `elem` [GT, GEE, EQ] && 
               relHL `elem` [GT, GEE] 
               -> Just GEE
-        _ -> Just NC
+        (Just NC, _, _, _) -> Just NC  
+        (_, Just NC, _, _) -> Just NC  
+        (_, _, Just NC, _) -> Just NC  
+        (_, _, _, Just NC) -> Just NC  
+        _ -> Nothing
+--        _ -> Just NC -- if we want this to be a decidable order
     where
     c = NumOrd.maybeCompareEff effort 
     (l1, h1) = getEndpoints i1    
@@ -145,15 +150,51 @@ arbitraryIntervalTupleRelatedBy indices constraints =
         endpointsComparable = endpoints1Comparable ++ endpoints2Comparable
         forEachRel EQ = -- both must be thin and equal 
             [[(((ix1,-1),(ix1,1)), [EQ]), (((ix1,1),(ix2,1)), [EQ]), (((ix2,-1),(ix2,1)), [EQ])]]
+            ++ -- some cases where the order is not decided:
+            -- or the interval ix1 is indide ix2 + ix1 does not coincide with ix2's endpoint
+            [
+                endpointsComparable ++
+                [(((ix1,-1),(ix2,-1)), [EQ, GT, GEE])] ++ 
+                [(((ix1,1),(ix2,-1)), [GT, GEE])] ++ 
+                [(((ix1,-1),(ix2,1)), [LT, LEE])] ++
+                [(((ix1,1),(ix2,1)), [EQ, LT, LEE])]
+            ]
+            ++
+            -- or the interval ix2 is indide ix1 + ix2 does not coincide with ix1's endpoint
+            [
+                endpointsComparable ++
+                [(((ix2,-1),(ix1,-1)), [EQ, GT, GEE])] ++ 
+                [(((ix2,1),(ix1,-1)), [GT, GEE])] ++ 
+                [(((ix2,-1),(ix1,1)), [LT, LEE])] ++
+                [(((ix2,1),(ix1,1)), [EQ, LT, LEE])]
+            ]
         forEachRel LT = -- both endpoints of ix1 must be less than both endpoints of ix2  
             [
                 endpointsComparable ++ 
                 [(((ix1,side1),(ix2,side2)), [LT]) | side1 <- [-1,1], side2 <- [-1,1]]
             ]
+            ++ -- some undecidable cases:
+            -- or the interval ix1 overlaps ix2 and ix1 is slightly to the left of ix2
+            [
+                endpointsComparable ++
+                [(((ix1,-1),(ix2,-1)), [EQ, LT, LEE]), 
+                 (((ix1,1),(ix2,1)), [EQ,LT,LEE]),
+                 (((ix1,-1),(ix2,1)), [LT, LEE]),
+                 (((ix1,1),(ix2,-1)), [GT, GEE])]
+            ]
         forEachRel GT = -- both endpoints of ix1 must be greater than both endpoints of ix2  
             [
                 endpointsComparable ++ 
                 [(((ix1,side1),(ix2,side2)), [GT]) | side1 <- [-1,1], side2 <- [-1,1]]
+            ]
+            ++ -- some undecidable cases:
+            -- or the interval ix1 overlaps ix2 and ix1 is slightly to the right of ix2
+            [
+                endpointsComparable ++
+                [(((ix2,-1),(ix1,-1)), [EQ, LT, LEE]), 
+                 (((ix2,1),(ix1,1)), [EQ,LT,LEE]),
+                 (((ix2,-1),(ix1,1)), [LT, LEE]),
+                 (((ix2,1),(ix1,-1)), [GT, GEE])]
             ]
         forEachRel LEE =
             [
@@ -174,40 +215,40 @@ arbitraryIntervalTupleRelatedBy indices constraints =
             [ endpointsComparable ++ [(((ix1,side1), (ix2, side2)),[NC])]  
                | side1 <- [-1,1], side2 <- [-1,1]
             ]
-            ++
-            -- or the interval ix1 is indide ix2 + ix1 does not coincide with ix2's endpoint
-            [
-                endpointsComparable ++
-                [(((ix1,-1),(ix2,-1)), [EQ, GT, GEE])] ++ 
-                [(((ix1,1),(ix2,-1)), [GT, GEE])] ++ 
-                [(((ix1,-1),(ix2,1)), [LT, LEE])] ++
-                [(((ix1,1),(ix2,1)), [EQ, LT, LEE])]
-            ]
-            ++
-            -- or the interval ix2 is indide ix1 + ix2 does not coincide with ix1's endpoint
-            [
-                endpointsComparable ++
-                [(((ix2,-1),(ix1,-1)), [EQ, GT, GEE])] ++ 
-                [(((ix2,1),(ix1,-1)), [GT, GEE])] ++ 
-                [(((ix2,-1),(ix1,1)), [LT, LEE])] ++
-                [(((ix2,1),(ix1,1)), [EQ, LT, LEE])]
-            ]
-            ++
-            -- or the interval ix1 overlaps ix2 and ix1 is slightly to the left of ix2
-            [
-                endpointsComparable ++
-                [(((ix1,-1),(ix2,-1)), [EQ, LT, LEE]), 
-                 (((ix1,1),(ix2,1)), [EQ,LT,LEE]),
-                 (((ix1,-1),(ix2,1)), [LT, LEE]),
-                 (((ix1,1),(ix2,-1)), [GT, GEE])]
-            ]
-            ++
-            -- or the interval ix1 overlaps ix2 and ix1 is slightly to the right of ix2
-            [
-                endpointsComparable ++
-                [(((ix2,-1),(ix1,-1)), [EQ, LT, LEE]), 
-                 (((ix2,1),(ix1,1)), [EQ,LT,LEE]),
-                 (((ix2,-1),(ix1,1)), [LT, LEE]),
-                 (((ix2,1),(ix1,-1)), [GT, GEE])]
-            ]
+--            ++
+--            -- or the interval ix1 is indide ix2 + ix1 does not coincide with ix2's endpoint
+--            [
+--                endpointsComparable ++
+--                [(((ix1,-1),(ix2,-1)), [EQ, GT, GEE])] ++ 
+--                [(((ix1,1),(ix2,-1)), [GT, GEE])] ++ 
+--                [(((ix1,-1),(ix2,1)), [LT, LEE])] ++
+--                [(((ix1,1),(ix2,1)), [EQ, LT, LEE])]
+--            ]
+--            ++
+--            -- or the interval ix2 is indide ix1 + ix2 does not coincide with ix1's endpoint
+--            [
+--                endpointsComparable ++
+--                [(((ix2,-1),(ix1,-1)), [EQ, GT, GEE])] ++ 
+--                [(((ix2,1),(ix1,-1)), [GT, GEE])] ++ 
+--                [(((ix2,-1),(ix1,1)), [LT, LEE])] ++
+--                [(((ix2,1),(ix1,1)), [EQ, LT, LEE])]
+--            ]
+--            ++
+--            -- or the interval ix1 overlaps ix2 and ix1 is slightly to the left of ix2
+--            [
+--                endpointsComparable ++
+--                [(((ix1,-1),(ix2,-1)), [EQ, LT, LEE]), 
+--                 (((ix1,1),(ix2,1)), [EQ,LT,LEE]),
+--                 (((ix1,-1),(ix2,1)), [LT, LEE]),
+--                 (((ix1,1),(ix2,-1)), [GT, GEE])]
+--            ]
+--            ++
+--            -- or the interval ix1 overlaps ix2 and ix1 is slightly to the right of ix2
+--            [
+--                endpointsComparable ++
+--                [(((ix2,-1),(ix1,-1)), [EQ, LT, LEE]), 
+--                 (((ix2,1),(ix1,1)), [EQ,LT,LEE]),
+--                 (((ix2,-1),(ix1,1)), [LT, LEE]),
+--                 (((ix2,1),(ix1,-1)), [GT, GEE])]
+--            ]
             
