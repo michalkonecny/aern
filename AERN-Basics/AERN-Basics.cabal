@@ -60,6 +60,7 @@ Library
     Numeric.AERN.Basics.Laws.RoundedOperation
     Numeric.AERN.Basics.Laws.OperationRelation
     Numeric.AERN.Misc.Bool
+    Numeric.AERN.Misc.List
     Numeric.AERN.Misc.Maybe
     Numeric.AERN.Misc.QuickCheck
     

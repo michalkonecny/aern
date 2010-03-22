@@ -53,8 +53,8 @@ class Comparison t where
     a |>    b = a `compare` b Prelude.== GT
     a |<==> b = a `compare` b Prelude./= NC
     a |</=> b = a `compare` b Prelude.== NC
-    a |<=   b = a `compare` b `elem` [EQ, LT, LE]
-    a |>=   b = a `compare` b `elem` [EQ, GT, GE]
+    a |<=   b = a `compare` b `elem` [EQ, LT, LEE]
+    a |>=   b = a `compare` b `elem` [EQ, GT, GEE]
 
 -- convenience Unicode math operator notation:
 (⊏) :: (Comparison t) => t -> t -> Bool

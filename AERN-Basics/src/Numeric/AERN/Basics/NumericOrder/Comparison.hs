@@ -62,8 +62,8 @@ class (SemidecidableComparison t, Show t) => Comparison t where
     a >    b = a `compare` b Prelude.== GT
     a <==> b = a `compare` b Prelude./= NC
     a </=> b = a `compare` b Prelude.== NC
-    a <=   b = (a `compare` b) `elem` [EQ, LT, LE]
-    a >=   b = (a `compare` b) `elem` [EQ, GT, GE]
+    a <=   b = (a `compare` b) `elem` [EQ, LT, LEE]
+    a >=   b = (a `compare` b) `elem` [EQ, GT, GEE]
 
 instance Comparison Int where
     compare a b = toPartialOrdering $ Prelude.compare a b  

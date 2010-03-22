@@ -54,8 +54,8 @@ class SemidecidableComparison t where
     a >?    b = fmap (== GT) (maybeCompare a b)
     a <==>? b = fmap (/= NC) (maybeCompare a b)
     a </=>? b = fmap (== NC) (maybeCompare a b)
-    a <=?   b = fmap (`elem` [EQ,LT,LE]) (maybeCompare a b)
-    a >=?   b = fmap (`elem` [EQ,GT,GE]) (maybeCompare a b)
+    a <=?   b = fmap (`elem` [EQ,LT,LEE]) (maybeCompare a b)
+    a >=?   b = fmap (`elem` [EQ,GT,GEE]) (maybeCompare a b)
 
 instance SemidecidableComparison Int where
     maybeCompareEff = maybeComparePreludeCompare    
