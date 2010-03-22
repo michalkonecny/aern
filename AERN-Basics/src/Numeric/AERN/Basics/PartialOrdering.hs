@@ -64,6 +64,12 @@ toPartialOrdering Prelude.EQ = EQ
 toPartialOrdering Prelude.LT = LT 
 toPartialOrdering Prelude.GT = GT 
 
+fromPartialOrdering :: PartialOrdering -> Ordering
+fromPartialOrdering EQ = Prelude.EQ 
+fromPartialOrdering LT = Prelude.LT 
+fromPartialOrdering GT = Prelude.GT
+fromPartialOrdering rel = error $ "cannot convert " ++ show rel ++ " to Prelude.Ordering" 
+
 {-| flip an ordering relation -}
 partialOrderingTranspose :: PartialOrdering -> PartialOrdering
 partialOrderingTranspose LT = GT

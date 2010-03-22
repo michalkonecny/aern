@@ -39,7 +39,7 @@ class ArbitraryOrderedTuple t where
     {-| generator of tuples that satisfy the given relation requirements, 
         nothing if in this structure there are no tuples satisfying these requirements -}
     arbitraryTupleRelatedBy ::
-        (Ord ix) => 
+        (Ord ix, Show ix) => 
         [ix] {-^ how many elements should be generated and with what names -} -> 
         [((ix, ix),[PartialOrdering])]
            {-^ required orderings for some pairs of elements -} -> 
