@@ -43,5 +43,4 @@ instance (NumOrd.HasHighest e) => (NumOrd.HasHighest (Interval e))
 instance (NumOrd.HasExtrema e) => (NumOrd.HasExtrema (Interval e))
 
 instance (NumOrd.ArbitraryOrderedTuple e) => NumOrd.ArbitraryOrderedTuple (Interval e) where
-   arbitraryTupleRelatedBy indices constraints =
-       Nothing --TODO
+   arbitraryTupleRelatedBy = arbitraryIntervalTupleRelatedBy

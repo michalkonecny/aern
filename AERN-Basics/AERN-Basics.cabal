@@ -63,6 +63,7 @@ Library
     Numeric.AERN.Misc.List
     Numeric.AERN.Misc.Maybe
     Numeric.AERN.Misc.QuickCheck
+    Numeric.AERN.Misc.Debug
     
   Other-modules:
     Numeric.AERN.Basics.NumericOrder.SemidecidableComparison

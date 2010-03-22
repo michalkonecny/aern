@@ -8,7 +8,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    miscellaneous boolean functions
+    Miscellaneous boolean functions.
 -}
 module Numeric.AERN.Misc.Bool where
 
