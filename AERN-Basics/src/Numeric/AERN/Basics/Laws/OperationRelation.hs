@@ -12,7 +12,9 @@
 -}
 module Numeric.AERN.Basics.Laws.OperationRelation 
 (
-    joinOfOrderedPair, meetOfOrderedPair, joinAboveOperands, meetBelowOperands,
+    joinOfOrderedPairNonReflexive, meetOfOrderedPairNonReflexive, 
+    joinOfOrderedPair, meetOfOrderedPair, 
+    joinAboveOperands, meetBelowOperands,
     partialJoinOfOrderedPair, partialJoinAboveOperands,
     roundedJoinOfOrderedPair, roundedMeetOfOrderedPair
 )
@@ -22,6 +24,16 @@ import Numeric.AERN.Basics.Laws.Utilities
 
 import Numeric.AERN.Misc.Bool
 import Numeric.AERN.Misc.Maybe
+
+joinOfOrderedPairNonReflexive ::
+    (Rel t) -> (Rel t) -> (Op t) -> t -> t -> Bool    
+joinOfOrderedPairNonReflexive (==) (<=) (\/) e1 e2 =
+    (e1 <= e2) ===> ((e1 \/ e2) == e2)
+
+meetOfOrderedPairNonReflexive ::
+    (Rel t) -> (Rel t) -> (Op t) -> t -> t -> Bool    
+meetOfOrderedPairNonReflexive (==) (<=) (/\) e1 e2 =
+    (e1 <= e2) ===> ((e1 /\ e2) == e1)
 
 joinOfOrderedPair ::
     (Rel t) -> (Rel t) -> (Op t) -> t -> t -> Bool    
