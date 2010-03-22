@@ -60,13 +60,13 @@ testsDISemidecidableComparison =
         ]
         
 propDILatticeComparisonCompatible :: NumOrd.UniformlyOrderedPair DI -> Bool
-propDILatticeComparisonCompatible = NumOrd.propLatticeComparisonCompatibleNonReflexive
+propDILatticeComparisonCompatible = NumOrd.propLatticeComparisonCompatible
 
---propDILatticeJoinAboveBoth :: NumOrd.UniformlyOrderedPair DI -> Bool
---propDILatticeJoinAboveBoth = NumOrd.propLatticeJoinAboveBoth
---
---propDILatticeMeetBelowBoth :: NumOrd.UniformlyOrderedPair DI -> Bool
---propDILatticeMeetBelowBoth = NumOrd.propLatticeMeetBelowBoth
+propDILatticeJoinAboveBoth :: NumOrd.UniformlyOrderedPair DI -> Bool
+propDILatticeJoinAboveBoth = NumOrd.propLatticeJoinAboveBoth
+
+propDILatticeMeetBelowBoth :: NumOrd.UniformlyOrderedPair DI -> Bool
+propDILatticeMeetBelowBoth = NumOrd.propLatticeMeetBelowBoth
 
 propDILatticeJoinIdempotent :: DI -> Bool
 propDILatticeJoinIdempotent = NumOrd.propLatticeJoinIdempotent
@@ -95,10 +95,10 @@ testsDILattice =
         [
          testProperty "Comparison compatible" propDILatticeComparisonCompatible
         ,
---         testProperty "join above" propDILatticeJoinAboveBoth
---        ,
---         testProperty "meet below" propDILatticeMeetBelowBoth
---        ,
+         testProperty "join above" propDILatticeJoinAboveBoth
+        ,
+         testProperty "meet below" propDILatticeMeetBelowBoth
+        ,
          testProperty "join idempotent" propDILatticeJoinIdempotent
         ,
          testProperty "join commutative" propDILatticeJoinCommutative
