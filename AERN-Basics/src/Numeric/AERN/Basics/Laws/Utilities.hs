@@ -20,7 +20,7 @@ type Op t = t -> t -> t
 type PartOp t = t -> t -> Maybe t
 
 type Rel t = t -> t -> Bool
-type PartRel t = t -> t -> Maybe Bool
+type SmdcRel t = t -> t -> Maybe Bool
 
 type Expr1Op1 t = (Op t) -> Expr1 t
 type Expr1Op2 t = (Op t) -> Expr2 t
