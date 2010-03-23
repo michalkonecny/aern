@@ -12,7 +12,8 @@
 -}
 module Numeric.AERN.RealArithmetic.Interval.Double.RefinementOrder
 (
-   testsDIRefinementSemidecidableComparison
+   testsDIRefinementSemidecidableComparison,
+   testsDIRefinementBasis
 )
 where
 
@@ -57,4 +58,34 @@ testsDIRefinementSemidecidableComparison =
          testProperty "transitive" propDIRefinementSemidecidableComparisonTransitiveLE
         ,
          testProperty "extrema" propDIRefinementExtremaInSemidecidableComparison
+        ]
+
+propDIRefinementBasisComparisonCompatible :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementBasisComparisonCompatible (RefOrd.UniformlyOrderedPair (i1, i2)) = 
+    RefOrd.propBasisComparisonCompatible i1 i2
+
+propDIRefinementBasisJoinAboveBoth :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementBasisJoinAboveBoth (RefOrd.UniformlyOrderedPair (i1, i2)) =
+    RefOrd.propBasisJoinAboveBoth i1 i2
+
+propDIRefinementBasisJoinIdempotent :: DI -> Bool
+propDIRefinementBasisJoinIdempotent = RefOrd.propBasisJoinIdempotent
+
+propDIRefinementBasisJoinCommutative :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementBasisJoinCommutative (RefOrd.UniformlyOrderedPair (i1, i2)) =
+    RefOrd.propBasisJoinCommutative i1 i2
+
+propDIRefinementBasisJoinAssociative :: RefOrd.UniformlyOrderedTriple DI -> Bool
+propDIRefinementBasisJoinAssociative (RefOrd.UniformlyOrderedTriple (i1, i2, i3)) =
+    RefOrd.propBasisJoinAssocative i1 i2 i3
+
+testsDIRefinementBasis :: Test
+testsDIRefinementBasis =
+    testGroup "DI (⊔?)"
+        [
+         testProperty "comparison compatible"  propDIRefinementBasisComparisonCompatible,
+         testProperty "join above both"  propDIRefinementBasisJoinAboveBoth,
+         testProperty "join idempotent" propDIRefinementBasisJoinIdempotent,
+         testProperty "join commutative" propDIRefinementBasisJoinCommutative,
+         testProperty "join associative" propDIRefinementBasisJoinAssociative
         ]
