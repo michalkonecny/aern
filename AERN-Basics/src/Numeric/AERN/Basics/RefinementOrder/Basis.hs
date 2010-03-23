@@ -31,7 +31,7 @@ import Prelude hiding (EQ, LT, GT)
     A lattice.  Join and meet should be compatible with some partial order.
     Both operations should be idempotent, commutative and associative.
 -}
-class (Eq t) => Basis t where
+class Basis t where
     (|\/?) :: t -> t -> Maybe t
     consistent :: t -> t -> Bool
     consistent a b = isJust $ a |\/? b 
@@ -39,19 +39,19 @@ class (Eq t) => Basis t where
 (⊔?) :: (Basis t) => t -> t -> Maybe t
 (⊔?) = (|\/?)
 
-propBasisComparisonCompatible :: (SemidecidableComparison t, Basis t) => t -> t -> Bool
+propBasisComparisonCompatible :: (Eq t, SemidecidableComparison t, Basis t) => t -> t -> Bool
 propBasisComparisonCompatible = partialJoinOfOrderedPair (==) (|<=?) (|\/?) 
 
 propBasisJoinAboveBoth :: (SemidecidableComparison t, Basis t) => t -> t -> Bool
 propBasisJoinAboveBoth = partialJoinAboveOperands (|<=?) (|\/?)
 
-propBasisJoinIdempotent :: (Basis t) => t -> Bool
+propBasisJoinIdempotent :: (Eq t, Basis t) => t -> Bool
 propBasisJoinIdempotent = partialIdempotent (==) (|\/?)
 
-propBasisJoinCommutative :: (Basis t) => t -> t -> Bool
+propBasisJoinCommutative :: (Eq t, Basis t) => t -> t -> Bool
 propBasisJoinCommutative = partialCommutative (==) (|\/?)
 
-propBasisJoinAssocative :: (Basis t) => t -> t -> t -> Bool
+propBasisJoinAssocative :: (Eq t, Basis t) => t -> t -> t -> Bool
 propBasisJoinAssocative = partialAssociative  (==) (|\/?)
 
 
