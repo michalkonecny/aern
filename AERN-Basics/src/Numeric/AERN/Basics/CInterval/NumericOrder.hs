@@ -108,13 +108,13 @@ highestInterval = fromEndpoints (NumOrd.highest, NumOrd.highest)
      A function that can serve as a default implementation of
      the 'NumOrd.ArbitraryOrderedTuple' class for 'CInterval' types.
 -}
-arbitraryIntervalTupleRelatedBy :: 
+arbitraryIntervalTupleNumericallyRelatedBy :: 
     (Ord ix, Show ix, CInterval i, NumOrd.ArbitraryOrderedTuple (Endpoint i)) =>
     [ix] {-^ how many elements should be generated and with what names -} -> 
     [((ix, ix),[PartialOrdering])]
        {-^ required orderings for some pairs of elements -} -> 
     Maybe (Gen [i]) {-^ generator for tuples if the requirements make sense -}   
-arbitraryIntervalTupleRelatedBy indices constraints =
+arbitraryIntervalTupleNumericallyRelatedBy indices constraints =
     case endpointGens of 
         [] -> Nothing
         _ -> Just $
