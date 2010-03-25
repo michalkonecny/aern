@@ -12,7 +12,9 @@
 -}
 module Numeric.AERN.RealArithmetic.Interval.Double.NumericOrder 
 (
-   testsDINumericSemidecidableComparison, testsDINumericLattice
+   testsDINumericSemidecidableComparison, 
+   testsDINumericLattice,
+   testsDINumericRefinementRoundedLattice
 )
 where
 
@@ -112,5 +114,48 @@ testsDINumericLattice =
          testProperty "meet associative" propDINumericLatticeMeetAssocative
         ,
          testProperty "distributive" propDINumericLatticeDistributive
+        ]
+        
+propDINumericRefinementRoundedLatticeJoinIdempotent :: DI -> Bool
+propDINumericRefinementRoundedLatticeJoinIdempotent = NumOrd.propRefinementRoundedLatticeJoinIdempotent
+
+propDINumericRefinementRoundedLatticeJoinCommutative :: NumOrd.UniformlyOrderedPair DI -> Bool
+propDINumericRefinementRoundedLatticeJoinCommutative = NumOrd.propRefinementRoundedLatticeJoinCommutative
+
+propDINumericRefinementRoundedLatticeJoinAssocative :: NumOrd.UniformlyOrderedTriple DI -> Bool
+propDINumericRefinementRoundedLatticeJoinAssocative = NumOrd.propRefinementRoundedLatticeJoinAssocative
+
+propDINumericRefinementRoundedLatticeMeetIdempotent :: DI -> Bool
+propDINumericRefinementRoundedLatticeMeetIdempotent = NumOrd.propRefinementRoundedLatticeMeetIdempotent
+
+propDINumericRefinementRoundedLatticeMeetCommutative :: NumOrd.UniformlyOrderedPair DI -> Bool
+propDINumericRefinementRoundedLatticeMeetCommutative = NumOrd.propRefinementRoundedLatticeMeetCommutative
+
+propDINumericRefinementRoundedLatticeMeetAssocative :: NumOrd.UniformlyOrderedTriple DI -> Bool
+propDINumericRefinementRoundedLatticeMeetAssocative = NumOrd.propRefinementRoundedLatticeMeetAssocative
+
+propDINumericRefinementRoundedLatticeModular :: NumOrd.UniformlyOrderedTriple DI -> Bool
+propDINumericRefinementRoundedLatticeModular = NumOrd.propRefinementRoundedLatticeModular
+
+propDINumericRefinementRoundedLatticeDistributive :: NumOrd.UniformlyOrderedTriple DI -> Bool
+propDINumericRefinementRoundedLatticeDistributive = NumOrd.propRefinementRoundedLatticeDistributive
+
+testsDINumericRefinementRoundedLattice :: Test
+testsDINumericRefinementRoundedLattice =
+    testGroup "DI (min,max) treated as refinement rounded" 
+        [
+         testProperty "join idempotent" propDINumericRefinementRoundedLatticeJoinIdempotent
+        ,
+         testProperty "join commutative" propDINumericRefinementRoundedLatticeJoinCommutative
+        ,
+         testProperty "join associative" propDINumericRefinementRoundedLatticeJoinAssocative
+        ,
+         testProperty "meet idempotent" propDINumericRefinementRoundedLatticeMeetIdempotent
+        ,
+         testProperty "meet commutative" propDINumericRefinementRoundedLatticeMeetCommutative
+        ,
+         testProperty "meet associative" propDINumericRefinementRoundedLatticeMeetAssocative
+        ,
+         testProperty "distributive" propDINumericRefinementRoundedLatticeDistributive
         ]
         

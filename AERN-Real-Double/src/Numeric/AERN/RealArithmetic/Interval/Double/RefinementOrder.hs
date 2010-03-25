@@ -14,7 +14,7 @@ module Numeric.AERN.RealArithmetic.Interval.Double.RefinementOrder
 (
    testsDIRefinementSemidecidableComparison,
    testsDIRefinementBasis, testsDIRefinementRoundedBasis,
-   testsDIRefinementLattice
+   testsDIRefinementLattice, testsDIRefinementRoundedLattice
 )
 where
 
@@ -170,3 +170,62 @@ testsDIRefinementLattice =
         ,
          testProperty "distributive" propDIRefinementLatticeDistributive
         ]
+
+propDIRefinementRoundedLatticeComparisonCompatible :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementRoundedLatticeComparisonCompatible = RefOrd.propRoundedLatticeComparisonCompatible
+
+propDIRefinementRoundedLatticeJoinAboveBoth :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementRoundedLatticeJoinAboveBoth = RefOrd.propRoundedLatticeJoinAboveBoth
+
+propDIRefinementRoundedLatticeMeetBelowBoth :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementRoundedLatticeMeetBelowBoth = RefOrd.propRoundedLatticeMeetBelowBoth
+
+propDIRefinementRoundedLatticeJoinIdempotent :: DI -> Bool
+propDIRefinementRoundedLatticeJoinIdempotent = RefOrd.propRoundedLatticeJoinIdempotent
+
+propDIRefinementRoundedLatticeJoinCommutative :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementRoundedLatticeJoinCommutative = RefOrd.propRoundedLatticeJoinCommutative
+
+propDIRefinementRoundedLatticeJoinAssocative :: RefOrd.UniformlyOrderedTriple DI -> Bool
+propDIRefinementRoundedLatticeJoinAssocative = RefOrd.propRoundedLatticeJoinAssocative
+
+propDIRefinementRoundedLatticeMeetIdempotent :: DI -> Bool
+propDIRefinementRoundedLatticeMeetIdempotent = RefOrd.propRoundedLatticeMeetIdempotent
+
+propDIRefinementRoundedLatticeMeetCommutative :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementRoundedLatticeMeetCommutative = RefOrd.propRoundedLatticeMeetCommutative
+
+propDIRefinementRoundedLatticeMeetAssocative :: RefOrd.UniformlyOrderedTriple DI -> Bool
+propDIRefinementRoundedLatticeMeetAssocative = RefOrd.propRoundedLatticeMeetAssocative
+
+propDIRefinementRoundedLatticeModular :: RefOrd.UniformlyOrderedTriple DI -> Bool
+propDIRefinementRoundedLatticeModular = RefOrd.propRoundedLatticeModular
+
+propDIRefinementRoundedLatticeDistributive :: RefOrd.UniformlyOrderedTriple DI -> Bool
+propDIRefinementRoundedLatticeDistributive = RefOrd.propRoundedLatticeDistributive
+
+testsDIRefinementRoundedLattice :: Test
+testsDIRefinementRoundedLattice =
+    testGroup "DI (⊓,⊔) treated as rounded" 
+        [
+         testProperty "comparison compatible" propDIRefinementRoundedLatticeComparisonCompatible
+        ,
+         testProperty "join above" propDIRefinementRoundedLatticeJoinAboveBoth
+        ,
+         testProperty "meet below" propDIRefinementRoundedLatticeMeetBelowBoth
+        ,
+         testProperty "join idempotent" propDIRefinementRoundedLatticeJoinIdempotent
+        ,
+         testProperty "join commutative" propDIRefinementRoundedLatticeJoinCommutative
+        ,
+         testProperty "join associative" propDIRefinementRoundedLatticeJoinAssocative
+        ,
+         testProperty "meet idempotent" propDIRefinementRoundedLatticeMeetIdempotent
+        ,
+         testProperty "meet commutative" propDIRefinementRoundedLatticeMeetCommutative
+        ,
+         testProperty "meet associative" propDIRefinementRoundedLatticeMeetAssocative
+        ,
+         testProperty "distributive" propDIRefinementRoundedLatticeDistributive
+        ]
+        
