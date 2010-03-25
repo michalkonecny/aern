@@ -58,32 +58,52 @@ propLatticeJoinAboveBoth ::
 propLatticeJoinAboveBoth (UniformlyOrderedPair (e1,e2)) =
     (joinAboveOperands (<=?) max e1 e2)
 
-propLatticeMeetBelowBoth :: (Eq t, SemidecidableComparison t, Lattice t) => UniformlyOrderedPair t -> Bool
-propLatticeMeetBelowBoth (UniformlyOrderedPair (e1,e2)) = meetBelowOperands (<=?) min e1 e2
+propLatticeMeetBelowBoth :: 
+    (Eq t, SemidecidableComparison t, Lattice t) => 
+    UniformlyOrderedPair t -> Bool
+propLatticeMeetBelowBoth (UniformlyOrderedPair (e1,e2)) = 
+    meetBelowOperands (<=?) min e1 e2
 
 propLatticeJoinIdempotent :: (Eq t, Lattice t) => t -> Bool
 propLatticeJoinIdempotent = idempotent (==) max
 
-propLatticeJoinCommutative :: (Eq t, Lattice t) => UniformlyOrderedPair t -> Bool
-propLatticeJoinCommutative (UniformlyOrderedPair (e1,e2)) = commutative (==) max e1 e2
+propLatticeJoinCommutative :: 
+    (Eq t, Lattice t) => 
+    UniformlyOrderedPair t -> Bool
+propLatticeJoinCommutative (UniformlyOrderedPair (e1,e2)) = 
+    commutative (==) max e1 e2
 
-propLatticeJoinAssocative :: (Eq t, Lattice t) => UniformlyOrderedTriple t -> Bool
-propLatticeJoinAssocative (UniformlyOrderedTriple (e1,e2,e3)) = associative (==) max e1 e2 e3
+propLatticeJoinAssocative :: 
+    (Eq t, Lattice t) => 
+    UniformlyOrderedTriple t -> Bool
+propLatticeJoinAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
+    associative (==) max e1 e2 e3
 
 propLatticeMeetIdempotent :: (Eq t, Lattice t) => t -> Bool
 propLatticeMeetIdempotent = idempotent (==) min
 
-propLatticeMeetCommutative :: (Eq t, Lattice t) => UniformlyOrderedPair t -> Bool
-propLatticeMeetCommutative (UniformlyOrderedPair (e1,e2)) = commutative (==) min e1 e2
+propLatticeMeetCommutative :: 
+    (Eq t, Lattice t) => 
+    UniformlyOrderedPair t -> Bool
+propLatticeMeetCommutative (UniformlyOrderedPair (e1,e2)) = 
+    commutative (==) min e1 e2
 
-propLatticeMeetAssocative :: (Eq t, Lattice t) => UniformlyOrderedTriple t -> Bool
-propLatticeMeetAssocative (UniformlyOrderedTriple (e1,e2,e3)) = associative (==) min e1 e2 e3
+propLatticeMeetAssocative :: 
+    (Eq t, Lattice t) => 
+    UniformlyOrderedTriple t -> Bool
+propLatticeMeetAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
+    associative (==) min e1 e2 e3
 
 {- optional properties: -}
-propLatticeModular :: (Eq t, Lattice t) => UniformlyOrderedTriple t -> Bool
-propLatticeModular (UniformlyOrderedTriple (e1,e2,e3)) = modular (==) max min e1 e2 e3
+propLatticeModular :: 
+    (Eq t, Lattice t) => 
+    UniformlyOrderedTriple t -> Bool
+propLatticeModular (UniformlyOrderedTriple (e1,e2,e3)) = 
+    modular (==) max min e1 e2 e3
 
-propLatticeDistributive :: (Eq t, Lattice t) => UniformlyOrderedTriple t -> Bool
+propLatticeDistributive :: 
+    (Eq t, Lattice t) => 
+    UniformlyOrderedTriple t -> Bool
 propLatticeDistributive (UniformlyOrderedTriple (e1,e2,e3)) = 
         (leftDistributive (==) max min e1 e2 e3)
         && 

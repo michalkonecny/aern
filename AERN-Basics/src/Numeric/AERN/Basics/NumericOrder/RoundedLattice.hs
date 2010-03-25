@@ -23,16 +23,17 @@ import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.NumericOrder.Comparison
 import Numeric.AERN.Basics.NumericOrder.Arbitrary 
 import Numeric.AERN.Basics.NumericOrder.SemidecidableComparison 
-
 import Numeric.AERN.Basics.NumericOrder.Extrema
+
 import Numeric.AERN.Basics.Laws.SemidecidableRelation
 import Numeric.AERN.Basics.Laws.RoundedOperation
 import Numeric.AERN.Basics.Laws.OperationRelation
+
+import Numeric.AERN.Misc.Maybe
 
 {-|
     A type with directed-rounding lattice operations.
@@ -68,50 +69,68 @@ propRoundedLatticeComparisonCompatible (UniformlyOrderedPair (e1,e2)) =
     && 
     (upRoundedMeetOfOrderedPair (<=?) maxUp e1 e2)
 
-propRoundedLatticeJoinAboveBoth :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
+propRoundedLatticeJoinAboveBoth :: 
+    (SemidecidableComparison t, RoundedLattice t) => 
+    UniformlyOrderedPair t -> Bool
 propRoundedLatticeJoinAboveBoth (UniformlyOrderedPair (e1,e2)) = 
     joinAboveOperands (<=?) maxUp e1 e2
 
-propRoundedLatticeMeetBelowBoth :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
+propRoundedLatticeMeetBelowBoth :: 
+    (SemidecidableComparison t, RoundedLattice t) => 
+    UniformlyOrderedPair t -> Bool
 propRoundedLatticeMeetBelowBoth (UniformlyOrderedPair (e1,e2)) = 
     meetBelowOperands (<=?) minDn e1 e2
 
-propRoundedLatticeJoinIdempotent :: (SemidecidableComparison t, RoundedLattice t) => t -> Bool
+propRoundedLatticeJoinIdempotent :: 
+    (SemidecidableComparison t, RoundedLattice t) => 
+    t -> Bool
 propRoundedLatticeJoinIdempotent = roundedIdempotent (<=?) maxUp maxDn
 
-propRoundedLatticeJoinCommutative :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
+propRoundedLatticeJoinCommutative :: 
+    (SemidecidableComparison t, RoundedLattice t) => 
+    UniformlyOrderedPair t -> Bool
 propRoundedLatticeJoinCommutative (UniformlyOrderedPair (e1,e2)) = 
     roundedCommutative (<=?) maxUp maxDn e1 e2
 
-propRoundedLatticeJoinAssocative :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
+propRoundedLatticeJoinAssocative :: 
+    (SemidecidableComparison t, RoundedLattice t) => 
+    UniformlyOrderedTriple t -> Bool
 propRoundedLatticeJoinAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedAssociative (<=?) maxUp maxDn e1 e2 e3
 
-propRoundedLatticeMeetIdempotent :: (SemidecidableComparison t, RoundedLattice t) => t -> Bool
+propRoundedLatticeMeetIdempotent :: 
+    (SemidecidableComparison t, RoundedLattice t) => 
+    t -> Bool
 propRoundedLatticeMeetIdempotent = 
     roundedIdempotent (<=?) minUp minDn
 
-propRoundedLatticeMeetCommutative :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
+propRoundedLatticeMeetCommutative :: 
+    (SemidecidableComparison t, RoundedLattice t) => 
+    UniformlyOrderedPair t -> Bool
 propRoundedLatticeMeetCommutative (UniformlyOrderedPair (e1,e2)) = 
     roundedCommutative (<=?) minUp minDn e1 e2
 
-propRoundedLatticeMeetAssocative :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
+propRoundedLatticeMeetAssocative :: 
+    (SemidecidableComparison t, RoundedLattice t) => 
+    UniformlyOrderedTriple t -> Bool
 propRoundedLatticeMeetAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedAssociative (<=?) minUp minDn e1 e2 e3
 
 {- optional properties: -}
-propRoundedLatticeModular :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
+propRoundedLatticeModular :: 
+    (SemidecidableComparison t, RoundedLattice t) => 
+    UniformlyOrderedTriple t -> Bool
 propRoundedLatticeModular (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedModular (<=?) maxUp minUp maxDn minDn e1 e2 e3
 
-propRoundedLatticeDistributive :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedTriple t -> Bool
+propRoundedLatticeDistributive :: 
+    (SemidecidableComparison t, RoundedLattice t) => 
+    UniformlyOrderedTriple t -> Bool
 propRoundedLatticeDistributive (UniformlyOrderedTriple (e1,e2,e3)) = 
     (roundedLeftDistributive  (<=?) maxUp minUp maxDn minDn e1 e2 e3)
     && 
     (roundedLeftDistributive  (<=?) maxUp minUp maxDn minDn e1 e2 e3)
 
--- further properties of RoundedLattice (TODO)
-    
 {-|
     A type with directed-rounding lattice operations
     that also supported in-place.

@@ -46,19 +46,33 @@ instance (NumOrd.Lattice e, NumOrd.SemidecidableComparison e) => (RefOrd.Basis (
 
 instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.OuterRoundedBasis (Interval e)) 
     where
-    partialJoinOut = basisOuterRoundedJoinInterval
-    partialJoinOutDefaultEffort = partialJoinDefaultEffortInterval
+    partialJoinOut = outerRoundedPartialJoinInterval
+    partialJoinOutDefaultEffort = joinmeetDefaultEffortInterval
 
 instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.InnerRoundedBasis (Interval e)) 
     where
-    partialJoinIn = basisInnerRoundedJoinInterval
-    partialJoinInDefaultEffort = partialJoinDefaultEffortInterval
+    partialJoinIn = innerRoundedPartialJoinInterval
+    partialJoinInDefaultEffort = joinmeetDefaultEffortInterval
 
 instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.RoundedBasis (Interval e)) 
 
 
--- TODO: add instances for
---       Lattice, OuterRoundedLattice, InnerRoundedLattice
+instance (NumOrd.Lattice e, NumOrd.SemidecidableComparison e) => (RefOrd.Lattice (Interval e)) 
+    where
+    (|\/) = joinInterval
+    (|/\) = meetInterval
+
+instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.OuterRoundedLattice (Interval e)) 
+    where
+    joinOut = outerRoundedJoinInterval
+    meetOut = outerRoundedMeetInterval
+    joinmeetOutDefaultEffort = joinmeetDefaultEffortInterval
+
+instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.InnerRoundedLattice (Interval e)) 
+    where
+    joinIn = innerRoundedJoinInterval
+    meetIn = innerRoundedMeetInterval
+    joinmeetInDefaultEffort = joinmeetDefaultEffortInterval
 
 
 instance (NumOrd.ArbitraryOrderedTuple e) => RefOrd.ArbitraryOrderedTuple (Interval e) where
