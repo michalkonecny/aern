@@ -18,7 +18,9 @@ module Numeric.AERN.Basics.RefinementOrder.Basis where
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
+import Numeric.AERN.Basics.RefinementOrder.Arbitrary
 import Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison
+
 import Numeric.AERN.Basics.Laws.Operation
 import Numeric.AERN.Basics.Laws.OperationRelation
 
@@ -42,17 +44,17 @@ class Basis t where
 propBasisComparisonCompatible :: (Eq t, SemidecidableComparison t, Basis t) => t -> t -> Bool
 propBasisComparisonCompatible = partialJoinOfOrderedPair (==) (|<=?) (|\/?) 
 
-propBasisJoinAboveBoth :: (SemidecidableComparison t, Basis t) => t -> t -> Bool
-propBasisJoinAboveBoth = partialJoinAboveOperands (|<=?) (|\/?)
+propBasisJoinAboveBoth :: (SemidecidableComparison t, Basis t) => UniformlyOrderedPair t -> Bool
+propBasisJoinAboveBoth (UniformlyOrderedPair (e1,e2)) = partialJoinAboveOperands (|<=?) (|\/?) e1 e2
 
 propBasisJoinIdempotent :: (Eq t, Basis t) => t -> Bool
 propBasisJoinIdempotent = partialIdempotent (==) (|\/?)
 
-propBasisJoinCommutative :: (Eq t, Basis t) => t -> t -> Bool
-propBasisJoinCommutative = partialCommutative (==) (|\/?)
+propBasisJoinCommutative :: (Eq t, Basis t) => UniformlyOrderedPair t -> Bool
+propBasisJoinCommutative  (UniformlyOrderedPair (e1,e2)) = partialCommutative (==) (|\/?) e1 e2
 
-propBasisJoinAssocative :: (Eq t, Basis t) => t -> t -> t -> Bool
-propBasisJoinAssocative = partialAssociative  (==) (|\/?)
+propBasisJoinAssocative :: (Eq t, Basis t) => UniformlyOrderedTriple t -> Bool
+propBasisJoinAssocative (UniformlyOrderedTriple (e1,e2,e3)) = partialAssociative  (==) (|\/?) e1 e2 e3
 
 
 {-|
