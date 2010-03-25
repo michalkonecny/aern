@@ -92,11 +92,35 @@ basisJoinInterval i1 i2 =
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
 
-basisOuterRoundedJoinInterval :: 
+joinInterval :: 
+    (CInterval i, NumOrd.Lattice (Endpoint i), 
+     NumOrd.SemidecidableComparison (Endpoint i)) => 
+    i -> i -> i
+joinInterval i1 i2 =
+    fromEndpoints (l,h)
+    where
+    l = l1 `NumOrd.max` l2
+    h = h1 `NumOrd.min` h2
+    (l1, h1) = getEndpoints i1    
+    (l2, h2) = getEndpoints i2
+
+meetInterval :: 
+    (CInterval i, NumOrd.Lattice (Endpoint i), 
+     NumOrd.SemidecidableComparison (Endpoint i)) => 
+    i -> i -> i
+meetInterval i1 i2 =
+    fromEndpoints (l,h)
+    where
+    l = l1 `NumOrd.min` l2
+    h = h1 `NumOrd.max` h2
+    (l1, h1) = getEndpoints i1    
+    (l2, h2) = getEndpoints i2
+
+outerRoundedPartialJoinInterval :: 
     (CInterval i, NumOrd.RoundedLattice (Endpoint i), 
      NumOrd.SemidecidableComparison (Endpoint i)) => 
     [EffortIndicator] -> i -> i -> Maybe i
-basisOuterRoundedJoinInterval effort i1 i2 =
+outerRoundedPartialJoinInterval effort i1 i2 =
     case l NumOrd.<=? h of
         Just True -> Just $ fromEndpoints (l,h)
         _ -> Nothing
@@ -106,11 +130,11 @@ basisOuterRoundedJoinInterval effort i1 i2 =
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
     
-basisInnerRoundedJoinInterval :: 
+innerRoundedPartialJoinInterval :: 
     (CInterval i, NumOrd.RoundedLattice (Endpoint i), 
      NumOrd.SemidecidableComparison (Endpoint i)) => 
     [EffortIndicator] -> i -> i -> Maybe i
-basisInnerRoundedJoinInterval effort i1 i2 =
+innerRoundedPartialJoinInterval effort i1 i2 =
     case l NumOrd.<=? h of
         Just True -> Just $ fromEndpoints (l,h)
         _ -> Nothing
@@ -120,10 +144,58 @@ basisInnerRoundedJoinInterval effort i1 i2 =
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
     
-partialJoinDefaultEffortInterval ::
+outerRoundedJoinInterval :: 
+    (CInterval i, NumOrd.RoundedLattice (Endpoint i), 
+     NumOrd.SemidecidableComparison (Endpoint i)) => 
+    [EffortIndicator] -> i -> i -> i
+outerRoundedJoinInterval effort i1 i2 =
+    fromEndpoints (l,h)
+    where
+    l = NumOrd.maxDnEff effort l1 l2
+    h = NumOrd.minUpEff effort h1 h2
+    (l1, h1) = getEndpoints i1    
+    (l2, h2) = getEndpoints i2
+    
+innerRoundedJoinInterval :: 
+    (CInterval i, NumOrd.RoundedLattice (Endpoint i), 
+     NumOrd.SemidecidableComparison (Endpoint i)) => 
+    [EffortIndicator] -> i -> i -> i
+innerRoundedJoinInterval effort i1 i2 =
+    fromEndpoints (l,h)
+    where
+    l = NumOrd.maxUpEff effort l1 l2
+    h = NumOrd.minDnEff effort h1 h2
+    (l1, h1) = getEndpoints i1    
+    (l2, h2) = getEndpoints i2
+    
+outerRoundedMeetInterval :: 
+    (CInterval i, NumOrd.RoundedLattice (Endpoint i), 
+     NumOrd.SemidecidableComparison (Endpoint i)) => 
+    [EffortIndicator] -> i -> i -> i
+outerRoundedMeetInterval effort i1 i2 =
+    fromEndpoints (l,h)
+    where
+    l = NumOrd.minDnEff effort l1 l2
+    h = NumOrd.maxUpEff effort h1 h2
+    (l1, h1) = getEndpoints i1    
+    (l2, h2) = getEndpoints i2
+    
+innerRoundedMeetInterval :: 
+    (CInterval i, NumOrd.RoundedLattice (Endpoint i), 
+     NumOrd.SemidecidableComparison (Endpoint i)) => 
+    [EffortIndicator] -> i -> i -> i
+innerRoundedMeetInterval effort i1 i2 =
+    fromEndpoints (l,h)
+    where
+    l = NumOrd.minUpEff effort l1 l2
+    h = NumOrd.maxDnEff effort h1 h2
+    (l1, h1) = getEndpoints i1    
+    (l2, h2) = getEndpoints i2
+    
+joinmeetDefaultEffortInterval ::
         (CInterval i, NumOrd.RoundedLattice (Endpoint i)) => 
         i -> [EffortIndicator]
-partialJoinDefaultEffortInterval i =
+joinmeetDefaultEffortInterval i =
     zipWith Prelude.max
         (NumOrd.minmaxDefaultEffort l)
         (NumOrd.minmaxDefaultEffort h)
