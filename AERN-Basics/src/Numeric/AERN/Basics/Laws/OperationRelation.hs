@@ -16,7 +16,8 @@ module Numeric.AERN.Basics.Laws.OperationRelation
     joinOfOrderedPair, meetOfOrderedPair, 
     joinAboveOperands, meetBelowOperands,
     partialJoinOfOrderedPair, partialJoinAboveOperands,
-    roundedJoinOfOrderedPair, roundedMeetOfOrderedPair
+    downRoundedJoinOfOrderedPair, upRoundedMeetOfOrderedPair,
+    downRoundedPartialJoinOfOrderedPair
 )
 where
 
@@ -83,21 +84,28 @@ partialJoinAboveOperands (<=?) (\/?) e1 e2 =
     (defined (e1 \/? e2)) ===>
     joinAboveOperands (<=?) (assumeTotal2 (\/?)) e1 e2
 
-roundedJoinOfOrderedPair ::
+
+
+downRoundedJoinOfOrderedPair ::
     (SmdcRel t) -> (Op t) -> t -> t -> Bool    
-roundedJoinOfOrderedPair (<=?) (\/.) e1 e2 =
+downRoundedJoinOfOrderedPair (<=?) (\/.) e1 e2 =
     (defined (e1 <=? e2) && defined (e1 \/. e2 <=? e2)) 
     ===>
     ((e1 <= e2) ===> (e1 \/. e2 <= e2))
     where
     (<=) = assumeTotal2 (<=?)
 
-roundedMeetOfOrderedPair ::
+upRoundedMeetOfOrderedPair ::
     (SmdcRel t) -> (Op t) -> t -> t -> Bool    
-roundedMeetOfOrderedPair (<=?) (/\^) e1 e2 =
+upRoundedMeetOfOrderedPair (<=?) (/\^) e1 e2 =
     (defined (e1 <=? e2) && defined (e1 <=? (e1 /\^ e2))) 
     ===>
     ((e1 <= e2) ===> (e1 <= (e1 /\^ e2)))
     where
     (<=) = assumeTotal2 (<=?)
 
+downRoundedPartialJoinOfOrderedPair ::
+    (SmdcRel t) -> (PartOp t) -> t -> t -> Bool    
+downRoundedPartialJoinOfOrderedPair (<=?) (\/.?) e1 e2 =
+    (defined (e1 \/.? e2)) ===>
+    downRoundedJoinOfOrderedPair (<=?) (assumeTotal2 (\/.?)) e1 e2 

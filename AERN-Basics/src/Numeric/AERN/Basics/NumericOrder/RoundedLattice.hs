@@ -64,9 +64,9 @@ propRoundedLatticeComparisonCompatible ::
     (SemidecidableComparison t, RoundedLattice t) => 
     UniformlyOrderedPair t -> Bool
 propRoundedLatticeComparisonCompatible (UniformlyOrderedPair (e1,e2)) = 
-    (roundedJoinOfOrderedPair (<=?) minUp e1 e2)
+    (downRoundedJoinOfOrderedPair (<=?) minDn e1 e2)
     && 
-    (roundedMeetOfOrderedPair (<=?) maxDn e1 e2)
+    (upRoundedMeetOfOrderedPair (<=?) maxUp e1 e2)
 
 propRoundedLatticeJoinAboveBoth :: (SemidecidableComparison t, RoundedLattice t) => UniformlyOrderedPair t -> Bool
 propRoundedLatticeJoinAboveBoth (UniformlyOrderedPair (e1,e2)) = 

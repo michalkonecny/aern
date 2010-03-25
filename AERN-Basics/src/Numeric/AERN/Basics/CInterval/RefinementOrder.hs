@@ -91,6 +91,44 @@ basisJoinInterval i1 i2 =
     h = h1 `NumOrd.min` h2
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
+
+basisOuterRoundedJoinInterval :: 
+    (CInterval i, NumOrd.RoundedLattice (Endpoint i), 
+     NumOrd.SemidecidableComparison (Endpoint i)) => 
+    [EffortIndicator] -> i -> i -> Maybe i
+basisOuterRoundedJoinInterval effort i1 i2 =
+    case l NumOrd.<=? h of
+        Just True -> Just $ fromEndpoints (l,h)
+        _ -> Nothing
+    where
+    l = NumOrd.maxDnEff effort l1 l2
+    h = NumOrd.minUpEff effort h1 h2
+    (l1, h1) = getEndpoints i1    
+    (l2, h2) = getEndpoints i2
+    
+basisInnerRoundedJoinInterval :: 
+    (CInterval i, NumOrd.RoundedLattice (Endpoint i), 
+     NumOrd.SemidecidableComparison (Endpoint i)) => 
+    [EffortIndicator] -> i -> i -> Maybe i
+basisInnerRoundedJoinInterval effort i1 i2 =
+    case l NumOrd.<=? h of
+        Just True -> Just $ fromEndpoints (l,h)
+        _ -> Nothing
+    where
+    l = NumOrd.maxUpEff effort l1 l2
+    h = NumOrd.minDnEff effort h1 h2
+    (l1, h1) = getEndpoints i1    
+    (l2, h2) = getEndpoints i2
+    
+partialJoinDefaultEffortInterval ::
+        (CInterval i, NumOrd.RoundedLattice (Endpoint i)) => 
+        i -> [EffortIndicator]
+partialJoinDefaultEffortInterval i =
+    zipWith Prelude.max
+        (NumOrd.minmaxDefaultEffort l)
+        (NumOrd.minmaxDefaultEffort h)
+    where
+    (l,h) = getEndpoints i
     
 arbitraryIntervalTupleRefinementRelatedBy :: 
     (Ord ix, Show ix, CInterval i, NumOrd.ArbitraryOrderedTuple (Endpoint i)) =>

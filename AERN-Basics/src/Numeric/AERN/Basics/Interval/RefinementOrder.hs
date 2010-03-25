@@ -44,7 +44,20 @@ instance (NumOrd.Lattice e, NumOrd.SemidecidableComparison e) => (RefOrd.Basis (
     where
     (|\/?) = basisJoinInterval
 
--- TODO: add instances for OuterRoundedBasis, InnerRoundedBasis
+instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.OuterRoundedBasis (Interval e)) 
+    where
+    partialJoinOut = basisOuterRoundedJoinInterval
+    partialJoinOutDefaultEffort = partialJoinDefaultEffortInterval
+
+instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.InnerRoundedBasis (Interval e)) 
+    where
+    partialJoinIn = basisInnerRoundedJoinInterval
+    partialJoinInDefaultEffort = partialJoinDefaultEffortInterval
+
+instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.RoundedBasis (Interval e)) 
+
+
+-- TODO: add instances for
 --       Lattice, OuterRoundedLattice, InnerRoundedLattice
 
 

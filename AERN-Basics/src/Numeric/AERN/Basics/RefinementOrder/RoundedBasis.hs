@@ -19,9 +19,14 @@ import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Basics.PartialOrdering
---import Numeric.AERN.Basics.RefinementOrder.Extrema
+import Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison
+import Numeric.AERN.Basics.RefinementOrder.Arbitrary
+
+import Numeric.AERN.Basics.Laws.OperationRelation
+import Numeric.AERN.Basics.Laws.RoundedOperation
+
+import Numeric.AERN.Misc.Maybe
 
 {-|
     A type with outward-rounding lattice operations.
@@ -38,7 +43,9 @@ class OuterRoundedBasis t where
 (<⊔>?) :: (OuterRoundedBasis t) => t -> t -> Maybe t
 (<⊔>?) = (<|\/>?)
 
--- properties of OuterRoundedBasis (TODO)
+-- properties of OuterRoundedBasis
+propOuterRoundedBasisComparisonCompatible :: (SemidecidableComparison t, OuterRoundedBasis t) => t -> t -> Bool
+propOuterRoundedBasisComparisonCompatible = downRoundedPartialJoinOfOrderedPair (|<=?) (<|\/>?)
 
 {-|
     A type with outward-rounding lattice operations.
@@ -55,6 +62,23 @@ class InnerRoundedBasis t where
 (>⊔<?) :: (InnerRoundedBasis t) => t -> t -> Maybe t
 (>⊔<?) = (>|\/<?)
 
--- properties of InnerRoundedBasis (TODO)
-    
+-- properties of InnerRoundedBasis:
+propInnerRoundedBasisJoinAboveBoth :: (SemidecidableComparison t, InnerRoundedBasis t) => t -> t -> Bool
+propInnerRoundedBasisJoinAboveBoth = partialJoinAboveOperands (|<=?) (>|\/<?)
+
+class (OuterRoundedBasis t, InnerRoundedBasis t) => RoundedBasis t
+
+-- properties of RoundedBasis:
+propRoundedBasisJoinIdempotent :: (SemidecidableComparison t, RoundedBasis t) => t -> Bool
+propRoundedBasisJoinIdempotent = partialRoundedIdempotent (|<=?) (>|\/<?) (<|\/>?)
+
+propRoundedBasisJoinCommutative :: (SemidecidableComparison t, RoundedBasis t) => UniformlyOrderedPair t -> Bool
+propRoundedBasisJoinCommutative (UniformlyOrderedPair (e1,e2)) = 
+    partialRoundedCommutative (|<=?) (>|\/<?) (<|\/>?) e1 e2
+
+propRoundedBasisJoinAssocative :: (SemidecidableComparison t, RoundedBasis t) => UniformlyOrderedTriple t -> Bool
+propRoundedBasisJoinAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
+    partialRoundedAssociative (|<=?) (>|\/<?) (<|\/>?) e1 e2 e3
+
+
 -- mutable versions (TODO)    

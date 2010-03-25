@@ -18,6 +18,34 @@ import Numeric.AERN.Basics.Laws.Utilities
 import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Misc.Bool
 
+partialRoundedIdempotent :: (SmdcRel t) -> (PartOp t) -> (PartOp t) -> t -> Bool
+partialRoundedIdempotent (<=?) (*^?) (*.?) e =
+    (defined (e *.? e) && defined (e *^? e))
+    ===>
+    (roundedIdempotent  (<=?) (*^) (*.) e)
+    where
+    (*.) = assumeTotal2 (*.?)
+    (*^) = assumeTotal2 (*^?)
+
+partialRoundedCommutative :: (SmdcRel t) -> (PartOp t) -> (PartOp t) -> t -> t -> Bool
+partialRoundedCommutative (<=?) (*^?) (*.?) e1 e2 =
+    (and $ map defined [e1 *.? e2, e2 *.? e1, e1 *^? e2, e2 *^? e1])
+    ===>
+    (roundedCommutative (<=?) (*^) (*.) e1 e2)
+    where
+    (*.) = assumeTotal2 (*.?)
+    (*^) = assumeTotal2 (*^?)
+
+partialRoundedAssociative :: (SmdcRel t) -> (PartOp t) -> (PartOp t) -> t -> t -> t -> Bool
+partialRoundedAssociative (<=?) (*^?) (*.?) e1 e2 e3 =
+    (and $ map defined [e1 *.? e2, (e1 *. e2) *.? e3, e2 *.? e3, e1 *.? (e2 *. e3), 
+                        e1 *^? e2, (e1 *^ e2) *^? e3, e2 *^? e3, e1 *^? (e2 *^ e3)])
+    ===>
+    (roundedAssociative (<=?) (*^) (*.) e1 e2 e3)
+    where
+    (*.) = assumeTotal2 (*.?)
+    (*^) = assumeTotal2 (*^?)
+
 roundedIdempotent :: (SmdcRel t) -> (Op t) -> (Op t) -> t -> Bool
 roundedIdempotent =
     equalRoundingUpDn11 (\(*) e -> e) (\(*) e -> e * e)  
