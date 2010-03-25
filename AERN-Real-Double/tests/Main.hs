@@ -25,8 +25,10 @@ tests =
        -- DI:
        testsDINumericSemidecidableComparison,
        testsDINumericLattice,
+       testsDINumericRefinementRoundedLattice,
        testsDIRefinementSemidecidableComparison, 
        testsDIRefinementBasis,
        testsDIRefinementRoundedBasis,
-       testsDIRefinementLattice
+       testsDIRefinementLattice,
+       testsDIRefinementRoundedLattice
     ]
