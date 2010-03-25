@@ -13,7 +13,8 @@
 module Numeric.AERN.RealArithmetic.Interval.Double.RefinementOrder
 (
    testsDIRefinementSemidecidableComparison,
-   testsDIRefinementBasis, testsDIRefinementRoundedBasis
+   testsDIRefinementBasis, testsDIRefinementRoundedBasis,
+   testsDIRefinementLattice
 )
 where
 
@@ -115,3 +116,57 @@ testsDIRefinementRoundedBasis =
          testProperty "rounded join associative" propDIRefinementRoundedBasisJoinAssociative
         ]
         
+propDIRefinementLatticeComparisonCompatible :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementLatticeComparisonCompatible = RefOrd.propLatticeComparisonCompatible
+
+propDIRefinementLatticeJoinAboveBoth :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementLatticeJoinAboveBoth = RefOrd.propLatticeJoinAboveBoth
+
+propDIRefinementLatticeMeetBelowBoth :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementLatticeMeetBelowBoth = RefOrd.propLatticeMeetBelowBoth
+
+propDIRefinementLatticeJoinIdempotent :: DI -> Bool
+propDIRefinementLatticeJoinIdempotent = RefOrd.propLatticeJoinIdempotent
+
+propDIRefinementLatticeJoinCommutative :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementLatticeJoinCommutative = RefOrd.propLatticeJoinCommutative
+
+propDIRefinementLatticeJoinAssocative :: RefOrd.UniformlyOrderedTriple DI -> Bool
+propDIRefinementLatticeJoinAssocative = RefOrd.propLatticeJoinAssocative
+
+propDIRefinementLatticeMeetIdempotent :: DI -> Bool
+propDIRefinementLatticeMeetIdempotent = RefOrd.propLatticeMeetIdempotent
+
+propDIRefinementLatticeMeetCommutative :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementLatticeMeetCommutative = RefOrd.propLatticeMeetCommutative
+
+propDIRefinementLatticeMeetAssocative :: RefOrd.UniformlyOrderedTriple DI -> Bool
+propDIRefinementLatticeMeetAssocative = RefOrd.propLatticeMeetAssocative
+
+propDIRefinementLatticeDistributive :: RefOrd.UniformlyOrderedTriple DI -> Bool
+propDIRefinementLatticeDistributive = RefOrd.propLatticeDistributive
+
+testsDIRefinementLattice :: Test
+testsDIRefinementLattice =
+    testGroup "DI (⊓,⊔)" 
+        [
+         testProperty "Comparison compatible" propDIRefinementLatticeComparisonCompatible
+        ,
+         testProperty "join above" propDIRefinementLatticeJoinAboveBoth
+        ,
+         testProperty "meet below" propDIRefinementLatticeMeetBelowBoth
+        ,
+         testProperty "join idempotent" propDIRefinementLatticeJoinIdempotent
+        ,
+         testProperty "join commutative" propDIRefinementLatticeJoinCommutative
+        ,
+         testProperty "join associative" propDIRefinementLatticeJoinAssocative
+        ,
+         testProperty "meet idempotent" propDIRefinementLatticeMeetIdempotent
+        ,
+         testProperty "meet commutative" propDIRefinementLatticeMeetCommutative
+        ,
+         testProperty "meet associative" propDIRefinementLatticeMeetAssocative
+        ,
+         testProperty "distributive" propDIRefinementLatticeDistributive
+        ]
