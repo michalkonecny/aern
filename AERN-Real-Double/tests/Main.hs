@@ -23,9 +23,10 @@ tests =
        testsDoubleComparison, testsDoubleSemidecidableComparison,
        testsDoubleLattice, testsDoubleRoundedLattice,
        -- DI:
-       testsDISemidecidableComparison,
-       testsDILattice,
+       testsDINumericSemidecidableComparison,
+       testsDINumericLattice,
        testsDIRefinementSemidecidableComparison, 
        testsDIRefinementBasis,
-       testsDIRefinementRoundedBasis
+       testsDIRefinementRoundedBasis,
+       testsDIRefinementLattice
     ]

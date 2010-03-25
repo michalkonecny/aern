@@ -12,7 +12,7 @@
 -}
 module Numeric.AERN.RealArithmetic.Interval.Double.NumericOrder 
 (
-   testsDISemidecidableComparison, testsDILattice
+   testsDINumericSemidecidableComparison, testsDINumericLattice
 )
 where
 
@@ -29,88 +29,88 @@ import Numeric.AERN.Misc.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-propDISemidecidableComparisonAntiSymmetric :: DI -> DI -> Bool
-propDISemidecidableComparisonAntiSymmetric = NumOrd.propSemidecidableComparisonAntiSymmetric
+propDINumericSemidecidableComparisonAntiSymmetric :: DI -> DI -> Bool
+propDINumericSemidecidableComparisonAntiSymmetric = NumOrd.propSemidecidableComparisonAntiSymmetric
 
-propDISemidecidableComparisonTransitiveEQ :: DI -> DI -> DI -> Bool
-propDISemidecidableComparisonTransitiveEQ = NumOrd.propSemidecidableComparisonTransitiveEQ
+propDINumericSemidecidableComparisonTransitiveEQ :: DI -> DI -> DI -> Bool
+propDINumericSemidecidableComparisonTransitiveEQ = NumOrd.propSemidecidableComparisonTransitiveEQ
 
-propDISemidecidableComparisonTransitiveLT :: DI -> DI -> DI -> Bool
-propDISemidecidableComparisonTransitiveLT = NumOrd.propSemidecidableComparisonTransitiveLT
+propDINumericSemidecidableComparisonTransitiveLT :: DI -> DI -> DI -> Bool
+propDINumericSemidecidableComparisonTransitiveLT = NumOrd.propSemidecidableComparisonTransitiveLT
 
-propDISemidecidableComparisonTransitiveLE :: DI -> DI -> DI -> Bool
-propDISemidecidableComparisonTransitiveLE = NumOrd.propSemidecidableComparisonTransitiveLE
+propDINumericSemidecidableComparisonTransitiveLE :: DI -> DI -> DI -> Bool
+propDINumericSemidecidableComparisonTransitiveLE = NumOrd.propSemidecidableComparisonTransitiveLE
 
 propDIExtremaInSemidecidableComparison :: DI -> Bool
 propDIExtremaInSemidecidableComparison = NumOrd.propExtremaInSemidecidableComparison
 
-testsDISemidecidableComparison :: Test
-testsDISemidecidableComparison =
+testsDINumericSemidecidableComparison :: Test
+testsDINumericSemidecidableComparison =
     testGroup "DI (>=?)" 
         [
-         testProperty "anti symmetric" propDISemidecidableComparisonAntiSymmetric
+         testProperty "anti symmetric" propDINumericSemidecidableComparisonAntiSymmetric
         ,
-         testProperty "transitive EQ" propDISemidecidableComparisonTransitiveEQ
+         testProperty "transitive EQ" propDINumericSemidecidableComparisonTransitiveEQ
         ,
-         testProperty "transitive LE" propDISemidecidableComparisonTransitiveLE
+         testProperty "transitive LE" propDINumericSemidecidableComparisonTransitiveLE
         ,
-         testProperty "transitive LT" propDISemidecidableComparisonTransitiveLT
+         testProperty "transitive LT" propDINumericSemidecidableComparisonTransitiveLT
         ,
          testProperty "extrema" propDIExtremaInSemidecidableComparison
         ]
         
-propDILatticeComparisonCompatible :: NumOrd.UniformlyOrderedPair DI -> Bool
-propDILatticeComparisonCompatible = NumOrd.propLatticeComparisonCompatible
+propDINumericLatticeComparisonCompatible :: NumOrd.UniformlyOrderedPair DI -> Bool
+propDINumericLatticeComparisonCompatible = NumOrd.propLatticeComparisonCompatible
 
-propDILatticeJoinAboveBoth :: NumOrd.UniformlyOrderedPair DI -> Bool
-propDILatticeJoinAboveBoth = NumOrd.propLatticeJoinAboveBoth
+propDINumericLatticeJoinAboveBoth :: NumOrd.UniformlyOrderedPair DI -> Bool
+propDINumericLatticeJoinAboveBoth = NumOrd.propLatticeJoinAboveBoth
 
-propDILatticeMeetBelowBoth :: NumOrd.UniformlyOrderedPair DI -> Bool
-propDILatticeMeetBelowBoth = NumOrd.propLatticeMeetBelowBoth
+propDINumericLatticeMeetBelowBoth :: NumOrd.UniformlyOrderedPair DI -> Bool
+propDINumericLatticeMeetBelowBoth = NumOrd.propLatticeMeetBelowBoth
 
-propDILatticeJoinIdempotent :: DI -> Bool
-propDILatticeJoinIdempotent = NumOrd.propLatticeJoinIdempotent
+propDINumericLatticeJoinIdempotent :: DI -> Bool
+propDINumericLatticeJoinIdempotent = NumOrd.propLatticeJoinIdempotent
 
-propDILatticeJoinCommutative :: NumOrd.UniformlyOrderedPair DI -> Bool
-propDILatticeJoinCommutative = NumOrd.propLatticeJoinCommutative
+propDINumericLatticeJoinCommutative :: NumOrd.UniformlyOrderedPair DI -> Bool
+propDINumericLatticeJoinCommutative = NumOrd.propLatticeJoinCommutative
 
-propDILatticeJoinAssocative :: NumOrd.UniformlyOrderedTriple DI -> Bool
-propDILatticeJoinAssocative = NumOrd.propLatticeJoinAssocative
+propDINumericLatticeJoinAssocative :: NumOrd.UniformlyOrderedTriple DI -> Bool
+propDINumericLatticeJoinAssocative = NumOrd.propLatticeJoinAssocative
 
-propDILatticeMeetIdempotent :: DI -> Bool
-propDILatticeMeetIdempotent = NumOrd.propLatticeMeetIdempotent
+propDINumericLatticeMeetIdempotent :: DI -> Bool
+propDINumericLatticeMeetIdempotent = NumOrd.propLatticeMeetIdempotent
 
-propDILatticeMeetCommutative :: NumOrd.UniformlyOrderedPair DI -> Bool
-propDILatticeMeetCommutative = NumOrd.propLatticeMeetCommutative
+propDINumericLatticeMeetCommutative :: NumOrd.UniformlyOrderedPair DI -> Bool
+propDINumericLatticeMeetCommutative = NumOrd.propLatticeMeetCommutative
 
-propDILatticeMeetAssocative :: NumOrd.UniformlyOrderedTriple DI -> Bool
-propDILatticeMeetAssocative = NumOrd.propLatticeMeetAssocative
+propDINumericLatticeMeetAssocative :: NumOrd.UniformlyOrderedTriple DI -> Bool
+propDINumericLatticeMeetAssocative = NumOrd.propLatticeMeetAssocative
 
-propDILatticeDistributive :: NumOrd.UniformlyOrderedTriple DI -> Bool
-propDILatticeDistributive = NumOrd.propLatticeDistributive
+propDINumericLatticeDistributive :: NumOrd.UniformlyOrderedTriple DI -> Bool
+propDINumericLatticeDistributive = NumOrd.propLatticeDistributive
 
-testsDILattice :: Test
-testsDILattice =
+testsDINumericLattice :: Test
+testsDINumericLattice =
     testGroup "DI (min,max)" 
         [
-         testProperty "Comparison compatible" propDILatticeComparisonCompatible
+         testProperty "Comparison compatible" propDINumericLatticeComparisonCompatible
         ,
-         testProperty "join above" propDILatticeJoinAboveBoth
+         testProperty "join above" propDINumericLatticeJoinAboveBoth
         ,
-         testProperty "meet below" propDILatticeMeetBelowBoth
+         testProperty "meet below" propDINumericLatticeMeetBelowBoth
         ,
-         testProperty "join idempotent" propDILatticeJoinIdempotent
+         testProperty "join idempotent" propDINumericLatticeJoinIdempotent
         ,
-         testProperty "join commutative" propDILatticeJoinCommutative
+         testProperty "join commutative" propDINumericLatticeJoinCommutative
         ,
-         testProperty "join associative" propDILatticeJoinAssocative
+         testProperty "join associative" propDINumericLatticeJoinAssocative
         ,
-         testProperty "meet idempotent" propDILatticeMeetIdempotent
+         testProperty "meet idempotent" propDINumericLatticeMeetIdempotent
         ,
-         testProperty "meet commutative" propDILatticeMeetCommutative
+         testProperty "meet commutative" propDINumericLatticeMeetCommutative
         ,
-         testProperty "meet associative" propDILatticeMeetAssocative
+         testProperty "meet associative" propDINumericLatticeMeetAssocative
         ,
-         testProperty "distributive" propDILatticeDistributive
+         testProperty "distributive" propDINumericLatticeDistributive
         ]
         
