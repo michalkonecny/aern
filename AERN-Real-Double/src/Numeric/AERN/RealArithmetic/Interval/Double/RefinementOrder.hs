@@ -13,7 +13,7 @@
 module Numeric.AERN.RealArithmetic.Interval.Double.RefinementOrder
 (
    testsDIRefinementSemidecidableComparison,
-   testsDIRefinementBasis
+   testsDIRefinementBasis, testsDIRefinementRoundedBasis
 )
 where
 
@@ -65,27 +65,53 @@ propDIRefinementBasisComparisonCompatible (RefOrd.UniformlyOrderedPair (i1, i2))
     RefOrd.propBasisComparisonCompatible i1 i2
 
 propDIRefinementBasisJoinAboveBoth :: RefOrd.UniformlyOrderedPair DI -> Bool
-propDIRefinementBasisJoinAboveBoth (RefOrd.UniformlyOrderedPair (i1, i2)) =
-    RefOrd.propBasisJoinAboveBoth i1 i2
+propDIRefinementBasisJoinAboveBoth = RefOrd.propBasisJoinAboveBoth
 
 propDIRefinementBasisJoinIdempotent :: DI -> Bool
 propDIRefinementBasisJoinIdempotent = RefOrd.propBasisJoinIdempotent
 
 propDIRefinementBasisJoinCommutative :: RefOrd.UniformlyOrderedPair DI -> Bool
-propDIRefinementBasisJoinCommutative (RefOrd.UniformlyOrderedPair (i1, i2)) =
-    RefOrd.propBasisJoinCommutative i1 i2
+propDIRefinementBasisJoinCommutative = RefOrd.propBasisJoinCommutative
 
 propDIRefinementBasisJoinAssociative :: RefOrd.UniformlyOrderedTriple DI -> Bool
-propDIRefinementBasisJoinAssociative (RefOrd.UniformlyOrderedTriple (i1, i2, i3)) =
-    RefOrd.propBasisJoinAssocative i1 i2 i3
+propDIRefinementBasisJoinAssociative = RefOrd.propBasisJoinAssocative
 
 testsDIRefinementBasis :: Test
 testsDIRefinementBasis =
     testGroup "DI (⊔?)"
         [
-         testProperty "comparison compatible"  propDIRefinementBasisComparisonCompatible,
+         testProperty "join comparison compatible"  propDIRefinementBasisComparisonCompatible,
          testProperty "join above both"  propDIRefinementBasisJoinAboveBoth,
          testProperty "join idempotent" propDIRefinementBasisJoinIdempotent,
          testProperty "join commutative" propDIRefinementBasisJoinCommutative,
          testProperty "join associative" propDIRefinementBasisJoinAssociative
         ]
+
+propDIRefinementRoundedBasisComparisonCompatible :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementRoundedBasisComparisonCompatible (RefOrd.UniformlyOrderedPair (i1, i2)) = 
+    RefOrd.propOuterRoundedBasisComparisonCompatible i1 i2
+
+propDIRefinementRoundedBasisJoinAboveBoth :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementRoundedBasisJoinAboveBoth (RefOrd.UniformlyOrderedPair (i1, i2)) =
+    RefOrd.propInnerRoundedBasisJoinAboveBoth i1 i2
+
+propDIRefinementRoundedBasisJoinIdempotent :: DI -> Bool
+propDIRefinementRoundedBasisJoinIdempotent = RefOrd.propRoundedBasisJoinIdempotent
+
+propDIRefinementRoundedBasisJoinCommutative :: RefOrd.UniformlyOrderedPair DI -> Bool
+propDIRefinementRoundedBasisJoinCommutative = RefOrd.propRoundedBasisJoinCommutative
+
+propDIRefinementRoundedBasisJoinAssociative :: RefOrd.UniformlyOrderedTriple DI -> Bool
+propDIRefinementRoundedBasisJoinAssociative = RefOrd.propRoundedBasisJoinAssocative
+
+testsDIRefinementRoundedBasis :: Test
+testsDIRefinementRoundedBasis =
+    testGroup "DI (<⊔>?, >⊔<?)"
+        [
+         testProperty "rounded join comparison compatible"  propDIRefinementRoundedBasisComparisonCompatible,
+         testProperty "rounded join above both"  propDIRefinementRoundedBasisJoinAboveBoth,
+         testProperty "rounded join idempotent" propDIRefinementRoundedBasisJoinIdempotent,
+         testProperty "rounded join commutative" propDIRefinementRoundedBasisJoinCommutative,
+         testProperty "rounded join associative" propDIRefinementRoundedBasisJoinAssociative
+        ]
+        
