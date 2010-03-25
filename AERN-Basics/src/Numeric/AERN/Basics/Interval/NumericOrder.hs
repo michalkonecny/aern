@@ -32,6 +32,20 @@ instance (NumOrd.Lattice e) => (NumOrd.Lattice (Interval e))
     min = minInterval 
     max = maxInterval 
 
+instance (NumOrd.RoundedLattice e) => (NumOrd.OuterRoundedLattice (Interval e))
+    where
+    minOuterEff = minOuterInterval 
+    maxOuterEff = maxOuterInterval
+    minmaxOuterDefaultEffort = minmaxDefaultEffortInterval 
+
+instance (NumOrd.RoundedLattice e) => (NumOrd.InnerRoundedLattice (Interval e))
+    where
+    minInnerEff = minInnerInterval 
+    maxInnerEff = maxInnerInterval
+    minmaxInnerDefaultEffort = minmaxDefaultEffortInterval 
+
+instance (NumOrd.RoundedLattice e) => (NumOrd.RefinementRoundedLattice (Interval e))
+
 instance (NumOrd.HasLeast e) => (NumOrd.HasLeast (Interval e))
     where
     least = leastInterval

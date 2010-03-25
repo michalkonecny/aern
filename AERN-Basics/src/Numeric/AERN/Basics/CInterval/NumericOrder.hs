@@ -96,6 +96,67 @@ maxInterval i1 i2 =
     (l1, h1) = getEndpoints i1
     (l2, h2) = getEndpoints i2
 
+{-|
+    Default binary outer-roudned maximum for 'CInterval' types.
+-}
+maxOuterInterval ::
+    (CInterval i, NumOrd.RoundedLattice (Endpoint i)) =>
+    [EffortIndicator] -> i -> i -> i
+maxOuterInterval effort i1 i2 =
+    fromEndpoints (NumOrd.maxDnEff effort l1 l2, NumOrd.maxUpEff effort h1 h2)
+    where
+    (l1, h1) = getEndpoints i1
+    (l2, h2) = getEndpoints i2
+
+{-|
+    Default binary inner-roudned maximum for 'CInterval' types.
+-}
+maxInnerInterval ::
+    (CInterval i, NumOrd.RoundedLattice (Endpoint i)) =>
+    [EffortIndicator] -> i -> i -> i
+maxInnerInterval effort i1 i2 =
+    fromEndpoints (NumOrd.maxUpEff effort l1 l2, NumOrd.maxDnEff effort h1 h2)
+    where
+    (l1, h1) = getEndpoints i1
+    (l2, h2) = getEndpoints i2
+
+{-|
+    Default binary outer-roudned minimum for 'CInterval' types.
+-}
+minOuterInterval ::
+    (CInterval i, NumOrd.RoundedLattice (Endpoint i)) =>
+    [EffortIndicator] -> i -> i -> i
+minOuterInterval effort i1 i2 =
+    fromEndpoints (NumOrd.minDnEff effort l1 l2, NumOrd.minUpEff effort h1 h2)
+    where
+    (l1, h1) = getEndpoints i1
+    (l2, h2) = getEndpoints i2
+
+{-|
+    Default binary inner-roudned minimum for 'CInterval' types.
+-}
+minInnerInterval ::
+    (CInterval i, NumOrd.RoundedLattice (Endpoint i)) =>
+    [EffortIndicator] -> i -> i -> i
+minInnerInterval effort i1 i2 =
+    fromEndpoints (NumOrd.minUpEff effort l1 l2, NumOrd.minDnEff effort h1 h2)
+    where
+    (l1, h1) = getEndpoints i1
+    (l2, h2) = getEndpoints i2
+
+{-|
+    Default default effort indicators for numerically comparing 'CInterval' types. 
+-}
+minmaxDefaultEffortInterval ::
+        (CInterval i, NumOrd.RoundedLattice (Endpoint i)) => 
+        i -> [EffortIndicator]
+minmaxDefaultEffortInterval i =
+    zipWith Prelude.max
+        (NumOrd.minmaxDefaultEffort l)
+        (NumOrd.minmaxDefaultEffort h)
+    where
+    (l,h) = getEndpoints i
+
 leastInterval ::
      (CInterval i, NumOrd.HasLeast (Endpoint i)) => i
 leastInterval = fromEndpoints (NumOrd.least, NumOrd.least)

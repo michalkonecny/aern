@@ -74,6 +74,7 @@ instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.
     meetIn = innerRoundedMeetInterval
     joinmeetInDefaultEffort = joinmeetDefaultEffortInterval
 
+instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.RoundedLattice (Interval e))
 
 instance (NumOrd.ArbitraryOrderedTuple e) => RefOrd.ArbitraryOrderedTuple (Interval e) where
    arbitraryTupleRelatedBy = arbitraryIntervalTupleRefinementRelatedBy
