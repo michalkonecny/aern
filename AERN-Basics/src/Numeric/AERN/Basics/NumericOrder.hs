@@ -21,7 +21,8 @@ module Numeric.AERN.Basics.NumericOrder
     module Numeric.AERN.Basics.NumericOrder.Arbitrary,
     module Numeric.AERN.Basics.NumericOrder.Extrema,
     module Numeric.AERN.Basics.NumericOrder.Lattice,
-    module Numeric.AERN.Basics.NumericOrder.RoundedLattice
+    module Numeric.AERN.Basics.NumericOrder.RoundedLattice,
+    module Numeric.AERN.Basics.NumericOrder.RefinementRoundedLattice
 )
 where
 
@@ -31,3 +32,4 @@ import Numeric.AERN.Basics.NumericOrder.Arbitrary
 import Numeric.AERN.Basics.NumericOrder.Extrema
 import Numeric.AERN.Basics.NumericOrder.Lattice
 import Numeric.AERN.Basics.NumericOrder.RoundedLattice
+import Numeric.AERN.Basics.NumericOrder.RefinementRoundedLattice

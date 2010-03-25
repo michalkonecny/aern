@@ -72,6 +72,7 @@ Library
     Numeric.AERN.Basics.NumericOrder.Extrema
     Numeric.AERN.Basics.NumericOrder.Lattice
     Numeric.AERN.Basics.NumericOrder.RoundedLattice
+    Numeric.AERN.Basics.NumericOrder.RefinementRoundedLattice
     Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison
     Numeric.AERN.Basics.RefinementOrder.Comparison
     Numeric.AERN.Basics.RefinementOrder.Arbitrary
