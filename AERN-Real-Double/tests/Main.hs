@@ -26,5 +26,6 @@ tests =
        testsDISemidecidableComparison,
        testsDILattice,
        testsDIRefinementSemidecidableComparison, 
-       testsDIRefinementBasis
+       testsDIRefinementBasis,
+       testsDIRefinementRoundedBasis
     ]

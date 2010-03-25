@@ -27,6 +27,7 @@ Executable testAERN-Real-Double
   Build-Depends:
         base >= 4 && < 5,
         containers >= 0.3 && < 0.4,
+        convertible >= 1.0 && < 2,
         QuickCheck >= 2.1 && < 2.2,
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
         AERN-Basics == 2010.1, AERN-Real == 2010.1
@@ -36,6 +37,8 @@ Library
   ghc-options:     -O2
   Build-Depends:
         base >= 4 && < 5,
+        containers >= 0.3 && < 0.4,
+        convertible >= 1.0 && < 2,
         QuickCheck >= 2.1 && < 2.2,
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
         AERN-Basics == 2010.1, AERN-Real == 2010.1

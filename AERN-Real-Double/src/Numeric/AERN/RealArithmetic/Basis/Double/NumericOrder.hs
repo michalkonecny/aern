@@ -40,6 +40,8 @@ import qualified Data.List as List
 import qualified Data.Map as Map
 --import qualified Data.Set as Set
 
+import Data.Convertible
+
 instance NumOrd.HasLeast Double where
     least = - 1/0
 
@@ -212,6 +214,12 @@ instance NumOrd.RoundedLattice Double where
     minUpEff _ = NumOrd.min
     minDnEff _ = NumOrd.min
     minmaxDefaultEffort _ = []
+--    -- a version with artificially added rounding for "testing" the tests
+--    maxUpEff [effort] e1 e2 = NumOrd.max e1 e2 + (1/(convert effort))
+--    maxDnEff [effort] e1 e2 = NumOrd.max e1 e2 - (1/(convert effort))
+--    minUpEff [effort] e1 e2 = NumOrd.min e1 e2 + (1/(convert effort))
+--    minDnEff [effort] e1 e2 = NumOrd.min e1 e2 - (1/(convert effort))
+--    minmaxDefaultEffort _ = [10]
 
 propDoubleRoundedLatticeNaNException :: Double -> Bool
 propDoubleRoundedLatticeNaNException =
