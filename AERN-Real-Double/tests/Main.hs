@@ -10,12 +10,16 @@
 -}
 module Main where
 
+import Numeric.AERN.Basics.Granularity
 import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
 
 import Test.Framework (defaultMain)
 
-main = defaultMain tests
+main =
+    do
+    initGranularityRounding (0 :: Double) 
+    defaultMain tests
 
 tests = 
     [
