@@ -47,6 +47,7 @@ Library
     Numeric.AERN.Basics.PartialOrdering
     Numeric.AERN.Basics.NumericOrder
     Numeric.AERN.Basics.RefinementOrder
+    Numeric.AERN.Basics.Consistency
     Numeric.AERN.Basics.Granularity
     Numeric.AERN.Basics.CInterval
     Numeric.AERN.Basics.CInterval.Granularity
@@ -82,6 +83,7 @@ Library
     Numeric.AERN.Basics.RefinementOrder.RoundedBasis
     Numeric.AERN.Basics.RefinementOrder.RoundedLattice
     Numeric.AERN.Basics.Interval.Basics
+    Numeric.AERN.Basics.Interval.Consistency
     Numeric.AERN.Basics.Interval.NumericOrder
     Numeric.AERN.Basics.Interval.RefinementOrder
 
