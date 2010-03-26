@@ -28,6 +28,7 @@ Executable testAERN-Real-Double
         base >= 4 && < 5,
         containers >= 0.3 && < 0.4,
         convertible >= 1.0 && < 2,
+        ieee-utils >= 0.4 && < 0.5,
         QuickCheck >= 2.1 && < 2.2,
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
         AERN-Basics == 2010.1, AERN-Real == 2010.1
@@ -39,6 +40,7 @@ Library
         base >= 4 && < 5,
         containers >= 0.3 && < 0.4,
         convertible >= 1.0 && < 2,
+        ieee-utils >= 0.4 && < 0.5,
         QuickCheck >= 2.1 && < 2.2,
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
         AERN-Basics == 2010.1, AERN-Real == 2010.1
