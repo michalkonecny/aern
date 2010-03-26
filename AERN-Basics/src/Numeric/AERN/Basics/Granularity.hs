@@ -39,6 +39,7 @@ class HasGranularity t where
     type Granularity t
     {-| extract the internal granularity of a value of e -}
     getGranularity :: t -> Granularity t
+    initGranularityRounding :: t -> IO ()
     
 class (CanBeMutable t, HasGranularity t) => HasGranularityMutable t
     where

@@ -125,6 +125,7 @@ instance (HasGranularity e, NumOrd.Lattice (Granularity e)) =>
     where
     type Granularity (Interval e) = Granularity e
     getGranularity = getGranularityInterval
+    initGranularityRounding (Interval l h) = initGranularityRounding l
 
 instance (CanSetGranularityRoundedByNumericOrder e, NumOrd.Lattice (Granularity e)) => 
          CanSetGranularityRoundedByRefinementOrder (Interval e)
