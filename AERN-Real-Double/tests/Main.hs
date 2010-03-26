@@ -27,6 +27,7 @@ tests =
        testsDoubleComparison, testsDoubleSemidecidableComparison,
        testsDoubleLattice, testsDoubleRoundedLattice,
        -- DI:
+       testsDIConsistencyFlip,
        testsDINumericSemidecidableComparison,
        testsDINumericLattice,
        testsDINumericRefinementRoundedLattice,
