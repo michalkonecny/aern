@@ -12,7 +12,7 @@
 -}
 module Numeric.AERN.RealArithmetic.Interval.Double.Basics 
 (
-   DI
+   DI, sampleDI
 )
 where
 
@@ -27,3 +27,5 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 type DI = Interval Double
 
+sampleDI :: DI
+sampleDI = Interval 0 0
