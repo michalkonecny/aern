@@ -77,53 +77,41 @@ roundedLeftDistributive =
 
 equalRoundingUpDn11 :: (Expr1Op1 t) -> (Expr1Op1 t) -> (SmdcRel t) -> (Op t) -> (Op t) -> t -> Bool
 equalRoundingUpDn11 expr1 expr2  (<=?) (*^) (*.) e =
-    (defined (expr1 (*.) e <=? (expr2 (*^) e)) && 
-     defined (expr2 (*.) e <=? (expr1 (*^) e)))
-    ===>
-    (
-     (expr1 (*.) e <= (expr2 (*^) e))
-     &&
-     (expr2 (*.) e <= (expr1 (*^) e))
-    )
+    (defined (expr1 (*.) e <=? (expr2 (*^) e)) 
+        ===> (expr1 (*.) e <= (expr2 (*^) e)))
+    && 
+    (defined (expr2 (*.) e <=? (expr1 (*^) e)) 
+        ===> (expr2 (*.) e <= (expr1 (*^) e)))
     where
     (<=) = assumeTotal2 (<=?)
     
 equalRoundingUpDn12 :: (Expr1Op2 t) -> (Expr1Op2 t) -> (SmdcRel t) -> (Op t) -> (Op t) -> t -> t -> Bool
 equalRoundingUpDn12 expr1 expr2  (<=?) (*^) (*.) e1 e2 =
-    (defined (expr1 (*.) e1 e2 <=? (expr2 (*^) e1 e2)) && 
-     defined (expr2 (*.) e1 e2 <=? (expr1 (*^) e1 e2)))
-    ===>
-    (
-     (expr1 (*.) e1 e2 <= (expr2 (*^) e1 e2))
-     &&
-     (expr2 (*.) e1 e2 <= (expr1 (*^) e1 e2))
-    )
+    (defined (expr1 (*.) e1 e2 <=? (expr2 (*^) e1 e2)) 
+        ===> (expr1 (*.) e1 e2 <= (expr2 (*^) e1 e2))) 
+    && 
+    (defined (expr2 (*.) e1 e2 <=? (expr1 (*^) e1 e2)) 
+        ===> (expr2 (*.) e1 e2 <= (expr1 (*^) e1 e2)))
     where
     (<=) = assumeTotal2 (<=?)
     
 equalRoundingUpDn13 :: (Expr1Op3 t) -> (Expr1Op3 t) -> (SmdcRel t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
 equalRoundingUpDn13 expr1 expr2  (<=?) (*^) (*.) e1 e2 e3 =
-    (defined (expr1 (*.) e1 e2 e3 <=? (expr2 (*^) e1 e2 e3)) && 
-     defined (expr2 (*.) e1 e2 e3 <=? (expr1 (*^) e1 e2 e3)))
-    ===>
-    (
-     (expr1 (*.) e1 e2 e3 <= (expr2 (*^) e1 e2 e3))
-     &&
-     (expr2 (*.) e1 e2 e3 <= (expr1 (*^) e1 e2 e3))
-    )
+    (defined (expr1 (*.) e1 e2 e3 <=? (expr2 (*^) e1 e2 e3)) 
+        ===> (expr1 (*.) e1 e2 e3 <= (expr2 (*^) e1 e2 e3)))
+    && 
+    (defined (expr2 (*.) e1 e2 e3 <=? (expr1 (*^) e1 e2 e3))
+        ===> (expr2 (*.) e1 e2 e3 <= (expr1 (*^) e1 e2 e3)))
     where
     (<=) = assumeTotal2 (<=?)
     
 equalRoundingUpDn23 :: (Expr2Op3 t) -> (Expr2Op3 t) -> (SmdcRel t) -> (Op t) -> (Op t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
 equalRoundingUpDn23 expr1 expr2  (<=?) (*^) (**^) (*.) (**.) e1 e2 e3 =
-    (defined (expr1 (*.) (**.) e1 e2 e3 <=? (expr2 (*^) (**^) e1 e2 e3)) && 
-     defined (expr2 (*.) (**.) e1 e2 e3 <=? (expr1 (*^) (**^) e1 e2 e3)))
-    ===>
-    (
-     (expr1 (*.) (**.) e1 e2 e3 <= (expr2 (*^) (**^) e1 e2 e3))
-     &&
-     (expr2 (*.) (**.) e1 e2 e3 <= (expr1 (*^) (**^) e1 e2 e3))
-    )
+    (defined (expr1 (*.) (**.) e1 e2 e3 <=? (expr2 (*^) (**^) e1 e2 e3)) 
+        ===> (expr1 (*.) (**.) e1 e2 e3 <= (expr2 (*^) (**^) e1 e2 e3)))
+    && 
+    (defined (expr2 (*.) (**.) e1 e2 e3 <=? (expr1 (*^) (**^) e1 e2 e3)) 
+        ===> (expr2 (*.) (**.) e1 e2 e3 <= (expr1 (*^) (**^) e1 e2 e3)))
     where
     (<=) = assumeTotal2 (<=?)
     
