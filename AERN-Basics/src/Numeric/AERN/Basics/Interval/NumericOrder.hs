@@ -24,7 +24,7 @@ instance (NumOrd.SemidecidableComparison e) => (NumOrd.SemidecidableComparison (
     where
     maybeCompareEff = maybeCompareEffInterval
     maybeCompareDefaultEffort = maybeCompareDefaultEffortInterval
-        
+                
 instance (NumOrd.Comparison e) => (NumOrd.Comparison (Interval e))
         
 instance (NumOrd.Lattice e) => (NumOrd.Lattice (Interval e))

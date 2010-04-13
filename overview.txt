@@ -1,32 +1,34 @@
 Misc
    QuickCheck
+   Bool
+   Maybe
 Basics
-   Mutable
-   Exception
    Effort (EffortIndicator type)
-   Equality ==?
-   PartialOrdering (NC)
+   PartialOrdering (NC, arbitrary ordered tuples)
    NumericOrder (NumOrd)
-     Extrema (least, highest)
-     Poset (<=)
+     SemidecidableComparison
+       (<?, <=?, ==?, maybeCompareDefaultEffort)
+     Comparison (<, <=, ==) equality non-reflexive!
      Distance TODO
-     Lattice (max, min)
-     SemidecidablePoset
-       (<=?, maybeCompareDefaultEffort)
+     Extrema (least, highest)
      RoundedLattice (maxUp, minmaxDefaultEffort)
+     Lattice (max, min)
    RefinementOrder (RefOrd)
+     Equality |==?
      Extrema (top, bottom)
-     Poset |<=
+     Comparison |<=
      Basis |\/? consistent
      Lattice |\/, |/\
-     SemidecidablePoset |<=?
+     SemidecidableComparison |<=?
      Precision TODO
      Consistency TODO
      OuterRoundedBasis <|\/>? maybeConsistent
      OuterRoundedLattice <|\/>
      InnerRoundedBasis >|\/<?
      InnerRoundedLattice >|\/<
-   Granularity setMinGranularity, getMaxGranularity
+   Granularity setMinGranularity, getMaxGranularity, init rounding
+   Exception
+   Mutable
    CInterval class (endpoints)
        Granularity instance helpers
        NumericOrder

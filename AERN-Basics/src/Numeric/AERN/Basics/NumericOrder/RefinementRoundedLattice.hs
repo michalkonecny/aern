@@ -37,6 +37,10 @@ import Numeric.AERN.Basics.Laws.OperationRelation
 
 import Numeric.AERN.Misc.Maybe
 
+import Test.QuickCheck
+import Test.Framework (testGroup, Test)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
+
 {-|
     A type with refinement-outer-rounding numerical-order-lattice operations.
 -}
@@ -68,58 +72,93 @@ class InnerRoundedLattice t where
 
 class (OuterRoundedLattice t, InnerRoundedLattice t) => RefinementRoundedLattice t
 
-propRefinementRoundedLatticeIllegalArgException :: (RefinementRoundedLattice t) => t -> t -> Bool
+propRefinementRoundedLatticeIllegalArgException :: 
+    (RefinementRoundedLattice t) => 
+    t -> t -> Bool
 propRefinementRoundedLatticeIllegalArgException illegalArg d =
     and $ map raisesAERNException $ 
                 concat [[op d illegalArg, op illegalArg d] | op <- [maxInner, maxOuter, minInner, minOuter]] 
 
 propRefinementRoundedLatticeJoinIdempotent :: 
     (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
-    t -> Bool
-propRefinementRoundedLatticeJoinIdempotent = roundedIdempotent (|<=?) maxInner maxOuter
+    t -> t -> Bool
+propRefinementRoundedLatticeJoinIdempotent _ = roundedIdempotent (|<=?) maxInner maxOuter
 
 propRefinementRoundedLatticeJoinCommutative :: 
     (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
-    UniformlyOrderedPair t -> Bool
-propRefinementRoundedLatticeJoinCommutative (UniformlyOrderedPair (e1,e2)) = 
+    t -> UniformlyOrderedPair t -> Bool
+propRefinementRoundedLatticeJoinCommutative _ (UniformlyOrderedPair (e1,e2)) = 
     roundedCommutative (|<=?) maxInner maxOuter e1 e2
 
 propRefinementRoundedLatticeJoinAssocative :: 
     (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
-    UniformlyOrderedTriple t -> Bool
-propRefinementRoundedLatticeJoinAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
+    t -> UniformlyOrderedTriple t -> Bool
+propRefinementRoundedLatticeJoinAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedAssociative (|<=?) maxInner maxOuter e1 e2 e3
 
 propRefinementRoundedLatticeMeetIdempotent :: 
     (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
-    t -> Bool
-propRefinementRoundedLatticeMeetIdempotent = 
+    t -> t -> Bool
+propRefinementRoundedLatticeMeetIdempotent _ = 
     roundedIdempotent (|<=?) minInner minOuter
 
 propRefinementRoundedLatticeMeetCommutative :: 
     (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
-    UniformlyOrderedPair t -> Bool
-propRefinementRoundedLatticeMeetCommutative (UniformlyOrderedPair (e1,e2)) = 
+    t -> UniformlyOrderedPair t -> Bool
+propRefinementRoundedLatticeMeetCommutative _ (UniformlyOrderedPair (e1,e2)) = 
     roundedCommutative (|<=?) minInner minOuter e1 e2
 
 propRefinementRoundedLatticeMeetAssocative :: 
     (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
-    UniformlyOrderedTriple t -> Bool
-propRefinementRoundedLatticeMeetAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
+    t -> UniformlyOrderedTriple t -> Bool
+propRefinementRoundedLatticeMeetAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedAssociative (|<=?) minInner minOuter e1 e2 e3
 
 {- optional properties: -}
 propRefinementRoundedLatticeModular :: 
     (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
-    UniformlyOrderedTriple t -> Bool
-propRefinementRoundedLatticeModular (UniformlyOrderedTriple (e1,e2,e3)) = 
+    t -> UniformlyOrderedTriple t -> Bool
+propRefinementRoundedLatticeModular _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedModular (|<=?) maxInner minInner maxOuter minOuter e1 e2 e3
 
 propRefinementRoundedLatticeDistributive :: 
     (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
-    UniformlyOrderedTriple t -> Bool
-propRefinementRoundedLatticeDistributive (UniformlyOrderedTriple (e1,e2,e3)) = 
+    t -> UniformlyOrderedTriple t -> Bool
+propRefinementRoundedLatticeDistributive _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     (roundedLeftDistributive  (|<=?) maxInner minInner maxOuter minOuter e1 e2 e3)
     && 
     (roundedLeftDistributive  (|<=?) maxInner minInner maxOuter minOuter e1 e2 e3)
+    
+testsRefinementRoundedLatticeDistributive :: 
+    (RefOrd.SemidecidableComparison t,
+     HasExtrema t,
+     RefinementRoundedLattice t,
+     ArbitraryOrderedTuple t,
+     Arbitrary t, 
+     Eq t, 
+     Show t) => 
+    (String, t) -> (Maybe (String, t)) -> Test
+testsRefinementRoundedLatticeDistributive (name, sample) maybeIllegalArg =
+    testGroup (name ++ " (min,max) treated as refinement rounded") $
+        (case maybeIllegalArg of 
+            Nothing -> []
+            Just (illegalArgName, illegalArg) -> 
+                [testProperty (illegalArgName ++ " exception") 
+                              (propRefinementRoundedLatticeIllegalArgException illegalArg)]) 
+        ++
+        [
+         testProperty "join idempotent" (propRefinementRoundedLatticeJoinIdempotent sample)
+        ,
+         testProperty "join commutative" (propRefinementRoundedLatticeJoinCommutative sample)
+        ,
+         testProperty "join associative" (propRefinementRoundedLatticeJoinAssocative sample)
+        ,
+         testProperty "meet idempotent" (propRefinementRoundedLatticeMeetIdempotent sample)
+        ,
+         testProperty "meet commutative" (propRefinementRoundedLatticeMeetCommutative sample)
+        ,
+         testProperty "meet associative" (propRefinementRoundedLatticeMeetAssocative sample)
+        ,
+         testProperty "distributive" (propRefinementRoundedLatticeDistributive sample)
+        ]
     

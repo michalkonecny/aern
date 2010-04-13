@@ -23,6 +23,8 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set 
 
 import Test.QuickCheck
+import Test.Framework (testGroup, Test)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import System.IO.Unsafe
 
@@ -154,6 +156,9 @@ instance (ArbitraryOrderedTuple t) => Arbitrary (LTLTLTTriple t) where
                 return $ LTLTLTTriple triple
 
 
+propArbitraryOrderedPair ::
+    (ArbitraryOrderedTuple t) =>
+    (t -> t -> PartialOrdering) -> PartialOrdering -> Bool 
 propArbitraryOrderedPair compare rel =
      case arbitraryPairRelatedBy rel of
         Nothing -> True
@@ -163,6 +168,9 @@ propArbitraryOrderedPair compare rel =
              theSample = unsafePerformIO $ sample' gen 
              relOK (e1, e2) = compare e1 e2 == rel
 
+propArbitraryOrderedTriple ::
+    (ArbitraryOrderedTuple t) =>
+    (t -> t -> PartialOrdering) -> (PartialOrdering, PartialOrdering, PartialOrdering) -> Bool 
 propArbitraryOrderedTriple compare rels@(r1,r2,r3) =
      case arbitraryTripleRelatedBy rels of
         Nothing -> True
@@ -173,3 +181,14 @@ propArbitraryOrderedTriple compare rels@(r1,r2,r3) =
              relOK (e1, e2, e3) = 
                 and [compare e1 e2 == r1, compare e2 e3 == r2, compare e1 e3 == r3]
 
+testsArbitraryTuple ::
+    (Arbitrary t,
+     ArbitraryOrderedTuple t) =>
+    (String, t, t -> t -> PartialOrdering) -> Test
+testsArbitraryTuple (name, sample, compare)  =
+    testGroup (name ++ " arbitrary ordered") $ 
+        [
+         testProperty "pairs" (propArbitraryOrderedPair compare)
+        ,
+         testProperty "triples" (propArbitraryOrderedTriple compare)
+        ]

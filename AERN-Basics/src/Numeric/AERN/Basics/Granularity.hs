@@ -54,32 +54,32 @@ class (HasGranularity t) => (CanSetGranularityRoundedByNumericOrder t) where
 
 propSetGranularityUp ::
         (NumOrd.Comparison t, CanSetGranularityRoundedByNumericOrder t, Eq (Granularity t)) => 
-        t -> Granularity t -> Bool
-propSetGranularityUp e gr =
+        t -> t -> Granularity t -> Bool
+propSetGranularityUp _ e gr =
         (gr == getGranularity e') && (e' >= e)
         where
         e' = setGranularityUp gr e
  
 propSetGranularityDn :: 
         (NumOrd.Comparison t, CanSetGranularityRoundedByNumericOrder t, Eq (Granularity t)) => 
-        t -> Granularity t -> Bool
-propSetGranularityDn e gr =
+        t -> t -> Granularity t -> Bool
+propSetGranularityDn _ e gr =
         (gr == getGranularity e') && (e' <= e)
         where
         e' = setGranularityDn gr e
  
 propSetMinGranularityUp :: 
         (NumOrd.Comparison t, CanSetGranularityRoundedByNumericOrder t, NumOrd.Comparison (Granularity t)) => 
-        t -> Granularity t -> Bool
-propSetMinGranularityUp e gr =
+        t -> t -> Granularity t -> Bool
+propSetMinGranularityUp _ e gr =
         (gr <= getGranularity e') && (e' >= e)
         where
         e' = setMinGranularityUp gr e
  
 propSetMinGranularityDn :: 
         (NumOrd.Comparison t, CanSetGranularityRoundedByNumericOrder t, NumOrd.Comparison (Granularity t)) => 
-        t -> Granularity t -> Bool
-propSetMinGranularityDn e gr =
+        t -> t -> Granularity t -> Bool
+propSetMinGranularityDn _ e gr =
         (gr <= getGranularity e') && (e' <= e)
         where
         e' = setMinGranularityDn gr e

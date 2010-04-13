@@ -16,6 +16,8 @@
 module Numeric.AERN.Basics.NumericOrder.SemidecidableComparison 
 where
 
+import Prelude hiding (EQ, LT, GT)
+
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.NumericOrder.Extrema
@@ -24,8 +26,9 @@ import Numeric.AERN.Basics.Laws.SemidecidableRelation
 import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Misc.Bool
 
-import Prelude hiding (EQ, LT, GT)
-
+import Test.QuickCheck
+import Test.Framework (testGroup, Test)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 {-|
     A type with semi-decidable equality and partial order
@@ -64,25 +67,57 @@ instance SemidecidableComparison Int where
 maybeComparePreludeCompare _ a b =
     Just $ toPartialOrdering $ Prelude.compare a b
 
-propSemidecidableComparisonReflexiveEQ :: (SemidecidableComparison t) => t -> Bool
-propSemidecidableComparisonReflexiveEQ e = 
+propSemidecidableComparisonReflexiveEQ :: 
+    (SemidecidableComparison t) => 
+    t -> t -> Bool
+propSemidecidableComparisonReflexiveEQ _ e = 
     case maybeCompare e e of Just EQ -> True; Nothing -> True; _ -> False 
 
-propSemidecidableComparisonAntiSymmetric :: (SemidecidableComparison t) => t -> t -> Bool
-propSemidecidableComparisonAntiSymmetric e1 e2 =
+propSemidecidableComparisonAntiSymmetric :: 
+    (SemidecidableComparison t) => 
+    t -> t -> t -> Bool
+propSemidecidableComparisonAntiSymmetric _ e1 e2 =
     case (maybeCompare e2 e1, maybeCompare e1 e2) of
         (Just b1, Just b2) -> b1 == partialOrderingTranspose b2
         _ -> True 
 
-propSemidecidableComparisonTransitiveEQ :: (SemidecidableComparison t) => t -> t -> t -> Bool
-propSemidecidableComparisonTransitiveEQ = semidecidableTransitive (==?)
+propSemidecidableComparisonTransitiveEQ :: 
+    (SemidecidableComparison t) => 
+    t -> t -> t -> t -> Bool
+propSemidecidableComparisonTransitiveEQ _ = semidecidableTransitive (==?)
 
-propSemidecidableComparisonTransitiveLT :: (SemidecidableComparison t) => t -> t -> t -> Bool
-propSemidecidableComparisonTransitiveLT = semidecidableTransitive (<?)
+propSemidecidableComparisonTransitiveLT :: 
+    (SemidecidableComparison t) => 
+    t -> t -> t -> t -> Bool
+propSemidecidableComparisonTransitiveLT _ = semidecidableTransitive (<?)
 
-propSemidecidableComparisonTransitiveLE :: (SemidecidableComparison t) => t -> t -> t -> Bool
-propSemidecidableComparisonTransitiveLE = semidecidableTransitive (<=?)
+propSemidecidableComparisonTransitiveLE :: 
+    (SemidecidableComparison t) => 
+    t -> t -> t -> t -> Bool
+propSemidecidableComparisonTransitiveLE _ = semidecidableTransitive (<=?)
 
-propExtremaInSemidecidableComparison :: (SemidecidableComparison t, HasExtrema t) => t -> Bool
-propExtremaInSemidecidableComparison = semidecidableOrderExtrema (<=?) least highest
+propExtremaInSemidecidableComparison :: 
+    (SemidecidableComparison t, HasExtrema t) => 
+    t -> t -> Bool
+propExtremaInSemidecidableComparison _ = semidecidableOrderExtrema (<=?) least highest
 
+testsSemidecidableComparison :: 
+    (SemidecidableComparison t,
+     HasExtrema t,
+     Arbitrary t, 
+     Show t) => 
+    (String, t) -> Test
+testsSemidecidableComparison (name, sample) =
+    testGroup (name ++ " (>=?)")
+        [
+         testProperty "anti symmetric" (propSemidecidableComparisonAntiSymmetric sample)
+        ,
+         testProperty "transitive EQ" (propSemidecidableComparisonTransitiveEQ sample)
+        ,
+         testProperty "transitive LE" (propSemidecidableComparisonTransitiveLE sample)
+        ,
+         testProperty "transitive LT" (propSemidecidableComparisonTransitiveLT sample)
+        ,
+         testProperty "extrema" (propExtremaInSemidecidableComparison sample)
+        ]
+        

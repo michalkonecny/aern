@@ -13,10 +13,6 @@
     This is a private module reexported publicly via its parent.
 -}
 module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
-(
-   testsDoubleComparison, testsDoubleSemidecidableComparison, 
-   testsDoubleLattice, testsDoubleRoundedLattice
-)
 where
 
 import Prelude hiding (EQ,LT,GT)
@@ -42,6 +38,12 @@ import qualified Data.Map as Map
 
 import Data.Convertible
 
+sampleD :: Double
+sampleD = 0
+
+nanD :: Double
+nanD = 0/0
+
 instance NumOrd.HasLeast Double where
     least = - 1/0
 
@@ -58,80 +60,12 @@ instance NumOrd.SemidecidableComparison Double where
            _ -> Just NC 
     maybeCompareDefaultEffort _ = []
 
-propDoubleSemidecidableComparisonAntiSymmetric :: Double -> Double -> Bool
-propDoubleSemidecidableComparisonAntiSymmetric = NumOrd.propSemidecidableComparisonAntiSymmetric
-
-propDoubleSemidecidableComparisonTransitiveEQ :: Double -> Double -> Double -> Bool
-propDoubleSemidecidableComparisonTransitiveEQ = NumOrd.propSemidecidableComparisonTransitiveEQ
-
-propDoubleSemidecidableComparisonTransitiveLT :: Double -> Double -> Double -> Bool
-propDoubleSemidecidableComparisonTransitiveLT = NumOrd.propSemidecidableComparisonTransitiveLT
-
-propDoubleSemidecidableComparisonTransitiveLE :: Double -> Double -> Double -> Bool
-propDoubleSemidecidableComparisonTransitiveLE = NumOrd.propSemidecidableComparisonTransitiveLE
-
-propDoubleExtremaInSemidecidableComparison :: Double -> Bool
-propDoubleExtremaInSemidecidableComparison = NumOrd.propExtremaInSemidecidableComparison
-
-testsDoubleSemidecidableComparison :: Test
-testsDoubleSemidecidableComparison =
-    testGroup "Double (>=?)" 
-        [
-         testProperty "anti symmetric" propDoubleSemidecidableComparisonAntiSymmetric
-        ,
-         testProperty "transitive EQ" propDoubleSemidecidableComparisonTransitiveEQ
-        ,
-         testProperty "transitive LE" propDoubleSemidecidableComparisonTransitiveLE
-        ,
-         testProperty "transitive LT" propDoubleSemidecidableComparisonTransitiveLT
-        ,
-         testProperty "extrema" propDoubleExtremaInSemidecidableComparison
-        ]
-
 instance NumOrd.Comparison Double where
     compare a b =
         case (isNaN a, isNaN b) of
            (False, False) -> toPartialOrdering $ Prelude.compare a b  
            _ -> throw (AERNException $ "illegal Double argument: NumOrd.Comparison.compare " 
                         ++ show a ++ " " ++ show b) 
-
-propDoubleComparisonNaNException :: Double -> Bool
-propDoubleComparisonNaNException =
-    NumOrd.propComparisonIllegalArgException nan
-    where
-    nan = 0/0  
-    
-propDoubleComparisonAntiSymmetric :: NumOrd.UniformlyOrderedPair Double -> Bool
-propDoubleComparisonAntiSymmetric = NumOrd.propComparisonAntiSymmetric
-
-propDoubleComparisonTransitiveEQ :: Double -> Double -> Double -> Bool
-propDoubleComparisonTransitiveEQ = NumOrd.propComparisonTransitiveEQ
-
-propDoubleComparisonTransitiveLT :: Double -> Double -> Double -> Bool
-propDoubleComparisonTransitiveLT = NumOrd.propComparisonTransitiveLT
-
-propDoubleComparisonTransitiveLE :: Double -> Double -> Double -> Bool
-propDoubleComparisonTransitiveLE = NumOrd.propComparisonTransitiveLE
-
-propDoubleExtremaInComparison :: Double -> Bool
-propDoubleExtremaInComparison = NumOrd.propExtremaInComparison
-
-testsDoubleComparison :: Test
-testsDoubleComparison =
-    testGroup "Double (>=)" 
-        [
-         testProperty "NaN exception" propDoubleComparisonNaNException
-        ,
-         testProperty "anti symmetric" propDoubleComparisonAntiSymmetric
-        ,
-         testProperty "transitive EQ" propDoubleComparisonTransitiveEQ
-        ,
-         testProperty "transitive LT" propDoubleComparisonTransitiveLT
-        ,
-         testProperty "transitive LE" propDoubleComparisonTransitiveLE
-        ,
-         testProperty "extrema" propDoubleExtremaInComparison
-        ]
 
 instance NumOrd.Lattice Double where
     max a b =
@@ -144,69 +78,6 @@ instance NumOrd.Lattice Double where
            (False, False) -> Prelude.min a b  
            _ -> throw (AERNException $ "illegal Double argument: NumOrd.Lattice.min " 
                         ++ show a ++ " " ++ show b) 
-    
-propDoubleLatticeNaNException :: Double -> Bool
-propDoubleLatticeNaNException =
-    NumOrd.propLatticeIllegalArgException nan
-    where
-    nan = 0/0  
-    
-propDoubleLatticeComparisonCompatible :: NumOrd.UniformlyOrderedPair Double -> Bool
-propDoubleLatticeComparisonCompatible = NumOrd.propLatticeComparisonCompatible
-
-propDoubleLatticeJoinAboveBoth :: NumOrd.UniformlyOrderedPair Double -> Bool
-propDoubleLatticeJoinAboveBoth = NumOrd.propLatticeJoinAboveBoth
-
-propDoubleLatticeMeetBelowBoth :: NumOrd.UniformlyOrderedPair Double -> Bool
-propDoubleLatticeMeetBelowBoth = NumOrd.propLatticeMeetBelowBoth
-
-propDoubleLatticeJoinIdempotent :: Double -> Bool
-propDoubleLatticeJoinIdempotent = NumOrd.propLatticeJoinIdempotent
-
-propDoubleLatticeJoinCommutative :: NumOrd.UniformlyOrderedPair Double -> Bool
-propDoubleLatticeJoinCommutative = NumOrd.propLatticeJoinCommutative
-
-propDoubleLatticeJoinAssocative :: NumOrd.UniformlyOrderedTriple Double -> Bool
-propDoubleLatticeJoinAssocative = NumOrd.propLatticeJoinAssocative
-
-propDoubleLatticeMeetIdempotent :: Double -> Bool
-propDoubleLatticeMeetIdempotent = NumOrd.propLatticeMeetIdempotent
-
-propDoubleLatticeMeetCommutative :: NumOrd.UniformlyOrderedPair Double -> Bool
-propDoubleLatticeMeetCommutative = NumOrd.propLatticeMeetCommutative
-
-propDoubleLatticeMeetAssocative :: NumOrd.UniformlyOrderedTriple Double -> Bool
-propDoubleLatticeMeetAssocative = NumOrd.propLatticeMeetAssocative
-
-propDoubleLatticeDistributive :: NumOrd.UniformlyOrderedTriple Double -> Bool
-propDoubleLatticeDistributive = NumOrd.propLatticeDistributive
-
-testsDoubleLattice :: Test
-testsDoubleLattice =
-    testGroup "Double (min,max)" 
-        [
-         testProperty "NaN exception" propDoubleLatticeNaNException
-        ,
-         testProperty "Comparison compatible" propDoubleLatticeComparisonCompatible
-        ,
-         testProperty "join above" propDoubleLatticeJoinAboveBoth
-        ,
-         testProperty "meet below" propDoubleLatticeMeetBelowBoth
-        ,
-         testProperty "join idempotent" propDoubleLatticeJoinIdempotent
-        ,
-         testProperty "join commutative" propDoubleLatticeJoinCommutative
-        ,
-         testProperty "join associative" propDoubleLatticeJoinAssocative
-        ,
-         testProperty "meet idempotent" propDoubleLatticeMeetIdempotent
-        ,
-         testProperty "meet commutative" propDoubleLatticeMeetCommutative
-        ,
-         testProperty "meet associative" propDoubleLatticeMeetAssocative
-        ,
-         testProperty "distributive" propDoubleLatticeDistributive
-        ]
     
 instance NumOrd.RoundedLattice Double where
     maxUpEff _ = NumOrd.max
@@ -221,71 +92,6 @@ instance NumOrd.RoundedLattice Double where
 --    minDnEff [effort] e1 e2 = NumOrd.min e1 e2 - (1/(convert effort))
 --    minmaxDefaultEffort _ = [10]
 
-propDoubleRoundedLatticeNaNException :: Double -> Bool
-propDoubleRoundedLatticeNaNException =
-    NumOrd.propRoundedLatticeIllegalArgException nan
-    where
-    nan = 0/0  
-    
-propDoubleRoundedLatticeComparisonCompatible :: NumOrd.UniformlyOrderedPair Double -> Bool
-propDoubleRoundedLatticeComparisonCompatible = NumOrd.propRoundedLatticeComparisonCompatible
-
-propDoubleRoundedLatticeJoinAboveBoth :: NumOrd.UniformlyOrderedPair Double -> Bool
-propDoubleRoundedLatticeJoinAboveBoth = NumOrd.propRoundedLatticeJoinAboveBoth
-
-propDoubleRoundedLatticeMeetBelowBoth :: NumOrd.UniformlyOrderedPair Double -> Bool
-propDoubleRoundedLatticeMeetBelowBoth = NumOrd.propRoundedLatticeMeetBelowBoth
-
-propDoubleRoundedLatticeJoinIdempotent :: Double -> Bool
-propDoubleRoundedLatticeJoinIdempotent = NumOrd.propRoundedLatticeJoinIdempotent
-
-propDoubleRoundedLatticeJoinCommutative :: NumOrd.UniformlyOrderedPair Double -> Bool
-propDoubleRoundedLatticeJoinCommutative = NumOrd.propRoundedLatticeJoinCommutative
-
-propDoubleRoundedLatticeJoinAssocative :: NumOrd.UniformlyOrderedTriple Double -> Bool
-propDoubleRoundedLatticeJoinAssocative = NumOrd.propRoundedLatticeJoinAssocative
-
-propDoubleRoundedLatticeMeetIdempotent :: Double -> Bool
-propDoubleRoundedLatticeMeetIdempotent = NumOrd.propRoundedLatticeMeetIdempotent
-
-propDoubleRoundedLatticeMeetCommutative :: NumOrd.UniformlyOrderedPair Double -> Bool
-propDoubleRoundedLatticeMeetCommutative = NumOrd.propRoundedLatticeMeetCommutative
-
-propDoubleRoundedLatticeMeetAssocative :: NumOrd.UniformlyOrderedTriple Double -> Bool
-propDoubleRoundedLatticeMeetAssocative = NumOrd.propRoundedLatticeMeetAssocative
-
-propDoubleRoundedLatticeModular :: NumOrd.UniformlyOrderedTriple Double -> Bool
-propDoubleRoundedLatticeModular = NumOrd.propRoundedLatticeModular
-
-propDoubleRoundedLatticeDistributive :: NumOrd.UniformlyOrderedTriple Double -> Bool
-propDoubleRoundedLatticeDistributive = NumOrd.propRoundedLatticeDistributive
-
-testsDoubleRoundedLattice :: Test
-testsDoubleRoundedLattice =
-    testGroup "Double (min,max) treated as rounded" 
-        [
-         testProperty "NaN exception" propDoubleRoundedLatticeNaNException
-        ,
-         testProperty "Comparison compatible" propDoubleRoundedLatticeComparisonCompatible
-        ,
-         testProperty "join above" propDoubleRoundedLatticeJoinAboveBoth
-        ,
-         testProperty "meet below" propDoubleRoundedLatticeMeetBelowBoth
-        ,
-         testProperty "join idempotent" propDoubleRoundedLatticeJoinIdempotent
-        ,
-         testProperty "join commutative" propDoubleRoundedLatticeJoinCommutative
-        ,
-         testProperty "join associative" propDoubleRoundedLatticeJoinAssocative
-        ,
-         testProperty "meet idempotent" propDoubleRoundedLatticeMeetIdempotent
-        ,
-         testProperty "meet commutative" propDoubleRoundedLatticeMeetCommutative
-        ,
-         testProperty "meet associative" propDoubleRoundedLatticeMeetAssocative
-        ,
-         testProperty "distributive" propDoubleRoundedLatticeDistributive
-        ]
 
 
 instance NumOrd.ArbitraryOrderedTuple Double where

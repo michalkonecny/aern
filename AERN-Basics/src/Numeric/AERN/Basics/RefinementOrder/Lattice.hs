@@ -15,6 +15,9 @@
 
 module Numeric.AERN.Basics.RefinementOrder.Lattice where
 
+import qualified Prelude 
+import Prelude hiding (min, max, EQ, LT, GT)
+
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
@@ -24,8 +27,9 @@ import Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison
 import Numeric.AERN.Basics.Laws.Operation
 import Numeric.AERN.Basics.Laws.OperationRelation
 
-import qualified Prelude 
-import Prelude hiding (min, max, EQ, LT, GT)
+import Test.QuickCheck
+import Test.Framework (testGroup, Test)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 {-|
     A lattice.  Join and meet should be compatible with some partial order.
@@ -43,55 +47,102 @@ class Lattice t where
 
 propLatticeComparisonCompatible :: 
     (Eq t, SemidecidableComparison t, Lattice t) => 
-    UniformlyOrderedPair t -> Bool
-propLatticeComparisonCompatible (UniformlyOrderedPair (e1,e2)) = 
+    t -> UniformlyOrderedPair t -> Bool
+propLatticeComparisonCompatible _ (UniformlyOrderedPair (e1,e2)) = 
     (joinOfOrderedPair (==) (|<=?) (|\/) e1 e2) 
     && 
     (meetOfOrderedPair (==) (|<=?) (|/\) e1 e2) 
 
 propLatticeJoinAboveBoth :: 
     (SemidecidableComparison t, Lattice t) => 
-    UniformlyOrderedPair t -> Bool
-propLatticeJoinAboveBoth (UniformlyOrderedPair (e1,e2)) = 
+    t -> UniformlyOrderedPair t -> Bool
+propLatticeJoinAboveBoth _ (UniformlyOrderedPair (e1,e2)) = 
     joinAboveOperands (|<=?) (|\/) e1 e2
 
 
 propLatticeMeetBelowBoth :: 
     (SemidecidableComparison t, Lattice t) => 
-    UniformlyOrderedPair t -> Bool
-propLatticeMeetBelowBoth (UniformlyOrderedPair (e1,e2)) = 
+    t -> UniformlyOrderedPair t -> Bool
+propLatticeMeetBelowBoth _ (UniformlyOrderedPair (e1,e2)) = 
     meetBelowOperands (|<=?) (|/\) e1 e2
 
-propLatticeJoinIdempotent :: (Eq t, Lattice t) => t -> Bool
-propLatticeJoinIdempotent = idempotent (==) (|\/)
+propLatticeJoinIdempotent :: 
+    (Eq t, Lattice t) => 
+    t -> t -> Bool
+propLatticeJoinIdempotent _ = idempotent (==) (|\/)
 
-propLatticeJoinCommutative :: (Eq t, Lattice t) => UniformlyOrderedPair t -> Bool
-propLatticeJoinCommutative (UniformlyOrderedPair (e1,e2)) = 
+propLatticeJoinCommutative :: 
+    (Eq t, Lattice t) => 
+    t -> UniformlyOrderedPair t -> Bool
+propLatticeJoinCommutative _ (UniformlyOrderedPair (e1,e2)) = 
     commutative (==) (|\/) e1 e2
 
-propLatticeJoinAssocative :: (Eq t, Lattice t) => UniformlyOrderedTriple t -> Bool
-propLatticeJoinAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
+propLatticeJoinAssocative :: 
+    (Eq t, Lattice t) => 
+    t -> UniformlyOrderedTriple t -> Bool
+propLatticeJoinAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     associative (==) (|\/) e1 e2 e3
 
-propLatticeMeetIdempotent :: (Eq t, Lattice t) => t -> Bool
-propLatticeMeetIdempotent = idempotent (==) (|/\)
+propLatticeMeetIdempotent :: 
+    (Eq t, Lattice t) => 
+    t -> t -> Bool
+propLatticeMeetIdempotent _ = idempotent (==) (|/\)
 
-propLatticeMeetCommutative :: (Eq t, Lattice t) => UniformlyOrderedPair t -> Bool
-propLatticeMeetCommutative (UniformlyOrderedPair (e1,e2)) = 
+propLatticeMeetCommutative :: 
+    (Eq t, Lattice t) => 
+    t -> UniformlyOrderedPair t -> Bool
+propLatticeMeetCommutative _ (UniformlyOrderedPair (e1,e2)) = 
     commutative (==) (|/\) e1 e2
 
-propLatticeMeetAssocative :: (Eq t, Lattice t) => UniformlyOrderedTriple t -> Bool
-propLatticeMeetAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
+propLatticeMeetAssocative :: 
+    (Eq t, Lattice t) => 
+    t -> UniformlyOrderedTriple t -> Bool
+propLatticeMeetAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     associative (==) (|/\) e1 e2 e3
 
 {- optional properties: -}
-propLatticeModular :: (Eq t, Lattice t) => UniformlyOrderedTriple t -> Bool
-propLatticeModular (UniformlyOrderedTriple (e1,e2,e3)) = 
+propLatticeModular :: 
+    (Eq t, Lattice t) => 
+    t -> UniformlyOrderedTriple t -> Bool
+propLatticeModular _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     modular (==) (|\/) (|/\) e1 e2 e3
 
-propLatticeDistributive :: (Eq t, Lattice t) => UniformlyOrderedTriple t -> Bool
-propLatticeDistributive (UniformlyOrderedTriple (e1,e2,e3)) = 
+propLatticeDistributive :: 
+    (Eq t, Lattice t) => 
+    t -> UniformlyOrderedTriple t -> Bool
+propLatticeDistributive _ (UniformlyOrderedTriple (e1,e2,e3)) = 
         (leftDistributive (==) (|\/) (|/\) e1 e2 e3)
         && 
         (leftDistributive (==) (|/\) (|\/) e1 e2 e3)
 
+testsLatticeDistributive ::
+    (SemidecidableComparison t,
+     Lattice t,
+     Arbitrary t, 
+     ArbitraryOrderedTuple t,
+     Eq t, 
+     Show t) => 
+    (String, t) -> Test
+testsLatticeDistributive (name, sample) =
+    testGroup (name ++ " (min,max)") $
+        [
+         testProperty "Comparison compatible" (propLatticeComparisonCompatible sample)
+        ,
+         testProperty "join above" (propLatticeJoinAboveBoth sample)
+        ,
+         testProperty "meet below" (propLatticeMeetBelowBoth sample)
+        ,
+         testProperty "join idempotent" (propLatticeJoinIdempotent sample)
+        ,
+         testProperty "join commutative" (propLatticeJoinCommutative sample)
+        ,
+         testProperty "join associative" (propLatticeJoinAssocative sample)
+        ,
+         testProperty "meet idempotent" (propLatticeMeetIdempotent sample)
+        ,
+         testProperty "meet commutative" (propLatticeMeetCommutative sample)
+        ,
+         testProperty "meet associative" (propLatticeMeetAssocative sample)
+        ,
+         testProperty "distributive" (propLatticeDistributive sample)
+        ]

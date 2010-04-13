@@ -29,6 +29,10 @@ import Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison
 import Numeric.AERN.Basics.Laws.RoundedOperation
 import Numeric.AERN.Basics.Laws.OperationRelation
 
+import Test.QuickCheck
+import Test.Framework (testGroup, Test)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
+
 {-|
     A type with outward-rounding lattice operations.
 -}
@@ -76,81 +80,108 @@ class (InnerRoundedLattice t, OuterRoundedLattice t) => RoundedLattice t
 
 -- properties of RoundedLattice
 
-propRoundedLatticeIllegalArgException :: (RoundedLattice t) => t -> t -> Bool
-propRoundedLatticeIllegalArgException illegalArg d =
-    and $ map raisesAERNException $ 
-                concat [[op d illegalArg, op illegalArg d] | op <- [(>⊔<), (<⊔>), (>⊓<), (<⊓>)]] 
-
 propRoundedLatticeComparisonCompatible :: 
     (SemidecidableComparison t, RoundedLattice t) => 
-    UniformlyOrderedPair t -> Bool
-propRoundedLatticeComparisonCompatible (UniformlyOrderedPair (e1,e2)) = 
+    t -> UniformlyOrderedPair t -> Bool
+propRoundedLatticeComparisonCompatible _ (UniformlyOrderedPair (e1,e2)) = 
     (downRoundedJoinOfOrderedPair (|<=?) (<⊓>) e1 e2)
     && 
     (upRoundedMeetOfOrderedPair (|<=?) (>⊔<) e1 e2)
 
 propRoundedLatticeJoinAboveBoth :: 
     (SemidecidableComparison t, RoundedLattice t) => 
-    UniformlyOrderedPair t -> Bool
-propRoundedLatticeJoinAboveBoth (UniformlyOrderedPair (e1,e2)) = 
+    t -> UniformlyOrderedPair t -> Bool
+propRoundedLatticeJoinAboveBoth _ (UniformlyOrderedPair (e1,e2)) = 
     joinAboveOperands (|<=?) (>⊔<) e1 e2
 
 propRoundedLatticeMeetBelowBoth :: 
     (SemidecidableComparison t, RoundedLattice t) => 
-    UniformlyOrderedPair t -> Bool
-propRoundedLatticeMeetBelowBoth (UniformlyOrderedPair (e1,e2)) = 
+    t -> UniformlyOrderedPair t -> Bool
+propRoundedLatticeMeetBelowBoth _ (UniformlyOrderedPair (e1,e2)) = 
     meetBelowOperands (|<=?) (<⊓>) e1 e2
 
 propRoundedLatticeJoinIdempotent :: 
     (SemidecidableComparison t, RoundedLattice t) => 
-    t -> Bool
-propRoundedLatticeJoinIdempotent = roundedIdempotent (|<=?) (>⊔<) (<⊔>)
+    t -> t -> Bool
+propRoundedLatticeJoinIdempotent _ = 
+    roundedIdempotent (|<=?) (>⊔<) (<⊔>)
 
 propRoundedLatticeJoinCommutative :: 
     (SemidecidableComparison t, RoundedLattice t) => 
-    UniformlyOrderedPair t -> Bool
-propRoundedLatticeJoinCommutative (UniformlyOrderedPair (e1,e2)) = 
+    t -> UniformlyOrderedPair t -> Bool
+propRoundedLatticeJoinCommutative _ (UniformlyOrderedPair (e1,e2)) = 
     roundedCommutative (|<=?) (>⊔<) (<⊔>) e1 e2
 
 propRoundedLatticeJoinAssocative :: 
     (SemidecidableComparison t, RoundedLattice t) => 
-    UniformlyOrderedTriple t -> Bool
-propRoundedLatticeJoinAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
+    t -> UniformlyOrderedTriple t -> Bool
+propRoundedLatticeJoinAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedAssociative (|<=?) (>⊔<) (<⊔>) e1 e2 e3
 
 propRoundedLatticeMeetIdempotent :: 
     (SemidecidableComparison t, RoundedLattice t) => 
-    t -> Bool
-propRoundedLatticeMeetIdempotent = 
+    t -> t -> Bool
+propRoundedLatticeMeetIdempotent _ = 
     roundedIdempotent (|<=?) (>⊓<) (<⊓>)
 
 propRoundedLatticeMeetCommutative :: 
     (SemidecidableComparison t, RoundedLattice t) => 
-    UniformlyOrderedPair t -> Bool
-propRoundedLatticeMeetCommutative (UniformlyOrderedPair (e1,e2)) = 
+    t -> UniformlyOrderedPair t -> Bool
+propRoundedLatticeMeetCommutative _ (UniformlyOrderedPair (e1,e2)) = 
     roundedCommutative (|<=?) (>⊓<) (<⊓>) e1 e2
 
 propRoundedLatticeMeetAssocative :: 
     (SemidecidableComparison t, RoundedLattice t) => 
-    UniformlyOrderedTriple t -> Bool
-propRoundedLatticeMeetAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
+    t -> UniformlyOrderedTriple t -> Bool
+propRoundedLatticeMeetAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedAssociative (|<=?) (>⊓<) (<⊓>) e1 e2 e3
 
 {- optional properties: -}
 propRoundedLatticeModular :: 
     (SemidecidableComparison t, RoundedLattice t) => 
-    UniformlyOrderedTriple t -> Bool
-propRoundedLatticeModular (UniformlyOrderedTriple (e1,e2,e3)) = 
+    t -> UniformlyOrderedTriple t -> Bool
+propRoundedLatticeModular _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedModular (|<=?) (>⊔<) (>⊓<) (<⊔>) (<⊓>) e1 e2 e3
 
 propRoundedLatticeDistributive :: 
     (SemidecidableComparison t, RoundedLattice t) => 
-    UniformlyOrderedTriple t -> Bool
-propRoundedLatticeDistributive (UniformlyOrderedTriple (e1,e2,e3)) = 
+    t -> UniformlyOrderedTriple t -> Bool
+propRoundedLatticeDistributive _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     (roundedLeftDistributive  (|<=?) (>⊔<) (>⊓<) (<⊔>) (<⊓>) e1 e2 e3)
     && 
     (roundedLeftDistributive  (|<=?) (>⊔<) (>⊓<) (<⊔>) (<⊓>) e1 e2 e3)
 
 
+testsRoundedLatticeDistributive :: 
+    (SemidecidableComparison t,
+     RoundedLattice t,
+     Arbitrary t, 
+     ArbitraryOrderedTuple t,
+     Eq t, 
+     Show t) => 
+    (String, t) -> Test
+testsRoundedLatticeDistributive (name, sample) =
+    testGroup (name ++ " (min,max) rounded") $
+        [
+         testProperty "Comparison compatible" (propRoundedLatticeComparisonCompatible sample)
+        ,
+         testProperty "join above" (propRoundedLatticeJoinAboveBoth sample)
+        ,
+         testProperty "meet below" (propRoundedLatticeMeetBelowBoth sample)
+        ,
+         testProperty "join idempotent" (propRoundedLatticeJoinIdempotent sample)
+        ,
+         testProperty "join commutative" (propRoundedLatticeJoinCommutative sample)
+        ,
+         testProperty "join associative" (propRoundedLatticeJoinAssocative sample)
+        ,
+         testProperty "meet idempotent" (propRoundedLatticeMeetIdempotent sample)
+        ,
+         testProperty "meet commutative" (propRoundedLatticeMeetCommutative sample)
+        ,
+         testProperty "meet associative" (propRoundedLatticeMeetAssocative sample)
+        ,
+         testProperty "distributive" (propRoundedLatticeDistributive sample)
+        ]
     
 -- mutable versions (TODO)    

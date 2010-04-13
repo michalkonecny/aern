@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.Basics.Interval.Basics
     Description :  consistency instances for intervals 
@@ -47,26 +48,14 @@ instance (NumOrd.SemidecidableComparison e) => HasAntiConsistency (Interval e)
     isAntiConsistent (Interval l h) = h <=? l
     flipConsistency (Interval l h) = Interval h l
 
-propIntervalFlipConsistency ::
-    (Eq e, NumOrd.SemidecidableComparison e) =>  
-    e {-^ dummy parameter to help type checking -} -> 
-    (Interval e) -> Bool
-propIntervalFlipConsistency _ = propFlipConsistency
-
-propIntervalConsistencyFlipSelfInverse ::
-    (Eq e, NumOrd.SemidecidableComparison e) =>  
-    e {-^ dummy parameter to help type checking -} -> 
-    (Interval e) -> Bool
-propIntervalConsistencyFlipSelfInverse _ = propConsistencyFlipSelfInverse
-
 testsIntervalConsistencyFlip ::
     (Eq e, Show e, NumOrd.ArbitraryOrderedTuple e, NumOrd.SemidecidableComparison e) =>
-    String -> e -> Test
-testsIntervalConsistencyFlip typeName sample =
+    (String, Interval e) -> Test
+testsIntervalConsistencyFlip (typeName, sample) =
     testGroup (typeName ++ " consistency flip")
     [
-        testProperty "really flips" (propIntervalFlipConsistency sample),
-        testProperty "self inverse" (propIntervalConsistencyFlipSelfInverse sample)
+        testProperty "really flips" (propFlipConsistency sample),
+        testProperty "self inverse" (propConsistencyFlipSelfInverse sample)
     ]
 
 -- random generation of intervals with no guarantee of consistency: 
