@@ -28,6 +28,10 @@ import Numeric.AERN.Basics.Laws.RoundedOperation
 
 import Numeric.AERN.Misc.Maybe
 
+import Test.QuickCheck
+import Test.Framework (testGroup, Test)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
+
 {-|
     A type with outward-rounding lattice operations.
 -}
@@ -44,8 +48,11 @@ class OuterRoundedBasis t where
 (<⊔>?) = (<|\/>?)
 
 -- properties of OuterRoundedBasis
-propOuterRoundedBasisComparisonCompatible :: (SemidecidableComparison t, OuterRoundedBasis t) => t -> t -> Bool
-propOuterRoundedBasisComparisonCompatible = downRoundedPartialJoinOfOrderedPair (|<=?) (<|\/>?)
+propOuterRoundedBasisComparisonCompatible :: 
+    (SemidecidableComparison t, OuterRoundedBasis t) => 
+    t -> t -> t -> Bool
+propOuterRoundedBasisComparisonCompatible _ = 
+    downRoundedPartialJoinOfOrderedPair (|<=?) (<|\/>?)
 
 {-|
     A type with outward-rounding lattice operations.
@@ -63,22 +70,50 @@ class InnerRoundedBasis t where
 (>⊔<?) = (>|\/<?)
 
 -- properties of InnerRoundedBasis:
-propInnerRoundedBasisJoinAboveBoth :: (SemidecidableComparison t, InnerRoundedBasis t) => t -> t -> Bool
-propInnerRoundedBasisJoinAboveBoth = partialJoinAboveOperands (|<=?) (>|\/<?)
+propInnerRoundedBasisJoinAboveBoth :: 
+    (SemidecidableComparison t, InnerRoundedBasis t) => 
+    t -> t -> t -> Bool
+propInnerRoundedBasisJoinAboveBoth _ = 
+    partialJoinAboveOperands (|<=?) (>|\/<?)
 
 class (OuterRoundedBasis t, InnerRoundedBasis t) => RoundedBasis t
 
 -- properties of RoundedBasis:
-propRoundedBasisJoinIdempotent :: (SemidecidableComparison t, RoundedBasis t) => t -> Bool
-propRoundedBasisJoinIdempotent = partialRoundedIdempotent (|<=?) (>|\/<?) (<|\/>?)
+propRoundedBasisJoinIdempotent :: 
+    (SemidecidableComparison t, RoundedBasis t) => 
+    t -> t -> Bool
+propRoundedBasisJoinIdempotent _ = 
+    partialRoundedIdempotent (|<=?) (>|\/<?) (<|\/>?)
 
-propRoundedBasisJoinCommutative :: (SemidecidableComparison t, RoundedBasis t) => UniformlyOrderedPair t -> Bool
-propRoundedBasisJoinCommutative (UniformlyOrderedPair (e1,e2)) = 
+propRoundedBasisJoinCommutative :: 
+    (SemidecidableComparison t, RoundedBasis t) => 
+    t -> UniformlyOrderedPair t -> Bool
+propRoundedBasisJoinCommutative _ (UniformlyOrderedPair (e1,e2)) = 
     partialRoundedCommutative (|<=?) (>|\/<?) (<|\/>?) e1 e2
 
-propRoundedBasisJoinAssocative :: (SemidecidableComparison t, RoundedBasis t) => UniformlyOrderedTriple t -> Bool
-propRoundedBasisJoinAssocative (UniformlyOrderedTriple (e1,e2,e3)) = 
+propRoundedBasisJoinAssociative :: 
+    (SemidecidableComparison t, RoundedBasis t) => 
+    t -> UniformlyOrderedTriple t -> Bool
+propRoundedBasisJoinAssociative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     partialRoundedAssociative (|<=?) (>|\/<?) (<|\/>?) e1 e2 e3
 
+
+testsRoundedBasis ::
+    (SemidecidableComparison t,
+     RoundedBasis t,
+     Arbitrary t, 
+     ArbitraryOrderedTuple t,
+     Eq t, 
+     Show t) => 
+    (String, t) -> Test
+testsRoundedBasis (name, sample) =
+    testGroup (name ++ " (<⊔>?, >⊔<?)") $
+        [
+         testProperty "rounded join comparison compatible"  (propOuterRoundedBasisComparisonCompatible sample),
+         testProperty "rounded join above both"  (propInnerRoundedBasisJoinAboveBoth sample),
+         testProperty "rounded join idempotent" (propRoundedBasisJoinIdempotent sample),
+         testProperty "rounded join commutative" (propRoundedBasisJoinCommutative sample),
+         testProperty "rounded join associative" (propRoundedBasisJoinAssociative sample)
+        ]
 
 -- mutable versions (TODO)    

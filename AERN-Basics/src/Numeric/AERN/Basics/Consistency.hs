@@ -26,8 +26,8 @@ class (HasConsistency t) => HasAntiConsistency t where
     flipConsistency :: t -> t
     
 propFlipConsistency :: 
-    (HasAntiConsistency t, Eq t) => t -> Bool
-propFlipConsistency e =
+    (HasAntiConsistency t, Eq t) => t -> t -> Bool
+propFlipConsistency _ e =
     (defined (isConsistent e) && defined (isAntiConsistent eF))
     ===>
     ((fromJust $ isConsistent e) <===> (fromJust $ isAntiConsistent eF))
@@ -35,7 +35,7 @@ propFlipConsistency e =
     eF = flipConsistency e
 
 propConsistencyFlipSelfInverse :: 
-    (HasAntiConsistency t, Eq t) => t -> Bool
-propConsistencyFlipSelfInverse e =
+    (HasAntiConsistency t, Eq t) => t -> t -> Bool
+propConsistencyFlipSelfInverse _ e =
     e == (flipConsistency $ flipConsistency e)
 

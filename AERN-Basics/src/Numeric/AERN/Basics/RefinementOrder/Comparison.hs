@@ -15,6 +15,12 @@
 
 module Numeric.AERN.Basics.RefinementOrder.Comparison where
 
+import qualified Prelude 
+import Prelude hiding (Eq, (==), compare, EQ, LT, GT)
+
+import Numeric.AERN.Basics.RefinementOrder.Arbitrary
+import Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison
+
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.RefinementOrder.Extrema
@@ -22,9 +28,9 @@ import Numeric.AERN.Basics.Laws.Relation
 
 import Numeric.AERN.Misc.Bool
 
-import qualified Prelude 
-import Prelude hiding (Eq, (==), compare, EQ, LT, GT)
 import Test.QuickCheck
+import Test.Framework (testGroup, Test)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 
 {-|
@@ -33,8 +39,15 @@ import Test.QuickCheck
     (More-or-less copied from Data.Comparison 
      in package altfloat-0.3 by Nick Bowler.) 
 -} 
-class Comparison t where
+class (SemidecidableComparison t, Show t) => Comparison t where
     compare :: t -> t -> PartialOrdering
+    -- default implementation assuming the inherited semidecidable order is actually decidable:
+    compare a b =
+        case maybeCompare a b of
+            Just r -> r
+            _ -> error $
+                "Comparison comparison of " ++ show a
+                ++ " with " ++ show b ++ " is not decidable"
     
     -- | non-reflexive inequality
     (|==)  :: t -> t -> Bool
@@ -71,23 +84,48 @@ propComparisonIllegalArgException illegalArg e =
     and $ map raisesAERNException 
                 [compare e illegalArg, compare illegalArg e]
 
-propComparisonReflexiveEQ :: (Comparison t) => t -> Bool
-propComparisonReflexiveEQ e = 
+propComparisonReflexiveEQ :: (Comparison t) => t -> t -> Bool
+propComparisonReflexiveEQ _ e = 
     compare e e Prelude.== EQ 
 
-propComparisonAntiSymmetric :: (Comparison t) => t -> t -> Bool
-propComparisonAntiSymmetric e1 e2 = 
+propComparisonAntiSymmetric :: (Comparison t) => t -> t -> t -> Bool
+propComparisonAntiSymmetric _ e1 e2 = 
     compare e2 e1 Prelude.== (partialOrderingTranspose $ compare e1 e2) 
 
-propComparisonTransitiveEQ :: (Comparison t) => t -> t -> t -> Bool
-propComparisonTransitiveEQ = transitive (|==)
+propComparisonTransitiveEQ :: (Comparison t) => t -> t -> t -> t -> Bool
+propComparisonTransitiveEQ _ = transitive (|==)
     
-propComparisonTransitiveLT :: (Comparison t) => t -> t -> t -> Bool
-propComparisonTransitiveLT = transitive (⊏)
+propComparisonTransitiveLT :: (Comparison t) => t -> t -> t -> t -> Bool
+propComparisonTransitiveLT _ = transitive (⊏)
     
-propComparisonTransitiveLE :: (Comparison t) => t -> t -> t -> Bool
-propComparisonTransitiveLE = transitive (⊑)
+propComparisonTransitiveLE :: (Comparison t) => t -> t -> t -> t -> Bool
+propComparisonTransitiveLE _ = transitive (⊑)
     
-propExtremaInComparison :: (Comparison t, HasExtrema t) => t -> Bool
-propExtremaInComparison = extrema (⊑) (⊥) (⊤)
+propExtremaInComparison :: (Comparison t, HasExtrema t) => t -> t -> Bool
+propExtremaInComparison _ = extrema (⊑) (⊥) (⊤)
     
+testsComparison ::
+    (Comparison t,
+     HasExtrema t,
+     Arbitrary t,
+     ArbitraryOrderedTuple t) =>
+    (String, t) -> (Maybe (String, t)) -> Test
+testsComparison (name, sample) maybeIllegalArg =
+    testGroup (name ++ " (>=)") $ 
+        (case maybeIllegalArg of 
+            Nothing -> []
+            Just (illegalArgName, illegalArg) -> 
+                [testProperty (illegalArgName ++ " exception") 
+                              (propComparisonIllegalArgException illegalArg)]) 
+        ++
+        [
+         testProperty "anti symmetric" (propComparisonAntiSymmetric sample)
+        ,
+         testProperty "transitive EQ" (propComparisonTransitiveEQ sample)
+        ,
+         testProperty "transitive LT" (propComparisonTransitiveLT sample)
+        ,
+         testProperty "transitive LE" (propComparisonTransitiveLE sample)
+        ,
+         testProperty "extrema" (propExtremaInComparison sample)
+        ]

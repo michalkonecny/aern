@@ -15,6 +15,9 @@
 
 module Numeric.AERN.Basics.NumericOrder.Comparison where
 
+import qualified Prelude
+import Prelude hiding (Eq, (==), compare, EQ, LT, GT, (<), (<=), (>=), (>))
+
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.NumericOrder.Extrema
@@ -24,9 +27,9 @@ import Numeric.AERN.Basics.Laws.Relation
 
 import Numeric.AERN.Misc.Bool
 
-import qualified Prelude
-import Prelude hiding (Eq, (==), compare, EQ, LT, GT, (<), (<=), (>=), (>))
-
+import Test.QuickCheck
+import Test.Framework (testGroup, Test)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 {-|
     A partially ordered set.
@@ -68,28 +71,55 @@ class (SemidecidableComparison t, Show t) => Comparison t where
 instance Comparison Int where
     compare a b = toPartialOrdering $ Prelude.compare a b  
 
-propComparisonIllegalArgException :: (Comparison t) => t -> t -> Bool
+propComparisonIllegalArgException :: 
+    (Comparison t) => t -> t -> Bool
 propComparisonIllegalArgException illegalArg e =
     and $ map raisesAERNException 
                 [compare e illegalArg, compare illegalArg e] 
 
-propComparisonReflexiveEQ :: (Comparison t) => t -> Bool
-propComparisonReflexiveEQ e = 
+propComparisonReflexiveEQ :: (Comparison t) => t -> t -> Bool
+propComparisonReflexiveEQ _ e = 
     compare e e Prelude.== EQ 
 
-propComparisonAntiSymmetric :: (Comparison t) => UniformlyOrderedPair t -> Bool
-propComparisonAntiSymmetric (UniformlyOrderedPair (e1, e2)) = 
+propComparisonAntiSymmetric :: (Comparison t) => t -> UniformlyOrderedPair t -> Bool
+propComparisonAntiSymmetric _ (UniformlyOrderedPair (e1, e2)) = 
     compare e2 e1 Prelude.== (partialOrderingTranspose $ compare e1 e2) 
 
-propComparisonTransitiveEQ :: (Comparison t) => t -> t -> t -> Bool
-propComparisonTransitiveEQ e1 e2 e3 = transitive (==) e1 e2 e3
+propComparisonTransitiveEQ :: (Comparison t) => t -> t -> t -> t -> Bool
+propComparisonTransitiveEQ _ e1 e2 e3 = transitive (==) e1 e2 e3
     
-propComparisonTransitiveLT :: (Comparison t) => t -> t -> t -> Bool
-propComparisonTransitiveLT e1 e2 e3 = transitive (<) e1 e2 e3
+propComparisonTransitiveLT :: (Comparison t) => t -> t -> t -> t -> Bool
+propComparisonTransitiveLT _ e1 e2 e3 = transitive (<) e1 e2 e3
     
-propComparisonTransitiveLE :: (Comparison t) => t -> t -> t -> Bool
-propComparisonTransitiveLE e1 e2 e3 = transitive (<=) e1 e2 e3
+propComparisonTransitiveLE :: (Comparison t) => t -> t -> t -> t -> Bool
+propComparisonTransitiveLE _ e1 e2 e3 = transitive (<=) e1 e2 e3
     
-propExtremaInComparison :: (Comparison t, HasExtrema t) => t -> Bool
-propExtremaInComparison = extrema (<=) least highest
+propExtremaInComparison :: (Comparison t, HasExtrema t) => t -> t -> Bool
+propExtremaInComparison _ = extrema (<=) least highest
+
+testsComparison ::
+    (Comparison t,
+     HasExtrema t,
+     Arbitrary t,
+     ArbitraryOrderedTuple t) =>
+    (String, t) -> (Maybe (String, t)) -> Test
+testsComparison (name, sample) maybeIllegalArg =
+    testGroup (name ++ " (>=)") $ 
+        (case maybeIllegalArg of 
+            Nothing -> []
+            Just (illegalArgName, illegalArg) -> 
+                [testProperty (illegalArgName ++ " exception") 
+                              (propComparisonIllegalArgException illegalArg)]) 
+        ++
+        [
+         testProperty "anti symmetric" (propComparisonAntiSymmetric sample)
+        ,
+         testProperty "transitive EQ" (propComparisonTransitiveEQ sample)
+        ,
+         testProperty "transitive LT" (propComparisonTransitiveLT sample)
+        ,
+         testProperty "transitive LE" (propComparisonTransitiveLE sample)
+        ,
+         testProperty "extrema" (propExtremaInComparison sample)
+        ]
 
