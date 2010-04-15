@@ -21,7 +21,7 @@ import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison
+import Numeric.AERN.Basics.RefinementOrder.PartialComparison
 import Numeric.AERN.Basics.RefinementOrder.Arbitrary
 
 import Numeric.AERN.Basics.Laws.OperationRelation
@@ -51,7 +51,7 @@ class OuterRoundedBasis t where
 
 -- properties of OuterRoundedBasis
 propOuterRoundedBasisComparisonCompatible :: 
-    (SemidecidableComparison t, OuterRoundedBasis t) => 
+    (PartialComparison t, OuterRoundedBasis t) => 
     t -> t -> t -> Bool
 propOuterRoundedBasisComparisonCompatible _ = 
     downRoundedPartialJoinOfOrderedPair (|<=?) (<|\/>?)
@@ -74,7 +74,7 @@ class InnerRoundedBasis t where
 
 -- properties of InnerRoundedBasis:
 propInnerRoundedBasisJoinAboveBoth :: 
-    (SemidecidableComparison t, InnerRoundedBasis t) => 
+    (PartialComparison t, InnerRoundedBasis t) => 
     t -> t -> t -> Bool
 propInnerRoundedBasisJoinAboveBoth _ = 
     partialJoinAboveOperands (|<=?) (>|\/<?)
@@ -83,26 +83,26 @@ class (OuterRoundedBasis t, InnerRoundedBasis t) => RoundedBasis t
 
 -- properties of RoundedBasis:
 propRoundedBasisJoinIdempotent :: 
-    (SemidecidableComparison t, RoundedBasis t) => 
+    (PartialComparison t, RoundedBasis t) => 
     t -> t -> Bool
 propRoundedBasisJoinIdempotent _ = 
     partialRoundedIdempotent (|<=?) (>|\/<?) (<|\/>?)
 
 propRoundedBasisJoinCommutative :: 
-    (SemidecidableComparison t, RoundedBasis t) => 
+    (PartialComparison t, RoundedBasis t) => 
     t -> UniformlyOrderedPair t -> Bool
 propRoundedBasisJoinCommutative _ (UniformlyOrderedPair (e1,e2)) = 
     partialRoundedCommutative (|<=?) (>|\/<?) (<|\/>?) e1 e2
 
 propRoundedBasisJoinAssociative :: 
-    (SemidecidableComparison t, RoundedBasis t) => 
+    (PartialComparison t, RoundedBasis t) => 
     t -> UniformlyOrderedTriple t -> Bool
 propRoundedBasisJoinAssociative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     partialRoundedAssociative (|<=?) (>|\/<?) (<|\/>?) e1 e2 e3
 
 
 testsRoundedBasis ::
-    (SemidecidableComparison t,
+    (PartialComparison t,
      RoundedBasis t,
      Arbitrary t, 
      ArbitraryOrderedTuple t,

@@ -30,28 +30,28 @@ import Data.Maybe
 {-|
     Default default effort indicators for numerically comparing 'CInterval' types. 
 -}
-maybeCompareDefaultEffortInterval ::
+pCompareDefaultEffortInterval ::
     (CInterval i, 
-     NumOrd.Lattice (NumOrd.MaybeCompareEffortIndicator (Endpoint i)),
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
-    i -> (NumOrd.MaybeCompareEffortIndicator (Endpoint i))
-maybeCompareDefaultEffortInterval i =
+     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i)),
+     NumOrd.PartialComparison (Endpoint i)) => 
+    i -> (NumOrd.PartialCompareEffortIndicator (Endpoint i))
+pCompareDefaultEffortInterval i =
     NumOrd.max
-        (NumOrd.maybeCompareDefaultEffort l)
-        (NumOrd.maybeCompareDefaultEffort h)
+        (NumOrd.pCompareDefaultEffort l)
+        (NumOrd.pCompareDefaultEffort h)
     where
     (l,h) = getEndpoints i
         
 {-|
     Default numerical comparison for 'CInterval' types.
 -}
-maybeCompareEffInterval ::
+pCompareEffInterval ::
     (CInterval i, 
-     NumOrd.Lattice (NumOrd.MaybeCompareEffortIndicator (Endpoint i)),
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
-    (NumOrd.MaybeCompareEffortIndicator (Endpoint i)) -> 
+     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i)),
+     NumOrd.PartialComparison (Endpoint i)) => 
+    (NumOrd.PartialCompareEffortIndicator (Endpoint i)) -> 
     i -> i -> Maybe PartialOrdering
-maybeCompareEffInterval effort i1 i2 = 
+pCompareEffInterval effort i1 i2 = 
     case (c l1 l2, c l1 h2, c h1 l2, c h1 h2) of
         (Just EQ, Just EQ, Just EQ, _) -> Just EQ
         (Just LT, Just LT, Just LT, Just LT) -> Just LT  
@@ -73,7 +73,7 @@ maybeCompareEffInterval effort i1 i2 =
         _ -> Nothing
 --        _ -> Just NC -- if we want this to be a decidable order
     where
-    c = NumOrd.maybeCompareEff effort 
+    c = NumOrd.pCompareEff effort 
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
 

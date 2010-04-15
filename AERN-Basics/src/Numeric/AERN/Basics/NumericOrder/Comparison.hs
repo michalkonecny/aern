@@ -22,7 +22,7 @@ import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.NumericOrder.Extrema
 import Numeric.AERN.Basics.NumericOrder.Arbitrary
-import Numeric.AERN.Basics.NumericOrder.SemidecidableComparison
+import Numeric.AERN.Basics.NumericOrder.PartialComparison
 import Numeric.AERN.Basics.Laws.Relation
 
 import Numeric.AERN.Misc.Bool
@@ -37,12 +37,12 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
     (More-or-less copied from Data.Comparison 
      in package altfloat-0.3 by Nick Bowler.) 
 -} 
-class (SemidecidableComparison t, Show t) => Comparison t where
+class (PartialComparison t, Show t) => Comparison t where
     compare :: t -> t -> PartialOrdering
     
-    -- default implementation assuming the inherited semidecidable order is actually decidable:
+    -- default implementation assuming the inherited partial comparison is actually total:
     compare a b =
-        case maybeCompare a b of
+        case pCompare a b of
             Just r -> r
             _ -> error $
                 "Comparison comparison of " ++ show a

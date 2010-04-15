@@ -16,7 +16,7 @@
 -}
 module Numeric.AERN.Basics.NumericOrder 
 (
-    module Numeric.AERN.Basics.NumericOrder.SemidecidableComparison,
+    module Numeric.AERN.Basics.NumericOrder.PartialComparison,
     module Numeric.AERN.Basics.NumericOrder.Comparison,
     module Numeric.AERN.Basics.NumericOrder.Arbitrary,
     module Numeric.AERN.Basics.NumericOrder.Extrema,
@@ -26,7 +26,7 @@ module Numeric.AERN.Basics.NumericOrder
 )
 where
 
-import Numeric.AERN.Basics.NumericOrder.SemidecidableComparison
+import Numeric.AERN.Basics.NumericOrder.PartialComparison
 import Numeric.AERN.Basics.NumericOrder.Comparison
 import Numeric.AERN.Basics.NumericOrder.Arbitrary
 import Numeric.AERN.Basics.NumericOrder.Extrema

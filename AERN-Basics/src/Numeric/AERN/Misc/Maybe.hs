@@ -1,6 +1,6 @@
 {-|
     Module      :  Numeric.AERN.Misc.Maybe
-    Description :  utilities for semidecidable predicates and partial operations
+    Description :  utilities for partial predicates and partial operations
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -8,7 +8,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Utilities for semidecidable predicates and partial operations.
+    Utilities for partial predicates and partial operations.
 -}
 module Numeric.AERN.Misc.Maybe where
 

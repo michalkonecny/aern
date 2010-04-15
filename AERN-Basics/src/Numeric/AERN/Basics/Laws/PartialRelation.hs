@@ -1,6 +1,6 @@
 {-|
-    Module      :  Numeric.AERN.Basics.Laws.Relation
-    Description :  common properties of semidecidable relations  
+    Module      :  Numeric.AERN.Basics.Laws.PartialRelation
+    Description :  common properties of partial relations  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -8,12 +8,12 @@
     Stability   :  experimental
     Portability :  portable
     
-    Common properties of semidecidable relations.
+    Common properties of partial relations.
 -}
-module Numeric.AERN.Basics.Laws.SemidecidableRelation
+module Numeric.AERN.Basics.Laws.PartialRelation
 (
-    semidecidableReflexive, semidecidableTransitive, semidecidableSymmetric,
-    semidecidableOrderExtrema
+    partialReflexive, partialTransitive, partialSymmetric,
+    partialOrderExtrema
 )
 where
 
@@ -25,22 +25,22 @@ import Data.Maybe (isNothing)
 
 --import qualified Algebra.Laws as NP -- numeric-prelude
 
-semidecidableReflexive :: (t -> t -> Maybe Bool) -> t -> Bool
-semidecidableReflexive (~~?) e = 
+partialReflexive :: (t -> t -> Maybe Bool) -> t -> Bool
+partialReflexive (~~?) e = 
     trueOrNothing $ e ~~? e 
     
 
-semidecidableTransitive :: (t -> t -> Maybe Bool) -> t -> t -> t -> Bool
-semidecidableTransitive (~~?) e1 e2 e3 =
+partialTransitive :: (t -> t -> Maybe Bool) -> t -> t -> t -> Bool
+partialTransitive (~~?) e1 e2 e3 =
     (and $ map defined [e1 ~~? e2, e2 ~~? e3, e1 ~~? e3]) ===>
     transitive (assumeTotal2 (~~?)) e1 e2 e3
 
-semidecidableSymmetric :: (t -> t -> Maybe Bool) -> t -> t -> Bool
-semidecidableSymmetric (~~?) e1 e2 =
+partialSymmetric :: (t -> t -> Maybe Bool) -> t -> t -> Bool
+partialSymmetric (~~?) e1 e2 =
     (and $ map defined [e1 ~~? e2, e2 ~~? e1]) ===>
     symmetric (assumeTotal2 (~~?)) e1 e2
 
-semidecidableOrderExtrema (<=?) bottom top e =
+partialOrderExtrema (<=?) bottom top e =
     (trueOrNothing $ bottom <=? e) 
     && 
     (trueOrNothing $ e <=? top)

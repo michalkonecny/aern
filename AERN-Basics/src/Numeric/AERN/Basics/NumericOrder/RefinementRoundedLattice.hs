@@ -26,13 +26,13 @@ import Control.Monad.ST (ST)
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.NumericOrder.Arbitrary 
-import Numeric.AERN.Basics.NumericOrder.SemidecidableComparison 
+import Numeric.AERN.Basics.NumericOrder.PartialComparison 
 import Numeric.AERN.Basics.NumericOrder.Extrema
 
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.RefinementOrder ((|<=?))
 
-import Numeric.AERN.Basics.Laws.SemidecidableRelation
+import Numeric.AERN.Basics.Laws.PartialRelation
 import Numeric.AERN.Basics.Laws.RoundedOperation
 import Numeric.AERN.Basics.Laws.OperationRelation
 
@@ -85,49 +85,49 @@ propRefinementRoundedLatticeIllegalArgException illegalArg d =
                 concat [[op d illegalArg, op illegalArg d] | op <- [maxInner, maxOuter, minInner, minOuter]] 
 
 propRefinementRoundedLatticeJoinIdempotent :: 
-    (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
     t -> t -> Bool
 propRefinementRoundedLatticeJoinIdempotent _ = roundedIdempotent (|<=?) maxInner maxOuter
 
 propRefinementRoundedLatticeJoinCommutative :: 
-    (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
     t -> UniformlyOrderedPair t -> Bool
 propRefinementRoundedLatticeJoinCommutative _ (UniformlyOrderedPair (e1,e2)) = 
     roundedCommutative (|<=?) maxInner maxOuter e1 e2
 
 propRefinementRoundedLatticeJoinAssocative :: 
-    (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
     t -> UniformlyOrderedTriple t -> Bool
 propRefinementRoundedLatticeJoinAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedAssociative (|<=?) maxInner maxOuter e1 e2 e3
 
 propRefinementRoundedLatticeMeetIdempotent :: 
-    (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
     t -> t -> Bool
 propRefinementRoundedLatticeMeetIdempotent _ = 
     roundedIdempotent (|<=?) minInner minOuter
 
 propRefinementRoundedLatticeMeetCommutative :: 
-    (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
     t -> UniformlyOrderedPair t -> Bool
 propRefinementRoundedLatticeMeetCommutative _ (UniformlyOrderedPair (e1,e2)) = 
     roundedCommutative (|<=?) minInner minOuter e1 e2
 
 propRefinementRoundedLatticeMeetAssocative :: 
-    (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
     t -> UniformlyOrderedTriple t -> Bool
 propRefinementRoundedLatticeMeetAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedAssociative (|<=?) minInner minOuter e1 e2 e3
 
 {- optional properties: -}
 propRefinementRoundedLatticeModular :: 
-    (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
     t -> UniformlyOrderedTriple t -> Bool
 propRefinementRoundedLatticeModular _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedModular (|<=?) maxInner minInner maxOuter minOuter e1 e2 e3
 
 propRefinementRoundedLatticeDistributive :: 
-    (RefOrd.SemidecidableComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
     t -> UniformlyOrderedTriple t -> Bool
 propRefinementRoundedLatticeDistributive _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     (roundedLeftDistributive  (|<=?) maxInner minInner maxOuter minOuter e1 e2 e3)
@@ -135,7 +135,7 @@ propRefinementRoundedLatticeDistributive _ (UniformlyOrderedTriple (e1,e2,e3)) =
     (roundedLeftDistributive  (|<=?) maxInner minInner maxOuter minOuter e1 e2 e3)
     
 testsRefinementRoundedLatticeDistributive :: 
-    (RefOrd.SemidecidableComparison t,
+    (RefOrd.PartialComparison t,
      HasExtrema t,
      RefinementRoundedLattice t,
      ArbitraryOrderedTuple t,

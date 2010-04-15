@@ -22,7 +22,7 @@ import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.RefinementOrder.Arbitrary
-import Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison
+import Numeric.AERN.Basics.RefinementOrder.PartialComparison
 
 import Numeric.AERN.Basics.Laws.Operation
 import Numeric.AERN.Basics.Laws.OperationRelation
@@ -46,13 +46,13 @@ class Basis t where
 (⊔?) = (|\/?)
 
 propBasisComparisonCompatible :: 
-    (Eq t, SemidecidableComparison t, Basis t) => 
+    (Eq t, PartialComparison t, Basis t) => 
     t -> t -> t -> Bool
 propBasisComparisonCompatible _ = 
     partialJoinOfOrderedPair (==) (|<=?) (|\/?) 
 
 propBasisJoinAboveBoth :: 
-    (SemidecidableComparison t, Basis t) => 
+    (PartialComparison t, Basis t) => 
     t -> UniformlyOrderedPair t -> Bool
 propBasisJoinAboveBoth _ (UniformlyOrderedPair (e1,e2)) = 
     partialJoinAboveOperands (|<=?) (|\/?) e1 e2
@@ -75,7 +75,7 @@ propBasisJoinAssociative _ (UniformlyOrderedTriple (e1,e2,e3)) =
     partialAssociative  (==) (|\/?) e1 e2 e3
 
 testsBasis ::
-    (SemidecidableComparison t,
+    (PartialComparison t,
      Basis t,
      Arbitrary t, 
      ArbitraryOrderedTuple t,

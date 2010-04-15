@@ -29,24 +29,24 @@ import Test.QuickCheck
 
 import Data.Maybe
 
-maybeCompareDefaultEffortIntervalRef ::
+pCompareDefaultEffortIntervalRef ::
     (CInterval i, 
-     NumOrd.Lattice (NumOrd.MaybeCompareEffortIndicator (Endpoint i)),
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
-    i -> (NumOrd.MaybeCompareEffortIndicator (Endpoint i))
-maybeCompareDefaultEffortIntervalRef = 
-    maybeCompareDefaultEffortInterval
+     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i)),
+     NumOrd.PartialComparison (Endpoint i)) => 
+    i -> (NumOrd.PartialCompareEffortIndicator (Endpoint i))
+pCompareDefaultEffortIntervalRef = 
+    pCompareDefaultEffortInterval
 
 {-|
   For two intervals, attempt to decide the inclusion partial order.
 -}
-maybeCompareEffIntervalRef ::
+pCompareEffIntervalRef ::
     (CInterval i, 
-     NumOrd.Lattice (NumOrd.MaybeCompareEffortIndicator (Endpoint i)),
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
-    (NumOrd.MaybeCompareEffortIndicator (Endpoint i)) -> 
+     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i)),
+     NumOrd.PartialComparison (Endpoint i)) => 
+    (NumOrd.PartialCompareEffortIndicator (Endpoint i)) -> 
     i -> i -> Maybe PartialOrdering
-maybeCompareEffIntervalRef effort i1 i2 = 
+pCompareEffIntervalRef effort i1 i2 = 
     case (c l1 l2, c h1 h2) of
         (Just EQ, Just EQ) -> Just EQ
         (Just LT, Just GT) -> Just LT  
@@ -58,7 +58,7 @@ maybeCompareEffIntervalRef effort i1 i2 =
         (Just _, Just _) -> Just NC  
         _ -> Nothing
     where
-    c = NumOrd.maybeCompareEff effort 
+    c = NumOrd.pCompareEff effort 
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
 
@@ -67,13 +67,13 @@ maybeCompareEffIntervalRef effort i1 i2 =
 -}
 compareIntervalRef ::
         (CInterval i, NumOrd.Comparison (Endpoint i),
-         NumOrd.Lattice (NumOrd.MaybeCompareEffortIndicator (Endpoint i))) => 
+         NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i))) => 
         i -> i -> PartialOrdering
 compareIntervalRef i1 i2 =
-    case maybeCompareEffIntervalRef effort i1 i2 of
+    case pCompareEffIntervalRef effort i1 i2 of
         Just r -> r 
     where
-    effort = maybeCompareDefaultEffortIntervalRef i1
+    effort = pCompareDefaultEffortIntervalRef i1
 
     
 bottomInterval ::
@@ -86,7 +86,7 @@ topInterval = fromEndpoints (NumOrd.highest, NumOrd.least)
 
 basisJoinInterval :: 
     (CInterval i, NumOrd.Lattice (Endpoint i), 
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
+     NumOrd.PartialComparison (Endpoint i)) => 
     i -> i -> Maybe i
 basisJoinInterval i1 i2 =
     case l NumOrd.<=? h of
@@ -100,7 +100,7 @@ basisJoinInterval i1 i2 =
 
 joinInterval :: 
     (CInterval i, NumOrd.Lattice (Endpoint i), 
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
+     NumOrd.PartialComparison (Endpoint i)) => 
     i -> i -> i
 joinInterval i1 i2 =
     fromEndpoints (l,h)
@@ -112,7 +112,7 @@ joinInterval i1 i2 =
 
 meetInterval :: 
     (CInterval i, NumOrd.Lattice (Endpoint i), 
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
+     NumOrd.PartialComparison (Endpoint i)) => 
     i -> i -> i
 meetInterval i1 i2 =
     fromEndpoints (l,h)
@@ -126,7 +126,7 @@ outerRoundedPartialJoinInterval ::
     (CInterval i,
      NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i), 
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
+     NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
     i -> i -> Maybe i
 outerRoundedPartialJoinInterval effort i1 i2 =
@@ -143,7 +143,7 @@ innerRoundedPartialJoinInterval ::
     (CInterval i,
      NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i), 
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
+     NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
     i -> i -> Maybe i
 innerRoundedPartialJoinInterval effort i1 i2 =
@@ -160,7 +160,7 @@ outerRoundedJoinInterval ::
     (CInterval i,
      NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i), 
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
+     NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
     i -> i -> i
 outerRoundedJoinInterval effort i1 i2 =
@@ -175,7 +175,7 @@ innerRoundedJoinInterval ::
     (CInterval i,
      NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i), 
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
+     NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
     i -> i -> i
 innerRoundedJoinInterval effort i1 i2 =
@@ -190,7 +190,7 @@ outerRoundedMeetInterval ::
     (CInterval i,
      NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i), 
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
+     NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
     i -> i -> i
 outerRoundedMeetInterval effort i1 i2 =
@@ -205,7 +205,7 @@ innerRoundedMeetInterval ::
     (CInterval i,
      NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i), 
-     NumOrd.SemidecidableComparison (Endpoint i)) => 
+     NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
     i -> i -> i
 innerRoundedMeetInterval effort i1 i2 =

@@ -39,17 +39,17 @@ import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 
-instance (NumOrd.SemidecidableComparison e) => HasConsistency (Interval e)
+instance (NumOrd.PartialComparison e) => HasConsistency (Interval e)
     where
     isConsistent (Interval l h) = l <=? h
 
-instance (NumOrd.SemidecidableComparison e) => HasAntiConsistency (Interval e)
+instance (NumOrd.PartialComparison e) => HasAntiConsistency (Interval e)
     where
     isAntiConsistent (Interval l h) = h <=? l
     flipConsistency (Interval l h) = Interval h l
 
 testsIntervalConsistencyFlip ::
-    (Eq e, Show e, NumOrd.ArbitraryOrderedTuple e, NumOrd.SemidecidableComparison e) =>
+    (Eq e, Show e, NumOrd.ArbitraryOrderedTuple e, NumOrd.PartialComparison e) =>
     (String, Interval e) -> Test
 testsIntervalConsistencyFlip (typeName, sample) =
     testGroup (typeName ++ " consistency flip")

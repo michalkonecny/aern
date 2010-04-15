@@ -18,9 +18,9 @@ type Expr1 t = t -> t
 type Expr2 t = t -> t -> t
 type Expr3 t = t -> t -> t -> t
 
-type ExprEff1 ei t = ei -> t -> t
-type ExprEff2 ei t = ei -> t -> t -> t
-type ExprEff3 ei t = ei -> t -> t -> t -> t
+type Expr1Eff ei t = ei -> t -> t
+type Expr2Eff ei t = ei -> t -> t -> t
+type Expr3Eff ei t = ei -> t -> t -> t -> t
 
 type Op t = t -> t -> t
 type PartOp t = t -> t -> Maybe t
@@ -39,9 +39,9 @@ type Expr2Op1 t = (Op t) -> (Op t) -> Expr1 t
 type Expr2Op2 t = (Op t) -> (Op t) -> Expr2 t
 type Expr2Op3 t = (Op t) -> (Op t) -> Expr3 t
 
-type Expr1Op1Eff ei t = (OpEff ei t) -> ExprEff1 ei t
-type Expr1Op2Eff ei t = (OpEff ei t) -> ExprEff2 ei t
-type Expr1OpEff3 ei t = (OpEff ei t) -> ExprEff3 ei t
-type Expr2OpEff1 ei1 ei2 t = (OpEff ei1 t) -> (OpEff ei2 t) -> ExprEff1 (ei1, ei2) t
-type Expr2OpEff2 ei1 ei2 t = (OpEff ei1 t) -> (OpEff ei2 t) -> ExprEff2 (ei1, ei2) t
-type Expr2OpEff3 ei1 ei2 t = (OpEff ei1 t) -> (OpEff ei2 t) -> ExprEff3 (ei1, ei2) t
+type Expr1Op1Eff ei t = (OpEff ei t) -> Expr1Eff ei t
+type Expr1Op2Eff ei t = (OpEff ei t) -> Expr2Eff ei t
+type Expr1Op3Eff ei t = (OpEff ei t) -> Expr3Eff ei t
+type Expr2Op1Eff ei1 ei2 t = (OpEff ei1 t) -> (OpEff ei2 t) -> Expr1Eff (ei1, ei2) t
+type Expr2Op2Eff ei1 ei2 t = (OpEff ei1 t) -> (OpEff ei2 t) -> Expr2Eff (ei1, ei2) t
+type Expr2Op3Eff ei1 ei2 t = (OpEff ei1 t) -> (OpEff ei2 t) -> Expr3Eff (ei1, ei2) t
