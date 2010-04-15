@@ -29,14 +29,14 @@ import Data.Maybe
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 
-roundedAbsorbes ::
+roundedImprovingUnit ::
     (EffortIndicator eiRel, EffortIndicator eiOp,
      HasImprecision t, 
      NumOrd.PartialComparison (Imprecision t),
      RoundedSubtr (Imprecision t)) =>
     t -> (SmdcRelEff eiRel t) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (eiRel, eiOp) -> t -> Bool
-roundedAbsorbes unit =
+roundedImprovingUnit unit =
     equalRoundingUpDnImprovement11 (\_ _ e -> e) expr2
     where
     expr2 opEff effort e = 

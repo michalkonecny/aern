@@ -50,7 +50,7 @@ propUpDnAddZero ::
     (NumOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
     t -> Bool
 propUpDnAddZero _ =
-    roundedAbsorbes zero NumOrd.pLeqEff addUpEff addDnEff
+    roundedImprovingUnit zero NumOrd.pLeqEff addUpEff addDnEff
 
 --propUpDnAddCommutative ::
 --    (NumOrd.Comparison t, RoundedAdd t) =>
@@ -94,7 +94,7 @@ class RoundedMultiply t where
 --    (NumOrd.Comparison t, RoundedMult t, HasOne t) =>
 --    t -> t -> Bool
 --propUpDnMultOne _ =
---    roundedAbsorbes one (NumOrd.<=?) (*^) (*.)
+--    roundedUnit one (NumOrd.<=?) (*^) (*.)
 --
 --propUpDnMultCommutative ::
 --    (NumOrd.Comparison t, RoundedMult t) =>
