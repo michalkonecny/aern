@@ -30,6 +30,9 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import Data.Maybe
 
+infixl 6 +., +^, -., -^
+infixl 7 *., *^
+
 class RoundedAdd t where
     type AddEffortIndicator t
     addUpEff :: AddEffortIndicator t -> t -> t -> t
