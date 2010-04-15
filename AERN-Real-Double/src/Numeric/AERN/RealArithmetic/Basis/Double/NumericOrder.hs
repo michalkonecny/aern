@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
     Description :  numeric order instances for Double  
@@ -52,13 +53,14 @@ instance NumOrd.HasHighest Double where
 
 instance NumOrd.HasExtrema Double where
 
-instance NumOrd.SemidecidableComparison Double where
-    maybeCompareEff _ a b =
+instance NumOrd.PartialComparison Double where
+    type NumOrd.PartialCompareEffortIndicator Double = ()
+    pCompareEff _ a b =
         case (isNaN a, isNaN b) of
            (False, False) -> Just $ toPartialOrdering $ Prelude.compare a b  
            (True, True) -> Just EQ
            _ -> Just NC 
-    maybeCompareDefaultEffort _ = []
+    pCompareDefaultEffort _ = ()
 
 instance NumOrd.Comparison Double where
     compare a b =
@@ -80,11 +82,12 @@ instance NumOrd.Lattice Double where
                         ++ show a ++ " " ++ show b) 
     
 instance NumOrd.RoundedLattice Double where
+    type NumOrd.MinmaxEffortIndicator Double = ()
     maxUpEff _ = NumOrd.max
     maxDnEff _ = NumOrd.max
     minUpEff _ = NumOrd.min
     minDnEff _ = NumOrd.min
-    minmaxDefaultEffort _ = []
+    minmaxDefaultEffort _ = ()
 --    -- a version with artificially added rounding for "testing" the tests
 --    maxUpEff [effort] e1 e2 = NumOrd.max e1 e2 + (1/(convert effort))
 --    maxDnEff [effort] e1 e2 = NumOrd.max e1 e2 - (1/(convert effort))
