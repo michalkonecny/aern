@@ -25,7 +25,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.RefinementOrder.Arbitrary
-import Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison
+import Numeric.AERN.Basics.RefinementOrder.PartialComparison
 
 import Numeric.AERN.Basics.Laws.RoundedOperation
 import Numeric.AERN.Basics.Laws.OperationRelation
@@ -86,7 +86,7 @@ class (InnerRoundedLattice t, OuterRoundedLattice t) => RoundedLattice t
 -- properties of RoundedLattice
 
 propRoundedLatticeComparisonCompatible :: 
-    (SemidecidableComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t) => 
     t -> UniformlyOrderedPair t -> Bool
 propRoundedLatticeComparisonCompatible _ (UniformlyOrderedPair (e1,e2)) = 
     (downRoundedJoinOfOrderedPair (|<=?) (<⊓>) e1 e2)
@@ -94,62 +94,62 @@ propRoundedLatticeComparisonCompatible _ (UniformlyOrderedPair (e1,e2)) =
     (upRoundedMeetOfOrderedPair (|<=?) (>⊔<) e1 e2)
 
 propRoundedLatticeJoinAboveBoth :: 
-    (SemidecidableComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t) => 
     t -> UniformlyOrderedPair t -> Bool
 propRoundedLatticeJoinAboveBoth _ (UniformlyOrderedPair (e1,e2)) = 
     joinAboveOperands (|<=?) (>⊔<) e1 e2
 
 propRoundedLatticeMeetBelowBoth :: 
-    (SemidecidableComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t) => 
     t -> UniformlyOrderedPair t -> Bool
 propRoundedLatticeMeetBelowBoth _ (UniformlyOrderedPair (e1,e2)) = 
     meetBelowOperands (|<=?) (<⊓>) e1 e2
 
 propRoundedLatticeJoinIdempotent :: 
-    (SemidecidableComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t) => 
     t -> t -> Bool
 propRoundedLatticeJoinIdempotent _ = 
     roundedIdempotent (|<=?) (>⊔<) (<⊔>)
 
 propRoundedLatticeJoinCommutative :: 
-    (SemidecidableComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t) => 
     t -> UniformlyOrderedPair t -> Bool
 propRoundedLatticeJoinCommutative _ (UniformlyOrderedPair (e1,e2)) = 
     roundedCommutative (|<=?) (>⊔<) (<⊔>) e1 e2
 
 propRoundedLatticeJoinAssocative :: 
-    (SemidecidableComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t) => 
     t -> UniformlyOrderedTriple t -> Bool
 propRoundedLatticeJoinAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedAssociative (|<=?) (>⊔<) (<⊔>) e1 e2 e3
 
 propRoundedLatticeMeetIdempotent :: 
-    (SemidecidableComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t) => 
     t -> t -> Bool
 propRoundedLatticeMeetIdempotent _ = 
     roundedIdempotent (|<=?) (>⊓<) (<⊓>)
 
 propRoundedLatticeMeetCommutative :: 
-    (SemidecidableComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t) => 
     t -> UniformlyOrderedPair t -> Bool
 propRoundedLatticeMeetCommutative _ (UniformlyOrderedPair (e1,e2)) = 
     roundedCommutative (|<=?) (>⊓<) (<⊓>) e1 e2
 
 propRoundedLatticeMeetAssocative :: 
-    (SemidecidableComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t) => 
     t -> UniformlyOrderedTriple t -> Bool
 propRoundedLatticeMeetAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedAssociative (|<=?) (>⊓<) (<⊓>) e1 e2 e3
 
 {- optional properties: -}
 propRoundedLatticeModular :: 
-    (SemidecidableComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t) => 
     t -> UniformlyOrderedTriple t -> Bool
 propRoundedLatticeModular _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     roundedModular (|<=?) (>⊔<) (>⊓<) (<⊔>) (<⊓>) e1 e2 e3
 
 propRoundedLatticeDistributive :: 
-    (SemidecidableComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t) => 
     t -> UniformlyOrderedTriple t -> Bool
 propRoundedLatticeDistributive _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     (roundedLeftDistributive  (|<=?) (>⊔<) (>⊓<) (<⊔>) (<⊓>) e1 e2 e3)
@@ -158,7 +158,7 @@ propRoundedLatticeDistributive _ (UniformlyOrderedTriple (e1,e2,e3)) =
 
 
 testsRoundedLatticeDistributive :: 
-    (SemidecidableComparison t,
+    (PartialComparison t,
      RoundedLattice t,
      Arbitrary t, 
      ArbitraryOrderedTuple t,

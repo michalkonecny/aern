@@ -19,11 +19,11 @@ import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.NumericOrder.SemidecidableComparison ((<=?),(>=?))
+import Numeric.AERN.Basics.NumericOrder.PartialComparison ((<=?),(>=?))
 import Numeric.AERN.Basics.NumericOrder.Comparison ((<=),(>=))
 
 --import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
---import Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison ((|<=?),(|>=?))
+--import Numeric.AERN.Basics.RefinementOrder.PartialComparison ((|<=?),(|>=?))
 --import Numeric.AERN.Basics.RefinementOrder.Comparison ((|<=),(|>=))
 
 import qualified Prelude

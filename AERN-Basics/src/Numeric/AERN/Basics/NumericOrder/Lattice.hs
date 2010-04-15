@@ -20,7 +20,7 @@ import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.PartialOrdering
 import Control.Monad.ST (ST)
 
-import Numeric.AERN.Basics.NumericOrder.SemidecidableComparison
+import Numeric.AERN.Basics.NumericOrder.PartialComparison
 import Numeric.AERN.Basics.NumericOrder.Arbitrary
 import Numeric.AERN.Basics.Laws.Operation
 import Numeric.AERN.Basics.Laws.OperationRelation
@@ -50,7 +50,7 @@ propLatticeIllegalArgException illegalArg d =
                 [min d illegalArg, min illegalArg d, max d illegalArg, max illegalArg d] 
 
 propLatticeComparisonCompatible :: 
-    (Eq t, SemidecidableComparison t, Lattice t) => 
+    (Eq t, PartialComparison t, Lattice t) => 
     t -> UniformlyOrderedPair t -> Bool
 propLatticeComparisonCompatible _ (UniformlyOrderedPair (e1,e2)) =
     ((joinOfOrderedPair (==) (<=?) max e1 e2)
@@ -58,13 +58,13 @@ propLatticeComparisonCompatible _ (UniformlyOrderedPair (e1,e2)) =
     (meetOfOrderedPair (==) (<=?) min e1 e2))
 
 propLatticeJoinAboveBoth :: 
-    (Eq t, SemidecidableComparison t, Lattice t) => 
+    (Eq t, PartialComparison t, Lattice t) => 
     t -> UniformlyOrderedPair t -> Bool
 propLatticeJoinAboveBoth _ (UniformlyOrderedPair (e1,e2)) =
     (joinAboveOperands (<=?) max e1 e2)
 
 propLatticeMeetBelowBoth :: 
-    (Eq t, SemidecidableComparison t, Lattice t) => 
+    (Eq t, PartialComparison t, Lattice t) => 
     t -> UniformlyOrderedPair t -> Bool
 propLatticeMeetBelowBoth _ (UniformlyOrderedPair (e1,e2)) = 
     meetBelowOperands (<=?) min e1 e2
@@ -115,7 +115,7 @@ propLatticeDistributive _ (UniformlyOrderedTriple (e1,e2,e3)) =
         (leftDistributive (==) min max e1 e2 e3)
 
 testsLatticeDistributive ::
-    (SemidecidableComparison t,
+    (PartialComparison t,
      Lattice t,
      Arbitrary t, 
      ArbitraryOrderedTuple t,

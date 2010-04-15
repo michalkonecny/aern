@@ -17,7 +17,7 @@
 -}
 module Numeric.AERN.Basics.RefinementOrder 
 (
-    module Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison,
+    module Numeric.AERN.Basics.RefinementOrder.PartialComparison,
     module Numeric.AERN.Basics.RefinementOrder.Comparison,
     module Numeric.AERN.Basics.RefinementOrder.Arbitrary,
     module Numeric.AERN.Basics.RefinementOrder.Basis,
@@ -28,7 +28,7 @@ module Numeric.AERN.Basics.RefinementOrder
 )
 where
 
-import Numeric.AERN.Basics.RefinementOrder.SemidecidableComparison
+import Numeric.AERN.Basics.RefinementOrder.PartialComparison
 import Numeric.AERN.Basics.RefinementOrder.Comparison
 import Numeric.AERN.Basics.RefinementOrder.Arbitrary
 import Numeric.AERN.Basics.RefinementOrder.Basis
