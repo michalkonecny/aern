@@ -31,7 +31,7 @@ testsDouble =
     [
 --       NumOrd.testsArbitraryTuple ("Double", sampleD, NumOrd.compare),
        NumOrd.testsComparison ("Double", sampleD) (Just ("NaN", nanD)),
-       NumOrd.testsSemidecidableComparison ("Double", sampleD),
+       NumOrd.testsPartialComparison ("Double", sampleD),
        NumOrd.testsLatticeDistributive ("Double", sampleD) (Just ("NaN", nanD)),
        NumOrd.testsRoundedLatticeDistributive ("Double", sampleD) (Just ("NaN", nanD))
     ]
@@ -39,10 +39,10 @@ testsDouble =
 testsDI =
     [
        testsIntervalConsistencyFlip ("DI", sampleDI),
-       NumOrd.testsSemidecidableComparison ("DI", sampleDI),
+       NumOrd.testsPartialComparison ("DI", sampleDI),
        NumOrd.testsLatticeDistributive ("DI", sampleDI) Nothing,
        NumOrd.testsRefinementRoundedLatticeDistributive  ("DI", sampleDI) Nothing,
-       RefOrd.testsSemidecidableComparison  ("DI", sampleDI), 
+       RefOrd.testsPartialComparison  ("DI", sampleDI), 
        RefOrd.testsBasis ("DI", sampleDI),
        RefOrd.testsRoundedBasis ("DI", sampleDI),
        RefOrd.testsLatticeDistributive ("DI", sampleDI),
