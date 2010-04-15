@@ -34,6 +34,9 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+infixr 3 <|/\>, <⊓>, >|/\<, >⊓< 
+infixr 2 <|\/>, <⊔>, >|\/<, >⊔< 
+
 {-|
     A type with outward-rounding lattice operations.
 -}

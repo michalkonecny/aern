@@ -33,6 +33,8 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+infixr 2 |\/?, ⊔?
+
 {-|
     A lattice.  Join and meet should be compatible with some partial order.
     Both operations should be idempotent, commutative and associative.

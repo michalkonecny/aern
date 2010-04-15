@@ -31,6 +31,8 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+infix 4 ==, <==>, </=>, <, <=, >=, >
+
 {-|
     A partially ordered set.
     
