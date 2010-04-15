@@ -46,8 +46,8 @@ partialRoundedAssociative (<=?) (*^?) (*.?) e1 e2 e3 =
     (*.) = assumeTotal2 (*.?)
     (*^) = assumeTotal2 (*^?)
 
-roundedAbsorbes :: t -> (SmdcRel t) -> (Op t) -> (Op t) -> t -> Bool
-roundedAbsorbes unit =
+roundedUnit :: t -> (SmdcRel t) -> (Op t) -> (Op t) -> t -> Bool
+roundedUnit unit =
     equalRoundingUpDn11 (\(*) e -> e) (\(*) e -> unit * e)  
 
 roundedIdempotent :: (SmdcRel t) -> (Op t) -> (Op t) -> t -> Bool
