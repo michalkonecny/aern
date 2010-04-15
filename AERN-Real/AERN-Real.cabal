@@ -41,7 +41,11 @@ Library
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
         AERN-Basics == 2010.1
   Exposed-modules:
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
+    Numeric.AERN.RealArithmetic.NumericOrderRounding
+    Numeric.AERN.RealArithmetic.Measures
+    Numeric.AERN.RealArithmetic.Laws
 
   Other-modules:
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedRing
 
