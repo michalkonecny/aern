@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.RefinementRoundedLattice
     Description :  lattices over numerical order but with refinement order rounding  
@@ -45,9 +46,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
     A type with refinement-outer-rounding numerical-order-lattice operations.
 -}
 class OuterRoundedLattice t where
-    maxOuterEff :: [EffortIndicator] -> t -> t -> t
-    minOuterEff :: [EffortIndicator] -> t -> t -> t
-    minmaxOuterDefaultEffort :: t -> [EffortIndicator]
+    type MinmaxOuterEffortIndicator t
+    minmaxOuterDefaultEffort :: t -> MinmaxOuterEffortIndicator t
+
+    maxOuterEff :: MinmaxOuterEffortIndicator t -> t -> t -> t
+    minOuterEff :: MinmaxOuterEffortIndicator t -> t -> t -> t
 
     maxOuter :: t -> t -> t
     minOuter :: t -> t -> t
@@ -59,9 +62,11 @@ class OuterRoundedLattice t where
     A type with refinement-inner-rounding numerical-order-lattice operations.
 -}
 class InnerRoundedLattice t where
-    maxInnerEff :: [EffortIndicator] -> t -> t -> t
-    minInnerEff :: [EffortIndicator] -> t -> t -> t
-    minmaxInnerDefaultEffort :: t -> [EffortIndicator]
+    type MinmaxInnerEffortIndicator t
+    minmaxInnerDefaultEffort :: t -> MinmaxInnerEffortIndicator t
+
+    maxInnerEff :: MinmaxInnerEffortIndicator t -> t -> t -> t
+    minInnerEff :: MinmaxInnerEffortIndicator t -> t -> t -> t
 
     maxInner :: t -> t -> t
     minInner :: t -> t -> t

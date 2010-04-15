@@ -1,3 +1,6 @@
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.Basics.Interval.RefinementOrder
     Description :  interval instances of refinement-ordered structures 
@@ -21,12 +24,19 @@ import Numeric.AERN.Basics.CInterval.RefinementOrder
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
-instance (NumOrd.Comparison e) => (RefOrd.Comparison (Interval e))
+instance 
+    (NumOrd.Comparison e, 
+     NumOrd.Lattice (NumOrd.MaybeCompareEffortIndicator e)) => 
+    (RefOrd.Comparison (Interval e))
     where
     compare = compareIntervalRef
     
-instance (NumOrd.SemidecidableComparison e) => (RefOrd.SemidecidableComparison (Interval e))
+instance 
+    (NumOrd.SemidecidableComparison e, 
+     NumOrd.Lattice (NumOrd.MaybeCompareEffortIndicator e)) => 
+    (RefOrd.SemidecidableComparison (Interval e))
     where
+    type RefOrd.MaybeCompareEffortIndicator (Interval e) = NumOrd.MaybeCompareEffortIndicator e 
     maybeCompareEff = maybeCompareEffIntervalRef
     maybeCompareDefaultEffort = maybeCompareDefaultEffortIntervalRef
 
@@ -44,17 +54,28 @@ instance (NumOrd.Lattice e, NumOrd.SemidecidableComparison e) => (RefOrd.Basis (
     where
     (|\/?) = basisJoinInterval
 
-instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.OuterRoundedBasis (Interval e)) 
+instance 
+    (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e, 
+     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (RefOrd.OuterRoundedBasis (Interval e)) 
     where
+    type RefOrd.PartialJoinOutEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e 
     partialJoinOut = outerRoundedPartialJoinInterval
     partialJoinOutDefaultEffort = joinmeetDefaultEffortInterval
 
-instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.InnerRoundedBasis (Interval e)) 
+instance 
+    (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e, 
+     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (RefOrd.InnerRoundedBasis (Interval e)) 
     where
+    type RefOrd.PartialJoinInEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e 
     partialJoinIn = innerRoundedPartialJoinInterval
     partialJoinInDefaultEffort = joinmeetDefaultEffortInterval
 
-instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.RoundedBasis (Interval e)) 
+instance 
+    (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e, 
+     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (RefOrd.RoundedBasis (Interval e)) 
 
 
 instance (NumOrd.Lattice e, NumOrd.SemidecidableComparison e) => (RefOrd.Lattice (Interval e)) 
@@ -62,19 +83,30 @@ instance (NumOrd.Lattice e, NumOrd.SemidecidableComparison e) => (RefOrd.Lattice
     (|\/) = joinInterval
     (|/\) = meetInterval
 
-instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.OuterRoundedLattice (Interval e)) 
+instance 
+    (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e, 
+     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (RefOrd.OuterRoundedLattice (Interval e)) 
     where
+    type RefOrd.JoinMeetOutEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
     joinOut = outerRoundedJoinInterval
     meetOut = outerRoundedMeetInterval
     joinmeetOutDefaultEffort = joinmeetDefaultEffortInterval
 
-instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.InnerRoundedLattice (Interval e)) 
+instance 
+    (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e, 
+     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (RefOrd.InnerRoundedLattice (Interval e)) 
     where
+    type RefOrd.JoinMeetInEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
     joinIn = innerRoundedJoinInterval
     meetIn = innerRoundedMeetInterval
     joinmeetInDefaultEffort = joinmeetDefaultEffortInterval
 
-instance (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e) => (RefOrd.RoundedLattice (Interval e))
+instance 
+    (NumOrd.RoundedLattice e, NumOrd.SemidecidableComparison e, 
+     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (RefOrd.RoundedLattice (Interval e))
 
 instance (NumOrd.ArbitraryOrderedTuple e) => RefOrd.ArbitraryOrderedTuple (Interval e) where
    arbitraryTupleRelatedBy = arbitraryIntervalTupleRefinementRelatedBy

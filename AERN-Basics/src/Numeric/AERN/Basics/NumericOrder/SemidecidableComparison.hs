@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.ApproxOrder
     Description :  Comparisons with semideciable order  
@@ -34,8 +35,9 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
     A type with semi-decidable equality and partial order
 -}
 class SemidecidableComparison t where
-    maybeCompareEff :: [EffortIndicator] -> t -> t -> Maybe PartialOrdering
-    maybeCompareDefaultEffort :: t -> [EffortIndicator]
+    type MaybeCompareEffortIndicator t
+    maybeCompareEff :: MaybeCompareEffortIndicator t -> t -> t -> Maybe PartialOrdering
+    maybeCompareDefaultEffort :: t -> MaybeCompareEffortIndicator t
     
     maybeCompare :: t -> t -> Maybe PartialOrdering
     maybeCompare a = maybeCompareEff (maybeCompareDefaultEffort a) a
@@ -61,8 +63,9 @@ class SemidecidableComparison t where
     a >=?   b = fmap (`elem` [EQ,GT,GEE]) (maybeCompare a b)
 
 instance SemidecidableComparison Int where
+    type MaybeCompareEffortIndicator Int = ()
     maybeCompareEff = maybeComparePreludeCompare    
-    maybeCompareDefaultEffort _ = []
+    maybeCompareDefaultEffort _ = ()
     
 maybeComparePreludeCompare _ a b =
     Just $ toPartialOrdering $ Prelude.compare a b

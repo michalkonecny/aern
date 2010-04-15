@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.RoundedLattice
     Description :  lattices with directed-rounded operations  
@@ -43,11 +44,12 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
     A type with directed-rounding lattice operations.
 -}
 class RoundedLattice t where
-    maxUpEff :: [EffortIndicator] -> t -> t -> t
-    maxDnEff :: [EffortIndicator] -> t -> t -> t
-    minUpEff :: [EffortIndicator] -> t -> t -> t
-    minDnEff :: [EffortIndicator] -> t -> t -> t
-    minmaxDefaultEffort :: t -> [EffortIndicator]
+    type MinmaxEffortIndicator t
+    minmaxDefaultEffort :: t -> MinmaxEffortIndicator t
+    maxUpEff :: MinmaxEffortIndicator t -> t -> t -> t
+    maxDnEff :: MinmaxEffortIndicator t -> t -> t -> t
+    minUpEff :: MinmaxEffortIndicator t -> t -> t -> t
+    minDnEff :: MinmaxEffortIndicator t -> t -> t -> t
 
     maxUp :: t -> t -> t
     maxDn :: t -> t -> t

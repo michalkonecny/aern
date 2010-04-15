@@ -31,10 +31,12 @@ import Data.Maybe
     Default default effort indicators for numerically comparing 'CInterval' types. 
 -}
 maybeCompareDefaultEffortInterval ::
-        (CInterval i, NumOrd.SemidecidableComparison (Endpoint i)) => 
-        i -> [EffortIndicator]
+    (CInterval i, 
+     NumOrd.Lattice (NumOrd.MaybeCompareEffortIndicator (Endpoint i)),
+     NumOrd.SemidecidableComparison (Endpoint i)) => 
+    i -> (NumOrd.MaybeCompareEffortIndicator (Endpoint i))
 maybeCompareDefaultEffortInterval i =
-    zipWith Prelude.max
+    NumOrd.max
         (NumOrd.maybeCompareDefaultEffort l)
         (NumOrd.maybeCompareDefaultEffort h)
     where
@@ -44,8 +46,11 @@ maybeCompareDefaultEffortInterval i =
     Default numerical comparison for 'CInterval' types.
 -}
 maybeCompareEffInterval ::
-        (CInterval i, NumOrd.SemidecidableComparison (Endpoint i)) => 
-        [EffortIndicator] -> i -> i -> Maybe PartialOrdering
+    (CInterval i, 
+     NumOrd.Lattice (NumOrd.MaybeCompareEffortIndicator (Endpoint i)),
+     NumOrd.SemidecidableComparison (Endpoint i)) => 
+    (NumOrd.MaybeCompareEffortIndicator (Endpoint i)) -> 
+    i -> i -> Maybe PartialOrdering
 maybeCompareEffInterval effort i1 i2 = 
     case (c l1 l2, c l1 h2, c h1 l2, c h1 h2) of
         (Just EQ, Just EQ, Just EQ, _) -> Just EQ
@@ -100,8 +105,11 @@ maxInterval i1 i2 =
     Default binary outer-roudned maximum for 'CInterval' types.
 -}
 maxOuterInterval ::
-    (CInterval i, NumOrd.RoundedLattice (Endpoint i)) =>
-    [EffortIndicator] -> i -> i -> i
+    (CInterval i, 
+     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
+     NumOrd.RoundedLattice (Endpoint i)) => 
+    (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
+    i -> i -> i
 maxOuterInterval effort i1 i2 =
     fromEndpoints (NumOrd.maxDnEff effort l1 l2, NumOrd.maxUpEff effort h1 h2)
     where
@@ -112,8 +120,11 @@ maxOuterInterval effort i1 i2 =
     Default binary inner-roudned maximum for 'CInterval' types.
 -}
 maxInnerInterval ::
-    (CInterval i, NumOrd.RoundedLattice (Endpoint i)) =>
-    [EffortIndicator] -> i -> i -> i
+    (CInterval i, 
+     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
+     NumOrd.RoundedLattice (Endpoint i)) => 
+    (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
+    i -> i -> i
 maxInnerInterval effort i1 i2 =
     fromEndpoints (NumOrd.maxUpEff effort l1 l2, NumOrd.maxDnEff effort h1 h2)
     where
@@ -124,8 +135,11 @@ maxInnerInterval effort i1 i2 =
     Default binary outer-roudned minimum for 'CInterval' types.
 -}
 minOuterInterval ::
-    (CInterval i, NumOrd.RoundedLattice (Endpoint i)) =>
-    [EffortIndicator] -> i -> i -> i
+    (CInterval i,
+     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
+     NumOrd.RoundedLattice (Endpoint i)) => 
+    (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
+    i -> i -> i
 minOuterInterval effort i1 i2 =
     fromEndpoints (NumOrd.minDnEff effort l1 l2, NumOrd.minUpEff effort h1 h2)
     where
@@ -136,8 +150,11 @@ minOuterInterval effort i1 i2 =
     Default binary inner-roudned minimum for 'CInterval' types.
 -}
 minInnerInterval ::
-    (CInterval i, NumOrd.RoundedLattice (Endpoint i)) =>
-    [EffortIndicator] -> i -> i -> i
+    (CInterval i, 
+     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
+     NumOrd.RoundedLattice (Endpoint i)) => 
+    (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
+    i -> i -> i
 minInnerInterval effort i1 i2 =
     fromEndpoints (NumOrd.minUpEff effort l1 l2, NumOrd.minDnEff effort h1 h2)
     where
@@ -148,10 +165,12 @@ minInnerInterval effort i1 i2 =
     Default default effort indicators for numerically comparing 'CInterval' types. 
 -}
 minmaxDefaultEffortInterval ::
-        (CInterval i, NumOrd.RoundedLattice (Endpoint i)) => 
-        i -> [EffortIndicator]
+    (CInterval i, 
+     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
+     NumOrd.RoundedLattice (Endpoint i)) => 
+    i -> (NumOrd.MinmaxEffortIndicator (Endpoint i)) 
 minmaxDefaultEffortInterval i =
-    zipWith Prelude.max
+    NumOrd.max
         (NumOrd.minmaxDefaultEffort l)
         (NumOrd.minmaxDefaultEffort h)
     where

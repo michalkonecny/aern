@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.RoundedLattice
     Description :  lattices with outwards and inwards rounded operations  
@@ -37,9 +38,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
     A type with outward-rounding lattice operations.
 -}
 class OuterRoundedLattice t where
-    joinOut :: [EffortIndicator] -> t -> t -> t
-    meetOut :: [EffortIndicator] -> t -> t -> t
-    joinmeetOutDefaultEffort :: t -> [EffortIndicator]
+    type JoinMeetOutEffortIndicator t
+    joinmeetOutDefaultEffort :: t -> JoinMeetOutEffortIndicator t
+
+    joinOut :: JoinMeetOutEffortIndicator t -> t -> t -> t
+    meetOut :: JoinMeetOutEffortIndicator t -> t -> t -> t
 
     (<|\/>) :: t -> t -> t
     (<|/\>) :: t -> t -> t
@@ -59,9 +62,11 @@ class OuterRoundedLattice t where
     A type with outward-rounding lattice operations.
 -}
 class InnerRoundedLattice t where
-    joinIn :: [EffortIndicator] -> t -> t -> t
-    meetIn :: [EffortIndicator] -> t -> t -> t
-    joinmeetInDefaultEffort :: t -> [EffortIndicator]
+    type JoinMeetInEffortIndicator t
+    joinmeetInDefaultEffort :: t -> JoinMeetInEffortIndicator t
+    
+    joinIn :: JoinMeetInEffortIndicator t -> t -> t -> t
+    meetIn :: JoinMeetInEffortIndicator t -> t -> t -> t
 
     (>|\/<) :: t -> t -> t
     (>|/\<) :: t -> t -> t
