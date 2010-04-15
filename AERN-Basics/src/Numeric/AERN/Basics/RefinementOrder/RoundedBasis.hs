@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.RoundedBasis
     Description :  domain bases with outwards and inwards rounded operations  
@@ -36,8 +37,9 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
     A type with outward-rounding lattice operations.
 -}
 class OuterRoundedBasis t where
-    partialJoinOut :: [EffortIndicator] -> t -> t -> Maybe t
-    partialJoinOutDefaultEffort :: t -> [EffortIndicator]
+    type PartialJoinOutEffortIndicator t
+    partialJoinOut :: PartialJoinOutEffortIndicator t -> t -> t -> Maybe t
+    partialJoinOutDefaultEffort :: t -> PartialJoinOutEffortIndicator t
 
     (<|\/>?) :: t -> t -> Maybe t
     
@@ -58,8 +60,9 @@ propOuterRoundedBasisComparisonCompatible _ =
     A type with outward-rounding lattice operations.
 -}
 class InnerRoundedBasis t where
-    partialJoinIn :: [EffortIndicator] -> t -> t -> Maybe t
-    partialJoinInDefaultEffort :: t -> [EffortIndicator]
+    type PartialJoinInEffortIndicator t
+    partialJoinIn :: PartialJoinInEffortIndicator t -> t -> t -> Maybe t
+    partialJoinInDefaultEffort :: t -> PartialJoinInEffortIndicator t
 
     (>|\/<?) :: t -> t -> Maybe t
     

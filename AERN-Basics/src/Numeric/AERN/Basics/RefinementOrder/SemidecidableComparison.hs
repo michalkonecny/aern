@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.ApproxOrder
     Description :  Comparisons with semideciable order  
@@ -35,8 +36,9 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
     A type with semi-decidable equality and partial order
 -}
 class SemidecidableComparison t where
-    maybeCompareEff :: [EffortIndicator] -> t -> t -> Maybe PartialOrdering
-    maybeCompareDefaultEffort :: t -> [EffortIndicator]
+    type MaybeCompareEffortIndicator t
+    maybeCompareEff :: MaybeCompareEffortIndicator t -> t -> t -> Maybe PartialOrdering
+    maybeCompareDefaultEffort :: t -> MaybeCompareEffortIndicator t
     
     maybeCompare :: t -> t -> Maybe PartialOrdering
     maybeCompare a = maybeCompareEff (maybeCompareDefaultEffort a) a
