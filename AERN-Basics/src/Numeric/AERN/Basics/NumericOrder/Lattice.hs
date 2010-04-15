@@ -44,6 +44,14 @@ class Lattice t where
     min :: t -> t -> t
     max :: t -> t -> t
 
+instance Lattice Int where
+    min = Prelude.min
+    max = Prelude.max
+
+instance Lattice () where
+    min _ _ = () 
+    max _ _ = ()
+
 propLatticeIllegalArgException :: (Lattice t) => t -> t -> Bool
 propLatticeIllegalArgException illegalArg d =
     and $ map raisesAERNException 
