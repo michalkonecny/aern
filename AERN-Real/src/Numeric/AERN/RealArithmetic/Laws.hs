@@ -26,15 +26,15 @@ import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Misc.Bool
 import Data.Maybe
 
+import Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 
 roundedImprovingUnit ::
     (EffortIndicator eiRel, EffortIndicator eiOp,
-     HasImprecision t, 
-     NumOrd.PartialComparison (Imprecision t),
-     RoundedSubtr (Imprecision t)) =>
-    t -> (SmdcRelEff eiRel t) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
+     NumOrd.PartialComparison gap, HasZero gap) =>
+    t -> 
+    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (eiRel, eiOp) -> t -> Bool
 roundedImprovingUnit unit =
     equalRoundingUpDnImprovement11 (\_ _ e -> e) expr2
@@ -46,19 +46,22 @@ roundedImprovingUnit unit =
 
 equalRoundingUpDnImprovement11 :: 
     (EffortIndicator eiRel, EffortIndicator eiOp,
-     HasImprecision t, 
-     NumOrd.PartialComparison (Imprecision t),
-     RoundedSubtr (Imprecision t)) =>
+     NumOrd.PartialComparison gap, HasZero gap) =>
     (Expr1Op1Eff eiOp t) -> (Expr1Op1Eff eiOp t) -> 
-    (SmdcRelEff eiRel t) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
+    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (eiRel, eiOp) -> t -> Bool
-equalRoundingUpDnImprovement11 expr1 expr2 pCompareEff opUpEff opDnEff 
+equalRoundingUpDnImprovement11 expr1 expr2 pCompareEff measureGap opUpEff opDnEff 
         initEffort@(initEffortRel, initEffortOp) e =
     and successes && isImprovement
     where
-    isImprovement = or $ catMaybes $ map (improvement0 NumOrd.>?) improvements
+    improvement0Zero = (improvement0 NumOrd.==? zero) == Just True
+    isImprovement = or $ null efforts : improvement0Zero : -- either perfect or can be improved: 
+                         (catMaybes $ map (improvement0 NumOrd.>?) improvements)
     (successes, improvement0 : improvements) = unzip $ map check efforts
-    efforts = take 5 $ effortIncrements initEffort
+    efforts =
+        map (\i -> (initEffortRel, i)) $ concat $
+            map (take 5 . effortIncrementSequence) $ 
+                effortIncrementVariants initEffortOp 
     check (effortRel, effortOp) =
         (success, improvement)
         where
@@ -67,7 +70,7 @@ equalRoundingUpDnImprovement11 expr1 expr2 pCompareEff opUpEff opDnEff
             &&
             (defined (val2Dn <=? val1Up) ===> (val2Dn <= val1Up))
         improvement =
-            imprecisionOf val1Dn -. imprecisionOf val2Up
+            measureGap val1Dn val2Up
         val1Dn = expr1 opDnEff effortOp e
         val1Up = expr1 opUpEff effortOp e
         val2Dn = expr2 opDnEff effortOp e
