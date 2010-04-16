@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.Basics.Consistency
     Description :  types with consistent and inconsistent values
@@ -19,20 +20,23 @@ import Numeric.AERN.Misc.Maybe
 import Data.Maybe
 
 class HasConsistency t where
-    isConsistent :: t -> Maybe Bool
+    type ConsistencyEffortIndicator t
+    isConsistentEff :: (ConsistencyEffortIndicator t) -> t -> Maybe Bool
     
 class (HasConsistency t) => HasAntiConsistency t where
-    isAntiConsistent :: t -> Maybe Bool
+    isAntiConsistentEff :: (ConsistencyEffortIndicator t) -> t -> Maybe Bool
     flipConsistency :: t -> t
     
 propFlipConsistency :: 
-    (HasAntiConsistency t, Eq t) => t -> t -> Bool
-propFlipConsistency _ e =
-    (defined (isConsistent e) && defined (isAntiConsistent eF))
+    (HasAntiConsistency t, Eq t) => t -> (ConsistencyEffortIndicator t) -> t -> Bool
+propFlipConsistency _ effort e =
+    (defined eConsistent && defined eFAntiConsistent)
     ===>
-    ((fromJust $ isConsistent e) <===> (fromJust $ isAntiConsistent eF))
+    (fromJust eConsistent <===> fromJust eFAntiConsistent)
     where
     eF = flipConsistency e
+    eConsistent = isConsistentEff effort e
+    eFAntiConsistent =  isAntiConsistentEff effort eF
 
 propConsistencyFlipSelfInverse :: 
     (HasAntiConsistency t, Eq t) => t -> t -> Bool

@@ -50,7 +50,8 @@ propUpDnAddZero ::
      EffortIndicator (AddEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
-    t -> 
+    t ->
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
     (NumOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
     t -> Bool
 propUpDnAddZero _ =

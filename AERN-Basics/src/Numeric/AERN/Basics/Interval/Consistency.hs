@@ -1,4 +1,6 @@
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Basics.Interval.Basics
     Description :  consistency instances for intervals 
@@ -20,7 +22,7 @@ module Numeric.AERN.Basics.Interval.Consistency
 )
 where
 
-import Prelude hiding (LT)
+import Prelude hiding (LT,EQ)
 import Numeric.AERN.Basics.PartialOrdering
 
 import Numeric.AERN.Basics.Interval.Basics
@@ -41,15 +43,22 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 instance (NumOrd.PartialComparison e) => HasConsistency (Interval e)
     where
-    isConsistent (Interval l h) = l <=? h
+    type ConsistencyEffortIndicator (Interval e) = 
+        NumOrd.PartialCompareEffortIndicator e
+    isConsistentEff effort (Interval l h) =
+        NumOrd.pLeqEff effort l h
 
 instance (NumOrd.PartialComparison e) => HasAntiConsistency (Interval e)
     where
-    isAntiConsistent (Interval l h) = h <=? l
+    isAntiConsistentEff effort (Interval l h) = 
+        NumOrd.pLeqEff effort h l
     flipConsistency (Interval l h) = Interval h l
 
 testsIntervalConsistencyFlip ::
-    (Eq e, Show e, NumOrd.ArbitraryOrderedTuple e, NumOrd.PartialComparison e) =>
+    (Eq e, Show e,
+     Arbitrary (NumOrd.PartialCompareEffortIndicator e),
+     Show (NumOrd.PartialCompareEffortIndicator e),
+     NumOrd.ArbitraryOrderedTuple e, NumOrd.PartialComparison e) =>
     (String, Interval e) -> Test
 testsIntervalConsistencyFlip (typeName, sample) =
     testGroup (typeName ++ " consistency flip")

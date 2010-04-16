@@ -1,3 +1,5 @@
+{-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.Lattice
     Description :  lattices using numeric order notation  
@@ -59,22 +61,25 @@ propLatticeIllegalArgException illegalArg d =
 
 propLatticeComparisonCompatible :: 
     (Eq t, PartialComparison t, Lattice t) => 
-    t -> UniformlyOrderedPair t -> Bool
-propLatticeComparisonCompatible _ (UniformlyOrderedPair (e1,e2)) =
-    ((joinOfOrderedPair (==) (<=?) max e1 e2)
-    && 
-    (meetOfOrderedPair (==) (<=?) min e1 e2))
+    t -> (PartialCompareEffortIndicator t) -> UniformlyOrderedPair t -> Bool
+propLatticeComparisonCompatible _ effort (UniformlyOrderedPair (e1,e2)) =
+    let ?pCompareEffort = effort in
+        ((joinOfOrderedPair (==) (<=?) max e1 e2)
+        && 
+        (meetOfOrderedPair (==) (<=?) min e1 e2))
 
 propLatticeJoinAboveBoth :: 
     (Eq t, PartialComparison t, Lattice t) => 
-    t -> UniformlyOrderedPair t -> Bool
-propLatticeJoinAboveBoth _ (UniformlyOrderedPair (e1,e2)) =
+    t -> (PartialCompareEffortIndicator t) -> UniformlyOrderedPair t -> Bool
+propLatticeJoinAboveBoth _ effort (UniformlyOrderedPair (e1,e2)) =
+    let ?pCompareEffort = effort in
     (joinAboveOperands (<=?) max e1 e2)
 
 propLatticeMeetBelowBoth :: 
     (Eq t, PartialComparison t, Lattice t) => 
-    t -> UniformlyOrderedPair t -> Bool
-propLatticeMeetBelowBoth _ (UniformlyOrderedPair (e1,e2)) = 
+    t -> (PartialCompareEffortIndicator t) -> UniformlyOrderedPair t -> Bool
+propLatticeMeetBelowBoth _ effort (UniformlyOrderedPair (e1,e2)) = 
+    let ?pCompareEffort = effort in
     meetBelowOperands (<=?) min e1 e2
 
 propLatticeJoinIdempotent :: (Eq t, Lattice t) => t -> t -> Bool
@@ -125,10 +130,11 @@ propLatticeDistributive _ (UniformlyOrderedTriple (e1,e2,e3)) =
 testsLatticeDistributive ::
     (PartialComparison t,
      Lattice t,
-     Arbitrary t, 
+     Arbitrary t, Show t, 
      ArbitraryOrderedTuple t,
-     Eq t, 
-     Show t) => 
+     Eq t,
+     Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t) 
+     ) => 
     (String, t) -> (Maybe (String, t)) -> Test
 testsLatticeDistributive (name, sample) maybeIllegalArg =
     testGroup (name ++ " (min,max)") $

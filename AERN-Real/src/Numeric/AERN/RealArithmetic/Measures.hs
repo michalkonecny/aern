@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Measures
     Description :  measures of quality for approximations
@@ -38,9 +39,11 @@ propDistanceTriangular ::
      NumOrd.PartialComparison (Distance t),
      RoundedAdd (Distance t)
     ) =>
-    t -> 
+    t ->
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
     t -> t -> t -> Bool
-propDistanceTriangular _ e1 e2 e3 =
+propDistanceTriangular _ effortComp e1 e2 e3 =
+    let ?pCompareEffort = effortComp in
     case (d12 +. d23) NumOrd.<=? d13 of
         Nothing -> True
         Just b -> b
@@ -50,10 +53,12 @@ propDistanceTriangular _ e1 e2 e3 =
     d13 = e1 `distanceBetween` e3
 
 testsDistance ::
-    (Arbitrary t, HasDistance t, 
+    (HasDistance t, 
      NumOrd.PartialComparison (Distance t),
      RoundedAdd (Distance t),
-     Show t) =>
+     Arbitrary (NumOrd.PartialCompareEffortIndicator (Distance t)), 
+     Show (NumOrd.PartialCompareEffortIndicator (Distance t)),
+     Arbitrary t, Show t) =>
     (String, t) -> Test
 testsDistance (name, sample) =
     testGroup (name ++ " distance measure") $ 
@@ -72,8 +77,11 @@ class HasImprecision t where
 
 propImprecisionDecreasesWithRefinement ::
     (HasImprecision t, NumOrd.PartialComparison (Imprecision t)) =>
-    t -> RefOrd.LEPair t -> Bool
-propImprecisionDecreasesWithRefinement _ (RefOrd.LEPair (e1,e2)) =
+    t -> 
+    (NumOrd.PartialCompareEffortIndicator (Imprecision t)) -> 
+    RefOrd.LEPair t -> Bool
+propImprecisionDecreasesWithRefinement _ effortComp (RefOrd.LEPair (e1,e2)) =
+    let ?pCompareEffort = effortComp in
     case (imprecisionOf e1) NumOrd.>=? (imprecisionOf e2) of
         Nothing -> True
         Just b -> b
