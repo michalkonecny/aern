@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.Lattice
     Description :  lattices using refinement order notation  
@@ -50,24 +52,33 @@ class Lattice t where
 
 propLatticeComparisonCompatible :: 
     (Eq t, PartialComparison t, Lattice t) => 
-    t -> UniformlyOrderedPair t -> Bool
-propLatticeComparisonCompatible _ (UniformlyOrderedPair (e1,e2)) = 
-    (joinOfOrderedPair (==) (|<=?) (|\/) e1 e2) 
-    && 
-    (meetOfOrderedPair (==) (|<=?) (|/\) e1 e2) 
+    t -> 
+    (PartialCompareEffortIndicator t) -> 
+    UniformlyOrderedPair t -> Bool
+propLatticeComparisonCompatible _ effort (UniformlyOrderedPair (e1,e2)) =
+    let ?pCompareEffort = effort in 
+        (joinOfOrderedPair (==) (|<=?) (|\/) e1 e2) 
+        && 
+        (meetOfOrderedPair (==) (|<=?) (|/\) e1 e2) 
 
 propLatticeJoinAboveBoth :: 
     (PartialComparison t, Lattice t) => 
-    t -> UniformlyOrderedPair t -> Bool
-propLatticeJoinAboveBoth _ (UniformlyOrderedPair (e1,e2)) = 
-    joinAboveOperands (|<=?) (|\/) e1 e2
+    t -> 
+    (PartialCompareEffortIndicator t) -> 
+    UniformlyOrderedPair t -> Bool
+propLatticeJoinAboveBoth _ effort (UniformlyOrderedPair (e1,e2)) = 
+    let ?pCompareEffort = effort in 
+        joinAboveOperands (|<=?) (|\/) e1 e2
 
 
 propLatticeMeetBelowBoth :: 
     (PartialComparison t, Lattice t) => 
-    t -> UniformlyOrderedPair t -> Bool
-propLatticeMeetBelowBoth _ (UniformlyOrderedPair (e1,e2)) = 
-    meetBelowOperands (|<=?) (|/\) e1 e2
+    t -> 
+    (PartialCompareEffortIndicator t) -> 
+    UniformlyOrderedPair t -> Bool
+propLatticeMeetBelowBoth _ effort (UniformlyOrderedPair (e1,e2)) = 
+    let ?pCompareEffort = effort in 
+        meetBelowOperands (|<=?) (|/\) e1 e2
 
 propLatticeJoinIdempotent :: 
     (Eq t, Lattice t) => 
@@ -121,10 +132,10 @@ propLatticeDistributive _ (UniformlyOrderedTriple (e1,e2,e3)) =
 testsLatticeDistributive ::
     (PartialComparison t,
      Lattice t,
-     Arbitrary t, 
+     Arbitrary t, Show t,
+     Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t),
      ArbitraryOrderedTuple t,
-     Eq t, 
-     Show t) => 
+     Eq t) => 
     (String, t) -> Test
 testsLatticeDistributive (name, sample) =
     testGroup (name ++ " (min,max)") $

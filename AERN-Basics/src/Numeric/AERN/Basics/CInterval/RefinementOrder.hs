@@ -89,10 +89,11 @@ basisJoinInterval ::
      NumOrd.PartialComparison (Endpoint i)) => 
     i -> i -> Maybe i
 basisJoinInterval i1 i2 =
-    case l NumOrd.<=? h of
+    case l <=? h of
         Just True -> Just $ fromEndpoints (l,h)
         _ -> Nothing
     where
+    (<=?) = NumOrd.pLeqEff (NumOrd.pCompareDefaultEffort l)
     l = l1 `NumOrd.max` l2
     h = h1 `NumOrd.min` h2
     (l1, h1) = getEndpoints i1    
@@ -130,10 +131,11 @@ outerRoundedPartialJoinInterval ::
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
     i -> i -> Maybe i
 outerRoundedPartialJoinInterval effort i1 i2 =
-    case l NumOrd.<=? h of
+    case l <=? h of
         Just True -> Just $ fromEndpoints (l,h)
         _ -> Nothing
     where
+    (<=?) = NumOrd.pLeqEff (NumOrd.pCompareDefaultEffort l)
     l = NumOrd.maxDnEff effort l1 l2
     h = NumOrd.minUpEff effort h1 h2
     (l1, h1) = getEndpoints i1    
@@ -147,10 +149,11 @@ innerRoundedPartialJoinInterval ::
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
     i -> i -> Maybe i
 innerRoundedPartialJoinInterval effort i1 i2 =
-    case l NumOrd.<=? h of
+    case l <=? h of
         Just True -> Just $ fromEndpoints (l,h)
         _ -> Nothing
     where
+    (<=?) = NumOrd.pLeqEff (NumOrd.pCompareDefaultEffort l)
     l = NumOrd.maxUpEff effort l1 l2
     h = NumOrd.minDnEff effort h1 h2
     (l1, h1) = getEndpoints i1    

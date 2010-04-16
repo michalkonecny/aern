@@ -16,13 +16,13 @@ Description:
     Type classes abstracting typical arithmetic operations for real number
     over approximations for exact entities, including outer and inner-rounded
     field operations and common elementary operations.
-    
+    .
     A concrete implementation for the type classes is provided in the form
     of interval arithmetic.  The arithmetic supports also anti-consistent
     intervals (ie @[l,h]@ with @l >= h@) and maintains monotonicity in the
     refinement order so that both inner and outer approximations of exact interval
     expressions can be safely computed.
-
+    .
     The package AERN-Real-MPFR facilitates (via package hmpfr) 
     the use of the MPFR arbitrary granularity (ie precision) floating point numbers 
     as endpoints.

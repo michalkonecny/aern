@@ -60,7 +60,7 @@ instance
     (RefOrd.OuterRoundedBasis (Interval e)) 
     where
     type RefOrd.PartialJoinOutEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e 
-    partialJoinOut = outerRoundedPartialJoinInterval
+    partialJoinOutEff = outerRoundedPartialJoinInterval
     partialJoinOutDefaultEffort = joinmeetDefaultEffortInterval
 
 instance 
@@ -69,7 +69,7 @@ instance
     (RefOrd.InnerRoundedBasis (Interval e)) 
     where
     type RefOrd.PartialJoinInEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e 
-    partialJoinIn = innerRoundedPartialJoinInterval
+    partialJoinInEff = innerRoundedPartialJoinInterval
     partialJoinInDefaultEffort = joinmeetDefaultEffortInterval
 
 instance 
@@ -89,8 +89,8 @@ instance
     (RefOrd.OuterRoundedLattice (Interval e)) 
     where
     type RefOrd.JoinMeetOutEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
-    joinOut = outerRoundedJoinInterval
-    meetOut = outerRoundedMeetInterval
+    joinOutEff = outerRoundedJoinInterval
+    meetOutEff = outerRoundedMeetInterval
     joinmeetOutDefaultEffort = joinmeetDefaultEffortInterval
 
 instance 
@@ -99,8 +99,8 @@ instance
     (RefOrd.InnerRoundedLattice (Interval e)) 
     where
     type RefOrd.JoinMeetInEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
-    joinIn = innerRoundedJoinInterval
-    meetIn = innerRoundedMeetInterval
+    joinInEff = innerRoundedJoinInterval
+    meetInEff = innerRoundedMeetInterval
     joinmeetInDefaultEffort = joinmeetDefaultEffortInterval
 
 instance 

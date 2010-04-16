@@ -1,4 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.RefinementRoundedLattice
     Description :  lattices over numerical order but with refinement order rounding  
@@ -18,7 +20,7 @@ where
 
 import Prelude hiding ((<=))
 
-import Numeric.AERN.Basics.Exception
+import Numeric.AERN.Basics.Exception 
 
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
@@ -52,11 +54,15 @@ class OuterRoundedLattice t where
     maxOuterEff :: MinmaxOuterEffortIndicator t -> t -> t -> t
     minOuterEff :: MinmaxOuterEffortIndicator t -> t -> t -> t
 
-    maxOuter :: t -> t -> t
-    minOuter :: t -> t -> t
+    maxOuter :: 
+        (?minmaxOuterEffort :: MinmaxOuterEffortIndicator t) => 
+        t -> t -> t
+    minOuter ::
+        (?minmaxOuterEffort :: MinmaxOuterEffortIndicator t) => 
+        t -> t -> t
     
-    maxOuter a b = maxOuterEff (minmaxOuterDefaultEffort a) a b 
-    minOuter a b = minOuterEff (minmaxOuterDefaultEffort a) a b 
+    maxOuter = maxOuterEff ?minmaxOuterEffort 
+    minOuter = minOuterEff ?minmaxOuterEffort 
 
 {-|
     A type with refinement-inner-rounding numerical-order-lattice operations.
@@ -68,68 +74,139 @@ class InnerRoundedLattice t where
     maxInnerEff :: MinmaxInnerEffortIndicator t -> t -> t -> t
     minInnerEff :: MinmaxInnerEffortIndicator t -> t -> t -> t
 
-    maxInner :: t -> t -> t
-    minInner :: t -> t -> t
+    maxInner :: 
+        (?minmaxInnerEffort :: MinmaxInnerEffortIndicator t) => 
+        t -> t -> t
+    minInner ::
+        (?minmaxInnerEffort :: MinmaxInnerEffortIndicator t) => 
+        t -> t -> t
     
-    maxInner a b = maxInnerEff (minmaxInnerDefaultEffort a) a b 
-    minInner a b = minInnerEff (minmaxInnerDefaultEffort a) a b 
+    maxInner = maxInnerEff ?minmaxInnerEffort 
+    minInner = minInnerEff ?minmaxInnerEffort 
 
 
 class (OuterRoundedLattice t, InnerRoundedLattice t) => RefinementRoundedLattice t
 
 propRefinementRoundedLatticeIllegalArgException :: 
     (RefinementRoundedLattice t) => 
-    t -> t -> Bool
-propRefinementRoundedLatticeIllegalArgException illegalArg d =
+    t -> 
+    (MinmaxInnerEffortIndicator t, MinmaxOuterEffortIndicator t) -> 
+    t -> Bool
+propRefinementRoundedLatticeIllegalArgException illegalArg (effortIn, effortOut) d =
+    let ?minmaxInnerEffort = effortIn; ?minmaxOuterEffort = effortOut in
     and $ map raisesAERNException $ 
-                concat [[op d illegalArg, op illegalArg d] | op <- [maxInner, maxOuter, minInner, minOuter]] 
+                concat [[op d illegalArg, op illegalArg d] 
+                          | op <- [maxInner, maxOuter, minInner, minOuter]] 
 
 propRefinementRoundedLatticeJoinIdempotent :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
-    t -> t -> Bool
-propRefinementRoundedLatticeJoinIdempotent _ = roundedIdempotent (|<=?) maxInner maxOuter
+    t ->
+    (RefOrd.PartialCompareEffortIndicator t, 
+     MinmaxInnerEffortIndicator t, 
+     MinmaxOuterEffortIndicator t) -> 
+    t -> Bool
+propRefinementRoundedLatticeJoinIdempotent _ (effortComp, effortIn, effortOut) =
+    let ?pCompareEffort = effortComp
+        ?minmaxInnerEffort = effortIn
+        ?minmaxOuterEffort = effortOut in 
+    roundedIdempotent (|<=?) maxInner maxOuter
 
 propRefinementRoundedLatticeJoinCommutative :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
-    t -> UniformlyOrderedPair t -> Bool
-propRefinementRoundedLatticeJoinCommutative _ (UniformlyOrderedPair (e1,e2)) = 
+    t -> 
+    (RefOrd.PartialCompareEffortIndicator t, 
+     MinmaxInnerEffortIndicator t, 
+     MinmaxOuterEffortIndicator t) -> 
+    UniformlyOrderedPair t -> Bool
+propRefinementRoundedLatticeJoinCommutative _ (effortComp, effortIn, effortOut)
+        (UniformlyOrderedPair (e1,e2)) = 
+    let ?pCompareEffort = effortComp
+        ?minmaxInnerEffort = effortIn
+        ?minmaxOuterEffort = effortOut in 
     roundedCommutative (|<=?) maxInner maxOuter e1 e2
 
 propRefinementRoundedLatticeJoinAssocative :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
-    t -> UniformlyOrderedTriple t -> Bool
-propRefinementRoundedLatticeJoinAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
+    t -> 
+    (RefOrd.PartialCompareEffortIndicator t, 
+     MinmaxInnerEffortIndicator t, 
+     MinmaxOuterEffortIndicator t) -> 
+    UniformlyOrderedTriple t -> Bool
+propRefinementRoundedLatticeJoinAssocative _ (effortComp, effortIn, effortOut)
+        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    let ?pCompareEffort = effortComp
+        ?minmaxInnerEffort = effortIn
+        ?minmaxOuterEffort = effortOut in 
     roundedAssociative (|<=?) maxInner maxOuter e1 e2 e3
 
 propRefinementRoundedLatticeMeetIdempotent :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
-    t -> t -> Bool
-propRefinementRoundedLatticeMeetIdempotent _ = 
+    t -> 
+    (RefOrd.PartialCompareEffortIndicator t, 
+     MinmaxInnerEffortIndicator t, 
+     MinmaxOuterEffortIndicator t) -> 
+    t -> Bool
+propRefinementRoundedLatticeMeetIdempotent _ (effortComp, effortIn, effortOut) = 
+    let ?pCompareEffort = effortComp
+        ?minmaxInnerEffort = effortIn
+        ?minmaxOuterEffort = effortOut in 
     roundedIdempotent (|<=?) minInner minOuter
 
 propRefinementRoundedLatticeMeetCommutative :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
-    t -> UniformlyOrderedPair t -> Bool
-propRefinementRoundedLatticeMeetCommutative _ (UniformlyOrderedPair (e1,e2)) = 
+    t -> 
+    (RefOrd.PartialCompareEffortIndicator t, 
+     MinmaxInnerEffortIndicator t, 
+     MinmaxOuterEffortIndicator t) -> 
+    UniformlyOrderedPair t -> Bool
+propRefinementRoundedLatticeMeetCommutative _  (effortComp, effortIn, effortOut)
+        (UniformlyOrderedPair (e1,e2)) = 
+    let ?pCompareEffort = effortComp
+        ?minmaxInnerEffort = effortIn
+        ?minmaxOuterEffort = effortOut in 
     roundedCommutative (|<=?) minInner minOuter e1 e2
 
 propRefinementRoundedLatticeMeetAssocative :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
-    t -> UniformlyOrderedTriple t -> Bool
-propRefinementRoundedLatticeMeetAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
+    t -> 
+    (RefOrd.PartialCompareEffortIndicator t, 
+     MinmaxInnerEffortIndicator t, 
+     MinmaxOuterEffortIndicator t) -> 
+    UniformlyOrderedTriple t -> Bool
+propRefinementRoundedLatticeMeetAssocative _ (effortComp, effortIn, effortOut)
+        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    let ?pCompareEffort = effortComp
+        ?minmaxInnerEffort = effortIn
+        ?minmaxOuterEffort = effortOut in 
     roundedAssociative (|<=?) minInner minOuter e1 e2 e3
 
 {- optional properties: -}
 propRefinementRoundedLatticeModular :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
-    t -> UniformlyOrderedTriple t -> Bool
-propRefinementRoundedLatticeModular _ (UniformlyOrderedTriple (e1,e2,e3)) = 
+    t -> 
+    (RefOrd.PartialCompareEffortIndicator t, 
+     MinmaxInnerEffortIndicator t, 
+     MinmaxOuterEffortIndicator t) -> 
+    UniformlyOrderedTriple t -> Bool
+propRefinementRoundedLatticeModular _ (effortComp, effortIn, effortOut)
+        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    let ?pCompareEffort = effortComp
+        ?minmaxInnerEffort = effortIn
+        ?minmaxOuterEffort = effortOut in 
     roundedModular (|<=?) maxInner minInner maxOuter minOuter e1 e2 e3
 
 propRefinementRoundedLatticeDistributive :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
-    t -> UniformlyOrderedTriple t -> Bool
-propRefinementRoundedLatticeDistributive _ (UniformlyOrderedTriple (e1,e2,e3)) = 
+    t -> 
+    (RefOrd.PartialCompareEffortIndicator t, 
+     MinmaxInnerEffortIndicator t, 
+     MinmaxOuterEffortIndicator t) -> 
+    UniformlyOrderedTriple t -> Bool
+propRefinementRoundedLatticeDistributive _ (effortComp, effortIn, effortOut)
+        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    let ?pCompareEffort = effortComp
+        ?minmaxInnerEffort = effortIn
+        ?minmaxOuterEffort = effortOut in 
     (roundedLeftDistributive  (|<=?) maxInner minInner maxOuter minOuter e1 e2 e3)
     && 
     (roundedLeftDistributive  (|<=?) maxInner minInner maxOuter minOuter e1 e2 e3)
@@ -139,9 +216,12 @@ testsRefinementRoundedLatticeDistributive ::
      HasExtrema t,
      RefinementRoundedLattice t,
      ArbitraryOrderedTuple t,
-     Arbitrary t, 
-     Eq t, 
-     Show t) => 
+     Arbitrary t, Show t, 
+     Arbitrary (RefOrd.PartialCompareEffortIndicator t), Show (RefOrd.PartialCompareEffortIndicator t), 
+     Arbitrary (MinmaxInnerEffortIndicator t), Show (MinmaxInnerEffortIndicator t), 
+     Arbitrary (MinmaxOuterEffortIndicator t), Show (MinmaxOuterEffortIndicator t), 
+     Eq t 
+     ) => 
     (String, t) -> (Maybe (String, t)) -> Test
 testsRefinementRoundedLatticeDistributive (name, sample) maybeIllegalArg =
     testGroup (name ++ " (min,max) treated as refinement rounded") $

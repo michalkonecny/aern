@@ -1,4 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.ApproxOrder
     Description :  Comparisons with semidecidable order  
@@ -42,9 +44,6 @@ class PartialComparison t where
     pCompareEff :: PartialCompareEffortIndicator t -> t -> t -> Maybe PartialOrdering
     pCompareDefaultEffort :: t -> PartialCompareEffortIndicator t
     
-    pCompare :: t -> t -> Maybe PartialOrdering
-    pCompare a = pCompareEff (pCompareDefaultEffort a) a
-
     -- | Partial equality
     pEqualEff :: (PartialCompareEffortIndicator t) -> t -> t -> Maybe Bool
     -- | Partial `is comparable to`.
@@ -57,15 +56,15 @@ class PartialComparison t where
     pGreaterEff :: (PartialCompareEffortIndicator t) -> t -> t -> Maybe Bool
     
     -- | Partial equality
-    (|==?)  :: t -> t -> Maybe Bool
+    (|==?)    :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
     -- | Partial `is comparable to`.
-    (|<==>?)  :: t -> t -> Maybe Bool
+    (|<==>?)  :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
     -- | Partial `is not comparable to`.
-    (|</=>?)  :: t -> t -> Maybe Bool
-    (|<?)     :: t -> t -> Maybe Bool
-    (|<=?)    :: t -> t -> Maybe Bool
-    (|>=?)    :: t -> t -> Maybe Bool
-    (|>?)     :: t -> t -> Maybe Bool
+    (|</=>?)  :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
+    (|<?)     :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
+    (|<=?)    :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
+    (|>=?)    :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
+    (|>?)     :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
 
     -- defaults for all convenience operations:
     pEqualEff effort a b = fmap (== EQ) (pCompareEff effort a b)
@@ -76,64 +75,76 @@ class PartialComparison t where
     pLeqEff effort a b = fmap (`elem` [EQ,LT,LEE]) (pCompareEff effort a b)
     pGeqEff effort a b = fmap (`elem` [EQ,GT,GEE]) (pCompareEff effort a b)
 
-    a |==?   b = fmap (== EQ) (pCompare a b)
-    a |<?    b = fmap (== LT) (pCompare a b)
-    a |>?    b = fmap (== GT) (pCompare a b)
-    a |<==>? b = fmap (/= NC) (pCompare a b)
-    a |</=>? b = fmap (== NC) (pCompare a b)
-    a |<=?   b = fmap (`elem` [EQ,LT,LEE]) (pCompare a b)
-    a |>=?   b = fmap (`elem` [EQ,GT,GEE]) (pCompare a b)
+    (|==?) = pEqualEff ?pCompareEffort
+    (|<==>?) = pComparableEff ?pCompareEffort
+    (|</=>?) = pIncomparableEff ?pCompareEffort
+    (|<?) = pLessEff ?pCompareEffort
+    (|>?) = pGreaterEff ?pCompareEffort
+    (|<=?) = pLeqEff ?pCompareEffort
+    (|>=?) = pGeqEff ?pCompareEffort
 
 -- convenience Unicode math operator notation:
-(⊏?) :: (PartialComparison t) => t -> t -> Maybe Bool
+(⊏?) :: 
+    (PartialComparison t, ?pCompareEffort :: PartialCompareEffortIndicator t) => 
+    t -> t -> Maybe Bool
 (⊏?) = (|<?)
-(⊑?) :: (PartialComparison t) => t -> t -> Maybe Bool
+(⊑?) :: 
+    (PartialComparison t, ?pCompareEffort :: PartialCompareEffortIndicator t) => 
+    t -> t -> Maybe Bool
 (⊑?) = (|<=?)
-(⊒?) :: (PartialComparison t) => t -> t -> Maybe Bool
+(⊒?) ::
+    (PartialComparison t, ?pCompareEffort :: PartialCompareEffortIndicator t) => 
+    t -> t -> Maybe Bool
 (⊒?) = (|>=?)
-(⊐?) :: (PartialComparison t) => t -> t -> Maybe Bool
+(⊐?) ::
+    (PartialComparison t, ?pCompareEffort :: PartialCompareEffortIndicator t) => 
+    t -> t -> Maybe Bool
 (⊐?) = (|>?)
 
 propPartialComparisonReflexiveEQ :: 
     (PartialComparison t) => 
-    t -> t -> Bool
-propPartialComparisonReflexiveEQ _ e = 
-    case pCompare e e of Just EQ -> True; Nothing -> True; _ -> False 
+    t -> (PartialCompareEffortIndicator t) -> t -> Bool
+propPartialComparisonReflexiveEQ _ effort e = 
+    case pCompareEff effort e e of Just EQ -> True; Nothing -> True; _ -> False 
 
 propPartialComparisonAntiSymmetric :: 
     (PartialComparison t) => 
-    t -> t -> t -> Bool
-propPartialComparisonAntiSymmetric _ e1 e2 =
-    case (pCompare e2 e1, pCompare e1 e2) of
+    t -> (PartialCompareEffortIndicator t) -> t -> t -> Bool
+propPartialComparisonAntiSymmetric _ effort e1 e2 =
+    case (pCompareEff effort e2 e1, pCompareEff effort e1 e2) of
         (Just b1, Just b2) -> b1 == partialOrderingTranspose b2
         _ -> True 
 
 propPartialComparisonTransitiveEQ :: 
     (PartialComparison t) => 
-    t -> t -> t -> t -> Bool
-propPartialComparisonTransitiveEQ _ = partialTransitive (|==?)
+    t -> (PartialCompareEffortIndicator t) -> t -> t -> t -> Bool
+propPartialComparisonTransitiveEQ _ effort = 
+    let ?pCompareEffort = effort in partialTransitive (|==?)
 
 propPartialComparisonTransitiveLT :: 
     (PartialComparison t) => 
-    t -> t -> t -> t -> Bool
-propPartialComparisonTransitiveLT _ = partialTransitive (|<?)
+    t -> (PartialCompareEffortIndicator t) -> t -> t -> t -> Bool
+propPartialComparisonTransitiveLT _ effort = 
+    let ?pCompareEffort = effort in partialTransitive (|<?)
 
 propPartialComparisonTransitiveLE :: 
     (PartialComparison t) => 
-    t -> t -> t -> t -> Bool
-propPartialComparisonTransitiveLE _ = partialTransitive (|<=?)
-
+    t -> (PartialCompareEffortIndicator t) -> t -> t -> t -> Bool
+propPartialComparisonTransitiveLE _ effort =
+    let ?pCompareEffort = effort in partialTransitive (|<=?)
 
 propExtremaInPartialComparison :: 
     (PartialComparison t, HasExtrema t) => 
-    t -> t -> Bool
-propExtremaInPartialComparison _ = partialOrderExtrema (|<=?) bottom top
+    t -> (PartialCompareEffortIndicator t) -> t -> Bool
+propExtremaInPartialComparison _ effort = 
+    let ?pCompareEffort = effort in partialOrderExtrema (|<=?) bottom top
 
 testsPartialComparison :: 
     (PartialComparison t,
      HasExtrema t,
-     Arbitrary t, 
-     Show t) => 
+     Arbitrary t, Show t,
+     Arbitrary (PartialCompareEffortIndicator t),
+     Show (PartialCompareEffortIndicator t)) => 
     (String, t) -> Test
 testsPartialComparison (name, sample) =
     testGroup (name ++ " (⊑?)")

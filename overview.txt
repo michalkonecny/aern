@@ -51,10 +51,10 @@ Basics
 RealArithmetic TODO
   NumericOrderRounding
     Numerals int, ratio, double
-    RoundedRing +^, +_, *^, *_
+    RoundedRing +^, +., *^, *.
       addDefaultEffort
       timesDefaultEffort
-    RoundedField /^, /_
+    RoundedField /^, /.
       divideDefaultEffort
     RoundedElementary
   Basis

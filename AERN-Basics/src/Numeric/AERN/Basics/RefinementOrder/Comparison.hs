@@ -44,7 +44,7 @@ class (PartialComparison t, Show t) => Comparison t where
     compare :: t -> t -> PartialOrdering
     -- default implementation assuming the inherited partial comparison is actually total:
     compare a b =
-        case pCompare a b of
+        case pCompareEff (pCompareDefaultEffort a) a b of
             Just r -> r
             _ -> error $
                 "Comparison comparison of " ++ show a

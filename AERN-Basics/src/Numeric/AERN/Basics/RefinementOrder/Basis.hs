@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.Basis
     Description :  domain bases using refinement order notation  
@@ -49,15 +51,21 @@ class Basis t where
 
 propBasisComparisonCompatible :: 
     (Eq t, PartialComparison t, Basis t) => 
-    t -> t -> t -> Bool
-propBasisComparisonCompatible _ = 
-    partialJoinOfOrderedPair (==) (|<=?) (|\/?) 
+    t -> 
+    (PartialCompareEffortIndicator t) -> 
+    t -> t -> Bool
+propBasisComparisonCompatible _ effortComp =
+    let ?pCompareEffort = effortComp in 
+        partialJoinOfOrderedPair (==) (|<=?) (|\/?) 
 
 propBasisJoinAboveBoth :: 
     (PartialComparison t, Basis t) => 
-    t -> UniformlyOrderedPair t -> Bool
-propBasisJoinAboveBoth _ (UniformlyOrderedPair (e1,e2)) = 
-    partialJoinAboveOperands (|<=?) (|\/?) e1 e2
+    t -> 
+    (PartialCompareEffortIndicator t) -> 
+    UniformlyOrderedPair t -> Bool
+propBasisJoinAboveBoth _ effortComp (UniformlyOrderedPair (e1,e2)) = 
+    let ?pCompareEffort = effortComp in 
+        partialJoinAboveOperands (|<=?) (|\/?) e1 e2
 
 propBasisJoinIdempotent :: 
     (Eq t, Basis t) => 
@@ -79,10 +87,11 @@ propBasisJoinAssociative _ (UniformlyOrderedTriple (e1,e2,e3)) =
 testsBasis ::
     (PartialComparison t,
      Basis t,
-     Arbitrary t, 
+     Arbitrary t, Show t, 
+     Arbitrary (PartialCompareEffortIndicator t), 
+     Show (PartialCompareEffortIndicator t), 
      ArbitraryOrderedTuple t,
-     Eq t, 
-     Show t) => 
+     Eq t) => 
     (String, t) -> Test
 testsBasis (name, sample) =
     testGroup (name ++ " (⊔?)") $

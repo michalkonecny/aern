@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Basics.Laws.Relation
     Description :  common properties of arithmetic operations arbitrarily-little rounded  
@@ -35,7 +36,7 @@ roundedImprovingUnit ::
      NumOrd.PartialComparison gap, HasZero gap) =>
     t -> 
     (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
-    (eiRel, eiOp) -> t -> Bool
+    (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> t -> Bool
 roundedImprovingUnit unit =
     equalRoundingUpDnImprovement11 (\_ _ e -> e) expr2
     where
@@ -49,14 +50,20 @@ equalRoundingUpDnImprovement11 ::
      NumOrd.PartialComparison gap, HasZero gap) =>
     (Expr1Op1Eff eiOp t) -> (Expr1Op1Eff eiOp t) -> 
     (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
-    (eiRel, eiOp) -> t -> Bool
+    (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> t -> Bool
 equalRoundingUpDnImprovement11 expr1 expr2 pCompareEff measureGap opUpEff opDnEff 
-        initEffort@(initEffortRel, initEffortOp) e =
+        effortImprComp initEffort@(initEffortRel, initEffortOp) e =
     and successes && isImprovement
     where
-    improvement0Zero = (improvement0 NumOrd.==? zero) == Just True
-    isImprovement = or $ null efforts : improvement0Zero : -- either perfect or can be improved: 
-                         (catMaybes $ map (improvement0 NumOrd.>?) improvements)
+    improvement0Zero = 
+        (improvement0 NumOrd.==? zero) == Just True
+        where
+        ?pCompareEffort = effortImprComp
+    isImprovement = 
+        or $ null efforts : improvement0Zero : -- either perfect or can be improved: 
+                (catMaybes $ map (improvement0 NumOrd.>?) improvements)
+        where
+        ?pCompareEffort = effortImprComp
     (successes, improvement0 : improvements) = unzip $ map check efforts
     efforts =
         map (\i -> (initEffortRel, i)) $ concat $
