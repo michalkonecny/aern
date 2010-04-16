@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ImplicitParams #-}
 
 module Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedRing where
 
@@ -13,16 +14,16 @@ class RoundedAdd t where
     addUpEff :: AddEffortIndicator t -> t -> t -> t
     addDnEff :: AddEffortIndicator t -> t -> t -> t
     addDefaultEffort :: t -> AddEffortIndicator t
-    (+^) :: t -> t -> t
-    (+.) :: t -> t -> t
-    a +^ b = addUpEff (addDefaultEffort a) a b
-    a +. b = addDnEff (addDefaultEffort a) a b
+    (+^) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
+    (+.) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
+    (+^) = addUpEff ?addUpDnEffort
+    (+.) = addDnEff ?addUpDnEffort
 
 class Neg t where
     neg :: t -> t
 
 class (RoundedAdd t, Neg t) => RoundedSubtr t where
-    (-^) :: t -> t -> t
-    (-.) :: t -> t -> t
-    a -^ b = addUpEff (addDefaultEffort a) a (neg b)
-    a -. b = addDnEff (addDefaultEffort a) a (neg b)
+    (-^) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
+    (-.) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
+    a -^ b = addUpEff ?addUpDnEffort a (neg b)
+    a -. b = addDnEff ?addUpDnEffort a (neg b)

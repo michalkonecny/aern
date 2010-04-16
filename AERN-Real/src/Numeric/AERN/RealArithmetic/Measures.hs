@@ -41,9 +41,10 @@ propDistanceTriangular ::
     ) =>
     t ->
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (AddEffortIndicator (Distance t)) ->     
     t -> t -> t -> Bool
-propDistanceTriangular _ effortComp e1 e2 e3 =
-    let ?pCompareEffort = effortComp in
+propDistanceTriangular _ effortComp effortAdd e1 e2 e3 =
+    let ?pCompareEffort = effortComp; ?addUpDnEffort = effortAdd in
     case (d12 +. d23) NumOrd.<=? d13 of
         Nothing -> True
         Just b -> b
@@ -58,6 +59,8 @@ testsDistance ::
      RoundedAdd (Distance t),
      Arbitrary (NumOrd.PartialCompareEffortIndicator (Distance t)), 
      Show (NumOrd.PartialCompareEffortIndicator (Distance t)),
+     Arbitrary (AddEffortIndicator (Distance t)), 
+     Show (AddEffortIndicator (Distance t)),
      Arbitrary t, Show t) =>
     (String, t) -> Test
 testsDistance (name, sample) =
