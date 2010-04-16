@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.NumericOrderRounding.RoundedMult
     Description :  rounded addition and multiplication  
@@ -38,10 +39,10 @@ class RoundedAdd t where
     addUpEff :: AddEffortIndicator t -> t -> t -> t
     addDnEff :: AddEffortIndicator t -> t -> t -> t
     addDefaultEffort :: t -> AddEffortIndicator t
-    (+^) :: t -> t -> t
-    (+.) :: t -> t -> t
-    a +^ b = addUpEff (addDefaultEffort a) a b
-    a +. b = addDnEff (addDefaultEffort a) a b
+    (+^) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
+    (+.) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
+    (+^) = addUpEff ?addUpDnEffort
+    (+.) = addDnEff ?addUpDnEffort
 
 propUpDnAddZero ::
     (NumOrd.Comparison t, RoundedAdd t, HasZero t,
@@ -80,20 +81,20 @@ propNegFlip _ e =
     neg (neg e) == e 
 
 class (RoundedAdd t, Neg t) => RoundedSubtr t where
-    (-^) :: t -> t -> t
-    (-.) :: t -> t -> t
-    a -^ b = addUpEff (addDefaultEffort a) a (neg b)
-    a -. b = addDnEff (addDefaultEffort a) a (neg b)
+    (-^) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
+    (-.) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
+    a -^ b = addUpEff ?addUpDnEffort a (neg b)
+    a -. b = addDnEff ?addUpDnEffort a (neg b)
 
 class RoundedMultiply t where
     type MultEffortIndicator t
     multUpEff :: MultEffortIndicator t -> t -> t -> t
     multDnEff :: MultEffortIndicator t -> t -> t -> t
     multDefaultEffort :: t -> MultEffortIndicator t
-    (*^) :: t -> t -> t
-    (*.) :: t -> t -> t
-    a *^ b = multUpEff (multDefaultEffort a) a b
-    a *. b = multDnEff (multDefaultEffort a) a b
+    (*^) :: (?multUpDnEffort :: MultEffortIndicator t) => t -> t -> t
+    (*.) :: (?multUpDnEffort :: MultEffortIndicator t) => t -> t -> t
+    (*^) = multUpEff ?multUpDnEffort
+    (*.) = multDnEff ?multUpDnEffort
 
 --propUpDnMultOne ::
 --    (NumOrd.Comparison t, RoundedMult t, HasOne t) =>
