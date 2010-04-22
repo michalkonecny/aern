@@ -17,7 +17,6 @@
 
 module Numeric.AERN.RealArithmetic.Laws where
 
-import {-# Source #-} Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedRing
 import Numeric.AERN.RealArithmetic.Measures
 
 import Numeric.AERN.Basics.Effort
@@ -27,6 +26,7 @@ import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Misc.Bool
 import Data.Maybe
 
+import Numeric.AERN.RealArithmetic.ExactOperations
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 

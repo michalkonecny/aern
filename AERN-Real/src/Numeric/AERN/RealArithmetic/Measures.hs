@@ -15,7 +15,7 @@
 -}
 module Numeric.AERN.RealArithmetic.Measures where
 
-import {-# Source #-} Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedRing
+import {-# Source #-} Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedRing
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
@@ -44,8 +44,8 @@ propDistanceTriangular ::
     (AddEffortIndicator (Distance t)) ->     
     t -> t -> t -> Bool
 propDistanceTriangular _ effortComp effortAdd e1 e2 e3 =
-    let ?pCompareEffort = effortComp; ?addUpDnEffort = effortAdd in
-    case (d12 +. d23) NumOrd.<=? d13 of
+    let ?pCompareEffort = effortComp; ?addInOutEffort = effortAdd in
+    case (d12 <+> d23) NumOrd.<=? d13 of
         Nothing -> True
         Just b -> b
     where

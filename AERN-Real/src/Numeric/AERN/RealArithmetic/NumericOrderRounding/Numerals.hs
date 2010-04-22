@@ -18,18 +18,14 @@ module Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals where
 
 import Prelude hiding (EQ, LT, GT)
 
+import Numeric.AERN.RealArithmetic.ExactOperations
+
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Data.Ratio
 
-class HasZero t where
-    zero :: t
-    
-class HasOne t where
-    one :: t
-    
 class FromInteger t where
     type FromIntegerEffortIndicator t
     fromIntegerUpEff :: FromIntegerEffortIndicator t -> Integer -> t
