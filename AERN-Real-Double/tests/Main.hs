@@ -22,7 +22,6 @@ import Test.Framework (defaultMain)
 
 main =
     do
-    initGranularityRounding (0 :: Double) 
     defaultMain tests
 
 tests = testsDouble ++ testsDI

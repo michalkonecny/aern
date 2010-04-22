@@ -45,11 +45,11 @@ Library
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
         AERN-Basics == 2010.1, AERN-Real == 2010.1
   Exposed-modules:
-Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations
     Numeric.AERN.RealArithmetic.Basis.Double
     Numeric.AERN.RealArithmetic.Interval.Double
 
   Other-modules:
+    Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations
     Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
     Numeric.AERN.RealArithmetic.Basis.Double.NumericOrderRounding
     Numeric.AERN.RealArithmetic.Basis.Double.Measures
