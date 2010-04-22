@@ -7,7 +7,6 @@ import Numeric.AERN.RealArithmetic.ExactOperations
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
 
 import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Basics.Granularity
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 infixl 6 <+>, >+<, <->, >-<

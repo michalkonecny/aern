@@ -13,7 +13,6 @@ module Main where
 import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
 
-import Numeric.AERN.Basics.Granularity
 import Numeric.AERN.Basics.Interval
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd

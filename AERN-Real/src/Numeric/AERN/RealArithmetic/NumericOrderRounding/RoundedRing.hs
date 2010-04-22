@@ -21,7 +21,6 @@ import Numeric.AERN.RealArithmetic.ExactOperations
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
 
 import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Basics.Granularity
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd

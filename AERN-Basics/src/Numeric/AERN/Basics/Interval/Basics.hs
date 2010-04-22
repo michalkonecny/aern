@@ -22,8 +22,6 @@ module Numeric.AERN.Basics.Interval.Basics
 where
 
 import Numeric.AERN.Basics.CInterval
-import Numeric.AERN.Basics.Granularity
-import Numeric.AERN.Basics.CInterval.Granularity
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.NumericOrder ((<=?))
@@ -55,20 +53,6 @@ instance CInterval (Interval e) where
         where
         (l2, h2) = f (l, h)
 
-instance (HasGranularity e, NumOrd.Lattice (Granularity e)) => 
-         HasGranularity (Interval e)
-    where
-    type Granularity (Interval e) = Granularity e
-    getGranularity = getGranularityInterval
-    initGranularityRounding (Interval l h) = initGranularityRounding l
-
-instance (CanSetGranularityRoundedByNumericOrder e, NumOrd.Lattice (Granularity e)) => 
-         CanSetGranularityRoundedByRefinementOrder (Interval e)
-    where
-    setGranularityOut = setGranularityOutInterval
-    setGranularityIn = setGranularityInInterval
-    setMinGranularityOut = setMinGranularityOutInterval
-    setMinGranularityIn = setMinGranularityInInterval
 
 
 
