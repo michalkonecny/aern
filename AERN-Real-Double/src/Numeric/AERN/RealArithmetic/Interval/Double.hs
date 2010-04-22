@@ -13,13 +13,7 @@
 module Numeric.AERN.RealArithmetic.Interval.Double 
 where
 
-import Numeric.AERN.RealArithmetic.Basis.Double
-
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.Interval
-
-import Test.Framework (Test)
 
 type DI = Interval Double
 
