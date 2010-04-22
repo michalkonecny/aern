@@ -17,6 +17,7 @@
 -}
 module Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedRing where
 
+import Numeric.AERN.RealArithmetic.ExactOperations
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
 
 import Numeric.AERN.Basics.Effort
@@ -70,15 +71,6 @@ propUpDnAddZero _ =
 --propUpDnAddAssociative _ =
 --    roundedAssociative (NumOrd.<=?) (+^) (+.)
 --       
-
-class Neg t where
-    neg :: t -> t
-
-propNegFlip ::
-    (Eq t, Neg t) =>
-    t -> t -> Bool
-propNegFlip _ e =
-    neg (neg e) == e 
 
 class (RoundedAdd t, Neg t) => RoundedSubtr t where
     (-^) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t

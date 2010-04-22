@@ -10,7 +10,7 @@ Maintainer:     mikkonecny@gmail.com
 Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
-Synopsis:       arbitrary precision real interval arithmetic
+Synopsis:       aarbitrary precision real interval arithmetic
 Tested-with:    GHC ==6.12.1
 Description:
     Type classes abstracting typical arithmetic operations for real number
@@ -42,10 +42,13 @@ Library
         AERN-Basics == 2010.1
   Exposed-modules:
     Numeric.AERN.RealArithmetic.NumericOrderRounding
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding
     Numeric.AERN.RealArithmetic.Measures
     Numeric.AERN.RealArithmetic.Laws
 
   Other-modules:
     Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
     Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedRing
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedRing
 
