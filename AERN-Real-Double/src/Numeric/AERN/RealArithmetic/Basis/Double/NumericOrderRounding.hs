@@ -59,6 +59,12 @@ instance RoundedAdd Double where
     
 instance RoundedSubtr Double
 
+instance RoundedAbs Double where
+    type AbsEffortIndicator Double = ()
+    absDefaultEffort _ = ()
+    absDnEff _ = abs
+    absUpEff _ = abs
+
 instance RoundedMultiply Double where
     type MultEffortIndicator Double = () 
     multUpEff effort d1 d2 = withUpwardsRounding $ d1 * d2
