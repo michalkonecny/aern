@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.NumericOrderRounding
+    Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding
     Description :  common arithmetical operations rounded up/down  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3

@@ -54,11 +54,12 @@ propInOutAddZero ::
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
+    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
     (RefOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
     t -> Bool
-propInOutAddZero _ =
-    roundedImprovingUnit zero RefOrd.pLeqEff distanceBetween addInEff addOutEff
+propInOutAddZero _ effortDist =
+    roundedImprovingUnit zero RefOrd.pLeqEff (distanceBetweenEff effortDist) addInEff addOutEff
 
 --propInOutAddCommutative ::
 --    (RefOrd.Comparison t, RoundedAdd t) =>

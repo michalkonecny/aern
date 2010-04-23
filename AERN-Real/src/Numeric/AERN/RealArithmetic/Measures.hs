@@ -31,8 +31,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 -}
 class HasDistance t where
     type Distance t
+    type DistanceEffortIndicator t
+    distanceDefaultEffort :: t -> (DistanceEffortIndicator t)
     {-| distance measure -}
-    distanceBetween :: t -> t -> Distance t
+    distanceBetweenEff :: 
+        DistanceEffortIndicator t -> t -> t -> Distance t
 
 propDistanceTriangular :: 
     (HasDistance t, 
@@ -40,18 +43,23 @@ propDistanceTriangular ::
      RoundedAdd (Distance t)
     ) =>
     t ->
+    (DistanceEffortIndicator t) ->     
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
     (AddEffortIndicator (Distance t)) ->     
     t -> t -> t -> Bool
-propDistanceTriangular _ effortComp effortAdd e1 e2 e3 =
-    let ?pCompareEffort = effortComp; ?addInOutEffort = effortAdd in
-    case (d12 <+> d23) NumOrd.<=? d13 of
-        Nothing -> True
-        Just b -> b
-    where
-    d12 = e1 `distanceBetween` e2
-    d23 = e2 `distanceBetween` e3
-    d13 = e1 `distanceBetween` e3
+propDistanceTriangular _ effortDist effortComp effortAdd e1 e2 e3 =
+    let 
+    ?pCompareEffort = effortComp 
+    ?addInOutEffort = effortAdd 
+    in
+        let
+        d12 = distanceBetweenEff effortDist e1 e2
+        d23 = distanceBetweenEff effortDist e2 e3
+        d13 = distanceBetweenEff effortDist e1 e3
+        in
+        case (d12 <+> d23) NumOrd.<=? d13 of
+            Nothing -> True
+            Just b -> b
 
 testsDistance ::
     (HasDistance t, 
@@ -61,6 +69,8 @@ testsDistance ::
      Show (NumOrd.PartialCompareEffortIndicator (Distance t)),
      Arbitrary (AddEffortIndicator (Distance t)), 
      Show (AddEffortIndicator (Distance t)),
+     Arbitrary (DistanceEffortIndicator t), 
+     Show (DistanceEffortIndicator t), 
      Arbitrary t, Show t) =>
     (String, t) -> Test
 testsDistance (name, sample) =
@@ -76,16 +86,21 @@ testsDistance (name, sample) =
 -}
 class HasImprecision t where
     type Imprecision t
-    imprecisionOf :: t -> Imprecision t
+    type ImprecisionEffortIndicator t
+    imprecisionDefaultEffort :: t -> ImprecisionEffortIndicator t
+    imprecisionOfEff :: ImprecisionEffortIndicator t -> t -> Imprecision t
 
 propImprecisionDecreasesWithRefinement ::
     (HasImprecision t, NumOrd.PartialComparison (Imprecision t)) =>
     t -> 
+    (ImprecisionEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Imprecision t)) -> 
     RefOrd.LEPair t -> Bool
-propImprecisionDecreasesWithRefinement _ effortComp (RefOrd.LEPair (e1,e2)) =
-    let ?pCompareEffort = effortComp in
-    case (imprecisionOf e1) NumOrd.>=? (imprecisionOf e2) of
+propImprecisionDecreasesWithRefinement _ effortImpr effortComp (RefOrd.LEPair (e1,e2)) =
+    let 
+    ?pCompareEffort = effortComp 
+    in
+    case (imprecisionOfEff effortImpr e1) NumOrd.>=? (imprecisionOfEff effortImpr e2) of
         Nothing -> True
         Just b -> b
 

@@ -52,11 +52,12 @@ propUpDnAddZero ::
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
+    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
     (NumOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
     t -> Bool
-propUpDnAddZero _ =
-    roundedImprovingUnit zero NumOrd.pLeqEff distanceBetween addUpEff addDnEff
+propUpDnAddZero _ effortDist =
+    roundedImprovingUnit zero NumOrd.pLeqEff (distanceBetweenEff effortDist) addUpEff addDnEff
 
 --propUpDnAddCommutative ::
 --    (NumOrd.Comparison t, RoundedAdd t) =>
