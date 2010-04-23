@@ -14,11 +14,12 @@
 module Numeric.AERN.RealArithmetic.Interval
 (
     module Numeric.AERN.RealArithmetic.Interval.ExactOperations,
-    module Numeric.AERN.RealArithmetic.Interval.Measures
+    module Numeric.AERN.RealArithmetic.Interval.Measures,
+    module Numeric.AERN.RealArithmetic.Interval.RoundedOps
 )
 where
 
 import Numeric.AERN.RealArithmetic.Interval.ExactOperations
 import Numeric.AERN.RealArithmetic.Interval.Measures
 --import Numeric.AERN.RealArithmetic.Interval.Numerals
---import Numeric.AERN.RealArithmetic.Interval.RoundedOps
+import Numeric.AERN.RealArithmetic.Interval.RoundedOps
