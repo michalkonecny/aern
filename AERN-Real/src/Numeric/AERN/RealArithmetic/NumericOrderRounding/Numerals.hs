@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.NumericOrderRounding.Numerals
+    Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
     Description :  conversion between approximations and standard numeric types  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3

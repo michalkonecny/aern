@@ -46,10 +46,13 @@ Library
     Numeric.AERN.RealArithmetic.RefinementOrderRounding
     Numeric.AERN.RealArithmetic.Measures
     Numeric.AERN.RealArithmetic.Laws
+    Numeric.AERN.RealArithmetic.Interval
 
   Other-modules:
     Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
     Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedRing
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedRing
+    Numeric.AERN.RealArithmetic.Interval.ExactOperations
+    Numeric.AERN.RealArithmetic.Interval.Measures
 
