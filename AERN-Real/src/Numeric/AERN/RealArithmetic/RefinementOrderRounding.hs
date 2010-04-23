@@ -17,9 +17,9 @@
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding
 (
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals,
-    module Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedRing
+    module Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps
 )
 where
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedRing
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps

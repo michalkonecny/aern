@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ImplicitParams #-}
 
-module Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedRing where
+module Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps where
 
 import Numeric.AERN.RealArithmetic.ExactOperations
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals

@@ -15,7 +15,7 @@
 -}
 module Numeric.AERN.RealArithmetic.Measures where
 
-import {-# Source #-} Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedRing
+import {-# Source #-} Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
