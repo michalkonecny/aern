@@ -21,6 +21,7 @@ import Data.Maybe
 
 class HasConsistency t where
     type ConsistencyEffortIndicator t
+    consistencyDefaultEffort :: t -> ConsistencyEffortIndicator t
     isConsistentEff :: (ConsistencyEffortIndicator t) -> t -> Maybe Bool
     
 class (HasConsistency t) => HasAntiConsistency t where
