@@ -18,7 +18,9 @@
 
 module Numeric.AERN.Basics.Interval.Consistency 
 (
-    testsIntervalConsistencyFlip
+   ConsistentInterval(..),
+   AntiConsistentInterval(..),
+   ConsistentOrACInterval(..)
 )
 where
 
@@ -55,19 +57,6 @@ instance (NumOrd.PartialComparison e) => HasAntiConsistency (Interval e)
     isAntiConsistentEff effort (Interval l h) = 
         NumOrd.pLeqEff effort h l
     flipConsistency (Interval l h) = Interval h l
-
-testsIntervalConsistencyFlip ::
-    (Eq e, Show e,
-     Arbitrary (NumOrd.PartialCompareEffortIndicator e),
-     Show (NumOrd.PartialCompareEffortIndicator e),
-     NumOrd.ArbitraryOrderedTuple e, NumOrd.PartialComparison e) =>
-    (String, Interval e) -> Test
-testsIntervalConsistencyFlip (typeName, sample) =
-    testGroup (typeName ++ " consistency flip")
-    [
-        testProperty "really flips" (propFlipConsistency sample),
-        testProperty "self inverse" (propConsistencyFlipSelfInverse sample)
-    ]
 
 -- random generation of intervals with no guarantee of consistency: 
 instance (NumOrd.ArbitraryOrderedTuple e) => Arbitrary (Interval e)
