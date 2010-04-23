@@ -32,13 +32,14 @@ import Data.Maybe
 -}
 pCompareDefaultEffortInterval ::
     (CInterval i, 
-     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i)),
+--     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i)),
      NumOrd.PartialComparison (Endpoint i)) => 
     i -> (NumOrd.PartialCompareEffortIndicator (Endpoint i))
 pCompareDefaultEffortInterval i =
-    NumOrd.max
-        (NumOrd.pCompareDefaultEffort l)
-        (NumOrd.pCompareDefaultEffort h)
+    NumOrd.pCompareDefaultEffort l
+--    NumOrd.max
+--        (NumOrd.pCompareDefaultEffort l)
+--        (NumOrd.pCompareDefaultEffort h)
     where
     (l,h) = getEndpoints i
         
@@ -166,13 +167,14 @@ minInnerInterval effort i1 i2 =
 -}
 minmaxDefaultEffortInterval ::
     (CInterval i, 
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i)) => 
     i -> (NumOrd.MinmaxEffortIndicator (Endpoint i)) 
 minmaxDefaultEffortInterval i =
-    NumOrd.max
-        (NumOrd.minmaxDefaultEffort l)
-        (NumOrd.minmaxDefaultEffort h)
+    NumOrd.minmaxDefaultEffort l
+--    NumOrd.max
+--        (NumOrd.minmaxDefaultEffort l)
+--        (NumOrd.minmaxDefaultEffort h)
     where
     (l,h) = getEndpoints i
 
