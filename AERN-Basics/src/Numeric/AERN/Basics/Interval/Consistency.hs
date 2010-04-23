@@ -45,6 +45,8 @@ instance (NumOrd.PartialComparison e) => HasConsistency (Interval e)
     where
     type ConsistencyEffortIndicator (Interval e) = 
         NumOrd.PartialCompareEffortIndicator e
+    consistencyDefaultEffort (Interval l h) =
+        NumOrd.pCompareDefaultEffort l
     isConsistentEff effort (Interval l h) =
         NumOrd.pLeqEff effort l h
 
