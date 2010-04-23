@@ -107,7 +107,6 @@ maxInterval i1 i2 =
 -}
 maxOuterInterval ::
     (CInterval i, 
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
     i -> i -> i
@@ -122,7 +121,6 @@ maxOuterInterval effort i1 i2 =
 -}
 maxInnerInterval ::
     (CInterval i, 
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
     i -> i -> i
@@ -137,7 +135,6 @@ maxInnerInterval effort i1 i2 =
 -}
 minOuterInterval ::
     (CInterval i,
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
     i -> i -> i
@@ -152,7 +149,6 @@ minOuterInterval effort i1 i2 =
 -}
 minInnerInterval ::
     (CInterval i, 
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
     i -> i -> i

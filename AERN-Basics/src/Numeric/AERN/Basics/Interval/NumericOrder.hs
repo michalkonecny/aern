@@ -42,8 +42,7 @@ instance (NumOrd.Lattice e) => (NumOrd.Lattice (Interval e))
     max = maxInterval 
 
 instance 
-    (NumOrd.RoundedLattice e,
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (NumOrd.RoundedLattice e) => 
     (NumOrd.OuterRoundedLattice (Interval e))
     where
     type NumOrd.MinmaxOuterEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
@@ -52,8 +51,7 @@ instance
     minmaxOuterDefaultEffort = minmaxDefaultEffortInterval 
 
 instance 
-    (NumOrd.RoundedLattice e,
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (NumOrd.RoundedLattice e) => 
     (NumOrd.InnerRoundedLattice (Interval e))
     where
     type NumOrd.MinmaxInnerEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
