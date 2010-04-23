@@ -32,7 +32,6 @@ import Data.Maybe
 -}
 pCompareDefaultEffortInterval ::
     (CInterval i, 
---     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i)),
      NumOrd.PartialComparison (Endpoint i)) => 
     i -> (NumOrd.PartialCompareEffortIndicator (Endpoint i))
 pCompareDefaultEffortInterval i =
@@ -48,7 +47,6 @@ pCompareDefaultEffortInterval i =
 -}
 pCompareEffInterval ::
     (CInterval i, 
-     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i)),
      NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.PartialCompareEffortIndicator (Endpoint i)) -> 
     i -> i -> Maybe PartialOrdering

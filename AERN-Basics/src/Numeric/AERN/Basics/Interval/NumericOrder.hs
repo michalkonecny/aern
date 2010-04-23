@@ -23,8 +23,7 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.CInterval.NumericOrder
 
 instance
-    (NumOrd.PartialComparison e, 
-     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator e)) => 
+    (NumOrd.PartialComparison e) => 
     (NumOrd.PartialComparison (Interval e))
     where
     type NumOrd.PartialCompareEffortIndicator (Interval e) = NumOrd.PartialCompareEffortIndicator e 
@@ -32,8 +31,7 @@ instance
     pCompareDefaultEffort = pCompareDefaultEffortInterval
                 
 instance 
-    (NumOrd.Comparison e, 
-     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator e)) => 
+    (NumOrd.Comparison e) => 
     (NumOrd.Comparison (Interval e))
         
 instance (NumOrd.Lattice e) => (NumOrd.Lattice (Interval e))
@@ -42,7 +40,7 @@ instance (NumOrd.Lattice e) => (NumOrd.Lattice (Interval e))
     max = maxInterval 
 
 instance 
-    (NumOrd.RoundedLattice e) => 
+    (NumOrd.RoundedLattice e) =>
     (NumOrd.OuterRoundedLattice (Interval e))
     where
     type NumOrd.MinmaxOuterEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
@@ -60,8 +58,7 @@ instance
     minmaxInnerDefaultEffort = minmaxDefaultEffortInterval 
 
 instance 
-    (NumOrd.RoundedLattice e,
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (NumOrd.RoundedLattice e) => 
     (NumOrd.RefinementRoundedLattice (Interval e))
 
 instance (NumOrd.HasLeast e) => (NumOrd.HasLeast (Interval e))
