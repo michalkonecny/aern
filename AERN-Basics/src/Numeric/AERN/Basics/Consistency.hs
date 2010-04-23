@@ -53,8 +53,7 @@ testsConsistency ::
     (Arbitrary t, Show t, Eq t,
      HasAntiConsistency t,
      Arbitrary (ConsistencyEffortIndicator t),
-     Show (ConsistencyEffortIndicator t)
-     ) => 
+     Show (ConsistencyEffortIndicator t)) => 
     (String, t) -> Test
 testsConsistency (name, sample) =
     testGroup (name ++ " consistency flip")
