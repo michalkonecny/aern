@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.Basics.Consistency
     Description :  types with consistent and inconsistent values
@@ -18,6 +19,10 @@ import Numeric.AERN.Misc.Bool
 import Numeric.AERN.Misc.Maybe
 
 import Data.Maybe
+
+import Test.QuickCheck
+import Test.Framework (testGroup, Test)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 class HasConsistency t where
     type ConsistencyEffortIndicator t
@@ -44,3 +49,17 @@ propConsistencyFlipSelfInverse ::
 propConsistencyFlipSelfInverse _ e =
     e == (flipConsistency $ flipConsistency e)
 
+testsConsistency :: 
+    (Arbitrary t, Show t, Eq t,
+     HasAntiConsistency t,
+     Arbitrary (ConsistencyEffortIndicator t),
+     Show (ConsistencyEffortIndicator t)
+     ) => 
+    (String, t) -> Test
+testsConsistency (name, sample) =
+    testGroup (name ++ " consistency flip")
+        [
+         testProperty "con<->anticon" (propFlipConsistency sample)
+        ,
+         testProperty "self inverse" (propConsistencyFlipSelfInverse sample)
+        ]
