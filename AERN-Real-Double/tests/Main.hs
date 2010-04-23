@@ -13,9 +13,11 @@ module Main where
 import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
 
-import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.Consistency
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+
+import Numeric.AERN.RealArithmetic.Measures
 
 import Test.Framework (defaultMain)
 
@@ -36,7 +38,7 @@ testsDouble =
 
 testsDI =
     [
-       testsIntervalConsistencyFlip ("DI", sampleDI),
+       testsConsistency ("DI", sampleDI),
        NumOrd.testsPartialComparison ("DI", sampleDI),
        NumOrd.testsLatticeDistributive ("DI", sampleDI) Nothing,
        NumOrd.testsRefinementRoundedLatticeDistributive  ("DI", sampleDI) Nothing,
@@ -44,5 +46,7 @@ testsDI =
        RefOrd.testsBasis ("DI", sampleDI),
        RefOrd.testsRoundedBasis ("DI", sampleDI),
        RefOrd.testsLatticeDistributive ("DI", sampleDI),
-       RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI)
+       RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI),
+       testsDistance ("DI", sampleDI),
+       testsImprecision ("DI", sampleDI)
     ]

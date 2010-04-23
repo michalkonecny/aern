@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Basis.Double.Measures
     Description :  distance between Double numbers
@@ -16,15 +17,25 @@
 
 module Numeric.AERN.RealArithmetic.Basis.Double.Measures where
 
+import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
+import Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations
+import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrderRounding
+
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 import Numeric.AERN.RealArithmetic.ExactOperations
 import Numeric.AERN.RealArithmetic.Measures
+import Numeric.AERN.RealArithmetic.Interval
 import Numeric.AERN.RealArithmetic.Interval.Double
+
+import Numeric.AERN.Basics.CInterval
 
 instance HasDistance Double where
     type Distance Double = DI
-    distanceBetween d1 d2 =
---        abs (d2I <-> d1I)
---        where
---        d1I = fromEndpoints (d1, d1)
---        d2I = fromEndpoints (d2, d2)
-        error "distanceBetween not defined yet for Double"  
+    type DistanceEffortIndicator Double = ()
+    distanceDefaultEffort _ = ()
+    distanceBetweenEff _ d1 d2 =
+        let ?addInOutEffort = () :: AddEffortIndicator (Distance Double) in
+        absOutEff ((),()) (d2I <-> d1I)
+        where
+        d1I = fromEndpoints (d1, d1)
+        d2I = fromEndpoints (d2, d2)
