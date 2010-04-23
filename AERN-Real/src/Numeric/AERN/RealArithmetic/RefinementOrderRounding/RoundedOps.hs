@@ -17,6 +17,9 @@
 -}
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps where
 
+import Prelude hiding (EQ, LT, GT)
+import Numeric.AERN.Basics.PartialOrdering
+
 import Numeric.AERN.RealArithmetic.ExactOperations
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
@@ -85,6 +88,40 @@ class RoundedAbs t where
     absDefaultEffort :: t -> AbsEffortIndicator t
     absInEff :: (AbsEffortIndicator t) -> t -> t
     absOutEff :: (AbsEffortIndicator t) -> t -> t
+
+absOutUsingCompMax ::
+    (HasZero t, Neg t, 
+     NumOrd.PartialComparison t, NumOrd.OuterRoundedLattice t) =>
+    (NumOrd.PartialCompareEffortIndicator t,
+     NumOrd.MinmaxOuterEffortIndicator t) ->
+    t -> t 
+absOutUsingCompMax (effortComp, effortMinmax) a =
+    case NumOrd.pCompareEff effortComp zero a of
+        Just EQ -> a
+        Just LT -> a
+        Just LEE -> a
+        Just GT -> neg a
+        Just GEE -> neg a
+        _ -> zero `max` (a `max` (neg a))
+    where
+    max = NumOrd.maxOuterEff effortMinmax
+
+absInUsingCompMax ::
+    (HasZero t, Neg t, 
+     NumOrd.PartialComparison t, NumOrd.InnerRoundedLattice t) =>
+    (NumOrd.PartialCompareEffortIndicator t,
+     NumOrd.MinmaxInnerEffortIndicator t) ->
+    t -> t 
+absInUsingCompMax (effortComp, effortMinmax) a =
+    case NumOrd.pCompareEff effortComp zero a of
+        Just EQ -> a
+        Just LT -> a
+        Just LEE -> a
+        Just GT -> neg a
+        Just GEE -> neg a
+        _ -> zero `max` (a `max` (neg a))
+    where
+    max = NumOrd.maxInnerEff effortMinmax
 
 class RoundedMultiply t where
     type MultEffortIndicator t

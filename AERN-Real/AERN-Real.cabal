@@ -55,4 +55,5 @@ Library
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps
     Numeric.AERN.RealArithmetic.Interval.ExactOperations
     Numeric.AERN.RealArithmetic.Interval.Measures
+    Numeric.AERN.RealArithmetic.Interval.RoundedOps
 
