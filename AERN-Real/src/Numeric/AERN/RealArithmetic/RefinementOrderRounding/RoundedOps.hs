@@ -15,7 +15,7 @@
     
     This module is hidden and reexported via its parent RefinementOrderRounding. 
 -}
-module Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedRing where
+module Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps where
 
 import Numeric.AERN.RealArithmetic.ExactOperations
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
@@ -80,6 +80,12 @@ class (RoundedAdd t, Neg t) => RoundedSubtr t where
     a >-< b = addInEff ?addInOutEffort a (neg b)
     a <-> b = addOutEff ?addInOutEffort a (neg b)
 
+class RoundedAbs t where
+    type AbsEffortIndicator t
+    absDefaultEffort :: t -> AbsEffortIndicator t
+    absInEff :: (AbsEffortIndicator t) -> t -> t
+    absOutEff :: (AbsEffortIndicator t) -> t -> t
+
 class RoundedMultiply t where
     type MultEffortIndicator t
     multInEff :: MultEffortIndicator t -> t -> t -> t
@@ -89,6 +95,16 @@ class RoundedMultiply t where
     (<*>) :: (?multInOutEffort :: MultEffortIndicator t) => t -> t -> t
     (>*<) = multInEff ?multInOutEffort
     (<*>) = multOutEff ?multInOutEffort
+
+class RoundedDivide t where
+    type DivEffortIndicator t
+    divInEff :: DivEffortIndicator t -> t -> t -> t
+    divOutEff :: DivEffortIndicator t -> t -> t -> t
+    divDefaultEffort :: t -> DivEffortIndicator t
+    (>/<) :: (?divInOutEffort :: DivEffortIndicator t) => t -> t -> t
+    (</>) :: (?divInOutEffort :: DivEffortIndicator t) => t -> t -> t
+    (>/<) = divInEff ?divInOutEffort
+    (</>) = divOutEff ?divInOutEffort
 
 --propInOutMultOne ::
 --    (RefOrd.Comparison t, RoundedMult t, HasOne t) =>

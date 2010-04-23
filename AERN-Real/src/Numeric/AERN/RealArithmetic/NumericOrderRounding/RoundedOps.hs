@@ -2,8 +2,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.NumericOrderRounding.RoundedMult
-    Description :  rounded addition and multiplication  
+    Module      :  Numeric.AERN.NumericOrderRounding.RoundedOps
+    Description :  rounded basic arithmetical operations  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -11,11 +11,11 @@
     Stability   :  experimental
     Portability :  portable
     
-    Rounded addition and multiplication.
+    Rounded basic arithmetical operations.
     
     This module is hidden and reexported via its parent NumericOrderRounding. 
 -}
-module Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedRing where
+module Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedOps where
 
 import Numeric.AERN.RealArithmetic.ExactOperations
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
@@ -78,6 +78,12 @@ class (RoundedAdd t, Neg t) => RoundedSubtr t where
     a -^ b = addUpEff ?addUpDnEffort a (neg b)
     a -. b = addDnEff ?addUpDnEffort a (neg b)
 
+class RoundedAbs t where
+    type AbsEffortIndicator t
+    absDefaultEffort :: t -> AbsEffortIndicator t
+    absUpEff :: (AbsEffortIndicator t) -> t -> t
+    absDnEff :: (AbsEffortIndicator t) -> t -> t
+
 class RoundedMultiply t where
     type MultEffortIndicator t
     multUpEff :: MultEffortIndicator t -> t -> t -> t
@@ -87,6 +93,20 @@ class RoundedMultiply t where
     (*.) :: (?multUpDnEffort :: MultEffortIndicator t) => t -> t -> t
     (*^) = multUpEff ?multUpDnEffort
     (*.) = multDnEff ?multUpDnEffort
+
+class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t) => RoundedRRing t
+
+class RoundedDivide t where
+    type DivEffortIndicator t
+    divUpEff :: DivEffortIndicator t -> t -> t -> t
+    divDnEff :: DivEffortIndicator t -> t -> t -> t
+    divDefaultEffort :: t -> DivEffortIndicator t
+    (/^) :: (?divUpDnEffort :: DivEffortIndicator t) => t -> t -> t
+    (/.) :: (?divUpDnEffort :: DivEffortIndicator t) => t -> t -> t
+    (/^) = divUpEff ?divUpDnEffort
+    (/.) = divDnEff ?divUpDnEffort
+
+class (RoundedRRing t, RoundedDivide t) => RoundedField t
 
 --propUpDnMultOne ::
 --    (NumOrd.Comparison t, RoundedMult t, HasOne t) =>
