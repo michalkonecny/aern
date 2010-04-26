@@ -19,7 +19,7 @@ module Numeric.AERN.RealArithmetic.Basis.Double.Measures where
 
 import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 import Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations
-import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrderRounding
+import Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 import Numeric.AERN.RealArithmetic.ExactOperations

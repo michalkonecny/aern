@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.Basis.Double.NumericOrderRounding
+    Module      :  Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps
     Description :  rounded arithmetic instances for Double
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -15,7 +15,7 @@
     This is a private module reexported publicly via its parent.
 -}
 
-module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrderRounding 
+module Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps 
 ()
 where
 

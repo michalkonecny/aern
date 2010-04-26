@@ -16,14 +16,14 @@
 module Numeric.AERN.RealArithmetic.Basis.Double 
 (
    module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder,
-   module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrderRounding,
+   module Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps,
    module Numeric.AERN.RealArithmetic.Basis.Double.Measures,
    module Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations
 )
 where
 
 import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
-import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrderRounding
+import Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps
 import Numeric.AERN.RealArithmetic.Basis.Double.Measures
 import Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations
 
