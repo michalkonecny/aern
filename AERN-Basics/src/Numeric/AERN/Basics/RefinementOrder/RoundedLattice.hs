@@ -179,6 +179,26 @@ propRoundedLatticeJoinAssocative _ (effortComp, effortIn, effortOut)
         ?joinmeetOutEffort = effortOut in 
     roundedAssociative (|<=?) (>⊔<) (<⊔>) e1 e2 e3
 
+propRoundedLatticeJoinMonotone ::
+    (Eq t, RoundedLattice t, PartialComparison t) => 
+    t -> 
+    (PartialCompareEffortIndicator t, 
+     JoinMeetOutEffortIndicator t, 
+     JoinMeetInEffortIndicator t) -> 
+    LEPair t -> 
+    LEPair t ->
+    Bool
+propRoundedLatticeJoinMonotone _ (effortComp, effortOut, effortIn)
+        (LEPair (e1Lower,e1)) 
+        (LEPair (e2Lower,e2)) =
+    let ?pCompareEffort = effortComp in
+    case rLower |<=? r of
+        Just b -> b
+        Nothing -> True
+   where
+    rLower = joinOutEff effortOut e1Lower e2Lower 
+    r = joinInEff effortIn e1 e2 
+
 propRoundedLatticeMeetIdempotent :: 
     (PartialComparison t, RoundedLattice t) => 
     t -> 
@@ -235,6 +255,26 @@ propRoundedLatticeModular _ (effortComp, effortIn, effortOut)
         ?joinmeetOutEffort = effortOut in 
     roundedModular (|<=?) (>⊔<) (>⊓<) (<⊔>) (<⊓>) e1 e2 e3
 
+propRoundedLatticeMeetMonotone ::
+    (Eq t, RoundedLattice t, PartialComparison t) => 
+    t -> 
+    (PartialCompareEffortIndicator t, 
+     JoinMeetOutEffortIndicator t, 
+     JoinMeetInEffortIndicator t) -> 
+    LEPair t -> 
+    LEPair t ->
+    Bool
+propRoundedLatticeMeetMonotone _ (effortComp, effortOut, effortIn)
+        (LEPair (e1Lower,e1)) 
+        (LEPair (e2Lower,e2)) =
+    let ?pCompareEffort = effortComp in
+    case rLower |<=? r of
+        Just b -> b
+        Nothing -> True
+   where
+    rLower = meetOutEff effortOut e1Lower e2Lower 
+    r = meetInEff effortIn e1 e2 
+
 propRoundedLatticeDistributive :: 
     (PartialComparison t, RoundedLattice t) => 
     t -> 
@@ -277,11 +317,15 @@ testsRoundedLatticeDistributive (name, sample) =
         ,
          testProperty "join associative" (propRoundedLatticeJoinAssocative sample)
         ,
+         testProperty "join monotone" (propRoundedLatticeJoinMonotone sample)
+        ,
          testProperty "meet idempotent" (propRoundedLatticeMeetIdempotent sample)
         ,
          testProperty "meet commutative" (propRoundedLatticeMeetCommutative sample)
         ,
          testProperty "meet associative" (propRoundedLatticeMeetAssocative sample)
+        ,
+         testProperty "meet monotone" (propRoundedLatticeMeetMonotone sample)
         ,
          testProperty "distributive" (propRoundedLatticeDistributive sample)
         ]

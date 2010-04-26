@@ -84,6 +84,28 @@ propBasisJoinAssociative ::
 propBasisJoinAssociative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     partialAssociative  (==) (|\/?) e1 e2 e3
 
+propBasisJoinMonotone ::
+    (Eq t, Basis t, PartialComparison t) => 
+    t -> 
+    PartialCompareEffortIndicator t -> 
+    LEPair t -> 
+    LEPair t ->
+    Bool
+propBasisJoinMonotone _ effortComp
+        (LEPair (e1Lower,e1)) 
+        (LEPair (e2Lower,e2)) =
+    let ?pCompareEffort = effortComp in
+    case (maybeRLower, maybeR) of
+        (Just rLower, Just r) ->
+            case rLower |<=? r of
+                Just b -> b
+                Nothing -> True
+        (_, _) -> True
+    where
+    maybeRLower = e1Lower ⊔? e2Lower 
+    maybeR = e1 ⊔? e2 
+
+
 testsBasis ::
     (PartialComparison t,
      Basis t,
@@ -100,7 +122,8 @@ testsBasis (name, sample) =
          testProperty "join above both"  (propBasisJoinAboveBoth sample),
          testProperty "join idempotent" (propBasisJoinIdempotent sample),
          testProperty "join commutative" (propBasisJoinCommutative sample),
-         testProperty "join associative" (propBasisJoinAssociative sample)
+         testProperty "join associative" (propBasisJoinAssociative sample),
+         testProperty "join monotone" (propBasisJoinMonotone sample)
         ]
 
 

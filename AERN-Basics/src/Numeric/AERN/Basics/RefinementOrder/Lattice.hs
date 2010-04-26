@@ -97,6 +97,25 @@ propLatticeJoinAssocative ::
 propLatticeJoinAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     associative (==) (|\/) e1 e2 e3
 
+propLatticeJoinMonotone ::
+    (Eq t, Lattice t, PartialComparison t) => 
+    t -> 
+    PartialCompareEffortIndicator t -> 
+    LEPair t -> 
+    LEPair t ->
+    Bool
+propLatticeJoinMonotone _ effortComp
+        (LEPair (e1Lower,e1)) 
+        (LEPair (e2Lower,e2)) =
+    let ?pCompareEffort = effortComp in
+    case rLower |<=? r of
+        Just b -> b
+        Nothing -> True
+    where
+    rLower = e1Lower ⊔ e2Lower 
+    r = e1 ⊔ e2 
+
+
 propLatticeMeetIdempotent :: 
     (Eq t, Lattice t) => 
     t -> t -> Bool
@@ -113,6 +132,25 @@ propLatticeMeetAssocative ::
     t -> UniformlyOrderedTriple t -> Bool
 propLatticeMeetAssocative _ (UniformlyOrderedTriple (e1,e2,e3)) = 
     associative (==) (|/\) e1 e2 e3
+
+
+propLatticeMeetMonotone ::
+    (Eq t, Lattice t, PartialComparison t) => 
+    t -> 
+    PartialCompareEffortIndicator t -> 
+    LEPair t -> 
+    LEPair t ->
+    Bool
+propLatticeMeetMonotone _ effortComp
+        (LEPair (e1Lower,e1)) 
+        (LEPair (e2Lower,e2)) =
+    let ?pCompareEffort = effortComp in
+    case rLower |<=? r of
+        Just b -> b
+        Nothing -> True
+    where
+    rLower = e1Lower ⊓ e2Lower 
+    r = e1 ⊓ e2 
 
 {- optional properties: -}
 propLatticeModular :: 
@@ -152,11 +190,15 @@ testsLatticeDistributive (name, sample) =
         ,
          testProperty "join associative" (propLatticeJoinAssocative sample)
         ,
+         testProperty "join monotone" (propLatticeJoinMonotone sample)
+        ,
          testProperty "meet idempotent" (propLatticeMeetIdempotent sample)
         ,
          testProperty "meet commutative" (propLatticeMeetCommutative sample)
         ,
          testProperty "meet associative" (propLatticeMeetAssocative sample)
+        ,
+         testProperty "meet monotone" (propLatticeMeetMonotone sample)
         ,
          testProperty "distributive" (propLatticeDistributive sample)
         ]

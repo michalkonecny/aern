@@ -16,6 +16,14 @@
     This module is hidden and reexported via its parent NumericOrder. 
 -}
 module Numeric.AERN.Basics.NumericOrder.RefinementRoundedLattice 
+(
+    OuterRoundedLattice(..),
+    InnerRoundedLattice(..),
+    RefinementRoundedLattice(..),
+    testsRefinementRoundedLattice, 
+    testsRefinementRoundedLatticeDistributive,
+    testsRefinementRoundedLatticeDistributiveMonotone
+)
 where
 
 import Prelude hiding ((<=))
@@ -211,8 +219,67 @@ propRefinementRoundedLatticeDistributive _ (effortComp, effortIn, effortOut)
     && 
     (roundedLeftDistributive  (|<=?) maxInner minInner maxOuter minOuter e1 e2 e3)
     
+propRefinementRoundedLatticeJoinMonotone ::
+    (Eq t, RefinementRoundedLattice t, RefOrd.PartialComparison t) => 
+    t -> 
+    (RefOrd.PartialCompareEffortIndicator t, 
+     MinmaxInnerEffortIndicator t, 
+     MinmaxOuterEffortIndicator t) -> 
+    RefOrd.LEPair t -> 
+    RefOrd.LEPair t ->
+    Bool
+propRefinementRoundedLatticeJoinMonotone _ (effortComp, effortIn, effortOut)
+        (RefOrd.LEPair (e1Lower,e1)) 
+        (RefOrd.LEPair (e2Lower,e2)) =
+    let ?pCompareEffort = effortComp in
+    case rLower |<=? r of
+        Just b -> b
+        Nothing -> True
+    where
+    rLower = maxOuterEff effortOut e1Lower e2Lower 
+    r = maxInnerEff effortIn e1 e2 
+    
+propRefinementRoundedLatticeMeetMonotone ::
+    (Eq t, RefinementRoundedLattice t, RefOrd.PartialComparison t) => 
+    t -> 
+    (RefOrd.PartialCompareEffortIndicator t, 
+     MinmaxInnerEffortIndicator t, 
+     MinmaxOuterEffortIndicator t) -> 
+    RefOrd.LEPair t -> 
+    RefOrd.LEPair t ->
+    Bool
+propRefinementRoundedLatticeMeetMonotone _ (effortComp, effortIn, effortOut)
+        (RefOrd.LEPair (e1Lower,e1)) 
+        (RefOrd.LEPair (e2Lower,e2)) =
+    let ?pCompareEffort = effortComp in
+    case rLower |<=? r of
+        Just b -> b
+        Nothing -> True
+    where
+    rLower = minOuterEff effortOut e1Lower e2Lower 
+    r = minInnerEff effortIn e1 e2 
+    
+mkTestGroupLattice name = testGroup (name ++ " (min,max) treated as refinement rounded")
+    
+testsRefinementRoundedLattice :: 
+    (RefOrd.PartialComparison t,
+     RefOrd.ArbitraryOrderedTuple t,
+     HasExtrema t,
+     RefinementRoundedLattice t,
+     ArbitraryOrderedTuple t,
+     Arbitrary t, Show t, 
+     Arbitrary (RefOrd.PartialCompareEffortIndicator t), Show (RefOrd.PartialCompareEffortIndicator t), 
+     Arbitrary (MinmaxInnerEffortIndicator t), Show (MinmaxInnerEffortIndicator t), 
+     Arbitrary (MinmaxOuterEffortIndicator t), Show (MinmaxOuterEffortIndicator t), 
+     Eq t 
+     ) => 
+    (String, t) -> (Maybe (String, t)) -> Test
+testsRefinementRoundedLattice (name, sample) maybeIllegalArg =
+    mkTestGroupLattice name (testsRefinementRoundedLatticeL sample maybeIllegalArg)
+
 testsRefinementRoundedLatticeDistributive :: 
     (RefOrd.PartialComparison t,
+     RefOrd.ArbitraryOrderedTuple t,
      HasExtrema t,
      RefinementRoundedLattice t,
      ArbitraryOrderedTuple t,
@@ -224,7 +291,25 @@ testsRefinementRoundedLatticeDistributive ::
      ) => 
     (String, t) -> (Maybe (String, t)) -> Test
 testsRefinementRoundedLatticeDistributive (name, sample) maybeIllegalArg =
-    testGroup (name ++ " (min,max) treated as refinement rounded") $
+    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveL sample maybeIllegalArg)
+
+testsRefinementRoundedLatticeDistributiveMonotone :: 
+    (RefOrd.PartialComparison t,
+     RefOrd.ArbitraryOrderedTuple t,
+     HasExtrema t,
+     RefinementRoundedLattice t,
+     ArbitraryOrderedTuple t,
+     Arbitrary t, Show t, 
+     Arbitrary (RefOrd.PartialCompareEffortIndicator t), Show (RefOrd.PartialCompareEffortIndicator t), 
+     Arbitrary (MinmaxInnerEffortIndicator t), Show (MinmaxInnerEffortIndicator t), 
+     Arbitrary (MinmaxOuterEffortIndicator t), Show (MinmaxOuterEffortIndicator t), 
+     Eq t 
+     ) => 
+    (String, t) -> (Maybe (String, t)) -> Test
+testsRefinementRoundedLatticeDistributiveMonotone (name, sample) maybeIllegalArg =
+    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveMonotoneL sample maybeIllegalArg)
+
+testsRefinementRoundedLatticeL sample maybeIllegalArg =    
         (case maybeIllegalArg of 
             Nothing -> []
             Just (illegalArgName, illegalArg) -> 
@@ -243,7 +328,19 @@ testsRefinementRoundedLatticeDistributive (name, sample) maybeIllegalArg =
          testProperty "meet commutative" (propRefinementRoundedLatticeMeetCommutative sample)
         ,
          testProperty "meet associative" (propRefinementRoundedLatticeMeetAssocative sample)
-        ,
+        ]
+        
+testsRefinementRoundedLatticeDistributiveL sample maybeIllegalArg =
+    testsRefinementRoundedLatticeL sample maybeIllegalArg ++
+        [    
          testProperty "distributive" (propRefinementRoundedLatticeDistributive sample)
+        ]
+        
+testsRefinementRoundedLatticeDistributiveMonotoneL sample maybeIllegalArg =
+    testsRefinementRoundedLatticeDistributiveL sample maybeIllegalArg ++
+        [    
+         testProperty "join monotone" (propRefinementRoundedLatticeJoinMonotone sample)
+        ,
+         testProperty "meet monotone" (propRefinementRoundedLatticeMeetMonotone sample)
         ]
     
