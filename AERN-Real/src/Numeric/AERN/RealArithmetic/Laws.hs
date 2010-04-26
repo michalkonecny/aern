@@ -55,28 +55,30 @@ equalRoundingUpDnImprovement11 expr1 expr2 pCompareEff measureGap opUpEff opDnEf
         effortImprComp initEffort@(initEffortRel, initEffortOp) e =
     and successes && isImprovement
     where
-    improvement0Zero = 
-        (improvement0 NumOrd.==? zero) == Just True
+    imprecision0Zero = 
+        (imprecision0 NumOrd.==? zero) == Just True
         where
         ?pCompareEffort = effortImprComp
     isImprovement = 
-        or $ null efforts : improvement0Zero : -- either perfect or can be improved: 
-                (catMaybes $ map (improvement0 NumOrd.>?) improvements)
+        or $ null efforts : imprecision0Zero : -- either perfect or can be improved: 
+                (catMaybes $ map (imprecision0 NumOrd.>?) imprecisions)
         where
         ?pCompareEffort = effortImprComp
-    (successes, improvement0 : improvements) = unzip $ map check efforts
+    (successes, imprecision0 : imprecisions) = unzip $ map check efforts
     efforts =
-        map (\i -> (initEffortRel, i)) $ concat $
-            map (take 5 . effortIncrementSequence) $ 
-                effortIncrementVariants initEffortOp 
+        map (\i -> (initEffortRel, i)) $
+            (initEffortOp : ) $ 
+                concat $
+                    map (take 5 . effortIncrementSequence) $ 
+                        effortIncrementVariants initEffortOp 
     check (effortRel, effortOp) =
-        (success, improvement)
+        (success, imprecision)
         where
         success =
             (defined (val1Dn <=? val2Up) ===> (val1Dn <= val2Up))
             &&
             (defined (val2Dn <=? val1Up) ===> (val2Dn <= val1Up))
-        improvement =
+        imprecision =
             measureGap val1Dn val2Up
         val1Dn = expr1 opDnEff effortOp e
         val1Up = expr1 opUpEff effortOp e
