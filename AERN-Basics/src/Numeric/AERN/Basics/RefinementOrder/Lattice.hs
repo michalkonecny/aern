@@ -138,7 +138,7 @@ testsLatticeDistributive ::
      Eq t) => 
     (String, t) -> Test
 testsLatticeDistributive (name, sample) =
-    testGroup (name ++ " (min,max)") $
+    testGroup (name ++ " (⊓,⊔)") $
         [
          testProperty "Comparison compatible" (propLatticeComparisonCompatible sample)
         ,
