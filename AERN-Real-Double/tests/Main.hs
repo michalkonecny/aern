@@ -41,8 +41,8 @@ testsDI =
     [
        testsConsistency ("DI", sampleDI),
        NumOrd.testsPartialComparison ("DI", sampleDI),
-       NumOrd.testsLatticeDistributive ("DI", sampleDI) Nothing,
-       NumOrd.testsRefinementRoundedLatticeDistributive  ("DI", sampleDI) Nothing,
+       NumOrd.testsLatticeDistributiveMonotone ("DI", sampleDI) Nothing,
+       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("DI", sampleDI) Nothing,
        RefOrd.testsPartialComparison  ("DI", sampleDI), 
        RefOrd.testsBasis ("DI", sampleDI),
        RefOrd.testsRoundedBasis ("DI", sampleDI),
