@@ -263,7 +263,7 @@ testsRoundedLatticeDistributive ::
      Eq t) => 
     (String, t) -> Test
 testsRoundedLatticeDistributive (name, sample) =
-    testGroup (name ++ " (min,max) rounded") $
+    testGroup (name ++ " (⊓,⊔) rounded") $
         [
          testProperty "Comparison compatible" (propRoundedLatticeComparisonCompatible sample)
         ,
