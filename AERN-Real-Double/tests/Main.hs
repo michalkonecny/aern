@@ -18,6 +18,7 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 import Numeric.AERN.RealArithmetic.Measures
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import Test.Framework (defaultMain)
 
@@ -34,7 +35,8 @@ testsDouble =
        NumOrd.testsPartialComparison ("Double", sampleD),
        NumOrd.testsLatticeDistributive ("Double", sampleD) (Just ("NaN", nanD)),
        NumOrd.testsRoundedLatticeDistributive ("Double", sampleD) (Just ("NaN", nanD)),
-       testsDistance ("Double", sampleD)
+       testsDistance ("Double", sampleD),
+       ArithUpDn.testsUpDnAdd ("Double", sampleD)
     ]
 
 testsDI =
