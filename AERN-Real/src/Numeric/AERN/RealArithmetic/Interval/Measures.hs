@@ -23,27 +23,34 @@ import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.ExactOperations
 
 import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.CInterval
 import Numeric.AERN.Basics.Consistency
+
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding ((<+>))
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.RefinementOrder ((<⊓>))
 
 
-instance (HasDistance e, RefOrd.OuterRoundedLattice (Distance e)) => HasDistance (Interval e) where
+instance (HasDistance e, ArithInOut.RoundedAdd (Distance e)) => 
+    HasDistance (Interval e) where
     type Distance (Interval e) = Distance e
     type DistanceEffortIndicator (Interval e) = 
-        (DistanceEffortIndicator e, RefOrd.JoinMeetOutEffortIndicator (Distance e))
+        (DistanceEffortIndicator e, ArithInOut.AddEffortIndicator (Distance e))
     distanceDefaultEffort (Interval l h) = 
-        (effortDist, RefOrd.joinmeetOutDefaultEffort d)
+        (effortDist, effortAdd)
         where
         effortDist = distanceDefaultEffort l 
+        effortAdd = ArithInOut.addDefaultEffort d 
         d = distanceBetweenEff effortDist l h
-    distanceBetweenEff (effortDist, effortMeet) (Interval l1 h1) (Interval l2 h2) =
-        let 
-        ?joinmeetOutEffort = effortMeet
-        in 
-        (distanceBetweenEff effortDist l1 h2) <⊓> (distanceBetweenEff effortDist l2 h1)
+    distanceBetweenEff (effortDist, effortAdd) (Interval l1 h1) (Interval l2 h2) =
+        let ?addInOutEffort = effortAdd in
+        distL <+> distH
+        where
+        distL = distanceBetweenEff effortDist l1 l2
+        distH = distanceBetweenEff effortDist h1 h2
     
 instance 
     (HasDistance e, RefOrd.OuterRoundedLattice (Distance e), Neg (Distance e), 
