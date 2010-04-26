@@ -15,7 +15,13 @@
     
     This module is hidden and reexported via its parent NumericOrderRounding. 
 -}
-module Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedOps where
+module Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedOps 
+(
+    RoundedAdd(..), RoundedSubtr(..), testsUpDnAdd,
+    RoundedAbs(..), 
+    RoundedMultiply(..), RoundedDivide(..)
+)
+where
 
 import Prelude hiding (EQ, LT, GT)
 import Numeric.AERN.Basics.PartialOrdering
@@ -49,7 +55,7 @@ class RoundedAdd t where
 
 propUpDnAddZero ::
     (NumOrd.Comparison t, RoundedAdd t, HasZero t,
-     HasDistance t, RoundedSubtr (Distance t), 
+     HasDistance t,  
      NumOrd.Comparison (Distance t), HasZero (Distance t),
      EffortIndicator (AddEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
@@ -75,6 +81,11 @@ propUpDnAddZero _ effortDist =
 --    roundedAssociative (NumOrd.<=?) (+^) (+.)
 --       
 
+testsUpDnAdd (name, sample) =
+    testGroup (name ++ " +. +^") $
+        [
+            testProperty "0 absorbs" (propUpDnAddZero sample)
+        ]
 class (RoundedAdd t, Neg t) => RoundedSubtr t where
     (-^) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
     (-.) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
