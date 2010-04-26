@@ -142,6 +142,29 @@ propRoundedBasisJoinAssociative _ (effortComp, effortJoinIn, effortJoinOut)
     partialRoundedAssociative (|<=?) (>|\/<?) (<|\/>?) e1 e2 e3
 
 
+propRoundedBasisJoinMonotone ::
+    (Eq t, RoundedBasis t, PartialComparison t) => 
+    t -> 
+    (PartialCompareEffortIndicator t, 
+     PartialJoinOutEffortIndicator t, 
+     PartialJoinInEffortIndicator t) -> 
+    LEPair t -> 
+    LEPair t ->
+    Bool
+propRoundedBasisJoinMonotone _ (effortComp, effortOut, effortIn)
+        (LEPair (e1Lower,e1)) 
+        (LEPair (e2Lower,e2)) =
+    let ?pCompareEffort = effortComp in
+    case (maybeRLower, maybeR) of
+        (Just rLower, Just r) ->
+            case rLower |<=? r of
+                Just b -> b
+                Nothing -> True
+        (_, _) -> True
+    where
+    maybeRLower = partialJoinOutEff effortOut e1Lower e2Lower 
+    maybeR = partialJoinInEff effortIn e1 e2 
+
 testsRoundedBasis ::
     (PartialComparison t,
      RoundedBasis t,
@@ -159,7 +182,8 @@ testsRoundedBasis (name, sample) =
          testProperty "rounded join above both"  (propInnerRoundedBasisJoinAboveBoth sample),
          testProperty "rounded join idempotent" (propRoundedBasisJoinIdempotent sample),
          testProperty "rounded join commutative" (propRoundedBasisJoinCommutative sample),
-         testProperty "rounded join associative" (propRoundedBasisJoinAssociative sample)
+         testProperty "rounded join associative" (propRoundedBasisJoinAssociative sample),
+         testProperty "rounded join monotone" (propRoundedBasisJoinMonotone sample)
         ]
 
 -- mutable versions (TODO)    

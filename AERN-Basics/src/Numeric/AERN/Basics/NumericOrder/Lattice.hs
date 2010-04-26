@@ -15,7 +15,12 @@
     This module is hidden and reexported via its parent NumericOrder. 
 -}
 
-module Numeric.AERN.Basics.NumericOrder.Lattice where
+module Numeric.AERN.Basics.NumericOrder.Lattice 
+(
+    Lattice(..),
+    testsLattice, testsLatticeDistributive, testsLatticeDistributiveMonotone
+)
+where
 
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.Mutable
@@ -26,6 +31,8 @@ import Numeric.AERN.Basics.NumericOrder.PartialComparison
 import Numeric.AERN.Basics.NumericOrder.Arbitrary
 import Numeric.AERN.Basics.Laws.Operation
 import Numeric.AERN.Basics.Laws.OperationRelation
+
+import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 import Numeric.AERN.Misc.Bool
 import Numeric.AERN.Misc.Maybe
@@ -123,9 +130,58 @@ propLatticeDistributive ::
     (Eq t, Lattice t) => 
     t -> UniformlyOrderedTriple t -> Bool
 propLatticeDistributive _ (UniformlyOrderedTriple (e1,e2,e3)) = 
-        (leftDistributive (==) max min e1 e2 e3)
-        && 
-        (leftDistributive (==) min max e1 e2 e3)
+    (leftDistributive (==) max min e1 e2 e3)
+    && 
+    (leftDistributive (==) min max e1 e2 e3)
+
+propLatticeJoinMonotone ::
+    (Eq t, Lattice t, RefOrd.PartialComparison t) => 
+    t -> 
+    RefOrd.PartialCompareEffortIndicator t -> 
+    RefOrd.LEPair t -> 
+    RefOrd.LEPair t ->
+    Bool
+propLatticeJoinMonotone _ effortComp
+        (RefOrd.LEPair (e1Lower,e1)) 
+        (RefOrd.LEPair (e2Lower,e2)) =
+    case RefOrd.pLeqEff effortComp rLower r of
+        Just b -> b
+        Nothing -> True
+    where
+    rLower = max e1Lower e2Lower 
+    r = max e1 e2 
+    
+propLatticeMeetMonotone ::
+    (Eq t, Lattice t, RefOrd.PartialComparison t) => 
+    t -> 
+    RefOrd.PartialCompareEffortIndicator t -> 
+    RefOrd.LEPair t -> 
+    RefOrd.LEPair t ->
+    Bool
+propLatticeMeetMonotone _ effortComp
+        (RefOrd.LEPair (e1Lower,e1)) 
+        (RefOrd.LEPair (e2Lower,e2)) =
+    case RefOrd.pLeqEff effortComp rLower r of
+        Just b -> b
+        Nothing -> True
+    where
+    rLower = min e1Lower e2Lower 
+    r = min e1 e2 
+    
+
+mkTestGroupLattice name = testGroup (name ++ " (min,max)")
+
+testsLattice ::
+    (PartialComparison t,
+     Lattice t,
+     Arbitrary t, Show t, 
+     ArbitraryOrderedTuple t,
+     Eq t,
+     Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t) 
+     ) => 
+    (String, t) -> (Maybe (String, t)) -> Test
+testsLattice (name, sample) maybeIllegalArg =
+    mkTestGroupLattice name (testsLatticeL sample maybeIllegalArg)
 
 testsLatticeDistributive ::
     (PartialComparison t,
@@ -137,7 +193,26 @@ testsLatticeDistributive ::
      ) => 
     (String, t) -> (Maybe (String, t)) -> Test
 testsLatticeDistributive (name, sample) maybeIllegalArg =
-    testGroup (name ++ " (min,max)") $
+    mkTestGroupLattice name (testsLatticeDistributiveL sample maybeIllegalArg)
+
+testsLatticeDistributiveMonotone ::
+    (PartialComparison t,
+     Lattice t,
+     Arbitrary t, Show t, 
+     ArbitraryOrderedTuple t,
+     Arbitrary (PartialCompareEffortIndicator t), 
+     Show (PartialCompareEffortIndicator t), 
+     RefOrd.PartialComparison t,
+     RefOrd.ArbitraryOrderedTuple t,
+     Arbitrary (RefOrd.PartialCompareEffortIndicator t), 
+     Show (RefOrd.PartialCompareEffortIndicator t), 
+     Eq t
+     ) => 
+    (String, t) -> (Maybe (String, t)) -> Test
+testsLatticeDistributiveMonotone (name, sample) maybeIllegalArg =
+    mkTestGroupLattice name (testsLatticeDistributiveMonotoneL sample maybeIllegalArg)
+
+testsLatticeL sample maybeIllegalArg =
         (case maybeIllegalArg of 
             Nothing -> []
             Just (illegalArgName, illegalArg) -> 
@@ -162,9 +237,22 @@ testsLatticeDistributive (name, sample) maybeIllegalArg =
          testProperty "meet commutative" (propLatticeMeetCommutative sample)
         ,
          testProperty "meet associative" (propLatticeMeetAssocative sample)
-        ,
+        ]    
+
+testsLatticeDistributiveL sample maybeIllegalArg =
+    (testsLatticeL sample maybeIllegalArg) ++
+        [
          testProperty "distributive" (propLatticeDistributive sample)
         ]
+
+testsLatticeDistributiveMonotoneL sample maybeIllegalArg =
+    (testsLatticeDistributiveL sample maybeIllegalArg) ++
+        [
+         testProperty "join monotone" (propLatticeJoinMonotone sample)
+        ,
+         testProperty "meet monotone" (propLatticeMeetMonotone sample)
+        ]
+
 
 --
 --{-|
