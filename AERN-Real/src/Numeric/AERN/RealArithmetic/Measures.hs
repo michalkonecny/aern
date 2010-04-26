@@ -57,7 +57,7 @@ propDistanceTriangular _ effortDist effortComp effortAdd e1 e2 e3 =
         d23 = distanceBetweenEff effortDist e2 e3
         d13 = distanceBetweenEff effortDist e1 e3
         in
-        case (d12 <+> d23) NumOrd.<=? d13 of
+        case (d12 <+> d23) NumOrd.>=? d13 of
             Nothing -> True
             Just b -> b
 
