@@ -51,7 +51,7 @@ Library
   Other-modules:
     Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations
     Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
-    Numeric.AERN.RealArithmetic.Basis.Double.NumericOrderRounding
+    Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps
     Numeric.AERN.RealArithmetic.Basis.Double.Measures
     
     
