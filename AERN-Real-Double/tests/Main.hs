@@ -33,8 +33,7 @@ testsDouble =
        NumOrd.testsComparison ("Double", sampleD) (Just ("NaN", nanD)),
        NumOrd.testsPartialComparison ("Double", sampleD),
        NumOrd.testsLatticeDistributive ("Double", sampleD) (Just ("NaN", nanD)),
-       NumOrd.testsRoundedLatticeDistributive ("Double", sampleD) (Just ("NaN", nanD)),
-       testsDistance ("Double", sampleD)
+       NumOrd.testsRoundedLatticeDistributive ("Double", sampleD) (Just ("NaN", nanD))
     ]
 
 testsDI =
