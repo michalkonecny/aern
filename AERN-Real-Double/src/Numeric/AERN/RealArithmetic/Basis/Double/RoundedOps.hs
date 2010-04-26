@@ -52,9 +52,9 @@ setMachineRoundingModeUp =
 
 instance RoundedAdd Double where
     type AddEffortIndicator Double = () 
+    addDefaultEffort _ = ()
     addUpEff effort d1 d2 = withUpwardsRounding $ d1 + d2
     addDnEff effort d1 d2 = negate $ withUpwardsRounding $ (negate d1) + (negate d2)
-    addDefaultEffort _ = ()
 
     
 instance RoundedSubtr Double
@@ -67,9 +67,15 @@ instance RoundedAbs Double where
 
 instance RoundedMultiply Double where
     type MultEffortIndicator Double = () 
+    multDefaultEffort _ = ()
     multUpEff effort d1 d2 = withUpwardsRounding $ d1 * d2
     multDnEff effort d1 d2 = negate $ withUpwardsRounding $ (negate d1) * d2
-    multDefaultEffort _ = ()
+
+instance RoundedDivide Double where
+    type DivEffortIndicator Double = () 
+    divDefaultEffort _ = ()
+    divUpEff effort d1 d2 = withUpwardsRounding $ d1 / d2
+    divDnEff effort d1 d2 = negate $ withUpwardsRounding $ (negate d1) / d2
 
 --test1 :: [Double]
 --test1 =
