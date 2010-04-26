@@ -9,7 +9,7 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
-    
+
     Refinement rounded basic operations for intervals.
     
     This module is hidden and reexported via its parent Interval. 
