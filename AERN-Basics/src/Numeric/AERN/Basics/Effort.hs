@@ -12,6 +12,8 @@
 -}
 module Numeric.AERN.Basics.Effort where
 
+import Test.QuickCheck
+
 class EffortIndicator t where
     {-| get a range of independent increments to a given effort indicator (may be empty) -}
     effortIncrementVariants :: t -> [t]
@@ -20,11 +22,40 @@ class EffortIndicator t where
     {-| get an infinitely increasing sequence of effort indicators of the same type -}
     effortIncrementSequence :: t -> [t]
 
-instance EffortIndicator Int where
-    effortIncrementVariants i = [i + 1]
-    effortRepeatIncrement (i1,i2) = i2 + (i2 - i1)
-    effortIncrementSequence i =
-        map (i +) $ fibs12
+newtype Int1To100 = Int1To100 { fromInt1To100 :: Int }
+newtype Int1To1000 = Int1To1000 { fromInt1To1000 :: Int }
+
+instance Show Int1To100 where
+    show (Int1To100 i) = show i
+
+instance Show Int1To1000 where
+    show (Int1To1000 i) = show i
+
+instance Arbitrary Int1To100 where
+    arbitrary =
+        do
+        i <- choose (1, 100)
+        return $ Int1To100 i
+
+instance Arbitrary Int1To1000 where
+    arbitrary =
+        do
+        i <- choose (1, 1000)
+        return $ Int1To1000 i
+
+instance EffortIndicator Int1To100 where
+    effortIncrementVariants (Int1To100 i) = [Int1To100 $ i + 1]
+    effortRepeatIncrement (Int1To100 i1, Int1To100 i2) = Int1To100 $ i2 + (i2 - i1)
+    effortIncrementSequence (Int1To100 i) =
+        map Int1To100 $ map (i +) $ fibs12
+        where
+        fibs12 = scanl (+) 1 (1:fibs12)
+
+instance EffortIndicator Int1To1000 where
+    effortIncrementVariants (Int1To1000 i) = [Int1To1000 $ i + 1]
+    effortRepeatIncrement (Int1To1000 i1, Int1To1000 i2) = Int1To1000 $ i2 + (i2 - i1)
+    effortIncrementSequence (Int1To1000 i) =
+        map Int1To1000 $ map (i +) $ fibs12
         where
         fibs12 = scanl (+) 1 (1:fibs12)
 
