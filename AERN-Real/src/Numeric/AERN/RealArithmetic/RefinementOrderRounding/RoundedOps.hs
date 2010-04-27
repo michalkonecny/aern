@@ -53,6 +53,8 @@ propInOutAddZero ::
     (RefOrd.Comparison t, RoundedAdd t, HasZero t,
      HasDistance t, ArithUpDn.RoundedSubtr (Distance t), 
      NumOrd.Comparison (Distance t), HasZero (Distance t),
+     Show (AddEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>

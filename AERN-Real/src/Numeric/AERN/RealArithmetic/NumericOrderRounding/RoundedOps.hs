@@ -57,7 +57,9 @@ propUpDnAddZero ::
     (NumOrd.Comparison t, RoundedAdd t, HasZero t,
      HasDistance t,  
      NumOrd.Comparison (Distance t), HasZero (Distance t),
+     Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
@@ -68,12 +70,23 @@ propUpDnAddZero ::
 propUpDnAddZero _ effortDist =
     roundedImprovingUnit zero NumOrd.pLeqEff (distanceBetweenEff effortDist) addUpEff addDnEff
 
---propUpDnAddCommutative ::
---    (NumOrd.Comparison t, RoundedAdd t) =>
---    t -> t -> t -> Bool
---propUpDnAddCommutative _ =
---    roundedCommutative (NumOrd.<=?) (+^) (+.)
---       
+propUpDnAddCommutative ::
+    (NumOrd.Comparison t, RoundedAdd t, HasZero t,
+     HasDistance t,  
+     NumOrd.Comparison (Distance t), HasZero (Distance t),
+     Show (AddEffortIndicator t),
+     EffortIndicator (AddEffortIndicator t),
+     Show (NumOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (DistanceEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (NumOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    t -> t -> Bool
+propUpDnAddCommutative _ effortDist =
+    roundedImprovingCommutative NumOrd.pLeqEff (distanceBetweenEff effortDist) addUpEff addDnEff
+       
 --propUpDnAddAssociative ::
 --    (NumOrd.Comparison t, RoundedAdd t) =>
 --    t -> t -> t -> t -> Bool
@@ -85,7 +98,10 @@ testsUpDnAdd (name, sample) =
     testGroup (name ++ " +. +^") $
         [
             testProperty "0 absorbs" (propUpDnAddZero sample)
+        ,
+            testProperty "commutativity" (propUpDnAddCommutative sample)
         ]
+        
 class (RoundedAdd t, Neg t) => RoundedSubtr t where
     (-^) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
     (-.) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
