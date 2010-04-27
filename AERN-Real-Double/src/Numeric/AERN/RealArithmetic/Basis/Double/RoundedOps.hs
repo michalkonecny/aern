@@ -23,6 +23,8 @@ import Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
+import Numeric.AERN.Basics.Effort
+
 import Numeric.IEEE.RoundMode
 import System.IO.Unsafe
 
@@ -55,6 +57,19 @@ instance RoundedAdd Double where
     addDefaultEffort _ = ()
     addUpEff effort d1 d2 = withUpwardsRounding $ d1 + d2
     addDnEff effort d1 d2 = negate $ withUpwardsRounding $ (negate d1) + (negate d2)
+    -- the following is an exagerated rounding version meant for testing:
+--    type AddEffortIndicator Double = Int1To100 
+--    addDefaultEffort _ = Int1To100 10
+--    addUpEff effort d1 d2 = 
+--        withUpwardsRounding $ 
+--            d1 + d2 + (1/effortD)
+--        where
+--        effortD = fromInteger $ toInteger $ fromInt1To100 $ effort
+--    addDnEff effort d1 d2 = 
+--        negate $ withUpwardsRounding $ 
+--            (negate d1) + (negate d2) + (1/effortD)
+--        where
+--        effortD = fromInteger $ toInteger $ fromInt1To100 $ effort
 
     
 instance RoundedSubtr Double
@@ -70,6 +85,19 @@ instance RoundedMultiply Double where
     multDefaultEffort _ = ()
     multUpEff effort d1 d2 = withUpwardsRounding $ d1 * d2
     multDnEff effort d1 d2 = negate $ withUpwardsRounding $ (negate d1) * d2
+    -- the following is an exagerated rounding version meant for testing:
+--    type MultEffortIndicator Double = Int1To100 
+--    multDefaultEffort _ = Int1To100 10
+--    multUpEff effort d1 d2 = 
+--        withUpwardsRounding $ 
+--            d1 * d2 + (1/effortD)
+--        where
+--        effortD = fromInteger $ toInteger $ fromInt1To100 $ effort
+--    multDnEff effort d1 d2 = 
+--        negate $ withUpwardsRounding $ 
+--            (negate d1) * d2 + (1/effortD)
+--        where
+--        effortD = fromInteger $ toInteger $ fromInt1To100 $ effort
 
 instance RoundedDivide Double where
     type DivEffortIndicator Double = () 

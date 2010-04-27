@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Basis.Double.Measures
     Description :  distance between Double numbers
@@ -31,10 +32,10 @@ import Numeric.AERN.Basics.CInterval
 
 instance HasDistance Double where
     type Distance Double = DI
-    type DistanceEffortIndicator Double = ()
-    distanceDefaultEffort _ = ()
-    distanceBetweenEff _ d1 d2 =
-        let ?addInOutEffort = () :: AddEffortIndicator (Distance Double) in
+    type DistanceEffortIndicator Double = AddEffortIndicator DI
+    distanceDefaultEffort d = addDefaultEffort (sampleDI :: DI)
+    distanceBetweenEff effort d1 d2 =
+        let ?addInOutEffort = effort :: AddEffortIndicator (Distance Double) in
         absOutEff ((),()) (d2I <-> d1I)
         where
         d1I = fromEndpoints (d1, d1)
