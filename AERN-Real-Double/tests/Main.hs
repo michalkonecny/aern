@@ -26,7 +26,7 @@ main =
     do
     defaultMain tests
 
-tests = testsDouble ++ testsDI
+tests = testsDouble -- ++ testsDI
 
 testsDouble =
     [
@@ -37,8 +37,10 @@ testsDouble =
        NumOrd.testsRoundedLatticeDistributive ("Double", sampleD) (Just ("NaN", nanD)),
        testsDistance ("Double", sampleD),
        ArithUpDn.testsUpDnAdd ("Double", sampleD),
+       ArithUpDn.testsUpDnSubtr ("Double", sampleD),
        ArithUpDn.testsUpDnAbs ("Double", sampleD),
-       ArithUpDn.testsUpDnMult ("Double", sampleD)
+       ArithUpDn.testsUpDnMult ("Double", sampleD),
+       ArithUpDn.testsUpDnDiv ("Double", sampleD)
     ]
 
 testsDI =
