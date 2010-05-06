@@ -17,7 +17,7 @@
     
     The default exeception policy is:
     
-    * no operation should return NaN but raise an AERN exception instead
+    * no operation should return NaN but raise an AERNNaN exception instead
     
     * intervals support infinite endpoints, overflows are OK
     
@@ -34,6 +34,7 @@ import System.IO.Unsafe
 
 data AERNException =
     AERNException String
+    | AERNNaNException String
     deriving (Show, Typeable)
 
 instance Exception AERNException
@@ -44,6 +45,20 @@ evalCatchAERNExceptions a =
     where
     handler (AERNException msg) = 
         return (Left msg)
+    handler (AERNNaNException msg) = 
+        return (Left $ "NaN: " ++ msg)
+    evaluateEmbed a =
+        do
+        aa <- evaluate a
+        return $ Right aa
+
+evalCatchNaNExceptions :: t -> Either String t
+evalCatchNaNExceptions a =
+    unsafePerformIO $ catch (evaluateEmbed a) handler
+    where
+    handler (AERNNaNException msg) = 
+        return (Left msg)
+    handler e = throw e -- rethrow other exceptions
     evaluateEmbed a =
         do
         aa <- evaluate a
@@ -52,6 +67,12 @@ evalCatchAERNExceptions a =
 raisesAERNException :: t -> Bool
 raisesAERNException a =
     case (evalCatchAERNExceptions a) of
+        (Left _) -> True
+        _ -> False
+
+raisesNaNException :: t -> Bool
+raisesNaNException a =
+    case (evalCatchNaNExceptions a) of
         (Left _) -> True
         _ -> False
 
