@@ -28,6 +28,9 @@ import Numeric.AERN.Basics.Effort
 import Numeric.IEEE.RoundMode
 import System.IO.Unsafe
 
+import Numeric.AERN.Basics.Exception
+import Control.Exception
+
 withUpwardsRounding :: a -> a
 withUpwardsRounding a =
     unsafePerformIO $ 
@@ -52,11 +55,21 @@ setMachineRoundingModeUp =
                 False -> 
                    error "Numeric.AERN.RealArithmetic.Basics.Double: failed to switch rounding mode"
 
+detectNaN :: String -> Double -> Double
+detectNaN msg a 
+    | isNaN a =
+        throw (AERNNaNException $ "NaN in " ++ msg)
+    | otherwise = a
+
 instance RoundedAdd Double where
     type AddEffortIndicator Double = () 
     addDefaultEffort _ = ()
-    addUpEff effort d1 d2 = withUpwardsRounding $ d1 + d2
-    addDnEff effort d1 d2 = negate $ withUpwardsRounding $ (negate d1) + (negate d2)
+    addUpEff effort d1 d2 = 
+        detectNaN ("addition " ++ show d1 ++ " +^ " ++ show d2 ) $ 
+            withUpwardsRounding $ d1 + d2
+    addDnEff effort d1 d2 =
+        detectNaN ("addition " ++ show d1 ++ " +. " ++ show d2 ) $ 
+            negate $ withUpwardsRounding $ (negate d1) + (negate d2)
     -- the following is an exagerated rounding version meant for testing:
 --    type AddEffortIndicator Double = Int1To100 
 --    addDefaultEffort _ = Int1To100 10
@@ -83,8 +96,12 @@ instance RoundedAbs Double where
 instance RoundedMultiply Double where
     type MultEffortIndicator Double = () 
     multDefaultEffort _ = ()
-    multUpEff effort d1 d2 = withUpwardsRounding $ d1 * d2
-    multDnEff effort d1 d2 = negate $ withUpwardsRounding $ (negate d1) * d2
+    multUpEff effort d1 d2 = 
+        detectNaN ("multiplication " ++ show d1 ++ " *^ " ++ show d2 ) $ 
+            withUpwardsRounding $ d1 * d2
+    multDnEff effort d1 d2 = 
+        detectNaN ("multiplication " ++ show d1 ++ " *. " ++ show d2 ) $ 
+            negate $ withUpwardsRounding $ (negate d1) * d2
     -- the following is an exagerated rounding version meant for testing:
 --    type MultEffortIndicator Double = Int1To100 
 --    multDefaultEffort _ = Int1To100 10
@@ -102,8 +119,12 @@ instance RoundedMultiply Double where
 instance RoundedDivide Double where
     type DivEffortIndicator Double = () 
     divDefaultEffort _ = ()
-    divUpEff effort d1 d2 = withUpwardsRounding $ d1 / d2
-    divDnEff effort d1 d2 = negate $ withUpwardsRounding $ (negate d1) / d2
+    divUpEff effort d1 d2 = 
+        detectNaN ("division " ++ show d1 ++ " /^ " ++ show d2 ) $ 
+            withUpwardsRounding $ d1 / d2
+    divDnEff effort d1 d2 = 
+        detectNaN ("division " ++ show d1 ++ " /. " ++ show d2 ) $ 
+            negate $ withUpwardsRounding $ (negate d1) / d2
 
 --test1 :: [Double]
 --test1 =

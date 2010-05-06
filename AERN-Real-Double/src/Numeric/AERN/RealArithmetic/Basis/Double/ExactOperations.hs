@@ -23,5 +23,11 @@ instance HasZero Double where
 instance HasOne Double where
     one = 1
     
+instance HasInfinities Double where
+    plusInfinity = 1/0
+    minusInfinity = -1/0
+    excludesPlusInfinity a = (a /= plusInfinity)
+    excludesMinusInfinity a = (a /= minusInfinity)
+    
 instance Neg Double where
     neg = negate
