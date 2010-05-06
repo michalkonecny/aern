@@ -18,6 +18,15 @@ class HasZero t where
 class HasOne t where
     one :: t
     
+class HasInfinities t where
+    plusInfinity :: t
+    minusInfinity :: t
+    excludesPlusInfinity :: t -> Bool
+    excludesMinusInfinity :: t -> Bool
+    excludesInfinity :: t -> Bool
+    excludesInfinity a = 
+        excludesMinusInfinity a && excludesPlusInfinity a 
+    
 class Neg t where
     neg :: t -> t
 
