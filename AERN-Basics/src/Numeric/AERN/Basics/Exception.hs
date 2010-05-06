@@ -13,7 +13,16 @@
     whose proper pure handling would be inefficient.
     'Control.Exception.ArithmeticException' is not
     flexible enough, eg because often we will not be checking
-    overflows but NaNs instead.  
+    overflows but NaNs instead.
+    
+    The default exeception policy is:
+    
+    * no operation should return NaN but raise an AERN exception instead
+    
+    * intervals support infinite endpoints, overflows are OK
+    
+    * polynomial coefficients must be finite, overflows of coefficients detected
+      and result in a special polynomial denoting the constant infinity
 -}
 module Numeric.AERN.Basics.Exception where
 
