@@ -348,6 +348,51 @@ propUpDnMultAssociative _ effortDist effortDistComp minmaxEffort initEffort e1 e
         let r1 = (e1 *^ e2) *. e3 in
         let r2 = (e1 *. e2) *. e3 in
         NumOrd.minDnEff minmaxEffort r1 r2
+
+propUpDnMultDistributesOverAdd ::
+    (NumOrd.Comparison t, NumOrd.RoundedLattice t,
+     RoundedMultiply t,  RoundedAdd t,
+     HasDistance t,  
+     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     Show (MultEffortIndicator t),
+     EffortIndicator (MultEffortIndicator t),
+     Show (AddEffortIndicator t),
+     EffortIndicator (AddEffortIndicator t),
+     Show (NumOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (DistanceEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (NumOrd.MinmaxEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator t, (MultEffortIndicator t, AddEffortIndicator t)) -> 
+    t -> t -> t -> Bool
+propUpDnMultDistributesOverAdd _ effortDist effortDistComp minmaxEffort initEffort e1 e2 e3 =
+    equalRoundingUpDnImprovement
+        expr1Up expr1Dn expr2Up expr2Dn 
+        NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+    where
+    expr1Up (effMult, effAdd) =
+        let ?multUpDnEffort = effMult in
+        let ?addUpDnEffort = effAdd in
+        let r1 = e1 *^ (e2 +^ e3) in
+        let r2 = e1 *^ (e2 +. e3) in
+        NumOrd.maxUpEff minmaxEffort r1 r2
+    expr1Dn (effMult, effAdd) =
+        let ?multUpDnEffort = effMult in
+        let ?addUpDnEffort = effAdd in
+        let r1 = e1 *. (e2 +^ e3) in
+        let r2 = e1 *. (e2 +. e3) in
+        NumOrd.minDnEff minmaxEffort r1 r2
+    expr2Up (effMult, effAdd) =
+        let ?multUpDnEffort = effMult in
+        let ?addUpDnEffort = effAdd in
+        (e1 *^ e2) +^ (e1 *^ e3)
+    expr2Dn (effMult, effAdd) =
+        let ?multUpDnEffort = effMult in
+        let ?addUpDnEffort = effAdd in
+        (e1 *. e2) +. (e1 *. e3)
+       
     
 testsUpDnMult (name, sample) =
     testGroup (name ++ " *. *^") $
@@ -357,6 +402,8 @@ testsUpDnMult (name, sample) =
             testProperty "commutative" (propUpDnMultCommutative sample)
         ,
             testProperty "associative" (propUpDnMultAssociative sample)
+        ,
+            testProperty "distributes over +" (propUpDnMultDistributesOverAdd sample)
         ]
 
 
