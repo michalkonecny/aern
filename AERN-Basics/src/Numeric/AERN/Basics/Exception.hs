@@ -17,12 +17,16 @@
     
     The default exeception policy is:
     
-    * no operation should return NaN but raise an AERNNaN exception instead
+    * no operation should ever return NaN; when a NaN represents "any value"/bottom
+      (eg with 0/0 or &infin - &infin),
+      it should be rounded up to +&infin; or down to -&infin;; when a NaN represent
+      an illegal argument exception (eg with log(-1)), an AERN NaN exception should
+      be thrown with an appropriate message
     
-    * intervals support infinite endpoints, overflows are OK
+    * intervals support infinite endpoints
     
     * polynomial coefficients must be finite, overflows of coefficients detected
-      and result in a special polynomial denoting the constant infinity
+      and result in a special polynomial denoting the constant function +&infin; or -&infin;
 -}
 module Numeric.AERN.Basics.Exception where
 
@@ -43,9 +47,13 @@ evalCatchAERNExceptions :: t -> Either String t
 evalCatchAERNExceptions a =
     unsafePerformIO $ catch (evaluateEmbed a) handler
     where
-    handler (AERNException msg) = 
+    handler (AERNException msg) =
+        do
+        putStrLn $ "caught AERN exception: " ++ msg
         return (Left msg)
-    handler (AERNNaNException msg) = 
+    handler (AERNNaNException msg) =
+        do 
+        putStrLn $ "caught AERN NaN exception: " ++ msg
         return (Left $ "NaN: " ++ msg)
     evaluateEmbed a =
         do
@@ -57,6 +65,8 @@ evalCatchNaNExceptions a =
     unsafePerformIO $ catch (evaluateEmbed a) handler
     where
     handler (AERNNaNException msg) = 
+        do 
+        putStrLn $ "caught AERN NaN exception: " ++ msg
         return (Left msg)
     handler e = throw e -- rethrow other exceptions
     evaluateEmbed a =
