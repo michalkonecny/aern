@@ -35,8 +35,12 @@ instance HasDistance Double where
     type DistanceEffortIndicator Double = AddEffortIndicator DI
     distanceDefaultEffort d = addDefaultEffort (sampleDI :: DI)
     distanceBetweenEff effort d1 d2 =
-        let ?addInOutEffort = effort :: AddEffortIndicator (Distance Double) in
-        absOutEff ((),()) (d2I <-> d1I)
-        where
-        d1I = fromEndpoints (d1, d1)
-        d2I = fromEndpoints (d2, d2)
+--        | d1 == 1/0 && d2 == 1/0 = zero 
+--          -- distance between two infinities is zero (beware: distance not continuous at infinities!)  
+--        | d1 == -1/0 && d2 == -1/0 = zero
+--        | otherwise =
+            let ?addInOutEffort = effort :: AddEffortIndicator (Distance Double) in
+            absOutEff ((),()) (d2I <-> d1I)
+            where
+            d1I = fromEndpoints (d1, d1)
+            d2I = fromEndpoints (d2, d2)
