@@ -55,20 +55,30 @@ setMachineRoundingModeUp =
                 False -> 
                    error "Numeric.AERN.RealArithmetic.Basics.Double: failed to switch rounding mode"
 
-detectNaN :: String -> Double -> Double
-detectNaN msg a 
+detectNaNThrow :: String -> Double -> Double
+detectNaNThrow msg a 
     | isNaN a =
         throw (AERNNaNException $ "NaN in " ++ msg)
+    | otherwise = a
+
+detectNaNUp :: String -> Double -> Double
+detectNaNUp _ a 
+    | isNaN a = 1/0
+    | otherwise = a
+
+detectNaNDn :: String -> Double -> Double
+detectNaNDn _ a 
+    | isNaN a = -1/0
     | otherwise = a
 
 instance RoundedAdd Double where
     type AddEffortIndicator Double = () 
     addDefaultEffort _ = ()
     addUpEff effort d1 d2 = 
-        detectNaN ("addition " ++ show d1 ++ " +^ " ++ show d2 ) $ 
+        detectNaNUp ("addition " ++ show d1 ++ " +^ " ++ show d2 ) $ 
             withUpwardsRounding $ d1 + d2
     addDnEff effort d1 d2 =
-        detectNaN ("addition " ++ show d1 ++ " +. " ++ show d2 ) $ 
+        detectNaNDn ("addition " ++ show d1 ++ " +. " ++ show d2 ) $ 
             negate $ withUpwardsRounding $ (negate d1) + (negate d2)
     -- the following is an exagerated rounding version meant for testing:
 --    type AddEffortIndicator Double = Int1To100 
@@ -97,10 +107,10 @@ instance RoundedMultiply Double where
     type MultEffortIndicator Double = () 
     multDefaultEffort _ = ()
     multUpEff effort d1 d2 = 
-        detectNaN ("multiplication " ++ show d1 ++ " *^ " ++ show d2 ) $ 
+        detectNaNUp ("multiplication " ++ show d1 ++ " *^ " ++ show d2 ) $ 
             withUpwardsRounding $ d1 * d2
     multDnEff effort d1 d2 = 
-        detectNaN ("multiplication " ++ show d1 ++ " *. " ++ show d2 ) $ 
+        detectNaNDn ("multiplication " ++ show d1 ++ " *. " ++ show d2 ) $ 
             negate $ withUpwardsRounding $ (negate d1) * d2
     -- the following is an exagerated rounding version meant for testing:
 --    type MultEffortIndicator Double = Int1To100 
@@ -120,10 +130,10 @@ instance RoundedDivide Double where
     type DivEffortIndicator Double = () 
     divDefaultEffort _ = ()
     divUpEff effort d1 d2 = 
-        detectNaN ("division " ++ show d1 ++ " /^ " ++ show d2 ) $ 
+        detectNaNUp ("division " ++ show d1 ++ " /^ " ++ show d2 ) $ 
             withUpwardsRounding $ d1 / d2
     divDnEff effort d1 d2 = 
-        detectNaN ("division " ++ show d1 ++ " /. " ++ show d2 ) $ 
+        detectNaNDn ("division " ++ show d1 ++ " /. " ++ show d2 ) $ 
             negate $ withUpwardsRounding $ (negate d1) / d2
 
 --test1 :: [Double]
