@@ -141,10 +141,41 @@ propUpDnSubtrElim ::
 propUpDnSubtrElim _ effortDist =
     roundedImprovingReflexiveCollapse zero NumOrd.pLeqEff (distanceBetweenEff effortDist) subtrUpEff subtrDnEff
 
+propUpDnSubtrNegAdd ::
+    (NumOrd.PartialComparison t, RoundedSubtr t, Neg t,
+     HasDistance t,  
+     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     Show (AddEffortIndicator t),
+     EffortIndicator (AddEffortIndicator t),
+     Show (NumOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (DistanceEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (NumOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    t -> t -> Bool
+propUpDnSubtrNegAdd _ effortDist effortDistComp initEffort e1 e2 =
+    equalRoundingUpDnImprovement
+        expr1Up expr1Dn expr2Up expr2Dn 
+        NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+    where
+    expr1Up eff =
+        let ?addUpDnEffort = eff in e1 -^ (neg e2)
+    expr1Dn eff =
+        let ?addUpDnEffort = eff in e1 -. (neg e2)
+    expr2Up eff =
+        let ?addUpDnEffort = eff in e1 +^ e2
+    expr2Dn eff =
+        let ?addUpDnEffort = eff in e1 +. e2
+
+
 testsUpDnSubtr (name, sample) =
     testGroup (name ++ " -. -^") $
         [
             testProperty "a-a=0" (propUpDnSubtrElim sample)
+            ,
+            testProperty "a+b=a-(-b)" (propUpDnSubtrNegAdd sample)
         ]
 
 class RoundedAbs t where
@@ -363,9 +394,51 @@ propUpDnDivElim _ effortDist effortCompDist efforts2 a =
         effortCompDist efforts2 
         a
 
+propUpDnDivRecipMult ::
+    (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
+     RoundedMultiply t, RoundedDivide t, HasOne t,
+     HasDistance t,  
+     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     Show (MultEffortIndicator t),
+     EffortIndicator (MultEffortIndicator t),
+     Show (DivEffortIndicator t),
+     EffortIndicator (DivEffortIndicator t),
+     Show (NumOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (DistanceEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (NumOrd.MinmaxEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator t, (MultEffortIndicator t, DivEffortIndicator t)) -> 
+    t -> t -> Bool
+propUpDnDivRecipMult _ effortDist effortDistComp minmaxEffort initEffort e1 e2 =
+    equalRoundingUpDnImprovement
+        expr1Up expr1Dn expr2Up expr2Dn 
+        NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+    where
+    expr1Up (effMult, effDiv) =
+        let ?multUpDnEffort = effMult in
+        let ?divUpDnEffort = effDiv in
+        let r1 = e1 *^ (one /^ e2) in
+        let r2 = e1 *^ (one /. e2) in
+        NumOrd.maxUpEff minmaxEffort r1 r2
+    expr1Dn (effMult, effDiv) =
+        let ?multUpDnEffort = effMult in
+        let ?divUpDnEffort = effDiv in
+        let r1 = e1 *. (one /^ e2) in
+        let r2 = e1 *. (one /. e2) in
+        NumOrd.minDnEff minmaxEffort r1 r2
+    expr2Up (effMult, effDiv) =
+        let ?divUpDnEffort = effDiv in e1 /^ e2
+    expr2Dn (effMult, effDiv) =
+        let ?divUpDnEffort = effDiv in e1 /. e2
+
 testsUpDnDiv (name, sample) =
     testGroup (name ++ " /. /^") $
         [
             testProperty "a/a=1" (propUpDnDivElim sample)
+            ,
+            testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
         ]
     
