@@ -60,7 +60,7 @@ testsDI =
        RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI),
        testsDistance ("DI", sampleDI),
        testsImprecision ("DI", sampleDI),
-       ArithInOut.testsInOutAdd ("DI", sampleDI)
---       ArithInOut.testsInOutSubtr ("DI", sampleDI),
+       ArithInOut.testsInOutAdd ("DI", sampleDI),
+       ArithInOut.testsInOutSubtr ("DI", sampleDI)
 --       ArithInOut.testsInOutAbs ("DI", sampleDI)
     ]
