@@ -20,7 +20,7 @@
 module Numeric.AERN.RealArithmetic.Interval.Measures where
 
 import Numeric.AERN.RealArithmetic.Measures
-import Numeric.AERN.RealArithmetic.ExactOperations
+import Numeric.AERN.RealArithmetic.ExactOps
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.CInterval

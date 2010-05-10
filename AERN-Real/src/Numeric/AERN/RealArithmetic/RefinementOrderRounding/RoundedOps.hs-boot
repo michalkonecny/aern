@@ -3,7 +3,7 @@
 
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps where
 
-import Numeric.AERN.RealArithmetic.ExactOperations
+import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
 
 import Numeric.AERN.Basics.Effort

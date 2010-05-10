@@ -19,11 +19,11 @@
 module Numeric.AERN.RealArithmetic.Basis.Double.Measures where
 
 import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
-import Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations
+import Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
 import Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
-import Numeric.AERN.RealArithmetic.ExactOperations
+import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.Interval
 import Numeric.AERN.RealArithmetic.Interval.Double

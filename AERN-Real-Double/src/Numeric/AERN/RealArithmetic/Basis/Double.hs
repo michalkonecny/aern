@@ -18,14 +18,14 @@ module Numeric.AERN.RealArithmetic.Basis.Double
    module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder,
    module Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps,
    module Numeric.AERN.RealArithmetic.Basis.Double.Measures,
-   module Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations
+   module Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
 )
 where
 
 import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 import Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps
 import Numeric.AERN.RealArithmetic.Basis.Double.Measures
-import Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations
+import Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
 
 
 --{-|

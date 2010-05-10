@@ -19,8 +19,8 @@ module Numeric.AERN.RealArithmetic.Interval.RoundedOps where
 
 import Numeric.AERN.Basics.Interval
 
-import Numeric.AERN.RealArithmetic.ExactOperations
-import Numeric.AERN.RealArithmetic.Interval.ExactOperations
+import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Interval.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps

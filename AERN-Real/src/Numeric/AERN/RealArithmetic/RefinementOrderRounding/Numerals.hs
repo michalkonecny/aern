@@ -18,7 +18,7 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals where
 
 import Prelude hiding (EQ, LT, GT)
 
-import Numeric.AERN.RealArithmetic.ExactOperations
+import Numeric.AERN.RealArithmetic.ExactOps
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
