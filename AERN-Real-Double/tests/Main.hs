@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Main
     Description :  run all tests defined in the AERN-Real package  
@@ -12,6 +13,8 @@ module Main where
 
 import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
+import Numeric.AERN.RealArithmetic.Interval
+import Numeric.AERN.Basics.Interval
 
 import Numeric.AERN.Basics.Consistency
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
@@ -19,6 +22,7 @@ import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
 import Test.Framework (defaultMain)
 
@@ -26,7 +30,7 @@ main =
     do
     defaultMain tests
 
-tests = testsDouble -- ++ testsDI
+tests = testsDouble ++ testsDI
 
 testsDouble =
     [
@@ -55,5 +59,8 @@ testsDI =
        RefOrd.testsLatticeDistributive ("DI", sampleDI),
        RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI),
        testsDistance ("DI", sampleDI),
-       testsImprecision ("DI", sampleDI)
+       testsImprecision ("DI", sampleDI),
+       ArithInOut.testsInOutAdd ("DI", sampleDI)
+--       ArithInOut.testsInOutSubtr ("DI", sampleDI),
+--       ArithInOut.testsInOutAbs ("DI", sampleDI)
     ]
