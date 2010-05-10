@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.ExactOperations
+    Module      :  Numeric.AERN.RealArithmetic.ExactOps
     Description :  access to exact zero and one  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -10,7 +10,7 @@
     
     Access to exact zero and one.
 -}
-module Numeric.AERN.RealArithmetic.ExactOperations where
+module Numeric.AERN.RealArithmetic.ExactOps where
 
 class HasZero t where
     zero :: t

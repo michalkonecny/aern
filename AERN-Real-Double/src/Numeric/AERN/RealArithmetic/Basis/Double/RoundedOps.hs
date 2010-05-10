@@ -19,7 +19,7 @@ module Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps
 ()
 where
 
-import Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations
+import Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
 

@@ -41,7 +41,7 @@ Library
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
         AERN-Basics == 2010.1
   Exposed-modules:
-    Numeric.AERN.RealArithmetic.ExactOperations
+    Numeric.AERN.RealArithmetic.ExactOps
     Numeric.AERN.RealArithmetic.NumericOrderRounding
     Numeric.AERN.RealArithmetic.RefinementOrderRounding
     Numeric.AERN.RealArithmetic.Measures
@@ -53,7 +53,7 @@ Library
     Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedOps
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps
-    Numeric.AERN.RealArithmetic.Interval.ExactOperations
+    Numeric.AERN.RealArithmetic.Interval.ExactOps
     Numeric.AERN.RealArithmetic.Interval.Measures
     Numeric.AERN.RealArithmetic.Interval.RoundedOps
 

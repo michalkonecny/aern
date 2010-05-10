@@ -13,9 +13,9 @@
     This is a private module reexported publicly via its parent.
 -}
 
-module Numeric.AERN.RealArithmetic.Basis.Double.ExactOperations where
+module Numeric.AERN.RealArithmetic.Basis.Double.ExactOps where
 
-import Numeric.AERN.RealArithmetic.ExactOperations
+import Numeric.AERN.RealArithmetic.ExactOps
 
 instance HasZero Double where
     zero = 0

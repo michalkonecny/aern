@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.Interval.ExactOperations
+    Module      :  Numeric.AERN.RealArithmetic.Interval.ExactOps
     Description :  exact zero, one and neg for intervals 
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -13,11 +13,11 @@
     This module is hidden and reexported via its parent Interval. 
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.ExactOperations where
+module Numeric.AERN.RealArithmetic.Interval.ExactOps where
 
 import Numeric.AERN.Basics.Interval
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd 
-import Numeric.AERN.RealArithmetic.ExactOperations
+import Numeric.AERN.RealArithmetic.ExactOps
 
 instance  (HasZero e, NumOrd.PartialComparison e) => HasZero (Interval e) where
     zero = Interval zero zero
