@@ -35,6 +35,21 @@ import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.Exception
 import Control.Exception
 
+roundedRefinementMonotone1 ::
+    (RefOrd.PartialComparison t, RefOrd.ArbitraryOrderedTuple t) =>
+    (Expr1Eff ei t) ->
+    (Expr1Eff ei t) ->
+    ei -> (RefOrd.LEPair t) -> 
+    (RefOrd.PartialCompareEffortIndicator t) ->
+    Bool
+roundedRefinementMonotone1 exprUp exprDn effort (RefOrd.LEPair (e1L, e1H)) effortComp =
+    case RefOrd.pLeqEff effortComp resDn resUp of
+        Just b -> b
+        _ -> True
+    where
+    resUp = exprUp effort e1H
+    resDn = exprDn effort e1L
+
 roundedRefinementMonotone2 ::
     (RefOrd.PartialComparison t, RefOrd.ArbitraryOrderedTuple t) =>
     (Expr2Eff ei t) ->
