@@ -18,8 +18,9 @@
 module Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedOps 
 (
     RoundedAdd(..), RoundedSubtr(..), testsUpDnAdd, testsUpDnSubtr,
-    RoundedAbs(..), testsUpDnAbs,
-    RoundedMultiply(..), RoundedDivide(..), testsUpDnMult, testsUpDnDiv
+    RoundedAbs(..), testsUpDnAbs, absUpUsingCompMax, absDnUsingCompMax,
+    RoundedMultiply(..), RoundedDivide(..), testsUpDnMult, testsUpDnDiv,
+    RoundedRing, RoundedField
 )
 where
 
@@ -271,7 +272,7 @@ class RoundedMultiply t where
     (*^) = multUpEff ?multUpDnEffort
     (*.) = multDnEff ?multUpDnEffort
 
-class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t) => RoundedRRing t
+class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t) => RoundedRing t
 
 propUpDnMultOne ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasOne t,
@@ -417,7 +418,7 @@ class RoundedDivide t where
     (/^) = divUpEff ?divUpDnEffort
     (/.) = divDnEff ?divUpDnEffort
 
-class (RoundedRRing t, RoundedDivide t) => RoundedField t
+class (RoundedRing t, RoundedDivide t) => RoundedField t
 
 propUpDnDivElim ::
     (NumOrd.PartialComparison t, RoundedDivide t, HasOne t, HasZero t,

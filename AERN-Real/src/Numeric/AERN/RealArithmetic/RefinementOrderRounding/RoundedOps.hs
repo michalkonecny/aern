@@ -15,7 +15,14 @@
     
     This module is hidden and reexported via its parent RefinementOrderRounding. 
 -}
-module Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps where
+module Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps 
+(
+    RoundedAdd(..), RoundedSubtr(..), testsInOutAdd, testsInOutSubtr,
+    RoundedAbs(..), testsInOutAbs,  absInUsingCompMax, absOutUsingCompMax,
+    RoundedMultiply(..), RoundedDivide(..), testsInOutMult, testsInOutDiv,
+    RoundedRing, RoundedField
+)
+where
 
 import Prelude hiding (EQ, LT, GT)
 import Numeric.AERN.Basics.PartialOrdering
@@ -324,6 +331,7 @@ class RoundedMultiply t where
     (>*<) = multInEff ?multInOutEffort
     (<*>) = multOutEff ?multInOutEffort
 
+class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t) => RoundedRing t
 
 propInOutMultMonotone ::
     (RefOrd.PartialComparison t, RoundedMultiply t,
@@ -438,6 +446,8 @@ class RoundedDivide t where
     (</>) :: (?divInOutEffort :: DivEffortIndicator t) => t -> t -> t
     (>/<) = divInEff ?divInOutEffort
     (</>) = divOutEff ?divInOutEffort
+
+class (RoundedRing t, RoundedDivide t) => RoundedField t
 
 propInOutDivMonotone ::
     (RefOrd.PartialComparison t, RoundedDivide t,
