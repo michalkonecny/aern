@@ -18,7 +18,7 @@ import Numeric.AERN.Basics.Laws.Utilities
 import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Misc.Bool
 
-partialRoundedIdempotent :: (SmdcRel t) -> (PartOp t) -> (PartOp t) -> t -> Bool
+partialRoundedIdempotent :: (PRel t) -> (PartOp t) -> (PartOp t) -> t -> Bool
 partialRoundedIdempotent (<=?) (*^?) (*.?) e =
     (defined (e *.? e) && defined (e *^? e))
     ===>
@@ -27,7 +27,7 @@ partialRoundedIdempotent (<=?) (*^?) (*.?) e =
     (*.) = assumeTotal2 (*.?)
     (*^) = assumeTotal2 (*^?)
 
-partialRoundedCommutative :: (SmdcRel t) -> (PartOp t) -> (PartOp t) -> t -> t -> Bool
+partialRoundedCommutative :: (PRel t) -> (PartOp t) -> (PartOp t) -> t -> t -> Bool
 partialRoundedCommutative (<=?) (*^?) (*.?) e1 e2 =
     (and $ map defined [e1 *.? e2, e2 *.? e1, e1 *^? e2, e2 *^? e1])
     ===>
@@ -36,7 +36,7 @@ partialRoundedCommutative (<=?) (*^?) (*.?) e1 e2 =
     (*.) = assumeTotal2 (*.?)
     (*^) = assumeTotal2 (*^?)
 
-partialRoundedAssociative :: (SmdcRel t) -> (PartOp t) -> (PartOp t) -> t -> t -> t -> Bool
+partialRoundedAssociative :: (PRel t) -> (PartOp t) -> (PartOp t) -> t -> t -> t -> Bool
 partialRoundedAssociative (<=?) (*^?) (*.?) e1 e2 e3 =
     (and $ map defined [e1 *.? e2, (e1 *. e2) *.? e3, e2 *.? e3, e1 *.? (e2 *. e3), 
                         e1 *^? e2, (e1 *^ e2) *^? e3, e2 *^? e3, e1 *^? (e2 *^ e3)])
@@ -46,40 +46,40 @@ partialRoundedAssociative (<=?) (*^?) (*.?) e1 e2 e3 =
     (*.) = assumeTotal2 (*.?)
     (*^) = assumeTotal2 (*^?)
 
-roundedUnit :: t -> (SmdcRel t) -> (Op t) -> (Op t) -> t -> Bool
+roundedUnit :: t -> (PRel t) -> (Op t) -> (Op t) -> t -> Bool
 roundedUnit unit =
     equalRoundingUpDn11 (\(*) e -> e) (\(*) e -> unit * e)  
 
-roundedIdempotent :: (SmdcRel t) -> (Op t) -> (Op t) -> t -> Bool
+roundedIdempotent :: (PRel t) -> (Op t) -> (Op t) -> t -> Bool
 roundedIdempotent =
     equalRoundingUpDn11 (\(*) e -> e) (\(*) e -> e * e)  
 
-roundedCommutative :: (SmdcRel t) -> (Op t) -> (Op t) -> t -> t -> Bool
+roundedCommutative :: (PRel t) -> (Op t) -> (Op t) -> t -> t -> Bool
 roundedCommutative = 
     equalRoundingUpDn12 (\(*) e1 e2 -> e1 * e2) (\(*) e1 e2 -> e2 * e1)  
 
 
-roundedAssociative :: (SmdcRel t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
+roundedAssociative :: (PRel t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
 roundedAssociative = 
     equalRoundingUpDn13 
         (\(*) e1 e2 e3 -> (e1 * e2) * e3) 
         (\(*) e1 e2 e3 -> e1 * (e2 * e3))  
 
 roundedModular :: 
-    (SmdcRel t) -> (Op t) -> (Op t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
+    (PRel t) -> (Op t) -> (Op t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
 roundedModular = 
     equalRoundingUpDn23 
         (\(/\) (\/) e1 e2 e3 -> (e1 /\ e3) \/ (e2 /\ e3)) 
         (\(/\) (\/) e1 e2 e3 -> ((e1 /\ e3) \/ e2) /\ e3)  
 
 roundedLeftDistributive :: 
-    (SmdcRel t) -> (Op t) -> (Op t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
+    (PRel t) -> (Op t) -> (Op t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
 roundedLeftDistributive = 
     equalRoundingUpDn23 
         (\(/\) (\/) e1 e2 e3 -> e1 \/ (e2 /\ e3)) 
         (\(/\) (\/) e1 e2 e3 -> (e1 \/ e2) /\ (e1 \/ e3))     
 
-equalRoundingUpDn11 :: (Expr1Op1 t) -> (Expr1Op1 t) -> (SmdcRel t) -> (Op t) -> (Op t) -> t -> Bool
+equalRoundingUpDn11 :: (Expr1Op1 t) -> (Expr1Op1 t) -> (PRel t) -> (Op t) -> (Op t) -> t -> Bool
 equalRoundingUpDn11 expr1 expr2  (<=?) (*^) (*.) e =
     (defined (expr1 (*.) e <=? (expr2 (*^) e)) 
         ===> (expr1 (*.) e <= (expr2 (*^) e)))
@@ -89,7 +89,7 @@ equalRoundingUpDn11 expr1 expr2  (<=?) (*^) (*.) e =
     where
     (<=) = assumeTotal2 (<=?)
     
-equalRoundingUpDn12 :: (Expr1Op2 t) -> (Expr1Op2 t) -> (SmdcRel t) -> (Op t) -> (Op t) -> t -> t -> Bool
+equalRoundingUpDn12 :: (Expr1Op2 t) -> (Expr1Op2 t) -> (PRel t) -> (Op t) -> (Op t) -> t -> t -> Bool
 equalRoundingUpDn12 expr1 expr2  (<=?) (*^) (*.) e1 e2 =
     (defined (expr1 (*.) e1 e2 <=? (expr2 (*^) e1 e2)) 
         ===> (expr1 (*.) e1 e2 <= (expr2 (*^) e1 e2))) 
@@ -99,7 +99,7 @@ equalRoundingUpDn12 expr1 expr2  (<=?) (*^) (*.) e1 e2 =
     where
     (<=) = assumeTotal2 (<=?)
     
-equalRoundingUpDn13 :: (Expr1Op3 t) -> (Expr1Op3 t) -> (SmdcRel t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
+equalRoundingUpDn13 :: (Expr1Op3 t) -> (Expr1Op3 t) -> (PRel t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
 equalRoundingUpDn13 expr1 expr2  (<=?) (*^) (*.) e1 e2 e3 =
     (defined (expr1 (*.) e1 e2 e3 <=? (expr2 (*^) e1 e2 e3)) 
         ===> (expr1 (*.) e1 e2 e3 <= (expr2 (*^) e1 e2 e3)))
@@ -109,7 +109,7 @@ equalRoundingUpDn13 expr1 expr2  (<=?) (*^) (*.) e1 e2 e3 =
     where
     (<=) = assumeTotal2 (<=?)
     
-equalRoundingUpDn23 :: (Expr2Op3 t) -> (Expr2Op3 t) -> (SmdcRel t) -> (Op t) -> (Op t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
+equalRoundingUpDn23 :: (Expr2Op3 t) -> (Expr2Op3 t) -> (PRel t) -> (Op t) -> (Op t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
 equalRoundingUpDn23 expr1 expr2  (<=?) (*^) (**^) (*.) (**.) e1 e2 e3 =
     (defined (expr1 (*.) (**.) e1 e2 e3 <=? (expr2 (*^) (**^) e1 e2 e3)) 
         ===> (expr1 (*.) (**.) e1 e2 e3 <= (expr2 (*^) (**^) e1 e2 e3)))
