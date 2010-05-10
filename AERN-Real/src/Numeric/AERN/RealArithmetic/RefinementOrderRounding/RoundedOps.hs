@@ -117,7 +117,7 @@ propInOutAddMonotone _ =
     roundedRefinementMonotone2 addInEff addOutEff
 
 testsInOutAdd (name, sample) =
-    testGroup (name ++ " <+> >+<") $
+    testGroup (name ++ " >+< <+>") $
         [
             testProperty "0 absorbs" (propInOutAddZero sample)
         ,
@@ -130,10 +130,86 @@ testsInOutAdd (name, sample) =
 
 
 class (RoundedAdd t, Neg t) => RoundedSubtr t where
+    subtrInEff :: (AddEffortIndicator t) -> t -> t -> t
+    subtrOutEff :: (AddEffortIndicator t) -> t -> t -> t
+    subtrInEff effort a b = addInEff effort a (neg b)
+    subtrOutEff effort a b = addOutEff effort a (neg b)
     (>-<) :: (?addInOutEffort :: AddEffortIndicator t) => t -> t -> t
     (<->) :: (?addInOutEffort :: AddEffortIndicator t) => t -> t -> t
     a >-< b = addInEff ?addInOutEffort a (neg b)
     a <-> b = addOutEff ?addInOutEffort a (neg b)
+
+propInOutSubtrElim ::
+    (RefOrd.PartialComparison t, RoundedSubtr t, HasZero t,
+     HasDistance t,  
+     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     Show (AddEffortIndicator t),
+     EffortIndicator (AddEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (DistanceEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (RefOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    t -> Bool
+propInOutSubtrElim _ effortDist =
+    roundedImprovingReflexiveCollapse zero RefOrd.pLeqEff (distanceBetweenEff effortDist) subtrInEff subtrOutEff
+
+propInOutSubtrNegAdd ::
+    (RefOrd.PartialComparison t, RoundedSubtr t, Neg t,
+     HasDistance t,  
+     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     Show (AddEffortIndicator t),
+     EffortIndicator (AddEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (DistanceEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (RefOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    t -> t -> Bool
+propInOutSubtrNegAdd _ effortDist effortDistComp initEffort e1 e2 =
+    equalRoundingUpDnImprovement
+        expr1Up expr1Dn expr2Up expr2Dn 
+        RefOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+    where
+    expr1Up eff =
+        let ?addInOutEffort = eff in e1 >-< (neg e2)
+    expr1Dn eff =
+        let ?addInOutEffort = eff in e1 <-> (neg e2)
+    expr2Up eff =
+        let ?addInOutEffort = eff in e1 >+< e2
+    expr2Dn eff =
+        let ?addInOutEffort = eff in e1 <+> e2
+
+propInOutSubtrMonotone ::
+    (RefOrd.PartialComparison t, RoundedSubtr t,
+     RefOrd.ArbitraryOrderedTuple t,  
+     Show (AddEffortIndicator t),
+     EffortIndicator (AddEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (AddEffortIndicator t) -> 
+    (RefOrd.LEPair t) -> (RefOrd.LEPair t) -> 
+    (RefOrd.PartialCompareEffortIndicator t) ->
+    Bool
+propInOutSubtrMonotone _ =
+    roundedRefinementMonotone2 subtrInEff subtrOutEff
+
+testsInOutSubtr (name, sample) =
+    testGroup (name ++ " >-< <->") $
+        [
+--            testProperty "a-a=0" (propInOutSubtrElim sample)
+--            ,
+            testProperty "a+b=a-(-b)" (propInOutSubtrNegAdd sample)
+            ,
+            testProperty "refinement monotone" (propInOutSubtrMonotone sample)
+        ]
+
 
 class RoundedAbs t where
     type AbsEffortIndicator t

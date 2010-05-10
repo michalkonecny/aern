@@ -23,6 +23,10 @@ class RoundedAdd t where
     (<+>) = addOutEff ?addInOutEffort
 
 class (RoundedAdd t, Neg t) => RoundedSubtr t where
+    subtrInEff :: (AddEffortIndicator t) -> t -> t -> t
+    subtrOutEff :: (AddEffortIndicator t) -> t -> t -> t
+    subtrInEff effort a b = addInEff effort a (neg b)
+    subtrOutEff effort a b = addOutEff effort a (neg b)
     (>-<) :: (?addInOutEffort :: AddEffortIndicator t) => t -> t -> t
     (<->) :: (?addInOutEffort :: AddEffortIndicator t) => t -> t -> t
     a >-< b = addInEff ?addInOutEffort a (neg b)
