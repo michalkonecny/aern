@@ -61,6 +61,6 @@ testsDI =
        testsDistance ("DI", sampleDI),
        testsImprecision ("DI", sampleDI),
        ArithInOut.testsInOutAdd ("DI", sampleDI),
-       ArithInOut.testsInOutSubtr ("DI", sampleDI)
---       ArithInOut.testsInOutAbs ("DI", sampleDI)
+       ArithInOut.testsInOutSubtr ("DI", sampleDI),
+       ArithInOut.testsInOutAbs ("DI", sampleDI)
     ]

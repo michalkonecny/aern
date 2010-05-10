@@ -71,7 +71,7 @@ roundedImprovingUnit ::
      Show eiOp, Show eiRel,
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
     t -> 
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> 
     t -> Bool
 roundedImprovingUnit unit =
@@ -87,7 +87,7 @@ roundedImprovingReflexiveCollapse ::
      Show eiOp, Show eiRel,
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
     t -> 
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> 
     t -> Bool
 roundedImprovingReflexiveCollapse unit =
@@ -102,7 +102,7 @@ roundedImprovingCommutative ::
     (EffortIndicator eiRel, EffortIndicator eiOp,
      Show eiOp, Show eiRel,
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> 
     t -> t -> Bool
 roundedImprovingCommutative =
@@ -121,7 +121,7 @@ roundedImprovingAssociative ::
     (EffortIndicator eiRel, EffortIndicator eiOp,
      Show eiOp, Show eiRel,
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> 
     t -> t -> t -> Bool
 roundedImprovingAssociative =
@@ -140,7 +140,7 @@ roundedImprovingDistributive ::
     (EffortIndicator eiRel, EffortIndicator eiOp1, EffortIndicator eiOp2,
      Show eiOp1, Show eiOp2, Show eiRel,
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> 
     (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
     (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, (eiOp1, eiOp2)) -> 
@@ -165,7 +165,7 @@ roundedImprovingNegSymmetric ::
      EffortIndicator eiRel, EffortIndicator eiOp,
      Show eiOp, Show eiRel,
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (UnaryOpEff eiOp t) -> (UnaryOpEff eiOp t) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> (UnaryOpEff eiOp t) -> (UnaryOpEff eiOp t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> 
     t -> Bool
 roundedImprovingNegSymmetric =
@@ -180,7 +180,7 @@ roundedImprovingIdempotent ::
     (EffortIndicator eiRel, EffortIndicator eiOp,
      Show eiOp, Show eiRel,
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (UnaryOpEff eiOp t) -> (UnaryOpEff eiOp t) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> (UnaryOpEff eiOp t) -> (UnaryOpEff eiOp t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> 
     t -> Bool
 roundedImprovingIdempotent =
@@ -199,7 +199,7 @@ equalRoundingUpDnImprovementUnary1Var1 ::
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
     (Expr1UnaryOp1Eff eiOp t) -> 
     (Expr1UnaryOp1Eff eiOp t) -> 
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (UnaryOpEff eiOp t) -> (UnaryOpEff eiOp t) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> (UnaryOpEff eiOp t) -> (UnaryOpEff eiOp t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> t -> Bool
 equalRoundingUpDnImprovementUnary1Var1 expr1 expr2 pCompareEff measureGap opUpEff opDnEff 
         effortImprComp initEffort@(initEffortRel, initEffortOp) e =
@@ -217,7 +217,7 @@ equalRoundingUpDnImprovementBin1Var1 ::
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
     (Expr1Op1Eff eiOp t) -> 
     (Expr1Op1Eff eiOp t) -> 
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> t -> Bool
 equalRoundingUpDnImprovementBin1Var1 expr1 expr2 pCompareEff measureGap opUpEff opDnEff 
         effortImprComp initEffort@(initEffortRel, initEffortOp) e =
@@ -235,7 +235,7 @@ equalRoundingUpDnImprovementBin1Var2 ::
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
     (Expr1Op2Eff eiOp t) -> 
     (Expr1Op2Eff eiOp t) -> 
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> t -> t -> Bool
 equalRoundingUpDnImprovementBin1Var2 expr1 expr2 pCompareEff measureGap opUpEff opDnEff 
         effortImprComp initEffort@(initEffortRel, initEffortOp) e1 e2 =
@@ -253,7 +253,7 @@ equalRoundingUpDnImprovementBin1Var3 ::
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
     (Expr1Op3Eff eiOp t) -> 
     (Expr1Op3Eff eiOp t) -> 
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> 
     t -> t -> t -> Bool
 equalRoundingUpDnImprovementBin1Var3 expr1 expr2 pCompareEff measureGap opUpEff opDnEff 
@@ -272,7 +272,7 @@ equalRoundingUpDnImprovementBin2Var3 ::
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
     (Expr2Op3Eff eiOp1 eiOp2 t) -> 
     (Expr2Op3Eff eiOp1 eiOp2 t) -> 
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> 
     (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
     (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, (eiOp1, eiOp2)) -> 
@@ -295,7 +295,7 @@ equalRoundingUpDnImprovementBin2Var2 ::
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap) =>
     (Expr2Op2Eff eiOp1 eiOp2 t) -> 
     (Expr2Op2Eff eiOp1 eiOp2 t) -> 
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> 
     (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
     (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, (eiOp1, eiOp2)) -> 
@@ -320,7 +320,7 @@ equalRoundingUpDnImprovement ::
     (eiOp -> t) {-^ left hand side expression DN -} -> 
     (eiOp -> t) {-^ right hand side expression UP -} -> 
     (eiOp -> t) {-^ right hand side expression DN -} -> 
-    (SmdcRelEff eiRel t) -> (t -> t -> gap) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> Bool
 equalRoundingUpDnImprovement expr1Up expr1Dn expr2Up expr2Dn pCompareEff measureGap 
         effortImprComp initEffort@(initEffortRel, initEffortOp) =

@@ -31,8 +31,8 @@ type OpEff ei t = ei -> t -> t -> t
 type PartOpEff ei t = ei -> t -> t -> Maybe t
 
 type Rel t = t -> t -> Bool
-type SmdcRel t = t -> t -> Maybe Bool
-type SmdcRelEff ei t = ei -> t -> t -> Maybe Bool
+type PRel t = t -> t -> Maybe Bool
+type PRelEff ei t = ei -> t -> t -> Maybe Bool
 
 type Expr1Op1 t = (Op t) -> Expr1 t
 type Expr1Op2 t = (Op t) -> Expr2 t
