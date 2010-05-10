@@ -18,7 +18,7 @@
 module Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedOps 
 (
     RoundedAdd(..), RoundedSubtr(..), testsUpDnAdd, testsUpDnSubtr,
-    RoundedAbs(..), testsUpDnAbs, 
+    RoundedAbs(..), testsUpDnAbs,
     RoundedMultiply(..), RoundedDivide(..), testsUpDnMult, testsUpDnDiv
 )
 where
@@ -55,8 +55,8 @@ class RoundedAdd t where
 
 propUpDnAddZero ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
-     HasDistance t,  
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -72,8 +72,8 @@ propUpDnAddZero _ effortDist =
 
 propUpDnAddCommutative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
-     HasDistance t,  
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -89,8 +89,8 @@ propUpDnAddCommutative _ effortDist =
        
 propUpDnAddAssociative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
-     HasDistance t,  
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -126,8 +126,8 @@ class (RoundedAdd t, Neg t) => RoundedSubtr t where
 
 propUpDnSubtrElim ::
     (NumOrd.PartialComparison t, RoundedSubtr t, HasZero t,
-     HasDistance t,  
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -143,8 +143,8 @@ propUpDnSubtrElim _ effortDist =
 
 propUpDnSubtrNegAdd ::
     (NumOrd.PartialComparison t, RoundedSubtr t, Neg t,
-     HasDistance t,  
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -220,8 +220,8 @@ absDnUsingCompMax (effortComp, effortMinmax) a =
 
 propUpDnAbsNegSymmetric ::
     (NumOrd.PartialComparison t, RoundedAbs t, HasZero t,
-     HasDistance t,  Neg t,
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     HasDistance t,  Show (Distance t), Neg t,
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -237,8 +237,8 @@ propUpDnAbsNegSymmetric _ effortDist =
 
 propUpDnAbsIdempotent ::
     (NumOrd.PartialComparison t, RoundedAbs t, HasZero t,
-     HasDistance t,
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -274,9 +274,9 @@ class RoundedMultiply t where
 class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t) => RoundedRRing t
 
 propUpDnMultOne ::
-    (NumOrd.Comparison t, RoundedMultiply t, HasOne t,
-     HasDistance t,  
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+    (NumOrd.PartialComparison t, RoundedMultiply t, HasOne t,
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -291,9 +291,9 @@ propUpDnMultOne _ effortDist =
     roundedImprovingUnit one NumOrd.pLeqEff (distanceBetweenEff effortDist) multUpEff multDnEff
 
 propUpDnMultCommutative ::
-    (NumOrd.Comparison t, RoundedMultiply t, HasZero t,
-     HasDistance t,  
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+    (NumOrd.PartialComparison t, RoundedMultiply t, HasZero t,
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -310,8 +310,8 @@ propUpDnMultCommutative _ effortDist =
 propUpDnMultAssociative ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t, 
      RoundedMultiply t, HasZero t,
-     HasDistance t,  
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -350,10 +350,10 @@ propUpDnMultAssociative _ effortDist effortDistComp minmaxEffort initEffort e1 e
         NumOrd.minDnEff minmaxEffort r1 r2
 
 propUpDnMultDistributesOverAdd ::
-    (NumOrd.Comparison t, NumOrd.RoundedLattice t,
+    (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
      RoundedMultiply t,  RoundedAdd t,
-     HasDistance t,  
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (AddEffortIndicator t),
@@ -421,8 +421,8 @@ class (RoundedRRing t, RoundedDivide t) => RoundedField t
 
 propUpDnDivElim ::
     (NumOrd.PartialComparison t, RoundedDivide t, HasOne t, HasZero t,
-     HasDistance t,  
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -444,8 +444,8 @@ propUpDnDivElim _ effortDist effortCompDist efforts2 a =
 propUpDnDivRecipMult ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
      RoundedMultiply t, RoundedDivide t, HasOne t,
-     HasDistance t,  
-     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (DivEffortIndicator t),
