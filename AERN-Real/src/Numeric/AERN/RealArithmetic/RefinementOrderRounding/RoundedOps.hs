@@ -50,13 +50,13 @@ class RoundedAdd t where
     (<+>) = addOutEff ?addInOutEffort
 
 propInOutAddZero ::
-    (RefOrd.Comparison t, RoundedAdd t, HasZero t,
-     HasDistance t, ArithUpDn.RoundedSubtr (Distance t), 
+    (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
+     HasDistance t, RoundedSubtr (Distance t), 
      NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
-     Show (AddEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
+     Show (AddEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
     (DistanceEffortIndicator t) -> 
@@ -66,18 +66,68 @@ propInOutAddZero ::
 propInOutAddZero _ effortDist =
     roundedImprovingUnit zero RefOrd.pLeqEff (distanceBetweenEff effortDist) addInEff addOutEff
 
---propInOutAddCommutative ::
---    (RefOrd.Comparison t, RoundedAdd t) =>
---    t -> t -> t -> Bool
---propInOutAddCommutative _ =
---    roundedCommutative (RefOrd.<=?) (+^) (+.)
---       
---propInOutAddAssociative ::
---    (RefOrd.Comparison t, RoundedAdd t) =>
---    t -> t -> t -> t -> Bool
---propInOutAddAssociative _ =
---    roundedAssociative (RefOrd.<=?) (+^) (+.)
---       
+propInOutAddCommutative ::
+    (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
+     HasDistance t,  
+     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     Show (AddEffortIndicator t),
+     EffortIndicator (AddEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (DistanceEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (RefOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    t -> t -> Bool
+propInOutAddCommutative _ effortDist =
+    roundedImprovingCommutative RefOrd.pLeqEff (distanceBetweenEff effortDist) addInEff addOutEff
+
+propInOutAddAssociative ::
+    (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
+     HasDistance t,  
+     NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     Show (AddEffortIndicator t),
+     EffortIndicator (AddEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (DistanceEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (RefOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    t -> t -> t -> Bool
+propInOutAddAssociative _ effortDist =
+    roundedImprovingAssociative RefOrd.pLeqEff (distanceBetweenEff effortDist) addInEff addOutEff
+
+propInOutAddMonotone ::
+    (RefOrd.PartialComparison t, RoundedAdd t,
+     RefOrd.ArbitraryOrderedTuple t,  
+     Show (AddEffortIndicator t),
+     EffortIndicator (AddEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (AddEffortIndicator t) -> 
+    (RefOrd.LEPair t) -> (RefOrd.LEPair t) -> 
+    (RefOrd.PartialCompareEffortIndicator t) ->
+    Bool
+propInOutAddMonotone _ =
+    roundedRefinementMonotone2 addInEff addOutEff
+
+testsInOutAdd (name, sample) =
+    testGroup (name ++ " <+> >+<") $
+        [
+            testProperty "0 absorbs" (propInOutAddZero sample)
+        ,
+            testProperty "commutative" (propInOutAddCommutative sample)
+        ,
+            testProperty "associative" (propInOutAddAssociative sample)
+        ,
+            testProperty "refinement monotone" (propInOutAddMonotone sample)
+        ]
+
 
 class (RoundedAdd t, Neg t) => RoundedSubtr t where
     (>-<) :: (?addInOutEffort :: AddEffortIndicator t) => t -> t -> t
@@ -144,58 +194,4 @@ class RoundedDivide t where
     (</>) :: (?divInOutEffort :: DivEffortIndicator t) => t -> t -> t
     (>/<) = divInEff ?divInOutEffort
     (</>) = divOutEff ?divInOutEffort
-
---propInOutMultOne ::
---    (RefOrd.Comparison t, RoundedMult t, HasOne t) =>
---    t -> t -> Bool
---propInOutMultOne _ =
---    roundedUnit one (RefOrd.<=?) (*^) (*.)
---
---propInOutMultCommutative ::
---    (RefOrd.Comparison t, RoundedMult t) =>
---    t -> t -> t -> Bool
---propInOutMultCommutative _ =
---    roundedCommutative (RefOrd.<=?) (*^) (*.)
---       
---propInOutMultAssociative ::
---    (RefOrd.Comparison t, RoundedMult t) =>
---    t -> t -> t -> t -> Bool
---propInOutMultAssociative _ =
---    roundedAssociative (RefOrd.<=?) (*^) (*.)
---
---propInOutMultAddDistributive ::
---    (RefOrd.Comparison t, RoundedMult t, RoundedAdd t) =>
---    t -> t -> t -> t -> Bool
---propInOutMultAddDistributive _ =
---    roundedLeftDistributive (RefOrd.<=?) (+^) (*^) (+.) (*.)
---
---testsRoundedAddition ::
---    (RefOrd.Comparison t, RoundedAdd t, HasZero t, 
---     Arbitrary t) =>
---    (String, t) -> Test
---testsRoundedAddition (name, sample) =
---    testGroup (name ++ " rounded addition") $ 
---        [
---         testProperty "absorbs zero" (propInOutAddZero sample)
---        ,
---         testProperty "commutative" (propInOutAddCommutative sample)
---        ,
---         testProperty "associative" (propInOutAddAssociative sample)
---        ]
---
---testsRoundedMultiplication ::
---    (RefOrd.Comparison t, RoundedMult t, RoundedAdd t, HasOne t, 
---     Arbitrary t) =>
---    (String, t) -> Test
---testsRoundedMultiplication (name, sample) =
---    testGroup (name ++ " rounded multiplication") $ 
---        [
---         testProperty "absorbs one" (propInOutMultOne sample)
---        ,
---         testProperty "commutative" (propInOutMultCommutative sample)
---        ,
---         testProperty "associative" (propInOutMultAssociative sample)
---        ,
---         testProperty "distributes over addition" (propInOutMultAddDistributive sample)
---        ]
 

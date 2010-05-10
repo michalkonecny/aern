@@ -54,7 +54,7 @@ class RoundedAdd t where
     (+.) = addDnEff ?addUpDnEffort
 
 propUpDnAddZero ::
-    (NumOrd.Comparison t, RoundedAdd t, HasZero t,
+    (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
      HasDistance t,  
      NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
@@ -71,7 +71,7 @@ propUpDnAddZero _ effortDist =
     roundedImprovingUnit zero NumOrd.pLeqEff (distanceBetweenEff effortDist) addUpEff addDnEff
 
 propUpDnAddCommutative ::
-    (NumOrd.Comparison t, RoundedAdd t, HasZero t,
+    (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
      HasDistance t,  
      NumOrd.Comparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),

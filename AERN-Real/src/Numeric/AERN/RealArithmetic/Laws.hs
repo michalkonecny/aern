@@ -30,9 +30,26 @@ import Data.Maybe
 import Numeric.AERN.RealArithmetic.ExactOperations
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Exception
 import Control.Exception
+
+roundedRefinementMonotone2 ::
+    (RefOrd.PartialComparison t, RefOrd.ArbitraryOrderedTuple t) =>
+    (Expr2Eff ei t) ->
+    (Expr2Eff ei t) ->
+    ei -> (RefOrd.LEPair t) -> (RefOrd.LEPair t) -> 
+    (RefOrd.PartialCompareEffortIndicator t) ->
+    Bool
+roundedRefinementMonotone2 exprUp exprDn effort (RefOrd.LEPair (e1L, e1H)) (RefOrd.LEPair (e2L, e2H)) effortComp =
+    case RefOrd.pLeqEff effortComp resDn resUp of
+        Just b -> b
+        _ -> True
+    where
+    resUp = exprUp effort e1H e2H
+    resDn = exprDn effort e1L e2L
+
 
 roundedImprovingUnit ::
     (EffortIndicator eiRel, EffortIndicator eiOp,
