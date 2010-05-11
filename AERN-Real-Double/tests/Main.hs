@@ -62,5 +62,7 @@ testsDI =
        testsImprecision ("DI", sampleDI),
        ArithInOut.testsInOutAdd ("DI", sampleDI),
        ArithInOut.testsInOutSubtr ("DI", sampleDI),
-       ArithInOut.testsInOutAbs ("DI", sampleDI)
+       ArithInOut.testsInOutAbs ("DI", sampleDI),
+       ArithInOut.testsInOutMult ("DI", sampleDI),
+       ArithInOut.testsInOutDiv ("DI", sampleDI)
     ]
