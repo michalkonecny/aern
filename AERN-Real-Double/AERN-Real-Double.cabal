@@ -50,6 +50,7 @@ Library
 
   Other-modules:
     Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
+    Numeric.AERN.RealArithmetic.Basis.Double.Numerals
     Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
     Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps
     Numeric.AERN.RealArithmetic.Basis.Double.Measures
