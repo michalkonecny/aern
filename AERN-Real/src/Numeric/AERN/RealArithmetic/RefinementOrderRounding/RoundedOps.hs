@@ -109,7 +109,7 @@ propInOutAddAssociative _ effortDist =
     roundedImprovingAssociative RefOrd.pLeqEff (distanceBetweenEff effortDist) addInEff addOutEff
 
 propInOutAddMonotone ::
-    (RefOrd.PartialComparison t, RoundedAdd t,
+    (RefOrd.PartialComparison t, RoundedAdd t, Show t,
      RefOrd.ArbitraryOrderedTuple t,  
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
@@ -193,7 +193,7 @@ propInOutSubtrNegAdd _ effortDist effortDistComp initEffort e1 e2 =
         let ?addInOutEffort = eff in e1 <+> e2
 
 propInOutSubtrMonotone ::
-    (RefOrd.PartialComparison t, RoundedSubtr t,
+    (RefOrd.PartialComparison t, RoundedSubtr t, Show t,
      RefOrd.ArbitraryOrderedTuple t,  
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
@@ -334,7 +334,7 @@ class RoundedMultiply t where
 class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t) => RoundedRing t
 
 propInOutMultMonotone ::
-    (RefOrd.PartialComparison t, RoundedMultiply t,
+    (RefOrd.PartialComparison t, RoundedMultiply t, Show t,
      RefOrd.ArbitraryOrderedTuple t,  
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
@@ -431,8 +431,8 @@ testsInOutMult (name, sample) =
         ,
             testProperty "associative" (propInOutMultAssociative sample)
         ,
-            testProperty "distributes over +" (propInOutMultDistributesOverAdd sample)
-        ,
+--            testProperty "distributes over +" (propInOutMultDistributesOverAdd sample)
+--        ,
             testProperty "refinement monotone" (propInOutMultMonotone sample)
         ]
 
@@ -450,7 +450,7 @@ class RoundedDivide t where
 class (RoundedRing t, RoundedDivide t) => RoundedField t
 
 propInOutDivMonotone ::
-    (RefOrd.PartialComparison t, RoundedDivide t,
+    (RefOrd.PartialComparison t, RoundedDivide t, Show t,
      RefOrd.ArbitraryOrderedTuple t,  
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
