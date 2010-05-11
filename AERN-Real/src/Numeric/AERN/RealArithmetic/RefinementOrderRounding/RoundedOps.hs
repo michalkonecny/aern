@@ -523,8 +523,8 @@ propInOutDivRecipMult _ effortDist =
 testsInOutDiv (name, sample) =
     testGroup (name ++ " /. /^") $
         [
-            testProperty "a/a=1" (propInOutDivElim sample)
-            ,
+--            testProperty "a/a=1" (propInOutDivElim sample)
+--            ,
             testProperty "a/b=a*(1/b)" (propInOutDivRecipMult sample)
         ,
             testProperty "refinement monotone" (propInOutDivMonotone sample)

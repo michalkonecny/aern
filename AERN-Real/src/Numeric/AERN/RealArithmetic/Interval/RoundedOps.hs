@@ -31,6 +31,7 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 
 instance (ArithUpDn.RoundedAdd e) => RoundedAdd (Interval e) where
@@ -232,5 +233,57 @@ instance
     RoundedRing (Interval e)
 
 
--- TODO: division
+instance 
+    (ArithUpDn.RoundedMultiply e, ArithUpDn.RoundedDivide e,  
+     HasZero e, Neg e, HasOne e, NumOrd.HasExtrema e,
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLattice e) => 
+    RoundedDivide (Interval e)
+    where
+    type DivEffortIndicator (Interval e) = 
+        (NumOrd.PartialCompareEffortIndicator e, 
+         NumOrd.MinmaxEffortIndicator e,
+         (ArithUpDn.MultEffortIndicator e,
+          ArithUpDn.DivEffortIndicator e))
+    divDefaultEffort (Interval l h) = 
+        (NumOrd.pCompareDefaultEffort l, 
+         NumOrd.minmaxDefaultEffort l,
+         (ArithUpDn.multDefaultEffort l,
+          ArithUpDn.divDefaultEffort l)) 
+    divOutEff (effortComp, effortMinmax, (effortMult, effortDiv)) i1 i2 =
+        multOutEff (effortComp, effortMinmax, effortMult) i1 $ 
+            recipInterval 
+                (pNonnegNonposEff effortComp) 
+                (ArithUpDn.divDnEff effortDiv)
+                (ArithUpDn.divUpEff effortDiv)
+                RefOrd.bottom
+                i2
+    divInEff (effortComp, effortMinmax, (effortMult, effortDiv)) i1 i2 =
+        multInEff (effortComp, effortMinmax, effortMult) i1 $ 
+            recipInterval 
+                (pNonnegNonposEff effortComp) 
+                (ArithUpDn.divUpEff effortDiv)
+                (ArithUpDn.divDnEff effortDiv)
+                RefOrd.top
+                i2
+
+
+recipInterval pNonnegNonpos divL divR fallback (Interval l h) =
+    case (pNonnegNonpos l, pNonnegNonpos h) of
+        -- non-negative:
+        (Just (True, _), Just (True, _)) ->  
+             Interval (divL one h) (divR one l)
+        -- non-positive:
+        (Just (_, True), Just (_, True)) ->  
+             Interval (divL one h) (divR one l)
+        -- consistent around zero:
+        (Just (_, True), Just (True, _)) ->
+             RefOrd.bottom
+        -- anti-consistent around zero:
+        (Just (True, _), Just (_, True)) ->  
+             RefOrd.top
+        -- unknown:
+        _ ->  
+             fallback
+
             
