@@ -51,13 +51,18 @@ roundedRefinementMonotone1 exprUp exprDn effort (RefOrd.LEPair (e1L, e1H)) effor
     resDn = exprDn effort e1L
 
 roundedRefinementMonotone2 ::
-    (RefOrd.PartialComparison t, RefOrd.ArbitraryOrderedTuple t) =>
+    (RefOrd.PartialComparison t, RefOrd.ArbitraryOrderedTuple t, Show t) =>
     (Expr2Eff ei t) ->
     (Expr2Eff ei t) ->
     ei -> (RefOrd.LEPair t) -> (RefOrd.LEPair t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 roundedRefinementMonotone2 exprUp exprDn effort (RefOrd.LEPair (e1L, e1H)) (RefOrd.LEPair (e2L, e2H)) effortComp =
+--    unsafePrint ("\nroundedRefinementMonotone2: " 
+--      ++ "\n Up: op(" ++ show e1H ++ ", " ++ show e2H ++ ") = " ++ show resUp 
+--      ++ "\n Dn: op(" ++ show e1L ++ ", " ++ show e2L ++ ") = " ++ show resDn
+--      ++ "\n" 
+--    ) $
     case RefOrd.pLeqEff effortComp resDn resUp of
         Just b -> b
         _ -> True
