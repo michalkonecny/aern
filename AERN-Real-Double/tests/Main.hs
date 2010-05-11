@@ -40,6 +40,7 @@ testsDouble =
        NumOrd.testsLatticeDistributive ("Double", sampleD) (Just ("NaN", nanD)),
        NumOrd.testsRoundedLatticeDistributive ("Double", sampleD) (Just ("NaN", nanD)),
        testsDistance ("Double", sampleD),
+       ArithUpDn.testsFromToInteger ("Double", sampleD),
        ArithUpDn.testsUpDnAdd ("Double", sampleD),
        ArithUpDn.testsUpDnSubtr ("Double", sampleD),
        ArithUpDn.testsUpDnAbs ("Double", sampleD),
