@@ -26,11 +26,15 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Data.Ratio
 
+import Test.QuickCheck
+import Test.Framework (testGroup, Test)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
+
 class FromInteger t where
     type FromIntegerEffortIndicator t
+    fromIntegerDefaultEffort :: t -> FromIntegerEffortIndicator t 
     fromIntegerUpEff :: FromIntegerEffortIndicator t -> Integer -> t
     fromIntegerDnEff :: FromIntegerEffortIndicator t -> Integer -> t
-    fromIntegerDefaultEffort :: t -> FromIntegerEffortIndicator t 
 
 propFromIntegerMonotone ::
     (FromInteger t, NumOrd.Comparison t) =>
@@ -39,7 +43,7 @@ propFromIntegerMonotone ::
     Integer -> Integer -> Bool
 propFromIntegerMonotone sample effort i1 i2 
     | i1 > i2 = a1Up NumOrd.> a2Dn
-    | i1 <= i2 = a1Dn NumOrd.< a2Up
+    | i1 < i2 = a1Dn NumOrd.< a2Up
     | otherwise = True
     where
     a1Dn = fromIntegerDnEff effort i1 
@@ -50,9 +54,9 @@ propFromIntegerMonotone sample effort i1 i2
     
 class ToInteger t where
     type ToIntegerEffortIndicator t
+    toIntegerDefaultEffort :: t -> ToIntegerEffortIndicator t 
     toIntegerUpEff :: ToIntegerEffortIndicator t -> t -> Integer
     toIntegerDnEff :: ToIntegerEffortIndicator t -> t -> Integer
-    toIntegerDefaultEffort :: t -> ToIntegerEffortIndicator t 
 
 propToIntegerMonotone ::
     (ToInteger t, NumOrd.Comparison t) =>
@@ -61,11 +65,11 @@ propToIntegerMonotone ::
     t -> t -> Bool
 propToIntegerMonotone sample (effortComp, effortConv) a1 a2 =
     case NumOrd.pCompareEff effortComp a1 a2 of
-        Just LT -> i1Dn < i2Up
+        Just LT -> i1Dn <= i2Up
         Just LEE -> i1Dn <= i2Up
-        Just GT -> i1Up > i2Dn
+        Just GT -> i1Up >= i2Dn
         Just GEE -> i1Up >= i2Dn
-        Just EQ -> i1Dn < i2Up
+        Just EQ -> i1Dn <= i1Up
         _ -> True
     where
     i1Dn = toIntegerDnEff effortConv a1 
@@ -89,6 +93,16 @@ propToFromInteger _ (effortComp, effortFrom, effortTo) a =
     where
     aDn = fromIntegerDnEff effortFrom $ toIntegerDnEff effortTo a 
     aUp = fromIntegerUpEff effortFrom $ toIntegerUpEff effortTo a 
+    
+testsFromToInteger (name, sample) =
+    testGroup (name ++ " Integer conversions") $
+        [
+            testProperty "from Integer monotone" (propFromIntegerMonotone sample)
+        ,
+            testProperty "to Integer monotone" (propToIntegerMonotone sample)
+        ,
+            testProperty "round trip conversion" (propToFromInteger sample)
+        ]
     
 class FromDouble t where
     type FromDoubleEffortIndicator t
