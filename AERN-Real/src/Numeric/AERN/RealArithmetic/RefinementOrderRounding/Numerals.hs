@@ -104,6 +104,62 @@ class FromDouble t where
     fromDoubleOutEff :: FromDoubleEffortIndicator t -> Double -> t
     fromDoubleDefaultEffort :: t -> FromDoubleEffortIndicator t 
 
+propFromDoubleMonotone ::
+    (FromDouble t, NumOrd.PartialComparison t) =>
+    t ->
+    (FromDoubleEffortIndicator t, NumOrd.PartialCompareEffortIndicator t) ->  
+    Double -> Double -> Bool
+propFromDoubleMonotone sample (effortFrom, effortComp) i1 i2 
+    | i1 > i2 = 
+        (trueOrNothing $ let ?pCompareEffort = effortComp in a1Out NumOrd.>? a2Out)
+        &&
+        (trueOrNothing $ let ?pCompareEffort = effortComp in a1In NumOrd.>? a2In)
+    | i1 < i2 = 
+        (trueOrNothing $ let ?pCompareEffort = effortComp in a1Out NumOrd.<? a2Out)
+        &&
+        (trueOrNothing $ let ?pCompareEffort = effortComp in a1In NumOrd.<? a2In)
+    | otherwise = True
+    where
+    a1Out = fromDoubleOutEff effortFrom i1 
+    a1In = fromDoubleInEff effortFrom i1 
+    a2Out = fromDoubleOutEff effortFrom i2 
+    a2In = fromDoubleInEff effortFrom i2 
+    _ = [sample, a1Out, a1In]
+
+propToFromDouble ::
+    (UpDnNumerals.ToDouble t, FromDouble t, NumOrd.PartialComparison t, Show t) =>
+    t -> 
+    (NumOrd.PartialCompareEffortIndicator t, 
+     FromDoubleEffortIndicator t, 
+     UpDnNumerals.ToDoubleEffortIndicator t) ->
+    t -> Bool
+propToFromDouble sample (effortComp, effortFrom, effortTo) a =
+    let ?pCompareEffort = effortComp in
+    case (aDnOut NumOrd.<=? a, a NumOrd.<=? aUpOut) of
+       (Just False, _) -> printErrorDetail
+       (_, Just False) -> printErrorDetail
+       _ -> True
+    where
+    aDnOut = fromDoubleOutEff effortFrom $ UpDnNumerals.toDoubleDnEff effortTo a 
+    aUpOut = fromDoubleOutEff effortFrom $ UpDnNumerals.toDoubleUpEff effortTo a 
+    _ = [sample, aDnOut]
+    printErrorDetail =
+        error $
+           "propToFromDouble failed:"
+           ++ "\n  a = " ++ show a
+           ++ "\n  aDnOut = " ++ show aDnOut
+           ++ "\n  aUpOut = " ++ show aUpOut
+
+
+testsFromToDouble (name, sample) =
+    testGroup (name ++ " Double conversions") $
+        [
+            testProperty "from Double monotone" (propFromDoubleMonotone sample)
+        ,
+            testProperty "to Double monotone" (UpDnNumerals.propToDoubleMonotone sample)
+        ,
+            testProperty "round trip conversion" (propToFromDouble sample)
+        ]
 
 --class FromRatio t where
 --    fromRatioInEff :: EffortIndicator -> Ratio Integer -> t
