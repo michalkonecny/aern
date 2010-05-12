@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Basis.Double.Numerals
-    Description :  conversions between Double and other numeric types
+    Description :  conversions between Double and standard numeric types
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -9,7 +9,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Conversions between Double and other numeric types.
+    Conversions between Double and standard numeric types.
 
     This is a private module reexported publicly via its parent.
 -}
