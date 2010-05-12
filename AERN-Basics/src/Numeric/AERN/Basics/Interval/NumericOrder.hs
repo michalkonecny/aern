@@ -18,6 +18,7 @@
 module Numeric.AERN.Basics.Interval.NumericOrder where
 
 import Numeric.AERN.Basics.Interval.Basics
+import Numeric.AERN.Basics.Interval.Consistency
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.CInterval.NumericOrder
@@ -26,9 +27,10 @@ instance
     (NumOrd.PartialComparison e) => 
     (NumOrd.PartialComparison (Interval e))
     where
-    type NumOrd.PartialCompareEffortIndicator (Interval e) = NumOrd.PartialCompareEffortIndicator e 
-    pCompareEff = pCompareEffInterval
+    type NumOrd.PartialCompareEffortIndicator (Interval e) = 
+        NumOrd.PartialCompareEffortIndicator e 
     pCompareDefaultEffort = pCompareDefaultEffortInterval
+    pCompareEff effort = pCompareEffInterval effort effort
                 
 instance 
     (NumOrd.Comparison e) => 
