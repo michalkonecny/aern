@@ -16,6 +16,7 @@ module Numeric.AERN.Basics.CInterval.NumericOrder where
 import Prelude hiding (EQ, LT, GT)
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.CInterval
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
@@ -46,33 +47,46 @@ pCompareDefaultEffortInterval i =
     Default numerical comparison for 'CInterval' types.
 -}
 pCompareEffInterval ::
-    (CInterval i, 
+    (CInterval i, HasConsistency i,
      NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.PartialCompareEffortIndicator (Endpoint i)) -> 
+    (ConsistencyEffortIndicator i) -> 
     i -> i -> Maybe PartialOrdering
-pCompareEffInterval effort i1 i2 = 
-    case (c l1 l2, c l1 h2, c h1 l2, c h1 h2) of
-        (Just EQ, Just EQ, Just EQ, _) -> Just EQ
-        (Just LT, Just LT, Just LT, Just LT) -> Just LT  
-        (Just GT, Just GT, Just GT, Just GT) -> Just GT
-        (Just relLL, Just relLH, Just EQ, Just relHH) --touching but not all equal
-            | relLL `elem` [LT, LEE, EQ] &&  
-              relHH `elem` [LT, LEE, EQ] && 
-              relLH `elem` [LT, LEE]
-              -> Just LEE
-        (Just relLL, Just EQ, Just relHL, Just relHH) --touching but not all equal 
-            | relLL `elem` [GT, GEE, EQ] &&  
-              relHH `elem` [GT, GEE, EQ] && 
-              relHL `elem` [GT, GEE] 
-              -> Just GEE
-        (Just NC, _, _, _) -> Just NC  
-        (_, Just NC, _, _) -> Just NC  
-        (_, _, Just NC, _) -> Just NC  
-        (_, _, _, Just NC) -> Just NC  
+pCompareEffInterval effortComp effortCons i1 i2 =
+    case (isConsistentEff effortCons i1, isConsistentEff effortCons i2) of
+        (Just True, Just True) ->
+            case (h1 `leq` l2, h1 `less` l2, h2 `leq` l1, h2 `less` l1) of
+                (Just True, _, Just True, _) -> Just EQ
+                (_, Just True, _, _) -> Just LT
+                (Just True, _, _, _) -> Just LEE
+                (_, _, _, Just True) -> Just GT
+                (_, _, Just True, _) -> Just GEE
+                _ -> Nothing
         _ -> Nothing
 --        _ -> Just NC -- if we want this to be a decidable order
+--    case (c l1 l2, c l1 h2, c h1 l2, c h1 h2) of
+--        (Just EQ, Just EQ, Just EQ, _) -> Just EQ
+--        (Just LT, Just LT, Just LT, Just LT) -> Just LT  
+--        (Just GT, Just GT, Just GT, Just GT) -> Just GT
+--        (Just relLL, Just relLH, Just EQ, Just relHH) --touching but not all equal
+--            | relLL `elem` [LT, LEE, EQ] &&  
+--              relHH `elem` [LT, LEE, EQ] && 
+--              relLH `elem` [LT, LEE]
+--              -> Just LEE
+--        (Just relLL, Just EQ, Just relHL, Just relHH) --touching but not all equal 
+--            | relLL `elem` [GT, GEE, EQ] &&  
+--              relHH `elem` [GT, GEE, EQ] && 
+--              relHL `elem` [GT, GEE] 
+--              -> Just GEE
+--        (Just NC, _, _, _) -> Just NC  
+--        (_, Just NC, _, _) -> Just NC  
+--        (_, _, Just NC, _) -> Just NC  
+--        (_, _, _, Just NC) -> Just NC  
+--        _ -> Nothing
+--        _ -> Just NC -- if we want this to be a decidable order
     where
-    c = NumOrd.pCompareEff effort 
+    leq = NumOrd.pLeqEff effortComp
+    less = NumOrd.pLessEff effortComp
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
 
