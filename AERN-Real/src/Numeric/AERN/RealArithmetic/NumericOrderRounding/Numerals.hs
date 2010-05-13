@@ -23,6 +23,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 
 import Numeric.AERN.Misc.Maybe
 
@@ -44,8 +45,8 @@ propFromIntegerMonotone ::
     (FromIntegerEffortIndicator t, NumOrd.PartialCompareEffortIndicator t) ->  
     Integer -> Integer -> Bool
 propFromIntegerMonotone sample (effortFrom, effortComp) i1 i2 
-    | i1 > i2 = trueOrNothing $ let ?pCompareEffort = effortComp in a1Up NumOrd.>? a2Dn
-    | i1 < i2 = trueOrNothing $ let ?pCompareEffort = effortComp in a1Dn NumOrd.<? a2Up
+    | i1 > i2 = trueOrNothing $ let ?pCompareEffort = effortComp in a1Up >? a2Dn
+    | i1 < i2 = trueOrNothing $ let ?pCompareEffort = effortComp in a1Dn <? a2Up
     | otherwise = True
     where
     a1Dn = fromIntegerDnEff effortFrom i1 
@@ -88,7 +89,7 @@ propToFromInteger ::
     t -> Bool
 propToFromInteger _ (effortComp, effortFrom, effortTo) a =
     let ?pCompareEffort = effortComp in
-    case (aDn NumOrd.<=? a, a NumOrd.<=? aUp) of
+    case (aDn <=? a, a <=? aUp) of
        (Just False, _) -> False
        (_, Just False) -> False
        _ -> True
@@ -118,8 +119,8 @@ propFromDoubleMonotone ::
     (FromDoubleEffortIndicator t, NumOrd.PartialCompareEffortIndicator t) ->  
     Double -> Double -> Bool
 propFromDoubleMonotone sample (effortFrom, effortComp) i1 i2 
-    | i1 > i2 = trueOrNothing $ let ?pCompareEffort = effortComp in a1Up NumOrd.>? a2Dn
-    | i1 < i2 = trueOrNothing $ let ?pCompareEffort = effortComp in a1Dn NumOrd.<? a2Up
+    | i1 > i2 = trueOrNothing $ let ?pCompareEffort = effortComp in a1Up >? a2Dn
+    | i1 < i2 = trueOrNothing $ let ?pCompareEffort = effortComp in a1Dn <? a2Up
     | otherwise = True
     where
     a1Dn = fromDoubleDnEff effortFrom i1 
@@ -162,7 +163,7 @@ propToFromDouble ::
     t -> Bool
 propToFromDouble _ (effortComp, effortFrom, effortTo) a =
     let ?pCompareEffort = effortComp in
-    case (aDn NumOrd.<=? a, a NumOrd.<=? aUp) of
+    case (aDn <=? a, a <=? aUp) of
        (Just False, _) -> False
        (_, Just False) -> False
        _ -> True

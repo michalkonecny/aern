@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.RoundedLattice
     Description :  lattices with outwards and inwards rounded operations  
@@ -36,9 +35,6 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-infixr 3 <|/\>, <⊓>, >|/\<, >⊓< 
-infixr 2 <|\/>, <⊔>, >|\/<, >⊔< 
-
 {-|
     A type with outward-rounding lattice operations.
 -}
@@ -48,23 +44,6 @@ class OuterRoundedLattice t where
 
     joinOutEff :: JoinMeetOutEffortIndicator t -> t -> t -> t
     meetOutEff :: JoinMeetOutEffortIndicator t -> t -> t -> t
-
-    (<|\/>) :: (?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => t -> t -> t
-    (<|/\>) :: (?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => t -> t -> t
-    
-    (<|\/>) = joinOutEff ?joinmeetOutEffort 
-    (<|/\>) = meetOutEff ?joinmeetOutEffort 
-
-{-| convenience Unicode notation for '<|\/>' -}
-(<⊔>) :: 
-    (OuterRoundedLattice t, ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
-    t -> t -> t
-(<⊔>) = (<|\/>)
-{-| convenience Unicode notation for '<|/\>' -}
-(<⊓>) :: 
-    (OuterRoundedLattice t, ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
-    t -> t -> t
-(<⊓>) = (<|/\>)
 
 
 {-|
@@ -77,22 +56,6 @@ class InnerRoundedLattice t where
     joinInEff :: JoinMeetInEffortIndicator t -> t -> t -> t
     meetInEff :: JoinMeetInEffortIndicator t -> t -> t -> t
 
-    (>|\/<) :: (?joinmeetInEffort :: JoinMeetInEffortIndicator t) => t -> t -> t
-    (>|/\<) :: (?joinmeetInEffort :: JoinMeetInEffortIndicator t) => t -> t -> t
-    
-    (>|\/<) = joinInEff ?joinmeetInEffort 
-    (>|/\<) = meetInEff ?joinmeetInEffort 
-
-{-| convenience Unicode notation for '>|\/<' -}
-(>⊔<) :: 
-    (InnerRoundedLattice t, ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
-    t -> t -> t
-(>⊔<) = (>|\/<)
-{-| convenience Unicode notation for '>|/\<' -}
-(>⊓<) :: 
-    (InnerRoundedLattice t, ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
-    t -> t -> t
-(>⊓<) = (>|/\<)
 
 class (InnerRoundedLattice t, OuterRoundedLattice t) => RoundedLattice t
 
@@ -107,12 +70,9 @@ propRoundedLatticeComparisonCompatible ::
     UniformlyOrderedPair t -> Bool
 propRoundedLatticeComparisonCompatible _ (effortComp, effortIn, effortOut) 
         (UniformlyOrderedPair (e1,e2)) =
-    let ?pCompareEffort = effortComp; 
-        ?joinmeetInEffort = effortIn; 
-        ?joinmeetOutEffort = effortOut in 
-    (downRoundedJoinOfOrderedPair (|<=?) (<⊓>) e1 e2)
+    (downRoundedJoinOfOrderedPair (pLeqEff effortComp) (joinOutEff effortOut) e1 e2)
     && 
-    (upRoundedMeetOfOrderedPair (|<=?) (>⊔<) e1 e2)
+    (upRoundedMeetOfOrderedPair (pLeqEff effortComp) (meetInEff effortIn) e1 e2)
 
 propRoundedLatticeJoinAboveBoth :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -122,9 +82,7 @@ propRoundedLatticeJoinAboveBoth ::
     UniformlyOrderedPair t -> Bool
 propRoundedLatticeJoinAboveBoth _ (effortComp, effortIn)
         (UniformlyOrderedPair (e1,e2)) = 
-    let ?pCompareEffort = effortComp;
-        ?joinmeetInEffort = effortIn  in 
-    joinAboveOperands (|<=?) (>⊔<) e1 e2
+    joinAboveOperands (pLeqEff effortComp) (meetInEff effortIn) e1 e2
 
 propRoundedLatticeMeetBelowBoth :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -134,9 +92,7 @@ propRoundedLatticeMeetBelowBoth ::
     UniformlyOrderedPair t -> Bool
 propRoundedLatticeMeetBelowBoth _ (effortComp, effortOut)
         (UniformlyOrderedPair (e1,e2)) = 
-    let ?pCompareEffort = effortComp;
-        ?joinmeetOutEffort = effortOut  in 
-    meetBelowOperands (|<=?) (<⊓>) e1 e2
+    meetBelowOperands (pLeqEff effortComp) (joinOutEff effortOut) e1 e2
 
 propRoundedLatticeJoinIdempotent :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -146,10 +102,7 @@ propRoundedLatticeJoinIdempotent ::
      JoinMeetOutEffortIndicator t) -> 
     t -> Bool
 propRoundedLatticeJoinIdempotent _ (effortComp, effortIn, effortOut) = 
-    let ?pCompareEffort = effortComp; 
-        ?joinmeetInEffort = effortIn; 
-        ?joinmeetOutEffort = effortOut in 
-    roundedIdempotent (|<=?) (>⊔<) (<⊔>)
+    roundedIdempotent (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut)
 
 propRoundedLatticeJoinCommutative :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -160,10 +113,7 @@ propRoundedLatticeJoinCommutative ::
     UniformlyOrderedPair t -> Bool
 propRoundedLatticeJoinCommutative _ (effortComp, effortIn, effortOut)
         (UniformlyOrderedPair (e1,e2)) = 
-    let ?pCompareEffort = effortComp; 
-        ?joinmeetInEffort = effortIn; 
-        ?joinmeetOutEffort = effortOut in 
-    roundedCommutative (|<=?) (>⊔<) (<⊔>) e1 e2
+    roundedCommutative (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut) e1 e2
 
 propRoundedLatticeJoinAssocative :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -174,10 +124,7 @@ propRoundedLatticeJoinAssocative ::
     UniformlyOrderedTriple t -> Bool
 propRoundedLatticeJoinAssocative _ (effortComp, effortIn, effortOut)
         (UniformlyOrderedTriple (e1,e2,e3)) = 
-    let ?pCompareEffort = effortComp; 
-        ?joinmeetInEffort = effortIn; 
-        ?joinmeetOutEffort = effortOut in 
-    roundedAssociative (|<=?) (>⊔<) (<⊔>) e1 e2 e3
+    roundedAssociative (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut) e1 e2 e3
 
 propRoundedLatticeJoinMonotone ::
     (Eq t, RoundedLattice t, PartialComparison t) => 
@@ -191,8 +138,7 @@ propRoundedLatticeJoinMonotone ::
 propRoundedLatticeJoinMonotone _ (effortComp, effortOut, effortIn)
         (LEPair (e1Lower,e1)) 
         (LEPair (e2Lower,e2)) =
-    let ?pCompareEffort = effortComp in
-    case rLower |<=? r of
+    case pLeqEff effortComp rLower r of
         Just b -> b
         Nothing -> True
    where
@@ -207,10 +153,7 @@ propRoundedLatticeMeetIdempotent ::
      JoinMeetOutEffortIndicator t) -> 
     t -> Bool
 propRoundedLatticeMeetIdempotent _ (effortComp, effortIn, effortOut) = 
-    let ?pCompareEffort = effortComp; 
-        ?joinmeetInEffort = effortIn; 
-        ?joinmeetOutEffort = effortOut in 
-    roundedIdempotent (|<=?) (>⊓<) (<⊓>)
+    roundedIdempotent (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut)
 
 propRoundedLatticeMeetCommutative :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -221,10 +164,7 @@ propRoundedLatticeMeetCommutative ::
     UniformlyOrderedPair t -> Bool
 propRoundedLatticeMeetCommutative _ (effortComp, effortIn, effortOut)
         (UniformlyOrderedPair (e1,e2)) = 
-    let ?pCompareEffort = effortComp; 
-        ?joinmeetInEffort = effortIn; 
-        ?joinmeetOutEffort = effortOut in 
-    roundedCommutative (|<=?) (>⊓<) (<⊓>) e1 e2
+    roundedCommutative (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut) e1 e2
 
 propRoundedLatticeMeetAssocative :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -235,10 +175,7 @@ propRoundedLatticeMeetAssocative ::
     UniformlyOrderedTriple t -> Bool
 propRoundedLatticeMeetAssocative _ (effortComp, effortIn, effortOut)
         (UniformlyOrderedTriple (e1,e2,e3)) = 
-    let ?pCompareEffort = effortComp; 
-        ?joinmeetInEffort = effortIn; 
-        ?joinmeetOutEffort = effortOut in 
-    roundedAssociative (|<=?) (>⊓<) (<⊓>) e1 e2 e3
+    roundedAssociative (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut) e1 e2 e3
 
 {- optional properties: -}
 propRoundedLatticeModular :: 
@@ -250,10 +187,7 @@ propRoundedLatticeModular ::
     UniformlyOrderedTriple t -> Bool
 propRoundedLatticeModular _ (effortComp, effortIn, effortOut)
         (UniformlyOrderedTriple (e1,e2,e3)) = 
-    let ?pCompareEffort = effortComp; 
-        ?joinmeetInEffort = effortIn; 
-        ?joinmeetOutEffort = effortOut in 
-    roundedModular (|<=?) (>⊔<) (>⊓<) (<⊔>) (<⊓>) e1 e2 e3
+    roundedModular (pLeqEff effortComp) (meetInEff effortIn) (joinInEff effortIn) (meetOutEff effortOut) (joinOutEff effortOut) e1 e2 e3
 
 propRoundedLatticeMeetMonotone ::
     (Eq t, RoundedLattice t, PartialComparison t) => 
@@ -267,8 +201,7 @@ propRoundedLatticeMeetMonotone ::
 propRoundedLatticeMeetMonotone _ (effortComp, effortOut, effortIn)
         (LEPair (e1Lower,e1)) 
         (LEPair (e2Lower,e2)) =
-    let ?pCompareEffort = effortComp in
-    case rLower |<=? r of
+    case pLeqEff effortComp rLower r of
         Just b -> b
         Nothing -> True
    where
@@ -284,12 +217,9 @@ propRoundedLatticeDistributive ::
     UniformlyOrderedTriple t -> Bool
 propRoundedLatticeDistributive _ (effortComp, effortIn, effortOut)
         (UniformlyOrderedTriple (e1,e2,e3)) = 
-    let ?pCompareEffort = effortComp; 
-        ?joinmeetInEffort = effortIn; 
-        ?joinmeetOutEffort = effortOut in 
-    (roundedLeftDistributive  (|<=?) (>⊔<) (>⊓<) (<⊔>) (<⊓>) e1 e2 e3)
+    (roundedLeftDistributive  (pLeqEff effortComp) (meetInEff effortIn) (joinInEff effortIn) (meetOutEff effortOut) (joinOutEff effortOut) e1 e2 e3)
     && 
-    (roundedLeftDistributive  (|<=?) (>⊔<) (>⊓<) (<⊔>) (<⊓>) e1 e2 e3)
+    (roundedLeftDistributive  (pLeqEff effortComp) (meetInEff effortIn) (joinInEff effortIn) (meetOutEff effortOut) (joinOutEff effortOut) e1 e2 e3)
 
 
 testsRoundedLatticeDistributive :: 

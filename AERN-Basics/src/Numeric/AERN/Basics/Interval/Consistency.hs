@@ -33,7 +33,7 @@ import Numeric.AERN.Basics.CInterval
 import Numeric.AERN.Basics.Consistency
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.NumericOrder ((<=?))
+import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 
 
 import Test.QuickCheck

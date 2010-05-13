@@ -18,6 +18,8 @@ module Numeric.AERN.RealArithmetic.Measures where
 import {-# Source #-} Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
+
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 import Test.QuickCheck
@@ -57,7 +59,7 @@ propDistanceTriangular _ effortDist effortComp effortAdd e1 e2 e3 =
         d23 = distanceBetweenEff effortDist e2 e3
         d13 = distanceBetweenEff effortDist e1 e3
         in
-        case (d12 <+> d23) NumOrd.>=? d13 of
+        case (d12 <+> d23) >=? d13 of
             Nothing -> True
             Just b -> b
 
@@ -100,7 +102,7 @@ propImprecisionDecreasesWithRefinement _ effortImpr effortComp (RefOrd.LEPair (e
     let 
     ?pCompareEffort = effortComp 
     in
-    case (imprecisionOfEff effortImpr e1) NumOrd.>=? (imprecisionOfEff effortImpr e2) of
+    case (imprecisionOfEff effortImpr e1) >=? (imprecisionOfEff effortImpr e2) of
         Nothing -> True
         Just b -> b
 

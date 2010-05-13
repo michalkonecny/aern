@@ -56,10 +56,9 @@ propLatticeComparisonCompatible ::
     (PartialCompareEffortIndicator t) -> 
     UniformlyOrderedPair t -> Bool
 propLatticeComparisonCompatible _ effort (UniformlyOrderedPair (e1,e2)) =
-    let ?pCompareEffort = effort in 
-        (joinOfOrderedPair (==) (|<=?) (|\/) e1 e2) 
+        (joinOfOrderedPair (==) (pLeqEff effort) (|\/) e1 e2) 
         && 
-        (meetOfOrderedPair (==) (|<=?) (|/\) e1 e2) 
+        (meetOfOrderedPair (==) (pLeqEff effort) (|/\) e1 e2) 
 
 propLatticeJoinAboveBoth :: 
     (PartialComparison t, Lattice t) => 
@@ -67,8 +66,7 @@ propLatticeJoinAboveBoth ::
     (PartialCompareEffortIndicator t) -> 
     UniformlyOrderedPair t -> Bool
 propLatticeJoinAboveBoth _ effort (UniformlyOrderedPair (e1,e2)) = 
-    let ?pCompareEffort = effort in 
-        joinAboveOperands (|<=?) (|\/) e1 e2
+        joinAboveOperands (pLeqEff effort) (|\/) e1 e2
 
 
 propLatticeMeetBelowBoth :: 
@@ -77,8 +75,7 @@ propLatticeMeetBelowBoth ::
     (PartialCompareEffortIndicator t) -> 
     UniformlyOrderedPair t -> Bool
 propLatticeMeetBelowBoth _ effort (UniformlyOrderedPair (e1,e2)) = 
-    let ?pCompareEffort = effort in 
-        meetBelowOperands (|<=?) (|/\) e1 e2
+    meetBelowOperands (pLeqEff effort) (|/\) e1 e2
 
 propLatticeJoinIdempotent :: 
     (Eq t, Lattice t) => 
@@ -107,8 +104,7 @@ propLatticeJoinMonotone ::
 propLatticeJoinMonotone _ effortComp
         (LEPair (e1Lower,e1)) 
         (LEPair (e2Lower,e2)) =
-    let ?pCompareEffort = effortComp in
-    case rLower |<=? r of
+    case pLeqEff effortComp rLower r of
         Just b -> b
         Nothing -> True
     where
@@ -145,7 +141,7 @@ propLatticeMeetMonotone _ effortComp
         (LEPair (e1Lower,e1)) 
         (LEPair (e2Lower,e2)) =
     let ?pCompareEffort = effortComp in
-    case rLower |<=? r of
+    case pLeqEff effortComp rLower r of
         Just b -> b
         Nothing -> True
     where

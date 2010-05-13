@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.Basis
     Description :  domain bases using refinement order notation  
@@ -55,8 +54,7 @@ propBasisComparisonCompatible ::
     (PartialCompareEffortIndicator t) -> 
     t -> t -> Bool
 propBasisComparisonCompatible _ effortComp =
-    let ?pCompareEffort = effortComp in 
-        partialJoinOfOrderedPair (==) (|<=?) (|\/?) 
+    partialJoinOfOrderedPair (==) (pLeqEff effortComp) (|\/?) 
 
 propBasisJoinAboveBoth :: 
     (PartialComparison t, Basis t) => 
@@ -64,8 +62,7 @@ propBasisJoinAboveBoth ::
     (PartialCompareEffortIndicator t) -> 
     UniformlyOrderedPair t -> Bool
 propBasisJoinAboveBoth _ effortComp (UniformlyOrderedPair (e1,e2)) = 
-    let ?pCompareEffort = effortComp in 
-        partialJoinAboveOperands (|<=?) (|\/?) e1 e2
+    partialJoinAboveOperands (pLeqEff effortComp) (|\/?) e1 e2
 
 propBasisJoinIdempotent :: 
     (Eq t, Basis t) => 
@@ -94,10 +91,9 @@ propBasisJoinMonotone ::
 propBasisJoinMonotone _ effortComp
         (LEPair (e1Lower,e1)) 
         (LEPair (e2Lower,e2)) =
-    let ?pCompareEffort = effortComp in
     case (maybeRLower, maybeR) of
         (Just rLower, Just r) ->
-            case rLower |<=? r of
+            case pLeqEff effortComp rLower r of
                 Just b -> b
                 Nothing -> True
         (_, _) -> True

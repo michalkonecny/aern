@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.ApproxOrder
     Description :  Comparisons with semidecidable order  
@@ -34,8 +33,6 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>?, ⊏?, ⊑?, ⊒?, ⊐?
-
 {-|
     A type with semi-decidable equality and partial order
 -}
@@ -55,17 +52,6 @@ class PartialComparison t where
     pGeqEff :: (PartialCompareEffortIndicator t) -> t -> t -> Maybe Bool
     pGreaterEff :: (PartialCompareEffortIndicator t) -> t -> t -> Maybe Bool
     
-    -- | Partial equality
-    (|==?)    :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
-    -- | Partial `is comparable to`.
-    (|<==>?)  :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
-    -- | Partial `is not comparable to`.
-    (|</=>?)  :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
-    (|<?)     :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
-    (|<=?)    :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
-    (|>=?)    :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
-    (|>?)     :: (?pCompareEffort :: PartialCompareEffortIndicator t) => t -> t -> Maybe Bool
-
     -- defaults for all convenience operations:
     pEqualEff effort a b = fmap (== EQ) (pCompareEff effort a b)
     pLessEff effort a b = fmap (== LT) (pCompareEff effort a b)
@@ -75,31 +61,6 @@ class PartialComparison t where
     pLeqEff effort a b = fmap (`elem` [EQ,LT,LEE]) (pCompareEff effort a b)
     pGeqEff effort a b = fmap (`elem` [EQ,GT,GEE]) (pCompareEff effort a b)
 
-    (|==?) = pEqualEff ?pCompareEffort
-    (|<==>?) = pComparableEff ?pCompareEffort
-    (|</=>?) = pIncomparableEff ?pCompareEffort
-    (|<?) = pLessEff ?pCompareEffort
-    (|>?) = pGreaterEff ?pCompareEffort
-    (|<=?) = pLeqEff ?pCompareEffort
-    (|>=?) = pGeqEff ?pCompareEffort
-
--- convenience Unicode math operator notation:
-(⊏?) :: 
-    (PartialComparison t, ?pCompareEffort :: PartialCompareEffortIndicator t) => 
-    t -> t -> Maybe Bool
-(⊏?) = (|<?)
-(⊑?) :: 
-    (PartialComparison t, ?pCompareEffort :: PartialCompareEffortIndicator t) => 
-    t -> t -> Maybe Bool
-(⊑?) = (|<=?)
-(⊒?) ::
-    (PartialComparison t, ?pCompareEffort :: PartialCompareEffortIndicator t) => 
-    t -> t -> Maybe Bool
-(⊒?) = (|>=?)
-(⊐?) ::
-    (PartialComparison t, ?pCompareEffort :: PartialCompareEffortIndicator t) => 
-    t -> t -> Maybe Bool
-(⊐?) = (|>?)
 
 propPartialComparisonReflexiveEQ :: 
     (PartialComparison t) => 
@@ -119,25 +80,25 @@ propPartialComparisonTransitiveEQ ::
     (PartialComparison t) => 
     t -> (PartialCompareEffortIndicator t) -> t -> t -> t -> Bool
 propPartialComparisonTransitiveEQ _ effort = 
-    let ?pCompareEffort = effort in partialTransitive (|==?)
+    partialTransitive (pEqualEff effort)
 
 propPartialComparisonTransitiveLT :: 
     (PartialComparison t) => 
     t -> (PartialCompareEffortIndicator t) -> t -> t -> t -> Bool
 propPartialComparisonTransitiveLT _ effort = 
-    let ?pCompareEffort = effort in partialTransitive (|<?)
+    partialTransitive (pLessEff effort)
 
 propPartialComparisonTransitiveLE :: 
     (PartialComparison t) => 
     t -> (PartialCompareEffortIndicator t) -> t -> t -> t -> Bool
 propPartialComparisonTransitiveLE _ effort =
-    let ?pCompareEffort = effort in partialTransitive (|<=?)
+    partialTransitive (pLeqEff effort)
 
 propExtremaInPartialComparison :: 
     (PartialComparison t, HasExtrema t) => 
     t -> (PartialCompareEffortIndicator t) -> t -> Bool
 propExtremaInPartialComparison _ effort = 
-    let ?pCompareEffort = effort in partialOrderExtrema (|<=?) bottom top
+    partialOrderExtrema (pLeqEff effort) bottom top
 
 testsPartialComparison :: 
     (PartialComparison t,
