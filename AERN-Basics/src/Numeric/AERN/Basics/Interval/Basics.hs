@@ -24,7 +24,7 @@ where
 import Numeric.AERN.Basics.CInterval
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.NumericOrder ((<=?))
+import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 
 {-|
     Pairs of endpoints.  An end user should not use this type directly

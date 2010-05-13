@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.RoundedBasis
     Description :  domain bases with outwards and inwards rounded operations  
@@ -35,7 +34,6 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-infixr 2 <|\/>?, <⊔>?, >|\/<?, >⊔<?
 
 {-|
     A type with outward-rounding lattice operations.
@@ -45,17 +43,6 @@ class OuterRoundedBasis t where
     partialJoinOutEff :: PartialJoinOutEffortIndicator t -> t -> t -> Maybe t
     partialJoinOutDefaultEffort :: t -> PartialJoinOutEffortIndicator t
 
-    (<|\/>?) ::
-        (?partialJoinOutEffort :: PartialJoinOutEffortIndicator t) => 
-        t -> t -> Maybe t
-    
-    (<|\/>?) = partialJoinOutEff ?partialJoinOutEffort 
-
-{-| convenience Unicode notation for '<|\/>?' -}
-(<⊔>?) :: 
-    (OuterRoundedBasis t, ?partialJoinOutEffort :: PartialJoinOutEffortIndicator t) => 
-    t -> t -> Maybe t
-(<⊔>?) = (<|\/>?)
 
 -- properties of OuterRoundedBasis
 propOuterRoundedBasisComparisonCompatible :: 
@@ -64,8 +51,8 @@ propOuterRoundedBasisComparisonCompatible ::
     (PartialCompareEffortIndicator t, PartialJoinOutEffortIndicator t) ->
     t -> t -> Bool
 propOuterRoundedBasisComparisonCompatible _ (effortComp, effortJoin) =
-    let ?pCompareEffort = effortComp; ?partialJoinOutEffort = effortJoin in 
-        downRoundedPartialJoinOfOrderedPair (|<=?) (<|\/>?)
+    downRoundedPartialJoinOfOrderedPair (pLeqEff effortComp) 
+        (partialJoinOutEff effortJoin)
 
 {-|
     A type with outward-rounding lattice operations.
@@ -75,17 +62,6 @@ class InnerRoundedBasis t where
     partialJoinInEff :: PartialJoinInEffortIndicator t -> t -> t -> Maybe t
     partialJoinInDefaultEffort :: t -> PartialJoinInEffortIndicator t
 
-    (>|\/<?) ::
-        (?partialJoinInEffort :: PartialJoinInEffortIndicator t) => 
-        t -> t -> Maybe t
-    
-    (>|\/<?) = partialJoinInEff ?partialJoinInEffort 
-
-{-| convenience Unicode notation for '>|\/<?' -}
-(>⊔<?) :: 
-    (InnerRoundedBasis t, ?partialJoinInEffort :: PartialJoinInEffortIndicator t) => 
-    t -> t -> Maybe t
-(>⊔<?) = (>|\/<?)
 
 -- properties of InnerRoundedBasis:
 propInnerRoundedBasisJoinAboveBoth :: 
@@ -94,8 +70,7 @@ propInnerRoundedBasisJoinAboveBoth ::
     (PartialCompareEffortIndicator t, PartialJoinInEffortIndicator t) ->
     t -> t -> Bool
 propInnerRoundedBasisJoinAboveBoth _ (effortComp, effortJoin) = 
-    let ?pCompareEffort = effortComp; ?partialJoinInEffort = effortJoin in 
-        partialJoinAboveOperands (|<=?) (>|\/<?)
+    partialJoinAboveOperands (pLeqEff effortComp) (partialJoinInEff effortJoin)
 
 class (OuterRoundedBasis t, InnerRoundedBasis t) => RoundedBasis t
 
@@ -108,10 +83,8 @@ propRoundedBasisJoinIdempotent ::
      PartialJoinOutEffortIndicator t) ->
     t -> Bool
 propRoundedBasisJoinIdempotent _ (effortComp, effortJoinIn, effortJoinOut) = 
-    let ?pCompareEffort = effortComp 
-        ?partialJoinInEffort = effortJoinIn
-        ?partialJoinOutEffort = effortJoinOut in 
-    partialRoundedIdempotent (|<=?) (>|\/<?) (<|\/>?)
+    partialRoundedIdempotent (pLeqEff effortComp) 
+        (partialJoinInEff effortJoinIn) (partialJoinOutEff effortJoinOut)
 
 propRoundedBasisJoinCommutative :: 
     (PartialComparison t, RoundedBasis t) => 
@@ -122,10 +95,9 @@ propRoundedBasisJoinCommutative ::
     UniformlyOrderedPair t -> Bool
 propRoundedBasisJoinCommutative _ (effortComp, effortJoinIn, effortJoinOut)
         (UniformlyOrderedPair (e1,e2)) = 
-    let ?pCompareEffort = effortComp 
-        ?partialJoinInEffort = effortJoinIn
-        ?partialJoinOutEffort = effortJoinOut in 
-    partialRoundedCommutative (|<=?) (>|\/<?) (<|\/>?) e1 e2
+    partialRoundedCommutative (pLeqEff effortComp) 
+        (partialJoinInEff effortJoinIn) (partialJoinOutEff effortJoinOut) 
+        e1 e2
 
 propRoundedBasisJoinAssociative :: 
     (PartialComparison t, RoundedBasis t) => 
@@ -136,10 +108,9 @@ propRoundedBasisJoinAssociative ::
     UniformlyOrderedTriple t -> Bool
 propRoundedBasisJoinAssociative _ (effortComp, effortJoinIn, effortJoinOut)
         (UniformlyOrderedTriple (e1,e2,e3)) = 
-    let ?pCompareEffort = effortComp 
-        ?partialJoinInEffort = effortJoinIn
-        ?partialJoinOutEffort = effortJoinOut in 
-    partialRoundedAssociative (|<=?) (>|\/<?) (<|\/>?) e1 e2 e3
+    partialRoundedAssociative (pLeqEff effortComp) 
+        (partialJoinInEff effortJoinIn) (partialJoinOutEff effortJoinOut) 
+        e1 e2 e3
 
 
 propRoundedBasisJoinMonotone ::
@@ -154,10 +125,9 @@ propRoundedBasisJoinMonotone ::
 propRoundedBasisJoinMonotone _ (effortComp, effortOut, effortIn)
         (LEPair (e1Lower,e1)) 
         (LEPair (e2Lower,e2)) =
-    let ?pCompareEffort = effortComp in
     case (maybeRLower, maybeR) of
         (Just rLower, Just r) ->
-            case rLower |<=? r of
+            case pLeqEff effortComp rLower r of
                 Just b -> b
                 Nothing -> True
         (_, _) -> True

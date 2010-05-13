@@ -24,6 +24,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals as UpDnNumerals
 
@@ -48,13 +49,13 @@ propFromIntegerMonotone ::
     Integer -> Integer -> Bool
 propFromIntegerMonotone sample (effortFrom, effortComp) i1 i2 
     | i1 > i2 = 
-        (trueOrNothing $ let ?pCompareEffort = effortComp in a1Out NumOrd.>? a2Out)
+        (trueOrNothing $ let ?pCompareEffort = effortComp in a1Out >? a2Out)
         &&
-        (trueOrNothing $ let ?pCompareEffort = effortComp in a1In NumOrd.>? a2In)
+        (trueOrNothing $ let ?pCompareEffort = effortComp in a1In >? a2In)
     | i1 < i2 = 
-        (trueOrNothing $ let ?pCompareEffort = effortComp in a1Out NumOrd.<? a2Out)
+        (trueOrNothing $ let ?pCompareEffort = effortComp in a1Out <? a2Out)
         &&
-        (trueOrNothing $ let ?pCompareEffort = effortComp in a1In NumOrd.<? a2In)
+        (trueOrNothing $ let ?pCompareEffort = effortComp in a1In <? a2In)
     | otherwise = True
     where
     a1Out = fromIntegerOutEff effortFrom i1 
@@ -72,7 +73,7 @@ propToFromInteger ::
     t -> Bool
 propToFromInteger sample (effortComp, effortFrom, effortTo) a =
     let ?pCompareEffort = effortComp in
-    case (aDnOut NumOrd.<=? a, a NumOrd.<=? aUpOut) of
+    case (aDnOut <=? a, a <=? aUpOut) of
        (Just False, _) -> printErrorDetail
        (_, Just False) -> printErrorDetail
        _ -> True
@@ -111,13 +112,13 @@ propFromDoubleMonotone ::
     Double -> Double -> Bool
 propFromDoubleMonotone sample (effortFrom, effortComp) i1 i2 
     | i1 > i2 = 
-        (trueOrNothing $ let ?pCompareEffort = effortComp in a1Out NumOrd.>? a2Out)
+        (trueOrNothing $ let ?pCompareEffort = effortComp in a1Out >? a2Out)
         &&
-        (trueOrNothing $ let ?pCompareEffort = effortComp in a1In NumOrd.>? a2In)
+        (trueOrNothing $ let ?pCompareEffort = effortComp in a1In >? a2In)
     | i1 < i2 = 
-        (trueOrNothing $ let ?pCompareEffort = effortComp in a1Out NumOrd.<? a2Out)
+        (trueOrNothing $ let ?pCompareEffort = effortComp in a1Out <? a2Out)
         &&
-        (trueOrNothing $ let ?pCompareEffort = effortComp in a1In NumOrd.<? a2In)
+        (trueOrNothing $ let ?pCompareEffort = effortComp in a1In <? a2In)
     | otherwise = True
     where
     a1Out = fromDoubleOutEff effortFrom i1 
@@ -135,7 +136,7 @@ propToFromDouble ::
     t -> Bool
 propToFromDouble sample (effortComp, effortFrom, effortTo) a =
     let ?pCompareEffort = effortComp in
-    case (aDnOut NumOrd.<=? a, a NumOrd.<=? aUpOut) of
+    case (aDnOut <=? a, a <=? aUpOut) of
        (Just False, _) -> printErrorDetail
        (_, Just False) -> printErrorDetail
        _ -> True

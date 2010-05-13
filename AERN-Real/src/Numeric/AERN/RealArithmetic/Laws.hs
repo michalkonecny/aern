@@ -30,6 +30,8 @@ import Data.Maybe
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
+
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Exception
@@ -346,13 +348,13 @@ equalRoundingUpDnImprovement expr1Up expr1Dn expr2Up expr2Dn pCompareEff measure
     result = 
         (and successes) && isImprovement  
     imprecision0Zero = 
-        (imprecision0 NumOrd.==? zero) == Just True
+        (imprecision0 ==? zero) == Just True
         where
         ?pCompareEffort = effortImprComp
     isImprovement = 
         or $ null imprecisions : -- no way to raise effort  
               imprecision0Zero : -- or it is exact
-                (catMaybes $ map (imprecision0 NumOrd.>?) imprecisions)  -- or it can be improved
+                (catMaybes $ map (imprecision0 >?) imprecisions)  -- or it can be improved
         where
         ?pCompareEffort = effortImprComp
     (successes, imprecision0 : imprecisions) = unzip $ map check efforts

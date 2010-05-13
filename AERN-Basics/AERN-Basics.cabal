@@ -46,7 +46,11 @@ Library
     Numeric.AERN.Basics.Mutable
     Numeric.AERN.Basics.PartialOrdering
     Numeric.AERN.Basics.NumericOrder
+    Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
+    Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
     Numeric.AERN.Basics.RefinementOrder
+    Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
+    Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
     Numeric.AERN.Basics.Consistency
     Numeric.AERN.Basics.CInterval
     Numeric.AERN.Basics.CInterval.NumericOrder

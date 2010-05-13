@@ -31,7 +31,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding ((<+>))
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
-import Numeric.AERN.Basics.RefinementOrder ((<⊓>))
+import Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
 
 
 instance (HasDistance e, ArithInOut.RoundedAdd (Distance e)) => 
