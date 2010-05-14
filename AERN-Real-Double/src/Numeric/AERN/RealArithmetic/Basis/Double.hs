@@ -15,6 +15,7 @@
 -}
 module Numeric.AERN.RealArithmetic.Basis.Double 
 (
+   module Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals,
    module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder,
    module Numeric.AERN.RealArithmetic.Basis.Double.Numerals,
    module Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps,
@@ -23,6 +24,7 @@ module Numeric.AERN.RealArithmetic.Basis.Double
 )
 where
 
+import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
 import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 import Numeric.AERN.RealArithmetic.Basis.Double.Numerals
 import Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps

@@ -22,9 +22,11 @@ module Numeric.AERN.Basics.Interval.Basics
 where
 
 import Numeric.AERN.Basics.CInterval
+import Numeric.AERN.Basics.ShowInternals
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
+
 
 {-|
     Pairs of endpoints.  An end user should not use this type directly
@@ -38,6 +40,14 @@ data Interval e =
     }
     deriving (Eq)
     
+instance (ShowInternals e) => (ShowInternals (Interval e))
+    where
+    type ShowInternalsIndicator (Interval e) = ShowInternalsIndicator e
+    defaultShowIndicator (Interval l h) = defaultShowIndicator l
+    showInternals indicator (Interval l h) =
+        "[" ++ showInternals indicator l ++ 
+         "," ++ showInternals indicator h ++ "]"
+
 instance (Show e) => (Show (Interval e))
     where
     show (Interval l h) = "[" ++ show l ++ "," ++ show h ++ "]"

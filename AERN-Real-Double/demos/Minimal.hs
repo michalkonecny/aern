@@ -19,13 +19,23 @@ import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
 
 import Numeric.AERN.Basics.CInterval
+import Numeric.AERN.Basics.ShowInternals
+
+import Control.Concurrent
 
 main =
     do
-    putStrLn $ "big = " ++ show big ++ " [" ++ show (decodeFloat big) ++ "]"
-    putStrLn $ "t1 = " ++ show t1 ++ " [" ++ show (decodeFloat t1) ++ "]"
-    putStrLn $ "t2 = " ++ show t2 ++ " [" ++ show (decodeFloat t2L) ++ " , " ++ show (decodeFloat t2H) ++ "]"
+--    setMachineRoundingModeUp 
+    -- not sure why the above is sometimes needed...
+    -- the unsafePerformIO embedded in rounded ops sometimes 
+    -- does not work when run standalone, 
+    -- but they seem to work when run from ghci 
+    putStrLn $ "big = " ++ showInternals shouldShowInternals big
+    putStrLn $ "t1 = " ++ showInternals shouldShowInternals t1
+    putStrLn $ "t2 = " ++ showInternals shouldShowInternals t2
     return ()
+
+shouldShowInternals = False
 
 big = 10E200
 

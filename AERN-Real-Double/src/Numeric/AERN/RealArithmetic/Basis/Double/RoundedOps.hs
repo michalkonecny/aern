@@ -1,5 +1,4 @@
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps
     Description :  rounded arithmetic instances for Double
@@ -16,7 +15,7 @@
 -}
 
 module Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps 
-()
+(setMachineRoundingModeUp)
 where
 
 import Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
@@ -45,15 +44,19 @@ setMachineRoundingModeUp =
     currentRndMode <- getRound
     case currentRndMode == Upward of
         True ->
+            do
+--            putStrLn "setMachineRoundingModeUp: already up"
             return ()
         False ->
             do
             success <- setRound Upward
             case success of
-                True -> 
-                   return ()
+                True ->
+                    do 
+--                    putStrLn $ "setMachineRoundingModeUp: switching up from " ++ show currentRndMode
+                    return ()
                 False -> 
-                   error "Numeric.AERN.RealArithmetic.Basics.Double: failed to switch rounding mode"
+                    error "Numeric.AERN.RealArithmetic.Basics.Double: failed to switch rounding mode"
 
 detectNaNThrow :: String -> Double -> Double
 detectNaNThrow msg a 
