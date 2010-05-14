@@ -27,7 +27,7 @@ import Numeric.AERN.Basics.CInterval
 import Numeric.AERN.Basics.Consistency
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding ((<+>))
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd

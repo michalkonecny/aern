@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.NumericOrderRounding.RoundedOps
     Description :  rounded basic arithmetical operations  
@@ -41,18 +40,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import Data.Maybe
 
-infixl 6 +., +^, -., -^
-infixl 7 *., *^
-
 class RoundedAdd t where
     type AddEffortIndicator t
     addUpEff :: AddEffortIndicator t -> t -> t -> t
     addDnEff :: AddEffortIndicator t -> t -> t -> t
     addDefaultEffort :: t -> AddEffortIndicator t
-    (+^) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
-    (+.) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
-    (+^) = addUpEff ?addUpDnEffort
-    (+.) = addDnEff ?addUpDnEffort
 
 propUpDnAddZero ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -120,10 +112,6 @@ class (RoundedAdd t, Neg t) => RoundedSubtr t where
     subtrDnEff :: (AddEffortIndicator t) -> t -> t -> t
     subtrUpEff effort a b = addUpEff effort a (neg b)
     subtrDnEff effort a b = addDnEff effort a (neg b)
-    (-^) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
-    (-.) :: (?addUpDnEffort :: AddEffortIndicator t) => t -> t -> t
-    a -^ b = addUpEff ?addUpDnEffort a (neg b)
-    a -. b = addDnEff ?addUpDnEffort a (neg b)
 
 propUpDnSubtrElim ::
     (NumOrd.PartialComparison t, RoundedSubtr t, HasZero t,
@@ -162,13 +150,13 @@ propUpDnSubtrNegAdd _ effortDist effortDistComp initEffort e1 e2 =
         NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
     where
     expr1Up eff =
-        let ?addUpDnEffort = eff in e1 -^ (neg e2)
+        let (-^) = subtrUpEff eff in e1 -^ (neg e2)
     expr1Dn eff =
-        let ?addUpDnEffort = eff in e1 -. (neg e2)
+        let (-.) = subtrDnEff eff in e1 -. (neg e2)
     expr2Up eff =
-        let ?addUpDnEffort = eff in e1 +^ e2
+        let (+^) = addUpEff eff in e1 +^ e2
     expr2Dn eff =
-        let ?addUpDnEffort = eff in e1 +. e2
+        let (+.) = addDnEff eff in e1 +. e2
 
 
 testsUpDnSubtr (name, sample) =
@@ -267,10 +255,6 @@ class RoundedMultiply t where
     multUpEff :: MultEffortIndicator t -> t -> t -> t
     multDnEff :: MultEffortIndicator t -> t -> t -> t
     multDefaultEffort :: t -> MultEffortIndicator t
-    (*^) :: (?multUpDnEffort :: MultEffortIndicator t) => t -> t -> t
-    (*.) :: (?multUpDnEffort :: MultEffortIndicator t) => t -> t -> t
-    (*^) = multUpEff ?multUpDnEffort
-    (*.) = multDnEff ?multUpDnEffort
 
 class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t) => RoundedRing t
 
@@ -330,22 +314,22 @@ propUpDnMultAssociative _ effortDist effortDistComp minmaxEffort initEffort e1 e
         NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
     where
     expr1Up eff =
-        let ?multUpDnEffort = eff in
+        let (*^) = multUpEff eff; (*.) = multDnEff eff in
         let r1 = e1 *^ (e2 *^ e3) in
         let r2 = e1 *^ (e2 *. e3) in
         NumOrd.maxUpEff minmaxEffort r1 r2
     expr1Dn eff =
-        let ?multUpDnEffort = eff in
+        let (*^) = multUpEff eff; (*.) = multDnEff eff in
         let r1 = e1 *. (e2 *^ e3) in
         let r2 = e1 *. (e2 *. e3) in
         NumOrd.minDnEff minmaxEffort r1 r2
     expr2Up eff =
-        let ?multUpDnEffort = eff in
+        let (*^) = multUpEff eff; (*.) = multDnEff eff in
         let r1 = (e1 *^ e2) *^ e3 in
         let r2 = (e1 *. e2) *^ e3 in
         NumOrd.maxUpEff minmaxEffort r1 r2
     expr2Dn eff =
-        let ?multUpDnEffort = eff in
+        let (*^) = multUpEff eff; (*.) = multDnEff eff in
         let r1 = (e1 *^ e2) *. e3 in
         let r2 = (e1 *. e2) *. e3 in
         NumOrd.minDnEff minmaxEffort r1 r2
@@ -374,24 +358,24 @@ propUpDnMultDistributesOverAdd _ effortDist effortDistComp minmaxEffort initEffo
         NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
     where
     expr1Up (effMult, effAdd) =
-        let ?multUpDnEffort = effMult in
-        let ?addUpDnEffort = effAdd in
+        let (*^) = multUpEff effMult in
+        let (+^) = addUpEff effAdd; (+.) = addDnEff effAdd in
         let r1 = e1 *^ (e2 +^ e3) in
         let r2 = e1 *^ (e2 +. e3) in
         NumOrd.maxUpEff minmaxEffort r1 r2
     expr1Dn (effMult, effAdd) =
-        let ?multUpDnEffort = effMult in
-        let ?addUpDnEffort = effAdd in
+        let (*.) = multDnEff effMult in
+        let (+^) = addUpEff effAdd; (+.) = addDnEff effAdd in
         let r1 = e1 *. (e2 +^ e3) in
         let r2 = e1 *. (e2 +. e3) in
         NumOrd.minDnEff minmaxEffort r1 r2
     expr2Up (effMult, effAdd) =
-        let ?multUpDnEffort = effMult in
-        let ?addUpDnEffort = effAdd in
+        let (*^) = multUpEff effMult in
+        let (+^) = addUpEff effAdd in
         (e1 *^ e2) +^ (e1 *^ e3)
     expr2Dn (effMult, effAdd) =
-        let ?multUpDnEffort = effMult in
-        let ?addUpDnEffort = effAdd in
+        let (*.) = multDnEff effMult in
+        let (+.) = addDnEff effAdd in
         (e1 *. e2) +. (e1 *. e3)
        
     
@@ -413,10 +397,6 @@ class RoundedDivide t where
     divUpEff :: DivEffortIndicator t -> t -> t -> t
     divDnEff :: DivEffortIndicator t -> t -> t -> t
     divDefaultEffort :: t -> DivEffortIndicator t
-    (/^) :: (?divUpDnEffort :: DivEffortIndicator t) => t -> t -> t
-    (/.) :: (?divUpDnEffort :: DivEffortIndicator t) => t -> t -> t
-    (/^) = divUpEff ?divUpDnEffort
-    (/.) = divDnEff ?divUpDnEffort
 
 class (RoundedRing t, RoundedDivide t) => RoundedField t
 
@@ -466,21 +446,23 @@ propUpDnDivRecipMult _ effortDist effortDistComp minmaxEffort initEffort e1 e2 =
         NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
     where
     expr1Up (effMult, effDiv) =
-        let ?multUpDnEffort = effMult in
-        let ?divUpDnEffort = effDiv in
+        let (*^) = multUpEff effMult in
+        let (/^) = divUpEff effDiv; (/.) = divDnEff effDiv in
         let r1 = e1 *^ (one /^ e2) in
         let r2 = e1 *^ (one /. e2) in
         NumOrd.maxUpEff minmaxEffort r1 r2
     expr1Dn (effMult, effDiv) =
-        let ?multUpDnEffort = effMult in
-        let ?divUpDnEffort = effDiv in
+        let (*.) = multDnEff effMult in
+        let (/^) = divUpEff effDiv; (/.) = divDnEff effDiv in
         let r1 = e1 *. (one /^ e2) in
         let r2 = e1 *. (one /. e2) in
         NumOrd.minDnEff minmaxEffort r1 r2
     expr2Up (effMult, effDiv) =
-        let ?divUpDnEffort = effDiv in e1 /^ e2
+        let (/^) = divUpEff effDiv in
+        e1 /^ e2
     expr2Dn (effMult, effDiv) =
-        let ?divUpDnEffort = effDiv in e1 /. e2
+        let (/.) = divDnEff effDiv in
+        e1 /. e2
 
 testsUpDnDiv (name, sample) =
     testGroup (name ++ " /. /^") $

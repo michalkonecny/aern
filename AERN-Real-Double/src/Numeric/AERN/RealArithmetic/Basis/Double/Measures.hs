@@ -22,7 +22,8 @@ import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 import Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
 import Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps
 
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.Interval
@@ -32,15 +33,15 @@ import Numeric.AERN.Basics.CInterval
 
 instance HasDistance Double where
     type Distance Double = DI
-    type DistanceEffortIndicator Double = AddEffortIndicator DI
-    distanceDefaultEffort d = addDefaultEffort (sampleDI :: DI)
+    type DistanceEffortIndicator Double = ArithInOut.AddEffortIndicator DI
+    distanceDefaultEffort d = ArithInOut.addDefaultEffort (sampleDI :: DI)
     distanceBetweenEff effort d1 d2 =
 --        | d1 == 1/0 && d2 == 1/0 = zero 
 --          -- distance between two infinities is zero (beware: distance not continuous at infinities!)  
 --        | d1 == -1/0 && d2 == -1/0 = zero
 --        | otherwise =
-            let ?addInOutEffort = effort :: AddEffortIndicator (Distance Double) in
-            absOutEff ((),()) (d2I <-> d1I)
+            let ?addInOutEffort = effort :: ArithInOut.AddEffortIndicator (Distance Double) in
+            ArithInOut.absOutEff ((),()) (d2I <-> d1I)
             where
             d1I = fromEndpoints (d1, d1)
             d2I = fromEndpoints (d2, d2)

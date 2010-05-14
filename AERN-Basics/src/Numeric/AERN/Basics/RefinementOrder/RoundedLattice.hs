@@ -82,7 +82,7 @@ propRoundedLatticeJoinAboveBoth ::
     UniformlyOrderedPair t -> Bool
 propRoundedLatticeJoinAboveBoth _ (effortComp, effortIn)
         (UniformlyOrderedPair (e1,e2)) = 
-    joinAboveOperands (pLeqEff effortComp) (meetInEff effortIn) e1 e2
+    joinAboveOperands (pLeqEff effortComp) (joinInEff effortIn) e1 e2
 
 propRoundedLatticeMeetBelowBoth :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -92,7 +92,7 @@ propRoundedLatticeMeetBelowBoth ::
     UniformlyOrderedPair t -> Bool
 propRoundedLatticeMeetBelowBoth _ (effortComp, effortOut)
         (UniformlyOrderedPair (e1,e2)) = 
-    meetBelowOperands (pLeqEff effortComp) (joinOutEff effortOut) e1 e2
+    meetBelowOperands (pLeqEff effortComp) (meetOutEff effortOut) e1 e2
 
 propRoundedLatticeJoinIdempotent :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -102,7 +102,7 @@ propRoundedLatticeJoinIdempotent ::
      JoinMeetOutEffortIndicator t) -> 
     t -> Bool
 propRoundedLatticeJoinIdempotent _ (effortComp, effortIn, effortOut) = 
-    roundedIdempotent (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut)
+    roundedIdempotent (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut)
 
 propRoundedLatticeJoinCommutative :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -113,7 +113,7 @@ propRoundedLatticeJoinCommutative ::
     UniformlyOrderedPair t -> Bool
 propRoundedLatticeJoinCommutative _ (effortComp, effortIn, effortOut)
         (UniformlyOrderedPair (e1,e2)) = 
-    roundedCommutative (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut) e1 e2
+    roundedCommutative (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut) e1 e2
 
 propRoundedLatticeJoinAssocative :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -124,7 +124,7 @@ propRoundedLatticeJoinAssocative ::
     UniformlyOrderedTriple t -> Bool
 propRoundedLatticeJoinAssocative _ (effortComp, effortIn, effortOut)
         (UniformlyOrderedTriple (e1,e2,e3)) = 
-    roundedAssociative (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut) e1 e2 e3
+    roundedAssociative (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut) e1 e2 e3
 
 propRoundedLatticeJoinMonotone ::
     (Eq t, RoundedLattice t, PartialComparison t) => 
@@ -153,7 +153,7 @@ propRoundedLatticeMeetIdempotent ::
      JoinMeetOutEffortIndicator t) -> 
     t -> Bool
 propRoundedLatticeMeetIdempotent _ (effortComp, effortIn, effortOut) = 
-    roundedIdempotent (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut)
+    roundedIdempotent (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut)
 
 propRoundedLatticeMeetCommutative :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -164,7 +164,7 @@ propRoundedLatticeMeetCommutative ::
     UniformlyOrderedPair t -> Bool
 propRoundedLatticeMeetCommutative _ (effortComp, effortIn, effortOut)
         (UniformlyOrderedPair (e1,e2)) = 
-    roundedCommutative (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut) e1 e2
+    roundedCommutative (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut) e1 e2
 
 propRoundedLatticeMeetAssocative :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -175,7 +175,7 @@ propRoundedLatticeMeetAssocative ::
     UniformlyOrderedTriple t -> Bool
 propRoundedLatticeMeetAssocative _ (effortComp, effortIn, effortOut)
         (UniformlyOrderedTriple (e1,e2,e3)) = 
-    roundedAssociative (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut) e1 e2 e3
+    roundedAssociative (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut) e1 e2 e3
 
 {- optional properties: -}
 propRoundedLatticeModular :: 
@@ -219,7 +219,7 @@ propRoundedLatticeDistributive _ (effortComp, effortIn, effortOut)
         (UniformlyOrderedTriple (e1,e2,e3)) = 
     (roundedLeftDistributive  (pLeqEff effortComp) (meetInEff effortIn) (joinInEff effortIn) (meetOutEff effortOut) (joinOutEff effortOut) e1 e2 e3)
     && 
-    (roundedLeftDistributive  (pLeqEff effortComp) (meetInEff effortIn) (joinInEff effortIn) (meetOutEff effortOut) (joinOutEff effortOut) e1 e2 e3)
+    (roundedLeftDistributive  (pLeqEff effortComp) (joinInEff effortIn) (meetInEff effortIn) (joinOutEff effortOut) (meetOutEff effortOut) e1 e2 e3)
 
 
 testsRoundedLatticeDistributive :: 

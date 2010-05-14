@@ -1,7 +1,7 @@
 {-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
-    Description :  convenience binary symbols with implicit effort parameters  
+    Description :  convenience binary infix operators with implicit effort parameters  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -9,7 +9,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Convenience binary symbols with implicit effort parameters.
+    Convenience binary infix operators with implicit effort parameters.
 -}
 
 module Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort where

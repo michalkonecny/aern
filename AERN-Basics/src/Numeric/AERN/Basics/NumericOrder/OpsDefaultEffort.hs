@@ -1,6 +1,6 @@
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
-    Description :  convenience binary symbols with default effort parameters  
+    Description :  convenience binary infix operators with default effort parameters  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -8,7 +8,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Convenience binary symbols with default effort parameters.
+    Convenience binary infix operators with default effort parameters.
 -}
 
 module Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort where
