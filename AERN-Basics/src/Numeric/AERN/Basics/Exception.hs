@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-|
     Module      :  Numeric.AERN.Basics.Exception
-    Description :  extension of Prelude.Ordering with non-comparable variant  
+    Description :  exception type to signal AERN specific errors  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
