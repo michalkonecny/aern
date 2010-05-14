@@ -55,8 +55,10 @@ Library
   Other-modules:
     Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
     Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedOps
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary
     Numeric.AERN.RealArithmetic.Interval.ExactOps
     Numeric.AERN.RealArithmetic.Interval.Measures
     Numeric.AERN.RealArithmetic.Interval.Numerals
