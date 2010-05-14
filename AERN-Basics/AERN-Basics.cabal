@@ -10,7 +10,7 @@ Maintainer:     mikkonecny@gmail.com
 Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
-Synopsis:       foundational type classes for approximating exact real numbers
+Synopsis:       ffoundational type classes for approximating exact real numbers
 Tested-with:    GHC ==6.12.1
 Description:
  Type-classes abstracting various kinds of approximations for exact entities:
@@ -41,6 +41,7 @@ Library
         QuickCheck >= 2.1 && < 2.2,
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3
   Exposed-modules:
+    Numeric.AERN.Basics.ShowInternals
     Numeric.AERN.Basics.Exception
     Numeric.AERN.Basics.Effort
     Numeric.AERN.Basics.Mutable

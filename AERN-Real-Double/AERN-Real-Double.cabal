@@ -41,6 +41,7 @@ Library
     Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
     Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps
     Numeric.AERN.RealArithmetic.Basis.Double.Measures
+    Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
 
 Executable testAERN-Real-Double
   hs-source-dirs: src, tests
@@ -57,7 +58,7 @@ Executable testAERN-Real-Double
 
 Executable demoAERN-Real-Double-Minimal
   hs-source-dirs: src, demos
-  ghc-options:     -O2
+  ghc-options: -O2
   main-is: Minimal.hs
   Build-Depends:
         base >= 4 && < 5,
