@@ -50,10 +50,8 @@ propDistanceTriangular ::
     (AddEffortIndicator (Distance t)) ->     
     t -> t -> t -> Bool
 propDistanceTriangular _ effortDist effortComp effortAdd e1 e2 e3 =
-    let 
-    ?pCompareEffort = effortComp 
-    ?addInOutEffort = effortAdd 
-    in
+    let ?pCompareEffort = effortComp in 
+    let (<+>) = addOutEff effortAdd in 
         let
         d12 = distanceBetweenEff effortDist e1 e2
         d23 = distanceBetweenEff effortDist e2 e3

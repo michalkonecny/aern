@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RefinementOrderRounding.RoundedMult
     Description :  rounded addition and multiplication  
@@ -43,18 +42,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import Data.Maybe
 
-infixl 6 <+>, >+<, <->, >-<
-infixl 7 <*>, >*<
-
 class RoundedAdd t where
     type AddEffortIndicator t
     addInEff :: AddEffortIndicator t -> t -> t -> t
     addOutEff :: AddEffortIndicator t -> t -> t -> t
     addDefaultEffort :: t -> AddEffortIndicator t
-    (>+<) :: (?addInOutEffort :: AddEffortIndicator t) => t -> t -> t
-    (<+>) :: (?addInOutEffort :: AddEffortIndicator t) => t -> t -> t
-    (>+<) = addInEff ?addInOutEffort
-    (<+>) = addOutEff ?addInOutEffort
 
 propInOutAddZero ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -142,10 +134,6 @@ class (RoundedAdd t, Neg t) => RoundedSubtr t where
     subtrOutEff :: (AddEffortIndicator t) -> t -> t -> t
     subtrInEff effort a b = addInEff effort a (neg b)
     subtrOutEff effort a b = addOutEff effort a (neg b)
-    (>-<) :: (?addInOutEffort :: AddEffortIndicator t) => t -> t -> t
-    (<->) :: (?addInOutEffort :: AddEffortIndicator t) => t -> t -> t
-    a >-< b = addInEff ?addInOutEffort a (neg b)
-    a <-> b = addOutEff ?addInOutEffort a (neg b)
 
 propInOutSubtrElim ::
     (RefOrd.PartialComparison t, RoundedSubtr t, HasZero t,
@@ -184,13 +172,13 @@ propInOutSubtrNegAdd _ effortDist effortDistComp initEffort e1 e2 =
         RefOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
     where
     expr1Up eff =
-        let ?addInOutEffort = eff in e1 >-< (neg e2)
+        let (>-<) = subtrInEff eff in e1 >-< (neg e2)
     expr1Dn eff =
-        let ?addInOutEffort = eff in e1 <-> (neg e2)
+        let (<->) = subtrOutEff eff in e1 <-> (neg e2)
     expr2Up eff =
-        let ?addInOutEffort = eff in e1 >+< e2
+        let (>+<) = addInEff eff in e1 >+< e2
     expr2Dn eff =
-        let ?addInOutEffort = eff in e1 <+> e2
+        let (<+>) = addOutEff eff in e1 <+> e2
 
 propInOutSubtrMonotone ::
     (RefOrd.PartialComparison t, RoundedSubtr t, Show t,
@@ -326,10 +314,6 @@ class RoundedMultiply t where
     multInEff :: MultEffortIndicator t -> t -> t -> t
     multOutEff :: MultEffortIndicator t -> t -> t -> t
     multDefaultEffort :: t -> MultEffortIndicator t
-    (>*<) :: (?multInOutEffort :: MultEffortIndicator t) => t -> t -> t
-    (<*>) :: (?multInOutEffort :: MultEffortIndicator t) => t -> t -> t
-    (>*<) = multInEff ?multInOutEffort
-    (<*>) = multOutEff ?multInOutEffort
 
 class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t) => RoundedRing t
 
@@ -442,10 +426,6 @@ class RoundedDivide t where
     divInEff :: DivEffortIndicator t -> t -> t -> t
     divOutEff :: DivEffortIndicator t -> t -> t -> t
     divDefaultEffort :: t -> DivEffortIndicator t
-    (>/<) :: (?divInOutEffort :: DivEffortIndicator t) => t -> t -> t
-    (</>) :: (?divInOutEffort :: DivEffortIndicator t) => t -> t -> t
-    (>/<) = divInEff ?divInOutEffort
-    (</>) = divOutEff ?divInOutEffort
 
 class (RoundedRing t, RoundedDivide t) => RoundedField t
 
