@@ -14,6 +14,7 @@ module Main where
 import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
 import Numeric.AERN.RealArithmetic.Interval
+import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
 import Numeric.AERN.Basics.Interval
 
 import Numeric.AERN.Basics.Consistency
@@ -40,8 +41,9 @@ testsDouble =
        NumOrd.testsLatticeDistributive ("Double", sampleD) Nothing, --  (Just ("NaN", nanD)),
        NumOrd.testsRoundedLatticeDistributive ("Double", sampleD) Nothing, -- (Just ("NaN", nanD)),
        testsDistance ("Double", sampleD),
-       ArithUpDn.testsFromToInteger ("Double", sampleD),
-       ArithUpDn.testsFromToDouble ("Double", sampleD),
+       ArithUpDn.testsConvert ("Double", sampleD, "Integer", sampleI),
+       ArithUpDn.testsConvert ("Integer", sampleI, "Double", sampleD),
+       ArithUpDn.testsConvert ("Double", sampleD, "Double", sampleD),
        ArithUpDn.testsUpDnAdd ("Double", sampleD),
        ArithUpDn.testsUpDnSubtr ("Double", sampleD),
        ArithUpDn.testsUpDnAbs ("Double", sampleD),
@@ -62,11 +64,15 @@ testsDI =
        RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI),
        testsDistance ("DI", sampleDI),
        testsImprecision ("DI", sampleDI),
-       ArithInOut.testsFromToInteger ("DI", sampleDI),
-       ArithInOut.testsFromToDouble ("DI", sampleDI),
+       ArithInOut.testsConvertNumOrd ("Integer", sampleI, "DI", sampleDI),
+       ArithInOut.testsConvertNumOrd ("Double", sampleD, "DI", sampleDI),
        ArithInOut.testsInOutAdd ("DI", sampleDI),
        ArithInOut.testsInOutSubtr ("DI", sampleDI),
        ArithInOut.testsInOutAbs ("DI", sampleDI),
        ArithInOut.testsInOutMult ("DI", sampleDI),
        ArithInOut.testsInOutDiv ("DI", sampleDI)
+--       ,
+--       ArithInOut.testsInOutExp ("DI", sampleDI)
     ]
+
+sampleI = 1 :: Integer
