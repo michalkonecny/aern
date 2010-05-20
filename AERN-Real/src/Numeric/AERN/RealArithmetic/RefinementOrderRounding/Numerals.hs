@@ -92,6 +92,6 @@ testsConvertNumOrd (name1, sample1, name2, sample2) =
         [
             testProperty "monotone" (propConvertMonotoneFromNumOrd sample1 sample2)
         ,
-            testProperty "round trip" (propConvertRoundTripNumOrd sample1 sample2)
+            testProperty "round trip" (propConvertRoundTripNumOrd sample2 sample1)
         ]
 

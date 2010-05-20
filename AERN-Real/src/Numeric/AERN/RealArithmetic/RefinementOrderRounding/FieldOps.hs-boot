@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ImplicitParams #-}
 
-module Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps where
+module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps where
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals

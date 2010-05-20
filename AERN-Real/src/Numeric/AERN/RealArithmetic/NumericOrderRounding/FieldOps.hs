@@ -14,7 +14,7 @@
     
     This module is hidden and reexported via its parent NumericOrderRounding. 
 -}
-module Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedOps 
+module Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps 
 (
     RoundedAdd(..), RoundedSubtr(..), testsUpDnAdd, testsUpDnSubtr,
     RoundedAbs(..), testsUpDnAbs, absUpUsingCompMax, absDnUsingCompMax,
