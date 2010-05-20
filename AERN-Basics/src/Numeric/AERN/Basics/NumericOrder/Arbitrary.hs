@@ -26,6 +26,7 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+import qualified Data.List as List
 import System.IO.Unsafe
 
 {-|
@@ -46,6 +47,47 @@ class ArbitraryOrderedTuple t where
         [((ix, ix),[PartialOrdering])]
            {-^ required orderings for some pairs of elements -} -> 
         Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}   
+
+instance ArbitraryOrderedTuple Int where
+    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy
+
+instance ArbitraryOrderedTuple Integer where
+    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy
+
+{-| Default implementation of linearArbitraryTupleRelatedBy for Ord instances -}   
+linearArbitraryTupleRelatedBy ::
+    (Ord ix, Show ix, Ord a, Arbitrary a) =>
+    [ix] ->
+    [((ix,ix),[PartialOrdering])] ->
+    Maybe (Gen [a])
+linearArbitraryTupleRelatedBy indices constraints =   
+       case consistentUnambiguousConstraints of
+          [] -> Nothing
+          _ -> Just $
+              do
+              unambiguousConstraints <- elements consistentUnambiguousConstraints
+              let cMap = Map.fromList unambiguousConstraints
+              let sortedIndices = List.sortBy (turnIntoOrdering cMap) indices
+              let sortedIndicesGrouped = List.groupBy (turnIntoEquality cMap) sortedIndices
+              ds <- vectorOf (length sortedIndicesGrouped) arbitrary
+              return $ 
+                  map snd $ 
+                      List.sort $ 
+                          concat $ 
+                              zipWith zip sortedIndicesGrouped $ 
+                                  map repeat $ 
+                                      List.sort ds 
+       where
+       consistentUnambiguousConstraints =
+           pickConsistentOrderings permittedInLinearOrder indices constraints
+       turnIntoOrdering cMap a b =
+           case (Map.lookup (a,b) cMap, Map.lookup (b,a) cMap) of
+               (Just pord, _) -> fromPartialOrdering pord
+               (_, Just pord) -> fromPartialOrdering $ partialOrderingTranspose pord
+       turnIntoEquality cMap a b =
+           case (Map.lookup (a,b) cMap, Map.lookup (b,a) cMap) of
+               (Just pord, _) -> pord == EQ
+               (_, Just pord) -> pord == EQ
 
 arbitraryPairRelatedBy ::
     (ArbitraryOrderedTuple t) => PartialOrdering -> Maybe (Gen (t,t))
