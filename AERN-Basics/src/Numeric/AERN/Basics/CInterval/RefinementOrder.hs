@@ -42,7 +42,7 @@ pCompareDefaultEffortIntervalRef =
 -}
 pCompareEffIntervalRef ::
     (CInterval i, 
-     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i)),
+--     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i)),
      NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.PartialCompareEffortIndicator (Endpoint i)) -> 
     i -> i -> Maybe PartialOrdering
@@ -66,8 +66,10 @@ pCompareEffIntervalRef effort i1 i2 =
   For two intervals, decide the inclusion partial order.
 -}
 compareIntervalRef ::
-        (CInterval i, NumOrd.Comparison (Endpoint i),
-         NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i))) => 
+        (CInterval i, NumOrd.Comparison (Endpoint i)
+--        ,
+--         NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator (Endpoint i))
+         ) => 
         i -> i -> PartialOrdering
 compareIntervalRef i1 i2 =
     case pCompareEffIntervalRef effort i1 i2 of
@@ -125,7 +127,7 @@ meetInterval i1 i2 =
 
 outerRoundedPartialJoinInterval :: 
     (CInterval i,
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i), 
      NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
@@ -143,7 +145,7 @@ outerRoundedPartialJoinInterval effort i1 i2 =
     
 innerRoundedPartialJoinInterval :: 
     (CInterval i,
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i), 
      NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
@@ -161,7 +163,7 @@ innerRoundedPartialJoinInterval effort i1 i2 =
     
 outerRoundedJoinInterval :: 
     (CInterval i,
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i), 
      NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
@@ -176,7 +178,7 @@ outerRoundedJoinInterval effort i1 i2 =
     
 innerRoundedJoinInterval :: 
     (CInterval i,
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i), 
      NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
@@ -191,7 +193,7 @@ innerRoundedJoinInterval effort i1 i2 =
     
 outerRoundedMeetInterval :: 
     (CInterval i,
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i), 
      NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 
@@ -206,7 +208,7 @@ outerRoundedMeetInterval effort i1 i2 =
     
 innerRoundedMeetInterval :: 
     (CInterval i,
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i), 
      NumOrd.PartialComparison (Endpoint i)) => 
     (NumOrd.MinmaxEffortIndicator (Endpoint i)) -> 

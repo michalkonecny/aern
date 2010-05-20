@@ -25,15 +25,17 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 instance 
-    (NumOrd.Comparison e, 
-     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator e)) => 
+    (NumOrd.Comparison e 
+--     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator e)
+     ) => 
     (RefOrd.Comparison (Interval e))
     where
     compare = compareIntervalRef
     
 instance 
-    (NumOrd.PartialComparison e, 
-     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator e)) => 
+    (NumOrd.PartialComparison e 
+--     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator e)
+     ) => 
     (RefOrd.PartialComparison (Interval e))
     where
     type RefOrd.PartialCompareEffortIndicator (Interval e) = NumOrd.PartialCompareEffortIndicator e 
@@ -55,8 +57,9 @@ instance (NumOrd.Lattice e, NumOrd.PartialComparison e) => (RefOrd.Basis (Interv
     (|\/?) = basisJoinInterval
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e, 
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)
+     ) => 
     (RefOrd.OuterRoundedBasis (Interval e)) 
     where
     type RefOrd.PartialJoinOutEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e 
@@ -64,8 +67,9 @@ instance
     partialJoinOutDefaultEffort = joinmeetDefaultEffortInterval
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e, 
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)
+     ) => 
     (RefOrd.InnerRoundedBasis (Interval e)) 
     where
     type RefOrd.PartialJoinInEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e 
@@ -73,8 +77,9 @@ instance
     partialJoinInDefaultEffort = joinmeetDefaultEffortInterval
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e, 
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)
+     ) => 
     (RefOrd.RoundedBasis (Interval e)) 
 
 
@@ -84,8 +89,9 @@ instance (NumOrd.Lattice e, NumOrd.PartialComparison e) => (RefOrd.Lattice (Inte
     (|/\) = meetInterval
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e, 
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)
+     ) => 
     (RefOrd.OuterRoundedLattice (Interval e)) 
     where
     type RefOrd.JoinMeetOutEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
@@ -94,8 +100,9 @@ instance
     joinmeetOutDefaultEffort = joinmeetDefaultEffortInterval
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e, 
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)
+     ) => 
     (RefOrd.InnerRoundedLattice (Interval e)) 
     where
     type RefOrd.JoinMeetInEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
@@ -104,8 +111,9 @@ instance
     joinmeetInDefaultEffort = joinmeetDefaultEffortInterval
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e, 
-     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)) => 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
+--     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)
+     ) => 
     (RefOrd.RoundedLattice (Interval e))
 
 instance (NumOrd.ArbitraryOrderedTuple e) => RefOrd.ArbitraryOrderedTuple (Interval e) where
