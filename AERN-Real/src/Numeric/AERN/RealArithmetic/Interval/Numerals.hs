@@ -1,4 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.Numerals
@@ -24,40 +26,45 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.CInterval
 
-instance (ArithUpDn.FromInteger e) => FromInteger (Interval e) where
-    type FromIntegerEffortIndicator (Interval e) = ArithUpDn.FromIntegerEffortIndicator e
-    fromIntegerDefaultEffort (Interval l h) = ArithUpDn.fromIntegerDefaultEffort l 
-    fromIntegerInEff effort n =
+instance (ArithUpDn.Convertible Integer e) => Convertible Integer (Interval e) where
+    type ConvertEffortIndicator Integer (Interval e) = 
+        ArithUpDn.ConvertEffortIndicator Integer e
+    convertDefaultEffort i (Interval l h) = ArithUpDn.convertDefaultEffort i l 
+    convertInEff effort n =
         Interval 
-           (ArithUpDn.fromIntegerUpEff effort n) 
-           (ArithUpDn.fromIntegerDnEff effort n)
-    fromIntegerOutEff effort n =
+           (ArithUpDn.convertUpEff effort n) 
+           (ArithUpDn.convertDnEff effort n)
+    convertOutEff effort n =
         Interval 
-           (ArithUpDn.fromIntegerDnEff effort n) 
-           (ArithUpDn.fromIntegerUpEff effort n)
+           (ArithUpDn.convertDnEff effort n) 
+           (ArithUpDn.convertUpEff effort n)
            
-instance (ArithUpDn.ToInteger e) => ArithUpDn.ToInteger (Interval e) where
-    type ArithUpDn.ToIntegerEffortIndicator (Interval e) = ArithUpDn.ToIntegerEffortIndicator e
-    toIntegerDefaultEffort (Interval l h) = ArithUpDn.toIntegerDefaultEffort l 
-    toIntegerUpEff effort (Interval l h) = ArithUpDn.toIntegerUpEff effort h
-    toIntegerDnEff effort (Interval l h) = ArithUpDn.toIntegerDnEff effort l
+instance (ArithUpDn.Convertible e Integer) => 
+        ArithUpDn.Convertible (Interval e) Integer where
+    type ArithUpDn.ConvertEffortIndicator (Interval e) Integer = 
+        ArithUpDn.ConvertEffortIndicator e Integer
+    convertDefaultEffort (Interval l h) i = ArithUpDn.convertDefaultEffort l i 
+    convertUpEff effort (Interval l h) = ArithUpDn.convertUpEff effort h
+    convertDnEff effort (Interval l h) = ArithUpDn.convertDnEff effort l
 
-instance (ArithUpDn.FromDouble e) => FromDouble (Interval e) where
-    type FromDoubleEffortIndicator (Interval e) = ArithUpDn.FromDoubleEffortIndicator e
-    fromDoubleDefaultEffort (Interval l h) = ArithUpDn.fromDoubleDefaultEffort l 
-    fromDoubleInEff effort n =
+instance (ArithUpDn.Convertible Double e) => Convertible Double (Interval e) where
+    type ConvertEffortIndicator Double (Interval e) = 
+        ArithUpDn.ConvertEffortIndicator Double e
+    convertDefaultEffort d (Interval l h) = ArithUpDn.convertDefaultEffort d l 
+    convertInEff effort d =
         Interval 
-           (ArithUpDn.fromDoubleUpEff effort n) 
-           (ArithUpDn.fromDoubleDnEff effort n)
-    fromDoubleOutEff effort n =
+           (ArithUpDn.convertUpEff effort d) 
+           (ArithUpDn.convertDnEff effort d)
+    convertOutEff effort d =
         Interval 
-           (ArithUpDn.fromDoubleDnEff effort n) 
-           (ArithUpDn.fromDoubleUpEff effort n)
+           (ArithUpDn.convertDnEff effort d) 
+           (ArithUpDn.convertUpEff effort d)
            
-instance (ArithUpDn.ToDouble e) => ArithUpDn.ToDouble (Interval e) where
-    type ArithUpDn.ToDoubleEffortIndicator (Interval e) = ArithUpDn.ToDoubleEffortIndicator e
-    toDoubleDefaultEffort (Interval l h) = ArithUpDn.toDoubleDefaultEffort l 
-    toDoubleUpEff effort (Interval l h) = ArithUpDn.toDoubleUpEff effort h
-    toDoubleDnEff effort (Interval l h) = ArithUpDn.toDoubleDnEff effort l
+instance (ArithUpDn.Convertible e Double) => 
+        ArithUpDn.Convertible (Interval e) Double where
+    type ArithUpDn.ConvertEffortIndicator (Interval e) Double = 
+        ArithUpDn.ConvertEffortIndicator e Double
+    convertDefaultEffort (Interval l h) d = ArithUpDn.convertDefaultEffort l d 
+    convertUpEff effort (Interval l h) = ArithUpDn.convertUpEff effort h
+    convertDnEff effort (Interval l h) = ArithUpDn.convertDnEff effort l
 
-           

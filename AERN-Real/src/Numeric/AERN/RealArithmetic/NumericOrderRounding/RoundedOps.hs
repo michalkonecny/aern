@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.NumericOrderRounding.RoundedOps
-    Description :  rounded basic arithmetical operations  
+    Description :  rounded basic arithmetic operations  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
