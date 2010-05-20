@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps
+    Module      :  Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
     Description :  rounded arithmetic instances for Double
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -14,7 +14,7 @@
     This is a private module reexported publicly via its parent.
 -}
 
-module Numeric.AERN.RealArithmetic.Basis.Double.RoundedOps 
+module Numeric.AERN.RealArithmetic.Basis.Double.FieldOps 
 (setMachineRoundingModeUp)
 where
 

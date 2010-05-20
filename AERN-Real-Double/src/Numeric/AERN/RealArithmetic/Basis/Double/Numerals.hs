@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Basis.Double.Numerals
     Description :  conversions between Double and standard numeric types
@@ -18,10 +19,10 @@ module Numeric.AERN.RealArithmetic.Basis.Double.Numerals where
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
-instance FromInteger Double where
-    type FromIntegerEffortIndicator Double = ()
-    fromIntegerDefaultEffort _ = ()
-    fromIntegerUpEff _ n 
+instance Convertible Integer Double where
+    type ConvertEffortIndicator Integer Double = ()
+    convertDefaultEffort _ _ = ()
+    convertUpEff _ n
        | ndn >= n = dn
        | otherwise = dnUp
        where
@@ -29,7 +30,7 @@ instance FromInteger Double where
        dn = fromInteger n
        (m, e) = decodeFloat dn
        dnUp = encodeFloat (m + 1) e 
-    fromIntegerDnEff _ n 
+    convertDnEff _ n 
        | ndn <= n = dn
        | otherwise = dnDn
        where
@@ -38,22 +39,15 @@ instance FromInteger Double where
        (m, e) = decodeFloat dn
        dnDn = encodeFloat (m - 1) e 
     
-instance ToInteger Double where
-    type ToIntegerEffortIndicator Double = ()
-    toIntegerDefaultEffort _ = ()
-    toIntegerUpEff _ d = ceiling d
-    toIntegerDnEff _ d = floor d
+instance Convertible Double Integer where
+    type ConvertEffortIndicator Double Integer = ()
+    convertDefaultEffort _ _ = ()
+    convertUpEff _ d = ceiling d
+    convertDnEff _ d = floor d
 
-instance FromDouble Double where
-    type FromDoubleEffortIndicator Double = ()
-    fromDoubleDefaultEffort _ = ()
-    fromDoubleUpEff _ d = d
-    fromDoubleDnEff _ d = d
+instance Convertible Double Double where
+    type ConvertEffortIndicator Double Double = ()
+    convertDefaultEffort _ _ = ()
+    convertUpEff _ d = d
+    convertDnEff _ d = d
 
-instance ToDouble Double where
-    type ToDoubleEffortIndicator Double = ()
-    toDoubleDefaultEffort _ = ()
-    toDoubleUpEff _ d = d
-    toDoubleDnEff _ d = d
-
-    

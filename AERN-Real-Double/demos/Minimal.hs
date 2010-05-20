@@ -42,10 +42,8 @@ big = 10E200
 t1 :: Double
 t1 = 1 +^ big
 
-(t2L, t2H) = getEndpoints t2
-
 t2 :: DI
 t2 = 
-   (ArithInOut.fromDoubleOutEff () 1) 
+   (ArithInOut.convertOutEff () (1 :: Integer)) 
    <+> 
-   (ArithInOut.fromDoubleOutEff () big)
+   (ArithInOut.convertOutEff () big)
