@@ -15,7 +15,7 @@
 -}
 module Numeric.AERN.RealArithmetic.Measures where
 
-import {-# Source #-} Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps
+import {-# Source #-} Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort

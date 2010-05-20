@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-|
-    Module      :  Numeric.AERN.RefinementOrderRounding.RoundedMult
+    Module      :  Numeric.AERN.RefinementOrderRounding.FieldOps
     Description :  rounded addition and multiplication  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -14,7 +14,7 @@
     
     This module is hidden and reexported via its parent RefinementOrderRounding. 
 -}
-module Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps 
+module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps 
 (
     RoundedAdd(..), RoundedSubtr(..), testsInOutAdd, testsInOutSubtr,
     RoundedAbs(..), testsInOutAbs,  absInUsingCompMax, absOutUsingCompMax,

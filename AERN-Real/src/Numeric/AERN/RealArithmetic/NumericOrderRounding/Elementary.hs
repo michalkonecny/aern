@@ -18,7 +18,7 @@
 module Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary where
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedOps
+import Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.RealArithmetic.Laws

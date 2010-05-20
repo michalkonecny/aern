@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.Interval.RoundedOps
+    Module      :  Numeric.AERN.RealArithmetic.Interval.FieldOps
     Description :  refinement rounded basic operations for intervals
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -16,7 +16,7 @@
     This module is hidden and reexported via its parent Interval. 
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.RoundedOps where
+module Numeric.AERN.RealArithmetic.Interval.FieldOps where
 
 import Prelude hiding (EQ, LT, GT)
 import Numeric.AERN.Basics.PartialOrdering
@@ -28,7 +28,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Interval.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.RoundedOps
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
