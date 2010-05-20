@@ -63,8 +63,13 @@ class PartialComparison t where
 
 instance PartialComparison Int where
     type PartialCompareEffortIndicator Int = ()
-    pCompareEff = pComparePreludeCompare    
     pCompareDefaultEffort _ = ()
+    pCompareEff = pComparePreludeCompare    
+    
+instance PartialComparison Integer where
+    type PartialCompareEffortIndicator Integer = ()
+    pCompareDefaultEffort _ = ()
+    pCompareEff = pComparePreludeCompare    
     
 pComparePreludeCompare _ a b =
     Just $ toPartialOrdering $ Prelude.compare a b
