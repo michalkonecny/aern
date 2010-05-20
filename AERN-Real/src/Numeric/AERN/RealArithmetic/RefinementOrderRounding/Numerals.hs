@@ -47,11 +47,11 @@ propConvertMonotoneFromNumOrd ::
     (Convertible t1 t2, NumOrd.ArbitraryOrderedTuple t1, NumOrd.PartialComparison t2) =>
     t1 -> t2 ->
     (ConvertEffortIndicator t1 t2, NumOrd.PartialCompareEffortIndicator t2) ->  
-    NumOrd.LTPair t1 -> Bool
-propConvertMonotoneFromNumOrd sample1 sample2 (effortFrom, effortComp) (NumOrd.LTPair (a, b)) = 
-    (trueOrNothing $ let ?pCompareEffort = effortComp in aOut <? bOut)
+    NumOrd.LEPair t1 -> Bool
+propConvertMonotoneFromNumOrd sample1 sample2 (effortFrom, effortComp) (NumOrd.LEPair (a, b)) = 
+    (trueOrNothing $ let ?pCompareEffort = effortComp in aOut <=? bOut)
     &&
-    (trueOrNothing $ let ?pCompareEffort = effortComp in aIn <? bIn)
+    (trueOrNothing $ let ?pCompareEffort = effortComp in aIn <=? bIn)
     where
     aOut = convertOutEff effortFrom a 
     aIn = convertInEff effortFrom a 

@@ -47,9 +47,9 @@ propConvertMonotone ::
     t1 -> t2 ->
     (ConvertEffortIndicator t1 t2,
      NumOrd.PartialCompareEffortIndicator t2) ->  
-    NumOrd.LTPair t1 -> Bool
-propConvertMonotone sample1 sample2 (effortConvert, effortComp2) (NumOrd.LTPair (a1, a2)) =
-    trueOrNothing $ let ?pCompareEffort = effortComp2 in a1Dn <? a2Up
+    NumOrd.LEPair t1 -> Bool
+propConvertMonotone sample1 sample2 (effortConvert, effortComp2) (NumOrd.LEPair (a1, a2)) =
+    trueOrNothing $ let ?pCompareEffort = effortComp2 in a1Dn <=? a2Up
     where
     a1Dn = convertDnEff effortConvert a1 
     a2Up = convertUpEff effortConvert a2 
