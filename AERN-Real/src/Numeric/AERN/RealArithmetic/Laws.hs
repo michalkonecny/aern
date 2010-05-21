@@ -28,7 +28,7 @@ import Numeric.AERN.Misc.Debug
 import Data.Maybe
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
+import Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 

@@ -16,14 +16,14 @@
 
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding
 (
-    module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals,
+    module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion,
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps,
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps,
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary
 )
 where
 
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary

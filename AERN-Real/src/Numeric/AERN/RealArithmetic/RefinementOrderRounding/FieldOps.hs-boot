@@ -4,7 +4,7 @@
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps where
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
 
 import Numeric.AERN.Basics.Effort
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd

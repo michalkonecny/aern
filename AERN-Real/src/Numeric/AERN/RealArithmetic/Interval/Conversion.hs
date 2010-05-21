@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.Interval.Numerals
+    Module      :  Numeric.AERN.RealArithmetic.Interval.Conversion
     Description :  conversions between intervals and standard numeric types
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -17,7 +17,7 @@
     This module is hidden and reexported via its parent Interval. 
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.Numerals where
+module Numeric.AERN.RealArithmetic.Interval.Conversion where
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 

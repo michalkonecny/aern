@@ -2,8 +2,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
-    Description :  conversion between approximations and standard numeric types  
+    Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
+    Description :  conversion between approximations and other types  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -11,11 +11,11 @@
     Stability   :  experimental
     Portability :  portable
     
-    Conversion between approximations and standard numeric types.
+    Conversion between approximations and other types.
     
     This module is hidden and reexported via its parent RefinementOrderRounding. 
 -}
-module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals where
+module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion where
 
 import Prelude hiding (EQ, LT, GT)
 
@@ -27,7 +27,7 @@ import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals as UpDnNumerals
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion as UpDnConversion
 
 import Numeric.AERN.Misc.Maybe
 
@@ -60,12 +60,12 @@ propConvertMonotoneFromNumOrd sample1 sample2 (effortFrom, effortComp) (NumOrd.L
     _ = [sample2, aOut, aIn]
 
 propConvertRoundTripNumOrd ::
-    (UpDnNumerals.Convertible t1 t2, Convertible t2 t1, 
+    (UpDnConversion.Convertible t1 t2, Convertible t2 t1, 
      NumOrd.PartialComparison t1, Show t1, Show t2) =>
     t1 -> t2 -> 
     (NumOrd.PartialCompareEffortIndicator t1, 
      ConvertEffortIndicator t2 t1, 
-     UpDnNumerals.ConvertEffortIndicator t1 t2) ->
+     UpDnConversion.ConvertEffortIndicator t1 t2) ->
     t1 -> Bool
 propConvertRoundTripNumOrd sample1 sample2 (effortComp, effortFrom, effortTo) a =
     let ?pCompareEffort = effortComp in
@@ -75,9 +75,9 @@ propConvertRoundTripNumOrd sample1 sample2 (effortComp, effortFrom, effortTo) a 
        _ -> True
     where
     aDnOut = convertOutEff effortFrom aDn 
-    aDn = UpDnNumerals.convertDnEff effortTo a 
+    aDn = UpDnConversion.convertDnEff effortTo a 
     aUpOut = convertOutEff effortFrom aUp 
-    aUp = UpDnNumerals.convertUpEff effortTo a 
+    aUp = UpDnConversion.convertUpEff effortTo a 
     _ = [sample2, aDn, aUp]
     printErrorDetail =
         error $

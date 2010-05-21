@@ -28,7 +28,7 @@ import Numeric.AERN.Basics.PartialOrdering
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.RealArithmetic.Laws

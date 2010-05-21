@@ -27,7 +27,7 @@ import Prelude hiding (EQ, LT, GT)
 import Numeric.AERN.Basics.PartialOrdering
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
+import Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.RealArithmetic.Laws
