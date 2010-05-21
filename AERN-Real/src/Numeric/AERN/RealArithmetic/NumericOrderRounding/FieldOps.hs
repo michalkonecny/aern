@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-|
-    Module      :  Numeric.AERN.NumericOrderRounding.RoundedOps
+    Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedOps
     Description :  rounded basic arithmetic operations  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
