@@ -1,3 +1,5 @@
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval
     Description :  instances of arithmetic classes for Intervals  
@@ -24,3 +26,34 @@ import Numeric.AERN.RealArithmetic.Interval.ExactOps
 import Numeric.AERN.RealArithmetic.Interval.Measures
 import Numeric.AERN.RealArithmetic.Interval.Conversion
 import Numeric.AERN.RealArithmetic.Interval.FieldOps
+
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.ExactOps
+
+import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+
+import Numeric.AERN.Basics.Interval
+
+instance 
+    (ArithUpDn.Convertible Integer e, 
+     Eq e, Show e,
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLattice e, 
+     HasZero e, 
+     ArithUpDn.RoundedRing e, 
+     ArithUpDn.RoundedAbs e) => 
+    Num (Interval e)
+    where
+    (+) = (<+>)
+    (*) = (<*>)
+    abs a = ArithInOut.absOutEff (ArithInOut.absDefaultEffort a) a
+    fromInteger n = 
+        result
+        where
+        result =
+            ArithInOut.convertOutEff (ArithInOut.convertDefaultEffort n result) n
+    signum a =
+        error $ "signum not implemented for Interval"
+        
