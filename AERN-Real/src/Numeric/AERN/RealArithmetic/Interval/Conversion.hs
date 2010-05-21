@@ -67,4 +67,3 @@ instance (ArithUpDn.Convertible e Double) =>
     convertDefaultEffort (Interval l h) d = ArithUpDn.convertDefaultEffort l d 
     convertUpEff effort (Interval l h) = ArithUpDn.convertUpEff effort h
     convertDnEff effort (Interval l h) = ArithUpDn.convertDnEff effort l
-
