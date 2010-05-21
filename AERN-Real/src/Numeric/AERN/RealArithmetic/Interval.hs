@@ -15,12 +15,12 @@ module Numeric.AERN.RealArithmetic.Interval
 (
     module Numeric.AERN.RealArithmetic.Interval.ExactOps,
     module Numeric.AERN.RealArithmetic.Interval.Measures,
-    module Numeric.AERN.RealArithmetic.Interval.Numerals,
+    module Numeric.AERN.RealArithmetic.Interval.Conversion,
     module Numeric.AERN.RealArithmetic.Interval.FieldOps
 )
 where
 
 import Numeric.AERN.RealArithmetic.Interval.ExactOps
 import Numeric.AERN.RealArithmetic.Interval.Measures
-import Numeric.AERN.RealArithmetic.Interval.Numerals
+import Numeric.AERN.RealArithmetic.Interval.Conversion
 import Numeric.AERN.RealArithmetic.Interval.FieldOps

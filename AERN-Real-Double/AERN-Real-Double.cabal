@@ -37,7 +37,7 @@ Library
 
   Other-modules:
     Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
-    Numeric.AERN.RealArithmetic.Basis.Double.Numerals
+    Numeric.AERN.RealArithmetic.Basis.Double.Conversion
     Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
     Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
     Numeric.AERN.RealArithmetic.Basis.Double.Measures

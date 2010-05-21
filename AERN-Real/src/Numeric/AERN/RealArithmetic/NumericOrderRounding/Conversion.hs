@@ -2,8 +2,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
-    Description :  conversion between approximations and standard numeric types  
+    Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
+    Description :  conversion between approximations and other types  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -11,11 +11,11 @@
     Stability   :  experimental
     Portability :  portable
     
-    Conversion between approximations and standard numeric types.
+    Conversion between approximations and other types.
     
     This module is hidden and reexported via its parent NumericOrderRounding. 
 -}
-module Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals where
+module Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion where
 
 import Prelude hiding (EQ, LT, GT)
 

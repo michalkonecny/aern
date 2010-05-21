@@ -56,16 +56,16 @@ Library
     Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
 
   Other-modules:
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.Numerals
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
     Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
     Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps
     Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.Numerals
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary
     Numeric.AERN.RealArithmetic.Interval.ExactOps
     Numeric.AERN.RealArithmetic.Interval.Measures
-    Numeric.AERN.RealArithmetic.Interval.Numerals
+    Numeric.AERN.RealArithmetic.Interval.Conversion
     Numeric.AERN.RealArithmetic.Interval.FieldOps
 

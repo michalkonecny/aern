@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.Basis.Double.Numerals
+    Module      :  Numeric.AERN.RealArithmetic.Basis.Double.Conversion
     Description :  conversions between Double and standard numeric types
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -15,7 +15,7 @@
     This is a private module reexported publicly via its parent.
 -}
 
-module Numeric.AERN.RealArithmetic.Basis.Double.Numerals where
+module Numeric.AERN.RealArithmetic.Basis.Double.Conversion where
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
