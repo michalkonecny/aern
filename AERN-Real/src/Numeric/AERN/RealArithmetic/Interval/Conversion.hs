@@ -2,6 +2,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.Conversion
     Description :  conversions between intervals and standard numeric types
@@ -67,3 +68,25 @@ instance (ArithUpDn.Convertible e Double) =>
     convertDefaultEffort (Interval l h) d = ArithUpDn.convertDefaultEffort l d 
     convertUpEff effort (Interval l h) = ArithUpDn.convertUpEff effort h
     convertDnEff effort (Interval l h) = ArithUpDn.convertDnEff effort l
+
+instance (ArithUpDn.Convertible Rational e) => Convertible Rational (Interval e) where
+    type ConvertEffortIndicator Rational (Interval e) = 
+        ArithUpDn.ConvertEffortIndicator Rational e
+    convertDefaultEffort d (Interval l h) = ArithUpDn.convertDefaultEffort d l 
+    convertInEff effort d =
+        Interval 
+           (ArithUpDn.convertUpEff effort d) 
+           (ArithUpDn.convertDnEff effort d)
+    convertOutEff effort d =
+        Interval 
+           (ArithUpDn.convertDnEff effort d) 
+           (ArithUpDn.convertUpEff effort d)
+           
+instance (ArithUpDn.Convertible e Rational) => 
+        ArithUpDn.Convertible (Interval e) Rational where
+    type ArithUpDn.ConvertEffortIndicator (Interval e) Rational = 
+        ArithUpDn.ConvertEffortIndicator e Rational
+    convertDefaultEffort (Interval l h) d = ArithUpDn.convertDefaultEffort l d 
+    convertUpEff effort (Interval l h) = ArithUpDn.convertUpEff effort h
+    convertDnEff effort (Interval l h) = ArithUpDn.convertDnEff effort l
+    
