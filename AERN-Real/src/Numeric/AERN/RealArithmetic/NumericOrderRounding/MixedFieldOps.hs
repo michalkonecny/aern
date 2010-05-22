@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps
     Description :  rounded basic arithmetic operations mixing 2 types
@@ -25,6 +26,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 
 import Test.QuickCheck
 import Test.Framework (testGroup, Test)
@@ -142,8 +144,8 @@ mixedMultDnEffByConversion (effMult, effConv, effMinmax) a b =
 class RoundedMixedDivide s t where
     type MixedDivEffortIndicator s t
     mixedDivDefaultEffort :: s -> t -> MixedDivEffortIndicator s t
-    mixedDivUpEff :: MixedDivEffortIndicator s t -> s -> t -> t
-    mixedDivDnEff :: MixedDivEffortIndicator s t -> s -> t -> t
+    mixedDivUpEff :: MixedDivEffortIndicator s t -> t -> s -> t
+    mixedDivDnEff :: MixedDivEffortIndicator s t -> t -> s -> t
 
 {- tools to easily make a RoundedMixedDivide instance 
    via the composition of conversion and homogeneous addition -}
@@ -151,32 +153,62 @@ class RoundedMixedDivide s t where
 type MixedDivEffortIndicatorByConversion s t =
         (DivEffortIndicator t, 
          ConvertEffortIndicator s t,
-         NumOrd.MinmaxEffortIndicator t)
+         (NumOrd.MinmaxEffortIndicator t,
+          NumOrd.PartialCompareEffortIndicator t))
 
 mixedDivDefaultEffortByConversion n d = 
         (addDefaultEffort d, 
          convertDefaultEffort n d,
-         NumOrd.minmaxDefaultEffort d)
+         (NumOrd.minmaxDefaultEffort d,
+          NumOrd.pCompareDefaultEffort d))
 
 mixedDivUpEffByConversion ::
-    (Convertible t1 t2, RoundedDivide t2, NumOrd.RoundedLattice t2) =>
+    (Convertible t1 t2, 
+     RoundedDivide t2, 
+     HasZero t2,  HasInfinities t2,
+     NumOrd.PartialComparison t2,
+     NumOrd.RoundedLattice t2) =>
     (DivEffortIndicator t2, 
      ConvertEffortIndicator t1 t2,
-     NumOrd.MinmaxEffortIndicator t2) ->
-    t1 -> t2 -> t2
-mixedDivUpEffByConversion (effDiv, effConv, effMinmax) a b =
-    NumOrd.maxUpEff effMinmax  
-    (divUpEff effDiv (convertDnEff effConv a) b)
-    (divUpEff effDiv (convertUpEff effConv a) b)
+     (NumOrd.MinmaxEffortIndicator t2, 
+      NumOrd.PartialCompareEffortIndicator t2)) ->
+    t2 -> t1 -> t2
+mixedDivUpEffByConversion (effDiv, effConv, (effMinmax, effComp)) a b =
+    let ?pCompareEffort = effComp in
+    case (bDn >=? zero, bUp <=? zero) of
+        (Just True, _) -> normalResult 
+        (_, Just True) -> normalResult
+        _ -> plusInfinity -- b is too close to zero
+    where
+    normalResult =
+        NumOrd.maxDnEff effMinmax  -- we do not know the sign of a
+            (divUpEff effDiv a bDn)
+            (divUpEff effDiv a bUp)
+    bUp = convertUpEff effConv b
+    bDn = convertDnEff effConv b
 
 mixedDivDnEffByConversion ::
-    (Convertible t1 t2, RoundedDivide t2, NumOrd.RoundedLattice t2) =>
+    (Convertible t1 t2, 
+     RoundedDivide t2, 
+     HasZero t2,  HasInfinities t2,
+     NumOrd.PartialComparison t2,
+     NumOrd.RoundedLattice t2) =>
     (DivEffortIndicator t2, 
      ConvertEffortIndicator t1 t2,
-     NumOrd.MinmaxEffortIndicator t2) ->
-    t1 -> t2 -> t2
-mixedDivDnEffByConversion (effDiv, effConv, effMinmax) a b = 
-    NumOrd.maxDnEff effMinmax  
-    (divDnEff effDiv (convertDnEff effConv a) b)
-    (divDnEff effDiv (convertUpEff effConv a) b)
+     (NumOrd.MinmaxEffortIndicator t2, 
+      NumOrd.PartialCompareEffortIndicator t2)) ->
+    t2 -> t1 -> t2
+mixedDivDnEffByConversion (effDiv, effConv, (effMinmax, effComp)) a b = 
+    let ?pCompareEffort = effComp in
+    case (bDn >=? zero, bUp <=? zero) of
+        (Just True, _) -> normalResult 
+        (_, Just True) -> normalResult
+        _ -> minusInfinity -- b is too close to zero
+    where
+    normalResult =
+        NumOrd.maxDnEff effMinmax  -- we do not know the sign of a
+            (divDnEff effDiv a bDn)
+            (divDnEff effDiv a bUp)
+    bUp = convertUpEff effConv b
+    bDn = convertDnEff effConv b
     
