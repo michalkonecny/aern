@@ -41,11 +41,12 @@ instance
      Eq e, Show e,
      NumOrd.PartialComparison e, 
      NumOrd.RoundedLattice e, 
-     HasZero e, 
+     HasZero e,
      ArithUpDn.RoundedRing e, 
      ArithUpDn.RoundedAbs e) => 
     Num (Interval e)
     where
+    negate = neg
     (+) = (<+>)
     (*) = (<*>)
     abs a = ArithInOut.absOutEff (ArithInOut.absDefaultEffort a) a
@@ -56,4 +57,22 @@ instance
             ArithInOut.convertOutEff (ArithInOut.convertDefaultEffort n result) n
     signum a =
         error $ "signum not implemented for Interval"
+
+instance 
+    (ArithUpDn.Convertible Integer e, 
+     ArithUpDn.Convertible Rational e, 
+     Eq e, Show e,
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLattice e, 
+     HasZero e, HasOne e, NumOrd.HasExtrema e,
+     ArithUpDn.RoundedField e, 
+     ArithUpDn.RoundedAbs e) => 
+    Fractional (Interval e)
+    where
+    (/) = (</>)
+    fromRational r = 
+        result
+        where
+        result =
+            ArithInOut.convertOutEff (ArithInOut.convertDefaultEffort r result) r
         
