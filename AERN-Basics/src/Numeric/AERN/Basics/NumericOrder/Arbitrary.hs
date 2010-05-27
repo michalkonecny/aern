@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeSynonymInstances #-}
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.Arbitrary
     Description :  random generation of tuples with various relation constraints  
@@ -52,6 +53,9 @@ instance ArbitraryOrderedTuple Int where
     arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy
 
 instance ArbitraryOrderedTuple Integer where
+    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy
+
+instance ArbitraryOrderedTuple Rational where
     arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy
 
 {-| Default implementation of linearArbitraryTupleRelatedBy for Ord instances -}   
