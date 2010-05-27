@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Basis.Double.Conversion
@@ -26,16 +27,16 @@ instance Convertible Integer Double where
        | ndn >= n = dn
        | otherwise = dnUp
        where
-       ndn = toInteger n
        dn = fromInteger n
+       ndn = floor dn
        (m, e) = decodeFloat dn
        dnUp = encodeFloat (m + 1) e 
     convertDnEff _ n 
        | ndn <= n = dn
        | otherwise = dnDn
        where
-       ndn = toInteger n
        dn = fromInteger n
+       ndn = ceiling dn
        (m, e) = decodeFloat dn
        dnDn = encodeFloat (m - 1) e 
     
@@ -50,4 +51,30 @@ instance Convertible Double Double where
     convertDefaultEffort _ _ = ()
     convertUpEff _ d = d
     convertDnEff _ d = d
+
+instance Convertible Rational Double where
+    type ConvertEffortIndicator Rational Double = ()
+    convertDefaultEffort _ _ = ()
+    convertUpEff _ r
+       | rdr >= r = dr
+       | otherwise = drUp
+       where
+       rdr = toRational dr
+       dr = fromRational r
+       (m, e) = decodeFloat dr
+       drUp = encodeFloat (m + 1) e 
+    convertDnEff _ r 
+       | rdr <= r = dr
+       | otherwise = drDn
+       where
+       rdr = toRational dr
+       dr = fromRational r
+       (m, e) = decodeFloat dr
+       drDn = encodeFloat (m - 1) e 
+
+instance Convertible Double Rational where
+    type ConvertEffortIndicator Double Rational = ()
+    convertDefaultEffort _ _ = ()
+    convertUpEff _ d = toRational d
+    convertDnEff _ d = toRational d
 
