@@ -43,6 +43,8 @@ testsDouble =
        testsDistance ("Double", sampleD),
        ArithUpDn.testsConvert ("Double", sampleD, "Integer", sampleI),
        ArithUpDn.testsConvert ("Integer", sampleI, "Double", sampleD),
+       ArithUpDn.testsConvert ("Double", sampleD, "Rational", sampleR),
+       ArithUpDn.testsConvert ("Rational", sampleR, "Double", sampleD),
        ArithUpDn.testsConvert ("Double", sampleD, "Double", sampleD),
        ArithUpDn.testsUpDnAdd ("Double", sampleD),
        ArithUpDn.testsUpDnSubtr ("Double", sampleD),
@@ -66,6 +68,7 @@ testsDI =
        testsImprecision ("DI", sampleDI),
        ArithInOut.testsConvertNumOrd ("Integer", sampleI, "DI", sampleDI),
        ArithInOut.testsConvertNumOrd ("Double", sampleD, "DI", sampleDI),
+       ArithInOut.testsConvertNumOrd ("Rational", sampleR, "DI", sampleDI),
        ArithInOut.testsInOutAdd ("DI", sampleDI),
        ArithInOut.testsInOutSubtr ("DI", sampleDI),
        ArithInOut.testsInOutAbs ("DI", sampleDI),
@@ -76,3 +79,4 @@ testsDI =
     ]
 
 sampleI = 1 :: Integer
+sampleR = 1 :: Rational

@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-|
@@ -47,4 +48,49 @@ instance RoundedMixedDivide Integer Double
     mixedDivDefaultEffort = mixedDivDefaultEffortByConversion 
     mixedDivUpEff = mixedDivUpEffByConversion
     mixedDivDnEff = mixedDivDnEffByConversion
+
+instance RoundedMixedAdd Rational Double
+    where
+    type MixedAddEffortIndicator Rational Double =
+        MixedAddEffortIndicatorByConversion Rational Double 
+    mixedAddDefaultEffort = mixedAddDefaultEffortByConversion 
+    mixedAddUpEff = mixedAddUpEffByConversion
+    mixedAddDnEff = mixedAddDnEffByConversion
+
+instance RoundedMixedMultiply Rational Double
+    where
+    type MixedMultEffortIndicator Rational Double =
+        MixedMultEffortIndicatorByConversion Rational Double 
+    mixedMultDefaultEffort = mixedMultDefaultEffortByConversion 
+    mixedMultUpEff = mixedMultUpEffByConversion
+    mixedMultDnEff = mixedMultDnEffByConversion
+
+instance RoundedMixedDivide Rational Double
+    where
+    type MixedDivEffortIndicator Rational Double =
+        MixedDivEffortIndicatorByConversion Rational Double 
+    mixedDivDefaultEffort = mixedDivDefaultEffortByConversion 
+    mixedDivUpEff = mixedDivUpEffByConversion
+    mixedDivDnEff = mixedDivDnEffByConversion
+
+instance RoundedMixedAdd Double Double
+    where
+    type MixedAddEffortIndicator Double Double = () 
+    mixedAddDefaultEffort _ _ = () 
+    mixedAddUpEff _ a b = addUpEff () a b 
+    mixedAddDnEff _ a b = addDnEff () a b
+
+instance RoundedMixedMultiply Double Double
+    where
+    type MixedMultEffortIndicator Double Double = () 
+    mixedMultDefaultEffort _ _ = () 
+    mixedMultUpEff _ a b = multUpEff () a b 
+    mixedMultDnEff _ a b = multDnEff () a b
+
+instance RoundedMixedDivide Double Double
+    where
+    type MixedDivEffortIndicator Double Double = () 
+    mixedDivDefaultEffort _ _ = () 
+    mixedDivUpEff _ a b = divUpEff () a b 
+    mixedDivDnEff _ a b = divDnEff () a b
 
