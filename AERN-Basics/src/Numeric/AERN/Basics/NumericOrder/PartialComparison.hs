@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.ApproxOrder
@@ -68,6 +69,11 @@ instance PartialComparison Int where
     
 instance PartialComparison Integer where
     type PartialCompareEffortIndicator Integer = ()
+    pCompareDefaultEffort _ = ()
+    pCompareEff = pComparePreludeCompare    
+    
+instance PartialComparison Rational where
+    type PartialCompareEffortIndicator Rational = ()
     pCompareDefaultEffort _ = ()
     pCompareEff = pComparePreludeCompare    
     
