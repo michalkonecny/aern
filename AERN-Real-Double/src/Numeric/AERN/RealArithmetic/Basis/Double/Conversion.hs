@@ -10,7 +10,7 @@
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
-    
+
     Conversions between Double and standard numeric types.
 
     This is a private module reexported publicly via its parent.
@@ -30,16 +30,16 @@ instance Convertible Integer Double where
        dn = fromInteger n
        ndn = floor dn
        (m, e) = decodeFloat dn
-       dnUp = encodeFloat (m + 1) e 
-    convertDnEff _ n 
+       dnUp = encodeFloat (m + 1) e
+    convertDnEff _ n
        | ndn <= n = dn
        | otherwise = dnDn
        where
        dn = fromInteger n
        ndn = ceiling dn
        (m, e) = decodeFloat dn
-       dnDn = encodeFloat (m - 1) e 
-    
+       dnDn = encodeFloat (m - 1) e
+
 instance Convertible Double Integer where
     type ConvertEffortIndicator Double Integer = ()
     convertDefaultEffort _ _ = ()
@@ -62,15 +62,15 @@ instance Convertible Rational Double where
        rdr = toRational dr
        dr = fromRational r
        (m, e) = decodeFloat dr
-       drUp = encodeFloat (m + 1) e 
-    convertDnEff _ r 
+       drUp = encodeFloat (m + 1) e
+    convertDnEff _ r
        | rdr <= r = dr
        | otherwise = drDn
        where
        rdr = toRational dr
        dr = fromRational r
        (m, e) = decodeFloat dr
-       drDn = encodeFloat (m - 1) e 
+       drDn = encodeFloat (m - 1) e
 
 instance Convertible Double Rational where
     type ConvertEffortIndicator Double Rational = ()
