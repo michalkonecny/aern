@@ -68,4 +68,5 @@ Library
     Numeric.AERN.RealArithmetic.Interval.Measures
     Numeric.AERN.RealArithmetic.Interval.Conversion
     Numeric.AERN.RealArithmetic.Interval.FieldOps
+    Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
 

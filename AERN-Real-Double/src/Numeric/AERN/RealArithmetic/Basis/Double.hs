@@ -19,6 +19,7 @@ module Numeric.AERN.RealArithmetic.Basis.Double
    module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder,
    module Numeric.AERN.RealArithmetic.Basis.Double.Conversion,
    module Numeric.AERN.RealArithmetic.Basis.Double.FieldOps,
+   module Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps,
    module Numeric.AERN.RealArithmetic.Basis.Double.Measures,
    module Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
 )
@@ -28,6 +29,7 @@ import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
 import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 import Numeric.AERN.RealArithmetic.Basis.Double.Conversion
 import Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
+import Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps
 import Numeric.AERN.RealArithmetic.Basis.Double.Measures
 import Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
 
