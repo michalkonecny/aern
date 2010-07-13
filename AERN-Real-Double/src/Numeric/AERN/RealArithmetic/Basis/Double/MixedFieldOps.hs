@@ -4,7 +4,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps
-    Description :  rounded basic arithmetic operations mixing 2 types
+    Description :  rounded basic arithmetic operations mixing Double and another type
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -12,9 +12,9 @@
     Stability   :  experimental
     Portability :  portable
     
-    Rounded basic arithmetical operations mixing 2 types.
+    Rounded basic arithmetical operations mixing Double and another type.
     
-    This module is hidden and reexported via its parent NumericOrderRounding. 
+    This module is hidden and reexported via its parent Double. 
 -}
 
 module Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps where

@@ -160,4 +160,15 @@ propMixedDivEqualsConvert sample1 sample2 effortDist effortDistComp initEffort e
         let (>/<) = divInEff effDiv in e1 >/< (convertInEff effConv e2)
     expr2Out (_,effDiv,effConv) =
         let (</>) = divOutEff effDiv in e1 </> (convertOutEff effConv e2)
+
     
+testsInOutMixedFieldOps (name1, sample1) (name2, sample2) =
+    testGroup ("mixed in/out roudned ops: " ++ name1 ++ " with " ++ name2) $
+        [
+            testProperty "addition" (propMixedAddEqualsConvert sample1 sample2)
+        ,
+            testProperty "multiplication" (propMixedMultEqualsConvert sample1 sample2)
+        ,
+            testProperty "division" (propMixedDivEqualsConvert sample1 sample2)
+        ]
+        
