@@ -18,9 +18,6 @@
 
 module Numeric.AERN.RealArithmetic.Interval.FieldOps where
 
-import Prelude hiding (EQ, LT, GT)
-import Numeric.AERN.Basics.PartialOrdering
-
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.CInterval
 
@@ -103,17 +100,10 @@ instance
             (NumOrd.minDnEff effortMinmax) 
             i1 i2
     
-pNonnegNonposEff effort a =
-    case NumOrd.pCompareEff effort a zero of
-       Just EQ -> Just (True, True) 
-       Just LT -> Just (False, True) 
-       Just GT -> Just (True, False)
-       Just LEE -> Just (False, True) 
-       Just GEE -> Just (True, False)
-       _ -> Nothing
-       
-    
-multiplyIntervals pNonnegNonpos timesL timesR minL minR maxL maxR combineL combineR (Interval l1 h1) (Interval l2 h2) =
+multiplyIntervals 
+        pNonnegNonpos timesL timesR minL minR maxL maxR 
+        combineL combineR 
+        (Interval l1 h1) (Interval l2 h2) =
     let _ = [minL, maxR, combineL, combineR] in
         case (pNonnegNonpos l1, -- sign of l1 
               pNonnegNonpos h1, -- sign of h1

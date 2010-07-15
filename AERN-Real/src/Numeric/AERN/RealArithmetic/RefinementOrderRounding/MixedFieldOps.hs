@@ -37,6 +37,24 @@ class RoundedMixedAdd s t where
     mixedAddOutEff :: MixedAddEffortIndicator s t -> s -> t -> t
     mixedAddDefaultEffort :: s -> t -> MixedAddEffortIndicator s t
 
+mixedAddDefaultEffortByConversion n d = 
+        (addDefaultEffort d, convertDefaultEffort n d)
+
+mixedAddInEffByConversion ::
+    (Convertible t1 t2, RoundedAdd t2) =>
+    (AddEffortIndicator t2, ConvertEffortIndicator t1 t2) ->
+    t1 -> t2 -> t2
+mixedAddInEffByConversion (effAdd, effConv) a b = 
+    addInEff effAdd (convertInEff effConv a) b
+
+mixedAddOutEffByConversion ::
+    (Convertible t1 t2, RoundedAdd t2) =>
+    (AddEffortIndicator t2, ConvertEffortIndicator t1 t2) ->
+    t1 -> t2 -> t2
+mixedAddOutEffByConversion (effAdd, effConv) a b = 
+    addOutEff effAdd (convertOutEff effConv a) b
+
+
 propMixedAddEqualsConvert ::
     (RefOrd.PartialComparison t2, Convertible t1 t2,
      RoundedMixedAdd t1 t2, RoundedAdd t2,
@@ -81,6 +99,24 @@ class RoundedMixedMultiply s t where
     mixedMultOutEff :: MixedMultEffortIndicator s t -> s -> t -> t
     mixedMultDefaultEffort :: s -> t -> MixedMultEffortIndicator s t
 
+mixedMultDefaultEffortByConversion n d = 
+        (multDefaultEffort d, convertDefaultEffort n d)
+
+mixedMultInEffByConversion ::
+    (Convertible t1 t2, RoundedMultiply t2) =>
+    (MultEffortIndicator t2, ConvertEffortIndicator t1 t2) ->
+    t1 -> t2 -> t2
+mixedMultInEffByConversion (effMult, effConv) a b = 
+    multInEff effMult (convertInEff effConv a) b
+
+mixedMultOutEffByConversion ::
+    (Convertible t1 t2, RoundedMultiply t2) =>
+    (MultEffortIndicator t2, ConvertEffortIndicator t1 t2) ->
+    t1 -> t2 -> t2
+mixedMultOutEffByConversion (effMult, effConv) a b = 
+    multOutEff effMult (convertOutEff effConv a) b
+
+
 propMixedMultEqualsConvert ::
     (RefOrd.PartialComparison t2, Convertible t1 t2,
      RoundedMixedMultiply t1 t2, RoundedMultiply t2,
@@ -124,6 +160,24 @@ class RoundedMixedDivide s t where
     mixedDivOutEff :: MixedDivEffortIndicator s t -> t -> s -> t
     mixedDivDefaultEffort :: s -> t -> MixedDivEffortIndicator s t
 
+mixedDivDefaultEffortByConversion n d = 
+        (divDefaultEffort d, convertDefaultEffort n d)
+
+mixedDivInEffByConversion ::
+    (Convertible t1 t2, RoundedDivide t2) =>
+    (DivEffortIndicator t2, ConvertEffortIndicator t1 t2) ->
+    t2 -> t1 -> t2
+mixedDivInEffByConversion (effDiv, effConv) a b = 
+    divInEff effDiv a (convertInEff effConv b)
+
+mixedDivOutEffByConversion ::
+    (Convertible t1 t2, RoundedDivide t2) =>
+    (DivEffortIndicator t2, ConvertEffortIndicator t1 t2) ->
+    t2 -> t1 -> t2
+mixedDivOutEffByConversion (effDiv, effConv) a b = 
+    divOutEff effDiv a (convertOutEff effConv b)
+
+
 propMixedDivEqualsConvert ::
     (RefOrd.PartialComparison t2, Convertible t1 t2,
      RoundedMixedDivide t1 t2, RoundedDivide t2,
@@ -163,7 +217,7 @@ propMixedDivEqualsConvert sample1 sample2 effortDist effortDistComp initEffort e
 
     
 testsInOutMixedFieldOps (name1, sample1) (name2, sample2) =
-    testGroup ("mixed in/out roudned ops: " ++ name1 ++ " with " ++ name2) $
+    testGroup (name1 ++ " with " ++ name2 ++ ": mixed in/out rounded ops") $
         [
             testProperty "addition" (propMixedAddEqualsConvert sample1 sample2)
         ,
