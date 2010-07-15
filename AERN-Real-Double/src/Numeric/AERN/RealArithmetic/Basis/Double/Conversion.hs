@@ -20,6 +20,9 @@ module Numeric.AERN.RealArithmetic.Basis.Double.Conversion where
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
+import Numeric.AERN.Basics.Exception
+import Control.Exception
+
 instance Convertible Integer Double where
     type ConvertEffortIndicator Integer Double = ()
     convertDefaultEffort _ _ = ()
@@ -43,8 +46,18 @@ instance Convertible Integer Double where
 instance Convertible Double Integer where
     type ConvertEffortIndicator Double Integer = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff _ d = ceiling d
-    convertDnEff _ d = floor d
+    convertUpEff _ d 
+        | isInfinite d =
+            throw  $ 
+                AERNException $ 
+                    "cannot convert" ++ show d ++ " to an integer"
+        | otherwise = ceiling d
+    convertDnEff _ d 
+        | isInfinite d =
+            throw  $ 
+                AERNException $ 
+                    "cannot convert" ++ show d ++ " to an integer"
+        | otherwise = floor d
 
 instance Convertible Double Double where
     type ConvertEffortIndicator Double Double = ()
@@ -75,6 +88,11 @@ instance Convertible Rational Double where
 instance Convertible Double Rational where
     type ConvertEffortIndicator Double Rational = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff _ d = toRational d
-    convertDnEff _ d = toRational d
+    convertUpEff _ d
+        | isInfinite d =
+            throw  $ 
+                AERNException $ 
+                    "cannot convert" ++ show d ++ " to a rational"
+        | otherwise = toRational d
+    convertDnEff eff d = convertUpEff eff d
 
