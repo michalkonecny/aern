@@ -18,6 +18,11 @@ import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
 infixl 6 +., +^, -., -^
 infixl 7 *., *^
+infixl 7 /., /^
+
+infixr 6 |+., |+^
+infixr 7 |*., |*^
+infixl 7 |/., |/^
 
 (+^), (+.) :: 
     (RoundedAdd t, ?addUpDnEffort :: AddEffortIndicator t) => 
@@ -42,3 +47,25 @@ infixl 7 *., *^
     t -> t -> t
 (/^) = divUpEff ?divUpDnEffort
 (/.) = divDnEff ?divUpDnEffort
+
+(|+^), (|+.) ::
+    (RoundedMixedAdd t1 t2, 
+     ?mixedAddUpDnEffort :: MixedAddEffortIndicator t1 t2) => 
+    t1 -> t2 -> t2
+(|+^) = mixedAddUpEff ?mixedAddUpDnEffort
+(|+.) = mixedAddDnEff ?mixedAddUpDnEffort
+
+(|*^), (|*.) ::
+    (RoundedMixedMultiply t1 t2, 
+     ?mixedMultUpDnEffort :: MixedMultEffortIndicator t1 t2) => 
+    t1 -> t2 -> t2
+(|*^) = mixedMultUpEff ?mixedMultUpDnEffort
+(|*.) = mixedMultDnEff ?mixedMultUpDnEffort
+
+(|/^), (|/.) ::
+    (RoundedMixedDivide t1 t2, 
+     ?mixedDivUpDnEffort :: MixedDivEffortIndicator t1 t2) => 
+    t2 -> t1 -> t2
+(|/^) = mixedDivUpEff ?mixedDivUpDnEffort
+(|/.) = mixedDivDnEff ?mixedDivUpDnEffort
+

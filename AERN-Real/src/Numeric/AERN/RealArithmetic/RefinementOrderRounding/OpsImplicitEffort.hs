@@ -18,6 +18,11 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 
 infixl 6 <+>, >+<, <->, >-<
 infixl 7 <*>, >*<
+infixl 7 </>, >/<
+
+infixr 6 |<+>, |>+<
+infixr 7 |<*>, |>*<
+infixl 7 |</>, |>/<
 
 
 (>+<), (<+>) :: 
@@ -43,4 +48,26 @@ infixl 7 <*>, >*<
     t -> t -> t
 (>/<) = divInEff ?divInOutEffort
 (</>) = divOutEff ?divInOutEffort
+
+
+(|>+<), (|<+>) :: 
+    (RoundedMixedAdd t1 t2, 
+     ?mixedAddInOutEffort :: MixedAddEffortIndicator t1 t2) => 
+    t1 -> t2 -> t2
+(|>+<) = mixedAddInEff ?mixedAddInOutEffort
+(|<+>) = mixedAddOutEff ?mixedAddInOutEffort
+
+(|>*<), (|<*>) :: 
+    (RoundedMixedMultiply t1 t2, 
+     ?mixedMultInOutEffort :: MixedMultEffortIndicator t1 t2) => 
+    t1 -> t2 -> t2
+(|>*<) = mixedMultInEff ?mixedMultInOutEffort
+(|<*>) = mixedMultOutEff ?mixedMultInOutEffort
+
+(|>/<), (|</>) :: 
+    (RoundedMixedDivide t1 t2, 
+     ?mixedDivInOutEffort :: MixedDivEffortIndicator t1 t2) => 
+    t2 -> t1 -> t2
+(|>/<) = mixedDivInEff ?mixedDivInOutEffort
+(|</>) = mixedDivOutEff ?mixedDivInOutEffort
 
