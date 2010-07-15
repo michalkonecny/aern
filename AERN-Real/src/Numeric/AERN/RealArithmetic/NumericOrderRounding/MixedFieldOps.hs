@@ -312,7 +312,7 @@ propMixedDivEqualsConvert sample1 sample2 effortDist effortDistComp initEffort e
             (e1 /. (convertDnEff effConv e2))
     
 testsUpDnMixedFieldOps (name1, sample1) (name2, sample2) =
-    testGroup ("mixed up/dn roudned ops: " ++ name1 ++ " with " ++ name2) $
+    testGroup (name1 ++ " with " ++ name2 ++ ": mixed up/dn rounded ops") $
         [
             testProperty "addition" (propMixedAddEqualsConvert sample1 sample2)
         ,
