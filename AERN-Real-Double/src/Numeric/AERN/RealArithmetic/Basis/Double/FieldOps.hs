@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
     Description :  rounded arithmetic instances for Double
@@ -19,6 +20,7 @@ module Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
 where
 
 import Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
+import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
@@ -128,6 +130,26 @@ instance RoundedMultiply Double where
 --            (negate d1) * d2 + (1/effortD)
 --        where
 --        effortD = fromInteger $ toInteger $ fromInt1To100 $ effort
+
+instance RoundedPowerNonnegToNonnegInt Double where
+    type PowerNonnegToNonnegIntEffortIndicator Double = 
+        PowerNonnegToNonnegIntEffortIndicatorFromMult Double
+    powerNonnegToNonnegIntDefaultEffort = 
+        powerNonnegToNonnegIntDefaultEffortFromMult
+    powerNonnegToNonnegIntUpEff = 
+        powerNonnegToNonnegIntUpEffFromMult
+    powerNonnegToNonnegIntDnEff = 
+        powerNonnegToNonnegIntDnEffFromMult
+
+instance RoundedPowerToNonnegInt Double where
+    type PowerToNonnegIntEffortIndicator Double = 
+        PowerToNonnegIntEffortIndicatorFromMult Double
+    powerToNonnegIntDefaultEffort = 
+        powerToNonnegIntDefaultEffortFromMult
+    powerToNonnegIntUpEff = 
+        powerToNonnegIntUpEffFromMult
+    powerToNonnegIntDnEff = 
+        powerToNonnegIntDnEffFromMult
 
 instance RoundedDivide Double where
     type DivEffortIndicator Double = () 

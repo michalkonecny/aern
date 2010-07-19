@@ -18,7 +18,18 @@ module Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
 (
     RoundedAdd(..), RoundedSubtr(..), testsUpDnAdd, testsUpDnSubtr,
     RoundedAbs(..), testsUpDnAbs, absUpUsingCompMax, absDnUsingCompMax,
-    RoundedMultiply(..), RoundedDivide(..), testsUpDnMult, testsUpDnDiv,
+    RoundedMultiply(..), testsUpDnMult,
+    RoundedPowerNonnegToNonnegInt(..),
+    PowerNonnegToNonnegIntEffortIndicatorFromMult, 
+    powerNonnegToNonnegIntDefaultEffortFromMult,
+    powerNonnegToNonnegIntUpEffFromMult,
+    powerNonnegToNonnegIntDnEffFromMult,
+    RoundedPowerToNonnegInt(..), testsUpDnIntPower, 
+    PowerToNonnegIntEffortIndicatorFromMult, 
+    powerToNonnegIntDefaultEffortFromMult,
+    powerToNonnegIntUpEffFromMult,
+    powerToNonnegIntDnEffFromMult,
+    RoundedDivide(..), testsUpDnDiv,
     RoundedRing, RoundedField
 )
 where
@@ -48,6 +59,7 @@ class RoundedAdd t where
 
 propUpDnAddZero ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
@@ -65,6 +77,7 @@ propUpDnAddZero _ effortDist =
 
 propUpDnAddCommutative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
@@ -82,6 +95,7 @@ propUpDnAddCommutative _ effortDist =
        
 propUpDnAddAssociative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
@@ -115,6 +129,7 @@ class (RoundedAdd t, Neg t) => RoundedSubtr t where
 
 propUpDnSubtrElim ::
     (NumOrd.PartialComparison t, RoundedSubtr t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
@@ -132,6 +147,7 @@ propUpDnSubtrElim _ effortDist =
 
 propUpDnSubtrNegAdd ::
     (NumOrd.PartialComparison t, RoundedSubtr t, Neg t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
@@ -209,6 +225,7 @@ absDnUsingCompMax (effortComp, effortMinmax) a =
 
 propUpDnAbsNegSymmetric ::
     (NumOrd.PartialComparison t, RoundedAbs t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t), Neg t,
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AbsEffortIndicator t),
@@ -226,6 +243,7 @@ propUpDnAbsNegSymmetric _ effortDist =
 
 propUpDnAbsIdempotent ::
     (NumOrd.PartialComparison t, RoundedAbs t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AbsEffortIndicator t),
@@ -260,6 +278,7 @@ class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t) => RoundedRing t
 
 propUpDnMultOne ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasOne t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
@@ -277,6 +296,7 @@ propUpDnMultOne _ effortDist =
 
 propUpDnMultCommutative ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
@@ -294,6 +314,7 @@ propUpDnMultCommutative _ effortDist =
        
 propUpDnMultAssociative ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t, 
+     Show t,
      RoundedMultiply t, HasZero t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
@@ -336,6 +357,7 @@ propUpDnMultAssociative _ effortDist effortDistComp minmaxEffort initEffort e1 e
 
 propUpDnMultDistributesOverAdd ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
+     Show t,
      RoundedMultiply t,  RoundedAdd t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
@@ -391,6 +413,214 @@ testsUpDnMult (name, sample) =
             testProperty "distributes over +" (propUpDnMultDistributesOverAdd sample)
         ]
 
+-- simpler versions assuming the argument is non-negative:
+class RoundedPowerNonnegToNonnegInt t where
+    type PowerNonnegToNonnegIntEffortIndicator t
+    powerNonnegToNonnegIntDefaultEffort :: 
+        t -> PowerNonnegToNonnegIntEffortIndicator t 
+    powerNonnegToNonnegIntUpEff :: 
+        (PowerNonnegToNonnegIntEffortIndicator t) -> 
+        t {-^ @x@ (assumed >=0) -} -> 
+        Int {-^ @n@ (assumed >=0)-} -> 
+        t {-^ @x^n@ rounded up -}
+    powerNonnegToNonnegIntDnEff ::
+        (PowerNonnegToNonnegIntEffortIndicator t) -> 
+        t {-^ @x@ (assumed >=0) -} -> 
+        Int {-^ @n@ (assumed >=0)-} -> 
+        t {-^ @x^n@ rounded down -}
+        
+-- functions providing an implementation derived from rounded multiplication: 
+        
+type PowerNonnegToNonnegIntEffortIndicatorFromMult t =
+    MultEffortIndicator t
+    
+powerNonnegToNonnegIntDefaultEffortFromMult a =
+    multDefaultEffort a
+
+powerNonnegToNonnegIntUpEffFromMult ::
+    (RoundedMultiply t, HasOne t) => 
+    PowerNonnegToNonnegIntEffortIndicatorFromMult t -> 
+    t -> Int -> t
+powerNonnegToNonnegIntUpEffFromMult effMult e n =
+    powerNonneg (multUpEff effMult) e n
+
+powerNonnegToNonnegIntDnEffFromMult ::
+    (RoundedMultiply t, HasOne t) => 
+    PowerNonnegToNonnegIntEffortIndicatorFromMult t -> 
+    t -> Int -> t
+powerNonnegToNonnegIntDnEffFromMult effMult e n =
+    powerNonneg (multDnEff effMult) e n
+
+powerNonneg mult x n = p n -- assuming x >= 0
+    where
+    p n
+        | n == 1 = x
+        | otherwise =
+            case even n of
+                True -> 
+                    powHalf `mult` powHalf 
+                False -> 
+                    x `mult` (powHalf `mult` powHalf)
+        where
+        powHalf = p (n `div` 2)
+
+-- now not assuming the argument is non-negative:
+class RoundedPowerToNonnegInt t where
+    type PowerToNonnegIntEffortIndicator t
+    powerToNonnegIntDefaultEffort :: 
+        t -> PowerToNonnegIntEffortIndicator t 
+    powerToNonnegIntUpEff ::
+        (PowerToNonnegIntEffortIndicator t) -> 
+        t {-^ @x@ -} -> 
+        Int {-^ @n@ (assumed >=0)-} -> 
+        t {-^ @x^n@ rounded up -}
+    powerToNonnegIntDnEff ::
+        (PowerToNonnegIntEffortIndicator t) -> 
+        t {-^ @x@ -} -> 
+        Int {-^ @n@ (assumed >=0)-} -> 
+        t {-^ @x^n@ rounded down -}
+
+-- functions providing an implementation derived from roudned multiplication: 
+
+type PowerToNonnegIntEffortIndicatorFromMult t =
+    (MultEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t, 
+     NumOrd.MinmaxEffortIndicator t)
+     
+powerToNonnegIntDefaultEffortFromMult a =
+    (multDefaultEffort a,
+     NumOrd.pCompareDefaultEffort a,
+     NumOrd.minmaxDefaultEffort a)
+
+powerToNonnegIntUpEffFromMult :: 
+    (RoundedMultiply t, HasOne t, 
+     NumOrd.PartialComparison t, HasZero t, 
+     Neg t, NumOrd.RoundedLattice t) => 
+    PowerToNonnegIntEffortIndicatorFromMult t ->
+    t -> Int -> t
+powerToNonnegIntUpEffFromMult (effMult, effComp, effMinmax) e n =
+    powerToNonnegIntDir
+        (multUpEff effMult) (multDnEff effMult)
+        (NumOrd.maxUpEff effMinmax)
+        effComp e n
+
+powerToNonnegIntDnEffFromMult :: 
+    (RoundedMultiply t, HasOne t, 
+     NumOrd.PartialComparison t, HasZero t, 
+     Neg t, NumOrd.RoundedLattice t) => 
+    PowerToNonnegIntEffortIndicatorFromMult t ->
+    t -> Int -> t
+powerToNonnegIntDnEffFromMult (effMult, effComp, effMinmax) e n =
+    powerToNonnegIntDir 
+        (multDnEff effMult) (multUpEff effMult) 
+        (NumOrd.minDnEff effMinmax)
+        effComp e n
+
+powerToNonnegIntDir :: 
+    (HasOne t, 
+     NumOrd.PartialComparison t, HasZero t, 
+     Neg t) => 
+    (t -> t -> t) {-^ multiplication rounded in the desired direction -} ->
+    (t -> t -> t) {-^ multiplication rounded in the opposite direction -} ->
+    (t -> t -> t) {-^ safe combination of alternative results -} ->
+    (NumOrd.PartialCompareEffortIndicator t) -> 
+    t -> Int -> t
+powerToNonnegIntDir mult1 mult2 combine effComp x n
+    | n == 0 = one
+    | n == 1 = x
+    | otherwise =
+        case (pNonnegNonposEff effComp x) of
+            Just (True, _) -> resNonneg
+            Just (_, True) -> resNonpos
+            _ -> resNonneg `combine` resNonpos
+    where
+    resNonneg = powerNonneg mult1 x n
+    resNonpos 
+        | even n = 
+            powerNonneg mult1 (neg x) n
+        | otherwise = 
+            neg $ powerNonneg mult2 (neg x) n 
+            -- switching rounding direction
+
+propUpDnPowerSumExponents ::
+    (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
+     RoundedPowerToNonnegInt t, RoundedMultiply t, 
+     HasOne t, HasZero t, Neg t,
+     Show t,
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     Show (PowerToNonnegIntEffortIndicator t),
+     EffortIndicator (PowerToNonnegIntEffortIndicator t),
+     Show (MultEffortIndicator t),
+     EffortIndicator (MultEffortIndicator t),
+     Show (NumOrd.MinmaxEffortIndicator t),
+     EffortIndicator (NumOrd.MinmaxEffortIndicator t),
+     Show (NumOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (DistanceEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (NumOrd.PartialCompareEffortIndicator t,
+     (PowerToNonnegIntEffortIndicator t,
+      (NumOrd.PartialCompareEffortIndicator t,
+       MultEffortIndicator t,
+       NumOrd.MinmaxEffortIndicator t))) -> 
+    t -> Int -> Int -> Bool
+propUpDnPowerSumExponents _ effortDist effortDistComp initEffort a nR mR =
+    equalRoundingUpDnImprovement
+        expr1Up expr1Dn expr2Up expr2Dn 
+        NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+    where
+    n = nR `mod` 10
+    m = mR `mod` 10
+    minusA = neg a
+    expr1Up (effPower, (effComp, effMult, effMinmax)) =
+        let (^^) = powerToNonnegIntUpEff effPower in
+        a ^^ (n + m)
+    expr1Dn (effPower, (effComp, effMult, effMinmax)) =
+        let (^.) = powerToNonnegIntDnEff effPower in
+        a ^. (n + m)
+    expr2Up (effPower, (effComp, effMult, effMinmax)) =
+        case pNonnegNonposEff effComp a of
+            Just (True, _) -> rNonneg
+            Just (_, True) -> rNonpos
+            _ -> rNonneg `max` rNonpos
+        where
+        max = NumOrd.maxUpEff effMinmax
+        (^^) = powerToNonnegIntUpEff effPower
+        (^.) = powerToNonnegIntDnEff effPower
+        (*^) = multUpEff effMult
+        (*.) = multDnEff effMult
+        rNonneg = (a ^^ n) *^ (a ^^ m)
+        rNonpos =
+            case (even (n + m)) of
+                True -> (minusA ^^ n) *^ (minusA ^^ m)
+                False -> neg $ (minusA ^. n) *. (minusA ^. m)
+    expr2Dn (effPower, (effComp, effMult, effMinmax)) =
+        case pNonnegNonposEff effComp a of
+            Just (True, _) -> rNonneg
+            Just (_, True) -> rNonpos
+            _ -> rNonneg `min` rNonpos
+        where
+        min = NumOrd.minDnEff effMinmax
+        (^^) = powerToNonnegIntUpEff effPower
+        (^.) = powerToNonnegIntDnEff effPower
+        (*^) = multUpEff effMult
+        (*.) = multDnEff effMult
+        rNonneg = (a ^. n) *. (a ^. m)
+        rNonpos =
+            case (even (n + m)) of
+                True -> (minusA ^. n) *. (minusA ^. m)
+                False -> neg $ (minusA ^^ n) *^ (minusA ^^ m)
+
+testsUpDnIntPower (name, sample) =
+    testGroup (name ++ " non-negative integer power") $
+        [
+            testProperty "a^(n+m) = a^n * a^m" (propUpDnPowerSumExponents sample)
+--            ,
+--            testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
+        ]
 
 class RoundedDivide t where
     type DivEffortIndicator t
@@ -402,6 +632,7 @@ class (RoundedRing t, RoundedDivide t) => RoundedField t
 
 propUpDnDivElim ::
     (NumOrd.PartialComparison t, RoundedDivide t, HasOne t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (DivEffortIndicator t),
@@ -424,6 +655,7 @@ propUpDnDivElim _ effortDist effortCompDist efforts2 a =
 
 propUpDnDivRecipMult ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
+     Show t,
      RoundedMultiply t, RoundedDivide t, HasOne t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),

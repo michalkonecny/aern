@@ -18,7 +18,8 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
 (
     RoundedAdd(..), RoundedSubtr(..), testsInOutAdd, testsInOutSubtr,
     RoundedAbs(..), testsInOutAbs,  absInUsingCompMax, absOutUsingCompMax,
-    RoundedMultiply(..), RoundedDivide(..), testsInOutMult, testsInOutDiv,
+    RoundedMultiply(..), testsInOutMult,
+    RoundedDivide(..), testsInOutDiv, 
     RoundedRing, RoundedField
 )
 where
@@ -50,6 +51,7 @@ class RoundedAdd t where
 
 propInOutAddZero ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      RoundedSubtr (Distance t), 
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
@@ -68,6 +70,7 @@ propInOutAddZero _ effortDist =
 
 propInOutAddCommutative ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
@@ -85,6 +88,7 @@ propInOutAddCommutative _ effortDist =
 
 propInOutAddAssociative ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
@@ -137,6 +141,7 @@ class (RoundedAdd t, Neg t) => RoundedSubtr t where
 
 propInOutSubtrElim ::
     (RefOrd.PartialComparison t, RoundedSubtr t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
@@ -154,6 +159,7 @@ propInOutSubtrElim _ effortDist =
 
 propInOutSubtrNegAdd ::
     (RefOrd.PartialComparison t, RoundedSubtr t, Neg t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
@@ -248,8 +254,9 @@ absInUsingCompMax (effortComp, effortMinmax) a =
     max = NumOrd.maxInnerEff effortMinmax
 
 propInOutAbsNegSymmetric ::
-    (RefOrd.PartialComparison t, RoundedAbs t, HasZero t,
-     HasDistance t,  Show (Distance t), Neg t,
+    (RefOrd.PartialComparison t, RoundedAbs t, HasZero t, Neg t,
+     Show t,
+     HasDistance t,  Show (Distance t),
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
@@ -266,6 +273,7 @@ propInOutAbsNegSymmetric _ effortDist =
 
 propInOutAbsIdempotent ::
     (RefOrd.PartialComparison t, RoundedAbs t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AbsEffortIndicator t),
@@ -284,6 +292,7 @@ propInOutAbsIdempotent _ effortDist =
 propInOutAbsMonotone ::
     (RefOrd.PartialComparison t, RoundedAbs t,
      RefOrd.ArbitraryOrderedTuple t,  
+     Show t,
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -311,9 +320,9 @@ testsInOutAbs (name, sample) =
 
 class RoundedMultiply t where
     type MultEffortIndicator t
+    multDefaultEffort :: t -> MultEffortIndicator t
     multInEff :: MultEffortIndicator t -> t -> t -> t
     multOutEff :: MultEffortIndicator t -> t -> t -> t
-    multDefaultEffort :: t -> MultEffortIndicator t
 
 class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t) => RoundedRing t
 
@@ -335,6 +344,7 @@ propInOutMultMonotone _ =
 
 propInOutMultOne ::
     (RefOrd.Comparison t, RoundedMultiply t, HasOne t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
@@ -352,6 +362,7 @@ propInOutMultOne _ effortDist =
 
 propInOutMultCommutative ::
     (RefOrd.Comparison t, RoundedMultiply t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
@@ -370,6 +381,7 @@ propInOutMultCommutative _ effortDist =
 propInOutMultAssociative ::
     (RefOrd.PartialComparison t, 
      RoundedMultiply t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
@@ -420,12 +432,19 @@ testsInOutMult (name, sample) =
             testProperty "refinement monotone" (propInOutMultMonotone sample)
         ]
 
+class RoundedPowerToNonnegInt t where
+    type PowerToNonnegIntEffortIndicator t
+    powerToNonnegIntDefaultEffort :: t -> PowerToNonnegIntEffortIndicator t 
+    powerToNonnegIntInEff :: (PowerToNonnegIntEffortIndicator t) -> t -> Int -> t
+    powerToNonnegIntOutEff :: (PowerToNonnegIntEffortIndicator t) -> t -> Int -> t
+
+-- TODO: add property
 
 class RoundedDivide t where
     type DivEffortIndicator t
+    divDefaultEffort :: t -> DivEffortIndicator t
     divInEff :: DivEffortIndicator t -> t -> t -> t
     divOutEff :: DivEffortIndicator t -> t -> t -> t
-    divDefaultEffort :: t -> DivEffortIndicator t
 
 class (RoundedRing t, RoundedDivide t) => RoundedField t
 
@@ -447,6 +466,7 @@ propInOutDivMonotone _ =
 
 propInOutDivElim ::
     (RefOrd.PartialComparison t, RoundedDivide t, HasOne t, HasZero t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (DivEffortIndicator t),
@@ -470,6 +490,7 @@ propInOutDivElim _ effortDist effortCompDist efforts2 a =
 propInOutDivRecipMult ::
     (RefOrd.PartialComparison t,
      RoundedMultiply t, RoundedDivide t, HasOne t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),

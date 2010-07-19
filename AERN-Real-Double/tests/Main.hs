@@ -50,6 +50,7 @@ testsDouble =
        ArithUpDn.testsUpDnSubtr ("Double", sampleD),
        ArithUpDn.testsUpDnAbs ("Double", sampleD),
        ArithUpDn.testsUpDnMult ("Double", sampleD),
+       ArithUpDn.testsUpDnIntPower ("Double", sampleD),
        ArithUpDn.testsUpDnDiv ("Double", sampleD),
        ArithUpDn.testsUpDnMixedFieldOps ("Integer", sampleI) ("Double", sampleD),
        ArithUpDn.testsUpDnMixedFieldOps ("Rational", sampleR) ("Double", sampleD),
