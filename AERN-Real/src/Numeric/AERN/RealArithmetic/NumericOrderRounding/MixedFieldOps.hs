@@ -66,6 +66,7 @@ mixedAddDnEffByConversion (effAdd, effConv) a b =
 propMixedAddEqualsConvert ::
     (NumOrd.PartialComparison t2, Convertible t1 t2,
      RoundedMixedAdd t1 t2, RoundedAdd t2,
+     Show t2,
      HasDistance t2,  Show (Distance t2),  
      NumOrd.PartialComparison (Distance t2), 
      HasInfinities (Distance t2), HasZero (Distance t2),
@@ -147,6 +148,7 @@ propMixedMultEqualsConvert ::
     (NumOrd.PartialComparison t2, NumOrd.RoundedLattice t2, 
      Convertible t1 t2,
      RoundedMixedMultiply t1 t2, RoundedMultiply t2,
+     Show t2,
      HasDistance t2,  Show (Distance t2),  
      NumOrd.PartialComparison (Distance t2), 
      HasInfinities (Distance t2), HasZero (Distance t2),
@@ -268,6 +270,7 @@ propMixedDivEqualsConvert ::
     (NumOrd.PartialComparison t2, NumOrd.RoundedLattice t2, 
      Convertible t1 t2,
      RoundedMixedDivide t1 t2, RoundedDivide t2,
+     Show t2,
      HasDistance t2,  Show (Distance t2),  
      NumOrd.PartialComparison (Distance t2), 
      HasInfinities (Distance t2), HasZero (Distance t2),

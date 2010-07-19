@@ -39,6 +39,7 @@ class RoundedExponentiation t where
 propExpOfNegRecip ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
      RoundedExponentiation t, RoundedMultiply t, Neg t, HasOne t,
+     Show t,
      HasDistance t,  Show (Distance t), HasInfinities (Distance t), HasZero (Distance t),  
      NumOrd.PartialComparison (Distance t),
      Show (ExpEffortIndicator t),
@@ -72,6 +73,7 @@ propExpOfNegRecip _ effortDist effortDistComp initEffort e1 =
 propExpOfAddToMult ::
     (NumOrd.PartialComparison t,
      RoundedExponentiation t, RoundedMultiply t,  RoundedAdd t,
+     Show t,
      HasDistance t,  Show (Distance t), HasInfinities (Distance t), HasZero (Distance t),  
      NumOrd.PartialComparison (Distance t),
      Show (ExpEffortIndicator t),
