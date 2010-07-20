@@ -18,6 +18,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 
 infixl 6 <+>, >+<, <->, >-<
 infixl 7 <*>, >*<
+infixl 8 <^>, >^<
 infixl 7 </>, >/<
 
 infixr 6 |<+>, |>+<
@@ -42,6 +43,12 @@ infixl 7 |</>, |>/<
     t -> t -> t
 (>*<) = multInEff ?multInOutEffort
 (<*>) = multOutEff ?multInOutEffort
+
+(>^<), (<^>) :: 
+    (RoundedPowerToNonnegInt t, ?intPowerInOutEffort :: PowerToNonnegIntEffortIndicator t) => 
+    t -> Int -> t
+(>^<) = powerToNonnegIntInEff ?intPowerInOutEffort
+(<^>) = powerToNonnegIntOutEff ?intPowerInOutEffort
 
 (>/<), (</>) :: 
     (RoundedDivide t, ?divInOutEffort :: DivEffortIndicator t) => 

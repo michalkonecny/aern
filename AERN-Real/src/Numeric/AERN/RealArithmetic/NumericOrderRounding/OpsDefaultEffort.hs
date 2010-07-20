@@ -18,6 +18,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 
 infixl 6 +., +^, -., -^
 infixl 7 *., *^
+infixl 8 ^., ^^
 infixl 7 /., /^
 
 infixr 6 |+., |+^
@@ -41,6 +42,12 @@ infixl 7 |/., |/^
     t -> t -> t
 (*^) a = multUpEff (multDefaultEffort a) a
 (*.) a = multDnEff (multDefaultEffort a) a
+
+(^^), (^.) :: 
+    (RoundedPowerToNonnegInt t) => 
+    t -> Int -> t
+(^^) a = powerToNonnegIntUpEff (powerToNonnegIntDefaultEffort a) a
+(^.) a = powerToNonnegIntDnEff (powerToNonnegIntDefaultEffort a) a
 
 (/^), (/.) :: 
     (RoundedDivide t) => 

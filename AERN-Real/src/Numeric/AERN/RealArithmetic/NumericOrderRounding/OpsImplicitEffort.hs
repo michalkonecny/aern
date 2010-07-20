@@ -18,6 +18,7 @@ import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
 infixl 6 +., +^, -., -^
 infixl 7 *., *^
+infixl 8 ^., ^^
 infixl 7 /., /^
 
 infixr 6 |+., |+^
@@ -41,6 +42,12 @@ infixl 7 |/., |/^
     t -> t -> t
 (*^) = multUpEff ?multUpDnEffort
 (*.) = multDnEff ?multUpDnEffort
+
+(^^), (^.) :: 
+    (RoundedPowerToNonnegInt t, ?intPowerUpDnEffort :: PowerToNonnegIntEffortIndicator t) => 
+    t -> Int -> t
+(^^) = powerToNonnegIntUpEff ?intPowerUpDnEffort
+(^.) = powerToNonnegIntDnEff ?intPowerUpDnEffort
 
 (/^), (/.) :: 
     (RoundedDivide t, ?divUpDnEffort :: DivEffortIndicator t) => 
