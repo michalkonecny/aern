@@ -25,16 +25,7 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 instance 
-    (NumOrd.Comparison e 
---     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator e)
-     ) => 
-    (RefOrd.Comparison (Interval e))
-    where
-    compare = compareIntervalRef
-    
-instance 
     (NumOrd.PartialComparison e 
---     NumOrd.Lattice (NumOrd.PartialCompareEffortIndicator e)
      ) => 
     (RefOrd.PartialComparison (Interval e))
     where
@@ -51,10 +42,6 @@ instance (NumOrd.HasExtrema e) => (RefOrd.HasBottom (Interval e))
     bottom = bottomInterval
 
 instance (NumOrd.HasExtrema e) => (RefOrd.HasExtrema (Interval e))
-
-instance (NumOrd.Lattice e, NumOrd.PartialComparison e) => (RefOrd.Basis (Interval e)) 
-    where
-    (|\/?) = basisJoinInterval
 
 instance 
     (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
@@ -82,11 +69,6 @@ instance
      ) => 
     (RefOrd.RoundedBasis (Interval e)) 
 
-
-instance (NumOrd.Lattice e, NumOrd.PartialComparison e) => (RefOrd.Lattice (Interval e)) 
-    where
-    (|\/) = joinInterval
-    (|/\) = meetInterval
 
 instance 
     (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
@@ -118,7 +100,6 @@ instance
 
 instance (NumOrd.ArbitraryOrderedTuple e) => RefOrd.ArbitraryOrderedTuple (Interval e) where
    arbitraryTupleRelatedBy = arbitraryIntervalTupleRefinementRelatedBy
-       
        
        
     

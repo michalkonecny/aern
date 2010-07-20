@@ -61,32 +61,29 @@ instance NumOrd.PartialComparison Double where
            _ -> Just NC 
     pCompareDefaultEffort _ = ()
 
-instance NumOrd.Comparison Double where
-    compare a b =
-        case (isNaN a, isNaN b) of
-           (False, False) -> toPartialOrdering $ Prelude.compare a b  
-           _ -> throw (AERNException $ "illegal Double argument: NumOrd.Comparison.compare " 
-                        ++ show a ++ " " ++ show b) 
+--instance NumOrd.Comparison Double where
+--    compare a b =
+--        case (isNaN a, isNaN b) of
+--           (False, False) -> toPartialOrdering $ Prelude.compare a b  
+--           _ -> throw (AERNException $ "illegal Double argument: NumOrd.Comparison.compare " 
+--                        ++ show a ++ " " ++ show b) 
 
-instance NumOrd.Lattice Double where
-    max a b =
+instance NumOrd.RoundedLattice Double where
+    type NumOrd.MinmaxEffortIndicator Double = ()
+    minmaxDefaultEffort _ = ()
+    maxUpEff _ a b =
         case (isNaN a, isNaN b) of
            (False, False) -> Prelude.max a b  
            _ -> throw (AERNException $ "illegal Double argument: NumOrd.Lattice.max " 
-                        ++ show a ++ " " ++ show b) 
-    min a b =
+                        ++ show a ++ " " ++ show b)
+    maxDnEff = NumOrd.maxUpEff 
+    minUpEff _ a b =
         case (isNaN a, isNaN b) of
            (False, False) -> Prelude.min a b  
            _ -> throw (AERNException $ "illegal Double argument: NumOrd.Lattice.min " 
                         ++ show a ++ " " ++ show b) 
+    minDnEff = NumOrd.minUpEff 
     
-instance NumOrd.RoundedLattice Double where
-    type NumOrd.MinmaxEffortIndicator Double = ()
-    maxUpEff _ = NumOrd.max
-    maxDnEff _ = NumOrd.max
-    minUpEff _ = NumOrd.min
-    minDnEff _ = NumOrd.min
-    minmaxDefaultEffort _ = ()
 --    -- a version with artificially added rounding for "testing" the tests
 --    maxUpEff [effort] e1 e2 = NumOrd.max e1 e2 + (1/(convert effort))
 --    maxDnEff [effort] e1 e2 = NumOrd.max e1 e2 - (1/(convert effort))

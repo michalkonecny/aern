@@ -347,7 +347,7 @@ propInOutMultMonotone _ =
     roundedRefinementMonotone2 multInEff multOutEff
 
 propInOutMultOne ::
-    (RefOrd.Comparison t, RoundedMultiply t, HasOne t,
+    (RefOrd.PartialComparison t, RoundedMultiply t, HasOne t,
      Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
@@ -365,7 +365,7 @@ propInOutMultOne _ effortDist =
     roundedImprovingUnit one RefOrd.pLeqEff (distanceBetweenEff effortDist) multInEff multOutEff
 
 propInOutMultCommutative ::
-    (RefOrd.Comparison t, RoundedMultiply t, HasZero t,
+    (RefOrd.PartialComparison t, RoundedMultiply t, HasZero t,
      Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
@@ -402,8 +402,9 @@ propInOutMultAssociative _ effortDist =
     roundedImprovingAssociative RefOrd.pLeqEff (distanceBetweenEff effortDist) multInEff multOutEff
 
 propInOutMultDistributesOverAdd ::
-    (RefOrd.Comparison t,
+    (RefOrd.PartialComparison t,
      RoundedMultiply t,  RoundedAdd t,
+     Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),

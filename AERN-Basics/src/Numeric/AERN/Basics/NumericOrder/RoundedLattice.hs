@@ -27,7 +27,6 @@ import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.NumericOrder.Comparison
 import Numeric.AERN.Basics.NumericOrder.Arbitrary 
 import Numeric.AERN.Basics.NumericOrder.PartialComparison 
 import Numeric.AERN.Basics.NumericOrder.Extrema
