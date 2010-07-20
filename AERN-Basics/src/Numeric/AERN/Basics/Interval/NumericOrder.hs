@@ -33,15 +33,6 @@ instance
     pCompareEff effort = pCompareEffInterval effort effort
                 
 instance 
-    (NumOrd.Comparison e) => 
-    (NumOrd.Comparison (Interval e))
-        
-instance (NumOrd.Lattice e) => (NumOrd.Lattice (Interval e))
-    where
-    min = minInterval 
-    max = maxInterval 
-
-instance 
     (NumOrd.RoundedLattice e) =>
     (NumOrd.OuterRoundedLattice (Interval e))
     where

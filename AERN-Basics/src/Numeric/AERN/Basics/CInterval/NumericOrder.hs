@@ -90,29 +90,6 @@ pCompareEffInterval effortComp effortCons i1 i2 =
     (l1, h1) = getEndpoints i1    
     (l2, h2) = getEndpoints i2
 
-{-|
-    Default binary minimum for 'CInterval' types.
--}
-minInterval ::
-    (CInterval i, NumOrd.Lattice (Endpoint i)) =>
-    i -> i -> i
-minInterval i1 i2 =
-    fromEndpoints (NumOrd.min l1 l2, NumOrd.min h1 h2)
-    where
-    (l1, h1) = getEndpoints i1
-    (l2, h2) = getEndpoints i2
-
-{-|
-    Default binary maximum for 'CInterval' types.
--}
-maxInterval ::
-    (CInterval i, NumOrd.Lattice (Endpoint i)) =>
-    i -> i -> i
-maxInterval i1 i2 =
-    fromEndpoints (NumOrd.max l1 l2, NumOrd.max h1 h2)
-    where
-    (l1, h1) = getEndpoints i1
-    (l2, h2) = getEndpoints i2
 
 {-|
     Default binary outer-roudned maximum for 'CInterval' types.
@@ -175,7 +152,6 @@ minInnerInterval effort i1 i2 =
 -}
 minmaxDefaultEffortInterval ::
     (CInterval i, 
---     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator (Endpoint i)),
      NumOrd.RoundedLattice (Endpoint i)) => 
     i -> (NumOrd.MinmaxEffortIndicator (Endpoint i)) 
 minmaxDefaultEffortInterval i =

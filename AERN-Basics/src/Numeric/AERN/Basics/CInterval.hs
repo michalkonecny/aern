@@ -28,28 +28,28 @@ class CInterval i where
     mapBothEndpoints :: (Endpoint i -> Endpoint i) -> (Endpoint i -> Endpoint i) -> (i -> i)
     mapEndpointPair :: ((Endpoint i, Endpoint i) -> (Endpoint i, Endpoint i)) -> (i -> i)
     
-propCIntervalConsistent :: 
-    (CInterval i, NumOrd.Comparison (Endpoint i)) => 
-    i -> Bool
-propCIntervalConsistent i =
-    l NumOrd.<= h
-    where
-    (l,h) = getEndpoints i
-    
-propCIntervalAntiConsistent :: 
-    (CInterval i, NumOrd.Comparison (Endpoint i)) => 
-    i -> Bool 
-propCIntervalAntiConsistent i =
-    h NumOrd.<= l
-    where
-    (l,h) = getEndpoints i
-    
-propCIntervalConsistentAntiConsistent :: 
-    (CInterval i, NumOrd.Comparison (Endpoint i)) => 
-    i -> Bool 
-propCIntervalConsistentAntiConsistent i =
-    l NumOrd.<= h || h NumOrd.<= l
-    where
-    (l,h) = getEndpoints i
+--propCIntervalConsistent :: 
+--    (CInterval i, NumOrd.PartialComparison (Endpoint i)) => 
+--    i -> Bool
+--propCIntervalConsistent i =
+--    l NumOrd.<= h
+--    where
+--    (l,h) = getEndpoints i
+--    
+--propCIntervalAntiConsistent :: 
+--    (CInterval i, NumOrd.PartialComparison (Endpoint i)) => 
+--    i -> Bool 
+--propCIntervalAntiConsistent i =
+--    h NumOrd.<= l
+--    where
+--    (l,h) = getEndpoints i
+--    
+--propCIntervalConsistentAntiConsistent :: 
+--    (CInterval i, NumOrd.PartialComparison (Endpoint i)) => 
+--    i -> Bool 
+--propCIntervalConsistentAntiConsistent i =
+--    l NumOrd.<= h || h NumOrd.<= l
+--    where
+--    (l,h) = getEndpoints i
 
 

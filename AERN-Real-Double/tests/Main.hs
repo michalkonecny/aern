@@ -36,9 +36,7 @@ tests = testsDouble ++ testsDI
 testsDouble =
     [
 --       NumOrd.testsArbitraryTuple ("Double", sampleD, NumOrd.compare),
-       NumOrd.testsComparison ("Double", sampleD) Nothing, -- (Just ("NaN", nanD)),
        NumOrd.testsPartialComparison ("Double", sampleD),
-       NumOrd.testsLatticeDistributive ("Double", sampleD) Nothing, --  (Just ("NaN", nanD)),
        NumOrd.testsRoundedLatticeDistributive ("Double", sampleD) Nothing, -- (Just ("NaN", nanD)),
        testsDistance ("Double", sampleD),
        ArithUpDn.testsConvert ("Double", sampleD, "Integer", sampleI),
@@ -61,12 +59,9 @@ testsDI =
     [
        testsConsistency ("DI", sampleDI),
        NumOrd.testsPartialComparison ("DI", sampleDI),
-       NumOrd.testsLatticeDistributiveMonotone ("DI", sampleDI) Nothing,
        NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("DI", sampleDI) Nothing,
        RefOrd.testsPartialComparison  ("DI", sampleDI), 
-       RefOrd.testsBasis ("DI", sampleDI),
        RefOrd.testsRoundedBasis ("DI", sampleDI),
-       RefOrd.testsLatticeDistributive ("DI", sampleDI),
        RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI),
        testsDistance ("DI", sampleDI),
        testsImprecision ("DI", sampleDI),
