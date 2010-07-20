@@ -77,6 +77,7 @@ testsDI =
        ArithInOut.testsInOutSubtr ("DI", sampleDI),
        ArithInOut.testsInOutAbs ("DI", sampleDI),
        ArithInOut.testsInOutMult ("DI", sampleDI),
+       ArithInOut.testsInOutIntPower ("DI", sampleDI),
        ArithInOut.testsInOutDiv ("DI", sampleDI),
        ArithInOut.testsInOutMixedFieldOps ("Integer", sampleI) ("DI", sampleDI),
        ArithInOut.testsInOutMixedFieldOps ("Rational", sampleR) ("DI", sampleDI),

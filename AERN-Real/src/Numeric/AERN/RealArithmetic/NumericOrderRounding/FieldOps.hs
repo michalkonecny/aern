@@ -37,6 +37,7 @@ where
 import Prelude hiding (EQ, LT, GT)
 import Numeric.AERN.Basics.PartialOrdering
 
+import Numeric.AERN.RealArithmetic.Auxiliary
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
 
@@ -442,27 +443,14 @@ powerNonnegToNonnegIntUpEffFromMult ::
     PowerNonnegToNonnegIntEffortIndicatorFromMult t -> 
     t -> Int -> t
 powerNonnegToNonnegIntUpEffFromMult effMult e n =
-    powerNonneg (multUpEff effMult) e n
+    powerFromMult (multUpEff effMult) e n
 
 powerNonnegToNonnegIntDnEffFromMult ::
     (RoundedMultiply t, HasOne t) => 
     PowerNonnegToNonnegIntEffortIndicatorFromMult t -> 
     t -> Int -> t
 powerNonnegToNonnegIntDnEffFromMult effMult e n =
-    powerNonneg (multDnEff effMult) e n
-
-powerNonneg mult x n = p n -- assuming x >= 0
-    where
-    p n
-        | n == 1 = x
-        | otherwise =
-            case even n of
-                True -> 
-                    powHalf `mult` powHalf 
-                False -> 
-                    x `mult` (powHalf `mult` powHalf)
-        where
-        powHalf = p (n `div` 2)
+    powerFromMult (multDnEff effMult) e n
 
 -- now not assuming the argument is non-negative:
 class RoundedPowerToNonnegInt t where
@@ -480,7 +468,7 @@ class RoundedPowerToNonnegInt t where
         Int {-^ @n@ (assumed >=0)-} -> 
         t {-^ @x^n@ rounded down -}
 
--- functions providing an implementation derived from roudned multiplication: 
+-- functions providing an implementation derived from rounded multiplication: 
 
 type PowerToNonnegIntEffortIndicatorFromMult t =
     (MultEffortIndicator t, 
@@ -534,12 +522,12 @@ powerToNonnegIntDir mult1 mult2 combine effComp x n
             Just (_, True) -> resNonpos
             _ -> resNonneg `combine` resNonpos
     where
-    resNonneg = powerNonneg mult1 x n
+    resNonneg = powerFromMult mult1 x n
     resNonpos 
         | even n = 
-            powerNonneg mult1 (neg x) n
+            powerFromMult mult1 (neg x) n
         | otherwise = 
-            neg $ powerNonneg mult2 (neg x) n 
+            neg $ powerFromMult mult2 (neg x) n 
             -- switching rounding direction
 
 propUpDnPowerSumExponents ::

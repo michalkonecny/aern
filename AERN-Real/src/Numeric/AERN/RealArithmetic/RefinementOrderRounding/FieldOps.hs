@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-|
-    Module      :  Numeric.AERN.RefinementOrderRounding.FieldOps
+    Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
     Description :  rounded addition and multiplication  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -19,6 +19,9 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
     RoundedAdd(..), RoundedSubtr(..), testsInOutAdd, testsInOutSubtr,
     RoundedAbs(..), testsInOutAbs,  absInUsingCompMax, absOutUsingCompMax,
     RoundedMultiply(..), testsInOutMult,
+    RoundedPowerToNonnegInt(..), testsInOutIntPower,
+    PowerToNonnegIntEffortIndicatorFromMult, powerToNonnegIntDefaultEffortFromMult,
+    powerToNonnegIntInEffFromMult, powerToNonnegIntOutEffFromMult,
     RoundedDivide(..), testsInOutDiv, 
     RoundedRing, RoundedField
 )
@@ -27,6 +30,7 @@ where
 import Prelude hiding (EQ, LT, GT)
 import Numeric.AERN.Basics.PartialOrdering
 
+import Numeric.AERN.RealArithmetic.Auxiliary
 import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
@@ -434,11 +438,91 @@ testsInOutMult (name, sample) =
 
 class RoundedPowerToNonnegInt t where
     type PowerToNonnegIntEffortIndicator t
-    powerToNonnegIntDefaultEffort :: t -> PowerToNonnegIntEffortIndicator t 
-    powerToNonnegIntInEff :: (PowerToNonnegIntEffortIndicator t) -> t -> Int -> t
-    powerToNonnegIntOutEff :: (PowerToNonnegIntEffortIndicator t) -> t -> Int -> t
+    powerToNonnegIntDefaultEffort :: 
+        t -> PowerToNonnegIntEffortIndicator t 
+    powerToNonnegIntInEff ::
+        (PowerToNonnegIntEffortIndicator t) -> 
+        t {-^ @x@ -} -> 
+        Int {-^ @n@ (assumed >=0)-} -> 
+        t {-^ @x^n@ rounded inwards -}
+    powerToNonnegIntOutEff ::
+        (PowerToNonnegIntEffortIndicator t) -> 
+        t {-^ @x@ -} -> 
+        Int {-^ @n@ (assumed >=0)-} -> 
+        t {-^ @x^n@ rounded outwards -}
 
--- TODO: add property
+-- functions providing an implementation derived from rounded multiplication: 
+        
+type PowerToNonnegIntEffortIndicatorFromMult t =
+    MultEffortIndicator t
+    
+powerToNonnegIntDefaultEffortFromMult a =
+    multDefaultEffort a
+
+powerToNonnegIntInEffFromMult ::
+    (RoundedMultiply t, HasOne t) => 
+    PowerToNonnegIntEffortIndicatorFromMult t -> 
+    t -> Int -> t
+powerToNonnegIntInEffFromMult effMult e n =
+    powerFromMult (multInEff effMult) e n
+
+powerToNonnegIntOutEffFromMult ::
+    (RoundedMultiply t, HasOne t) => 
+    PowerToNonnegIntEffortIndicatorFromMult t -> 
+    t -> Int -> t
+powerToNonnegIntOutEffFromMult effMult e n =
+    powerFromMult (multOutEff effMult) e n
+
+
+propInOutPowerSumExponents ::
+    (RefOrd.PartialComparison t,
+     RoundedPowerToNonnegInt t, RoundedMultiply t, 
+     HasOne t, Show t,
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
+     Show (PowerToNonnegIntEffortIndicator t),
+     EffortIndicator (PowerToNonnegIntEffortIndicator t),
+     Show (MultEffortIndicator t),
+     EffortIndicator (MultEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (DistanceEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (RefOrd.PartialCompareEffortIndicator t,
+     (PowerToNonnegIntEffortIndicator t,
+      MultEffortIndicator t)) -> 
+    t -> Int -> Int -> Bool
+propInOutPowerSumExponents _ effortDist effortDistComp initEffort a nR mR =
+    equalRoundingUpDnImprovement
+        expr1Up expr1Dn expr2Up expr2Dn 
+        RefOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+    where
+    n = nR `mod` 10
+    m = mR `mod` 10
+    expr1Up (effPower, effMult) =
+        let (>^<) = powerToNonnegIntInEff effPower in
+        a >^< (n + m)
+    expr1Dn (effPower, effMult) =
+        let (<^>) = powerToNonnegIntOutEff effPower in
+        a <^> (n + m)
+    expr2Up (effPower, effMult) =
+        let (>^<) = powerToNonnegIntInEff effPower in
+        let (>*<) = multInEff effMult in
+        (a >^< n) >*< (a >^< m)
+    expr2Dn (effPower, effMult) =
+        let (<^>) = powerToNonnegIntOutEff effPower in
+        let (<*>) = multOutEff effMult in
+        (a <^> n) <*> (a <^> m)
+
+testsInOutIntPower (name, sample) =
+    testGroup (name ++ " non-negative integer power") $
+        [
+            testProperty "a^(n+m) = a^n * a^m" (propInOutPowerSumExponents sample)
+--            ,
+--            testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
+        ]
 
 class RoundedDivide t where
     type DivEffortIndicator t
