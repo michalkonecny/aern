@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.FieldOps
     Description :  refinement rounded basic operations for intervals
@@ -222,6 +223,60 @@ instance
      NumOrd.RoundedLattice e) => 
     RoundedRing (Interval e)
 
+instance
+    (ArithUpDn.RoundedPowerNonnegToNonnegInt e,
+     ArithUpDn.RoundedMultiply e,
+     HasZero e, HasOne e, Neg e,
+     NumOrd.PartialComparison e, NumOrd.RoundedLattice e
+     ) => 
+    RoundedPowerToNonnegInt (Interval e)
+    where
+    type PowerToNonnegIntEffortIndicator (Interval e) =
+        (ArithUpDn.PowerNonnegToNonnegIntEffortIndicator e,
+         NumOrd.PartialCompareEffortIndicator e,
+         PowerToNonnegIntEffortIndicatorFromMult (Interval e))
+    powerToNonnegIntDefaultEffort i@(Interval l h) =
+        (ArithUpDn.powerNonnegToNonnegIntDefaultEffort l,
+         NumOrd.pCompareDefaultEffort l,
+         powerToNonnegIntDefaultEffortFromMult i) 
+    powerToNonnegIntInEff 
+            (effPowerEndpt, effComp, effPowerFromMult) 
+            i@(Interval l h) n =
+        case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
+            (Just (True, _), Just (True, _)) -> -- both non-negative
+                Interval lPowerUp hPowerDn
+            (Just (_, True), Just (_, True)) -> -- both non-positive
+                case even n of
+                    True -> Interval hNegPowerUp lNegPowerDn -- switching sign!
+                    False -> Interval lNegNegPowerUp hNegNegPowerDn
+            _ -> -- may involve crossing zero, revert to the default:
+                powerToNonnegIntInEffFromMult effPowerFromMult i n
+        where
+        lPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt l n
+        hPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt h n
+        lNegPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt (neg l) n
+        hNegPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt (neg h) n
+        lNegNegPowerUp = neg lNegPowerDn
+        hNegNegPowerDn = neg hNegPowerUp
+    powerToNonnegIntOutEff 
+            (effPowerEndpt, effComp, effPowerFromMult) 
+            i@(Interval l h) n =
+        case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
+            (Just (True, _), Just (True, _)) -> -- both non-negative
+                Interval lPowerDn hPowerUp
+            (Just (_, True), Just (_, True)) -> -- both non-positive
+                case even n of
+                    True -> Interval hNegPowerDn lNegPowerUp -- switching sign!
+                    False -> Interval lNegNegPowerDn hNegNegPowerUp
+            _ -> -- may involve crossing zero, revert to the default:
+                powerToNonnegIntOutEffFromMult effPowerFromMult i n
+        where
+        lPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt l n
+        hPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt h n
+        lNegPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt (neg l) n
+        hNegPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt (neg h) n
+        lNegNegPowerDn = neg lNegPowerUp
+        hNegNegPowerUp = neg hNegPowerDn
 
 instance 
     (ArithUpDn.RoundedMultiply e, ArithUpDn.RoundedDivide e,  
