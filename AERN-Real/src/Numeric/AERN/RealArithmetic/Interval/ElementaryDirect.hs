@@ -21,6 +21,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Implementation.Elemen
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
@@ -29,58 +30,98 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Interval
 
 import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.CInterval
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 
 instance 
-    (ArithInOut.RoundedMixedAdd Integer e, 
-     ArithInOut.RoundedMultiply e, 
-     ArithInOut.RoundedMixedDivide Integer e,
-     ArithUpDn.Convertible e Integer,
-     ArithUpDn.Convertible Double e,
-     HasZero e,
+    (ArithInOut.RoundedMixedField Int (Interval e),
+     ArithInOut.RoundedField (Interval e), 
+     ArithUpDn.Convertible (Interval e) Int,
+     ArithInOut.Convertible Double (Interval e),
+     HasZero e, HasOne e, 
      HasInfinities e,
      NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e) => 
+     RefOrd.OuterRoundedLattice (Interval e)) => 
     (ArithInOut.RoundedExponentiation (Interval e))
     where
     type ArithInOut.ExpEffortIndicator (Interval e) = 
-        ((ArithInOut.MixedAddEffortIndicator Integer e, 
-          ArithInOut.MultEffortIndicator e,
-          ArithInOut.MixedDivEffortIndicator Integer e)
+        ((ArithInOut.FieldOpsEffortIndicator (Interval e),
+          ArithInOut.MixedFieldOpsEffortIndicator Int (Interval e))
         ,
          Int1To100
         ,
-         (NumOrd.MinmaxEffortIndicator e, 
-          ArithUpDn.ConvertEffortIndicator e Integer,
-          ArithUpDn.ConvertEffortIndicator Double e)
+         ((RefOrd.JoinMeetOutEffortIndicator (Interval e),
+           NumOrd.PartialCompareEffortIndicator e), 
+          (ArithUpDn.ConvertEffortIndicator (Interval e) Int,
+           ArithInOut.ConvertEffortIndicator Double (Interval e)))
         )
-    expDefaultEffortIndicator (Interval l h) = 
-        ((ArithInOut.mixedAddDefaultEffort sampleI l, 
-          ArithInOut.multDefaultEffort l,
-          ArithInOut.mixedDivDefaultEffort sampleI l)
+    expDefaultEffortIndicator i@(Interval l h) = 
+        ((ArithInOut.fieldOpsDefaultEffort i, 
+          ArithInOut.mixedFieldOpsDefaultEffort sampleI i)
         ,
          Int1To100 3
         , 
-         (NumOrd.minmaxDefaultEffort l, 
-          ArithUpDn.convertDefaultEffort l sampleI,
-          ArithUpDn.convertDefaultEffort sampleD l)
+         ((RefOrd.joinmeetOutDefaultEffort i,
+           NumOrd.pCompareDefaultEffort l), 
+          (ArithUpDn.convertDefaultEffort i sampleI,
+           ArithInOut.convertDefaultEffort sampleD i))
         )
-         where
-         sampleI = 1 :: Integer
-         sampleD = 1 :: Double
-    expOutEff effort@(effortOps,  effortTaylor, effortMeetConv@(effortMeet, _, _)) (Interval l h) =
-        RefOrd.meetOutEff effortMeet
-            (expOutThinArg effortOps effortMeetConv effortTaylor lI) 
-            (expOutThinArg effortOps effortMeetConv effortTaylor hI)
         where
+        sampleI = 1 :: Int
+        sampleD = 1 :: Double
+    expOutEff 
+            ((effortField, effortMixedField),
+             effortTaylor,
+             ((effortMeet, effortComp), effortConv)) 
+            (Interval l h) =
+                    Interval (fst $ getEndpoints expL) (snd $ getEndpoints expH)
+        where
+        expL = 
+            let ?addInOutEffort = ArithInOut.fldEffortAdd effortField in
+            let ?multInOutEffort = ArithInOut.fldEffortMult effortField in
+            let ?intPowerInOutEffort = ArithInOut.fldEffortPow effortField in
+            let ?divInOutEffort = ArithInOut.fldEffortDiv effortField in
+            let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd effortMixedField in
+            let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult effortMixedField in
+            let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv effortMixedField in
+            expOutThinArg effortMeet effortComp effortComp effortConv effortTaylor lI
+        expH =
+            let ?addInOutEffort = ArithInOut.fldEffortAdd effortField in
+            let ?multInOutEffort = ArithInOut.fldEffortMult effortField in
+            let ?intPowerInOutEffort = ArithInOut.fldEffortPow effortField in
+            let ?divInOutEffort = ArithInOut.fldEffortDiv effortField in
+            let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd effortMixedField in
+            let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult effortMixedField in
+            let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv effortMixedField in
+            expOutThinArg effortMeet effortComp effortComp effortConv effortTaylor hI
         lI = Interval l l
         hI = Interval h h
---    expInEff effort@(effortOps,  effortTaylor, effortMeet) (Interval l h) =
---        RefOrd.meetInEff effortMeet
---            (flipConsistency $ expOutThinArg effortOps  effortTaylor lI) 
---            (flipConsistency $ expOutThinArg effortOps effortTaylor hI)
---        where
---        lI = Interval l l
---        hI = Interval h h
+    expInEff 
+            ((effortField, effortMixedField),
+             effortTaylor,
+             ((effortMeet, effortComp), effortConv)) 
+            (Interval l h) =
+                    Interval (snd $ getEndpoints expL) (fst $ getEndpoints expH)
+        where
+        expL = 
+            let ?addInOutEffort = ArithInOut.fldEffortAdd effortField in
+            let ?multInOutEffort = ArithInOut.fldEffortMult effortField in
+            let ?intPowerInOutEffort = ArithInOut.fldEffortPow effortField in
+            let ?divInOutEffort = ArithInOut.fldEffortDiv effortField in
+            let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd effortMixedField in
+            let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult effortMixedField in
+            let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv effortMixedField in
+            expOutThinArg effortMeet effortComp effortComp effortConv effortTaylor lI
+        expH =
+            let ?addInOutEffort = ArithInOut.fldEffortAdd effortField in
+            let ?multInOutEffort = ArithInOut.fldEffortMult effortField in
+            let ?intPowerInOutEffort = ArithInOut.fldEffortPow effortField in
+            let ?divInOutEffort = ArithInOut.fldEffortDiv effortField in
+            let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd effortMixedField in
+            let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult effortMixedField in
+            let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv effortMixedField in
+            expOutThinArg effortMeet effortComp effortComp effortConv effortTaylor hI
+        lI = Interval l l
+        hI = Interval h h
         
