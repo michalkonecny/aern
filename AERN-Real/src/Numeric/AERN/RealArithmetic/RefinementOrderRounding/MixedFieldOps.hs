@@ -156,11 +156,13 @@ propMixedMultEqualsConvert sample1 sample2 effortDist effortDistComp initEffort 
     expr2Out (_,effMult,effConv) =
         let (<*>) = multOutEff effMult in (convertOutEff effConv e1) <*> e2
 
+class (RoundedMixedAdd s t, RoundedMixedMultiply s t) => RoundedMixedRing s t
+
 class RoundedMixedDivide s t where
     type MixedDivEffortIndicator s t
+    mixedDivDefaultEffort :: s -> t -> MixedDivEffortIndicator s t
     mixedDivInEff :: MixedDivEffortIndicator s t -> t -> s -> t
     mixedDivOutEff :: MixedDivEffortIndicator s t -> t -> s -> t
-    mixedDivDefaultEffort :: s -> t -> MixedDivEffortIndicator s t
 
 mixedDivDefaultEffortByConversion n d = 
         (divDefaultEffort d, convertDefaultEffort n d)
@@ -228,4 +230,22 @@ testsInOutMixedFieldOps (name1, sample1) (name2, sample2) =
         ,
             testProperty "division" (propMixedDivEqualsConvert sample1 sample2)
         ]
+
+data MixedFieldOpsEffortIndicator t1 t2 =
+        MixedFieldOpsEffortIndicator
+        {
+           mxfldEffortAdd :: MixedAddEffortIndicator t1 t2,
+           mxfldEffortMult :: MixedMultEffortIndicator t1 t2,
+           mxfldEffortDiv :: MixedDivEffortIndicator t1 t2
+        }
+
+mixedFieldOpsDefaultEffort a1 a2 =
+        MixedFieldOpsEffortIndicator
+        {
+           mxfldEffortAdd = mixedAddDefaultEffort a1 a2,
+           mxfldEffortMult = mixedMultDefaultEffort a1 a2,
+           mxfldEffortDiv = mixedDivDefaultEffort a1 a2
+        }
+
+class (RoundedMixedRing s t, RoundedMixedDivide s t) => RoundedMixedField s t
         

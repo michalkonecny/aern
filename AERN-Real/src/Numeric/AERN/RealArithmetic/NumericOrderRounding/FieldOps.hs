@@ -275,7 +275,8 @@ class RoundedMultiply t where
     multDnEff :: MultEffortIndicator t -> t -> t -> t
     multDefaultEffort :: t -> MultEffortIndicator t
 
-class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t) => RoundedRing t
+class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t, RoundedPowerToNonnegInt t) => 
+     RoundedRing t
 
 propUpDnMultOne ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasOne t,

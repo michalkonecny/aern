@@ -56,6 +56,14 @@ infixl 7 |</>, |>/<
 (>/<) = divInEff ?divInOutEffort
 (</>) = divOutEff ?divInOutEffort
 
+-- the following does not work, but is kept here as a template for
+-- cut and pasting the "let"s
+withFieldOpsEffortIndicator effortField expression =
+    let ?addInOutEffort = fldEffortAdd effortField in
+    let ?multInOutEffort = fldEffortMult effortField in
+    let ?intPowerInOutEffort = fldEffortPow effortField in
+    let ?divInOutEffort = fldEffortDiv effortField in
+    expression
 
 (|>+<), (|<+>) :: 
     (RoundedMixedAdd t1 t2, 
@@ -77,4 +85,12 @@ infixl 7 |</>, |>/<
     t2 -> t1 -> t2
 (|>/<) = mixedDivInEff ?mixedDivInOutEffort
 (|</>) = mixedDivOutEff ?mixedDivInOutEffort
+
+-- the following does not work, but is kept here as a template for
+-- cut and pasting the "let"s
+withMixedFieldOpsEffortIndicator effortMixedField expression =
+    let ?mixedAddInOutEffort = mxfldEffortAdd effortMixedField in
+    let ?mixedMultInOutEffort = mxfldEffortMult effortMixedField in
+    let ?mixedDivInOutEffort = mxfldEffortDiv effortMixedField in
+    expression
 
