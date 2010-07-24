@@ -217,9 +217,10 @@ multiplyIntervals
                  foldl1 combineR [l1 `timesR` h2, h1 `timesR` l2, l1 `timesR` l2, h1 `timesR` h2])
 
 instance 
-    (ArithUpDn.RoundedRing e,  
-     HasZero e, Neg e,
-     NumOrd.PartialComparison e, 
+    (ArithUpDn.RoundedRing e,
+     ArithUpDn.RoundedPowerNonnegToNonnegInt e,
+     HasOne e, HasZero e, Neg e,
+     NumOrd.PartialComparison e,
      NumOrd.RoundedLattice e) => 
     RoundedRing (Interval e)
 
@@ -332,7 +333,8 @@ recipInterval pNonnegNonpos divL divR fallback (Interval l h) =
              fallback
 
 instance 
-    (ArithUpDn.RoundedField e, 
+    (ArithUpDn.RoundedField e,
+     ArithUpDn.RoundedPowerNonnegToNonnegInt e,
      HasZero e, Neg e, HasOne e, 
      NumOrd.HasExtrema e,
      NumOrd.PartialComparison e, 

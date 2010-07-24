@@ -1,5 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
     Description :  rounded addition and multiplication  
@@ -22,8 +24,9 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
     RoundedPowerToNonnegInt(..), testsInOutIntPower,
     PowerToNonnegIntEffortIndicatorFromMult, powerToNonnegIntDefaultEffortFromMult,
     powerToNonnegIntInEffFromMult, powerToNonnegIntOutEffFromMult,
-    RoundedDivide(..), testsInOutDiv, 
-    RoundedRing, RoundedField
+    RoundedDivide(..), testsInOutDiv,
+    RoundedRing(..), RoundedField(..),
+    FieldOpsEffortIndicator(..), fieldOpsDefaultEffort
 )
 where
 
@@ -328,8 +331,6 @@ class RoundedMultiply t where
     multInEff :: MultEffortIndicator t -> t -> t -> t
     multOutEff :: MultEffortIndicator t -> t -> t -> t
 
-class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t) => RoundedRing t
-
 propInOutMultMonotone ::
     (RefOrd.PartialComparison t, RoundedMultiply t, Show t,
      RefOrd.ArbitraryOrderedTuple t,  
@@ -437,6 +438,8 @@ testsInOutMult (name, sample) =
             testProperty "refinement monotone" (propInOutMultMonotone sample)
         ]
 
+class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t, RoundedPowerToNonnegInt t) => RoundedRing t
+    
 class RoundedPowerToNonnegInt t where
     type PowerToNonnegIntEffortIndicator t
     powerToNonnegIntDefaultEffort :: 
@@ -616,3 +619,33 @@ testsInOutDiv (name, sample) =
             testProperty "refinement monotone" (propInOutDivMonotone sample)
         ]
 
+data FieldOpsEffortIndicator t =
+        FieldOpsEffortIndicator
+        {
+           fldEffortAdd :: AddEffortIndicator t,
+           fldEffortMult :: MultEffortIndicator t,
+           fldEffortPow :: PowerToNonnegIntEffortIndicator t,
+           fldEffortDiv :: DivEffortIndicator t
+        }
+instance 
+    (Show (AddEffortIndicator t), Show (MultEffortIndicator t),
+     Show (PowerToNonnegIntEffortIndicator t),
+     Show (DivEffortIndicator t)) => 
+    Show (FieldOpsEffortIndicator t)
+    where
+    show effortField =
+        "{add:" ++ (show $ fldEffortAdd effortField)
+        ++ ",mult:" ++ (show $ fldEffortMult effortField)
+        ++ ",power:" ++ (show $ fldEffortPow effortField)
+        ++ ",div:" ++ (show $ fldEffortPow effortField)
+        ++ "}"
+
+fieldOpsDefaultEffort a =
+        FieldOpsEffortIndicator
+        {
+           fldEffortAdd = addDefaultEffort a,
+           fldEffortMult = multDefaultEffort a,
+           fldEffortPow = powerToNonnegIntDefaultEffort a,
+           fldEffortDiv = divDefaultEffort a
+        }
+        
