@@ -54,7 +54,8 @@ Library
     Numeric.AERN.RealArithmetic.Interval
     Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
     Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
-
+    Numeric.AERN.Misc.IntegerArithmetic
+    
   Other-modules:
     Numeric.AERN.RealArithmetic.Auxiliary
     Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
