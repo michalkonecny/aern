@@ -29,9 +29,11 @@ import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion as UpDnConversion
 
+import Numeric.AERN.Misc.Bool
 import Numeric.AERN.Misc.Maybe
 
 import Data.Ratio
+import Data.Maybe
 
 import Test.QuickCheck
 import Test.Framework (testGroup, Test)
@@ -68,6 +70,7 @@ propConvertRoundTripNumOrd ::
      UpDnConversion.ConvertEffortIndicator t1 t2) ->
     t1 -> Bool
 propConvertRoundTripNumOrd sample1 sample2 (effortComp, effortFrom, effortTo) a =
+    (defined maDn && defined maUp) ===>
     let ?pCompareEffort = effortComp in
     case (aDnOut <=? a, a <=? aUpOut) of
        (Just False, _) -> printErrorDetail
@@ -75,9 +78,11 @@ propConvertRoundTripNumOrd sample1 sample2 (effortComp, effortFrom, effortTo) a 
        _ -> True
     where
     aDnOut = convertOutEff effortFrom aDn 
-    aDn = UpDnConversion.convertDnEff effortTo a 
-    aUpOut = convertOutEff effortFrom aUp 
-    aUp = UpDnConversion.convertUpEff effortTo a 
+    maDn = UpDnConversion.convertDnEff effortTo a
+    aDn = fromJust maDn 
+    aUpOut = convertOutEff effortFrom aUp
+    maUp = UpDnConversion.convertUpEff effortTo a
+    aUp = fromJust maUp 
     _ = [sample2, aDn, aUp]
     printErrorDetail =
         error $

@@ -231,21 +231,28 @@ testsInOutMixedFieldOps (name1, sample1) (name2, sample2) =
             testProperty "division" (propMixedDivEqualsConvert sample1 sample2)
         ]
 
-data MixedFieldOpsEffortIndicator t1 t2 =
-        MixedFieldOpsEffortIndicator
-        {
-           mxfldEffortAdd :: MixedAddEffortIndicator t1 t2,
-           mxfldEffortMult :: MixedMultEffortIndicator t1 t2,
-           mxfldEffortDiv :: MixedDivEffortIndicator t1 t2
-        }
-
-mixedFieldOpsDefaultEffort a1 a2 =
-        MixedFieldOpsEffortIndicator
-        {
-           mxfldEffortAdd = mixedAddDefaultEffort a1 a2,
-           mxfldEffortMult = mixedMultDefaultEffort a1 a2,
-           mxfldEffortDiv = mixedDivDefaultEffort a1 a2
-        }
+--data MixedFieldOpsEffortIndicator t1 t2 =
+--        MixedFieldOpsEffortIndicator
+--        {
+--           mxfldEffortAdd :: MixedAddEffortIndicator t1 t2,
+--           mxfldEffortMult :: MixedMultEffortIndicator t1 t2,
+--           mxfldEffortDiv :: MixedDivEffortIndicator t1 t2
+--        }
+--
+--mixedFieldOpsDefaultEffort a1 a2 =
+--        MixedFieldOpsEffortIndicator
+--        {
+--           mxfldEffortAdd = mixedAddDefaultEffort a1 a2,
+--           mxfldEffortMult = mixedMultDefaultEffort a1 a2,
+--           mxfldEffortDiv = mixedDivDefaultEffort a1 a2
+--        }
 
 class (RoundedMixedRing s t, RoundedMixedDivide s t) => RoundedMixedField s t
+    where
+    type MixedFieldOpsEffortIndicator s t
+    mixedFieldOpsDefaultEffort :: s -> t -> MixedFieldOpsEffortIndicator s t
+    mxfldEffortAdd :: s -> t -> MixedFieldOpsEffortIndicator s t -> MixedAddEffortIndicator s t
+    mxfldEffortMult :: s -> t -> MixedFieldOpsEffortIndicator s t -> MixedMultEffortIndicator s t
+    mxfldEffortDiv :: s -> t -> MixedFieldOpsEffortIndicator s t -> MixedDivEffortIndicator s t
+        
         

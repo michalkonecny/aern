@@ -340,4 +340,27 @@ instance
      NumOrd.PartialComparison e, 
      NumOrd.RoundedLattice e) => 
     RoundedField (Interval e)
-            
+    where
+    type FieldOpsEffortIndicator (Interval e) =
+        (ArithUpDn.FieldOpsEffortIndicator e,
+         NumOrd.PartialCompareEffortIndicator e,
+         NumOrd.MinmaxEffortIndicator e)
+    fieldOpsDefaultEffort (Interval l h) =
+        (ArithUpDn.fieldOpsDefaultEffort l,
+         NumOrd.pCompareDefaultEffort l,
+         NumOrd.minmaxDefaultEffort l)
+    fldEffortAdd (Interval l h) (effortField, effortComp, effortMinmax) =
+        ArithUpDn.fldEffortAdd l effortField
+    fldEffortMult (Interval l h) (effortField, effortComp, effortMinmax) =
+        (effortComp, effortMinmax, 
+         ArithUpDn.fldEffortMult l effortField)
+    fldEffortPow i@(Interval l h) e@(effortField, effortComp, effortMinmax) =
+        (ArithUpDn.fldEffortPow l effortField,
+         effortComp,
+         fldEffortMult i e) 
+    fldEffortDiv (Interval l h) (effortField, effortComp, effortMinmax) =
+        (effortComp, effortMinmax, 
+         (ArithUpDn.fldEffortMult l effortField,
+          ArithUpDn.fldEffortDiv l effortField))
+         
+        

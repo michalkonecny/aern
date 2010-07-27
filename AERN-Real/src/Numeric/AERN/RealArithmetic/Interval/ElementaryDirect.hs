@@ -78,23 +78,17 @@ instance
                     Interval (fst $ getEndpoints expL) (snd $ getEndpoints expH)
         where
         expL = 
-            let ?addInOutEffort = ArithInOut.fldEffortAdd effortField in
-            let ?multInOutEffort = ArithInOut.fldEffortMult effortField in
-            let ?intPowerInOutEffort = ArithInOut.fldEffortPow effortField in
-            let ?divInOutEffort = ArithInOut.fldEffortDiv effortField in
-            let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd effortMixedField in
-            let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult effortMixedField in
-            let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv effortMixedField in
-            expOutThinArg effortMeet effortComp effortComp effortConv effortTaylor lI
+            expOutThinArg 
+                effortField effortMixedField 
+                effortMeet effortComp effortComp effortConv 
+                effortTaylor 
+                lI
         expH =
-            let ?addInOutEffort = ArithInOut.fldEffortAdd effortField in
-            let ?multInOutEffort = ArithInOut.fldEffortMult effortField in
-            let ?intPowerInOutEffort = ArithInOut.fldEffortPow effortField in
-            let ?divInOutEffort = ArithInOut.fldEffortDiv effortField in
-            let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd effortMixedField in
-            let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult effortMixedField in
-            let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv effortMixedField in
-            expOutThinArg effortMeet effortComp effortComp effortConv effortTaylor hI
+            expOutThinArg 
+                effortField effortMixedField
+                effortMeet effortComp effortComp effortConv 
+                effortTaylor 
+                hI
         lI = Interval l l
         hI = Interval h h
     expInEff 
@@ -105,23 +99,17 @@ instance
                     Interval (snd $ getEndpoints expL) (fst $ getEndpoints expH)
         where
         expL = 
-            let ?addInOutEffort = ArithInOut.fldEffortAdd effortField in
-            let ?multInOutEffort = ArithInOut.fldEffortMult effortField in
-            let ?intPowerInOutEffort = ArithInOut.fldEffortPow effortField in
-            let ?divInOutEffort = ArithInOut.fldEffortDiv effortField in
-            let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd effortMixedField in
-            let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult effortMixedField in
-            let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv effortMixedField in
-            expOutThinArg effortMeet effortComp effortComp effortConv effortTaylor lI
+            expOutThinArg 
+                effortField effortMixedField 
+                effortMeet effortComp effortComp effortConv 
+                effortTaylor 
+                lI
         expH =
-            let ?addInOutEffort = ArithInOut.fldEffortAdd effortField in
-            let ?multInOutEffort = ArithInOut.fldEffortMult effortField in
-            let ?intPowerInOutEffort = ArithInOut.fldEffortPow effortField in
-            let ?divInOutEffort = ArithInOut.fldEffortDiv effortField in
-            let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd effortMixedField in
-            let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult effortMixedField in
-            let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv effortMixedField in
-            expOutThinArg effortMeet effortComp effortComp effortConv effortTaylor hI
+            expOutThinArg 
+                effortField effortMixedField
+                effortMeet effortComp effortComp effortConv 
+                effortTaylor 
+                hI
         lI = Interval l l
         hI = Interval h h
         

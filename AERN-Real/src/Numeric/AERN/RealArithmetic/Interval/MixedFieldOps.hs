@@ -34,9 +34,9 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
-instance (ArithUpDn.RoundedMixedAdd t e) => RoundedMixedAdd t (Interval e) where
-    type MixedAddEffortIndicator t (Interval e) = ArithUpDn.MixedAddEffortIndicator t e
-    mixedAddDefaultEffort t (Interval l h) = ArithUpDn.mixedAddDefaultEffort t l
+instance (ArithUpDn.RoundedMixedAdd s e) => RoundedMixedAdd s (Interval e) where
+    type MixedAddEffortIndicator s (Interval e) = ArithUpDn.MixedAddEffortIndicator s e
+    mixedAddDefaultEffort a (Interval l h) = ArithUpDn.mixedAddDefaultEffort a l
     mixedAddInEff effort e (Interval l2 h2) =
         Interval
             (ArithUpDn.mixedAddUpEff effort e l2)
@@ -46,16 +46,16 @@ instance (ArithUpDn.RoundedMixedAdd t e) => RoundedMixedAdd t (Interval e) where
             (ArithUpDn.mixedAddDnEff effort e l2)
             (ArithUpDn.mixedAddUpEff effort e h2)
 
-instance (ArithUpDn.RoundedMixedMultiply t e,
-          HasZero t, HasZero e,
-          NumOrd.PartialComparison t, NumOrd.PartialComparison e,
+instance (ArithUpDn.RoundedMixedMultiply s e,
+          HasZero s, HasZero e,
+          NumOrd.PartialComparison s, NumOrd.PartialComparison e,
           NumOrd.RoundedLattice e) => 
-        RoundedMixedMultiply t (Interval e) where
-    type MixedMultEffortIndicator t (Interval e) = 
-        ((NumOrd.PartialCompareEffortIndicator t, 
+        RoundedMixedMultiply s (Interval e) where
+    type MixedMultEffortIndicator s (Interval e) = 
+        ((NumOrd.PartialCompareEffortIndicator s, 
           NumOrd.PartialCompareEffortIndicator e), 
          NumOrd.MinmaxEffortIndicator e,
-         ArithUpDn.MixedMultEffortIndicator t e)
+         ArithUpDn.MixedMultEffortIndicator s e)
     mixedMultDefaultEffort s (Interval l h) = 
         ((NumOrd.pCompareDefaultEffort s, 
           NumOrd.pCompareDefaultEffort l), 
@@ -121,15 +121,45 @@ multiplySingletonWithInterval
                 -- need to include zero to account for 
                 -- consistent vs anti-consistent cases giving constant 0
 
+instance (RoundedMixedAdd s (Interval e),
+          RoundedMixedMultiply s (Interval e)) => 
+        RoundedMixedRing s (Interval e)
+
 instance (RoundedDivide (Interval e),
-          Convertible t (Interval e)) => 
-        RoundedMixedDivide t (Interval e) where
-    type MixedDivEffortIndicator t (Interval e) =
+          Convertible s (Interval e)) => 
+        RoundedMixedDivide s (Interval e) where
+    type MixedDivEffortIndicator s (Interval e) =
         (DivEffortIndicator (Interval e), 
-         ConvertEffortIndicator t (Interval e))
+         ConvertEffortIndicator s (Interval e))
     mixedDivDefaultEffort = mixedDivDefaultEffortByConversion
     mixedDivInEff = mixedDivInEffByConversion
     mixedDivOutEff = mixedDivOutEffByConversion
     
-    
+instance (RoundedMixedRing s (Interval e),
+          RoundedMixedDivide s (Interval e),
+          NumOrd.PartialComparison e,
+          NumOrd.RoundedLattice e,
+          NumOrd.PartialComparison s,
+          ArithUpDn.RoundedMixedField s e) => 
+        RoundedMixedField s (Interval e)
+    where
+    type MixedFieldOpsEffortIndicator s (Interval e) =
+        (ArithUpDn.MixedFieldOpsEffortIndicator s e,
+         (NumOrd.PartialCompareEffortIndicator e, 
+          NumOrd.MinmaxEffortIndicator e, 
+          NumOrd.PartialCompareEffortIndicator s),
+         MixedDivEffortIndicator s (Interval e))
+    mixedFieldOpsDefaultEffort a i@(Interval l h) =
+        (ArithUpDn.mixedFieldOpsDefaultEffort a l,
+         (NumOrd.pCompareDefaultEffort l, 
+          NumOrd.minmaxDefaultEffort l,
+          NumOrd.pCompareDefaultEffort a),
+         mixedDivDefaultEffort a i)
+    mxfldEffortAdd a (Interval l h) (effortFld, _, _) = 
+        ArithUpDn.mxfldEffortAdd a l effortFld
+    mxfldEffortMult a (Interval l h) (effortFld, (effortCompEpt, effortMinmax, effortCompS), _) =
+        ((effortCompS, effortCompEpt), 
+          effortMinmax, 
+          ArithUpDn.mxfldEffortMult a l effortFld) 
+    mxfldEffortDiv _ _ (_, _, effortDiv) = effortDiv
     
