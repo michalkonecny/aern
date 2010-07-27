@@ -54,6 +54,9 @@ propNegFlip _ e =
 
 -- instances for some common types:
 
+instance HasZero Int where zero = 0
+instance HasOne Int where one = 1
+
 instance HasZero Integer where zero = 0
 instance HasOne Integer where one = 1
 

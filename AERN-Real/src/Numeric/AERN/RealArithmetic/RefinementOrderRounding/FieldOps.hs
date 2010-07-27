@@ -25,8 +25,9 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
     PowerToNonnegIntEffortIndicatorFromMult, powerToNonnegIntDefaultEffortFromMult,
     powerToNonnegIntInEffFromMult, powerToNonnegIntOutEffFromMult,
     RoundedDivide(..), testsInOutDiv,
-    RoundedRing(..), RoundedField(..),
-    FieldOpsEffortIndicator(..), fieldOpsDefaultEffort
+    RoundedRing(..), RoundedField(..)
+--    ,
+--    FieldOpsEffortIndicator(..), fieldOpsDefaultEffort
 )
 where
 
@@ -534,7 +535,6 @@ class RoundedDivide t where
     divInEff :: DivEffortIndicator t -> t -> t -> t
     divOutEff :: DivEffortIndicator t -> t -> t -> t
 
-class (RoundedRing t, RoundedDivide t) => RoundedField t
 
 propInOutDivMonotone ::
     (RefOrd.PartialComparison t, RoundedDivide t, Show t,
@@ -619,33 +619,41 @@ testsInOutDiv (name, sample) =
             testProperty "refinement monotone" (propInOutDivMonotone sample)
         ]
 
-data FieldOpsEffortIndicator t =
-        FieldOpsEffortIndicator
-        {
-           fldEffortAdd :: AddEffortIndicator t,
-           fldEffortMult :: MultEffortIndicator t,
-           fldEffortPow :: PowerToNonnegIntEffortIndicator t,
-           fldEffortDiv :: DivEffortIndicator t
-        }
-instance 
-    (Show (AddEffortIndicator t), Show (MultEffortIndicator t),
-     Show (PowerToNonnegIntEffortIndicator t),
-     Show (DivEffortIndicator t)) => 
-    Show (FieldOpsEffortIndicator t)
-    where
-    show effortField =
-        "{add:" ++ (show $ fldEffortAdd effortField)
-        ++ ",mult:" ++ (show $ fldEffortMult effortField)
-        ++ ",power:" ++ (show $ fldEffortPow effortField)
-        ++ ",div:" ++ (show $ fldEffortPow effortField)
-        ++ "}"
+class (RoundedRing t, RoundedDivide t) => RoundedField t where
+    type FieldOpsEffortIndicator t
+    fieldOpsDefaultEffort :: t -> FieldOpsEffortIndicator t
+    fldEffortAdd :: t -> (FieldOpsEffortIndicator t) -> (AddEffortIndicator t)
+    fldEffortMult :: t ->  (FieldOpsEffortIndicator t) -> (MultEffortIndicator t)
+    fldEffortPow :: t -> (FieldOpsEffortIndicator t) -> (PowerToNonnegIntEffortIndicator t)
+    fldEffortDiv :: t -> (FieldOpsEffortIndicator t) -> (DivEffortIndicator t)
 
-fieldOpsDefaultEffort a =
-        FieldOpsEffortIndicator
-        {
-           fldEffortAdd = addDefaultEffort a,
-           fldEffortMult = multDefaultEffort a,
-           fldEffortPow = powerToNonnegIntDefaultEffort a,
-           fldEffortDiv = divDefaultEffort a
-        }
+--data FieldOpsEffortIndicator t =
+--        FieldOpsEffortIndicator
+--        {
+--           fldEffortAdd :: AddEffortIndicator t,
+--           fldEffortMult :: MultEffortIndicator t,
+--           fldEffortPow :: PowerToNonnegIntEffortIndicator t,
+--           fldEffortDiv :: DivEffortIndicator t
+--        }
+--instance 
+--    (Show (AddEffortIndicator t), Show (MultEffortIndicator t),
+--     Show (PowerToNonnegIntEffortIndicator t),
+--     Show (DivEffortIndicator t)) => 
+--    Show (FieldOpsEffortIndicator t)
+--    where
+--    show effortField =
+--        "{add:" ++ (show $ fldEffortAdd effortField)
+--        ++ ",mult:" ++ (show $ fldEffortMult effortField)
+--        ++ ",power:" ++ (show $ fldEffortPow effortField)
+--        ++ ",div:" ++ (show $ fldEffortPow effortField)
+--        ++ "}"
+
+--fieldOpsDefaultEffort a =
+--        FieldOpsEffortIndicator
+--        {
+--           fldEffortAdd = addDefaultEffort a,
+--           fldEffortMult = multDefaultEffort a,
+--           fldEffortPow = powerToNonnegIntDefaultEffort a,
+--           fldEffortDiv = divDefaultEffort a
+--        }
         

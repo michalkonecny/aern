@@ -30,7 +30,7 @@ module Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
     powerToNonnegIntUpEffFromMult,
     powerToNonnegIntDnEffFromMult,
     RoundedDivide(..), testsUpDnDiv,
-    RoundedRing, RoundedField
+    RoundedRing(..), RoundedField(..)
 )
 where
 
@@ -274,9 +274,6 @@ class RoundedMultiply t where
     multUpEff :: MultEffortIndicator t -> t -> t -> t
     multDnEff :: MultEffortIndicator t -> t -> t -> t
     multDefaultEffort :: t -> MultEffortIndicator t
-
-class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t, RoundedPowerToNonnegInt t) => 
-     RoundedRing t
 
 propUpDnMultOne ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasOne t,
@@ -611,13 +608,15 @@ testsUpDnIntPower (name, sample) =
 --            testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
         ]
 
+class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t, RoundedPowerToNonnegInt t) => 
+     RoundedRing t
+
+
 class RoundedDivide t where
     type DivEffortIndicator t
     divUpEff :: DivEffortIndicator t -> t -> t -> t
     divDnEff :: DivEffortIndicator t -> t -> t -> t
     divDefaultEffort :: t -> DivEffortIndicator t
-
-class (RoundedRing t, RoundedDivide t) => RoundedField t
 
 propUpDnDivElim ::
     (NumOrd.PartialComparison t, RoundedDivide t, HasOne t, HasZero t,
@@ -692,4 +691,14 @@ testsUpDnDiv (name, sample) =
             ,
             testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
         ]
+
+class (RoundedRing t, RoundedDivide t) => RoundedField t
+    where
+    type FieldOpsEffortIndicator t
+    fieldOpsDefaultEffort :: t -> FieldOpsEffortIndicator t
+    fldEffortAdd :: t -> (FieldOpsEffortIndicator t) -> (AddEffortIndicator t)
+    fldEffortMult :: t ->  (FieldOpsEffortIndicator t) -> (MultEffortIndicator t)
+    fldEffortPow :: t -> (FieldOpsEffortIndicator t) -> (PowerNonnegToNonnegIntEffortIndicator t)
+    fldEffortDiv :: t -> (FieldOpsEffortIndicator t) -> (DivEffortIndicator t)
+
     

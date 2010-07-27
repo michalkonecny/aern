@@ -131,6 +131,8 @@ instance RoundedMultiply Double where
 --        where
 --        effortD = fromInteger $ toInteger $ fromInt1To100 $ effort
 
+instance RoundedRing Double
+
 instance RoundedPowerNonnegToNonnegInt Double where
     type PowerNonnegToNonnegIntEffortIndicator Double = 
         PowerNonnegToNonnegIntEffortIndicatorFromMult Double
@@ -160,6 +162,15 @@ instance RoundedDivide Double where
     divDnEff effort d1 d2 = 
         detectNaNDn ("division " ++ show d1 ++ " /. " ++ show d2 ) $ 
             negate $ withUpwardsRounding $ (negate d1) / d2
+
+instance RoundedField Double
+    where
+    type FieldOpsEffortIndicator Double = ()
+    fieldOpsDefaultEffort _ = ()
+    fldEffortAdd _ _ = ()
+    fldEffortMult _ _ = ()
+    fldEffortPow _ _ = ()
+    fldEffortDiv _ _ = ()
 
 --test1 :: [Double]
 --test1 =

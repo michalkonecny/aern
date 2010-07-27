@@ -37,13 +37,9 @@ expOutThinArg ::
      ArithUpDn.Convertible t Int,
      ArithInOut.Convertible Double t,
      ArithInOut.RoundedMixedField Int t,
-     ArithInOut.RoundedField t,
-     ?addInOutEffort :: ArithInOut.AddEffortIndicator t,
-     ?multInOutEffort :: ArithInOut.MultEffortIndicator t,
-     ?intPowerInOutEffort :: ArithInOut.PowerToNonnegIntEffortIndicator t,
-     ?mixedAddInOutEffort :: ArithInOut.MixedAddEffortIndicator Int t,
-     ?mixedDivInOutEffort :: ArithInOut.MixedDivEffortIndicator Int t
-     ) =>
+     ArithInOut.RoundedField t) =>
+    ArithInOut.FieldOpsEffortIndicator t ->
+    ArithInOut.MixedFieldOpsEffortIndicator Int t ->
     RefOrd.JoinMeetOutEffortIndicator t ->
     RefOrd.PartialCompareEffortIndicator t ->
     NumOrd.PartialCompareEffortIndicator t ->
@@ -52,6 +48,8 @@ expOutThinArg ::
     Int1To100 ->
     t -> t
 expOutThinArg
+        effortField
+        effortMixedField
         effortMeet
         effortRefinement effortCompare
         (effortToInt, effortFromDouble)
@@ -60,31 +58,37 @@ expOutThinArg
     let ?joinmeetOutEffort = effortMeet in
     -- infinities not handled well by the Taylor formula,
     -- treat them as special cases, adding also 0 for efficiency:
-    case (x |>=? plusInfinity, x |>=? minusInfinity, x |>=? zero) of
-        (Just True, _, _) -> x -- x = +oo
-        (_, Just True, _) -> zero -- x = -oo
+    case (xTooBig, xTooLow, x |>=? zero) of
+        (True, _, _) -> x -- x = +oo
+        (_, True, _) -> zero -- x = -oo
         (_, _, Just True) -> one -- x = 0
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
---            let ?addMixInOutEffort = effortAddInt in
---            let ?multMixInOutEffort = effortMultInt in
---            let ?divMixInOutEffort = effortDivInt in
---            let ?multInOutEffort = effortMult in
---            let ?powerToNonnegInOutEffort = effortIntPower in
---            let ?joinmeetInOutEffort = effortMeet in
             expOutViaTaylorForXScaledNearZero
         _ -> -- not equal to infinity but not excluding infinity:
             zero <|/\> plusInfinity
              -- this is always a valid outer approx
     where
+    (xUp, xTooBig) =
+        case ArithUpDn.convertUpEff effortToInt x of
+            Just xUp -> (xUp :: Int, False)
+            _ -> (error "internal error in expOutThinArg", True)
+    (xDn, xTooLow) =
+        case ArithUpDn.convertDnEff effortToInt x of
+            Just xDn -> (xDn :: Int, False)
+            _ -> (error "internal error in expOutThinArg", True)
     expOutViaTaylorForXScaledNearZero =
         let ?joinmeetOutEffort = effortMeet in
+        let ?addInOutEffort = ArithInOut.fldEffortAdd x effortField in
+        let ?multInOutEffort = ArithInOut.fldEffortMult x effortField in
+        let ?intPowerInOutEffort = ArithInOut.fldEffortPow x effortField in
+        let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField in
+        let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd xUp x effortMixedField in
+        let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult xUp x effortMixedField in
+        let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv xUp x effortMixedField in
         ((expOutViaTaylor degr x) |</> n ) <^> n
         where
-        n :: Int
         n = -- x / n must fall inside [-1,1] 
-            (abs $ ArithUpDn.convertUpEff effortToInt x) 
-            `max` 
-            (abs $ ArithUpDn.convertDnEff effortToInt x)
+            (abs xUp) `max` (abs xDn)
     expOutViaTaylor degr x = -- assuming x inside [-1,1]
         oneI |<+> (te degr oneI)
         where
