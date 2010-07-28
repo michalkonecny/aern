@@ -42,7 +42,10 @@ class ArbitraryOrderedTuple t where
         nothing if in this structure there are no tuples satisfying these requirements -}
     arbitraryTupleRelatedBy ::
         (Ord ix, Show ix) => 
-        [ix] {-^ how many elements should be generated and with what names -} -> 
+        [ix]
+           {-^ how many elements should be generated and with what names -} -> 
+        [ix]
+           {-^ a subset of elements that have to thin approximations -} -> 
         [((ix, ix),[PartialOrdering])]
            {-^ required orderings for some pairs of elements -} -> 
         Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}   
@@ -50,7 +53,7 @@ class ArbitraryOrderedTuple t where
 arbitraryPairRelatedBy ::
     (ArbitraryOrderedTuple t) => PartialOrdering -> Maybe (Gen (t,t))
 arbitraryPairRelatedBy rel =
-    case arbitraryTupleRelatedBy [1,2] [((1,2),[rel])] of
+    case arbitraryTupleRelatedBy [1,2] [] [((1,2),[rel])] of
         Nothing -> Nothing
         Just gen -> Just $
             do
@@ -61,7 +64,7 @@ arbitraryTripleRelatedBy ::
     (ArbitraryOrderedTuple t) => 
     (PartialOrdering, PartialOrdering, PartialOrdering) -> Maybe (Gen (t,t,t))
 arbitraryTripleRelatedBy (r1, r2, r3) =
-    case arbitraryTupleRelatedBy [1,2,3] constraints of
+    case arbitraryTupleRelatedBy [1,2,3] [] constraints of
         Nothing -> Nothing
         Just gen -> Just $
             do
