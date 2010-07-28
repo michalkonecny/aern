@@ -45,22 +45,23 @@ expOutThinArg ::
     NumOrd.PartialCompareEffortIndicator t ->
     (ArithUpDn.ConvertEffortIndicator t Int, 
      ArithInOut.ConvertEffortIndicator Double t) ->
-    Int1To100 ->
-    t -> t
+    Int {-^ the highest degree to consider in the Taylor expansion -} ->
+    t {-^ @x@ assumed to be a thin approximation -} -> t {-^ @exp(x)@ -}
 expOutThinArg
         effortField
         effortMixedField
         effortMeet
         effortRefinement effortCompare
         (effortToInt, effortFromDouble)
-        (Int1To100 degr) x =
+        degr x =
     let ?pCompareEffort = effortRefinement in
     let ?joinmeetOutEffort = effortMeet in
+    let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField in
     -- infinities not handled well by the Taylor formula,
     -- treat them as special cases, adding also 0 for efficiency:
     case (xTooBig, xTooLow, x |>=? zero) of
-        (True, _, _) -> x -- x = +oo
-        (_, True, _) -> zero -- x = -oo
+        (True, _, _) -> x <|/\> plusInfinity -- x almost oo
+        (_, True, _) -> zero <|/\> (one </> (neg x)) -- x almost -oo
         (_, _, Just True) -> one -- x = 0
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
             expOutViaTaylorForXScaledNearZero
@@ -85,7 +86,7 @@ expOutThinArg
         let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd xUp x effortMixedField in
         let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult xUp x effortMixedField in
         let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv xUp x effortMixedField in
-        ((expOutViaTaylor degr x) |</> n ) <^> n
+        (expOutViaTaylor degr (x |</> n)) <^> n
         where
         n = -- x / n must fall inside [-1,1] 
             (abs xUp) `max` (abs xDn)
