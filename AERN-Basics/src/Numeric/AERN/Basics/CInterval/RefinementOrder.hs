@@ -174,10 +174,11 @@ joinmeetDefaultEffortInterval i =
 arbitraryIntervalTupleRefinementRelatedBy :: 
     (Ord ix, Show ix, CInterval i, NumOrd.ArbitraryOrderedTuple (Endpoint i)) =>
     [ix] {-^ how many elements should be generated and with what names -} -> 
+    [ix] {-^ a subset of elements that are required to be thin intervals -} -> 
     [((ix, ix),[PartialOrdering])]
        {-^ required orderings for some pairs of elements -} -> 
     Maybe (Gen [i]) {-^ generator for tuples if the requirements make sense -}   
-arbitraryIntervalTupleRefinementRelatedBy indices constraints =
+arbitraryIntervalTupleRefinementRelatedBy indices thinIndices constraints =
     case endpointGens of 
         [] -> Nothing
         _ -> Just $
@@ -202,7 +203,9 @@ arbitraryIntervalTupleRefinementRelatedBy indices constraints =
 --         ++ "\n endpointIndices = " ++ show endpointIndices 
 --         ++ "\n endpointConstraintsVersions = "
 --        ) $
-        map concat $ combinations $ map intervalConstraintsToEndpointConstraints constraints
+        map ((++ thinnessConstraints) . concat) $ 
+            combinations $ map intervalConstraintsToEndpointConstraints constraints
+    thinnessConstraints = map (\ix -> (((ix,-1),(ix,1)),[EQ])) thinIndices
     intervalConstraintsToEndpointConstraints :: 
         ((ix, ix), [PartialOrdering]) -> [[(((ix,Int), (ix,Int)), [PartialOrdering])]]
     intervalConstraintsToEndpointConstraints ((ix1, ix2),rels) =
