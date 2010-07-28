@@ -49,7 +49,7 @@ instance
         ((ArithInOut.FieldOpsEffortIndicator (Interval e),
           ArithInOut.MixedFieldOpsEffortIndicator Int (Interval e))
         ,
-         Int1To100
+         Int1To10
         ,
          ((RefOrd.JoinMeetOutEffortIndicator (Interval e),
            NumOrd.PartialCompareEffortIndicator e), 
@@ -60,7 +60,7 @@ instance
         ((ArithInOut.fieldOpsDefaultEffort i, 
           ArithInOut.mixedFieldOpsDefaultEffort sampleI i)
         ,
-         Int1To100 3
+         Int1To10 10
         , 
          ((RefOrd.joinmeetOutDefaultEffort i,
            NumOrd.pCompareDefaultEffort l), 
@@ -72,7 +72,7 @@ instance
         sampleD = 1 :: Double
     expOutEff 
             ((effortField, effortMixedField),
-             effortTaylor,
+             (Int1To10 effortTaylor),
              ((effortMeet, effortComp), effortConv)) 
             (Interval l h) =
                     Interval (fst $ getEndpoints expL) (snd $ getEndpoints expH)
@@ -93,7 +93,7 @@ instance
         hI = Interval h h
     expInEff 
             ((effortField, effortMixedField),
-             effortTaylor,
+             (Int1To10 effortTaylor),
              ((effortMeet, effortComp), effortConv)) 
             (Interval l h) =
                     Interval (snd $ getEndpoints expL) (fst $ getEndpoints expH)
