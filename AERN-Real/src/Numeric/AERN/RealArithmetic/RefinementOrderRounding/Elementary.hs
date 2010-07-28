@@ -26,6 +26,8 @@ import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
+import Numeric.AERN.Misc.Debug
+
 import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
@@ -64,6 +66,13 @@ propExpOfNegRecip _ effortDist effortDistComp initEffort e1 =
     expr1In (effExp, effMult) = one
     expr1Out (effExp, effMult) = one
     expr2In (effExp, effMult) =
+--        unsafePrintReturn (
+--                "propExpOfNegRecip: expr2In: " 
+--                ++ "\n e1 = " ++ (show e1)
+--                ++ "\n expInEff effExp e1 = " ++ (show $ expInEff effExp e1)
+--                ++ "\n expInEff effExp (neg e1) = " ++ (show $ expInEff effExp (neg e1))
+--                ++ "\n product of the above = "
+--        ) $
         let (>*<) = multInEff effMult in
         (expInEff effExp e1) >*< (expInEff effExp (neg e1))
     expr2Out (effExp, effMult) =
