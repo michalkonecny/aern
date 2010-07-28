@@ -22,14 +22,54 @@ class EffortIndicator t where
     {-| get an infinitely increasing sequence of effort indicators of the same type -}
     effortIncrementSequence :: t -> [t]
 
+newtype Int1To5 = Int1To5 { fromInt1To5 :: Int }
+newtype Int1To10 = Int1To10 { fromInt1To10 :: Int }
+newtype Int1To20 = Int1To20 { fromInt1To20 :: Int }
+newtype Int1To50 = Int1To50 { fromInt1To50 :: Int }
 newtype Int1To100 = Int1To100 { fromInt1To100 :: Int }
 newtype Int1To1000 = Int1To1000 { fromInt1To1000 :: Int }
+
+instance Show Int1To5 where
+    show (Int1To5 i) = show i
+
+instance Show Int1To10 where
+    show (Int1To10 i) = show i
+
+instance Show Int1To20 where
+    show (Int1To20 i) = show i
+
+instance Show Int1To50 where
+    show (Int1To50 i) = show i
 
 instance Show Int1To100 where
     show (Int1To100 i) = show i
 
 instance Show Int1To1000 where
     show (Int1To1000 i) = show i
+
+instance Arbitrary Int1To5 where
+    arbitrary =
+        do
+        i <- choose (1, 5)
+        return $ Int1To5 i
+
+instance Arbitrary Int1To10 where
+    arbitrary =
+        do
+        i <- choose (1, 10)
+        return $ Int1To10 i
+
+instance Arbitrary Int1To20 where
+    arbitrary =
+        do
+        i <- choose (1, 20)
+        return $ Int1To20 i
+
+instance Arbitrary Int1To50 where
+    arbitrary =
+        do
+        i <- choose (1, 50)
+        return $ Int1To50 i
 
 instance Arbitrary Int1To100 where
     arbitrary =
@@ -42,6 +82,38 @@ instance Arbitrary Int1To1000 where
         do
         i <- choose (1, 1000)
         return $ Int1To1000 i
+
+instance EffortIndicator Int1To5 where
+    effortIncrementVariants (Int1To5 i) = [Int1To5 $ i + 1]
+    effortRepeatIncrement (Int1To5 i1, Int1To5 i2) = Int1To5 $ i2 + (i2 - i1)
+    effortIncrementSequence (Int1To5 i) =
+        map Int1To5 $ map (i +) $ fibs12
+        where
+        fibs12 = scanl (+) 1 (1:fibs12)
+
+instance EffortIndicator Int1To10 where
+    effortIncrementVariants (Int1To10 i) = [Int1To10 $ i + 1]
+    effortRepeatIncrement (Int1To10 i1, Int1To10 i2) = Int1To10 $ i2 + (i2 - i1)
+    effortIncrementSequence (Int1To10 i) =
+        map Int1To10 $ map (i +) $ fibs12
+        where
+        fibs12 = scanl (+) 1 (1:fibs12)
+
+instance EffortIndicator Int1To20 where
+    effortIncrementVariants (Int1To20 i) = [Int1To20 $ i + 1]
+    effortRepeatIncrement (Int1To20 i1, Int1To20 i2) = Int1To20 $ i2 + (i2 - i1)
+    effortIncrementSequence (Int1To20 i) =
+        map Int1To20 $ map (i +) $ fibs12
+        where
+        fibs12 = scanl (+) 1 (1:fibs12)
+
+instance EffortIndicator Int1To50 where
+    effortIncrementVariants (Int1To50 i) = [Int1To50 $ i + 1]
+    effortRepeatIncrement (Int1To50 i1, Int1To50 i2) = Int1To50 $ i2 + (i2 - i1)
+    effortIncrementSequence (Int1To50 i) =
+        map Int1To50 $ map (i +) $ fibs12
+        where
+        fibs12 = scanl (+) 1 (1:fibs12)
 
 instance EffortIndicator Int1To100 where
     effortIncrementVariants (Int1To100 i) = [Int1To100 $ i + 1]
