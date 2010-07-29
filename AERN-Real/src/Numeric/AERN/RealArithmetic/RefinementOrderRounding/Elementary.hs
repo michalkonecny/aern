@@ -21,6 +21,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
@@ -42,7 +43,7 @@ class RoundedExponentiation t where
 propExpOfNegRecip ::
     (RefOrd.PartialComparison t,
      RoundedExponentiation t, RoundedMultiply t, Neg t, HasOne t,
-     Show t,
+     Show t, HasAntiConsistency t,
      HasDistance t,  Show (Distance t), HasInfinities (Distance t), HasZero (Distance t),  
      NumOrd.PartialComparison (Distance t),
      Show (ExpEffortIndicator t),
@@ -54,18 +55,19 @@ propExpOfNegRecip ::
      ) =>
     t ->
     (DistanceEffortIndicator t) -> 
+    (ConsistencyEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      (ExpEffortIndicator t, MultEffortIndicator t)) -> 
     t -> Bool
-propExpOfNegRecip _ effortDist effortDistComp initEffort e1 =
-    equalRoundingUpDnImprovement
+propExpOfNegRecip _ effortDist effortConsistency effortDistComp initEffort e1 =
+    thinEqualConsLeqRoundingUpDnImprovement [e1]
         expr1In expr1Out expr2In expr2Out 
-        RefOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+        RefOrd.pLeqEff (distanceBetweenEff effortDist)
+        effortConsistency 
+        effortDistComp initEffort
     where
-    expr1In (effExp, effMult) = one
-    expr1Out (effExp, effMult) = one
-    expr2In (effExp, effMult) =
+    expr1In (effExp, effMult) =
 --        unsafePrintReturn (
 --                "propExpOfNegRecip: expr2In: " 
 --                ++ "\n e1 = " ++ (show e1)
@@ -75,9 +77,11 @@ propExpOfNegRecip _ effortDist effortDistComp initEffort e1 =
 --        ) $
         let (>*<) = multInEff effMult in
         (expInEff effExp e1) >*< (expInEff effExp (neg e1))
-    expr2Out (effExp, effMult) =
+    expr1Out (effExp, effMult) =
         let (<*>) = multOutEff effMult in
         (expOutEff effExp e1) <*> (expOutEff effExp (neg e1))
+    expr2In (effExp, effMult) = one
+    expr2Out (effExp, effMult) = one
 
 -- | @e^(b+c) = e^b * e^c@
 propExpOfAddToMult ::
@@ -122,7 +126,7 @@ propExpOfAddToMult _ effortDist effortDistComp initEffort e1 e2 =
 testsInOutExp (name, sample) =
     testGroup (name ++ " exp in/out") $
         [
-            testProperty "e^a * e^(-a) = 1" (propExpOfNegRecip sample)
+            testProperty "e^a * e^(-a) ⊑/⊒ 1" (propExpOfNegRecip sample)
         ,
             testProperty "e^(a + b) = e^a * e^b" (propExpOfAddToMult sample)
         ]

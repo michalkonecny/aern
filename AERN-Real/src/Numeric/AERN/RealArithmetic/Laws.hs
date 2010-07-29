@@ -20,6 +20,7 @@ module Numeric.AERN.RealArithmetic.Laws where
 import Numeric.AERN.RealArithmetic.Measures
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Laws.Utilities
 
 import Numeric.AERN.Misc.Maybe
@@ -146,22 +147,40 @@ roundedImprovingAssociative =
 roundedImprovingDistributive ::
     (EffortIndicator eiRel, EffortIndicator eiOp1, EffortIndicator eiOp2,
      Show eiOp1, Show eiOp2, Show eiRel,
-     NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap, Show t) =>
+     NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap, 
+     HasAntiConsistency t, Show t) =>
     (PRelEff eiRel t) -> (t -> t -> gap) -> 
     (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
     (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
+    (ConsistencyEffortIndicator t) ->
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, (eiOp1, eiOp2)) -> 
     t -> t -> t -> Bool
-roundedImprovingDistributive =
-    equalRoundingUpDnImprovementBin2Var3 expr1 expr2
+roundedImprovingDistributive 
+        pCompareEff measureGap 
+        op1UpEff op2UpEff 
+        op1DnEff op2DnEff 
+        effortConsistency
+        effortImprComp initEffort@(initEffortRel, initEffortOp) 
+        e1 e2 e3 =
+    thinEqualConsLeqRoundingUpDnImprovement 
+        -- cannot get equality when e1 is not thin 
+        -- because e1 appears twice in expr1 (dependency error)
+        [e1] expr1Up expr1Dn expr2Up expr2Dn 
+        pCompareEff measureGap
+        effortConsistency 
+        effortImprComp (initEffortRel, initEffortOp)
     where
+    expr1Up eff = expr1 op1UpEff op2UpEff eff e1 e2 e3
+    expr1Dn eff = expr1 op1DnEff op2DnEff eff e1 e2 e3
+    expr2Up eff = expr2 op1UpEff op2UpEff eff e1 e2 e3
+    expr2Dn eff = expr2 op1DnEff op2DnEff eff e1 e2 e3
     expr1 op1Eff op2Eff (effort1, effort2) e1 e2 e3 = 
-        e1 * (e2 + e3)
+        (e1 * e2) + (e1 * e3)
         where
         (*) = op1Eff effort1
         (+) = op2Eff effort2
     expr2 op1Eff op2Eff (effort1, effort2) e1 e2 e3 = 
-        (e1 * e2) + (e1 * e3)
+        e1 * (e2 + e3)
         where
         (*) = op1Eff effort1
         (+) = op2Eff effort2
@@ -296,6 +315,40 @@ equalRoundingUpDnImprovementBin2Var3 expr1 expr2 pCompareEff measureGap
     expr2Up eff = expr2 op1UpEff op2UpEff eff e1 e2 e3
     expr2Dn eff = expr2 op1DnEff op2DnEff eff e1 e2 e3
 
+thinEqualConsLeqRoundingUpDnImprovementBin2Var3 :: 
+    (EffortIndicator eiRel, EffortIndicator eiOp1, EffortIndicator eiOp2,
+     Show eiRel, Show eiOp1, Show eiOp2, 
+     NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap, 
+     HasAntiConsistency t, Show t) =>
+    (Expr2Op3Eff eiOp1 eiOp2 t) -> 
+    (Expr2Op3Eff eiOp1 eiOp2 t) -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> 
+    (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
+    (OpEff eiOp1 t) -> (OpEff eiOp2 t) ->
+    (ConsistencyEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator gap) -> 
+    (eiRel, (eiOp1, eiOp2)) -> 
+    t -> t -> t -> Bool
+thinEqualConsLeqRoundingUpDnImprovementBin2Var3
+        expr1 expr2 pCompareEff measureGap 
+        op1UpEff op2UpEff 
+        op1DnEff op2DnEff 
+        effortConsistency
+        effortImprComp initEffort@(initEffortRel, initEffortOp) 
+        e1 e2 e3 =
+    thinEqualConsLeqRoundingUpDnImprovement 
+        [e1,e2,e3] expr1Up expr1Dn expr2Up expr2Dn 
+        pCompareEff measureGap
+        effortConsistency 
+        effortImprComp (initEffortRel, initEffortOp)
+    where
+    expr1Up eff = expr1 op1UpEff op2UpEff eff e1 e2 e3
+    expr1Dn eff = expr1 op1DnEff op2DnEff eff e1 e2 e3
+    expr2Up eff = expr2 op1UpEff op2UpEff eff e1 e2 e3
+    expr2Dn eff = expr2 op1DnEff op2DnEff eff e1 e2 e3
+
+
+
 equalRoundingUpDnImprovementBin2Var2 :: 
     (EffortIndicator eiRel, EffortIndicator eiOp1, EffortIndicator eiOp2,
      Show eiRel, Show eiOp1, Show eiOp2, 
@@ -329,7 +382,73 @@ equalRoundingUpDnImprovement ::
     (eiOp -> t) {-^ right hand side expression DN -} -> 
     (PRelEff eiRel t) -> (t -> t -> gap) -> 
     (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> Bool
-equalRoundingUpDnImprovement expr1Up expr1Dn expr2Up expr2Dn pCompareEff measureGap 
+equalRoundingUpDnImprovement 
+        expr1Up expr1Dn expr2Up expr2Dn 
+        pCompareEff measureGap effortImprComp initEffort =
+    (leqRoundingUpDnImprovement
+        expr1Dn expr2Up 
+        pCompareEff measureGap effortImprComp initEffort)
+    &&
+    (leqRoundingUpDnImprovement
+        expr2Dn expr1Up 
+        pCompareEff measureGap effortImprComp initEffort)
+
+thinEqualConsLeqRoundingUpDnImprovement :: 
+    (EffortIndicator eiRel, EffortIndicator eiOp,
+     Show eiOp, Show eiRel,
+     NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap, 
+     HasAntiConsistency t, Show t) =>
+    [t] -> 
+    (eiOp -> t) {-^ left hand side expression UP -} -> 
+    (eiOp -> t) {-^ left hand side expression DN -} -> 
+    (eiOp -> t) {-^ right hand side expression UP -} -> 
+    (eiOp -> t) {-^ right hand side expression DN -} ->
+    (PRelEff eiRel t) -> (t -> t -> gap) -> 
+    (ConsistencyEffortIndicator t) -> 
+    (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> Bool
+thinEqualConsLeqRoundingUpDnImprovement
+        parameters
+        expr1Up expr1Dn expr2Up expr2Dn
+        pCompareEff measureGap 
+        consistencyEffort 
+        effortImprComp initEffort =
+--    unsafePrint
+--    (
+--        "allConsistent = " ++ show allConsistent
+--        ++ "  allAntiConsistent = " ++ show allAntiConsistent
+--    ) $
+    okIfConsistent && okIfAntiConsistent
+    where
+    okIfConsistent 
+        | allConsistent =
+            (leqRoundingUpDnImprovement
+                expr1Dn expr2Up 
+                pCompareEff measureGap effortImprComp initEffort)
+        | otherwise = True
+    okIfAntiConsistent 
+        | allAntiConsistent =
+            (leqRoundingUpDnImprovement
+                expr2Dn expr1Up 
+                pCompareEff measureGap effortImprComp initEffort)
+        | otherwise = True
+    allConsistent =
+        and $ map isConsistent parameters
+    allAntiConsistent =
+        and $ map isAntiConsistent parameters
+    isConsistent a = 
+        justButNot False $ isConsistentEff consistencyEffort a
+    isAntiConsistent a = 
+        justButNot False $ isAntiConsistentEff consistencyEffort a
+
+leqRoundingUpDnImprovement :: 
+    (EffortIndicator eiRel, EffortIndicator eiOp,
+     Show eiOp, Show eiRel,
+     NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap, Show t) =>
+    (eiOp -> t) {-^ left hand side expression DN -} -> 
+    (eiOp -> t) {-^ right hand side expression UP -} -> 
+    (PRelEff eiRel t) -> (t -> t -> gap) -> 
+    (NumOrd.PartialCompareEffortIndicator gap) -> (eiRel, eiOp) -> Bool
+leqRoundingUpDnImprovement expr1Dn expr2Up pCompareEff measureGap 
         effortImprComp initEffort@(initEffortRel, initEffortOp) =
 --    unsafePrint 
 --    (
@@ -379,20 +498,13 @@ equalRoundingUpDnImprovement expr1Up expr1Dn expr2Up expr2Dn pCompareEff measure
                 ++ " effortOp = " ++ show effortOp ++
               "\n val1Dn <=? val2Up is " 
                 ++ show val1Dn ++ " <=? " ++ show val2Up ++ " = "
-                ++ show (val1Dn <=? val2Up) ++
-              "\n val2Dn <=? val1Up is "  
-                ++ show val2Dn ++ " <=? " ++ show val1Up ++ " = "
-                ++ show (val2Dn <=? val1Up)
+                ++ show (val1Dn <=? val2Up)
             )
         success =
             (defined (val1Dn <=? val2Up) ===> (val1Dn <= val2Up))
-            &&
-            (defined (val2Dn <=? val1Up) ===> (val2Dn <= val1Up))
         imprecision =
             measureGap val1Dn val2Up
         val1Dn = expr1Dn effortOp
-        val1Up = expr1Up effortOp
-        val2Dn = expr2Dn effortOp
         val2Up = expr2Up effortOp
         (<=) = assumeTotal2 (<=?)
         (<=?) = pCompareEff effortRel
