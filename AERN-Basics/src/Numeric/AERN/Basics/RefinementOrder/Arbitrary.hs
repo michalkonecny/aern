@@ -74,7 +74,7 @@ arbitraryTripleRelatedBy (r1, r2, r3) =
     constraints = [((1,2),[r1]), ((2,3),[r2]), ((1,3),[r3])]
 
 {-| type for generating random thin elements -}
-newtype Thin t = Thin t
+newtype Thin t = Thin t deriving (Show)
 
 {-| type for generating pairs distributed in such a way that all ordering relations 
     permitted by this structure have similar probabilities of occurrence -}
