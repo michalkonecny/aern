@@ -40,6 +40,8 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Consistency
+
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
@@ -56,6 +58,8 @@ class RoundedAdd t where
     addInEff :: AddEffortIndicator t -> t -> t -> t
     addOutEff :: AddEffortIndicator t -> t -> t -> t
     addDefaultEffort :: t -> AddEffortIndicator t
+
+--propAddMonotone _ effortDist
 
 propInOutAddZero ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -406,7 +410,7 @@ propInOutMultAssociative _ effortDist =
 propInOutMultDistributesOverAdd ::
     (RefOrd.PartialComparison t,
      RoundedMultiply t,  RoundedAdd t,
-     Show t,
+     HasAntiConsistency t, Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
@@ -418,11 +422,15 @@ propInOutMultDistributesOverAdd ::
      ) =>
     t ->
     (DistanceEffortIndicator t) -> 
+    (ConsistencyEffortIndicator t) ->
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
     (RefOrd.PartialCompareEffortIndicator t, (MultEffortIndicator t, AddEffortIndicator t)) -> 
     t -> t -> t -> Bool
 propInOutMultDistributesOverAdd _ effortDist =
-    roundedImprovingDistributive RefOrd.pLeqEff (distanceBetweenEff effortDist) multInEff addInEff multOutEff addOutEff
+    roundedImprovingDistributive 
+        RefOrd.pLeqEff 
+        (distanceBetweenEff effortDist) 
+        multInEff addInEff multOutEff addOutEff
        
     
 testsInOutMult (name, sample) =
@@ -434,8 +442,8 @@ testsInOutMult (name, sample) =
         ,
             testProperty "associative" (propInOutMultAssociative sample)
         ,
---            testProperty "distributes over +" (propInOutMultDistributesOverAdd sample)
---        ,
+            testProperty "weakly distributes over +" (propInOutMultDistributesOverAdd sample)
+        ,
             testProperty "refinement monotone" (propInOutMultMonotone sample)
         ]
 
@@ -478,53 +486,82 @@ powerToNonnegIntOutEffFromMult ::
 powerToNonnegIntOutEffFromMult effMult e n =
     powerFromMult (multOutEff effMult) e n
 
+propInOutPowerMonotone ::
+    (RefOrd.PartialComparison t, RoundedPowerToNonnegInt t,
+     RefOrd.ArbitraryOrderedTuple t,  
+     Show t,
+     Show (PowerToNonnegIntEffortIndicator t),
+     EffortIndicator (PowerToNonnegIntEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    Int ->
+    (PowerToNonnegIntEffortIndicator t) -> 
+    (RefOrd.LEPair t) -> 
+    (RefOrd.PartialCompareEffortIndicator t) ->
+    Bool
+propInOutPowerMonotone _ nR =
+    roundedRefinementMonotone1 powerNInEff powerNOutEff
+    where
+    n = nR `mod` 10
+    powerNInEff eff x = powerToNonnegIntInEff eff x n
+    powerNOutEff eff x = powerToNonnegIntOutEff eff x n
+
 
 propInOutPowerSumExponents ::
     (RefOrd.PartialComparison t,
      RoundedPowerToNonnegInt t, RoundedMultiply t, 
-     HasOne t, Show t,
+     HasOne t, HasAntiConsistency t, Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (PowerToNonnegIntEffortIndicator t),
      EffortIndicator (PowerToNonnegIntEffortIndicator t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
+     Show (ConsistencyEffortIndicator t),
+     EffortIndicator (ConsistencyEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
     (DistanceEffortIndicator t) -> 
+    (ConsistencyEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
     (RefOrd.PartialCompareEffortIndicator t,
      (PowerToNonnegIntEffortIndicator t,
-      MultEffortIndicator t)) -> 
+      MultEffortIndicator t)) ->
     t -> Int -> Int -> Bool
-propInOutPowerSumExponents _ effortDist effortDistComp initEffort a nR mR =
-    equalRoundingUpDnImprovement
+propInOutPowerSumExponents _ effortDist effortConsistency effortDistComp initEffort a nR mR =
+    thinEqualConsLeqRoundingUpDnImprovement [a]
         expr1Up expr1Dn expr2Up expr2Dn 
-        RefOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+        RefOrd.pLeqEff (distanceBetweenEff effortDist)
+        effortConsistency 
+        effortDistComp initEffort
     where
     n = nR `mod` 10
     m = mR `mod` 10
     expr1Up (effPower, effMult) =
         let (>^<) = powerToNonnegIntInEff effPower in
-        a >^< (n + m)
-    expr1Dn (effPower, effMult) =
-        let (<^>) = powerToNonnegIntOutEff effPower in
-        a <^> (n + m)
-    expr2Up (effPower, effMult) =
-        let (>^<) = powerToNonnegIntInEff effPower in
         let (>*<) = multInEff effMult in
         (a >^< n) >*< (a >^< m)
-    expr2Dn (effPower, effMult) =
+    expr1Dn (effPower, effMult) =
         let (<^>) = powerToNonnegIntOutEff effPower in
         let (<*>) = multOutEff effMult in
         (a <^> n) <*> (a <^> m)
+    expr2Up (effPower, effMult) =
+        let (>^<) = powerToNonnegIntInEff effPower in
+        a >^< (n + m)
+    expr2Dn (effPower, effMult) =
+        let (<^>) = powerToNonnegIntOutEff effPower in
+        a <^> (n + m)
 
 testsInOutIntPower (name, sample) =
     testGroup (name ++ " non-negative integer power") $
         [
-            testProperty "a^(n+m) = a^n * a^m" (propInOutPowerSumExponents sample)
+            testProperty "a^n * a^m ⊑/⊒ a^(n+m)" (propInOutPowerSumExponents sample)
+            ,
+            testProperty "refinement monotone" (propInOutPowerMonotone sample)
 --            ,
 --            testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
         ]
