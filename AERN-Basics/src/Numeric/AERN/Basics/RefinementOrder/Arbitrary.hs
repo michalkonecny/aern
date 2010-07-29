@@ -73,6 +73,9 @@ arbitraryTripleRelatedBy (r1, r2, r3) =
     where
     constraints = [((1,2),[r1]), ((2,3),[r2]), ((1,3),[r3])]
 
+{-| type for generating random thin elements -}
+newtype Thin t = Thin t
+
 {-| type for generating pairs distributed in such a way that all ordering relations 
     permitted by this structure have similar probabilities of occurrence -}
 data UniformlyOrderedPair t = UniformlyOrderedPair (t,t) deriving (Show)
@@ -88,6 +91,14 @@ data LELELETriple t = LELELETriple (t,t,t) deriving (Show)
 data NCLTLTTriple t = NCLTLTTriple (t,t,t) deriving (Show)
 data NCGTGTTriple t = NCGTGTTriple (t,t,t) deriving (Show)
 data NCLTNCTriple t = NCLTNCTriple (t,t,t) deriving (Show)
+
+instance (ArbitraryOrderedTuple t) => Arbitrary (Thin t) where
+    arbitrary =
+        do
+        [thinElement] <- gen 
+        return $ Thin thinElement
+        where
+        Just gen = arbitraryTupleRelatedBy [1] [1] []
 
 instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedPair t) where
     arbitrary =
