@@ -50,13 +50,20 @@ class ArbitraryOrderedTuple t where
         Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}   
 
 instance ArbitraryOrderedTuple Int where
-    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy arbitrary
+    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy arbitrarySizePlus1
+
+arbitrarySizePlus1 ::
+    (Arbitrary t) =>
+    Gen t
+arbitrarySizePlus1 =
+    sized $ \ size ->
+        resize (size + 1) arbitrary
 
 instance ArbitraryOrderedTuple Integer where
-    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy arbitrary
+    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy arbitrarySizePlus1
 
 instance ArbitraryOrderedTuple Rational where
-    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy arbitrary
+    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy arbitrarySizePlus1
 
 {-| Default implementation of linearArbitraryTupleRelatedBy for Ord instances -}   
 linearArbitraryTupleRelatedBy ::
