@@ -241,7 +241,7 @@ instance
          NumOrd.pCompareDefaultEffort l,
          powerToNonnegIntDefaultEffortFromMult i) 
     powerToNonnegIntInEff 
-            (effPowerEndpt, effComp, effPowerFromMult) 
+            (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
             i@(Interval l h) n =
         case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
             (Just (True, _), Just (True, _)) -> -- both non-negative
@@ -251,7 +251,11 @@ instance
                     True -> Interval hNegPowerUp lNegPowerDn -- switching sign!
                     False -> Interval lNegNegPowerUp hNegNegPowerDn
             _ -> -- may involve crossing zero, revert to the default:
-                powerToNonnegIntInEffFromMult effPowerFromMult i n
+                case even n of
+                    True -> 
+                        NumOrd.maxInnerEff effMinMax zero iPowerFromMult 
+                        -- take advantage of the fact that the result is non-negative 
+                    False -> iPowerFromMult 
         where
         lPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt l n
         hPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt h n
@@ -259,8 +263,9 @@ instance
         hNegPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt (neg h) n
         lNegNegPowerUp = neg lNegPowerDn
         hNegNegPowerDn = neg hNegPowerUp
+        iPowerFromMult = powerToNonnegIntInEffFromMult effPowerFromMult i n 
     powerToNonnegIntOutEff 
-            (effPowerEndpt, effComp, effPowerFromMult) 
+            (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
             i@(Interval l h) n =
         case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
             (Just (True, _), Just (True, _)) -> -- both non-negative
@@ -270,7 +275,11 @@ instance
                     True -> Interval hNegPowerDn lNegPowerUp -- switching sign!
                     False -> Interval lNegNegPowerDn hNegNegPowerUp
             _ -> -- may involve crossing zero, revert to the default:
-                powerToNonnegIntOutEffFromMult effPowerFromMult i n
+                case even n of
+                    True -> 
+                        NumOrd.maxOuterEff effMinMax zero iPowerFromMult 
+                        -- take advantage of the fact that the result is non-negative 
+                    False -> iPowerFromMult 
         where
         lPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt l n
         hPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt h n
@@ -278,6 +287,7 @@ instance
         hNegPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt (neg h) n
         lNegNegPowerDn = neg lNegPowerUp
         hNegNegPowerUp = neg hNegPowerDn
+        iPowerFromMult = powerToNonnegIntOutEffFromMult effPowerFromMult i n 
 
 instance 
     (ArithUpDn.RoundedMultiply e, ArithUpDn.RoundedDivide e,  
