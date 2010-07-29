@@ -19,6 +19,7 @@ import Prelude hiding (EQ, LT, GT)
 
 import Numeric.AERN.Basics.PartialOrdering
 
+
 import Data.Maybe
 import qualified Data.Map as Map 
 import qualified Data.Set as Set 
@@ -26,6 +27,7 @@ import qualified Data.Set as Set
 import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
+import Numeric.AERN.Misc.QuickCheck
 
 import qualified Data.List as List
 import System.IO.Unsafe
@@ -50,20 +52,13 @@ class ArbitraryOrderedTuple t where
         Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}   
 
 instance ArbitraryOrderedTuple Int where
-    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy arbitrarySizePlus1
-
-arbitrarySizePlus1 ::
-    (Arbitrary t) =>
-    Gen t
-arbitrarySizePlus1 =
-    sized $ \ size ->
-        resize (size + 1) arbitrary
+    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy (incrSize arbitrary)
 
 instance ArbitraryOrderedTuple Integer where
-    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy arbitrarySizePlus1
+    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy (incrSize arbitrary)
 
 instance ArbitraryOrderedTuple Rational where
-    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy arbitrarySizePlus1
+    arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy (incrSize arbitrary)
 
 {-| Default implementation of linearArbitraryTupleRelatedBy for Ord instances -}   
 linearArbitraryTupleRelatedBy ::
