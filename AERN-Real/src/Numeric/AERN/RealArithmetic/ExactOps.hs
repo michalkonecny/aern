@@ -15,7 +15,12 @@ module Numeric.AERN.RealArithmetic.ExactOps where
 import Prelude hiding (EQ, LT, GT)
 import Numeric.AERN.Basics.PartialOrdering
 
+import Control.Monad.ST
+import Data.STRef
+
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+
+import Numeric.AERN.Basics.Mutable
 
 import Data.Ratio
 
@@ -45,6 +50,17 @@ class HasInfinities t where
     
 class Neg t where
     neg :: t -> t
+    
+class (Neg t, CanBeMutable t) => NegInPlace t where
+    negInPlace :: t -> Mutable t s -> ST s ()
+    negInPlace sample var =
+        -- default such as this one is very inefficient
+        -- but facilitates an API that works even for
+        -- types that do not have native in-place updates
+        do
+        a <- readMutable var
+        let _ = [a,sample]
+        writeMutable var (neg a)
 
 propNegFlip ::
     (Eq t, Neg t) =>
