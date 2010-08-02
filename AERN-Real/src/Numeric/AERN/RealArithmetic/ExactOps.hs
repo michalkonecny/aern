@@ -72,9 +72,11 @@ propNegFlip _ e =
 
 instance HasZero Int where zero = 0
 instance HasOne Int where one = 1
+instance Neg Int where neg = negate
 
 instance HasZero Integer where zero = 0
 instance HasOne Integer where one = 1
+instance Neg Integer where neg = negate
 
 instance (HasZero t, HasOne t, Integral t) => 
     HasZero (Ratio t) 
@@ -82,3 +84,16 @@ instance (HasZero t, HasOne t, Integral t) =>
 instance (HasOne t, Integral t) => 
     HasOne (Ratio t) 
     where one = one % one
+instance (Integral t) => Neg (Ratio t) where neg = negate
+
+instance HasZero Double where zero = 0
+instance HasOne Double where one = 1
+instance Neg Double where neg = negate
+
+instance HasInfinities Double where
+    plusInfinity = 1/0
+    minusInfinity = -1/0
+    excludesPlusInfinity a = (a /= plusInfinity)
+    excludesMinusInfinity a = (a /= minusInfinity)
+    
+
