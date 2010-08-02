@@ -19,7 +19,6 @@ module Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
 (setMachineRoundingModeUp)
 where
 
-import Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
 import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
