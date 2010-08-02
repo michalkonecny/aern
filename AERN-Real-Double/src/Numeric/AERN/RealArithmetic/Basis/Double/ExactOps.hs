@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.Basis.Double.Measures
+    Module      :  Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
     Description :  one, zero, negation etc for Double numbers
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
