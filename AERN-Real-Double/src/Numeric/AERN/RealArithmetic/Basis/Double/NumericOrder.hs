@@ -52,22 +52,6 @@ instance NumOrd.HasHighest Double where
 
 instance NumOrd.HasExtrema Double where
 
-instance NumOrd.PartialComparison Double where
-    type NumOrd.PartialCompareEffortIndicator Double = ()
-    pCompareEff _ a b =
-        case (isNaN a, isNaN b) of
-           (False, False) -> Just $ toPartialOrdering $ Prelude.compare a b  
-           (True, True) -> Just EQ
-           _ -> Just NC 
-    pCompareDefaultEffort _ = ()
-
---instance NumOrd.Comparison Double where
---    compare a b =
---        case (isNaN a, isNaN b) of
---           (False, False) -> toPartialOrdering $ Prelude.compare a b  
---           _ -> throw (AERNException $ "illegal Double argument: NumOrd.Comparison.compare " 
---                        ++ show a ++ " " ++ show b) 
-
 instance NumOrd.RoundedLattice Double where
     type NumOrd.MinmaxEffortIndicator Double = ()
     minmaxDefaultEffort _ = ()
@@ -93,12 +77,5 @@ instance NumOrd.RoundedLattice Double where
 
 
 
-instance NumOrd.ArbitraryOrderedTuple Double where
-   arbitraryTupleRelatedBy = 
-       NumOrd.linearArbitraryTupleRelatedBy (incrSize $ choose (-300,300))
-       -- When generating Double numbers for testing, try to avoid overflows
-       -- as we cannot usually overcome overflows when we cannot increase 
-       -- the granularity (aka precision) of the floating point type.
-       -- Exp overflows at around 700.
        
 

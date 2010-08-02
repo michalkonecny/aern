@@ -60,6 +60,14 @@ instance ArbitraryOrderedTuple Integer where
 instance ArbitraryOrderedTuple Rational where
     arbitraryTupleRelatedBy = linearArbitraryTupleRelatedBy (incrSize arbitrary)
 
+instance ArbitraryOrderedTuple Double where
+   arbitraryTupleRelatedBy = 
+       linearArbitraryTupleRelatedBy (incrSize $ choose (-300,300))
+       -- When generating Double numbers for testing, try to avoid overflows
+       -- as we cannot usually overcome overflows when we cannot increase 
+       -- the granularity (aka precision) of the floating point type.
+       -- Exp overflows at around 700.
+
 {-| Default implementation of linearArbitraryTupleRelatedBy for Ord instances -}   
 linearArbitraryTupleRelatedBy ::
     (Ord ix, Show ix, Ord a) =>
