@@ -36,7 +36,6 @@ Library
     Numeric.AERN.RealArithmetic.Interval.Double
 
   Other-modules:
-    Numeric.AERN.RealArithmetic.Basis.Double.ExactOps
     Numeric.AERN.RealArithmetic.Basis.Double.Conversion
     Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
     Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
