@@ -12,6 +12,8 @@
 -}
 module Numeric.AERN.Basics.Effort where
 
+import Numeric.AERN.Misc.List
+
 import Test.QuickCheck
 
 class EffortIndicator t where
@@ -149,7 +151,7 @@ instance (EffortIndicator t1, EffortIndicator t2) => EffortIndicator (t1, t2)
     effortRepeatIncrement ((i1, i2), (j1, j2)) = 
         (effortRepeatIncrement (i1, j1), effortRepeatIncrement (i2, j2)) 
     effortIncrementSequence (i1, i2) =
-        zip (effortIncrementSequence i1) (effortIncrementSequence i2)
+        zipFill (effortIncrementSequence i1) (effortIncrementSequence i2)
         
 instance (EffortIndicator t1, EffortIndicator t2, EffortIndicator t3) => EffortIndicator (t1, t2, t3)
     where
@@ -165,6 +167,6 @@ instance (EffortIndicator t1, EffortIndicator t2, EffortIndicator t3) => EffortI
     effortRepeatIncrement ((i1, i2, i3), (j1, j2, j3)) = 
         (effortRepeatIncrement (i1, j1), effortRepeatIncrement (i2, j2), effortRepeatIncrement (i3, j3)) 
     effortIncrementSequence (i1, i2, i3) =
-        zip3 (effortIncrementSequence i1) (effortIncrementSequence i2) (effortIncrementSequence i3)
+        zipFill3 (effortIncrementSequence i1) (effortIncrementSequence i2) (effortIncrementSequence i3)
         
         
