@@ -32,7 +32,7 @@ andUnsafeReportFirstFalse :: [(Bool, String)] -> Bool
 andUnsafeReportFirstFalse [] = True
 andUnsafeReportFirstFalse ((True, _) : rest) = andUnsafeReportFirstFalse rest
 andUnsafeReportFirstFalse ((False, msg) : _) =
-   unsafePrintReturn msg False
+   unsafePrint msg False
    
 {-| Like 'or' except each parameter has a message
    associated with it and if all of the parameters
@@ -42,7 +42,7 @@ orUnsafeReportFalse :: [(Bool, String)] -> Bool
 orUnsafeReportFalse boolMsgList
     | notAllFalse = True 
     | otherwise =
-        unsafePrintReturn allMessages False
+        unsafePrint allMessages False
     where
     notAllFalse = or boolList
     allMessages = unlines $ messageList
