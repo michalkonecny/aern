@@ -178,6 +178,13 @@ roundedImprovingDistributive
         effortConsistency
         effortImprComp initEffort 
         e1 e2 e3 =
+--    unsafePrint
+--    (
+--        "property roundedImprovingDistributive: "
+--        ++ "\n e1 = " ++ show e1
+--        ++ "\n e2 = " ++ show e2
+--        ++ "\n e3 = " ++ show e3
+--    ) $        
     thinEqualConsLeqRoundingUpDnImprovement 
         -- cannot get equality when e1 is not thin 
         -- because e1 appears twice in expr1 (dependency error)
@@ -417,28 +424,6 @@ equalRoundingUpDnImprovementBin2Var2 expr1 expr2 pCompareEff measureGap
     expr2Up eff = expr2 op1UpEff op2UpEff eff e1 e2
     expr2Dn eff = expr2 op1DnEff op2DnEff eff e1 e2
 
-equalRoundingUpDnImprovement :: 
-    (EffortIndicator eiMeasure, EffortIndicator eiRel, EffortIndicator eiOp,
-     Show eiMeasure, Show eiOp, Show eiRel,
-     NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap, Show t) =>
-    (eiOp -> t) {-^ left hand side expression UP -} -> 
-    (eiOp -> t) {-^ left hand side expression DN -} -> 
-    (eiOp -> t) {-^ right hand side expression UP -} -> 
-    (eiOp -> t) {-^ right hand side expression DN -} -> 
-    (PRelEff eiRel t) -> (eiMeasure -> t -> t -> gap) -> 
-    (NumOrd.PartialCompareEffortIndicator gap) -> 
-    (eiMeasure, eiRel, eiOp) -> Bool
-equalRoundingUpDnImprovement 
-        expr1Up expr1Dn expr2Up expr2Dn 
-        pCompareEff measureGap effortImprComp initEffort =
-    (leqRoundingUpDnImprovement
-        expr1Dn expr2Up 
-        pCompareEff measureGap effortImprComp initEffort)
-    &&
-    (leqRoundingUpDnImprovement
-        expr2Dn expr1Up 
-        pCompareEff measureGap effortImprComp initEffort)
-
 thinEqualConsLeqRoundingUpDnImprovement :: 
     (EffortIndicator eiMeasure, EffortIndicator eiRel, EffortIndicator eiOp,
      Show eiMeasure, Show eiOp, Show eiRel,
@@ -457,61 +442,75 @@ thinEqualConsLeqRoundingUpDnImprovement
         expr1Up expr1Dn expr2Up expr2Dn
         pCompareEff measureGap 
         consistencyEffort 
-        effortImprComp initEffort =
---    unsafePrint
---    (
---        "allConsistent = " ++ show allConsistent
---        ++ "  allAntiConsistent = " ++ show allAntiConsistent
---    ) $
-    okIfConsistent && okIfAntiConsistent
+        effortImprComp initEffort@(_, effComp, effOp)
+    | allConsistent && allAntiConsistent =
+        okIfThin
+    | allConsistent =
+        okIfConsistent
+    | allAntiConsistent =
+        okIfAntiConsistent
     where
-    okIfConsistent 
-        | allConsistent =
-            (leqRoundingUpDnImprovement
-                expr1Dn expr2Up 
-                pCompareEff measureGap effortImprComp initEffort)
-        | otherwise = True
-    okIfAntiConsistent 
-        | allAntiConsistent =
-            (leqRoundingUpDnImprovement
-                expr2Dn expr1Up 
-                pCompareEff measureGap effortImprComp initEffort)
-        | otherwise = True
     allConsistent =
         and $ map isConsistent parameters
     allAntiConsistent =
         and $ map isAntiConsistent parameters
+    okIfThin =
+            (equalRoundingUpDnImprovement
+                expr1Up expr1Dn expr2Up expr2Dn 
+                pCompareEff measureGap effortImprComp initEffort)
+    okIfConsistent =
+            leqRoundingUpDn expr1Dn expr2Up
+    okIfAntiConsistent = 
+            leqRoundingUpDn expr2Dn expr1Up
     isConsistent a = 
         justButNot False $ isConsistentEff consistencyEffort a
     isAntiConsistent a = 
         justButNot False $ isAntiConsistentEff consistencyEffort a
+    leqRoundingUpDn expr1Dn expr2Up =
+        case pCompareEff effComp (expr1Dn effOp) (expr2Up effOp) of
+            Just res -> res
+            Nothing -> True
 
-leqRoundingUpDnImprovement :: 
+
+equalRoundingUpDnImprovement :: 
     (EffortIndicator eiMeasure, EffortIndicator eiRel, EffortIndicator eiOp,
      Show eiMeasure, Show eiOp, Show eiRel,
      NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap, Show t) =>
+    (eiOp -> t) {-^ left hand side expression UP -} -> 
     (eiOp -> t) {-^ left hand side expression DN -} -> 
     (eiOp -> t) {-^ right hand side expression UP -} -> 
+    (eiOp -> t) {-^ right hand side expression DN -} -> 
     (PRelEff eiRel t) -> (eiMeasure -> t -> t -> gap) -> 
-    (NumOrd.PartialCompareEffortIndicator gap) -> (eiMeasure, eiRel, eiOp) -> Bool
-leqRoundingUpDnImprovement expr1Dn expr2Up pCompareEff measureGap 
-        effortImprComp initEffort =
+    (NumOrd.PartialCompareEffortIndicator gap) -> 
+    (eiMeasure, eiRel, eiOp) -> Bool
+equalRoundingUpDnImprovement 
+        expr1Up expr1Dn expr2Up expr2Dn 
+        pCompareEff measureGap effortImprComp initEffort =
 --    unsafePrint 
 --    (
---        "equalRoundingUpDnImprovement:"
---        ++ "\n  efforts = " ++ show efforts
---        ++ "\n  successes = " ++ show successes
---        ++ "\n  imprecisions = " ++ show imprecisions
+--        "leqRoundingUpDnImprovement:"
+--        ++ "\n  efforts executed = \n" ++ unlines (map show $ take (comparisonCount + 1) efforts)
+--        ++ "\n  5 successes = \n" ++ unlines (map show relevantSuccesses)
+--        ++ "\n  5 imprecisions = \n" ++ unlines (map show $ take 5 imprecisions)
 --    ) 
 --    $
     case evalCatchNaNExceptions result of
-            Left msg -> True 
+            Left msg -> 
+                unsafePrint ("leqRoundingUpDnImprovement: NaN exception: " ++ msg) True 
             -- ignore tests during which an AERN exception arises 
             --     (typically due to NaN)
-            Right res -> res
+            Right res ->
+                case (not noneedComparison) && comparisonCount > 5 of
+                    True -> 
+                        unsafePrint 
+                        ("leqRoundingUpDnImprovement:"
+                          ++ " comparison count = " ++ show comparisonCount  
+                          ++ "; effort = " ++ show (efforts !! comparisonCount))
+                        res 
+                    _ -> res
     where
     result = 
-        (andUnsafeReportFirstFalse $ take 5 successes) && isImprovement  
+        (andUnsafeReportFirstFalse relevantSuccesses) && isImprovement  
     imprecision0Zero = 
         (imprecision0 ==? zero) == Just True
         where
@@ -519,20 +518,26 @@ leqRoundingUpDnImprovement expr1Dn expr2Up pCompareEff measureGap
     isImprovement =
         orUnsafeReportFalse $ 
             [
-             (null imprecisions, 
-              "imprecisions = " ++ show imprecisions) -- no way to raise effort
-            ,  
-             (imprecision0Zero, 
-              "imprecision0 = " ++ show imprecision0) -- or it is exact
+              (noneedComparison,
+              "imprecision0 = " ++ show imprecision0)
             ,
-             (or $ catMaybes $ map (imprecision0 >?) imprecisions, 
+             (comparisonResult, 
               "failed to reduce imprecision")  -- or it can be improved
             ]
-        where
-        ?pCompareEffort = effortImprComp
+    noneedComparison =
+        (null imprecisions) || imprecision0Zero 
+    (comparisonResult, comparisonCount) =
+         let ?pCompareEffort = effortImprComp in 
+         orMaybesCountUsed 0 $ map (imprecision0 >?) imprecisions
+    orMaybesCountUsed cnt [] = (False, cnt)
+    orMaybesCountUsed cnt (Just True:t) = (True, cnt)
+    orMaybesCountUsed cnt (_:t) = orMaybesCountUsed (cnt + 1) t 
+        
+        
+    relevantSuccesses = take 5 successes
     (successes, imprecision0 : imprecisions) = unzip $ map check efforts
     efforts =
-        (initEffort : ) $ take 100 $ effortIncrementSequence initEffort
+        (initEffort : ) $ take 15 $ effortIncrementSequence initEffort
 --            mergeManyLists $
 --                map (take 20 . effortIncrementSequence) $ 
 --                    effortIncrementVariants initEffort 
@@ -546,16 +551,23 @@ leqRoundingUpDnImprovement expr1Dn expr2Up pCompareEff measureGap
         successWithMsg =
             (success,
               "failure for effortRel = " ++ show effortRel 
-                ++ " effortOp = " ++ show effortOp ++
-              "\n val1Dn <=? val2Up is " 
+                ++ " effortOp = " ++ show effortOp
+              ++ "\n val1Dn <=? val2Up is " 
                 ++ show val1Dn ++ " <=? " ++ show val2Up ++ " = "
                 ++ show (val1Dn <=? val2Up)
+              ++ "\n val2Dn <=? val1Up is " 
+                ++ show val2Dn ++ " <=? " ++ show val1Up ++ " = "
+                ++ show (val2Dn <=? val1Up)
             )
         success =
             (defined (val1Dn <=? val2Up) ===> (val1Dn <= val2Up))
+            &&
+            (defined (val2Dn <=? val1Up) ===> (val2Dn <= val1Up))
         imprecision =
             measureGap effortMeasure val1Dn val2Up
         val1Dn = expr1Dn effortOp
+        val1Up = expr1Up effortOp
+        val2Dn = expr2Dn effortOp
         val2Up = expr2Up effortOp
         (<=) = assumeTotal2 (<=?)
         (<=?) = pCompareEff effortRel
