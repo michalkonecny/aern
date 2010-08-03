@@ -45,6 +45,7 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+import Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Test.QuickCheck
@@ -67,18 +68,21 @@ propInOutAddZero ::
      HasDistance t,  Show (Distance t),  
      RoundedSubtr (Distance t), 
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
-     EffortIndicator (AddEffortIndicator t),
      Show (AddEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t)
+     EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t, 
+     AddEffortIndicator t) -> 
     t -> Bool
-propInOutAddZero _ effortDist =
-    roundedImprovingUnit zero RefOrd.pLeqEff (distanceBetweenEff effortDist) addInEff addOutEff
+propInOutAddZero _ =
+    roundedImprovingUnit zero RefOrd.pLeqEff distanceBetweenEff addInEff addOutEff
 
 propInOutAddCommutative ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -87,16 +91,19 @@ propInOutAddCommutative ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t, 
+     AddEffortIndicator t) -> 
     t -> t -> Bool
-propInOutAddCommutative _ effortDist =
-    roundedImprovingCommutative RefOrd.pLeqEff (distanceBetweenEff effortDist) addInEff addOutEff
+propInOutAddCommutative _ =
+    roundedImprovingCommutative RefOrd.pLeqEff distanceBetweenEff addInEff addOutEff
 
 propInOutAddAssociative ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -105,16 +112,19 @@ propInOutAddAssociative ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t, 
+     AddEffortIndicator t) -> 
     t -> t -> t -> Bool
-propInOutAddAssociative _ effortDist =
-    roundedImprovingAssociative RefOrd.pLeqEff (distanceBetweenEff effortDist) addInEff addOutEff
+propInOutAddAssociative _ =
+    roundedImprovingAssociative RefOrd.pLeqEff distanceBetweenEff addInEff addOutEff
 
 propInOutAddMonotone ::
     (RefOrd.PartialComparison t, RoundedAdd t, Show t,
@@ -158,16 +168,19 @@ propInOutSubtrElim ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t, 
+     AddEffortIndicator t) -> 
     t -> Bool
-propInOutSubtrElim _ effortDist =
-    roundedImprovingReflexiveCollapse zero RefOrd.pLeqEff (distanceBetweenEff effortDist) subtrInEff subtrOutEff
+propInOutSubtrElim _ =
+    roundedImprovingReflexiveCollapse zero RefOrd.pLeqEff distanceBetweenEff subtrInEff subtrOutEff
 
 propInOutSubtrNegAdd ::
     (RefOrd.PartialComparison t, RoundedSubtr t, Neg t,
@@ -176,18 +189,21 @@ propInOutSubtrNegAdd ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t, 
+     AddEffortIndicator t) -> 
     t -> t -> Bool
-propInOutSubtrNegAdd _ effortDist effortDistComp initEffort e1 e2 =
+propInOutSubtrNegAdd _ effortDistComp initEffort e1 e2 =
     equalRoundingUpDnImprovement
         expr1Up expr1Dn expr2Up expr2Dn 
-        RefOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+        RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
     expr1Up eff =
         let (>-<) = subtrInEff eff in e1 >-< (neg e2)
@@ -272,16 +288,19 @@ propInOutAbsNegSymmetric ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, AbsEffortIndicator t) -> 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t, 
+     AbsEffortIndicator t) -> 
     t -> Bool
-propInOutAbsNegSymmetric _ effortDist =
-    roundedImprovingNegSymmetric RefOrd.pLeqEff (distanceBetweenEff effortDist) absInEff absOutEff
+propInOutAbsNegSymmetric _ =
+    roundedImprovingNegSymmetric RefOrd.pLeqEff distanceBetweenEff absInEff absOutEff
 
 propInOutAbsIdempotent ::
     (RefOrd.PartialComparison t, RoundedAbs t, HasZero t,
@@ -290,16 +309,19 @@ propInOutAbsIdempotent ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, AbsEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     RefOrd.PartialCompareEffortIndicator t, 
+     AbsEffortIndicator t) -> 
     t -> Bool
-propInOutAbsIdempotent _ effortDist =
-    roundedImprovingIdempotent RefOrd.pLeqEff (distanceBetweenEff effortDist) absInEff absOutEff
+propInOutAbsIdempotent _ =
+    roundedImprovingIdempotent RefOrd.pLeqEff distanceBetweenEff absInEff absOutEff
 
 propInOutAbsMonotone ::
     (RefOrd.PartialComparison t, RoundedAbs t,
@@ -359,16 +381,19 @@ propInOutMultOne ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, MultEffortIndicator t) -> 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t, 
+     MultEffortIndicator t) -> 
     t -> Bool
-propInOutMultOne _ effortDist =
-    roundedImprovingUnit one RefOrd.pLeqEff (distanceBetweenEff effortDist) multInEff multOutEff
+propInOutMultOne _ =
+    roundedImprovingUnit one RefOrd.pLeqEff distanceBetweenEff multInEff multOutEff
 
 propInOutMultCommutative ::
     (RefOrd.PartialComparison t, RoundedMultiply t, HasZero t,
@@ -377,16 +402,19 @@ propInOutMultCommutative ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, MultEffortIndicator t) -> 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t, 
+     MultEffortIndicator t) -> 
     t -> t -> Bool
-propInOutMultCommutative _ effortDist =
-    roundedImprovingCommutative RefOrd.pLeqEff (distanceBetweenEff effortDist) multInEff multOutEff
+propInOutMultCommutative _ =
+    roundedImprovingCommutative RefOrd.pLeqEff distanceBetweenEff multInEff multOutEff
        
 propInOutMultAssociative ::
     (RefOrd.PartialComparison t, 
@@ -396,16 +424,19 @@ propInOutMultAssociative ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, MultEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     RefOrd.PartialCompareEffortIndicator t, 
+     MultEffortIndicator t) -> 
     t -> t -> t -> Bool
-propInOutMultAssociative _ effortDist =
-    roundedImprovingAssociative RefOrd.pLeqEff (distanceBetweenEff effortDist) multInEff multOutEff
+propInOutMultAssociative _ =
+    roundedImprovingAssociative RefOrd.pLeqEff distanceBetweenEff multInEff multOutEff
 
 propInOutMultDistributesOverAdd ::
     (RefOrd.PartialComparison t,
@@ -417,19 +448,22 @@ propInOutMultDistributesOverAdd ::
      EffortIndicator (MultEffortIndicator t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (ConsistencyEffortIndicator t) ->
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, (MultEffortIndicator t, AddEffortIndicator t)) -> 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t, 
+     (MultEffortIndicator t, AddEffortIndicator t)) -> 
     t -> t -> t -> Bool
-propInOutMultDistributesOverAdd _ effortDist =
+propInOutMultDistributesOverAdd _ =
     roundedImprovingDistributive 
         RefOrd.pLeqEff 
-        (distanceBetweenEff effortDist) 
+        distanceBetweenEff 
         multInEff addInEff multOutEff addOutEff
        
     
@@ -521,21 +555,23 @@ propInOutPowerSumExponents ::
      EffortIndicator (MultEffortIndicator t),
      Show (ConsistencyEffortIndicator t),
      EffortIndicator (ConsistencyEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (ConsistencyEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t,
+    (DistanceEffortIndicator t, 
+     RefOrd.PartialCompareEffortIndicator t,
      (PowerToNonnegIntEffortIndicator t,
       MultEffortIndicator t)) ->
     t -> Int -> Int -> Bool
-propInOutPowerSumExponents _ effortDist effortConsistency effortDistComp initEffort a nR mR =
+propInOutPowerSumExponents _ effortConsistency effortDistComp initEffort a nR mR =
     thinEqualConsLeqRoundingUpDnImprovement [a]
         expr1Up expr1Dn expr2Up expr2Dn 
-        RefOrd.pLeqEff (distanceBetweenEff effortDist)
+        RefOrd.pLeqEff distanceBetweenEff
         effortConsistency 
         effortDistComp initEffort
     where
@@ -596,25 +632,32 @@ propInOutDivElim ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, DivEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     RefOrd.PartialCompareEffortIndicator t, 
+     DivEffortIndicator t) -> 
     t -> Bool
-propInOutDivElim _ effortDist effortCompDist efforts2 a =
-    roundedImprovingReflexiveCollapse 
-        one 
-        RefOrd.pLeqEff (distanceBetweenEff effortDist) 
-        divInEff divOutEff 
-        effortCompDist efforts2 
-        a
+propInOutDivElim _ effortCompDist efforts2@(_, effComp, _) a =
+    let ?pCompareEffort = effComp in
+    case a ⊑? zero of
+        Just False ->
+            roundedImprovingReflexiveCollapse 
+                one 
+                RefOrd.pLeqEff distanceBetweenEff 
+                divInEff divOutEff 
+                effortCompDist efforts2 
+                a
+        _ -> True
 
 propInOutDivRecipMult ::
     (RefOrd.PartialComparison t,
-     RoundedMultiply t, RoundedDivide t, HasOne t,
+     RoundedMultiply t, RoundedDivide t, HasOne t, HasZero t,
      Show t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
@@ -622,19 +665,26 @@ propInOutDivRecipMult ::
      EffortIndicator (MultEffortIndicator t),
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, (MultEffortIndicator t, DivEffortIndicator t)) -> 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t, 
+     (MultEffortIndicator t, DivEffortIndicator t)) -> 
     t -> t -> Bool
-propInOutDivRecipMult _ effortDist =
-    equalRoundingUpDnImprovementBin2Var2 
-        expr1 expr2 RefOrd.pLeqEff (distanceBetweenEff effortDist)
-        multInEff divInEff
-        multOutEff divOutEff
+propInOutDivRecipMult _ effortDistComp initEffort@(_,effComp,_) e1 e2 =
+    let ?pCompareEffort = effComp in
+    case e2 ⊑? zero of
+        Just False ->
+            equalRoundingUpDnImprovementBin2Var2 
+                expr1 expr2 RefOrd.pLeqEff distanceBetweenEff
+                multInEff divInEff
+                multOutEff divOutEff
+                effortDistComp initEffort e1 e2
     where
     expr1 op1Eff op2Eff (effort1, effort2) e1 e2 = 
         e1 * (one / e2)
@@ -664,33 +714,3 @@ class (RoundedRing t, RoundedDivide t) => RoundedField t where
     fldEffortPow :: t -> (FieldOpsEffortIndicator t) -> (PowerToNonnegIntEffortIndicator t)
     fldEffortDiv :: t -> (FieldOpsEffortIndicator t) -> (DivEffortIndicator t)
 
---data FieldOpsEffortIndicator t =
---        FieldOpsEffortIndicator
---        {
---           fldEffortAdd :: AddEffortIndicator t,
---           fldEffortMult :: MultEffortIndicator t,
---           fldEffortPow :: PowerToNonnegIntEffortIndicator t,
---           fldEffortDiv :: DivEffortIndicator t
---        }
---instance 
---    (Show (AddEffortIndicator t), Show (MultEffortIndicator t),
---     Show (PowerToNonnegIntEffortIndicator t),
---     Show (DivEffortIndicator t)) => 
---    Show (FieldOpsEffortIndicator t)
---    where
---    show effortField =
---        "{add:" ++ (show $ fldEffortAdd effortField)
---        ++ ",mult:" ++ (show $ fldEffortMult effortField)
---        ++ ",power:" ++ (show $ fldEffortPow effortField)
---        ++ ",div:" ++ (show $ fldEffortPow effortField)
---        ++ "}"
-
---fieldOpsDefaultEffort a =
---        FieldOpsEffortIndicator
---        {
---           fldEffortAdd = addDefaultEffort a,
---           fldEffortMult = multDefaultEffort a,
---           fldEffortPow = powerToNonnegIntDefaultEffort a,
---           fldEffortDiv = divDefaultEffort a
---        }
-        

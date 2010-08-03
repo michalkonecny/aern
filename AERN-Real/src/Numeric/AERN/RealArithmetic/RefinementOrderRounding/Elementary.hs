@@ -50,20 +50,22 @@ propExpOfNegRecip ::
      EffortIndicator (ExpEffortIndicator t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (ConsistencyEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t, 
      (ExpEffortIndicator t, MultEffortIndicator t)) -> 
     t -> Bool
-propExpOfNegRecip _ effortDist effortConsistency effortDistComp initEffort e1 =
+propExpOfNegRecip _ effortConsistency effortDistComp initEffort e1 =
     thinEqualConsLeqRoundingUpDnImprovement [e1]
         expr1In expr1Out expr2In expr2Out 
-        RefOrd.pLeqEff (distanceBetweenEff effortDist)
+        RefOrd.pLeqEff distanceBetweenEff
         effortConsistency 
         effortDistComp initEffort
     where
@@ -96,19 +98,21 @@ propExpOfAddToMult ::
      EffortIndicator (MultEffortIndicator t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (RefOrd.PartialCompareEffortIndicator t, 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t, 
      (ExpEffortIndicator t, MultEffortIndicator t, AddEffortIndicator t)) -> 
     t -> t -> Bool
-propExpOfAddToMult _ effortDist effortDistComp initEffort e1 e2 =
+propExpOfAddToMult _ effortDistComp initEffort e1 e2 =
     equalRoundingUpDnImprovement
         expr1In expr1Out expr2In expr2Out 
-        RefOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+        RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
     expr1In (effExp, effMult, effAdd) =
         let (+^) = addInEff effAdd in

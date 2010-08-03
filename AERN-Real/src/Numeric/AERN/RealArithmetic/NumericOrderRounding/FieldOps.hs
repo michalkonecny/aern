@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedOps
     Description :  rounded basic arithmetic operations  
@@ -45,6 +46,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 
 import Test.QuickCheck
 import Test.Framework (testGroup, Test)
@@ -65,16 +67,19 @@ propUpDnAddZero ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t, 
+     AddEffortIndicator t) -> 
     t -> Bool
-propUpDnAddZero _ effortDist =
-    roundedImprovingUnit zero NumOrd.pLeqEff (distanceBetweenEff effortDist) addUpEff addDnEff
+propUpDnAddZero _ =
+    roundedImprovingUnit zero NumOrd.pLeqEff distanceBetweenEff addUpEff addDnEff
 
 propUpDnAddCommutative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -83,16 +88,19 @@ propUpDnAddCommutative ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t, 
+     AddEffortIndicator t) -> 
     t -> t -> Bool
-propUpDnAddCommutative _ effortDist =
-    roundedImprovingCommutative NumOrd.pLeqEff (distanceBetweenEff effortDist) addUpEff addDnEff
+propUpDnAddCommutative _ =
+    roundedImprovingCommutative NumOrd.pLeqEff distanceBetweenEff addUpEff addDnEff
        
 propUpDnAddAssociative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -101,16 +109,19 @@ propUpDnAddAssociative ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t, 
+     AddEffortIndicator t) -> 
     t -> t -> t -> Bool
-propUpDnAddAssociative _ effortDist =
-    roundedImprovingAssociative NumOrd.pLeqEff (distanceBetweenEff effortDist) addUpEff addDnEff
+propUpDnAddAssociative _ =
+    roundedImprovingAssociative NumOrd.pLeqEff distanceBetweenEff addUpEff addDnEff
 
 testsUpDnAdd (name, sample) =
     testGroup (name ++ " +. +^") $
@@ -135,16 +146,19 @@ propUpDnSubtrElim ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t, 
+     AddEffortIndicator t) -> 
     t -> Bool
-propUpDnSubtrElim _ effortDist =
-    roundedImprovingReflexiveCollapse zero NumOrd.pLeqEff (distanceBetweenEff effortDist) subtrUpEff subtrDnEff
+propUpDnSubtrElim _ =
+    roundedImprovingReflexiveCollapse zero NumOrd.pLeqEff distanceBetweenEff subtrUpEff subtrDnEff
 
 propUpDnSubtrNegAdd ::
     (NumOrd.PartialComparison t, RoundedSubtr t, Neg t,
@@ -153,18 +167,21 @@ propUpDnSubtrNegAdd ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.PartialCompareEffortIndicator t, AddEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t, 
+     AddEffortIndicator t) -> 
     t -> t -> Bool
-propUpDnSubtrNegAdd _ effortDist effortDistComp initEffort e1 e2 =
+propUpDnSubtrNegAdd _ effortDistComp initEffort e1 e2 =
     equalRoundingUpDnImprovement
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
     expr1Up eff =
         let (-^) = subtrUpEff eff in e1 -^ (neg e2)
@@ -231,16 +248,19 @@ propUpDnAbsNegSymmetric ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.PartialCompareEffortIndicator t, AbsEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t, 
+     AbsEffortIndicator t) -> 
     t -> Bool
-propUpDnAbsNegSymmetric _ effortDist =
-    roundedImprovingNegSymmetric NumOrd.pLeqEff (distanceBetweenEff effortDist) absUpEff absDnEff
+propUpDnAbsNegSymmetric _ =
+    roundedImprovingNegSymmetric NumOrd.pLeqEff distanceBetweenEff absUpEff absDnEff
 
 propUpDnAbsIdempotent ::
     (NumOrd.PartialComparison t, RoundedAbs t, HasZero t,
@@ -249,16 +269,19 @@ propUpDnAbsIdempotent ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.PartialCompareEffortIndicator t, AbsEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t, 
+     AbsEffortIndicator t) -> 
     t -> Bool
-propUpDnAbsIdempotent _ effortDist =
-    roundedImprovingIdempotent NumOrd.pLeqEff (distanceBetweenEff effortDist) absUpEff absDnEff
+propUpDnAbsIdempotent _ =
+    roundedImprovingIdempotent NumOrd.pLeqEff distanceBetweenEff absUpEff absDnEff
 
 testsUpDnAbs (name, sample) =
     testGroup (name ++ " up/dn rounded abs") $
@@ -282,16 +305,19 @@ propUpDnMultOne ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.PartialCompareEffortIndicator t, MultEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t, 
+     MultEffortIndicator t) -> 
     t -> Bool
-propUpDnMultOne _ effortDist =
-    roundedImprovingUnit one NumOrd.pLeqEff (distanceBetweenEff effortDist) multUpEff multDnEff
+propUpDnMultOne _ =
+    roundedImprovingUnit one NumOrd.pLeqEff distanceBetweenEff multUpEff multDnEff
 
 propUpDnMultCommutative ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasZero t,
@@ -300,16 +326,19 @@ propUpDnMultCommutative ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.PartialCompareEffortIndicator t, MultEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t, 
+     MultEffortIndicator t) -> 
     t -> t -> Bool
-propUpDnMultCommutative _ effortDist =
-    roundedImprovingCommutative NumOrd.pLeqEff (distanceBetweenEff effortDist) multUpEff multDnEff
+propUpDnMultCommutative _ =
+    roundedImprovingCommutative NumOrd.pLeqEff distanceBetweenEff multUpEff multDnEff
        
 propUpDnMultAssociative ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t, 
@@ -319,40 +348,44 @@ propUpDnMultAssociative ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
+     Show (NumOrd.MinmaxEffortIndicator t),
+     EffortIndicator (NumOrd.MinmaxEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.MinmaxEffortIndicator t) -> 
-    (NumOrd.PartialCompareEffortIndicator t, MultEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t, 
+     (MultEffortIndicator t, NumOrd.MinmaxEffortIndicator t)) -> 
     t -> t -> t -> Bool
-propUpDnMultAssociative _ effortDist effortDistComp minmaxEffort initEffort e1 e2 e3 =
+propUpDnMultAssociative _ effortDistComp initEffort e1 e2 e3 =
     equalRoundingUpDnImprovement
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
-    expr1Up eff =
-        let (*^) = multUpEff eff; (*.) = multDnEff eff in
+    expr1Up (effMult, effMinmax) =
+        let (*^) = multUpEff effMult; (*.) = multDnEff effMult in
         let r1 = e1 *^ (e2 *^ e3) in
         let r2 = e1 *^ (e2 *. e3) in
-        NumOrd.maxUpEff minmaxEffort r1 r2
-    expr1Dn eff =
-        let (*^) = multUpEff eff; (*.) = multDnEff eff in
+        NumOrd.maxUpEff effMinmax r1 r2
+    expr1Dn (effMult, effMinmax) =
+        let (*^) = multUpEff effMult; (*.) = multDnEff effMult in
         let r1 = e1 *. (e2 *^ e3) in
         let r2 = e1 *. (e2 *. e3) in
-        NumOrd.minDnEff minmaxEffort r1 r2
-    expr2Up eff =
-        let (*^) = multUpEff eff; (*.) = multDnEff eff in
+        NumOrd.minDnEff effMinmax r1 r2
+    expr2Up (effMult, effMinmax) =
+        let (*^) = multUpEff effMult; (*.) = multDnEff effMult in
         let r1 = (e1 *^ e2) *^ e3 in
         let r2 = (e1 *. e2) *^ e3 in
-        NumOrd.maxUpEff minmaxEffort r1 r2
-    expr2Dn eff =
-        let (*^) = multUpEff eff; (*.) = multDnEff eff in
+        NumOrd.maxUpEff effMinmax r1 r2
+    expr2Dn (effMult, effMinmax) =
+        let (*^) = multUpEff effMult; (*.) = multDnEff effMult in
         let r1 = (e1 *^ e2) *. e3 in
         let r2 = (e1 *. e2) *. e3 in
-        NumOrd.minDnEff minmaxEffort r1 r2
+        NumOrd.minDnEff effMinmax r1 r2
 
 propUpDnMultDistributesOverAdd ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
@@ -364,37 +397,41 @@ propUpDnMultDistributesOverAdd ::
      EffortIndicator (MultEffortIndicator t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
+     Show (NumOrd.MinmaxEffortIndicator t),
+     EffortIndicator (NumOrd.MinmaxEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.MinmaxEffortIndicator t) -> 
-    (NumOrd.PartialCompareEffortIndicator t, (MultEffortIndicator t, AddEffortIndicator t)) -> 
+    (DistanceEffortIndicator t,
+     NumOrd.PartialCompareEffortIndicator t, 
+     (MultEffortIndicator t, AddEffortIndicator t, NumOrd.MinmaxEffortIndicator t)) -> 
     t -> t -> t -> Bool
-propUpDnMultDistributesOverAdd _ effortDist effortDistComp minmaxEffort initEffort e1 e2 e3 =
+propUpDnMultDistributesOverAdd _ effortDistComp initEffort e1 e2 e3 =
     equalRoundingUpDnImprovement
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
-    expr1Up (effMult, effAdd) =
+    expr1Up (effMult, effAdd, effMinmax) =
         let (*^) = multUpEff effMult in
         let (+^) = addUpEff effAdd; (+.) = addDnEff effAdd in
         let r1 = e1 *^ (e2 +^ e3) in
         let r2 = e1 *^ (e2 +. e3) in
-        NumOrd.maxUpEff minmaxEffort r1 r2
-    expr1Dn (effMult, effAdd) =
+        NumOrd.maxUpEff effMinmax r1 r2
+    expr1Dn (effMult, effAdd, effMinmax) =
         let (*.) = multDnEff effMult in
         let (+^) = addUpEff effAdd; (+.) = addDnEff effAdd in
         let r1 = e1 *. (e2 +^ e3) in
         let r2 = e1 *. (e2 +. e3) in
-        NumOrd.minDnEff minmaxEffort r1 r2
-    expr2Up (effMult, effAdd) =
+        NumOrd.minDnEff effMinmax r1 r2
+    expr2Up (effMult, effAdd, _) =
         let (*^) = multUpEff effMult in
         let (+^) = addUpEff effAdd in
         (e1 *^ e2) +^ (e1 *^ e3)
-    expr2Dn (effMult, effAdd) =
+    expr2Dn (effMult, effAdd, _) =
         let (*.) = multDnEff effMult in
         let (+.) = addDnEff effAdd in
         (e1 *. e2) +. (e1 *. e3)
@@ -541,22 +578,24 @@ propUpDnPowerSumExponents ::
      EffortIndicator (MultEffortIndicator t),
      Show (NumOrd.MinmaxEffortIndicator t),
      EffortIndicator (NumOrd.MinmaxEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.PartialCompareEffortIndicator t,
+    (DistanceEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t,
      (PowerToNonnegIntEffortIndicator t,
       (NumOrd.PartialCompareEffortIndicator t,
        MultEffortIndicator t,
        NumOrd.MinmaxEffortIndicator t))) -> 
     t -> Int -> Int -> Bool
-propUpDnPowerSumExponents _ effortDist effortDistComp initEffort a nR mR =
+propUpDnPowerSumExponents _ effortDistComp initEffort a nR mR =
     equalRoundingUpDnImprovement
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
     n = nR `mod` 10
     m = mR `mod` 10
@@ -625,62 +664,77 @@ propUpDnDivElim ::
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.PartialCompareEffortIndicator t, DivEffortIndicator t) -> 
+    (DistanceEffortIndicator t, 
+     NumOrd.PartialCompareEffortIndicator t, 
+     DivEffortIndicator t) -> 
     t -> Bool
-propUpDnDivElim _ effortDist effortCompDist efforts2 a =
-    roundedImprovingReflexiveCollapse 
-        one 
-        NumOrd.pLeqEff (distanceBetweenEff effortDist) 
-        divUpEff divDnEff 
-        effortCompDist efforts2 
-        a
-
+propUpDnDivElim _ effortCompDist efforts2@(_, effComp, _) a =
+    let ?pCompareEffort = effComp in
+    case a ==? zero of
+        Just False ->
+            roundedImprovingReflexiveCollapse 
+                one 
+                NumOrd.pLeqEff distanceBetweenEff 
+                divUpEff divDnEff 
+                effortCompDist efforts2 
+                a
+        _ -> True
+        
 propUpDnDivRecipMult ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
      Show t,
-     RoundedMultiply t, RoundedDivide t, HasOne t,
+     RoundedMultiply t, RoundedDivide t, HasOne t, HasZero t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
+     Show (NumOrd.MinmaxEffortIndicator t),
+     EffortIndicator (NumOrd.MinmaxEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (DistanceEffortIndicator t) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (NumOrd.MinmaxEffortIndicator t) -> 
-    (NumOrd.PartialCompareEffortIndicator t, (MultEffortIndicator t, DivEffortIndicator t)) -> 
+    (DistanceEffortIndicator t,
+     NumOrd.PartialCompareEffortIndicator t,
+     (MultEffortIndicator t, DivEffortIndicator t, NumOrd.MinmaxEffortIndicator t)) -> 
     t -> t -> Bool
-propUpDnDivRecipMult _ effortDist effortDistComp minmaxEffort initEffort e1 e2 =
-    equalRoundingUpDnImprovement
-        expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+propUpDnDivRecipMult _ effortDistComp initEffort@(_,effComp,_) e1 e2 =
+    let ?pCompareEffort = effComp in
+    case e2 ==? zero of
+        Just False ->
+            equalRoundingUpDnImprovement
+                expr1Up expr1Dn expr2Up expr2Dn 
+                NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        _ -> True
     where
-    expr1Up (effMult, effDiv) =
+    expr1Up (effMult, effDiv, effMinmax) =
         let (*^) = multUpEff effMult in
         let (/^) = divUpEff effDiv; (/.) = divDnEff effDiv in
         let r1 = e1 *^ (one /^ e2) in
         let r2 = e1 *^ (one /. e2) in
-        NumOrd.maxUpEff minmaxEffort r1 r2
-    expr1Dn (effMult, effDiv) =
+        NumOrd.maxUpEff effMinmax r1 r2
+    expr1Dn (effMult, effDiv, effMinmax) =
         let (*.) = multDnEff effMult in
         let (/^) = divUpEff effDiv; (/.) = divDnEff effDiv in
         let r1 = e1 *. (one /^ e2) in
         let r2 = e1 *. (one /. e2) in
-        NumOrd.minDnEff minmaxEffort r1 r2
-    expr2Up (effMult, effDiv) =
+        NumOrd.minDnEff effMinmax r1 r2
+    expr2Up (effMult, effDiv, _) =
         let (/^) = divUpEff effDiv in
         e1 /^ e2
-    expr2Dn (effMult, effDiv) =
+    expr2Dn (effMult, effDiv, _) =
         let (/.) = divDnEff effDiv in
         e1 /. e2
 

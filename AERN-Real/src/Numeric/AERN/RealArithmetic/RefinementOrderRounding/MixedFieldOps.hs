@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RefinementOrderRounding.MixedFieldOps
     Description :  rounded basic arithmetic operations mixing 2 types
@@ -26,6 +27,7 @@ import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+import Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
 
 import Test.QuickCheck
 import Test.Framework (testGroup, Test)
@@ -68,21 +70,23 @@ propMixedAddEqualsConvert ::
      EffortIndicator (ConvertEffortIndicator t1 t2),
      Show (AddEffortIndicator t2),
      EffortIndicator (AddEffortIndicator t2),
+     Show (DistanceEffortIndicator t2),
+     EffortIndicator (DistanceEffortIndicator t2),
      Show (RefOrd.PartialCompareEffortIndicator t2),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t2)
      ) =>
     t1 -> t2 ->
-    (DistanceEffortIndicator t2) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t2)) -> 
-    (RefOrd.PartialCompareEffortIndicator t2,
+    (DistanceEffortIndicator t2,
+     RefOrd.PartialCompareEffortIndicator t2,
      (MixedAddEffortIndicator t1 t2,      
       AddEffortIndicator t2,
       ConvertEffortIndicator t1 t2)) -> 
     t1 -> t2 -> Bool
-propMixedAddEqualsConvert sample1 sample2 effortDist effortDistComp initEffort e1 e2 =
+propMixedAddEqualsConvert sample1 sample2 effortDistComp initEffort e1 e2 =
     equalRoundingUpDnImprovement
         expr1In expr1Out expr2In expr2Out
-        RefOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+        RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
     expr1In (effMAdd,_,_) =
         let (>|+<) = mixedAddInEff effMAdd in e1 >|+< e2
@@ -131,21 +135,23 @@ propMixedMultEqualsConvert ::
      EffortIndicator (ConvertEffortIndicator t1 t2),
      Show (MultEffortIndicator t2),
      EffortIndicator (MultEffortIndicator t2),
+     Show (DistanceEffortIndicator t2),
+     EffortIndicator (DistanceEffortIndicator t2),
      Show (RefOrd.PartialCompareEffortIndicator t2),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t2)
      ) =>
     t1 -> t2 ->
-    (DistanceEffortIndicator t2) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t2)) -> 
-    (RefOrd.PartialCompareEffortIndicator t2,
+    (DistanceEffortIndicator t2,
+    RefOrd.PartialCompareEffortIndicator t2,
      (MixedMultEffortIndicator t1 t2,      
       MultEffortIndicator t2,
       ConvertEffortIndicator t1 t2)) -> 
     t1 -> t2 -> Bool
-propMixedMultEqualsConvert sample1 sample2 effortDist effortDistComp initEffort e1 e2 =
+propMixedMultEqualsConvert sample1 sample2 effortDistComp initEffort e1 e2 =
     equalRoundingUpDnImprovement
         expr1In expr1Out expr2In expr2Out
-        RefOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+        RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
     expr1In (effMMult,_,_) =
         let (>|*<) = mixedMultInEff effMMult in e1 >|*< e2
@@ -185,7 +191,7 @@ mixedDivOutEffByConversion (effDiv, effConv) a b =
 propMixedDivEqualsConvert ::
     (RefOrd.PartialComparison t2, Convertible t1 t2,
      RoundedMixedDivide t1 t2, RoundedDivide t2,
-     Show t2,
+     Show t2, HasZero t2,
      HasDistance t2,  Show (Distance t2),  
      NumOrd.PartialComparison (Distance t2), 
      HasInfinities (Distance t2), HasZero (Distance t2),
@@ -195,22 +201,33 @@ propMixedDivEqualsConvert ::
      EffortIndicator (ConvertEffortIndicator t1 t2),
      Show (DivEffortIndicator t2),
      EffortIndicator (DivEffortIndicator t2),
+     Show (DistanceEffortIndicator t2),
+     EffortIndicator (DistanceEffortIndicator t2),
      Show (RefOrd.PartialCompareEffortIndicator t2),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t2)
      ) =>
     t1 -> t2 ->
-    (DistanceEffortIndicator t2) -> 
     (NumOrd.PartialCompareEffortIndicator (Distance t2)) -> 
-    (RefOrd.PartialCompareEffortIndicator t2,
+    (DistanceEffortIndicator t2,
+     RefOrd.PartialCompareEffortIndicator t2,
      (MixedDivEffortIndicator t1 t2,      
       DivEffortIndicator t2,
       ConvertEffortIndicator t1 t2)) -> 
     t2 -> t1 -> Bool
-propMixedDivEqualsConvert sample1 sample2 effortDist effortDistComp initEffort e1 e2 =
-    equalRoundingUpDnImprovement
-        expr1In expr1Out expr2In expr2Out
-        RefOrd.pLeqEff (distanceBetweenEff effortDist) effortDistComp initEffort
+propMixedDivEqualsConvert sample1 sample2 effortDistComp initEffort@(_,effComp,(_,_,effConv)) e1 e2
+    | awayFromZero =
+            equalRoundingUpDnImprovement
+                expr1In expr1Out expr2In expr2Out
+                RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+    | otherwise = True
     where
+    awayFromZero =
+        case (convertOutEff effConv e2, convertInEff effConv e2) of
+            (e2Out, e2In) ->
+                let ?pCompareEffort = effComp in
+                case (e2Out ⊑? zero, zero ⊑? e2In) of
+                    (Just False, Just False) -> True
+                    _ -> False && (null [e1, e2Out, e2In]) -- type of e2Up, e2Dn...
     expr1In (effMDiv,_,_) =
         let (>|/<) = mixedDivInEff effMDiv in e1 >|/< e2
     expr1Out (effMDiv,_,_) =
