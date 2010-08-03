@@ -685,6 +685,7 @@ propInOutDivRecipMult _ effortDistComp initEffort@(_,effComp,_) e1 e2 =
                 multInEff divInEff
                 multOutEff divOutEff
                 effortDistComp initEffort e1 e2
+        _ -> True
     where
     expr1 op1Eff op2Eff (effort1, effort2) e1 e2 = 
         e1 * (one / e2)
