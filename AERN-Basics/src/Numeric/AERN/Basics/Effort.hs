@@ -151,7 +151,11 @@ instance (EffortIndicator t1, EffortIndicator t2) => EffortIndicator (t1, t2)
     effortRepeatIncrement ((i1, i2), (j1, j2)) = 
         (effortRepeatIncrement (i1, j1), effortRepeatIncrement (i2, j2)) 
     effortIncrementSequence (i1, i2) =
-        zipFill (effortIncrementSequence i1) (effortIncrementSequence i2)
+        case (effortIncrementSequence i1, effortIncrementSequence i2) of
+            ([], []) -> []
+            (s1, []) -> map (\e -> (e, i2)) s1 
+            ([], s2) -> map (\e -> (i1, e)) s2
+            (s1, s2) -> zipFill s1 s2
         
 instance (EffortIndicator t1, EffortIndicator t2, EffortIndicator t3) => EffortIndicator (t1, t2, t3)
     where
@@ -167,6 +171,14 @@ instance (EffortIndicator t1, EffortIndicator t2, EffortIndicator t3) => EffortI
     effortRepeatIncrement ((i1, i2, i3), (j1, j2, j3)) = 
         (effortRepeatIncrement (i1, j1), effortRepeatIncrement (i2, j2), effortRepeatIncrement (i3, j3)) 
     effortIncrementSequence (i1, i2, i3) =
-        zipFill3 (effortIncrementSequence i1) (effortIncrementSequence i2) (effortIncrementSequence i3)
+        case (effortIncrementSequence i1, effortIncrementSequence i2, effortIncrementSequence i3) of
+            ([], [], []) -> []
+            (s1, [], []) -> map (\e -> (e, i2, i3)) s1 
+            ([], s2, []) -> map (\e -> (i1, e, i3)) s2
+            ([], [], s3) -> map (\e -> (i1, i2, e)) s3
+            (s1, s2, []) -> map (\(e1,e2) -> (e1, e2, i3)) $ zipFill s1 s2 
+            (s1, [], s3) -> map (\(e1,e3) -> (e1, i2, e3)) $ zipFill s1 s3 
+            ([], s2, s3) -> map (\(e2,e3) -> (i1, e2, e3)) $ zipFill s2 s3 
+            (s1, s2, s3) -> zipFill3 s1 s2 s3
         
         
