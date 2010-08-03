@@ -30,3 +30,13 @@ combinations (options : rest) =
     where
     addHeadToAll h = map (h :) restDone
     restDone = combinations rest 
+    
+    
+mergeManyLists :: [[a]] -> [a]
+mergeManyLists lists 
+    | null listsNonempty = []
+    | otherwise =
+        heads ++ (mergeManyLists tails)
+    where
+    (heads, tails) = unzip $ map (\(h:t) -> (h,t)) listsNonempty 
+    listsNonempty = filter (not . null) lists
