@@ -31,7 +31,9 @@ combinations (options : rest) =
     addHeadToAll h = map (h :) restDone
     restDone = combinations rest 
     
-    
+{-|
+   Eg: @mergeManyLists [[1,2,3],[4,5],[7]] = [1,4,7,2,5,3]@
+-}    
 mergeManyLists :: [[a]] -> [a]
 mergeManyLists lists 
     | null listsNonempty = []
