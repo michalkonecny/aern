@@ -23,9 +23,10 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Laws.Utilities
 
-import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Misc.Bool
 import Numeric.AERN.Misc.Debug
+import Numeric.AERN.Misc.List
+import Numeric.AERN.Misc.Maybe
 import Data.Maybe
 
 import Numeric.AERN.RealArithmetic.ExactOps
@@ -510,25 +511,31 @@ leqRoundingUpDnImprovement expr1Dn expr2Up pCompareEff measureGap
             Right res -> res
     where
     result = 
-        (andUnsafeReportFirstFalse successes) && isImprovement  
+        (andUnsafeReportFirstFalse $ take 5 successes) && isImprovement  
     imprecision0Zero = 
         (imprecision0 ==? zero) == Just True
         where
         ?pCompareEffort = effortImprComp
     isImprovement =
         orUnsafeReportFalse $ 
-            (null imprecisions, "imprecisions = " ++ show imprecisions) : -- no way to raise effort  
-            (imprecision0Zero, "imprecision0 = " ++ show imprecision0) : -- or it is exact
-            (map (\ i -> (i, "no improvement detected") ) $ 
-               catMaybes $ map (imprecision0 >?) imprecisions)  -- or it can be improved
+            [
+             (null imprecisions, 
+              "imprecisions = " ++ show imprecisions) -- no way to raise effort
+            ,  
+             (imprecision0Zero, 
+              "imprecision0 = " ++ show imprecision0) -- or it is exact
+            ,
+             (or $ catMaybes $ map (imprecision0 >?) imprecisions, 
+              "failed to reduce imprecision")  -- or it can be improved
+            ]
         where
         ?pCompareEffort = effortImprComp
     (successes, imprecision0 : imprecisions) = unzip $ map check efforts
     efforts =
-        (initEffort : ) $ 
-            concat $
-                map (take 5 . effortIncrementSequence) $ 
-                    effortIncrementVariants initEffort 
+        (initEffort : ) $ take 100 $ effortIncrementSequence initEffort
+--            mergeManyLists $
+--                map (take 20 . effortIncrementSequence) $ 
+--                    effortIncrementVariants initEffort 
     check (effortMeasure, effortRel, effortOp) =
         -- the following catch does not work, currently have to
         --  catch the exceptions at a higher level 
