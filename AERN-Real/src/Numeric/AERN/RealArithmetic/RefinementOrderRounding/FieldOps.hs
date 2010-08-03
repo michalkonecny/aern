@@ -645,8 +645,8 @@ propInOutDivElim ::
     t -> Bool
 propInOutDivElim _ effortCompDist efforts2@(_, effComp, _) a =
     let ?pCompareEffort = effComp in
-    case a ⊑? zero of
-        Just False ->
+    case (a ⊑? zero, zero ⊑? a) of
+        (Just False, Just False) ->
             roundedImprovingReflexiveCollapse 
                 one 
                 RefOrd.pLeqEff distanceBetweenEff 
@@ -678,8 +678,8 @@ propInOutDivRecipMult ::
     t -> t -> Bool
 propInOutDivRecipMult _ effortDistComp initEffort@(_,effComp,_) e1 e2 =
     let ?pCompareEffort = effComp in
-    case e2 ⊑? zero of
-        Just False ->
+    case (e2 ⊑? zero, zero ⊑? e2) of
+        (Just False, Just False) ->
             equalRoundingUpDnImprovementBin2Var2 
                 expr1 expr2 RefOrd.pLeqEff distanceBetweenEff
                 multInEff divInEff
