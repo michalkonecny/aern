@@ -19,7 +19,8 @@ class EffortIndicator t where
     effortIncrementVariants :: t -> [t]
     {-| repeat the increment present in the given pair for the larger effort indicator -}
     effortRepeatIncrement :: (t,t) -> t
-    {-| get an infinitely increasing sequence of effort indicators of the same type -}
+    {-| get an increasing sequence of effort indicators of the same type 
+        as long as possible, ideally infinite -}
     effortIncrementSequence :: t -> [t]
 
 newtype Int1To5 = Int1To5 { fromInt1To5 :: Int }
@@ -134,7 +135,7 @@ instance EffortIndicator Int1To1000 where
 instance EffortIndicator () where
     effortIncrementVariants _ = []
     effortRepeatIncrement _ = ()
-    effortIncrementSequence i = repeat ()
+    effortIncrementSequence i = []
 
 instance (EffortIndicator t1, EffortIndicator t2) => EffortIndicator (t1, t2)
     where
