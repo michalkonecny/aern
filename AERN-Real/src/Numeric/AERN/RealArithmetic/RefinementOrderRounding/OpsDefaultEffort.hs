@@ -21,8 +21,10 @@ infixl 8 <^>, >^<
 infixl 7 </>, >/<
 
 infixr 6 |<+>, |>+<
+infixl 6 <+>|, >+<|
 infixr 7 |<*>, |>*<
-infixl 7 |</>, |>/<
+infixl 7 <*>|, >*<|
+infixl 7 </>|, >/<|
 
 (>+<), (<+>) :: 
     (RoundedAdd t) => 
@@ -61,15 +63,27 @@ infixl 7 |</>, |>/<
 (|>+<) a b = mixedAddInEff (mixedAddDefaultEffort a b) a b
 (|<+>) a b = mixedAddOutEff (mixedAddDefaultEffort a b) a b
 
+(>+<|), (<+>|) :: 
+    (RoundedMixedAdd t1 t2) => 
+    t2 -> t1 -> t2
+(>+<|) b a = mixedAddInEff (mixedAddDefaultEffort a b) a b
+(<+>|) b a = mixedAddOutEff (mixedAddDefaultEffort a b) a b
+
 (|>*<), (|<*>) :: 
     (RoundedMixedMultiply t1 t2) => 
     t1 -> t2 -> t2
 (|>*<) a b = mixedMultInEff (mixedMultDefaultEffort a b) a b
 (|<*>) a b = mixedMultOutEff (mixedMultDefaultEffort a b) a b
 
+(>*<|), (<*>|) :: 
+    (RoundedMixedMultiply t1 t2) => 
+    t2 -> t1 -> t2
+(>*<|) b a = mixedMultInEff (mixedMultDefaultEffort a b) a b
+(<*>|) b a = mixedMultOutEff (mixedMultDefaultEffort a b) a b
 
-(|>/<), (|</>) :: 
+
+(>/<|), (</>|) :: 
     (RoundedMixedDivide t1 t2) => 
     t2 -> t1 -> t2
-(|>/<) a b = mixedDivInEff (mixedDivDefaultEffort b a) a b
-(|</>) a b = mixedDivOutEff (mixedDivDefaultEffort b a) a b
+(>/<|) a b = mixedDivInEff (mixedDivDefaultEffort b a) a b
+(</>|) a b = mixedDivOutEff (mixedDivDefaultEffort b a) a b

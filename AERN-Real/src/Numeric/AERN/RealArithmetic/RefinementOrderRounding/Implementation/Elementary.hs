@@ -86,7 +86,7 @@ expOutThinArg
         let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd xUp x effortMixedField in
         let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult xUp x effortMixedField in
         let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv xUp x effortMixedField in
-        (expOutViaTaylor degr (x |</> n)) <^> n
+        (expOutViaTaylor degr (x </>| n)) <^> n
         where
         n = -- x / n must fall inside [-1,1] 
             (abs xUp) `max` (abs xDn)
@@ -97,12 +97,12 @@ expOutThinArg
         oneI = 1
         te steps i
             | steps > 0 =
-                (x |</> i) <*> (oneI |<+> (te (steps - 1) (i + 1)))
+                (x </>| i) <*> (oneI |<+> (te (steps - 1) (i + 1)))
             | steps == 0 = 
                 errorBound
                 where
                 errorBound = 
-                    (x |</> i) <*> ithDerivBound
+                    (x </>| i) <*> ithDerivBound
                 ithDerivBound =
                     case (pNonnegNonposEff effortCompare x) of
                         Just (True, _) -> -- x >= 0:
