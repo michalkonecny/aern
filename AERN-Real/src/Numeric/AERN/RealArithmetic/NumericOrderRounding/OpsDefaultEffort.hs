@@ -22,8 +22,10 @@ infixl 8 ^., ^^
 infixl 7 /., /^
 
 infixr 6 |+., |+^
+infixl 6 +.|, +^|
 infixr 7 |*., |*^
-infixl 7 |/., |/^
+infixl 7 *.|, *^|
+infixl 7 /.|, /^|
 
 (+^), (+.) :: 
     (RoundedAdd t) => 
@@ -61,15 +63,27 @@ infixl 7 |/., |/^
 (|+^) a b = mixedAddUpEff (mixedAddDefaultEffort a b) a b
 (|+.) a b = mixedAddDnEff (mixedAddDefaultEffort a b) a b
 
+(+^|), (+.|) :: 
+    (RoundedMixedAdd t1 t2) => 
+    t2 -> t1 -> t2
+(+^|) b a = mixedAddUpEff (mixedAddDefaultEffort a b) a b
+(+.|) b a = mixedAddDnEff (mixedAddDefaultEffort a b) a b
+
 (|*^), (|*.) :: 
     (RoundedMixedMultiply t1 t2) => 
     t1 -> t2 -> t2
 (|*^) a b = mixedMultUpEff (mixedMultDefaultEffort a b) a b
 (|*.) a b = mixedMultDnEff (mixedMultDefaultEffort a b) a b
 
-(|/^), (|/.) :: 
+(*^|), (*.|) :: 
+    (RoundedMixedMultiply t1 t2) => 
+    t2 -> t1 -> t2
+(*^|) b a = mixedMultUpEff (mixedMultDefaultEffort a b) a b
+(*.|) b a = mixedMultDnEff (mixedMultDefaultEffort a b) a b
+
+(/^|), (/.|) :: 
     (RoundedMixedDivide t1 t2) => 
     t2 -> t1 -> t2
-(|/^) a b = mixedDivUpEff (mixedDivDefaultEffort b a) a b
-(|/.) a b = mixedDivDnEff (mixedDivDefaultEffort b a) a b
+(/^|) a b = mixedDivUpEff (mixedDivDefaultEffort b a) a b
+(/.|) a b = mixedDivDnEff (mixedDivDefaultEffort b a) a b
 

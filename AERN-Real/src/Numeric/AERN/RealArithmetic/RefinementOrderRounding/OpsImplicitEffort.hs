@@ -22,8 +22,10 @@ infixl 8 <^>, >^<
 infixl 7 </>, >/<
 
 infixr 6 |<+>, |>+<
+infixl 6 <+>|, >+<|
 infixr 7 |<*>, |>*<
-infixl 7 |</>, |>/<
+infixl 7 <*>|, >*<|
+infixl 7 </>|, >/<|
 
 
 (>+<), (<+>) :: 
@@ -72,6 +74,13 @@ withFieldOpsEffortIndicator effortField expression =
 (|>+<) = mixedAddInEff ?mixedAddInOutEffort
 (|<+>) = mixedAddOutEff ?mixedAddInOutEffort
 
+(>+<|), (<+>|) :: 
+    (RoundedMixedAdd t1 t2, 
+     ?mixedAddInOutEffort :: MixedAddEffortIndicator t1 t2) => 
+    t2 -> t1 -> t2
+(>+<|) b a = mixedAddInEff ?mixedAddInOutEffort a b
+(<+>|) b a = mixedAddOutEff ?mixedAddInOutEffort a b
+
 (|>*<), (|<*>) :: 
     (RoundedMixedMultiply t1 t2, 
      ?mixedMultInOutEffort :: MixedMultEffortIndicator t1 t2) => 
@@ -79,12 +88,19 @@ withFieldOpsEffortIndicator effortField expression =
 (|>*<) = mixedMultInEff ?mixedMultInOutEffort
 (|<*>) = mixedMultOutEff ?mixedMultInOutEffort
 
-(|>/<), (|</>) :: 
+(>*<|), (<*>|) :: 
+    (RoundedMixedMultiply t1 t2, 
+     ?mixedMultInOutEffort :: MixedMultEffortIndicator t1 t2) => 
+    t2 -> t1 -> t2
+(>*<|) b a = mixedMultInEff ?mixedMultInOutEffort a b
+(<*>|) b a = mixedMultOutEff ?mixedMultInOutEffort a b
+
+(>/<|), (</>|) :: 
     (RoundedMixedDivide t1 t2, 
      ?mixedDivInOutEffort :: MixedDivEffortIndicator t1 t2) => 
     t2 -> t1 -> t2
-(|>/<) = mixedDivInEff ?mixedDivInOutEffort
-(|</>) = mixedDivOutEff ?mixedDivInOutEffort
+(>/<|) = mixedDivInEff ?mixedDivInOutEffort
+(</>|) = mixedDivOutEff ?mixedDivInOutEffort
 
 -- the following does not work, but is kept here as a template for
 -- cut and pasting the "let"s

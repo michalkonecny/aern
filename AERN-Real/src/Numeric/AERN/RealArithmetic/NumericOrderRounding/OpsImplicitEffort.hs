@@ -22,8 +22,10 @@ infixl 8 ^., ^^
 infixl 7 /., /^
 
 infixr 6 |+., |+^
+infixl 6 +.|, +^|
 infixr 7 |*., |*^
-infixl 7 |/., |/^
+infixl 7 *.|, *^|
+infixl 7 /.|, /^|
 
 (+^), (+.) :: 
     (RoundedAdd t, ?addUpDnEffort :: AddEffortIndicator t) => 
@@ -62,6 +64,13 @@ infixl 7 |/., |/^
 (|+^) = mixedAddUpEff ?mixedAddUpDnEffort
 (|+.) = mixedAddDnEff ?mixedAddUpDnEffort
 
+(+^|), (+.|) ::
+    (RoundedMixedAdd t1 t2, 
+     ?mixedAddUpDnEffort :: MixedAddEffortIndicator t1 t2) => 
+    t2 -> t1 -> t2
+(+^|) b a = mixedAddUpEff ?mixedAddUpDnEffort a b
+(+.|) b a = mixedAddDnEff ?mixedAddUpDnEffort a b
+
 (|*^), (|*.) ::
     (RoundedMixedMultiply t1 t2, 
      ?mixedMultUpDnEffort :: MixedMultEffortIndicator t1 t2) => 
@@ -69,10 +78,17 @@ infixl 7 |/., |/^
 (|*^) = mixedMultUpEff ?mixedMultUpDnEffort
 (|*.) = mixedMultDnEff ?mixedMultUpDnEffort
 
-(|/^), (|/.) ::
+(*^|), (*.|) ::
+    (RoundedMixedMultiply t1 t2, 
+     ?mixedMultUpDnEffort :: MixedMultEffortIndicator t1 t2) => 
+    t2 -> t1 -> t2
+(*^|) b a = mixedMultUpEff ?mixedMultUpDnEffort a b
+(*.|) b a = mixedMultDnEff ?mixedMultUpDnEffort a b
+
+(/^|), (/.|) ::
     (RoundedMixedDivide t1 t2, 
      ?mixedDivUpDnEffort :: MixedDivEffortIndicator t1 t2) => 
     t2 -> t1 -> t2
-(|/^) = mixedDivUpEff ?mixedDivUpDnEffort
-(|/.) = mixedDivDnEff ?mixedDivUpDnEffort
+(/^|) = mixedDivUpEff ?mixedDivUpDnEffort
+(/.|) = mixedDivDnEff ?mixedDivUpDnEffort
 
