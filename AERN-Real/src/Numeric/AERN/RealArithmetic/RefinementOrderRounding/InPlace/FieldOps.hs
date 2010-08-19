@@ -333,7 +333,7 @@ propInOutDivInPlace sample effortDistComp initEffort e1 e2 =
         let (</>) = divOutEffViaInPlace eff in e1 </> e2
 
 testsInOutFieldOpsInPlace (name, sample) =
-    testGroup (name ++ "in place up/down rounded ops match pure ops") $
+    testGroup (name ++ " in-place up/down rounded ops match pure ops") $
         [
             testProperty "addition" (propInOutAddInPlace sample)
         ,

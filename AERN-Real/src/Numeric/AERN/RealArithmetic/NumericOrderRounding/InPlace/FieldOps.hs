@@ -346,7 +346,7 @@ propUpDnDivInPlace sample effortDistComp initEffort e1 e2 =
         let (/.) = divDnEffViaInPlace eff in e1 /. e2
 
 testsUpDnFieldOpsInPlace (name, sample) =
-    testGroup (name ++ "in place up/down rounded ops match pure ops") $
+    testGroup (name ++ " in-place up/down rounded ops match pure ops") $
         [
             testProperty "addition" (propUpDnAddInPlace sample)
         ,
