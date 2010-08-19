@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.RoundedOps
+    Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
     Description :  rounded basic arithmetic operations  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -56,9 +56,9 @@ import Data.Maybe
 
 class RoundedAdd t where
     type AddEffortIndicator t
+    addDefaultEffort :: t -> AddEffortIndicator t
     addUpEff :: AddEffortIndicator t -> t -> t -> t
     addDnEff :: AddEffortIndicator t -> t -> t -> t
-    addDefaultEffort :: t -> AddEffortIndicator t
 
 propUpDnAddZero ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -647,9 +647,6 @@ testsUpDnIntPower (name, sample) =
 --            testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
         ]
 
-class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t, RoundedPowerToNonnegInt t) => 
-     RoundedRing t
-
 
 class RoundedDivide t where
     type DivEffortIndicator t
@@ -745,6 +742,12 @@ testsUpDnDiv (name, sample) =
             ,
             testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
         ]
+
+class (RoundedAdd t, RoundedSubtr t, 
+       RoundedMultiply t, 
+       RoundedPowerNonnegToNonnegInt t, RoundedPowerToNonnegInt t) => 
+     RoundedRing t
+
 
 class (RoundedRing t, RoundedDivide t) => RoundedField t
     where

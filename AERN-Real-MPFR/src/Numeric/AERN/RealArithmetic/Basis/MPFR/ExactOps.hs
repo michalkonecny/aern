@@ -40,9 +40,9 @@ instance Neg MPFR where
     neg = negate
 
 instance NegInPlace MPFR where
-    negInPlace _ r = 
+    negInPlace _ r a = 
         do
-        MM.neg r r M.Near
+        MM.neg r a M.Near
         return ()
 
 

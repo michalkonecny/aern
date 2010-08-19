@@ -36,10 +36,10 @@ expOutThinArg ::
      RefOrd.OuterRoundedLattice t,
      ArithUpDn.Convertible t Int,
      ArithInOut.Convertible Double t,
-     ArithInOut.RoundedMixedField Int t,
+     ArithInOut.RoundedMixedField t Int,
      ArithInOut.RoundedField t) =>
     ArithInOut.FieldOpsEffortIndicator t ->
-    ArithInOut.MixedFieldOpsEffortIndicator Int t ->
+    ArithInOut.MixedFieldOpsEffortIndicator t Int ->
     RefOrd.JoinMeetOutEffortIndicator t ->
     RefOrd.PartialCompareEffortIndicator t ->
     NumOrd.PartialCompareEffortIndicator t ->
@@ -83,9 +83,9 @@ expOutThinArg
         let ?multInOutEffort = ArithInOut.fldEffortMult x effortField in
         let ?intPowerInOutEffort = ArithInOut.fldEffortPow x effortField in
         let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField in
-        let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd xUp x effortMixedField in
-        let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult xUp x effortMixedField in
-        let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv xUp x effortMixedField in
+        let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd x xUp effortMixedField in
+        let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult x xUp effortMixedField in
+        let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv x xUp effortMixedField in
         (expOutViaTaylor degr (x </>| n)) <^> n
         where
         n = -- x / n must fall inside [-1,1] 

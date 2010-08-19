@@ -30,60 +30,60 @@ infixl 7 /.|, /^|
 (+^), (+.) :: 
     (RoundedAdd t) => 
     t -> t -> t
-(+^) a = addUpEff (addDefaultEffort a) a
-(+.) a = addDnEff (addDefaultEffort a) a
+(+^) d = addUpEff (addDefaultEffort d) d
+(+.) d = addDnEff (addDefaultEffort d) d
 
 (-^), (-.) :: 
     (RoundedSubtr t) => 
     t -> t -> t
-(-^) a = subtrUpEff (addDefaultEffort a) a
-(-.) a = subtrDnEff (addDefaultEffort a) a
+(-^) d = subtrUpEff (addDefaultEffort d) d
+(-.) d = subtrDnEff (addDefaultEffort d) d
 
 (*^), (*.) :: 
     (RoundedMultiply t) => 
     t -> t -> t
-(*^) a = multUpEff (multDefaultEffort a) a
-(*.) a = multDnEff (multDefaultEffort a) a
+(*^) d = multUpEff (multDefaultEffort d) d
+(*.) d = multDnEff (multDefaultEffort d) d
 
 (^^), (^.) :: 
     (RoundedPowerToNonnegInt t) => 
     t -> Int -> t
-(^^) a = powerToNonnegIntUpEff (powerToNonnegIntDefaultEffort a) a
-(^.) a = powerToNonnegIntDnEff (powerToNonnegIntDefaultEffort a) a
+(^^) d = powerToNonnegIntUpEff (powerToNonnegIntDefaultEffort d) d
+(^.) d = powerToNonnegIntDnEff (powerToNonnegIntDefaultEffort d) d
 
 (/^), (/.) :: 
     (RoundedDivide t) => 
     t -> t -> t
-(/^) a = divUpEff (divDefaultEffort a) a
-(/.) a = divDnEff (divDefaultEffort a) a
+(/^) d = divUpEff (divDefaultEffort d) d
+(/.) d = divDnEff (divDefaultEffort d) d
 
 (|+^), (|+.) :: 
-    (RoundedMixedAdd t1 t2) => 
-    t1 -> t2 -> t2
-(|+^) a b = mixedAddUpEff (mixedAddDefaultEffort a b) a b
-(|+.) a b = mixedAddDnEff (mixedAddDefaultEffort a b) a b
+    (RoundedMixedAdd t tn) => 
+    tn -> t -> t
+(|+^) n d = mixedAddUpEff (mixedAddDefaultEffort d n) d n
+(|+.) n d = mixedAddDnEff (mixedAddDefaultEffort d n) d n
 
 (+^|), (+.|) :: 
-    (RoundedMixedAdd t1 t2) => 
-    t2 -> t1 -> t2
-(+^|) b a = mixedAddUpEff (mixedAddDefaultEffort a b) a b
-(+.|) b a = mixedAddDnEff (mixedAddDefaultEffort a b) a b
+    (RoundedMixedAdd t tn) => 
+    t -> tn -> t
+(+^|) d n = mixedAddUpEff (mixedAddDefaultEffort d n) d n
+(+.|) d n = mixedAddDnEff (mixedAddDefaultEffort d n) d n
 
 (|*^), (|*.) :: 
-    (RoundedMixedMultiply t1 t2) => 
-    t1 -> t2 -> t2
-(|*^) a b = mixedMultUpEff (mixedMultDefaultEffort a b) a b
-(|*.) a b = mixedMultDnEff (mixedMultDefaultEffort a b) a b
+    (RoundedMixedMultiply t tn) => 
+    tn -> t -> t
+(|*^) n d = mixedMultUpEff (mixedMultDefaultEffort d n) d n
+(|*.) n d = mixedMultDnEff (mixedMultDefaultEffort d n) d n
 
 (*^|), (*.|) :: 
-    (RoundedMixedMultiply t1 t2) => 
-    t2 -> t1 -> t2
-(*^|) b a = mixedMultUpEff (mixedMultDefaultEffort a b) a b
-(*.|) b a = mixedMultDnEff (mixedMultDefaultEffort a b) a b
+    (RoundedMixedMultiply t tn) => 
+    t -> tn -> t
+(*^|) d n = mixedMultUpEff (mixedMultDefaultEffort d n) d n
+(*.|) d n = mixedMultDnEff (mixedMultDefaultEffort d n) d n
 
 (/^|), (/.|) :: 
-    (RoundedMixedDivide t1 t2) => 
-    t2 -> t1 -> t2
-(/^|) a b = mixedDivUpEff (mixedDivDefaultEffort b a) a b
-(/.|) a b = mixedDivDnEff (mixedDivDefaultEffort b a) a b
+    (RoundedMixedDivide t tn) => 
+    t -> tn -> t
+(/^|) d n = mixedDivUpEff (mixedDivDefaultEffort d n) d n
+(/.|) d n = mixedDivDnEff (mixedDivDefaultEffort d n) d n
 

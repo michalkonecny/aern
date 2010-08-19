@@ -35,7 +35,7 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 
 instance 
-    (ArithInOut.RoundedMixedField Int (Interval e),
+    (ArithInOut.RoundedMixedField (Interval e) Int,
      ArithInOut.RoundedField (Interval e), 
      ArithUpDn.Convertible (Interval e) Int,
      ArithInOut.Convertible Double (Interval e),
@@ -47,7 +47,7 @@ instance
     where
     type ArithInOut.ExpEffortIndicator (Interval e) = 
         ((ArithInOut.FieldOpsEffortIndicator (Interval e),
-          ArithInOut.MixedFieldOpsEffortIndicator Int (Interval e))
+          ArithInOut.MixedFieldOpsEffortIndicator (Interval e) Int)
         ,
          Int1To10
         ,
@@ -58,7 +58,7 @@ instance
         )
     expDefaultEffortIndicator i@(Interval l h) = 
         ((ArithInOut.fieldOpsDefaultEffort i, 
-          ArithInOut.mixedFieldOpsDefaultEffort sampleI i)
+          ArithInOut.mixedFieldOpsDefaultEffort i sampleI)
         ,
          Int1To10 10
         , 
