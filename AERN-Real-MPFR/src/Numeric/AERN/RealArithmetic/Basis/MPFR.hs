@@ -15,12 +15,13 @@
 -}
 module Numeric.AERN.RealArithmetic.Basis.MPFR 
 (
-   M.MPFR,
+   M.MPFR, MM.MMPFR,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.ShowInternals,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.Conversion,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.FieldOps,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.MixedFieldOps,
+   module Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.FieldOps,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.Measures,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps
 )
@@ -31,12 +32,14 @@ import Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder
 import Numeric.AERN.RealArithmetic.Basis.MPFR.Conversion
 import Numeric.AERN.RealArithmetic.Basis.MPFR.FieldOps
 import Numeric.AERN.RealArithmetic.Basis.MPFR.MixedFieldOps
+import Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.FieldOps
 import Numeric.AERN.RealArithmetic.Basis.MPFR.Measures
 import Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps
 
 import Numeric.AERN.Basics.Effort
 
 import qualified Data.Number.MPFR as M
+import qualified Data.Number.MPFR.Mutable as MM
 
 import Test.QuickCheck
 import Data.Word

@@ -51,6 +51,7 @@ testsMPFR =
        ArithUpDn.testsUpDnMult ("MPFR", sampleM),
        ArithUpDn.testsUpDnIntPower ("MPFR", sampleM),
        ArithUpDn.testsUpDnDiv ("MPFR", sampleM),
+       ArithUpDn.testsUpDnFieldOpsInPlace ("MPFR", sampleM),
        ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Integer", sampleI),
        ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Rational", sampleR),
        ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Double", sampleD)
