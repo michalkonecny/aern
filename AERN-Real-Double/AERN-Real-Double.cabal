@@ -40,6 +40,7 @@ Library
     Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
     Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
     Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps
+    Numeric.AERN.RealArithmetic.Basis.Double.Mutable
     Numeric.AERN.RealArithmetic.Basis.Double.Measures
     Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
 
