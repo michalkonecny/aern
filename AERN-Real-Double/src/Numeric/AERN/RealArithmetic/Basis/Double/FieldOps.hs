@@ -22,6 +22,7 @@ where
 import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
+import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
 
 import Numeric.AERN.Basics.Effort
 
@@ -98,7 +99,6 @@ instance RoundedAdd Double where
 --        where
 --        effortD = fromInteger $ toInteger $ fromInt1To100 $ effort
 
-    
 instance RoundedSubtr Double
 
 instance RoundedAbs Double where
