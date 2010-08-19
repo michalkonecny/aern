@@ -50,9 +50,13 @@ testsDouble =
        ArithUpDn.testsUpDnMult ("Double", sampleD),
        ArithUpDn.testsUpDnIntPower ("Double", sampleD),
        ArithUpDn.testsUpDnDiv ("Double", sampleD),
+       ArithUpDn.testsUpDnFieldOpsInPlace ("Double", sampleD),
        ArithUpDn.testsUpDnMixedFieldOps ("Double", sampleD) ("Integer", sampleI),
        ArithUpDn.testsUpDnMixedFieldOps ("Double", sampleD) ("Rational", sampleR),
-       ArithUpDn.testsUpDnMixedFieldOps ("Double", sampleD) ("Double", sampleD)
+       ArithUpDn.testsUpDnMixedFieldOps ("Double", sampleD) ("Double", sampleD),
+       ArithUpDn.testsUpDnMixedFieldOpsInPlace ("Double", sampleD) ("Integer", sampleI),
+       ArithUpDn.testsUpDnMixedFieldOpsInPlace ("Double", sampleD) ("Rational", sampleR),
+       ArithUpDn.testsUpDnMixedFieldOpsInPlace ("Double", sampleD) ("Double", sampleD)
     ]
 
 testsDI =

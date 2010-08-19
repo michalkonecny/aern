@@ -46,6 +46,7 @@ instance CanBeMutable Double where
 instance NegInPlace Double
 instance RoundedAddInPlace Double
 instance RoundedSubtrInPlace Double
+instance RoundedAbsInPlace Double
 instance RoundedMultiplyInPlace Double
 instance RoundedPowerNonnegToNonnegIntInPlace Double
     where
