@@ -22,7 +22,6 @@ where
 import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
-import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
 
 import Numeric.AERN.Basics.Effort
 

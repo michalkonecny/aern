@@ -45,13 +45,9 @@ Library
     Numeric.AERN.RealArithmetic.NumericOrderRounding
     Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort
     Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsDefaultEffort
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
---    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.OpsImplicitEffort
---    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.OpsDefaultEffort
     Numeric.AERN.RealArithmetic.RefinementOrderRounding
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.Implementation.Elementary
     Numeric.AERN.RealArithmetic.Measures
     Numeric.AERN.RealArithmetic.Laws
@@ -66,6 +62,7 @@ Library
     Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
     Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps
     Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
     Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps
     Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps
     Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Elementary
@@ -73,6 +70,7 @@ Library
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.FieldOps
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.MixedFieldOps
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.Elementary

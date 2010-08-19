@@ -10,8 +10,7 @@
     
     In-place versions of common arithmetical operations rounded up/down.
     
-    This module is meant to be imported qualified.
-    It is recommended to use the prefix ArithUpDnInPlace.
+    This module is hidden and reexported via its parent NumericOrderRounding. 
 -}
 module Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
 (
