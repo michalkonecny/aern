@@ -71,7 +71,7 @@ propMixedAddInPlaceEqualsConvert ::
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
-    t -> t ->
+    t -> tn ->
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
     (DistanceEffortIndicator t,
      NumOrd.PartialCompareEffortIndicator t,
@@ -135,7 +135,7 @@ propMixedMultInPlaceEqualsConvert ::
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
-    t -> t ->
+    t -> tn ->
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
     (DistanceEffortIndicator t,
      NumOrd.PartialCompareEffortIndicator t,
@@ -197,7 +197,7 @@ propMixedDivInPlaceEqualsConvert ::
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
-    t -> t ->
+    t -> tn ->
     (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
     (DistanceEffortIndicator t,
      NumOrd.PartialCompareEffortIndicator t,
