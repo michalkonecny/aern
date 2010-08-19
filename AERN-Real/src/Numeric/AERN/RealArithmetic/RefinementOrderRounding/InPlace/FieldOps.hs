@@ -28,14 +28,15 @@
 -}
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.FieldOps 
 (
-    RoundedAddInPlace(..), testsInOutAddInPlace, 
-    RoundedSubtrInPlace(..), testsInOutSubtrInPlace,
-    RoundedAbsInPlace(..), testsInOutAbsInPlace,
-    RoundedMultiplyInPlace(..), testsInOutMultInPlace,
+    RoundedAddInPlace(..), 
+    RoundedSubtrInPlace(..),
+    RoundedAbsInPlace(..),
+    RoundedMultiplyInPlace(..),
     RoundedPowerToNonnegIntInPlace(..),
     powerToNonnegIntInInPlaceEffFromMult,
     powerToNonnegIntOutInPlaceEffFromMult,
-    RoundedDivideInPlace(..), testsInOutDivInPlace,
+    RoundedDivideInPlace(..),
+    testsInOutFieldOpsInPlace,
     RoundedRingInPlace(..), RoundedFieldInPlace(..)
 )
 where
@@ -104,12 +105,6 @@ propInOutAddInPlace sample effortDistComp initEffort e1 e2 =
     expr2Out eff =
         let (<+>) = addOutEffViaInPlace eff in e1 <+> e2
 
-testsInOutAddInPlace (name, sample) =
-    testGroup (name ++ "in place <+> >+<") $
-        [
-            testProperty "matches pure" (propInOutAddInPlace sample)
-        ]
-        
 class (RoundedAddInPlace t,  RoundedSubtr t, NegInPlace t) => RoundedSubtrInPlace t where
     subtrInInPlaceEff :: t -> OpMutable2Eff (AddEffortIndicator t) t s
     subtrOutInPlaceEff :: t -> OpMutable2Eff (AddEffortIndicator t) t s
@@ -159,12 +154,6 @@ propInOutSubtrInPlace sample effortDistComp initEffort e1 e2 =
         let (<->) = subtrOutEffViaInPlace eff in e1 <-> e2
 
 
-testsInOutSubtrInPlace (name, sample) =
-    testGroup (name ++ " in place <-> >-<") $
-        [
-            testProperty "matches pure" (propInOutSubtrInPlace sample)
-        ]
-
 class (RoundedAbs t, CanBeMutable t) => RoundedAbsInPlace t where
     absInInPlaceEff :: t -> OpMutable1Eff (AbsEffortIndicator t) t s
     absOutInPlaceEff :: t -> OpMutable1Eff (AbsEffortIndicator t) t s
@@ -200,13 +189,6 @@ propInOutAbsInPlace sample effortDistComp initEffort e1 =
     expr1Out eff = absOutEff eff e1
     expr2In eff = absInEffViaInPlace eff e1
     expr2Out eff = absOutEffViaInPlace eff e1
-
-
-testsInOutAbsInPlace (name, sample) =
-    testGroup (name ++ " in place abs") $
-        [
-            testProperty "matches pure" (propInOutAbsInPlace sample)
-        ]
 
 
 class (RoundedMultiply t, CanBeMutable t) => RoundedMultiplyInPlace t where
@@ -248,12 +230,6 @@ propInOutMultInPlace sample effortDistComp initEffort e1 e2 =
         let (>*<) = multInEffViaInPlace eff in e1 >*< e2
     expr2Out eff =
         let (<*>) = multOutEffViaInPlace eff in e1 <*> e2
-
-testsInOutMultInPlace (name, sample) =
-    testGroup (name ++ "in place <*> >*<") $
-        [
-            testProperty "matches pure" (propInOutMultInPlace sample)
-        ]
 
 powerToNonnegIntInInPlaceEffFromMult ::
     (RoundedMultiplyInPlace t, HasOne t) =>
@@ -316,12 +292,6 @@ propInOutPowerToNonnegInPlace sample effortDistComp initEffort e1 n =
     expr2Out eff =
         let (<^>) = powerToNonnegIntOutEffViaInPlace eff in e1 <^> n
 
-testsInOutPowerToNonnegInPlace (name, sample) =
-    testGroup (name ++ "in place integer power") $
-        [
-            testProperty "matches pure" (propInOutMultInPlace sample)
-        ]
-
 class (RoundedDivide t, CanBeMutable t) => RoundedDivideInPlace t where
     divInInPlaceEff :: t -> OpMutable2Eff (DivEffortIndicator t) t s
     divOutInPlaceEff :: t -> OpMutable2Eff (DivEffortIndicator t) t s
@@ -362,10 +332,20 @@ propInOutDivInPlace sample effortDistComp initEffort e1 e2 =
     expr2Out eff =
         let (</>) = divOutEffViaInPlace eff in e1 </> e2
 
-testsInOutDivInPlace (name, sample) =
-    testGroup (name ++ "in place </> >/<") $
+testsInOutFieldOpsInPlace (name, sample) =
+    testGroup (name ++ "in place up/down rounded ops match pure ops") $
         [
-            testProperty "matches pure" (propInOutDivInPlace sample)
+            testProperty "addition" (propInOutAddInPlace sample)
+        ,
+            testProperty "subtraction" (propInOutSubtrInPlace sample)
+        ,
+            testProperty "absolute value" (propInOutAbsInPlace sample)
+        ,
+            testProperty "multiplication" (propInOutMultInPlace sample)
+        ,
+            testProperty "integer power" (propInOutMultInPlace sample)
+        ,
+            testProperty "division" (propInOutDivInPlace sample)
         ]
 
 

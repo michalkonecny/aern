@@ -28,15 +28,16 @@
 -}
 module Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps 
 (
-    RoundedAddInPlace(..), testsUpDnAddInPlace, 
-    RoundedSubtrInPlace(..), testsUpDnSubtrInPlace,
-    RoundedAbsInPlace(..), testsUpDnAbsInPlace,
-    RoundedMultiplyInPlace(..), testsUpDnMultInPlace,
+    RoundedAddInPlace(..), 
+    RoundedSubtrInPlace(..),
+    RoundedAbsInPlace(..),
+    RoundedMultiplyInPlace(..),
     RoundedPowerNonnegToNonnegIntInPlace(..),
     powerNonnegToNonnegIntUpInPlaceEffFromMult,
     powerNonnegToNonnegIntDnInPlaceEffFromMult,
-    RoundedPowerToNonnegIntInPlace(..), testsUpDnIntPowerInPlace, 
-    RoundedDivideInPlace(..), testsUpDnDivInPlace,
+    RoundedPowerToNonnegIntInPlace(..), 
+    RoundedDivideInPlace(..),
+    testsUpDnFieldOpsInPlace,
     RoundedRingInPlace(..), RoundedFieldInPlace(..)
 )
 where
@@ -104,12 +105,6 @@ propUpDnAddInPlace sample effortDistComp initEffort e1 e2 =
     expr2Dn eff =
         let (+.) = addDnEffViaInPlace eff in e1 +. e2
 
-testsUpDnAddInPlace (name, sample) =
-    testGroup (name ++ "in place +. +^") $
-        [
-            testProperty "matches pure" (propUpDnAddInPlace sample)
-        ]
-        
 class (RoundedAddInPlace t,  RoundedSubtr t, NegInPlace t) => RoundedSubtrInPlace t where
     subtrUpInPlaceEff :: t -> OpMutable2Eff (AddEffortIndicator t) t s
     subtrDnInPlaceEff :: t -> OpMutable2Eff (AddEffortIndicator t) t s
@@ -159,12 +154,6 @@ propUpDnSubtrInPlace sample effortDistComp initEffort e1 e2 =
         let (-.) = subtrDnEffViaInPlace eff in e1 -. e2
 
 
-testsUpDnSubtrInPlace (name, sample) =
-    testGroup (name ++ " in place -. -^") $
-        [
-            testProperty "matches pure" (propUpDnSubtrInPlace sample)
-        ]
-
 class (RoundedAbs t, CanBeMutable t) => RoundedAbsInPlace t where
     absUpInPlaceEff :: t -> OpMutable1Eff (AbsEffortIndicator t) t s
     absDnInPlaceEff :: t -> OpMutable1Eff (AbsEffortIndicator t) t s
@@ -200,14 +189,6 @@ propUpDnAbsInPlace sample effortDistComp initEffort e1 =
     expr1Dn eff = absDnEff eff e1
     expr2Up eff = absUpEffViaInPlace eff e1
     expr2Dn eff = absDnEffViaInPlace eff e1
-
-
-testsUpDnAbsInPlace (name, sample) =
-    testGroup (name ++ " in place abs") $
-        [
-            testProperty "matches pure" (propUpDnAbsInPlace sample)
-        ]
-
 
 class (RoundedMultiply t, CanBeMutable t) => RoundedMultiplyInPlace t where
     multUpInPlaceEff :: t -> OpMutable2Eff (MultEffortIndicator t) t s
@@ -248,12 +229,6 @@ propUpDnMultInPlace sample effortDistComp initEffort e1 e2 =
         let (*^) = multUpEffViaInPlace eff in e1 *^ e2
     expr2Dn eff =
         let (*.) = multDnEffViaInPlace eff in e1 *. e2
-
-testsUpDnMultInPlace (name, sample) =
-    testGroup (name ++ "in place *. *^") $
-        [
-            testProperty "matches pure" (propUpDnMultInPlace sample)
-        ]
 
 class (RoundedPowerNonnegToNonnegInt t, CanBeMutable t) => RoundedPowerNonnegToNonnegIntInPlace t where
     powerNonnegToNonnegIntUpInPlaceEff ::
@@ -330,12 +305,6 @@ propUpDnPowerToNonnegInPlace sample effortDistComp initEffort e1 n =
     expr2Dn eff =
         let (^.) = powerToNonnegIntDnEffViaInPlace eff in e1 ^. n
 
-testsUpDnIntPowerInPlace (name, sample) =
-    testGroup (name ++ "in place integer power") $
-        [
-            testProperty "matches pure" (propUpDnMultInPlace sample)
-        ]
-
 class (RoundedDivide t, CanBeMutable t) => RoundedDivideInPlace t where
     divUpInPlaceEff :: t -> OpMutable2Eff (DivEffortIndicator t) t s
     divDnInPlaceEff :: t -> OpMutable2Eff (DivEffortIndicator t) t s
@@ -376,12 +345,22 @@ propUpDnDivInPlace sample effortDistComp initEffort e1 e2 =
     expr2Dn eff =
         let (/.) = divDnEffViaInPlace eff in e1 /. e2
 
-testsUpDnDivInPlace (name, sample) =
-    testGroup (name ++ "in place /. /^") $
+testsUpDnFieldOpsInPlace (name, sample) =
+    testGroup (name ++ "in place up/down rounded ops match pure ops") $
         [
-            testProperty "matches pure" (propUpDnDivInPlace sample)
+            testProperty "addition" (propUpDnAddInPlace sample)
+        ,
+            testProperty "subtraction" (propUpDnSubtrInPlace sample)
+        ,
+            testProperty "absolute value" (propUpDnAbsInPlace sample)
+        ,
+            testProperty "multiplication" (propUpDnMultInPlace sample)
+        ,
+            testProperty "integer power" (propUpDnMultInPlace sample)
+        ,
+            testProperty "division" (propUpDnDivInPlace sample)
         ]
-
+        
 
 class (RoundedSubtrInPlace t, RoundedMultiplyInPlace t) => RoundedRingInPlace t
 class (RoundedRingInPlace t, RoundedDivideInPlace t) => RoundedFieldInPlace t
