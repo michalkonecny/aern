@@ -21,7 +21,7 @@ module Numeric.AERN.RealArithmetic.Basis.Double.Mutable where
 import Numeric.AERN.Basics.Mutable
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
+import Numeric.AERN.RealArithmetic.NumericOrderRounding 
 
 import Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
 import Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps

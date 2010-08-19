@@ -229,7 +229,7 @@ propMixedDivInPlaceEqualsConvert sample1 sample2 effortDistComp initEffort d n =
     expr2Out (_,effDiv,effConv) =
         let (<*>) = divOutEff effDiv in (convertOutEff effConv n) <*> d
     
-testsInOutMixedFieldOps (name, sample) (nameN, sampleN) =
+testsInOutMixedFieldOpsInPlace (name, sample) (nameN, sampleN) =
     testGroup (name ++ " with " ++ nameN ++ ": in-place mixed up/dn rounded ops") $
         [
             testProperty "addition" (propMixedAddInPlaceEqualsConvert sample sampleN)
