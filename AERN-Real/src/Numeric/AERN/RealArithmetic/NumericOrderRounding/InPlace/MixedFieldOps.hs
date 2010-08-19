@@ -117,7 +117,8 @@ class (RoundedMixedMultiply t tn, CanBeMutable t) => RoundedMixedMultiplyInPlace
 {- properties of mixed multiplication -}
 
 propMixedMultInPlaceEqualsConvert ::
-    (NumOrd.PartialComparison t, Convertible tn t,
+    (NumOrd.PartialComparison t,  NumOrd.RoundedLattice t,
+     Convertible tn t,
      RoundedMixedMultiplyInPlace t tn, RoundedMultiply t,
      Show t,
      HasDistance t,  Show (Distance t),  
@@ -129,6 +130,8 @@ propMixedMultInPlaceEqualsConvert ::
      EffortIndicator (ConvertEffortIndicator tn t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
+     Show (NumOrd.MinmaxEffortIndicator t),
+     EffortIndicator (NumOrd.MinmaxEffortIndicator t),
      Show (DistanceEffortIndicator t),
      EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -139,32 +142,39 @@ propMixedMultInPlaceEqualsConvert ::
     (DistanceEffortIndicator t,
      NumOrd.PartialCompareEffortIndicator t,
      (MixedMultEffortIndicator t tn,      
-      MultEffortIndicator t,
-      ConvertEffortIndicator tn t)) -> 
+      (MultEffortIndicator t,
+       ConvertEffortIndicator tn t,
+       NumOrd.MinmaxEffortIndicator t))) -> 
     t -> tn -> Bool
 propMixedMultInPlaceEqualsConvert sample1 sample2 effortDistComp initEffort d n =
     equalRoundingUpDnImprovement
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
-    expr1Up (effMMult,_,_) =
+    expr1Up (effMMult,_) =
         let (*^|=) dR = mixedMultUpInPlaceEff d effMMult dR dR in
         runST $ 
             do
             dR <- makeMutable d
             dR *^|= n
             unsafeReadMutable dR
-    expr1Dn (effMMult,_,_) =
+    expr1Dn (effMMult,_) =
         let (*.|=) dR = mixedMultDnInPlaceEff d effMMult dR dR in
         runST $ 
             do
             dR <- makeMutable d
             dR *.|= n
             unsafeReadMutable dR
-    expr2Up (_,effMult,effConv) =
-        let (*^) = multUpEff effMult in (fromJust $ convertUpEff effConv n) *^ d
-    expr2Dn (_,effMult,effConv) =
-        let (*.) = multDnEff effMult in (fromJust $ convertDnEff effConv n) *. d
+    expr2Up (_,(effMult,effConv,effMinmax)) =
+        let (*^) = multUpEff effMult in
+        NumOrd.maxUpEff effMinmax  
+            (d *^ (fromJust $ convertUpEff effConv n))
+            (d *^ (fromJust $ convertDnEff effConv n))
+    expr2Dn (_,(effMult,effConv,effMinmax)) =
+        let (*.) = multDnEff effMult in
+        NumOrd.minDnEff effMinmax  
+            (d *. (fromJust $ convertUpEff effConv n))
+            (d *. (fromJust $ convertDnEff effConv n))
 
 class (RoundedMixedDivide t tn, CanBeMutable t) => RoundedMixedDivideInPlace t tn where
     mixedDivUpInPlaceEff :: 
@@ -179,7 +189,8 @@ class (RoundedMixedDivide t tn, CanBeMutable t) => RoundedMixedDivideInPlace t t
 {- properties of mixed division -}
 
 propMixedDivInPlaceEqualsConvert ::
-    (NumOrd.PartialComparison t, Convertible tn t,
+    (NumOrd.PartialComparison t,  NumOrd.RoundedLattice t,
+     Convertible tn t,
      RoundedMixedDivideInPlace t tn, RoundedDivide t,
      Show t,
      HasDistance t,  Show (Distance t),  
@@ -191,6 +202,8 @@ propMixedDivInPlaceEqualsConvert ::
      EffortIndicator (ConvertEffortIndicator tn t),
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
+     Show (NumOrd.MinmaxEffortIndicator t),
+     EffortIndicator (NumOrd.MinmaxEffortIndicator t),
      Show (DistanceEffortIndicator t),
      EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -201,32 +214,39 @@ propMixedDivInPlaceEqualsConvert ::
     (DistanceEffortIndicator t,
      NumOrd.PartialCompareEffortIndicator t,
      (MixedDivEffortIndicator t tn,      
-      DivEffortIndicator t,
-      ConvertEffortIndicator tn t)) -> 
+      (DivEffortIndicator t,
+       ConvertEffortIndicator tn t,
+       NumOrd.MinmaxEffortIndicator t))) -> 
     t -> tn -> Bool
 propMixedDivInPlaceEqualsConvert sample1 sample2 effortDistComp initEffort d n =
     equalRoundingUpDnImprovement
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
-    expr1Up (effMDiv,_,_) =
-        let (*^|=) dR = mixedDivUpInPlaceEff d effMDiv dR dR in
+    expr1Up (effMDiv,_) =
+        let (/^|=) dR = mixedDivUpInPlaceEff d effMDiv dR dR in
         runST $ 
             do
             dR <- makeMutable d
-            dR *^|= n
+            dR /^|= n
             unsafeReadMutable dR
-    expr1Dn (effMDiv,_,_) =
-        let (*.|=) dR = mixedDivDnInPlaceEff d effMDiv dR dR in
+    expr1Dn (effMDiv,_) =
+        let (/.|=) dR = mixedDivDnInPlaceEff d effMDiv dR dR in
         runST $ 
             do
             dR <- makeMutable d
-            dR *.|= n
+            dR /.|= n
             unsafeReadMutable dR
-    expr2Up (_,effDiv,effConv) =
-        let (*^) = divUpEff effDiv in (fromJust $ convertUpEff effConv n) *^ d
-    expr2Dn (_,effDiv,effConv) =
-        let (*.) = divDnEff effDiv in (fromJust $ convertDnEff effConv n) *. d
+    expr2Up (_,(effDiv,effConv,effMinmax)) =
+        let (/^) = divUpEff effDiv in
+        NumOrd.maxUpEff effMinmax  
+            (d /^ (fromJust $ convertUpEff effConv n))
+            (d /^ (fromJust $ convertDnEff effConv n))
+    expr2Dn (_,(effDiv,effConv,effMinmax)) =
+        let (/.) = divDnEff effDiv in
+        NumOrd.minDnEff effMinmax  
+            (d /. (fromJust $ convertUpEff effConv n))
+            (d /. (fromJust $ convertDnEff effConv n))
     
 testsUpDnMixedFieldOpsInPlace (name, sample) (nameN, sampleN) =
     testGroup (name ++ " with " ++ nameN ++ ": in-place mixed up/dn rounded ops") $
