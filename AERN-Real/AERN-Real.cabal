@@ -67,7 +67,7 @@ Library
     Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary
     Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps
     Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps
---    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Elementary
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Elementary
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps
