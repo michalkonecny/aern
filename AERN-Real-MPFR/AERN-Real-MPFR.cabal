@@ -44,6 +44,7 @@ Library
     Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder
     Numeric.AERN.RealArithmetic.Basis.MPFR.FieldOps
     Numeric.AERN.RealArithmetic.Basis.MPFR.MixedFieldOps
+    Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.FieldOps
     Numeric.AERN.RealArithmetic.Basis.MPFR.Measures
     Numeric.AERN.RealArithmetic.Basis.MPFR.ShowInternals
 
