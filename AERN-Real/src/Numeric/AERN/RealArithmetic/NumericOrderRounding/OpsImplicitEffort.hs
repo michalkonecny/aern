@@ -57,38 +57,38 @@ infixl 7 /.|, /^|
 (/^) = divUpEff ?divUpDnEffort
 (/.) = divDnEff ?divUpDnEffort
 
-(|+^), (|+.) ::
-    (RoundedMixedAdd t1 t2, 
-     ?mixedAddUpDnEffort :: MixedAddEffortIndicator t1 t2) => 
-    t1 -> t2 -> t2
-(|+^) = mixedAddUpEff ?mixedAddUpDnEffort
-(|+.) = mixedAddDnEff ?mixedAddUpDnEffort
-
 (+^|), (+.|) ::
-    (RoundedMixedAdd t1 t2, 
-     ?mixedAddUpDnEffort :: MixedAddEffortIndicator t1 t2) => 
-    t2 -> t1 -> t2
-(+^|) b a = mixedAddUpEff ?mixedAddUpDnEffort a b
-(+.|) b a = mixedAddDnEff ?mixedAddUpDnEffort a b
+    (RoundedMixedAdd t tn, 
+     ?mixedAddUpDnEffort :: MixedAddEffortIndicator t tn) => 
+    t -> tn -> t
+(+^|) = mixedAddUpEff ?mixedAddUpDnEffort
+(+.|) = mixedAddDnEff ?mixedAddUpDnEffort
 
-(|*^), (|*.) ::
-    (RoundedMixedMultiply t1 t2, 
-     ?mixedMultUpDnEffort :: MixedMultEffortIndicator t1 t2) => 
-    t1 -> t2 -> t2
-(|*^) = mixedMultUpEff ?mixedMultUpDnEffort
-(|*.) = mixedMultDnEff ?mixedMultUpDnEffort
+(|+^), (|+.) ::
+    (RoundedMixedAdd t tn, 
+     ?mixedAddUpDnEffort :: MixedAddEffortIndicator t tn) => 
+    tn -> t -> t
+(|+^) n d = mixedAddUpEff ?mixedAddUpDnEffort d n
+(|+.) n d = mixedAddDnEff ?mixedAddUpDnEffort d n
 
 (*^|), (*.|) ::
-    (RoundedMixedMultiply t1 t2, 
-     ?mixedMultUpDnEffort :: MixedMultEffortIndicator t1 t2) => 
-    t2 -> t1 -> t2
-(*^|) b a = mixedMultUpEff ?mixedMultUpDnEffort a b
-(*.|) b a = mixedMultDnEff ?mixedMultUpDnEffort a b
+    (RoundedMixedMultiply t tn, 
+     ?mixedMultUpDnEffort :: MixedMultEffortIndicator t tn) => 
+    t -> tn -> t
+(*^|) = mixedMultUpEff ?mixedMultUpDnEffort
+(*.|) = mixedMultDnEff ?mixedMultUpDnEffort
+
+(|*^), (|*.) ::
+    (RoundedMixedMultiply t tn, 
+     ?mixedMultUpDnEffort :: MixedMultEffortIndicator t tn) => 
+    tn -> t -> t
+(|*^) n d = mixedMultUpEff ?mixedMultUpDnEffort d n
+(|*.) n d = mixedMultDnEff ?mixedMultUpDnEffort d n
 
 (/^|), (/.|) ::
-    (RoundedMixedDivide t1 t2, 
-     ?mixedDivUpDnEffort :: MixedDivEffortIndicator t1 t2) => 
-    t2 -> t1 -> t2
+    (RoundedMixedDivide t tn, 
+     ?mixedDivUpDnEffort :: MixedDivEffortIndicator t tn) => 
+    t -> tn -> t
 (/^|) = mixedDivUpEff ?mixedDivUpDnEffort
 (/.|) = mixedDivDnEff ?mixedDivUpDnEffort
 

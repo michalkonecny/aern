@@ -51,9 +51,9 @@ testsMPFR =
        ArithUpDn.testsUpDnMult ("MPFR", sampleM),
        ArithUpDn.testsUpDnIntPower ("MPFR", sampleM),
        ArithUpDn.testsUpDnDiv ("MPFR", sampleM),
-       ArithUpDn.testsUpDnMixedFieldOps ("Integer", sampleI) ("MPFR", sampleM),
-       ArithUpDn.testsUpDnMixedFieldOps ("Rational", sampleR) ("MPFR", sampleM),
-       ArithUpDn.testsUpDnMixedFieldOps ("Double", sampleD) ("MPFR", sampleM)
+       ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Integer", sampleI),
+       ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Rational", sampleR),
+       ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Double", sampleD)
     ]
 
 testsMI =
@@ -75,9 +75,9 @@ testsMI =
        ArithInOut.testsInOutMult ("MI", sampleMI),
        ArithInOut.testsInOutIntPower ("MI", sampleMI),
        ArithInOut.testsInOutDiv ("MI", sampleMI),
-       ArithInOut.testsInOutMixedFieldOps ("Integer", sampleI) ("MI", sampleMI),
-       ArithInOut.testsInOutMixedFieldOps ("Rational", sampleR) ("MI", sampleMI),
-       ArithInOut.testsInOutMixedFieldOps ("Double", sampleD) ("MI", sampleMI)
+       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Integer", sampleI),
+       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Rational", sampleR),
+       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Double", sampleD)
        ,
        ArithInOut.testsInOutExp ("MI", sampleMI)
     ]

@@ -50,8 +50,8 @@ testsDouble =
        ArithUpDn.testsUpDnMult ("Double", sampleD),
        ArithUpDn.testsUpDnIntPower ("Double", sampleD),
        ArithUpDn.testsUpDnDiv ("Double", sampleD),
-       ArithUpDn.testsUpDnMixedFieldOps ("Integer", sampleI) ("Double", sampleD),
-       ArithUpDn.testsUpDnMixedFieldOps ("Rational", sampleR) ("Double", sampleD),
+       ArithUpDn.testsUpDnMixedFieldOps ("Double", sampleD) ("Integer", sampleI),
+       ArithUpDn.testsUpDnMixedFieldOps ("Double", sampleD) ("Rational", sampleR),
        ArithUpDn.testsUpDnMixedFieldOps ("Double", sampleD) ("Double", sampleD)
     ]
 
@@ -74,9 +74,9 @@ testsDI =
        ArithInOut.testsInOutMult ("DI", sampleDI),
        ArithInOut.testsInOutIntPower ("DI", sampleDI),
        ArithInOut.testsInOutDiv ("DI", sampleDI),
-       ArithInOut.testsInOutMixedFieldOps ("Integer", sampleI) ("DI", sampleDI),
-       ArithInOut.testsInOutMixedFieldOps ("Rational", sampleR) ("DI", sampleDI),
-       ArithInOut.testsInOutMixedFieldOps ("Double", sampleD) ("DI", sampleDI)
+       ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Integer", sampleI),
+       ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Rational", sampleR),
+       ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Double", sampleD)
        ,
        ArithInOut.testsInOutExp ("DI", sampleDI)
     ]

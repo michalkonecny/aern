@@ -33,188 +33,186 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-class RoundedMixedAdd s t where
-    type MixedAddEffortIndicator s t
-    mixedAddInEff :: MixedAddEffortIndicator s t -> s -> t -> t
-    mixedAddOutEff :: MixedAddEffortIndicator s t -> s -> t -> t
-    mixedAddDefaultEffort :: s -> t -> MixedAddEffortIndicator s t
+class RoundedMixedAdd t tn where
+    type MixedAddEffortIndicator t tn
+    mixedAddInEff :: MixedAddEffortIndicator t tn -> t -> tn -> t
+    mixedAddOutEff :: MixedAddEffortIndicator t tn -> t -> tn -> t
+    mixedAddDefaultEffort :: t -> tn -> MixedAddEffortIndicator t tn
 
-mixedAddDefaultEffortByConversion n d = 
+mixedAddDefaultEffortByConversion d n = 
         (addDefaultEffort d, convertDefaultEffort n d)
 
 mixedAddInEffByConversion ::
-    (Convertible t1 t2, RoundedAdd t2) =>
-    (AddEffortIndicator t2, ConvertEffortIndicator t1 t2) ->
-    t1 -> t2 -> t2
-mixedAddInEffByConversion (effAdd, effConv) a b = 
-    addInEff effAdd (convertInEff effConv a) b
+    (Convertible tn t, RoundedAdd t) =>
+    (AddEffortIndicator t, ConvertEffortIndicator tn t) ->
+    t -> tn -> t
+mixedAddInEffByConversion (effAdd, effConv) d n = 
+    addInEff effAdd d (convertInEff effConv n)
 
 mixedAddOutEffByConversion ::
-    (Convertible t1 t2, RoundedAdd t2) =>
-    (AddEffortIndicator t2, ConvertEffortIndicator t1 t2) ->
-    t1 -> t2 -> t2
-mixedAddOutEffByConversion (effAdd, effConv) a b = 
-    addOutEff effAdd (convertOutEff effConv a) b
+    (Convertible tn t, RoundedAdd t) =>
+    (AddEffortIndicator t, ConvertEffortIndicator tn t) ->
+    t -> tn -> t
+mixedAddOutEffByConversion (effAdd, effConv) d n = 
+    addOutEff effAdd d (convertOutEff effConv n)
 
 
 propMixedAddEqualsConvert ::
-    (RefOrd.PartialComparison t2, Convertible t1 t2,
-     RoundedMixedAdd t1 t2, RoundedAdd t2,
-     Show t2,
-     HasDistance t2,  Show (Distance t2),  
-     NumOrd.PartialComparison (Distance t2), 
-     HasInfinities (Distance t2), HasZero (Distance t2),
-     Show (MixedAddEffortIndicator t1 t2),
-     EffortIndicator (MixedAddEffortIndicator t1 t2),
-     Show (ConvertEffortIndicator t1 t2),
-     EffortIndicator (ConvertEffortIndicator t1 t2),
-     Show (AddEffortIndicator t2),
-     EffortIndicator (AddEffortIndicator t2),
-     Show (DistanceEffortIndicator t2),
-     EffortIndicator (DistanceEffortIndicator t2),
-     Show (RefOrd.PartialCompareEffortIndicator t2),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t2)
+    (RefOrd.PartialComparison t, Convertible tn t,
+     RoundedMixedAdd t tn, RoundedAdd t,
+     Show t,
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), 
+     HasInfinities (Distance t), HasZero (Distance t),
+     Show (MixedAddEffortIndicator t tn),
+     EffortIndicator (MixedAddEffortIndicator t tn),
+     Show (ConvertEffortIndicator tn t),
+     EffortIndicator (ConvertEffortIndicator tn t),
+     Show (AddEffortIndicator t),
+     EffortIndicator (AddEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
-    t1 -> t2 ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t2)) -> 
-    (DistanceEffortIndicator t2,
-     RefOrd.PartialCompareEffortIndicator t2,
-     (MixedAddEffortIndicator t1 t2,      
-      AddEffortIndicator t2,
-      ConvertEffortIndicator t1 t2)) -> 
-    t1 -> t2 -> Bool
-propMixedAddEqualsConvert sample1 sample2 effortDistComp initEffort e1 e2 =
+    t -> tn ->
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t,
+     (MixedAddEffortIndicator t tn,      
+      AddEffortIndicator t,
+      ConvertEffortIndicator tn t)) -> 
+    t -> tn -> Bool
+propMixedAddEqualsConvert sample sampleN effortDistComp initEffort d n =
     equalRoundingUpDnImprovement
         expr1In expr1Out expr2In expr2Out
         RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
     expr1In (effMAdd,_,_) =
-        let (>|+<) = mixedAddInEff effMAdd in e1 >|+< e2
+        let (>+<|) = mixedAddInEff effMAdd in d >+<| n
     expr1Out (effMAdd,_,_) =
-        let (<|+>) = mixedAddOutEff effMAdd in e1 <|+> e2
+        let (<+>|) = mixedAddOutEff effMAdd in d <+>| n
     expr2In (_,effAdd,effConv) =
-        let (>+<) = addInEff effAdd in (convertInEff effConv e1) >+< e2
+        let (>+<) = addInEff effAdd in  d >+< (convertInEff effConv n)
     expr2Out (_,effAdd,effConv) =
-        let (<+>) = addOutEff effAdd in (convertOutEff effConv e1) <+> e2
+        let (<+>) = addOutEff effAdd in  d <+> (convertOutEff effConv n)
 
 
-class RoundedMixedMultiply s t where
-    type MixedMultEffortIndicator s t
-    mixedMultInEff :: MixedMultEffortIndicator s t -> s -> t -> t
-    mixedMultOutEff :: MixedMultEffortIndicator s t -> s -> t -> t
-    mixedMultDefaultEffort :: s -> t -> MixedMultEffortIndicator s t
+class RoundedMixedMultiply t tn where
+    type MixedMultEffortIndicator t tn
+    mixedMultDefaultEffort :: t -> tn -> MixedMultEffortIndicator t tn
+    mixedMultInEff :: MixedMultEffortIndicator t tn -> t -> tn -> t
+    mixedMultOutEff :: MixedMultEffortIndicator t tn -> t -> tn -> t
 
-mixedMultDefaultEffortByConversion n d = 
+mixedMultDefaultEffortByConversion d n = 
         (multDefaultEffort d, convertDefaultEffort n d)
 
 mixedMultInEffByConversion ::
-    (Convertible t1 t2, RoundedMultiply t2) =>
-    (MultEffortIndicator t2, ConvertEffortIndicator t1 t2) ->
-    t1 -> t2 -> t2
-mixedMultInEffByConversion (effMult, effConv) a b = 
-    multInEff effMult (convertInEff effConv a) b
+    (Convertible tn t, RoundedMultiply t) =>
+    (MultEffortIndicator t, ConvertEffortIndicator tn t) ->
+    t -> tn -> t
+mixedMultInEffByConversion (effMult, effConv) d n = 
+    multInEff effMult d (convertInEff effConv n)
 
 mixedMultOutEffByConversion ::
-    (Convertible t1 t2, RoundedMultiply t2) =>
-    (MultEffortIndicator t2, ConvertEffortIndicator t1 t2) ->
-    t1 -> t2 -> t2
-mixedMultOutEffByConversion (effMult, effConv) a b = 
-    multOutEff effMult (convertOutEff effConv a) b
+    (Convertible tn t, RoundedMultiply t) =>
+    (MultEffortIndicator t, ConvertEffortIndicator tn t) ->
+    t -> tn -> t
+mixedMultOutEffByConversion (effMult, effConv) d n = 
+    multOutEff effMult d (convertOutEff effConv n)
 
 
 propMixedMultEqualsConvert ::
-    (RefOrd.PartialComparison t2, Convertible t1 t2,
-     RoundedMixedMultiply t1 t2, RoundedMultiply t2,
-     Show t2,
-     HasDistance t2,  Show (Distance t2),  
-     NumOrd.PartialComparison (Distance t2), 
-     HasInfinities (Distance t2), HasZero (Distance t2),
-     Show (MixedMultEffortIndicator t1 t2),
-     EffortIndicator (MixedMultEffortIndicator t1 t2),
-     Show (ConvertEffortIndicator t1 t2),
-     EffortIndicator (ConvertEffortIndicator t1 t2),
-     Show (MultEffortIndicator t2),
-     EffortIndicator (MultEffortIndicator t2),
-     Show (DistanceEffortIndicator t2),
-     EffortIndicator (DistanceEffortIndicator t2),
-     Show (RefOrd.PartialCompareEffortIndicator t2),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t2)
+    (RefOrd.PartialComparison t, Convertible tn t,
+     RoundedMixedMultiply t tn, RoundedMultiply t,
+     Show t,
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), 
+     HasInfinities (Distance t), HasZero (Distance t),
+     Show (MixedMultEffortIndicator t tn),
+     EffortIndicator (MixedMultEffortIndicator t tn),
+     Show (ConvertEffortIndicator tn t),
+     EffortIndicator (ConvertEffortIndicator tn t),
+     Show (MultEffortIndicator t),
+     EffortIndicator (MultEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
-    t1 -> t2 ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t2)) -> 
-    (DistanceEffortIndicator t2,
-    RefOrd.PartialCompareEffortIndicator t2,
-     (MixedMultEffortIndicator t1 t2,      
-      MultEffortIndicator t2,
-      ConvertEffortIndicator t1 t2)) -> 
-    t1 -> t2 -> Bool
-propMixedMultEqualsConvert sample1 sample2 effortDistComp initEffort e1 e2 =
+    t -> tn ->
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (DistanceEffortIndicator t,
+    RefOrd.PartialCompareEffortIndicator t,
+     (MixedMultEffortIndicator t tn,      
+      MultEffortIndicator t,
+      ConvertEffortIndicator tn t)) -> 
+    t -> tn -> Bool
+propMixedMultEqualsConvert sample sampleN effortDistComp initEffort d n =
     equalRoundingUpDnImprovement
         expr1In expr1Out expr2In expr2Out
         RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
     expr1In (effMMult,_,_) =
-        let (>|*<) = mixedMultInEff effMMult in e1 >|*< e2
+        let (>*<|) = mixedMultInEff effMMult in d >*<| n
     expr1Out (effMMult,_,_) =
-        let (<|*>) = mixedMultOutEff effMMult in e1 <|*> e2
+        let (<*>|) = mixedMultOutEff effMMult in d <*>| n
     expr2In (_,effMult,effConv) =
-        let (>*<) = multInEff effMult in (convertInEff effConv e1) >*< e2
+        let (>*<) = multInEff effMult in d >*< (convertInEff effConv n)
     expr2Out (_,effMult,effConv) =
-        let (<*>) = multOutEff effMult in (convertOutEff effConv e1) <*> e2
+        let (<*>) = multOutEff effMult in d <*> (convertOutEff effConv n)
 
-class (RoundedMixedAdd s t, RoundedMixedMultiply s t) => RoundedMixedRing s t
+class RoundedMixedDivide t tn where
+    type MixedDivEffortIndicator t tn
+    mixedDivDefaultEffort :: t -> tn -> MixedDivEffortIndicator t tn
+    mixedDivInEff :: MixedDivEffortIndicator t tn -> t -> tn -> t
+    mixedDivOutEff :: MixedDivEffortIndicator t tn -> t -> tn -> t
 
-class RoundedMixedDivide s t where
-    type MixedDivEffortIndicator s t
-    mixedDivDefaultEffort :: s -> t -> MixedDivEffortIndicator s t
-    mixedDivInEff :: MixedDivEffortIndicator s t -> t -> s -> t
-    mixedDivOutEff :: MixedDivEffortIndicator s t -> t -> s -> t
-
-mixedDivDefaultEffortByConversion n d = 
+mixedDivDefaultEffortByConversion d n = 
         (divDefaultEffort d, convertDefaultEffort n d)
 
 mixedDivInEffByConversion ::
-    (Convertible t1 t2, RoundedDivide t2) =>
-    (DivEffortIndicator t2, ConvertEffortIndicator t1 t2) ->
-    t2 -> t1 -> t2
-mixedDivInEffByConversion (effDiv, effConv) a b = 
-    divInEff effDiv a (convertInEff effConv b)
+    (Convertible tn t, RoundedDivide t) =>
+    (DivEffortIndicator t, ConvertEffortIndicator tn t) ->
+    t -> tn -> t
+mixedDivInEffByConversion (effDiv, effConv) d n = 
+    divInEff effDiv d (convertInEff effConv n)
 
 mixedDivOutEffByConversion ::
-    (Convertible t1 t2, RoundedDivide t2) =>
-    (DivEffortIndicator t2, ConvertEffortIndicator t1 t2) ->
-    t2 -> t1 -> t2
-mixedDivOutEffByConversion (effDiv, effConv) a b = 
-    divOutEff effDiv a (convertOutEff effConv b)
+    (Convertible tn t, RoundedDivide t) =>
+    (DivEffortIndicator t, ConvertEffortIndicator tn t) ->
+    t -> tn -> t
+mixedDivOutEffByConversion (effDiv, effConv) d n = 
+    divOutEff effDiv d (convertOutEff effConv n)
 
 
 propMixedDivEqualsConvert ::
-    (RefOrd.PartialComparison t2, Convertible t1 t2,
-     RoundedMixedDivide t1 t2, RoundedDivide t2,
-     Show t2, HasZero t2,
-     HasDistance t2,  Show (Distance t2),  
-     NumOrd.PartialComparison (Distance t2), 
-     HasInfinities (Distance t2), HasZero (Distance t2),
-     Show (MixedDivEffortIndicator t1 t2),
-     EffortIndicator (MixedDivEffortIndicator t1 t2),
-     Show (ConvertEffortIndicator t1 t2),
-     EffortIndicator (ConvertEffortIndicator t1 t2),
-     Show (DivEffortIndicator t2),
-     EffortIndicator (DivEffortIndicator t2),
-     Show (DistanceEffortIndicator t2),
-     EffortIndicator (DistanceEffortIndicator t2),
-     Show (RefOrd.PartialCompareEffortIndicator t2),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t2)
+    (RefOrd.PartialComparison t, Convertible tn t,
+     RoundedMixedDivide t tn, RoundedDivide t,
+     Show t, HasZero t,
+     HasDistance t,  Show (Distance t),  
+     NumOrd.PartialComparison (Distance t), 
+     HasInfinities (Distance t), HasZero (Distance t),
+     Show (MixedDivEffortIndicator t tn),
+     EffortIndicator (MixedDivEffortIndicator t tn),
+     Show (ConvertEffortIndicator tn t),
+     EffortIndicator (ConvertEffortIndicator tn t),
+     Show (DivEffortIndicator t),
+     EffortIndicator (DivEffortIndicator t),
+     Show (DistanceEffortIndicator t),
+     EffortIndicator (DistanceEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
-    t1 -> t2 ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t2)) -> 
-    (DistanceEffortIndicator t2,
-     RefOrd.PartialCompareEffortIndicator t2,
-     (MixedDivEffortIndicator t1 t2,      
-      DivEffortIndicator t2,
-      ConvertEffortIndicator t1 t2)) -> 
-    t2 -> t1 -> Bool
-propMixedDivEqualsConvert sample1 sample2 effortDistComp initEffort@(_,effComp,(_,_,effConv)) e1 e2
+    t -> tn ->
+    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
+    (DistanceEffortIndicator t,
+     RefOrd.PartialCompareEffortIndicator t,
+     (MixedDivEffortIndicator t tn,      
+      DivEffortIndicator t,
+      ConvertEffortIndicator tn t)) -> 
+    t -> tn -> Bool
+propMixedDivEqualsConvert sample sampleN effortDistComp initEffort@(_,effComp,(_,_,effConv)) d n
     | awayFromZero =
             equalRoundingUpDnImprovement
                 expr1In expr1Out expr2In expr2Out
@@ -222,54 +220,40 @@ propMixedDivEqualsConvert sample1 sample2 effortDistComp initEffort@(_,effComp,(
     | otherwise = True
     where
     awayFromZero =
-        case (convertOutEff effConv e2, convertInEff effConv e2) of
-            (e2Out, e2In) ->
+        case (convertOutEff effConv n, convertInEff effConv n) of
+            (nOut, nIn) ->
                 let ?pCompareEffort = effComp in
-                case (e2Out ⊑? zero, zero ⊑? e2In) of
+                case (nOut ⊑? zero, zero ⊑? nIn) of
                     (Just False, Just False) -> True
-                    _ -> False && (null [e1, e2Out, e2In]) -- type of e2Up, e2Dn...
+                    _ -> False && (null [d, nOut, nIn]) -- type of e2Up, e2Dn...
     expr1In (effMDiv,_,_) =
-        let (>|/<) = mixedDivInEff effMDiv in e1 >|/< e2
+        let (>/<|) = mixedDivInEff effMDiv in d >/<| n
     expr1Out (effMDiv,_,_) =
-        let (<|/>) = mixedDivOutEff effMDiv in e1 <|/> e2
+        let (</>|) = mixedDivOutEff effMDiv in d </>| n
     expr2In (_,effDiv,effConv) =
-        let (>/<) = divInEff effDiv in e1 >/< (convertInEff effConv e2)
+        let (>/<) = divInEff effDiv in d >/< (convertInEff effConv n)
     expr2Out (_,effDiv,effConv) =
-        let (</>) = divOutEff effDiv in e1 </> (convertOutEff effConv e2)
+        let (</>) = divOutEff effDiv in d </> (convertOutEff effConv n)
 
     
-testsInOutMixedFieldOps (name1, sample1) (name2, sample2) =
-    testGroup (name1 ++ " with " ++ name2 ++ ": mixed in/out rounded ops") $
+testsInOutMixedFieldOps (name, sample) (nameN, sampleN) =
+    testGroup (name ++ " with " ++ nameN ++ ": mixed in/out rounded ops") $
         [
-            testProperty "addition" (propMixedAddEqualsConvert sample1 sample2)
+            testProperty "addition" (propMixedAddEqualsConvert sample sampleN)
         ,
-            testProperty "multiplication" (propMixedMultEqualsConvert sample1 sample2)
+            testProperty "multiplication" (propMixedMultEqualsConvert sample sampleN)
         ,
-            testProperty "division" (propMixedDivEqualsConvert sample1 sample2)
+            testProperty "division" (propMixedDivEqualsConvert sample sampleN)
         ]
 
---data MixedFieldOpsEffortIndicator t1 t2 =
---        MixedFieldOpsEffortIndicator
---        {
---           mxfldEffortAdd :: MixedAddEffortIndicator t1 t2,
---           mxfldEffortMult :: MixedMultEffortIndicator t1 t2,
---           mxfldEffortDiv :: MixedDivEffortIndicator t1 t2
---        }
---
---mixedFieldOpsDefaultEffort a1 a2 =
---        MixedFieldOpsEffortIndicator
---        {
---           mxfldEffortAdd = mixedAddDefaultEffort a1 a2,
---           mxfldEffortMult = mixedMultDefaultEffort a1 a2,
---           mxfldEffortDiv = mixedDivDefaultEffort a1 a2
---        }
+class (RoundedMixedAdd t tn, RoundedMixedMultiply t tn) => RoundedMixedRing t tn
 
-class (RoundedMixedRing s t, RoundedMixedDivide s t) => RoundedMixedField s t
+class (RoundedMixedRing t tn, RoundedMixedDivide t tn) => RoundedMixedField t tn
     where
-    type MixedFieldOpsEffortIndicator s t
-    mixedFieldOpsDefaultEffort :: s -> t -> MixedFieldOpsEffortIndicator s t
-    mxfldEffortAdd :: s -> t -> MixedFieldOpsEffortIndicator s t -> MixedAddEffortIndicator s t
-    mxfldEffortMult :: s -> t -> MixedFieldOpsEffortIndicator s t -> MixedMultEffortIndicator s t
-    mxfldEffortDiv :: s -> t -> MixedFieldOpsEffortIndicator s t -> MixedDivEffortIndicator s t
+    type MixedFieldOpsEffortIndicator t tn
+    mixedFieldOpsDefaultEffort :: t -> tn -> MixedFieldOpsEffortIndicator t tn
+    mxfldEffortAdd :: t -> tn -> MixedFieldOpsEffortIndicator t tn -> MixedAddEffortIndicator t tn
+    mxfldEffortMult :: t -> tn -> MixedFieldOpsEffortIndicator t tn -> MixedMultEffortIndicator t tn
+    mxfldEffortDiv :: t -> tn -> MixedFieldOpsEffortIndicator t tn -> MixedDivEffortIndicator t tn
         
         

@@ -25,92 +25,92 @@ import Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
-instance RoundedMixedAdd Int Double
+instance RoundedMixedAdd Double Int
     where
-    type MixedAddEffortIndicator Int Double =
-        MixedAddEffortIndicatorByConversion Int Double 
+    type MixedAddEffortIndicator Double Int =
+        MixedAddEffortIndicatorByConversion Double Int 
     mixedAddDefaultEffort = mixedAddDefaultEffortByConversion 
     mixedAddUpEff = mixedAddUpEffByConversion
     mixedAddDnEff = mixedAddDnEffByConversion
 
-instance RoundedMixedMultiply Int Double
+instance RoundedMixedMultiply Double Int
     where
-    type MixedMultEffortIndicator Int Double =
-        MixedMultEffortIndicatorByConversion Int Double 
+    type MixedMultEffortIndicator Double Int =
+        MixedMultEffortIndicatorByConversion Double Int 
     mixedMultDefaultEffort = mixedMultDefaultEffortByConversion 
     mixedMultUpEff = mixedMultUpEffByConversion
     mixedMultDnEff = mixedMultDnEffByConversion
 
-instance RoundedMixedDivide Int Double
+instance RoundedMixedDivide Double Int
     where
-    type MixedDivEffortIndicator Int Double =
-        MixedDivEffortIndicatorByConversion Int Double 
+    type MixedDivEffortIndicator Double Int =
+        MixedDivEffortIndicatorByConversion Double Int 
     mixedDivDefaultEffort = mixedDivDefaultEffortByConversion 
     mixedDivUpEff = mixedDivUpEffByConversion
     mixedDivDnEff = mixedDivDnEffByConversion
 
-instance RoundedMixedRing Int Double
-instance RoundedMixedField Int Double
+instance RoundedMixedRing Double Int
+instance RoundedMixedField Double Int
     where
-    type MixedFieldOpsEffortIndicator Int Double = ()
+    type MixedFieldOpsEffortIndicator Double Int = ()
     mixedFieldOpsDefaultEffort _ _ = ()
     mxfldEffortAdd _ _ _ = ((),())
     mxfldEffortMult _ _ _ = ((),(),())
     mxfldEffortDiv _ _ _ = ((),(),((),()))
 
-instance RoundedMixedAdd Integer Double
+instance RoundedMixedAdd Double Integer
     where
-    type MixedAddEffortIndicator Integer Double =
-        MixedAddEffortIndicatorByConversion Integer Double 
+    type MixedAddEffortIndicator Double Integer =
+        MixedAddEffortIndicatorByConversion Double Integer 
     mixedAddDefaultEffort = mixedAddDefaultEffortByConversion 
     mixedAddUpEff = mixedAddUpEffByConversion
     mixedAddDnEff = mixedAddDnEffByConversion
 
-instance RoundedMixedMultiply Integer Double
+instance RoundedMixedMultiply Double Integer
     where
-    type MixedMultEffortIndicator Integer Double =
-        MixedMultEffortIndicatorByConversion Integer Double 
+    type MixedMultEffortIndicator Double Integer =
+        MixedMultEffortIndicatorByConversion Double Integer 
     mixedMultDefaultEffort = mixedMultDefaultEffortByConversion 
     mixedMultUpEff = mixedMultUpEffByConversion
     mixedMultDnEff = mixedMultDnEffByConversion
 
-instance RoundedMixedDivide Integer Double
+instance RoundedMixedDivide Double Integer
     where
-    type MixedDivEffortIndicator Integer Double =
-        MixedDivEffortIndicatorByConversion Integer Double 
+    type MixedDivEffortIndicator Double Integer =
+        MixedDivEffortIndicatorByConversion Double Integer 
     mixedDivDefaultEffort = mixedDivDefaultEffortByConversion 
     mixedDivUpEff = mixedDivUpEffByConversion
     mixedDivDnEff = mixedDivDnEffByConversion
 
-instance RoundedMixedRing Integer Double
-instance RoundedMixedField Integer Double
+instance RoundedMixedRing Double Integer
+instance RoundedMixedField Double Integer
     where
-    type MixedFieldOpsEffortIndicator Integer Double = ()
+    type MixedFieldOpsEffortIndicator Double Integer = ()
     mixedFieldOpsDefaultEffort _ _ = ()
     mxfldEffortAdd _ _ _ = ((),())
     mxfldEffortMult _ _ _ = ((),(),())
     mxfldEffortDiv _ _ _ = ((),(),((),()))
 
-instance RoundedMixedAdd Rational Double
+instance RoundedMixedAdd Double Rational
     where
-    type MixedAddEffortIndicator Rational Double =
-        MixedAddEffortIndicatorByConversion Rational Double 
+    type MixedAddEffortIndicator Double Rational =
+        MixedAddEffortIndicatorByConversion Double Rational 
     mixedAddDefaultEffort = mixedAddDefaultEffortByConversion 
     mixedAddUpEff = mixedAddUpEffByConversion
     mixedAddDnEff = mixedAddDnEffByConversion
 
-instance RoundedMixedMultiply Rational Double
+instance RoundedMixedMultiply Double Rational
     where
-    type MixedMultEffortIndicator Rational Double =
-        MixedMultEffortIndicatorByConversion Rational Double 
+    type MixedMultEffortIndicator Double Rational =
+        MixedMultEffortIndicatorByConversion Double Rational 
     mixedMultDefaultEffort = mixedMultDefaultEffortByConversion 
     mixedMultUpEff = mixedMultUpEffByConversion
     mixedMultDnEff = mixedMultDnEffByConversion
 
-instance RoundedMixedDivide Rational Double
+instance RoundedMixedDivide Double Rational
     where
-    type MixedDivEffortIndicator Rational Double =
-        MixedDivEffortIndicatorByConversion Rational Double 
+    type MixedDivEffortIndicator Double Rational =
+        MixedDivEffortIndicatorByConversion Double Rational 
     mixedDivDefaultEffort = mixedDivDefaultEffortByConversion 
     mixedDivUpEff = mixedDivUpEffByConversion
     mixedDivDnEff = mixedDivDnEffByConversion
@@ -145,10 +145,10 @@ instance RoundedMixedDivide Double Double
     mixedDivUpEff _ a b = divUpEff () a b 
     mixedDivDnEff _ a b = divDnEff () a b
 
-instance RoundedMixedRing Rational Double
-instance RoundedMixedField Rational Double
+instance RoundedMixedRing Double Rational
+instance RoundedMixedField Double Rational
     where
-    type MixedFieldOpsEffortIndicator Rational Double = ()
+    type MixedFieldOpsEffortIndicator Double Rational = ()
     mixedFieldOpsDefaultEffort _ _ = ()
     mxfldEffortAdd _ _ _ = ((),())
     mxfldEffortMult _ _ _ = ((),(),())

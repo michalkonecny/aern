@@ -68,37 +68,37 @@ withFieldOpsEffortIndicator effortField expression =
     expression
 
 (|>+<), (|<+>) :: 
-    (RoundedMixedAdd t1 t2, 
-     ?mixedAddInOutEffort :: MixedAddEffortIndicator t1 t2) => 
-    t1 -> t2 -> t2
-(|>+<) = mixedAddInEff ?mixedAddInOutEffort
-(|<+>) = mixedAddOutEff ?mixedAddInOutEffort
+    (RoundedMixedAdd t tn, 
+     ?mixedAddInOutEffort :: MixedAddEffortIndicator t tn) => 
+    tn -> t -> t
+(|>+<) n d = mixedAddInEff ?mixedAddInOutEffort d n
+(|<+>) n d = mixedAddOutEff ?mixedAddInOutEffort d n
 
 (>+<|), (<+>|) :: 
-    (RoundedMixedAdd t1 t2, 
-     ?mixedAddInOutEffort :: MixedAddEffortIndicator t1 t2) => 
-    t2 -> t1 -> t2
-(>+<|) b a = mixedAddInEff ?mixedAddInOutEffort a b
-(<+>|) b a = mixedAddOutEff ?mixedAddInOutEffort a b
+    (RoundedMixedAdd t tn, 
+     ?mixedAddInOutEffort :: MixedAddEffortIndicator t tn) => 
+    t -> tn -> t
+(>+<|) = mixedAddInEff ?mixedAddInOutEffort
+(<+>|) = mixedAddOutEff ?mixedAddInOutEffort
 
 (|>*<), (|<*>) :: 
-    (RoundedMixedMultiply t1 t2, 
-     ?mixedMultInOutEffort :: MixedMultEffortIndicator t1 t2) => 
-    t1 -> t2 -> t2
-(|>*<) = mixedMultInEff ?mixedMultInOutEffort
-(|<*>) = mixedMultOutEff ?mixedMultInOutEffort
+    (RoundedMixedMultiply t tn, 
+     ?mixedMultInOutEffort :: MixedMultEffortIndicator t tn) => 
+    tn -> t -> t
+(|>*<) n d = mixedMultInEff ?mixedMultInOutEffort d n
+(|<*>) n d = mixedMultOutEff ?mixedMultInOutEffort d n
 
 (>*<|), (<*>|) :: 
-    (RoundedMixedMultiply t1 t2, 
-     ?mixedMultInOutEffort :: MixedMultEffortIndicator t1 t2) => 
-    t2 -> t1 -> t2
-(>*<|) b a = mixedMultInEff ?mixedMultInOutEffort a b
-(<*>|) b a = mixedMultOutEff ?mixedMultInOutEffort a b
+    (RoundedMixedMultiply t tn, 
+     ?mixedMultInOutEffort :: MixedMultEffortIndicator t tn) => 
+    t -> tn -> t
+(>*<|) = mixedMultInEff ?mixedMultInOutEffort
+(<*>|) = mixedMultOutEff ?mixedMultInOutEffort
 
 (>/<|), (</>|) :: 
-    (RoundedMixedDivide t1 t2, 
-     ?mixedDivInOutEffort :: MixedDivEffortIndicator t1 t2) => 
-    t2 -> t1 -> t2
+    (RoundedMixedDivide t tn, 
+     ?mixedDivInOutEffort :: MixedDivEffortIndicator t tn) => 
+    t -> tn -> t
 (>/<|) = mixedDivInEff ?mixedDivInOutEffort
 (</>|) = mixedDivOutEff ?mixedDivInOutEffort
 

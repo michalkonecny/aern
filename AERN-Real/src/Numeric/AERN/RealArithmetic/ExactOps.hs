@@ -52,15 +52,17 @@ class Neg t where
     neg :: t -> t
     
 class (Neg t, CanBeMutable t) => NegInPlace t where
-    negInPlace :: t -> Mutable t s -> ST s ()
-    negInPlace sample var =
-        -- default such as this one is very inefficient
-        -- but facilitates an API that works even for
-        -- types that do not have native in-place updates
-        do
-        a <- readMutable var
-        let _ = [a,sample]
-        writeMutable var (neg a)
+    negInPlace :: t -> OpMutable1 t s 
+    negInPlace sample =
+        pureToMutable1 sample neg
+--        
+--        -- default such as this one is very inefficient
+--        -- but facilitates an API that works even for
+--        -- types that do not have native in-place updates
+--        do
+--        a <- readMutable aM
+--        let _ = [a,sample]
+--        writeMutable rM (neg a)
 
 propNegFlip ::
     (Eq t, Neg t) =>
