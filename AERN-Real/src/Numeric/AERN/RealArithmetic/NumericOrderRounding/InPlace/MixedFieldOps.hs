@@ -19,6 +19,7 @@
 module Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps where
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps
+import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
@@ -49,6 +50,42 @@ class (RoundedMixedAdd t tn, CanBeMutable t) => RoundedMixedAddInPlace t tn wher
         pureToMutableNonmutEff sample mixedAddUpEff
     mixedAddDnInPlaceEff sample =
         pureToMutableNonmutEff sample mixedAddDnEff
+
+-- an alternative default implementation using conversion 
+-- - this could be more efficient
+
+mixedAddUpInPlaceEffByConversion ::
+    (Convertible tn t, RoundedAddInPlace t, Show tn) =>
+    t ->
+    OpMutableNonmutEff (AddEffortIndicator t, ConvertEffortIndicator tn t) t tn s 
+mixedAddUpInPlaceEffByConversion sample (effAdd, effConv) rM dM n =
+    do
+    nUpM <- makeMutable nUp
+    addUpInPlaceEff sample effAdd rM dM nUpM
+    where
+    _ = [nUp, sample]
+    nUp = 
+        case convertUpEff effConv n of
+            (Just nUp) -> nUp
+            _ -> throw $ AERNException $ 
+                        "conversion failed during mixed addition: n = " ++ show n
+
+mixedAddDnInPlaceEffByConversion ::
+    (Convertible tn t, RoundedAddInPlace t, Show tn) =>
+    t ->
+    OpMutableNonmutEff (AddEffortIndicator t, ConvertEffortIndicator tn t) t tn s 
+mixedAddDnInPlaceEffByConversion sample (effAdd, effConv) rM dM n =
+    do
+    nUpM <- makeMutable nDn
+    addUpInPlaceEff sample effAdd rM dM nUpM
+    where
+    _ = [nDn, sample]
+    nDn = 
+        case convertDnEff effConv n of
+            (Just nDn) -> nDn
+            _ -> throw $ AERNException $ 
+                        "conversion failed during mixed addition: n = " ++ show n
+
 
 {- properties of mixed addition -}
 
