@@ -15,14 +15,14 @@
 -}
 module Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
 (
-    module Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps
+    module Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps,
+    module Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps
 --    ,
---    module Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps,
 --    module Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Elementary
 )
 where
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps
---import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps
+import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps
 --import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Elementary
 
