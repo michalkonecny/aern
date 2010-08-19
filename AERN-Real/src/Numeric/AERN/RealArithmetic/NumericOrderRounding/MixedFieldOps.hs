@@ -321,9 +321,9 @@ propMixedDivEqualsConvert ::
      EffortIndicator (ConvertEffortIndicator tn t),
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
-     Show (DistanceEffortIndicator t),
      Show (NumOrd.MinmaxEffortIndicator t),
      EffortIndicator (NumOrd.MinmaxEffortIndicator t),
+     Show (DistanceEffortIndicator t),
      EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
