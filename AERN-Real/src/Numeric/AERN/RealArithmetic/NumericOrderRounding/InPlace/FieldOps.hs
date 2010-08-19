@@ -35,7 +35,7 @@ module Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps
     RoundedPowerNonnegToNonnegIntInPlace(..),
     powerNonnegToNonnegIntUpInPlaceEffFromMult,
     powerNonnegToNonnegIntDnInPlaceEffFromMult,
-    RoundedPowerToNonnegInt(..), testsUpDnIntPower, 
+    RoundedPowerToNonnegIntInPlace(..), testsUpDnIntPowerInPlace, 
     RoundedDivideInPlace(..), testsUpDnDivInPlace,
     RoundedRingInPlace(..), RoundedFieldInPlace(..)
 )
@@ -330,7 +330,7 @@ propUpDnPowerToNonnegInPlace sample effortDistComp initEffort e1 n =
     expr2Dn eff =
         let (^.) = powerToNonnegIntDnEffViaInPlace eff in e1 ^. n
 
-testsUpDnPowerToNonnegInPlace (name, sample) =
+testsUpDnIntPowerInPlace (name, sample) =
     testGroup (name ++ "in place integer power") $
         [
             testProperty "matches pure" (propUpDnMultInPlace sample)
