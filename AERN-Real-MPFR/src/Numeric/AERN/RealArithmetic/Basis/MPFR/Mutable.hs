@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Basis.MPFR.Mutable
-    Description :  one, zero, negation etc for MPFR numbers
+    Description :  MPFR mutable version 
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -9,7 +9,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    One, zero, negation etc for MPFR numbers.
+    MPFR mutable version.
 
     This is a private module reexported publicly via its parent.
 -}
