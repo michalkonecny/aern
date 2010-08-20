@@ -93,24 +93,24 @@ multiplySingletonWithInterval
              ) of
              
             -- s1 is zero
-            (Just (True, True), _, _) -> 
+            ((Just True, Just True), _, _) -> 
                 (zero, zero)
  
             -- s1 non negative
-            (Just (True, _), _, _) -> 
+            ((Just True, _), _, _) -> 
                 (s1 `timesL` l2, s1 `timesR` h2)
             
             -- s1 non positive
-            (Just (_, True), _, _) -> 
+            ((_, Just True), _, _) -> 
                 (s1 `timesL` h2, s1 `timesR` l2)
 
             -- nothing known about s1, i2 positive
-            (_, Just (True, _), Just (True, _)) -> 
+            (_, (Just True, _), (Just True, _)) -> 
                 ((s1 `timesL` h2) `combineL` (s1 `timesL` l2), 
                  (s1 `timesR` h2) `combineR` (s1 `timesR` l2))
 
             -- nothing known about s1, i2 negative
-            (_, Just (_, True), Just (_, True)) -> 
+            (_, (_, Just True), (_, Just True)) -> 
                 ((s1 `timesL` h2) `combineL` (s1 `timesL` l2), 
                  (s1 `timesR` h2) `combineR` (s1 `timesR` l2))
 
