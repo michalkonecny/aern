@@ -21,9 +21,12 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+
+import Numeric.AERN.Misc.Debug
 
 import Test.QuickCheck
 import Test.Framework (testGroup, Test)
@@ -40,6 +43,7 @@ propExpOfNegRecip ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
      RoundedExponentiation t, RoundedMultiply t, Neg t, HasOne t,
      Show t,
+     ShowInternals t,
      HasDistance t,  Show (Distance t), HasInfinities (Distance t), HasZero (Distance t),  
      NumOrd.PartialComparison (Distance t),
      Show (ExpEffortIndicator t),
@@ -66,7 +70,18 @@ propExpOfNegRecip _ effortDistComp initEffort e1 =
     expr1Dn (effExp, effMult) = one
     expr2Up (effExp, effMult) =
         let (*^) = multUpEff effMult in
-        (expUpEff effExp e1) *^ (expUpEff effExp (neg e1))
+        let expE1 = expUpEff effExp e1 in
+        let expNegE1 = expUpEff effExp (neg e1) in
+        let prod = expE1 *^ expNegE1 in
+--        unsafePrintReturn
+--        (
+--          "propExpOfNegRecip: expr2Up: e1 = " ++ show e1 
+--          ++ "; expE1 = " ++ show expE1 
+--          ++ "; expNegE1 = " ++ show expNegE1 
+--          ++ "; prod = " ++ showUsingShowInternals prod
+--          ++ "; result = " 
+--        )$
+        prod
     expr2Dn (effExp, effMult) =
         let (*.) = multDnEff effMult in
         (expDnEff effExp e1) *. (expDnEff effExp (neg e1))
