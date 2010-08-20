@@ -313,7 +313,7 @@ class (RoundedDivide t, CanBeMutable t) => RoundedDivideInPlace t where
 
 propUpDnDivInPlace ::
     (NumOrd.PartialComparison t, RoundedDivideInPlace t, Neg t,
-     Show t,
+     Show t, HasZero t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (DivEffortIndicator t),
@@ -329,10 +329,14 @@ propUpDnDivInPlace ::
      NumOrd.PartialCompareEffortIndicator t, 
      DivEffortIndicator t) -> 
     t -> t -> Bool
-propUpDnDivInPlace sample effortDistComp initEffort e1 e2 =
-    equalRoundingUpDnImprovement
-        expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+propUpDnDivInPlace sample effortDistComp initEffort@(_, effComp, _) e1 e2 =
+    let ?pCompareEffort = effComp in
+    case e2 ==? zero of
+        Just False ->
+            equalRoundingUpDnImprovement
+                expr1Up expr1Dn expr2Up expr2Dn 
+                NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        _ -> True
     where
     divUpEffViaInPlace = mutable2EffToPure (divUpInPlaceEff sample)
     divDnEffViaInPlace = mutable2EffToPure (divDnInPlaceEff sample)

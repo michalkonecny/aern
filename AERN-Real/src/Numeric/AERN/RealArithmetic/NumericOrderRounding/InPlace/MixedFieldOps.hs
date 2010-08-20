@@ -229,7 +229,7 @@ propMixedDivInPlaceEqualsConvert ::
     (NumOrd.PartialComparison t,  NumOrd.RoundedLattice t,
      Convertible tn t,
      RoundedMixedDivideInPlace t tn, RoundedDivide t,
-     Show t,
+     Show t, HasZero t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), 
      HasInfinities (Distance t), HasZero (Distance t),
@@ -255,11 +255,22 @@ propMixedDivInPlaceEqualsConvert ::
        ConvertEffortIndicator tn t,
        NumOrd.MinmaxEffortIndicator t))) -> 
     t -> tn -> Bool
-propMixedDivInPlaceEqualsConvert sample1 sample2 effortDistComp initEffort d n =
-    equalRoundingUpDnImprovement
-        expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+propMixedDivInPlaceEqualsConvert sample1 sample2 effortDistComp 
+        initEffort@(_,effComp,(_,(_,effConv,_))) d n
+    | awayFromZero =
+            equalRoundingUpDnImprovement
+                expr1Up expr1Dn expr2Up expr2Dn 
+                NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+    | otherwise = True
     where
+    awayFromZero =
+        case (convertDnEff effConv n, convertUpEff effConv n) of
+            (Just nDn, Just nUp) ->
+                let ?pCompareEffort = effComp in
+                case (nUp <? zero, zero <? nDn) of
+                    (Just True, _) -> True
+                    (_, Just True) -> True
+                    _ -> False && (null [d, nUp, nDn]) -- type of nUp, nDn...
     expr1Up (effMDiv,_) =
         let (/^|=) dR = mixedDivUpInPlaceEff d effMDiv dR dR in
         runST $ 

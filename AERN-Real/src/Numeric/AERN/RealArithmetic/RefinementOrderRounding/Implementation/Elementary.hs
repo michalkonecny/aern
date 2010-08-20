@@ -105,9 +105,9 @@ expOutThinArg
                     (x </>| i) <*> ithDerivBound
                 ithDerivBound =
                     case (pNonnegNonposEff effortCompare x) of
-                        Just (True, _) -> -- x >= 0:
+                        (Just True, _) -> -- x >= 0:
                             one <|/\> eUp
-                        Just (_, True) -> -- x <= 0:
+                        (_, Just True) -> -- x <= 0:
                             recipEDn <|/\> one
                         _ -> -- near or crossing zero:
                             recipEDn <|/\> eUp

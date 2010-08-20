@@ -116,60 +116,60 @@ multiplyIntervals
             -- cases where i1 or i2 is known to be positive or negative
             -----------------------------------------------------------
             -- i1 negative, i2 positive
-            (Just (_, True), Just (_, True), Just (True, _), Just (True, _)) -> 
+            ((_, Just True), (_, Just True), (Just True, _), (Just True, _)) -> 
                 (l1 `timesL` h2, h1 `timesR` l2)
             -- i1 negative, i2 negative
-            (Just (_, True), Just (_, True), Just (_, True), Just (_, True)) -> 
+            ((_, Just True), (_, Just True), (_, Just True), (_, Just True)) -> 
                 (h1 `timesL` h2, l1 `timesR` l2)
             -- i1 negative, i2 consistent and containing zero
-            (Just (_, True), Just (_, True), Just (_, True), Just (True, _)) -> 
+            ((_, Just True), (_, Just True), (_, Just True), (Just True, _)) -> 
                 (l1 `timesL` h2, l1 `timesR` l2)
             -- i1 negative, i2 anti-consistent and anti-containing zero
-            (Just (_, True), Just (_, True), Just (True, _), Just (_, True)) -> 
+            ((_, Just True), (_, Just True), (Just True, _), (_, Just True)) -> 
                 (h1 `timesL` h2, h1 `timesR` l2)
             -- i1 negative, nothing known about i2:
-            (Just (_, True), Just (_, True), _, _) -> 
+            ((_, Just True), (_, Just True), _, _) -> 
                 ((h1 `timesL` h2) `combineL` (l1 `timesL` h2), 
                  (h1 `timesR` l2) `combineR` (l1 `timesR` l2))
 
             -- i1 positive, i2 positive
-            (Just (True, _), Just (True, _), Just (True, _), Just (True, _)) -> 
+            ((Just True, _), (Just True, _), (Just True, _), (Just True, _)) -> 
                 (l1 `timesL` l2, h1 `timesR` h2)
             -- i1 positive, i2 negative
-            (Just (True, _), Just (True, _), Just (_, True), Just (_, True)) -> 
+            ((Just True, _), (Just True, _), (_, Just True), (_, Just True)) -> 
                 (h1 `timesL` l2, l1 `timesR` h2)
             -- i1 positive, i2 consistent and containing zero
-            (Just (True, _), Just (True, _), Just (_, True), Just (True, _)) -> 
+            ((Just True, _), (Just True, _), (_, Just True), (Just True, _)) -> 
                 (h1 `timesL` l2, h1 `timesR` h2)
             -- i1 positive, i2 anti-consistent and anti-containing zero
-            (Just (True, _), Just (True, _), Just (True, _), Just (_, True)) -> 
+            ((Just True, _), (Just True, _), (Just True, _), (_, Just True)) -> 
                 (l1 `timesL` l2, l1 `timesR` h2)
 
             -- i1 positive, nothing known about i2:
-            (Just (True, _), Just (True, _), _, _) -> 
+            ((Just True, _), (Just True, _), _, _) -> 
                 ((h1 `timesL` l2) `combineL` (l1 `timesL` l2), 
                  (h1 `timesR` h2) `combineR` (l1 `timesR` h2))
             
  
             -- i1 consistent and containing zero, i2 positive
-            (Just (_, True), Just (True, _), Just (True, _), Just (True, _)) -> 
+            ((_, Just True), (Just True, _), (Just True, _), (Just True, _)) -> 
                 (l1 `timesL` h2, h1 `timesR` h2)
             -- i1 anti-consistent and anti-containing zero, i2 positive
-            (Just (True, _), Just (_, True), Just (True, _), Just (True, _)) -> 
+            ((Just True, _), (_, Just True), (Just True, _), (Just True, _)) -> 
                 (l1 `timesL` l2, h1 `timesR` l2)
             -- nothing known about i1, i2 positive
-            (_, _, Just (True, _), Just (True, _)) -> 
+            (_, _, (Just True, _), (Just True, _)) -> 
                 ((l1 `timesL` h2) `combineL` (l1 `timesL` l2), 
                  (h1 `timesR` h2) `combineR` (h1 `timesR` l2))
 
             -- i1 consistent and containing zero, i2 negative
-            (Just (_, True), Just (True, _), Just (_, True), Just (_, True)) -> 
+            ((_, Just True), (Just True, _), (_, Just True), (_, Just True)) -> 
                 (h1 `timesL` l2, l1 `timesR` l2)
             -- i1 anti-consistent and anti-containing zero, i2 negative
-            (Just (True, _), Just (_, True), Just (_, True), Just (_, True)) -> 
+            ((Just True, _), (_, Just True), (_, Just True), (_, Just True)) -> 
                 (h1 `timesL` h2, l1 `timesR` h2)
             -- nothing known about i1, i2 negative
-            (_, _, Just (_, True), Just (_, True)) -> 
+            (_, _, (_, Just True), (_, Just True)) -> 
                 ((h1 `timesL` h2) `combineL` (h1 `timesL` l2), 
                  (l1 `timesR` h2) `combineR` (l1 `timesR` l2))
 
@@ -178,36 +178,36 @@ multiplyIntervals
             -----------------------------------------------------------
 
             -- i1 consistent and containing zero, i2 consistent and containing zero
-            (Just (_, True), Just (True, _), Just (_, True), Just (True, _)) ->
+            ((_, Just True), (Just True, _), (_, Just True), (Just True, _)) ->
                 ((l1 `timesL` h2) `minL` (h1 `timesL` l2), 
                  (l1 `timesR` l2) `maxR` (h1 `timesR` h2))
             -- i1 consistent and containing zero, i2 anti-consistent and anti-containing zero
-            (Just (_, True), Just (True, _), Just (True, _), Just (_, True)) ->
+            ((_, Just True), (Just True, _), (Just True, _), (_, Just True)) ->
                 (zero, zero)
             -- i1 consistent and containing zero, i2 unknown
-            (Just (_, True), Just (True, _), _, _) ->
+            ((_, Just True), (Just True, _), _, _) ->
                 (((l1 `timesL` h2) `combineL` (h1 `timesL` l2)) `combineL` zero,
                  ((l1 `timesR` l2) `combineR` (h1 `timesR` h2)) `combineR` zero)
                 
             -- i1 anti-consistent and anti-containing zero, i2 consistent and containing zero
-            (Just (True, _), Just (_, True), Just (_, True), Just (True, _)) ->
+            ((Just True, _), (_, Just True), (_, Just True), (Just True, _)) ->
                 (zero, zero)
             -- i1 anti-consistent and anti-containing zero, i2 anti-consistent and anti-containing zero
-            (Just (True, _), Just (_, True), Just (True, _), Just (_, True)) ->
+            ((Just True, _), (_, Just True), (Just True, _), (_, Just True)) ->
                 ((l1 `timesL` l2) `maxL` (h1 `timesL` h2),
                  (l1 `timesR` h2) `minR` (h1 `timesR` l2)) 
             -- i1 anti-consistent and anti-containing zero, i2 unknown
-            (Just (True, _), Just (_, True), _, _) -> 
+            ((Just True, _), (_, Just True), _, _) -> 
                 ((l1 `timesL` l2) `combineL` (h1 `timesL` h2) `combineL` zero,
                  (l1 `timesR` h2) `combineR` (h1 `timesR` l2) `combineR` zero) 
                 
             -- i1 unknown, i2 anti-consistent and anti-containing zero
-            (_, _, Just (True, _), Just (_, True)) -> 
+            (_, _, (Just True, _), (_, Just True)) -> 
                 ((l1 `timesL` l2) `combineL` (h1 `timesL` h2) `combineL` zero,
                  (l1 `timesR` h2) `combineR` (h1 `timesR` l2) `combineR` zero) 
 
             -- i1 unknown, i2 consistent and containing zero
-            (_, _, Just (_, True), Just (True, _)) -> 
+            (_, _, (_, Just True), (Just True, _)) -> 
                 ((l1 `timesL` h2) `combineL` (h1 `timesL` l2) `combineL` zero, 
                  (l1 `timesR` l2) `combineR` (h1 `timesR` h2) `combineR` zero)
 
@@ -244,9 +244,9 @@ instance
             (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
             i@(Interval l h) n =
         case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
-            (Just (True, _), Just (True, _)) -> -- both non-negative
+            ((Just True, _), (Just True, _)) -> -- both non-negative
                 Interval lPowerUp hPowerDn
-            (Just (_, True), Just (_, True)) -> -- both non-positive
+            ((_, Just True), (_, Just True)) -> -- both non-positive
                 case even n of
                     True -> Interval hNegPowerUp lNegPowerDn -- switching sign!
                     False -> Interval lNegNegPowerUp hNegNegPowerDn
@@ -268,9 +268,9 @@ instance
             (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
             i@(Interval l h) n =
         case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
-            (Just (True, _), Just (True, _)) -> -- both non-negative
+            ((Just True, _), (Just True, _)) -> -- both non-negative
                 Interval lPowerDn hPowerUp
-            (Just (_, True), Just (_, True)) -> -- both non-positive
+            ((_, Just True), (_, Just True)) -> -- both non-positive
                 case even n of
                     True -> Interval hNegPowerDn lNegPowerUp -- switching sign!
                     False -> Interval lNegNegPowerDn hNegNegPowerUp
@@ -309,7 +309,7 @@ instance
     divOutEff (effortComp, effortMinmax, (effortMult, effortDiv)) i1 i2 =
         multOutEff (effortComp, effortMinmax, effortMult) i1 $ 
             recipInterval 
-                (pNonnegNonposEff effortComp) 
+                (pPosNonnegNegNonposEff effortComp) 
                 (ArithUpDn.divDnEff effortDiv)
                 (ArithUpDn.divUpEff effortDiv)
                 RefOrd.bottom
@@ -317,26 +317,26 @@ instance
     divInEff (effortComp, effortMinmax, (effortMult, effortDiv)) i1 i2 =
         multInEff (effortComp, effortMinmax, effortMult) i1 $ 
             recipInterval 
-                (pNonnegNonposEff effortComp) 
+                (pPosNonnegNegNonposEff effortComp) 
                 (ArithUpDn.divUpEff effortDiv)
                 (ArithUpDn.divDnEff effortDiv)
                 RefOrd.top
                 i2
 
 
-recipInterval pNonnegNonpos divL divR fallback (Interval l h) =
-    case (pNonnegNonpos l, pNonnegNonpos h) of
-        -- non-negative:
-        (Just (True, _), Just (True, _)) ->  
+recipInterval pPosNonnegNegNonpos divL divR fallback (Interval l h) =
+    case (pPosNonnegNegNonpos l, pPosNonnegNegNonpos h) of
+        -- positive:
+        ((Just True, _, _, _), (Just True, _, _, _)) ->  
              Interval (divL one h) (divR one l)
-        -- non-positive:
-        (Just (_, True), Just (_, True)) ->  
+        -- negative:
+        ((_, _, Just True, _), (_, _, Just True, _)) ->  
              Interval (divL one h) (divR one l)
         -- consistent around zero:
-        (Just (_, True), Just (True, _)) ->
+        ((_, _, _, Just True), (_, Just True, _, _)) ->
              RefOrd.bottom
         -- anti-consistent around zero:
-        (Just (True, _), Just (_, True)) ->  
+        ((_, Just True, _, _), (_,_,_, Just True)) ->  
              RefOrd.top
         -- unknown:
         _ ->  

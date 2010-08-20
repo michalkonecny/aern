@@ -553,8 +553,8 @@ powerToNonnegIntDir mult1 mult2 combine effComp x n
     | n == 1 = x
     | otherwise =
         case (pNonnegNonposEff effComp x) of
-            Just (True, _) -> resNonneg
-            Just (_, True) -> resNonpos
+            (Just True, _) -> resNonneg
+            (_, Just True) -> resNonpos
             _ -> resNonneg `combine` resNonpos
     where
     resNonneg = powerFromMult mult1 x n
@@ -608,8 +608,8 @@ propUpDnPowerSumExponents _ effortDistComp initEffort a nR mR =
         a ^. (n + m)
     expr2Up (effPower, (effComp, effMult, effMinmax)) =
         case pNonnegNonposEff effComp a of
-            Just (True, _) -> rNonneg
-            Just (_, True) -> rNonpos
+            (Just True, _) -> rNonneg
+            (_, Just True) -> rNonpos
             _ -> rNonneg `max` rNonpos
         where
         max = NumOrd.maxUpEff effMinmax
@@ -624,8 +624,8 @@ propUpDnPowerSumExponents _ effortDistComp initEffort a nR mR =
                 False -> neg $ (minusA ^. n) *. (minusA ^. m)
     expr2Dn (effPower, (effComp, effMult, effMinmax)) =
         case pNonnegNonposEff effComp a of
-            Just (True, _) -> rNonneg
-            Just (_, True) -> rNonpos
+            (Just True, _) -> rNonneg
+            (_, Just True) -> rNonpos
             _ -> rNonneg `min` rNonpos
         where
         min = NumOrd.minDnEff effMinmax

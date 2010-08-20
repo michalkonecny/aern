@@ -55,8 +55,8 @@ import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+import Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
 
 import Test.QuickCheck
 import Test.Framework (testGroup, Test)
@@ -300,7 +300,7 @@ class (RoundedDivide t, CanBeMutable t) => RoundedDivideInPlace t where
 
 propInOutDivInPlace ::
     (RefOrd.PartialComparison t, RoundedDivideInPlace t, Neg t,
-     Show t,
+     Show t, HasZero t,
      HasDistance t,  Show (Distance t),  
      NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (DivEffortIndicator t),
@@ -316,10 +316,13 @@ propInOutDivInPlace ::
      RefOrd.PartialCompareEffortIndicator t, 
      DivEffortIndicator t) -> 
     t -> t -> Bool
-propInOutDivInPlace sample effortDistComp initEffort e1 e2 =
-    equalRoundingUpDnImprovement
-        expr1In expr1Out expr2In expr2Out 
-        RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+propInOutDivInPlace sample effortDistComp initEffort@(_, effComp, _) e1 e2 =
+    let ?pCompareEffort = effComp in
+    case (e2 ⊑? zero, zero ⊑? e2) of
+        (Just False, Just False) ->
+            equalRoundingUpDnImprovement
+                expr1In expr1Out expr2In expr2Out 
+                RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
     where
     divInEffViaInPlace = mutable2EffToPure (divInInPlaceEff sample)
     divOutEffViaInPlace = mutable2EffToPure (divOutInPlaceEff sample)

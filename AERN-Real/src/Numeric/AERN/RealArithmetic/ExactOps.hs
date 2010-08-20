@@ -28,13 +28,19 @@ class HasZero t where
     zero :: t
     
 pNonnegNonposEff effort a =
+    (nonneg, nonpos)
+    where
+    (_, nonneg, _, nonpos) =
+        pPosNonnegNegNonposEff effort a
+    
+pPosNonnegNegNonposEff effort a =
     case NumOrd.pCompareEff effort a zero of
-       Just EQ -> Just (True, True) 
-       Just LT -> Just (False, True) 
-       Just GT -> Just (True, False)
-       Just LEE -> Just (False, True) 
-       Just GEE -> Just (True, False)
-       _ -> Nothing
+       Just EQ -> (Just False, Just True, Just False, Just True) 
+       Just LT -> (Just False, Just False, Just True, Just True) 
+       Just GT -> (Just True, Just True, Just False, Just False)
+       Just LEE -> (Just False, Nothing, Nothing, Just True) 
+       Just GEE -> (Nothing, Just True, Just False, Nothing)
+       _ -> (Nothing, Nothing, Nothing, Nothing)
     
 class HasOne t where
     one :: t
