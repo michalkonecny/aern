@@ -53,10 +53,6 @@ Library
     Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
     Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
     Numeric.AERN.Basics.Consistency
-    Numeric.AERN.Basics.CInterval
-    Numeric.AERN.Basics.CInterval.NumericOrder
-    Numeric.AERN.Basics.CInterval.RefinementOrder
-    Numeric.AERN.Basics.Interval
     Numeric.AERN.Basics.Laws.Utilities
     Numeric.AERN.Basics.Laws.Relation
     Numeric.AERN.Basics.Laws.PartialRelation
@@ -85,9 +81,5 @@ Library
 --    Numeric.AERN.Basics.RefinementOrder.Lattice
     Numeric.AERN.Basics.RefinementOrder.RoundedBasis
     Numeric.AERN.Basics.RefinementOrder.RoundedLattice
-    Numeric.AERN.Basics.Interval.Basics
-    Numeric.AERN.Basics.Interval.Consistency
-    Numeric.AERN.Basics.Interval.NumericOrder
-    Numeric.AERN.Basics.Interval.RefinementOrder
 
     
