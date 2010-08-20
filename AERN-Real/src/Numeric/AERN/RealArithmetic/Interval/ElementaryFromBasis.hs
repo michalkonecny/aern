@@ -22,7 +22,7 @@ import Numeric.AERN.Basics.Interval
 
 instance (ArithUpDn.RoundedExponentiation e) => (ArithInOut.RoundedExponentiation (Interval e)) where
     type ArithInOut.ExpEffortIndicator (Interval e) = ArithUpDn.ExpEffortIndicator e
-    expDefaultEffortIndicator (Interval l h) = ArithUpDn.expDefaultEffortIndicator l
+    expDefaultEffort (Interval l h) = ArithUpDn.expDefaultEffort l
     expInEff effort (Interval l h) =
         Interval (ArithUpDn.expUpEff effort l) (ArithUpDn.expDnEff effort h)
     expOutEff effort (Interval l h) =

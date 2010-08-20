@@ -35,7 +35,7 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 class RoundedExponentiation t where
     type ExpEffortIndicator t
-    expDefaultEffortIndicator :: t -> ExpEffortIndicator t
+    expDefaultEffort :: t -> ExpEffortIndicator t
     expInEff :: (ExpEffortIndicator t) -> t -> t
     expOutEff :: (ExpEffortIndicator t) -> t -> t
 

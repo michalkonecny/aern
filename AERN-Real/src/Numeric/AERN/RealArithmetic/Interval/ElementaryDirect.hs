@@ -56,7 +56,7 @@ instance
           (ArithUpDn.ConvertEffortIndicator (Interval e) Int,
            ArithInOut.ConvertEffortIndicator Double (Interval e)))
         )
-    expDefaultEffortIndicator i@(Interval l h) = 
+    expDefaultEffort i@(Interval l h) = 
         ((ArithInOut.fieldOpsDefaultEffort i, 
           ArithInOut.mixedFieldOpsDefaultEffort i sampleI)
         ,
