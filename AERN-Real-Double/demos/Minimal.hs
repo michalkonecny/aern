@@ -79,7 +79,7 @@ expEffort n =
     (a, _, c) = expEffortDefault
 
 expEffortDefault = 
-   ArithInOut.expDefaultEffortIndicator t2
+   ArithInOut.expDefaultEffort t2
 
 big = 10E200
 
