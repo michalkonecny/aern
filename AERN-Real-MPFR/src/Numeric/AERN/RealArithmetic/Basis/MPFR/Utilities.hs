@@ -25,7 +25,7 @@ import Control.Exception
 detectNaNThrow :: String -> MPFR -> MPFR
 detectNaNThrow msg a 
     | M.isNaN a =
-        throw (AERNNaNException $ "NaN in " ++ msg)
+        throw (AERNDomViolationException $ "domain violation in MPFR " ++ msg)
     | otherwise = a
 
 detectNaNUp :: String -> MPFR -> MPFR

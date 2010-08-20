@@ -13,14 +13,14 @@
     whose proper pure handling would be inefficient.
     'Control.Exception.ArithmeticException' is not
     flexible enough, eg because often we will not be checking
-    overflows but NaNs instead.
+    overflows but DomViolations instead.
     
     The default exeception policy is:
     
-    * no operation should ever return NaN; when a NaN represents "any value"/bottom
+    * no operation should ever return DomViolation; when a DomViolation represents "any value"/bottom
       (eg with 0/0 or &infin - &infin),
-      it should be rounded up to +&infin; or down to -&infin;; when a NaN represent
-      an illegal argument exception (eg with log(-1)), an AERN NaN exception should
+      it should be rounded up to +&infin; or down to -&infin;; when a DomViolation represent
+      an illegal argument exception (eg with log(-1)), an AERN DomViolation exception should
       be thrown with an appropriate message
     
     * intervals support infinite endpoints
@@ -38,7 +38,8 @@ import System.IO.Unsafe
 
 data AERNException =
     AERNException String
-    | AERNNaNException String
+    | AERNDomViolationException String
+    | AERNMaybeDomViolationException String
     deriving (Show, Typeable)
 
 instance Exception AERNException
@@ -51,22 +52,26 @@ evalCatchAERNExceptions a =
         do
         putStrLn $ "caught AERN exception: " ++ msg
         return (Left msg)
-    handler (AERNNaNException msg) =
+    handler (AERNDomViolationException msg) =
         do 
-        putStrLn $ "caught AERN NaN exception: " ++ msg
-        return (Left $ "NaN: " ++ msg)
+        putStrLn $ "caught AERN operation domain violation exception: " ++ msg
+        return (Left $ "DomViolation: " ++ msg)
+    handler (AERNMaybeDomViolationException msg) =
+        do 
+        putStrLn $ "caught AERN potential operation domain violation exception: " ++ msg
+        return (Left $ "MaybeDomViolation: " ++ msg)
     evaluateEmbed a =
         do
         aa <- evaluate a
         return $ Right aa
 
-evalCatchNaNExceptions :: t -> Either String t
-evalCatchNaNExceptions a =
+evalCatchDomViolationExceptions :: t -> Either String t
+evalCatchDomViolationExceptions a =
     unsafePerformIO $ catch (evaluateEmbed a) handler
     where
-    handler (AERNNaNException msg) = 
+    handler (AERNDomViolationException msg) = 
         do 
-        putStrLn $ "caught AERN NaN exception: " ++ msg
+        putStrLn $ "caught AERN op domain violation exception: " ++ msg
         return (Left msg)
     handler e = throw e -- rethrow other exceptions
     evaluateEmbed a =
@@ -80,9 +85,9 @@ raisesAERNException a =
         (Left _) -> True
         _ -> False
 
-raisesNaNException :: t -> Bool
-raisesNaNException a =
-    case (evalCatchNaNExceptions a) of
+raisesDomViolationException :: t -> Bool
+raisesDomViolationException a =
+    case (evalCatchDomViolationExceptions a) of
         (Left _) -> True
         _ -> False
 

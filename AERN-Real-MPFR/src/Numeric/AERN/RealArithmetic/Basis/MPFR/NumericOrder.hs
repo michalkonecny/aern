@@ -61,34 +61,27 @@ instance NumOrd.HasExtrema MPFR where
 
 instance NumOrd.PartialComparison MPFR where
     type NumOrd.PartialCompareEffortIndicator MPFR = ()
-    pCompareEff _ a b =
-        case (M.isNaN a, M.isNaN b) of
-           (False, False) -> Just $ toPartialOrdering $ Prelude.compare a b  
-           (True, True) -> Just EQ
-           _ -> Just NC 
+    pCompareEff _ a b = Just $ toPartialOrdering $ Prelude.compare a b
+--        case (M.isNaN a, M.isNaN b) of
+--           (False, False) -> Just $ toPartialOrdering $ Prelude.compare a b  
+--           (True, True) -> Just EQ
+--           _ -> Just NC 
     pCompareDefaultEffort _ = ()
-
---instance NumOrd.Comparison MPFR where
---    compare a b =
---        case (isNaN a, isNaN b) of
---           (False, False) -> toPartialOrdering $ Prelude.compare a b  
---           _ -> throw (AERNException $ "illegal MPFR argument: NumOrd.Comparison.compare " 
---                        ++ show a ++ " " ++ show b) 
 
 instance NumOrd.RoundedLattice MPFR where
     type NumOrd.MinmaxEffortIndicator MPFR = ()
     minmaxDefaultEffort _ = ()
-    maxUpEff _ a b =
-        case (M.isNaN a, M.isNaN b) of
-           (False, False) -> Prelude.max a b  
-           _ -> throw (AERNException $ "illegal MPFR argument: NumOrd.Lattice.max " 
-                        ++ show a ++ " " ++ show b)
+    maxUpEff _ a b = Prelude.max a b
+--        case (M.isNaN a, M.isNaN b) of
+--           (False, False) -> Prelude.max a b  
+--           _ -> throw (AERNException $ "illegal MPFR argument: NumOrd.Lattice.max " 
+--                        ++ show a ++ " " ++ show b)
     maxDnEff = NumOrd.maxUpEff 
-    minUpEff _ a b =
-        case (M.isNaN a, M.isNaN b) of
-           (False, False) -> Prelude.min a b  
-           _ -> throw (AERNException $ "illegal MPFR argument: NumOrd.Lattice.min " 
-                        ++ show a ++ " " ++ show b) 
+    minUpEff _ a b = Prelude.min a b
+--        case (M.isNaN a, M.isNaN b) of
+--           (False, False) -> Prelude.min a b  
+--           _ -> throw (AERNException $ "illegal MPFR argument: NumOrd.Lattice.min " 
+--                        ++ show a ++ " " ++ show b) 
     minDnEff = NumOrd.minUpEff 
     
 --    -- a version with artificially added rounding for "testing" the tests

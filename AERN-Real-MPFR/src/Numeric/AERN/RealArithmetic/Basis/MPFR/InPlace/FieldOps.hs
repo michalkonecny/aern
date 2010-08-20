@@ -48,7 +48,7 @@ detectNaNThrow msg aM =
     do
     a <- unsafeReadMutable aM
     if (M.isNaN a) 
-       then throw (AERNNaNException $ "MPFR NaN in " ++ msg)
+       then throw (AERNDomViolationException $ "domain violation in MPFR: " ++ msg)
        else return () 
 
 detectNaNDir :: String -> MMPFR s -> M.RoundMode -> ST s ()
@@ -66,25 +66,25 @@ setPrec sample prec rM =
     let _ = [r, sample]
     unsafeWriteMutable rM $ M.set M.Up prec r
 
-opMutable1Unit op name symbol dir sample _ rM dM1 =
+opMutable1Unit op name symbol dir sample _prec rM dM1 =
         do
         op rM dM1 dir
         d1 <- unsafeReadMutable dM1
         let _ = [d1,sample]
         detectNaNDir (name ++ ": " ++ symbol ++ " " ++ show d1) rM dir
 
-opMutable2Prec op name symbol dir sample prec rM dM1 dM2 =
+opMutable2Prec op name symbol dir sample _prec rM dM1 dM2 =
         do
-        setPrec sample prec rM
+--        setPrec sample prec rM
         op rM dM1 dM2 dir
         d1 <- unsafeReadMutable dM1
         d2 <- unsafeReadMutable dM2
         let _ = [d1,d2,sample]
         detectNaNDir (name ++ ": " ++ show d1 ++ " " ++ symbol ++ show d2 ) rM dir 
 
-opMutableNonmutPrec op name symbol dir sample prec rM dM n =
+opMutableNonmutPrec op name symbol dir sample _prec rM dM n =
         do
-        setPrec sample prec rM
+--        setPrec sample prec rM
         op rM dM n dir
         d <- unsafeReadMutable dM
         let _ = [d,sample]

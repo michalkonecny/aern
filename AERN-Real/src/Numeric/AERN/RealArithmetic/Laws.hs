@@ -494,11 +494,10 @@ equalRoundingUpDnImprovement
 --        ++ "\n  5 imprecisions = \n" ++ unlines (map show $ take 5 imprecisions)
 --    ) 
 --    $
-    case evalCatchNaNExceptions result of
+    case evalCatchDomViolationExceptions result of
             Left msg -> 
-                unsafePrint ("leqRoundingUpDnImprovement: NaN exception: " ++ msg) True 
-            -- ignore tests during which an AERN exception arises 
-            --     (typically due to NaN)
+                unsafePrint ("leqRoundingUpDnImprovement: exception: " ++ msg) True 
+            -- ignore tests during which a domain violation exception arises 
             Right res ->
                 case (not noneedComparison) && comparisonCount > 5 of
                     True -> 
@@ -544,7 +543,7 @@ equalRoundingUpDnImprovement
     check (effortMeasure, effortRel, effortOp) =
         -- the following catch does not work, currently have to
         --  catch the exceptions at a higher level 
-        case evalCatchNaNExceptions (successWithMsg, imprecision) of
+        case evalCatchDomViolationExceptions (successWithMsg, imprecision) of
             Left msg -> ((True, ""), plusInfinity)
             Right res -> res 
         where
