@@ -32,7 +32,7 @@ Library
         QuickCheck >= 2.1 && < 2.2,
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
         hmpfr >= 0.3.1 && < 0.4,
-        AERN-Basics == 2010.1, AERN-Real == 2010.1
+        AERN-Basics == 2010.1, AERN-Real-Interval == 2010.1, AERN-Real == 2010.1
   Exposed-modules:
     Numeric.AERN.RealArithmetic.Basis.MPFR
     Numeric.AERN.RealArithmetic.Interval.MPFR

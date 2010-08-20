@@ -1,0 +1,59 @@
+Name:           AERN-Real-Interval
+Version:        2010.1
+Cabal-Version:  >= 1.2
+Build-Type:     Simple
+License:        BSD3
+License-File:   LICENCE
+Author:         Michal Konecny (Aston University)
+Copyright:      (c) 2010 Michal Konecny
+Maintainer:     mikkonecny@gmail.com
+Homepage:       http://code.google.com/p/aern/
+Stability:      experimental
+Category:       Data, Math
+Synopsis:       arbitrary precision real interval arithmetic
+Tested-with:    GHC ==6.12.1
+Description:
+    A concrete implementation for the refinement-order type classes from AERN-Real in the form
+    of interval arithmetic.  The arithmetic supports also anti-consistent
+    intervals (ie @[l,h]@ with @l >= h@) and maintains monotonicity in the
+    refinement order so that both inner and outer approximations of exact interval
+    expressions can be safely computed.
+    .
+    The package AERN-Real-MPFR facilitates (via package hmpfr) 
+    the use of the MPFR arbitrary granularity (ie precision) floating point numbers 
+    as endpoints.
+    .
+    The package AERN-Real-Double makes it possible to use ordinary
+    machine 'Double' values as endpoints, although limited to its fixed granularity (ie precision). 
+
+Extra-Source-Files:
+    CHANGES
+
+Library
+  hs-source-dirs: src
+  ghc-options:     -O2
+  Build-Depends:
+        base >= 4 && < 5,
+        QuickCheck >= 2.1 && < 2.2,
+        test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
+        AERN-Basics == 2010.1, AERN-Real == 2010.1
+  Exposed-modules:
+    Numeric.AERN.Basics.CInterval
+    Numeric.AERN.Basics.CInterval.NumericOrder
+    Numeric.AERN.Basics.CInterval.RefinementOrder
+    Numeric.AERN.Basics.Interval
+    Numeric.AERN.RealArithmetic.Interval
+    Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
+    Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
+    
+  Other-modules:
+    Numeric.AERN.Basics.Interval.Basics
+    Numeric.AERN.Basics.Interval.Consistency
+    Numeric.AERN.Basics.Interval.NumericOrder
+    Numeric.AERN.Basics.Interval.RefinementOrder
+    Numeric.AERN.RealArithmetic.Interval.ExactOps
+    Numeric.AERN.RealArithmetic.Interval.Measures
+    Numeric.AERN.RealArithmetic.Interval.Conversion
+    Numeric.AERN.RealArithmetic.Interval.FieldOps
+    Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
+

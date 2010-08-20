@@ -14,20 +14,17 @@ Synopsis:       arbitrary precision real interval arithmetic
 Tested-with:    GHC ==6.12.1
 Description:
     Type classes abstracting typical arithmetic operations for real number
-    over approximations for exact entities, including outer and inner-rounded
+    over approximations for exact entities, including rounded
     field operations and common elementary operations.
+    Two kinds of rounding are supported: rounding up/down in the numerical order
+    or rounding in/out in a refinement order.
     .
-    A concrete implementation for the type classes is provided in the form
-    of interval arithmetic.  The arithmetic supports also anti-consistent
-    intervals (ie @[l,h]@ with @l >= h@) and maintains monotonicity in the
-    refinement order so that both inner and outer approximations of exact interval
-    expressions can be safely computed.
-    .
-    The package AERN-Real-MPFR facilitates (via package hmpfr) 
-    the use of the MPFR arbitrary granularity (ie precision) floating point numbers 
-    as endpoints.
-    The package AERN-Real-Double makes it possible to use ordinary
-    machine 'Double' values as endpoints, although limited to its fixed granularity (ie precision). 
+    A concrete implementation of refinement order rounded operations
+    is given for intervals in the package AERN-Real-Interval.
+    Concrete implementations of up/down rounded operations is
+    given in AERN-Real-Double and AERN-Real-MPFR for ordinary Double
+    and MPFR arbitrary-precision numbers.  These can serve as interval
+    endpoints.
 
 Extra-Source-Files:
     CHANGES
@@ -51,9 +48,6 @@ Library
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.Implementation.Elementary
     Numeric.AERN.RealArithmetic.Measures
     Numeric.AERN.RealArithmetic.Laws
-    Numeric.AERN.RealArithmetic.Interval
-    Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
-    Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
     Numeric.AERN.Misc.IntegerArithmetic
     
   Other-modules:
@@ -74,9 +68,4 @@ Library
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.FieldOps
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.MixedFieldOps
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.Elementary
-    Numeric.AERN.RealArithmetic.Interval.ExactOps
-    Numeric.AERN.RealArithmetic.Interval.Measures
-    Numeric.AERN.RealArithmetic.Interval.Conversion
-    Numeric.AERN.RealArithmetic.Interval.FieldOps
-    Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
 
