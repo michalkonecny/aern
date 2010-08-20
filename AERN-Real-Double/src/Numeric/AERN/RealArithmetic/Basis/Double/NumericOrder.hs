@@ -55,25 +55,11 @@ instance NumOrd.HasExtrema Double where
 instance NumOrd.RoundedLattice Double where
     type NumOrd.MinmaxEffortIndicator Double = ()
     minmaxDefaultEffort _ = ()
-    maxUpEff _ a b =
-        case (isNaN a, isNaN b) of
-           (False, False) -> Prelude.max a b  
-           _ -> throw (AERNException $ "illegal Double argument: NumOrd.Lattice.max " 
-                        ++ show a ++ " " ++ show b)
+    maxUpEff _ a b = Prelude.max a b
     maxDnEff = NumOrd.maxUpEff 
-    minUpEff _ a b =
-        case (isNaN a, isNaN b) of
-           (False, False) -> Prelude.min a b  
-           _ -> throw (AERNException $ "illegal Double argument: NumOrd.Lattice.min " 
-                        ++ show a ++ " " ++ show b) 
+    minUpEff _ a b = Prelude.min a b
     minDnEff = NumOrd.minUpEff 
     
---    -- a version with artificially added rounding for "testing" the tests
---    maxUpEff [effort] e1 e2 = NumOrd.max e1 e2 + (1/(convert effort))
---    maxDnEff [effort] e1 e2 = NumOrd.max e1 e2 - (1/(convert effort))
---    minUpEff [effort] e1 e2 = NumOrd.min e1 e2 + (1/(convert effort))
---    minDnEff [effort] e1 e2 = NumOrd.min e1 e2 - (1/(convert effort))
---    minmaxDefaultEffort _ = [10]
 
 
 

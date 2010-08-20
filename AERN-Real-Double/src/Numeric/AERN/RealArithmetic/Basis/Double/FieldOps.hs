@@ -62,7 +62,7 @@ setMachineRoundingModeUp =
 detectNaNThrow :: String -> Double -> Double
 detectNaNThrow msg a 
     | isNaN a =
-        throw (AERNNaNException $ "NaN in " ++ msg)
+        throw (AERNDomViolationException $ "domain violation in " ++ msg)
     | otherwise = a
 
 detectNaNUp :: String -> Double -> Double

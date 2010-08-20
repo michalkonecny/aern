@@ -79,11 +79,11 @@ instance PartialComparison Rational where
 
 instance PartialComparison Double where
     type PartialCompareEffortIndicator Double = ()
-    pCompareEff _ a b =
-        case (isNaN a, isNaN b) of
-           (False, False) -> Just $ toPartialOrdering $ Prelude.compare a b  
-           (True, True) -> Just EQ
-           _ -> Just NC 
+    pCompareEff _ a b = Just $ toPartialOrdering $ Prelude.compare a b
+--        case (isNaN a, isNaN b) of
+--           (False, False) -> Just $ toPartialOrdering $ Prelude.compare a b  
+--           (True, True) -> Just EQ
+--           _ -> Just NC 
     pCompareDefaultEffort _ = ()
     
 pComparePreludeCompare _ a b =
