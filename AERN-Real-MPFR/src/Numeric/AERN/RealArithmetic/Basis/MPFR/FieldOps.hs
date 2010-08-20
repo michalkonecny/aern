@@ -21,6 +21,7 @@ where
 
 import Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps
 import Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder
+import Numeric.AERN.RealArithmetic.Basis.MPFR.Utilities
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
@@ -32,25 +33,6 @@ import qualified Data.Number.MPFR as M
 import Data.Number.MPFR (MPFR)
 import Data.Number.MPFR.Instances.Up
 import qualified Data.Number.MPFR.Mutable as MM
-
-import Numeric.AERN.Basics.Exception
-import Control.Exception
-
-detectNaNThrow :: String -> MPFR -> MPFR
-detectNaNThrow msg a 
-    | M.isNaN a =
-        throw (AERNNaNException $ "NaN in " ++ msg)
-    | otherwise = a
-
-detectNaNUp :: String -> MPFR -> MPFR
-detectNaNUp _ a 
-    | M.isNaN a = 1/0
-    | otherwise = a
-
-detectNaNDn :: String -> MPFR -> MPFR
-detectNaNDn _ a 
-    | M.isNaN a = -1/0
-    | otherwise = a
 
 instance RoundedAdd MPFR where
     type AddEffortIndicator MPFR = M.Precision 

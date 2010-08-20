@@ -16,7 +16,9 @@
 -}
 
 module Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.FieldOps 
-()
+(
+    setPrec, opMutableNonmutPrec
+)
 where
 
 import Numeric.AERN.RealArithmetic.Basis.MPFR.FieldOps
