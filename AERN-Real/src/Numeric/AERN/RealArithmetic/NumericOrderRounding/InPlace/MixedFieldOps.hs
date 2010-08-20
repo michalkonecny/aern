@@ -76,8 +76,8 @@ mixedAddDnInPlaceEffByConversion ::
     OpMutableNonmutEff (AddEffortIndicator t, ConvertEffortIndicator tn t) t tn s 
 mixedAddDnInPlaceEffByConversion sample (effAdd, effConv) rM dM n =
     do
-    nUpM <- makeMutable nDn
-    addUpInPlaceEff sample effAdd rM dM nUpM
+    nDnM <- makeMutable nDn
+    addDnInPlaceEff sample effAdd rM dM nDnM
     where
     _ = [nDn, sample]
     nDn = 
