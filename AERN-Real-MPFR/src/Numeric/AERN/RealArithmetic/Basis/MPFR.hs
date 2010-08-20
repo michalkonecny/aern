@@ -21,7 +21,9 @@ module Numeric.AERN.RealArithmetic.Basis.MPFR
    module Numeric.AERN.RealArithmetic.Basis.MPFR.Conversion,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.FieldOps,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.MixedFieldOps,
+   module Numeric.AERN.RealArithmetic.Basis.MPFR.Elementary,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.FieldOps,
+   module Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.MixedFieldOps,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.Measures,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps
 )
@@ -32,7 +34,9 @@ import Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder
 import Numeric.AERN.RealArithmetic.Basis.MPFR.Conversion
 import Numeric.AERN.RealArithmetic.Basis.MPFR.FieldOps
 import Numeric.AERN.RealArithmetic.Basis.MPFR.MixedFieldOps
+import Numeric.AERN.RealArithmetic.Basis.MPFR.Elementary
 import Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.FieldOps
+import Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.MixedFieldOps
 import Numeric.AERN.RealArithmetic.Basis.MPFR.Measures
 import Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps
 

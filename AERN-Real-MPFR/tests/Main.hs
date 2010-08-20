@@ -14,7 +14,8 @@ module Main where
 import Numeric.AERN.RealArithmetic.Basis.MPFR
 import Numeric.AERN.RealArithmetic.Interval.MPFR
 import Numeric.AERN.RealArithmetic.Interval
-import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
+--import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
 import Numeric.AERN.Basics.Interval
 
 import Numeric.AERN.Basics.Consistency
@@ -54,7 +55,11 @@ testsMPFR =
        ArithUpDn.testsUpDnFieldOpsInPlace ("MPFR", sampleM),
        ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Integer", sampleI),
        ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Rational", sampleR),
-       ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Double", sampleD)
+       ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Double", sampleD),
+       ArithUpDn.testsUpDnMixedFieldOpsInPlace ("MPFR", sampleM) ("Integer", sampleI),
+       ArithUpDn.testsUpDnMixedFieldOpsInPlace ("MPFR", sampleM) ("Rational", sampleR),
+       ArithUpDn.testsUpDnMixedFieldOpsInPlace ("MPFR", sampleM) ("Double", sampleD),
+       ArithUpDn.testsUpDnExp ("MPFR", sampleM)
     ]
 
 testsMI =

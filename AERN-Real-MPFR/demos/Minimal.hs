@@ -35,17 +35,43 @@ main =
     -- the unsafePerformIO embedded in rounded ops sometimes 
     -- does not work when run standalone, 
     -- but they seem to work when run from ghci 
---    putStrLn $ "big = " ++ showInternals shouldShowInternals big
---    putStrLn $ "t1 = " ++ showInternals shouldShowInternals t1
---    putStrLn $ "t2 = " ++ showInternals shouldShowInternals t2
-    putStrLn $ "exp 1 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp1efforts)
-    putStrLn $ "exp 3 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp3efforts)
-    putStrLn $ "exp 10 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp10efforts)
-    putStrLn $ "exp 100 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp100efforts)
-    putStrLn $ "exp 1000 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp1000efforts)
+    putStrLn $ "oo - oo = " ++ showInternals shouldShowInternals inftyMinusInftyOut
+    putStrLn $ "0</>0 = " ++ showInternals shouldShowInternals zeroOverZeroOut
+    putStrLn $ "0>/<0 = " ++ showInternals shouldShowInternals zeroOverZeroIn
+--    putStrLn $ "exp 1 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp1efforts)
+--    putStrLn $ "exp 3 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp3efforts)
+--    putStrLn $ "exp 10 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp10efforts)
+--    putStrLn $ "exp 100 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp100efforts)
+--    putStrLn $ "exp 1000 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp1000efforts)
     return ()
 
 shouldShowInternals = (30,False)
+
+inftyMinusInftyOut :: MI
+inftyMinusInftyOut =
+    let ?addDefaultEffort = 100 in
+    plusInfinity <-> plusInfinity
+
+zeroOverZeroOut :: MI
+zeroOverZeroOut =
+    let ?divDefaultEffort = 100 in
+    zero </> zero
+
+zeroOverZeroIn :: MI
+zeroOverZeroIn =
+    let ?divDefaultEffort = 100 in
+    zero >/< zero
+
+oneOverZeroOut :: MI
+oneOverZeroOut =
+    let ?divDefaultEffort = 100 in
+    one </> zero
+
+oneOverZeroIn :: MI
+oneOverZeroIn =
+    let ?divDefaultEffort = 100 in
+    one >/< zero
+
 
 exp1efforts :: [MI]
 exp1efforts =
@@ -79,7 +105,7 @@ expEffort n =
     (a, _, c) = expEffortDefault
 
 expEffortDefault = 
-   ArithInOut.expDefaultEffortIndicator three
+   ArithInOut.expDefaultEffort three
 
 
    

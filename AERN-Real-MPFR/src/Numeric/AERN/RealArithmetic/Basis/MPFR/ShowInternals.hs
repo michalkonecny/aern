@@ -27,7 +27,7 @@ import Data.Word
 
 instance ShowInternals MPFR where
     type ShowInternalsIndicator MPFR = (Word, Bool)
-    defaultShowIndicator d = (12, True)
+    defaultShowIndicator d = (10000, True)
     showInternals (prec,True) d =
         M.toStringExp prec d ++ "[gran = " ++ show gran ++ "]"
         where
