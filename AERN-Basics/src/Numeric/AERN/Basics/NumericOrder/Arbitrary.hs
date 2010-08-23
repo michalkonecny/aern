@@ -62,7 +62,14 @@ instance ArbitraryOrderedTuple Rational where
 
 instance ArbitraryOrderedTuple Double where
    arbitraryTupleRelatedBy = 
-       linearArbitraryTupleRelatedBy (incrSize $ choose (-300,300))
+       linearArbitraryTupleRelatedBy (incrSize $ chooseSmallDouble)
+       where
+       chooseSmallDouble =
+           do
+           d1 <- choose (0,300)
+           s <- elements [1,-1,0,1,-1,-1,1]
+           a <- elements [-1,0,1]
+           return (s * d1 + a)
        -- When generating Double numbers for testing, try to avoid overflows
        -- as we cannot usually overcome overflows when we cannot increase 
        -- the granularity (aka precision) of the floating point type.
