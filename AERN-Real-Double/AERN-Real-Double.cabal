@@ -55,7 +55,21 @@ Executable testAERN-Real-Double
         ieee-utils >= 0.4 && < 0.5,
         QuickCheck >= 2.1 && < 2.2,
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
-        AERN-Basics == 2010.1, AERN-Real == 2010.1
+        AERN-Basics == 2010.1, AERN-Real-Interval == 2010.1, AERN-Real == 2010.1
+
+Executable benchAERN-Real-Double
+  hs-source-dirs: src, bench
+  ghc-options:     -O2
+  main-is: Main.hs
+  Build-Depends:
+        base >= 4 && < 5,
+        containers >= 0.3 && < 0.4,
+        convertible >= 1.0 && < 2,
+        ieee-utils >= 0.4 && < 0.5,
+        QuickCheck >= 2.1 && < 2.2,
+        test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
+        criterion >= 0.5 && < 0.6, progression >= 0.4 && < 0.5,
+        AERN-Basics == 2010.1, AERN-Real-Interval == 2010.1, AERN-Real == 2010.1
 
 Executable demoAERN-Real-Double-Minimal
   hs-source-dirs: src, demos
