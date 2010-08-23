@@ -36,6 +36,7 @@ Library
         base >= 4 && < 5,
         QuickCheck >= 2.1 && < 2.2,
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
+        criterion >= 0.5 && < 0.6,
         AERN-Basics == 2010.1
   Exposed-modules:
     Numeric.AERN.RealArithmetic.ExactOps
@@ -48,6 +49,7 @@ Library
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.Implementation.Elementary
     Numeric.AERN.RealArithmetic.Measures
     Numeric.AERN.RealArithmetic.Laws
+    Numeric.AERN.RealArithmetic.Bench
     Numeric.AERN.Misc.IntegerArithmetic
     
   Other-modules:

@@ -21,8 +21,10 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Bench
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.RealArithmetic.Laws
+import Numeric.AERN.RealArithmetic.Bench
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
@@ -32,6 +34,8 @@ import Numeric.AERN.Misc.Debug
 import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
+
+import Criterion
 
 class RoundedExponentiation t where
     type ExpEffortIndicator t
@@ -135,3 +139,8 @@ testsInOutExp (name, sample) =
             testProperty "e^(a + b) = e^a * e^b" (propExpOfAddToMult sample)
         ]
             
+benchInOutExp (name, sample) =
+    bgroup (name ++ " exp") $ 
+        mkBenchSequence1 (mkCommentImprecision expOutEff) expOutEff (expDefaultEffort sample) sample 
+
+        

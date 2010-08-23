@@ -39,12 +39,15 @@ Library
         base >= 4 && < 5,
         containers >= 0.3 && < 0.4,
         QuickCheck >= 2.1 && < 2.2,
+        criterion >= 0.5 && < 0.6,
+        random >= 1.0 && < 2.0,
         test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3
   Exposed-modules:
     Numeric.AERN.Basics.ShowInternals
     Numeric.AERN.Basics.Exception
     Numeric.AERN.Basics.Effort
     Numeric.AERN.Basics.Mutable
+    Numeric.AERN.Basics.Bench
     Numeric.AERN.Basics.PartialOrdering
     Numeric.AERN.Basics.NumericOrder
     Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort

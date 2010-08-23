@@ -27,6 +27,7 @@ import Numeric.AERN.Basics.ShowInternals
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 
+import Control.DeepSeq
 
 {-|
     Pairs of endpoints.  An end user should not use this type directly
@@ -51,6 +52,10 @@ instance (ShowInternals e) => (ShowInternals (Interval e))
 instance (Show e) => (Show (Interval e))
     where
     show (Interval l h) = "[" ++ show l ++ "," ++ show h ++ "]"
+
+instance (NFData e) => NFData (Interval e) where
+    rnf (Interval l h) =
+        rnf l `seq` rnf h `seq` () 
 
 instance CInterval (Interval e) where
     type Endpoint (Interval e) = e
