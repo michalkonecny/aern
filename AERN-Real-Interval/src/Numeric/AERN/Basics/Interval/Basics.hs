@@ -36,8 +36,8 @@ import Control.DeepSeq
 data Interval e =
     Interval
     { 
-        lowEndpoint :: e,
-        highEndpoint :: e
+        lowEndpoint :: ! e,
+        highEndpoint :: ! e
     }
     deriving (Eq)
     

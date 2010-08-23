@@ -20,7 +20,7 @@ import Test.QuickCheck.Gen
 import System.Random
 
 mkBenchSequence1 mkComment fnEff initEffort sample =
-    map mkBench $ zip3 [1..20] efforts inputs 
+    map mkBench $ zip3 [1..7] efforts inputs 
     where
     mkBench (n, effort, input) =
         bench name (nf (\(e,i) -> fnEff e i) (effort, input))
@@ -35,13 +35,14 @@ mkBenchSequence1 mkComment fnEff initEffort sample =
         map (\(g, size) -> unGen arbitrary g size) $ zip gs sizes
         -- get a sample sequence (always the same!)  
     gs = 
-        iterate (snd . next) $ mkStdGen 1587346765
+        iterate (snd . next) $ mkStdGen 111111321
         -- sequence of random generators
     sizes = 
-        concat $ map (replicate 3) $ scanl1 (*) [2,2..] 
-        -- ie [2,2,2,4,4,4,8,8,8..]
+        concat $ map (replicate 1) $ scanl1 (*) [2,2..] 
+        -- ie [2,4,8,16..]
+--        -- ie [2,2,2,4,4,4,8,8,8..]
     efforts = 
-        concat $ map (replicate 10) $ effortIncrementSequence initEffort
+        concat $ map (replicate 1) $ effortIncrementSequence initEffort
 
 mkBenchSequence2 mkComment fnEff initEffort sample1 sample2 =
     map mkBench $ zip3 [1..20] efforts inputs
