@@ -12,7 +12,11 @@
 -}
 module Numeric.AERN.Misc.List where
 
+import qualified System.Random as R
+
 import qualified Data.List as List
+import qualified Data.Set as Set
+import qualified Data.Map as Map
 
 sortUsing :: (Ord b) => (a -> b) -> [a] -> [a]
 sortUsing f =
@@ -42,6 +46,35 @@ mergeManyLists lists
     where
     (heads, tails) = unzip $ map (\(h:t) -> (h,t)) listsNonempty 
     listsNonempty = filter (not . null) lists
+
+getNDistinctSorted :: (Ord a) => Int -> Int -> [a] -> [a]  
+getNDistinctSorted seed n xs =
+    Set.toAscList $ pickUsingIndices n xsMap randomIndices
+    where
+    pickUsingIndices _ _ [] = Set.empty
+    pickUsingIndices n esMap (i : is)
+        | Map.null esMap = Set.empty
+        | n > 0 =
+            case Map.lookup i esMap of
+                Nothing -> pickUsingIndices n esMap is
+                Just e -> Set.insert e $ (pickUsingIndices (n-1) (Map.delete i esMap) is)
+        | otherwise = Set.empty
+    randomIndices = 
+        map (`mod` (Map.size xsMap)) $ 
+            map fst $ 
+                drop 13 $ iterate (R.next . snd) (0,g)
+    g = R.mkStdGen seed
+    xsMap = Map.fromAscList $ zip [0..] $ Set.toList $ Set.fromList xs
+
+nubSorted :: (Eq a) => [a] -> [a]
+nubSorted [] = []
+nubSorted (x : xs) =
+   aux x xs
+   where
+   aux x [] = [x]
+   aux x (y : ys) 
+       | x == y = aux x ys
+       | otherwise = x : (aux y ys)
 
 {-|
    Like 'zip' except if the lists are non-empty and of different length,
