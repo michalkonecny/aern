@@ -58,6 +58,10 @@ instance (NumOrd.PartialComparison e) => HasAntiConsistency (Interval e)
         NumOrd.pLeqEff effort h l
     flipConsistency (Interval l h) = Interval h l
 
+instance HasThinRepresentative (Interval e)
+    where
+    getThinRepresentative (Interval l h) = Interval h h
+
 -- random generation of intervals with no guarantee of consistency: 
 instance (NumOrd.ArbitraryOrderedTuple e) => Arbitrary (Interval e)
     where
