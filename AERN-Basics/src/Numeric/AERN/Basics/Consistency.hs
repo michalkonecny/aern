@@ -33,6 +33,11 @@ class (HasConsistency t) => HasAntiConsistency t where
     isAntiConsistentEff :: (ConsistencyEffortIndicator t) -> t -> Maybe Bool
     flipConsistency :: t -> t
     
+class HasThinRepresentative t where
+    -- get a value that is both consistent and anticonsistent 
+    -- as well as close to the argument value
+    getThinRepresentative :: t -> t
+    
 propFlipConsistency :: 
     (HasAntiConsistency t, Eq t) => t -> (ConsistencyEffortIndicator t) -> t -> Bool
 propFlipConsistency _ effort e =
