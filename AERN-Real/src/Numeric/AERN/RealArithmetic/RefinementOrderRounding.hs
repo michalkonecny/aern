@@ -22,7 +22,8 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps,
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps,
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary,
-    module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace
+    module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace,
+    RoundedReal(..)
 )
 where
 
@@ -58,30 +59,30 @@ class
      Convertible Rational t, ArithUpDn.Convertible t Rational,  
      RoundedAbs t, 
      RoundedField t,
-     RoundedMixedField Int t, 
-     RoundedMixedField Integer t, 
-     RoundedMixedField Double t, 
-     RoundedMixedField Rational t) => 
+     RoundedMixedField t Int, 
+     RoundedMixedField t Integer, 
+     RoundedMixedField t Double, 
+     RoundedMixedField t Rational) => 
     RoundedReal t
     where
     type RoundedRealEffortIndicator t
     roundedRealDefaultEffort :: t -> RoundedRealEffortIndicator t
-    rrNumCompEffort :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator t)
-    rrMinmaxEffort :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.MinmaxEffortIndicator t)
-    rrCompEffort :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator t)
-    rrJoinMeetOutEffort :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.JoinMeetOutEffortIndicator t)
-    rrJoinMeetInEffort :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.JoinMeetInEffortIndicator t)
-    rrToIntEffort :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Int)
-    rrFromIntEffort :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Int t)
-    rrToIntegerEffort :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Integer)
-    rrFromIntegerEffort :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Integer t)
-    rrToDoubleEffort :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Double)
-    rrFromDoubleEffort :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Double t)
-    rrToRationalEffort :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Rational)
-    rrFromRationalEffort :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Rational t)
-    rrAbsEffort :: t -> (RoundedRealEffortIndicator t) -> (AbsEffortIndicator t)
-    rrFieldEffort :: t -> (RoundedRealEffortIndicator t) -> (FieldOpsEffortIndicator t)
-    rrIntMixedFieldEffort :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator Int t)
-    rrIntegerMixedFieldEffort :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator Integer t)
-    rrDoubleMixedFieldEffort :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator Double t)
-    rrRationalMixedFieldEffort :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator Rational t)
+    rrEffortNumComp :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator t)
+    rrEffortMinmax :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.MinmaxEffortIndicator t)
+    rrEffortComp :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator t)
+    rrEffortJoinMeetOut :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.JoinMeetOutEffortIndicator t)
+    rrEffortJoinMeetIn :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.JoinMeetInEffortIndicator t)
+    rrEffortToInt :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Int)
+    rrEffortFromInt :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Int t)
+    rrEffortToInteger :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Integer)
+    rrEffortFromInteger :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Integer t)
+    rrEffortToDouble :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Double)
+    rrEffortFromDouble :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Double t)
+    rrEffortToRational :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Rational)
+    rrEffortFromRational :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Rational t)
+    rrEffortAbs :: t -> (RoundedRealEffortIndicator t) -> (AbsEffortIndicator t)
+    rrEffortField :: t -> (RoundedRealEffortIndicator t) -> (FieldOpsEffortIndicator t)
+    rrEffortIntMixedField :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator t Int)
+    rrEffortIntegerMixedField :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator t Integer)
+    rrEffortDoubleMixedField :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator t Double)
+    rrEffortRationalMixedField :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator t Rational)
