@@ -33,29 +33,25 @@ import Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps
 import Numeric.AERN.RealArithmetic.Basis.Double.Measures
 import Numeric.AERN.RealArithmetic.Basis.Double.Mutable
 
+import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
---{-|
---    Set machine floating point unit to the upwards-directed rounding
---    mode.  
---    
---    This procedure has to be executed before using 'Double' 
---    as a basis for interval and polynomial arithmetic defined in the AERN
---    packages.
----}
---initMachineDouble :: IO ()
---initMachineDouble =
---    do
---    putStr "initialising Double rounding mode: "
---    currentRndMode <- getRound
---    case currentRndMode == Upward of
---        True ->
---            putStrLn "already rounding upwards"
---        False ->
---            do
---            success <- setRound Upward
---            case success of
---                True -> 
---                   putStrLn "switching to upwards rounding"
---                False -> 
---                   error "Numeric.AERN.RealArithmetic.Basics.Double: failed to switch rounding mode"
-
+instance RoundedReal Double where
+    type RoundedRealEffortIndicator Double = ()
+    roundedRealDefaultEffort _ = ()
+    rrEffortComp _ _ = ()
+    rrEffortMinmax _ _ = ()
+    rrEffortToInt _ _ = ()
+    rrEffortFromInt _ _ = ()
+    rrEffortToInteger _ _ = ()
+    rrEffortFromInteger _ _ = ()
+    rrEffortToDouble _ _ = () 
+    rrEffortFromDouble _ _ = ()
+    rrEffortToRational _ _ = ()
+    rrEffortFromRational _ _ = ()
+    rrEffortAbs _ _ = ()
+    rrEffortField _ _ = ()
+    rrEffortIntMixedField _ _ = ()
+    rrEffortIntegerMixedField _ _ = ()
+    rrEffortDoubleMixedField _ _ = ()
+    rrEffortRationalMixedField _ _ = ()
+    
