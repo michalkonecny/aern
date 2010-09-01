@@ -33,10 +33,6 @@ import Numeric.AERN.Misc.List
 import Numeric.AERN.Misc.Debug
 
 import Data.Maybe
-import qualified Data.Map as Map
---import qualified Data.Set as Set
-
-import Data.Convertible
 
 sampleD :: Double
 sampleD = 0
