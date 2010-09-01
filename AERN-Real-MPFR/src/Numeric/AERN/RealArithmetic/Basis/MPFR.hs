@@ -40,6 +40,8 @@ import Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.MixedFieldOps
 import Numeric.AERN.RealArithmetic.Basis.MPFR.Measures
 import Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps
 
+import Numeric.AERN.RealArithmetic.NumericOrderRounding
+
 import Numeric.AERN.Basics.Effort
 
 import qualified Data.Number.MPFR as M
@@ -64,3 +66,24 @@ instance EffortIndicator M.Precision where
         where
         fibsp2p = scanl (+) p (p:fibsp2p)
     
+instance RoundedReal M.MPFR where
+    type RoundedRealEffortIndicator M.MPFR = M.Precision
+    roundedRealDefaultEffort _ = 100
+    rrEffortComp _ _ = ()
+    rrEffortMinmax _ _ = ()
+    rrEffortToInt _ _ = ()
+    rrEffortFromInt _ p = p
+    rrEffortToInteger _ _ = ()
+    rrEffortFromInteger _ p = p
+    rrEffortToDouble _ _ = () 
+    rrEffortFromDouble _ p = p
+    rrEffortToRational _ _ = ()
+    rrEffortFromRational _ p = p
+    rrEffortAbs _ _ = ()
+    rrEffortField _ p = p
+    rrEffortIntMixedField _ p = p
+    rrEffortIntegerMixedField _ p = p
+    rrEffortDoubleMixedField _ p = p
+    rrEffortRationalMixedField _ p = p
+    
+  
