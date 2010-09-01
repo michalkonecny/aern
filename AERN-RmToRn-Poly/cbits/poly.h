@@ -1,9 +1,10 @@
 #include <stdint.h>
 
 /* The following are provided for better code readability: */
-typedef void * Coeff; // undisclosed Haskell type t
-typedef void * UnaryOp; // Haskell type t -> t
-typedef void * BinaryOp; // Haskell type t -> t -> t
+typedef void * Coeff; // pointer to undisclosed Haskell type t
+typedef void * UnaryOp; // pointer to Haskell type t -> t
+typedef void * BinaryOp; // pointer to Haskell type t -> t -> t
+typedef void * ConversionOp; // pointer to Haskell type t1 -> t2
 
 typedef uint32_t Var;
 typedef uint32_t Power;
@@ -27,13 +28,23 @@ typedef struct POLY
 {
   Var maxArity; // nominal number of variables
   Size maxSize; // maximal number of non-constant terms
-  Size size; // actual number of non-constant terms
+  Size psize; // actual number of non-constant terms
   Coeff constTerm;
   Term * terms;
 } Poly;
 
 Poly *
 newConstPoly(Coeff c, Var maxArity, Size maxSize);
+
+typedef void * Value; // A Haskell value passed via StablePtr
+
+/*
+ * Interpret the terms as Chebyshev polynomials and evaluate them for the
+ * given values assigned to variables using the given addition and multiplication
+ * Haskell operations.
+ */
+Value
+evalAtPtChebBasis(Poly *, Value *, Value, BinaryOp, BinaryOp, BinaryOp, ConversionOp);
 
 /*
  * preconditions:
@@ -53,6 +64,8 @@ typedef struct OPS
   UnaryOp absDn;
   BinaryOp plusUp;
   BinaryOp plusDn;
+  BinaryOp timesUp;
+  BinaryOp timesDn;
 } Ops;
 
 /*

@@ -1,6 +1,6 @@
 Name:           AERN-RmToRn-Poly
 Version:        2010.1
-Cabal-Version:  >= 1.2
+Cabal-Version:  >= 1.8
 Build-Type:     Simple
 License:        BSD3
 License-File:   LICENCE
@@ -18,19 +18,34 @@ Description:
     composition and integration.
     Any up/down rounded real approximations can be used as coefficients.
 
-Extra-Source-Files:
-    CHANGES
-
 Library
   hs-source-dirs: src
-  ghc-options:     -O2
+  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
+  cc-options:     -std=c99 -Wall -pedantic -O3 -march=native
   Build-Depends:
         base >= 4 && < 5,
+        containers >= 0.3 && < 0.4,
         QuickCheck >= 2.1 && < 2.2,
-        test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
+        test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
         criterion >= 0.5 && < 0.6,
-        AERN-Basics == 2010.1, AERN-Real == 2010.1, AERN-RmToRn == 2010.1
+        AERN-Basics == 2010.1, AERN-Real == 2010.1, AERN-RmToRn == 2010.1, 
+        AERN-Real-Double == 2010.1
   Exposed-modules:
+    Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport
+    Numeric.AERN.RmToRn.Basis.Polynomial.Internal.FFIhelper
     
-  Other-modules:
+  c-sources:
+    cbits/poly.c
+  include-dirs: 
+    cbits
 
+Executable testAERN-RmToRn-Poly
+  hs-source-dirs: src, tests
+  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
+  main-is: Main.hs
+  Build-Depends:
+        base >= 4 && < 5,
+        test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
+        AERN-Basics == 2010.1, AERN-Real == 2010.1, AERN-RmToRn == 2010.1, 
+        AERN-Real-Double == 2010.1, AERN-RmToRn-Poly == 2010.1
+  
