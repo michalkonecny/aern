@@ -25,11 +25,9 @@ Library
   ghc-options:     -O2
   Build-Depends:
         base >= 4 && < 5,
-        containers >= 0.3 && < 0.4,
-        convertible >= 1.0 && < 2,
         ieee-utils >= 0.4 && < 0.5,
         QuickCheck >= 2.1 && < 2.2,
-        test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
+        test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
         AERN-Basics == 2010.1, AERN-Real-Interval == 2010.1, AERN-Real == 2010.1
   Exposed-modules:
     Numeric.AERN.RealArithmetic.Basis.Double
@@ -50,11 +48,7 @@ Executable testAERN-Real-Double
   main-is: Main.hs
   Build-Depends:
         base >= 4 && < 5,
-        containers >= 0.3 && < 0.4,
-        convertible >= 1.0 && < 2,
-        ieee-utils >= 0.4 && < 0.5,
-        QuickCheck >= 2.1 && < 2.2,
-        test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
+        test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
         AERN-Basics == 2010.1, AERN-Real-Interval == 2010.1, AERN-Real == 2010.1
 
 Executable benchAERN-Real-Double
@@ -63,11 +57,6 @@ Executable benchAERN-Real-Double
   main-is: Main.hs
   Build-Depends:
         base >= 4 && < 5,
-        containers >= 0.3 && < 0.4,
-        convertible >= 1.0 && < 2,
-        ieee-utils >= 0.4 && < 0.5,
-        QuickCheck >= 2.1 && < 2.2,
-        test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
         criterion >= 0.5 && < 0.6, progression >= 0.4 && < 0.5,
         AERN-Basics == 2010.1, AERN-Real-Interval == 2010.1, AERN-Real == 2010.1
 
@@ -77,11 +66,6 @@ Executable demoAERN-Real-Double-Minimal
   main-is: Minimal.hs
   Build-Depends:
         base >= 4 && < 5,
-        containers >= 0.3 && < 0.4,
-        convertible >= 1.0 && < 2,
-        ieee-utils >= 0.4 && < 0.5,
-        QuickCheck >= 2.1 && < 2.2,
-        test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3,
         AERN-Basics == 2010.1, AERN-Real == 2010.1
 
     

@@ -41,7 +41,7 @@ Library
         QuickCheck >= 2.1 && < 2.2,
         criterion >= 0.5 && < 0.6,
         random >= 1.0 && < 2.0,
-        test-framework >= 0.2 && < 0.3, test-framework-quickcheck2 >= 0.2 && < 0.3
+        test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4
   Exposed-modules:
     Numeric.AERN.Basics.ShowInternals
     Numeric.AERN.Basics.Exception
