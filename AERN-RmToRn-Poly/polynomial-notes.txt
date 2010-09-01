@@ -3,15 +3,15 @@ What should be in C:
 * polynomial type transparent to Haskell
 
 * operations exposed to Haskell:
+  * creation of constant and projection polynomials
+  * eval at a point using given +,*,1 and coeff conversion
   * rounded field ops for polynomials
-  * eval at a point using given +,* and coeff conversion
+  * increase of polynomial arity
   * (?) rounded partial eval of polynomials 
 
 Values provided by Haskell as StablePtrs:
   * coefficients
-  * effort indicators
-
-Operations provided by Haskell as a struct of StablePtrs:
+  ops:
   * rounded field arithmetic for coefficients
   * coefficients zero and one 
   * coefficient partial comparison
