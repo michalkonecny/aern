@@ -110,10 +110,10 @@ hpolyConst ::
     (Show cf, HasZero cf, HasOne cf, NumOrd.PartialComparison cf) =>
      cf -> HPoly cf
 hpolyConst value =
-    unsafePrintReturn
-    (
-        "hpolyConst: value = " ++ show value ++ "; poly = " 
-    ) $ 
+--    unsafePrintReturn
+--    (
+--        "hpolyConst: value = " ++ show value ++ "; poly = " 
+--    ) $ 
     HPoly (Map.singleton (HTerm Map.empty) value)
 
 hpolyOne :: 
@@ -129,10 +129,10 @@ hpolyAdd ::
     (cf -> cf -> cf) ->
     (HPoly cf -> HPoly cf -> HPoly cf)
 hpolyAdd coeffAdd p1@(HPoly terms1) p2@(HPoly terms2) =
-    unsafePrintReturn
-    (
-        "hpolyAdd: " ++ show p1 ++ " + " ++ show p2 ++ " = "
-    ) $
+--    unsafePrintReturn
+--    (
+--        "hpolyAdd: " ++ show p1 ++ " + " ++ show p2 ++ " = "
+--    ) $
     HPoly terms
     where
     terms = Map.unionWith coeffAdd terms1 terms2
@@ -143,10 +143,10 @@ hpolySubtr ::
     (cf -> cf -> cf) ->
     (HPoly cf -> HPoly cf -> HPoly cf)
 hpolySubtr coeffNeg coeffAdd p1@(HPoly terms1) p2@(HPoly terms2) =
-    unsafePrintReturn
-    (
-        "hpolySubtr: " ++ show p1 ++ " - " ++ show p2 ++ " = "
-    ) $
+--    unsafePrintReturn
+--    (
+--        "hpolySubtr: " ++ show p1 ++ " - " ++ show p2 ++ " = "
+--    ) $
     HPoly terms
     where
     terms = Map.unionWith coeffAdd terms1 (Map.map coeffNeg terms2)
@@ -157,10 +157,10 @@ hpolyMult ::
     (cf -> cf -> cf) ->
     (HPoly cf -> HPoly cf -> HPoly cf)
 hpolyMult coeffAdd coeffMult p1@(HPoly terms1) p2@(HPoly terms2) =
-    unsafePrintReturn
-    (
-        "hpolyMult: " ++ show p1 ++ " * " ++ show p2 ++ " = "
-    ) $
+--    unsafePrintReturn
+--    (
+--        "hpolyMult: " ++ show p1 ++ " * " ++ show p2 ++ " = "
+--    ) $
     foldl (hpolyAdd coeffAdd) (HPoly Map.empty) $
         [HPoly $ 
             Map.singleton 
