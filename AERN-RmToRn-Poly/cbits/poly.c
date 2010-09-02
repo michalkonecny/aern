@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "poly.h"
@@ -30,6 +31,7 @@ evalAtPtChebBasis(Poly * p, Value * values, Value one, BinaryOp add,
           if (powers[var] > maxPowers[var])
             {
               maxPowers[var] = powers[var];
+//              printf("powers[%d]=%d\n", var, powers[var]);
             }
         }
     }
@@ -42,14 +44,14 @@ evalAtPtChebBasis(Poly * p, Value * values, Value one, BinaryOp add,
       Value x = values[var];
 
       // allocate space for powers of x using the maximum N:
-      varPowers[var] = malloc(varMaxN * sizeof(Value));
+      varPowers[var] = malloc((1 + varMaxN) * sizeof(Value));
 
       // initialise powers 0 and 1 if these are required:
-      if (varMaxN > 0)
+      if (varMaxN >= 0)
         {
           varPowers[var][0] = one;
         }
-      if (varMaxN > 1)
+      if (varMaxN >= 1)
         {
           varPowers[var][1] = x;
         }
@@ -66,12 +68,17 @@ evalAtPtChebBasis(Poly * p, Value * values, Value one, BinaryOp add,
   // scan the polynomial terms, cumulatively computing the result:
   for (Size termNo = 0; termNo < psize; ++termNo)
     {
-      Term term = terms[termNo];
-      Value termValue = term.coeff;
+      Value termValue = terms[termNo].coeff;
+      printf("processing term %d...\n", termNo);
 
       for (Var var = 0; var < maxArity; ++var)
         {
-          termValue = eval_binary_hs(mult, termValue, varPowers[var][term.powers[var]]);
+          Power pwr = terms[termNo].powers[var];
+          if(pwr > 0)
+            {
+              printf(" multiplying for var %d with power %d\n", var, pwr);
+              termValue = eval_binary_hs(mult, termValue, varPowers[var][pwr]);
+            }
         }
 
       result = eval_binary_hs(add, result, termValue);
@@ -102,7 +109,7 @@ newConstPoly(Coeff c, Var maxArity, Size maxSize)
 }
 
 Poly *
-newProjectionPoly(Ops * ops, Var var, Var maxArity, Size maxSize)
+newProjectionPoly(Ops_Pure * ops, Var var, Var maxArity, Size maxSize)
 {
   Poly * poly = newConstPoly(ops -> zero, maxArity, maxSize);
 
