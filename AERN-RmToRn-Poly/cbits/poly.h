@@ -5,6 +5,9 @@ typedef void * Coeff; // pointer to undisclosed Haskell type t
 typedef void * UnaryOp; // pointer to Haskell type t -> t
 typedef void * BinaryOp; // pointer to Haskell type t -> t -> t
 typedef void * ConversionOp; // pointer to Haskell type t1 -> t2
+typedef void * CoeffInPlace; // pointer to Haskell type Ptr t -> IO ()
+typedef void * UnaryOpInPlace; // pointer to Haskell type Ptr t -> Ptr t -> IO ()
+typedef void * BinaryOpInPlace; // pointer to Haskell type Ptr t -> Ptr t -> Ptr t -> IO ()
 
 typedef uint32_t Var;
 typedef uint32_t Power;
@@ -56,7 +59,7 @@ void
 incrementArity(Poly * res, Poly *p, Var * old2new);
 
 /* References to operations provided by Haskell: */
-typedef struct OPS
+typedef struct OPS_PURE
 {
   Coeff zero;
   Coeff one;
@@ -66,7 +69,18 @@ typedef struct OPS
   BinaryOp plusDn;
   BinaryOp timesUp;
   BinaryOp timesDn;
-} Ops;
+} Ops_Pure;
+
+/* References to operations provided by Haskell: */
+typedef struct OPS_INPLACE
+{
+  UnaryOpInPlace absUpInPlace;
+  UnaryOpInPlace absDnInPlace;
+  BinaryOpInPlace plusUpInPlace;
+  BinaryOpInPlace plusDnInPlace;
+  BinaryOpInPlace timesUpInPlace;
+  BinaryOpInPlace timesDnInPlace;
+} Ops_InPlace;
 
 /*
  * preconditions:
@@ -74,7 +88,7 @@ typedef struct OPS
  * 0 < maxSize
  */
 Poly *
-newProjectionPoly(Ops * ops, Var var, Var maxArity, Size maxSize);
+newProjectionPoly(Ops_Pure * ops, Var var, Var maxArity, Size maxSize);
 
 /*
  * The following operations expect all polynomial parameters and result space to
@@ -82,5 +96,5 @@ newProjectionPoly(Ops * ops, Var var, Var maxArity, Size maxSize);
  */
 
 void
-addUp(Ops * ops, Poly *res, Poly * p1, Poly * p2);
+addUp(Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2);
 

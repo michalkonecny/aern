@@ -29,8 +29,9 @@ Library
         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
         criterion >= 0.5 && < 0.6,
         AERN-Basics == 2010.1, AERN-Real == 2010.1, AERN-RmToRn == 2010.1, 
-        AERN-Real-Double == 2010.1
+        AERN-Real-Interval == 2010.1
   Exposed-modules:
+    Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Show
     Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport
     Numeric.AERN.RmToRn.Basis.Polynomial.Internal.FFIhelper
     
@@ -45,7 +46,11 @@ Executable testAERN-RmToRn-Poly
   main-is: Main.hs
   Build-Depends:
         base >= 4 && < 5,
+        containers >= 0.3 && < 0.4,
+        QuickCheck >= 2.1 && < 2.2,
         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
         AERN-Basics == 2010.1, AERN-Real == 2010.1, AERN-RmToRn == 2010.1, 
-        AERN-Real-Double == 2010.1, AERN-RmToRn-Poly == 2010.1
+        AERN-Real-Interval == 2010.1,
+        AERN-Real-Double == 2010.1, 
+        AERN-RmToRn-Poly == 2010.1
   
