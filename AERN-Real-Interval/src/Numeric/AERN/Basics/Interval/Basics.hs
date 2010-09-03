@@ -21,8 +21,11 @@ module Numeric.AERN.Basics.Interval.Basics
 )
 where
 
+import Prelude hiding (EQ, LT, GT)
+
 import Numeric.AERN.Basics.CInterval
 import Numeric.AERN.Basics.ShowInternals
+import Numeric.AERN.Basics.PartialOrdering
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
@@ -41,17 +44,28 @@ data Interval e =
     }
     deriving (Eq)
     
-instance (ShowInternals e) => (ShowInternals (Interval e))
+instance (ShowInternals e, NumOrd.PartialComparison e) => (ShowInternals (Interval e))
     where
     type ShowInternalsIndicator (Interval e) = ShowInternalsIndicator e
     defaultShowIndicator (Interval l h) = defaultShowIndicator l
     showInternals indicator (Interval l h) =
-        "[" ++ showInternals indicator l ++ 
-         "," ++ showInternals indicator h ++ "]"
+        case (NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort l) l h) of
+            Just EQ -> "<" ++ showL ++ ">"
+            Just LT -> showConsistent
+            Just LEE -> showConsistent
+            Just GT -> showAnticonsistent
+            Just GEE -> showAnticonsistent
+            _ -> showUnknown
+        where
+        showL = showInternals indicator l
+        showH = showInternals indicator h
+        showConsistent = "[." ++ showL ++ "," ++ showH ++ "^]"
+        showAnticonsistent = "[^" ++ showL ++ "," ++ showH ++ ".]"
+        showUnknown = "[?" ++ showL ++ "," ++ showH ++ "?]"
 
-instance (Show e) => (Show (Interval e))
+instance (ShowInternals e, NumOrd.PartialComparison e) => (Show (Interval e))
     where
-    show (Interval l h) = "[" ++ show l ++ "," ++ show h ++ "]"
+    show i = showInternals (defaultShowIndicator i) i
 
 instance (NFData e) => NFData (Interval e) where
     rnf (Interval l h) =

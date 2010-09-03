@@ -36,11 +36,12 @@ import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
+import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Interval
 
 instance 
     (ArithUpDn.Convertible Integer e, 
-     Eq e, Show e,
+     Eq e, ShowInternals e,
      NumOrd.PartialComparison e, 
      NumOrd.RoundedLattice e, 
      HasZero e,
@@ -63,7 +64,7 @@ instance
 instance 
     (ArithUpDn.Convertible Integer e, 
      ArithUpDn.Convertible Rational e, 
-     Eq e, Show e,
+     Eq e, ShowInternals e,
      NumOrd.PartialComparison e, 
      NumOrd.RoundedLattice e, 
      HasZero e, HasOne e, NumOrd.HasExtrema e,
