@@ -29,7 +29,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
-import Numeric.AERN.Misc.Debug
+--import Numeric.AERN.Misc.Debug
 
 
 import qualified Data.Map as Map
@@ -89,11 +89,10 @@ instance (Show cf, HasZero cf, HasOne cf, NumOrd.PartialComparison cf) => Show (
                     (Just b) -> not b
                     _ -> True 
         showTerm (t@(HTerm term), coeff) = 
-                case (coeff ==? one) of
-                    (Just True) -> 
-                         case Map.null term of
-                             True -> "1"
-                             False -> show t
+                case (coeff ==? one, Map.null term) of
+                    (Just True, True) -> "1"
+                    (Just True, _) -> show t  
+                    (_, True) -> show coeff
                     _ -> show coeff ++ "*" ++ show t
 
 instance Show HTerm where
