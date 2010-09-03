@@ -19,6 +19,7 @@ where
 
 import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.FFIhelper
 
+import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.RealArithmetic.Interval()
 
@@ -40,7 +41,7 @@ import Foreign.Storable
 import System.IO.Unsafe
 
 instance 
-        (Show cf, Storable cf,
+        (ShowInternals cf, Storable cf,
          ArithUpDn.RoundedReal cf) => 
         (Show (PolyFP cf)) 
     where
@@ -56,7 +57,8 @@ instance
                 ++ (map (\n -> "v" ++ show n ) [3..(arity - 1)])
         
 showPolyFPWithVars :: 
-    (Show cf, Storable cf,
+    (ShowInternals cf, 
+     Storable cf,
      ArithUpDn.RoundedReal cf) => 
     PolyFP cf -> [HVar] -> String
 showPolyFPWithVars polyFP varNames =
