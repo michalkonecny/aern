@@ -4,6 +4,81 @@
 #include "poly.h"
 #include "EvalExport_stub.h"
 
+
+void
+freePoly(Poly *p)
+{
+  // free the Poly struct:
+  int maxSize = p -> maxSize;
+  Term * terms = p -> terms;
+  free_SP_hs(p -> constTerm);
+  free(p);
+
+  // free the power arrays and coeffs:
+  for (Size i = 0; i < maxSize; i++)
+    {
+      free(terms[i].powers);
+      free_SP_hs(terms[i].coeff);
+    }
+
+  // free the terms array:
+  free(terms);
+}
+
+Poly *
+newConstPoly(Coeff c, Var maxArity, Size maxSize)
+{
+  Poly * poly = (Poly *) malloc(sizeof(Poly));
+  poly -> maxArity = maxArity;
+  poly -> maxSize = maxSize;
+  poly -> psize = 0;
+  poly -> constTerm = c;
+  poly -> terms = malloc(maxSize * sizeof(Term));
+
+  // allocate space for terms' powers:
+  for (Size i = 0; i < maxSize; i++)
+    {
+      (poly -> terms)[i].powers = (Power *) malloc(sizeof(Power) * maxArity);
+      // no need to initialise powers and
+      // coefficients as these terms are inactive
+    }
+
+  return poly;
+}
+
+Poly *
+newProjectionPoly(Coeff zero, Coeff one, Var var, Var maxArity, Size maxSize)
+{
+  Poly * poly = newConstPoly(zero, maxArity, maxSize);
+
+  // add one term for the variable:
+  poly -> psize = 1;
+  Term * term = poly -> terms;
+
+  // initialise the term's coeff:
+  term -> coeff = one;
+//  printf("newProjectionPoly: coeff one address = %p\n", term -> coeff);
+
+  // initialise the term's powers:
+  Power * powers = term -> powers;
+
+  // all zero:
+  for (Var i = 0; i < maxArity; ++i)
+    {
+      powers[i] = 0;
+    }
+  // except the chosen var:
+  powers[var] = 1;
+
+  return poly;
+}
+
+void
+addUp(Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2)
+{
+
+}
+
 Value
 evalAtPtChebBasis(Poly * p, Value * values, Value one, BinaryOp add,
     BinaryOp subtr, BinaryOp mult, ConversionOp cf2val)
@@ -108,52 +183,4 @@ evalAtPtChebBasis(Poly * p, Value * values, Value one, BinaryOp add,
   free(maxPowers);
 
   return result;
-}
-
-Poly *
-newConstPoly(Coeff c, Var maxArity, Size maxSize)
-{
-  Poly * poly = (Poly *) malloc(sizeof(Poly));
-  poly -> maxArity = maxArity;
-  poly -> maxSize = maxSize;
-  poly -> psize = 0;
-  poly -> constTerm = c;
-  poly -> terms = malloc(maxSize * sizeof(Term));
-
-  // allocate space for terms' powers:
-  for (Size i = 0; i < maxSize; i++)
-    {
-      (poly -> terms)[i].powers = (Power *) malloc(sizeof(Power) * maxArity);
-      // no need to initialise powers and
-      // coefficients as these terms are inactive
-    }
-
-  return poly;
-}
-
-Poly *
-newProjectionPoly(Ops_Pure * ops, Var var, Var maxArity, Size maxSize)
-{
-  Poly * poly = newConstPoly(ops -> zero, maxArity, maxSize);
-
-  // add one term for the variable:
-  poly -> psize = 1;
-  Term * term = poly -> terms;
-
-  // initialise the term's coeff:
-  term -> coeff = ops -> one;
-//  printf("newProjectionPoly: coeff one address = %p\n", term -> coeff);
-
-  // initialise the term's powers:
-  Power * powers = term -> powers;
-
-  // all zero:
-  for (Var i = 0; i < maxArity; ++i)
-    {
-      powers[i] = 0;
-    }
-  // except the chosen var:
-  powers[var] = 1;
-
-  return poly;
 }
