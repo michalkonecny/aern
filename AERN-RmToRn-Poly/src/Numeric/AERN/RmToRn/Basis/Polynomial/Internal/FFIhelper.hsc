@@ -3,6 +3,9 @@
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.FFIhelper where
 
+import Numeric.AERN.Basics.PartialOrdering
+import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+
 import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
@@ -13,13 +16,13 @@ import Control.Monad.ST (ST)
 
 --import Foreign.C.String(CString)
 --import Foreign.C.Types(CULong, CLong, CInt, CUInt, CDouble, CChar)
-import Foreign.Ptr(Ptr,FunPtr)
+import Foreign.Ptr(Ptr)
 --import Foreign.Marshal(alloca)
 import Foreign.Storable
 import Foreign.Marshal.Alloc (malloc, free)
 import Foreign.Marshal.Array (newArray)
 import Foreign.StablePtr (StablePtr, newStablePtr, deRefStablePtr, freeStablePtr)
-import Foreign.ForeignPtr (ForeignPtr, withForeignPtr, unsafeForeignPtrToPtr) --, mallocForeignPtrBytes)
+import Foreign.ForeignPtr (ForeignPtr, withForeignPtr) --, mallocForeignPtrBytes)
 import qualified Foreign.Concurrent as Conc (newForeignPtr)
 
 import Data.Typeable(Typeable)
@@ -124,6 +127,7 @@ peekArity (PolyFP fp) =
 type UnaryOp t = t -> t
 type BinaryOp t =  t -> t -> t
 type ConvertOp t1 t2 = t1 -> t2
+type ComparisonOp t =  t -> t -> (Maybe PartialOrdering)
 
 type UnaryOpInPlace s t = Mutable s t -> Mutable s t -> ST s ()
 type BinaryOpInPlace s t = Mutable s t -> Mutable s t -> Mutable s t -> ST s ()
@@ -135,6 +139,8 @@ data Ops_Pure t =
         ops_absDn :: {-# UNPACK #-} ! (StablePtr (UnaryOp t)),
         ops_plusUp :: {-# UNPACK #-} ! (StablePtr (BinaryOp t)),
         ops_plusDn :: {-# UNPACK #-} ! (StablePtr (BinaryOp t)),
+        ops_minusUp :: {-# UNPACK #-} ! (StablePtr (BinaryOp t)),
+        ops_minusDn :: {-# UNPACK #-} ! (StablePtr (BinaryOp t)),
         ops_timesUp :: {-# UNPACK #-} ! (StablePtr (BinaryOp t)),
         ops_timesDn :: {-# UNPACK #-} ! (StablePtr (BinaryOp t))
     }
@@ -159,6 +165,8 @@ data Ops_InPlace s t =
         ops_absDnInPlace :: {-# UNPACK #-} ! (StablePtr (UnaryOpInPlace s t)),
         ops_plusUpInPlace :: {-# UNPACK #-} ! (StablePtr (BinaryOpInPlace s t)),
         ops_plusDnInPlace :: {-# UNPACK #-} ! (StablePtr (BinaryOpInPlace s t)),
+        ops_minusUpInPlace :: {-# UNPACK #-} ! (StablePtr (BinaryOpInPlace s t)),
+        ops_minusDnInPlace :: {-# UNPACK #-} ! (StablePtr (BinaryOpInPlace s t)),
         ops_timesUpInPlace :: {-# UNPACK #-} ! (StablePtr (BinaryOpInPlace s t)),
         ops_timesDnInPlace :: {-# UNPACK #-} ! (StablePtr (BinaryOpInPlace s t))
     }
@@ -170,12 +178,16 @@ mkOpsPure ::
     (BinaryOp t) ->
     (BinaryOp t) ->
     (BinaryOp t) ->
+    (BinaryOp t) ->
+    (BinaryOp t) ->
     IO (Ops_Pure t)
-mkOpsPure absUp absDn addUp addDn multUp multDn =
+mkOpsPure absUp absDn addUp addDn subtrUp subtrDn multUp multDn =
     do
     absUpSP <- newStablePtr absUp  
     absDnSP <- newStablePtr absDn
     addUpSP <- newStablePtr addUp   
+    subtrDnSP <- newStablePtr subtrDn
+    subtrUpSP <- newStablePtr subtrUp   
     addDnSP <- newStablePtr addDn
     multUpSP <- newStablePtr multUp   
     multDnSP <- newStablePtr multDn
@@ -183,6 +195,7 @@ mkOpsPure absUp absDn addUp addDn multUp multDn =
       Ops_Pure
         absUpSP absDnSP
         addUpSP addDnSP
+        subtrUpSP subtrDnSP
         multUpSP multDnSP
 
 mkOpsPureArithUpDn ::
@@ -200,6 +213,8 @@ mkOpsPureArithUpDn sample effort =
         (ArithUpDn.absDnEff absEffort)
         (ArithUpDn.addUpEff addEffort)
         (ArithUpDn.addDnEff addEffort)
+        (ArithUpDn.subtrUpEff addEffort)
+        (ArithUpDn.subtrDnEff addEffort)
         (ArithUpDn.multUpEff multEffort)
         (ArithUpDn.multDnEff multEffort)
 
@@ -208,12 +223,14 @@ instance (Storable cf) => Storable (Ops_Pure cf) where
     sizeOf _ = #size Ops_Pure
     alignment _ = #{alignment Ops_Pure}
     peek = error "Ops_Pure.peek: Not needed and not applicable"
-    poke ptr (Ops_Pure absUp absDn plusUp plusDn timesUp timesDn) = 
+    poke ptr (Ops_Pure absUp absDn plusUp plusDn minusUp minusDn timesUp timesDn) = 
         do 
         #{poke Ops_Pure, absUp} ptr absUp
         #{poke Ops_Pure, absDn} ptr absDn
         #{poke Ops_Pure, plusUp} ptr plusUp
         #{poke Ops_Pure, plusDn} ptr plusDn
+        #{poke Ops_Pure, minusUp} ptr minusUp
+        #{poke Ops_Pure, minusDn} ptr minusDn
         #{poke Ops_Pure, timesUp} ptr timesUp
         #{poke Ops_Pure, timesDn} ptr timesDn
 
@@ -223,12 +240,16 @@ instance (Storable cf) => Storable (Ops_InPlace s cf) where
     peek = error "Ops_InPlace.peek: Not needed and not applicable"
     poke ptr 
             (Ops_InPlace absUpInPlace absDnInPlace 
-             plusUpInPlace plusDnInPlace timesUpInPlace timesDnInPlace) = 
+             plusUpInPlace plusDnInPlace 
+             minusUpInPlace minusDnInPlace 
+             timesUpInPlace timesDnInPlace) = 
         do 
         #{poke Ops_InPlace, absUpInPlace} ptr absUpInPlace
         #{poke Ops_InPlace, absDnInPlace} ptr absDnInPlace
         #{poke Ops_InPlace, plusUpInPlace} ptr plusUpInPlace
         #{poke Ops_InPlace, plusDnInPlace} ptr plusDnInPlace
+        #{poke Ops_InPlace, minusUpInPlace} ptr minusUpInPlace
+        #{poke Ops_InPlace, minusDnInPlace} ptr minusDnInPlace
         #{poke Ops_InPlace, timesUpInPlace} ptr timesUpInPlace
         #{poke Ops_InPlace, timesDnInPlace} ptr timesDnInPlace
 
@@ -276,6 +297,37 @@ newProjectionPoly _sample x maxArity maxSize =
     return $ PolyFP fp
 
 ----------------------------------------------------------------
+
+foreign import ccall safe "addUp"
+        poly_addUp :: 
+            (StablePtr cf) ->
+            (StablePtr (ComparisonOp cf)) ->
+            (Ptr (Ops_Pure cf)) ->
+            (Ptr (Poly cf)) -> 
+            (Ptr (Poly cf)) -> 
+            (Ptr (Poly cf)) -> 
+            IO ()
+
+polyAddUp :: 
+    (HasZero cf, NumOrd.PartialComparison cf) =>
+    cf -> 
+    Size ->
+    (Ptr (Ops_Pure cf)) ->
+    PolyFP cf ->
+    PolyFP cf ->
+    IO (PolyFP cf)
+polyAddUp sample maxSize opsPtr p1@(PolyFP p1FP) (PolyFP p2FP) =
+    do
+    maxArity <- peekArity p1
+    zeroSP <- newStablePtr $ head [zero, sample]
+    resP <- poly_newConstPoly zeroSP (toCVar maxArity) (toCSize maxSize)
+    compareSP <- newStablePtr $ (NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample))
+    withForeignPtr p1FP $ \p1 ->
+        withForeignPtr p2FP $ \p2 ->
+            poly_addUp zeroSP compareSP opsPtr resP p1 p2
+    freeStablePtr compareSP
+    resFP <- Conc.newForeignPtr resP (concFinalizerFreePoly resP)
+    return $ PolyFP resFP
 
 ----------------------------------------------------------------
 

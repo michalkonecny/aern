@@ -101,8 +101,11 @@ instance Show HTerm where
     show (HTerm vars) =
         intercalate "*" $ map showVar $ Map.toList vars
         where
-        showVar (var, power) =
-            var ++ "^" ++ show power
+        showVar (var, power) 
+            | power == 1 = 
+                var
+            | otherwise = 
+                var ++ "^" ++ show power
 
 --hpolyZero :: HPoly cf
 --hpolyZero = HPoly Map.empty
