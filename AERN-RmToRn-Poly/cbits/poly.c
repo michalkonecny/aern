@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "poly.h"
 #include "EvalExport_stub.h"
-
 
 void
 freePoly(Poly *p)
@@ -26,7 +26,7 @@ freePoly(Poly *p)
 }
 
 Poly *
-newConstPoly(Coeff c, Var maxArity, Size maxSize)
+newConstPoly(const Coeff c, Var maxArity, Size maxSize)
 {
   Poly * poly = (Poly *) malloc(sizeof(Poly));
   poly -> maxArity = maxArity;
@@ -47,7 +47,8 @@ newConstPoly(Coeff c, Var maxArity, Size maxSize)
 }
 
 Poly *
-newProjectionPoly(Coeff zero, Coeff one, Var var, Var maxArity, Size maxSize)
+newProjectionPoly(const Coeff zero, const Coeff one, Var var, Var maxArity,
+    Size maxSize)
 {
   Poly * poly = newConstPoly(zero, maxArity, maxSize);
 
@@ -57,7 +58,7 @@ newProjectionPoly(Coeff zero, Coeff one, Var var, Var maxArity, Size maxSize)
 
   // initialise the term's coeff:
   term -> coeff = one;
-//  printf("newProjectionPoly: coeff one address = %p\n", term -> coeff);
+  //  printf("newProjectionPoly: coeff one address = %p\n", term -> coeff);
 
   // initialise the term's powers:
   Power * powers = term -> powers;
@@ -73,15 +74,240 @@ newProjectionPoly(Coeff zero, Coeff one, Var var, Var maxArity, Size maxSize)
   return poly;
 }
 
+typedef struct COEFFN
+{
+  Coeff cf;
+  ComparisonOp cfCompare;
+  int n;
+  int n1;
+  int n2;
+} CoeffN;
+
+int
+compareCoeffNsByCoeffDecreasing(const CoeffN * cn1, const CoeffN * cn2)
+{
+  return eval_compare_hs(cn1 -> cfCompare, cn2 -> cf, cn1 -> cf);
+}
+
+int
+compareCoeffNsByN(const CoeffN * cn1, const CoeffN * cn2)
+{
+  return (cn1 -> n - cn2 -> n);
+}
+
 void
-addUp(Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2)
+sortCoeffNsByCoeffDecreasing(int size, CoeffN * cns)
+{
+  qsort(cns, size, sizeof(CoeffN), &compareCoeffNsByCoeffDecreasing);
+}
+
+void
+sortCoeffNsByN(int size, CoeffN * cns)
+{
+  qsort(cns, size, sizeof(CoeffN), &compareCoeffNsByN);
+}
+
+Coeff
+addTermsAndReturnMaxError(Coeff zero, const ComparisonOp compare,
+    const Ops_Pure * ops, Poly *res, const Poly * p1, const Poly * p2)
 {
 
+  Var arity = res -> maxArity;
+  Var maxSize = res -> maxSize;
+
+  Term * terms1 = p1 -> terms;
+  Term * terms2 = p2 -> terms;
+
+  Size p1Size = p1 -> psize;
+  Size p2Size = p2 -> psize;
+
+  Coeff maxError = zero;
+
+//  printf("addTermsAndReturnMaxError: p1Size = %d \n", p1Size);
+//  printf("addTermsAndReturnMaxError: p2Size = %d \n", p2Size);
+
+  if (p1Size + p2Size > 0)
+    {
+      CoeffN * newCoeffs = malloc((p1Size + p2Size) * sizeof(CoeffN));
+
+      int i = 0;
+      int i1 = 0;
+      int i2 = 0;
+
+//      printf("addTermsAndReturnMaxError: about to compute coeffs\n");
+      // compute new coefficients in the order of increasing powers:
+      while (i1 < p1Size || i2 < p2Size)
+        {
+//          printf(
+//              "addTermsAndReturnMaxError: about to compute coeff for i = %d, i1 = %d, i2 = %d;\n",
+//              i, i1, i2);
+          newCoeffs[i].n = i;
+          newCoeffs[i].cfCompare = compare;
+
+          // work out which polynomial(s) to read the next term from:
+          int powerComparison;
+          if (i1 == p1Size)
+            {
+              powerComparison = 1;
+            } // only p2 has some terms left
+          else if (i2 == p2Size)
+            {
+              powerComparison = -1;
+            } // only p1 has some terms left
+          else
+            {
+              powerComparison = memcmp(terms1[i1].powers, terms2[i2].powers,
+                  arity * (sizeof(Power)));
+            }
+
+          if (powerComparison == 0)
+            {
+//              printf(
+//                  "addTermsAndReturnMaxError: coeff %d: adding terms1[%d] and terms2[%d]\n",
+//                  i, i1, i2);
+              // compute sum of the two coefficients and its error bound:
+              Coeff newCfUp = eval_binary_hs(ops -> plusUp, terms1[i1].coeff,
+                  terms2[i2].coeff);
+              Coeff newCfDn = eval_binary_hs(ops -> plusDn, terms1[i1].coeff,
+                  terms2[i2].coeff);
+              Coeff newCfMaxError = eval_binary_hs(ops -> minusUp, newCfUp,
+                  newCfDn);
+              newCoeffs[i].cf = newCfUp;
+
+              // add the error bound to the accumulated error:
+              Coeff temp = maxError;
+              maxError = eval_binary_hs(ops -> plusUp, maxError, newCfMaxError);
+
+              // free temp numbers:
+              free_SP_hs(temp);
+              free_SP_hs(newCfDn);
+              free_SP_hs(newCfMaxError);
+
+              newCoeffs[i].n1 = i1;
+              newCoeffs[i].n2 = i2;
+              i1++;
+              i2++;
+            }
+          else if (powerComparison > 0) // i2 is smaller
+            {
+//              printf(
+//                  "addTermsAndReturnMaxError: coeff %d: copying terms2[%d]\n",
+//                  i, i2);
+              newCoeffs[i].cf = terms2[i2].coeff;
+              newCoeffs[i].n1 = -1;
+              newCoeffs[i].n2 = i2;
+              i2++;
+            }
+          else if (powerComparison < 0) // i1 is smaller
+            {
+//              printf(
+//                  "addTermsAndReturnMaxError: coeff %d: copying terms1[%d]\n",
+//                  i, i1);
+              newCoeffs[i].cf = terms1[i1].coeff;
+              newCoeffs[i].n1 = i1;
+              newCoeffs[i].n2 = -1;
+              i1++;
+            }
+
+          i++;
+        }
+
+      // i now holds the number of new coefficients,
+      // check whether they fit into res:
+      if (i > maxSize)
+        {
+//          printf("addTermsAndReturnMaxError: reducing number of coeffs from %d to %d.\n", i, maxSize);
+          // need to reduce the size, sort them from largest to smallest:
+          sortCoeffNsByCoeffDecreasing(i, newCoeffs);
+          // now sort the first maxSize coeffs by N, ie the power order:
+          sortCoeffNsByN(maxSize, newCoeffs);
+          // first maxSize coeffs to be used with their terms,
+          // the remaining coeffs' absolute values are added to the constant term:
+          for (int j = maxSize; j < i; ++j)
+            {
+              Coeff coeffAbs = eval_unary_hs(ops -> absUp, newCoeffs[j].cf);
+              Coeff temp = maxError;
+              maxError = eval_binary_hs(ops -> plusUp, maxError, coeffAbs);
+
+              free_SP_hs(temp);
+              free_SP_hs(coeffAbs);
+              if (newCoeffs[j].n1 >= 0 && newCoeffs[j].n2 >= 0)
+                {
+                  free_SP_hs(newCoeffs[j].cf);
+                }
+            }
+
+          // from now on, pretend that there are only maxSize terms:
+          i = maxSize;
+        }
+
+      // set the actual term size of the result:
+      res -> psize = i;
+
+//      printf("addTermsAndReturnMaxError: about to construct %d resulting term(s)\n", i);
+      // construct the resulting terms:
+      Term * terms = res -> terms;
+      for (int j = 0; j < i; ++j)
+        {
+          terms[j].coeff = newCoeffs[j].cf;
+          // copy the powers from terms1 or terms2:
+          if (newCoeffs[j].n1 >= 0)
+            {
+              // copy powers of variables from terms1:
+              memcpy(terms[j].powers, terms1[newCoeffs[j].n1].powers, arity
+                  * sizeof(Power));
+            }
+          else
+            {
+              // copy powers of variables from terms2:
+              memcpy(terms[j].powers, terms2[newCoeffs[j].n2].powers, arity
+                  * sizeof(Power));
+            }
+
+        }
+
+      free(newCoeffs);
+    }
+
+//  printf("addTermsAndReturnMaxError: finished, returning maxError\n");
+
+  return maxError;
+}
+
+void
+addUp(Coeff zero, const ComparisonOp compare, const Ops_Pure * ops, Poly *res,
+    const Poly * p1, const Poly * p2)
+{
+  Coeff maxError = addTermsAndReturnMaxError(zero, compare, ops, res, p1, p2);
+
+
+  // compute the constant term coefficient rounding up:
+  Coeff temp = eval_binary_hs(ops -> plusUp, p1 -> constTerm, p2 -> constTerm);
+  // also add maxError to the constant term coefficient:
+  res -> constTerm = eval_binary_hs(ops -> plusUp, temp, maxError);
+
+  free_SP_hs(temp);
+  free_SP_hs(maxError);
+}
+
+void
+addDn(Coeff zero, const ComparisonOp compare, const Ops_Pure * ops, Poly *res,
+    const Poly * p1, const Poly * p2)
+{
+  Coeff maxError = addTermsAndReturnMaxError(zero, compare, ops, res, p1, p2);
+
+  // compute the constant term coefficient rounding down:
+  Coeff temp = eval_binary_hs(ops -> plusDn, p1 -> constTerm, p2 -> constTerm);
+  // also subtract maxError from the constant term coefficient:
+  res -> constTerm = eval_binary_hs(ops -> minusDn, temp, maxError);
+  free(temp);
+  free(maxError);
 }
 
 Value
-evalAtPtChebBasis(Poly * p, Value * values, Value one, BinaryOp add,
-    BinaryOp subtr, BinaryOp mult, ConversionOp cf2val)
+evalAtPtChebBasis(const Poly * p, const Value * values, const Value one,
+    const BinaryOp add, const BinaryOp subtr, const BinaryOp mult,
+    const ConversionOp cf2val)
 {
   Var maxArity = p -> maxArity;
   Var psize = p -> psize;
@@ -106,7 +332,7 @@ evalAtPtChebBasis(Poly * p, Value * values, Value one, BinaryOp add,
           if (powers[var] > maxPowers[var])
             {
               maxPowers[var] = powers[var];
-//              printf("powers[%d]=%d\n", var, powers[var]);
+              //              printf("powers[%d]=%d\n", var, powers[var]);
             }
         }
     }
@@ -136,7 +362,8 @@ evalAtPtChebBasis(Poly * p, Value * values, Value one, BinaryOp add,
         {
           Value temp1 = eval_binary_hs(mult, x, varPowers[var][n - 1]);
           Value temp2 = eval_binary_hs(add, temp1, temp1);
-          varPowers[var][n] = eval_binary_hs(subtr, temp2, varPowers[var][n - 2]);
+          varPowers[var][n] = eval_binary_hs(subtr, temp2,
+              varPowers[var][n - 2]);
           free_SP_hs(temp1);
           free_SP_hs(temp2);
         }
@@ -145,15 +372,15 @@ evalAtPtChebBasis(Poly * p, Value * values, Value one, BinaryOp add,
   // scan the polynomial terms, cumulatively computing the result:
   for (Size termNo = 0; termNo < psize; ++termNo)
     {
-//      printf("processing term %d...\n", termNo);
+      //      printf("processing term %d...\n", termNo);
       Value termValue = eval_convert_hs(cf2val, terms[termNo].coeff);
 
       for (Var var = 0; var < maxArity; ++var)
         {
           Power pwr = terms[termNo].powers[var];
-          if(pwr > 0)
+          if (pwr > 0)
             {
-//              printf(" multiplying for var %d with power %d\n", var, pwr);
+              //              printf(" multiplying for var %d with power %d\n", var, pwr);
               Value temp = termValue;
               termValue = eval_binary_hs(mult, termValue, varPowers[var][pwr]);
               free_SP_hs(temp);
@@ -170,7 +397,7 @@ evalAtPtChebBasis(Poly * p, Value * values, Value one, BinaryOp add,
   for (Var var = 0; var < maxArity; ++var)
     {
       // free the haskell values pointed to by this array:
-      for(Power power = 0; power < maxPowers[var]; ++power)
+      for (Power power = 0; power < maxPowers[var]; ++power)
         {
           free_SP_hs(varPowers[var][power]);
         };

@@ -2,6 +2,7 @@
 
 /* The following are provided for better code readability: */
 typedef void * Coeff; // pointer to undisclosed Haskell type t
+typedef void * ComparisonOp; // pointer to Haskell type t -> t -> Int
 typedef void * UnaryOp; // pointer to Haskell type t -> t
 typedef void * BinaryOp; // pointer to Haskell type t -> t -> t
 typedef void * ConversionOp; // pointer to Haskell type t1 -> t2
@@ -20,6 +21,8 @@ typedef struct OPS_PURE
   UnaryOp absDn;
   BinaryOp plusUp;
   BinaryOp plusDn;
+  BinaryOp minusUp;
+  BinaryOp minusDn;
   BinaryOp timesUp;
   BinaryOp timesDn;
 } Ops_Pure;
@@ -31,6 +34,8 @@ typedef struct OPS_INPLACE
   UnaryOpInPlace absDnInPlace;
   BinaryOpInPlace plusUpInPlace;
   BinaryOpInPlace plusDnInPlace;
+  BinaryOpInPlace minusUpInPlace;
+  BinaryOpInPlace minusDnInPlace;
   BinaryOpInPlace timesUpInPlace;
   BinaryOpInPlace timesDnInPlace;
 } Ops_InPlace;
@@ -75,7 +80,7 @@ freePoly(Poly *p);
  * no persistent references to c and this pointer is unique for each call
  */
 Poly *
-newConstPoly(Coeff c, Var maxArity, Size maxSize);
+newConstPoly(const Coeff c, Var maxArity, Size maxSize);
 
 /*
  * preconditions:
@@ -84,7 +89,8 @@ newConstPoly(Coeff c, Var maxArity, Size maxSize);
  * no persistent references to zero, one and these pointers are unique to each call
  */
 Poly *
-newProjectionPoly(Coeff zero, Coeff one, Var var, Var maxArity, Size maxSize);
+newProjectionPoly(const Coeff zero, const Coeff one, Var var, Var maxArity,
+    Size maxSize);
 
 ///*
 // * preconditions:
@@ -97,11 +103,14 @@ newProjectionPoly(Coeff zero, Coeff one, Var var, Var maxArity, Size maxSize);
 
 /*
  * The following operations expect all polynomial parameters and result space to
- * have matching maxArities and maxSizes.
+ * have matching maxArities.
+ *
+ * All Coeff parameters passed with a call are deallocated during the call.
  */
 
 void
-addUp(Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2);
+addUp(Coeff zero, const ComparisonOp compare, const Ops_Pure * ops,
+    Poly *res, const Poly * p1, const Poly * p2);
 
 typedef void * Value; // A Haskell value passed via StablePtr
 
@@ -111,5 +120,6 @@ typedef void * Value; // A Haskell value passed via StablePtr
  * Haskell operations.
  */
 Value
-evalAtPtChebBasis(Poly *, Value *, Value, BinaryOp, BinaryOp, BinaryOp, ConversionOp);
+evalAtPtChebBasis(const Poly *, const Value *, const Value, const BinaryOp,
+    const BinaryOp, const BinaryOp, const ConversionOp);
 
