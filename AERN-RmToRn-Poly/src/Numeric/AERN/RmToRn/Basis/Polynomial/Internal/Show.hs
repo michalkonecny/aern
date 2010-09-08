@@ -46,11 +46,9 @@ instance
         (Show (PolyFP cf)) 
     where
     show polyFP =
-        unsafePerformIO $
-            do
-            (Var maxArity, _) <- peekSizes polyFP
-            return $ showPolyFPWithVars polyFP $ varNames (fromIntegral maxArity)
+        showPolyFPWithVars polyFP $ varNames (fromIntegral maxArity)
         where
+        (Var maxArity) = peekArity polyFP
         varNames arity = 
             take arity $ 
                 ["x", "y", "z"] 
@@ -63,7 +61,6 @@ showPolyFPWithVars ::
     PolyFP cf -> [HVar] -> String
 showPolyFPWithVars polyFP varNames =
     show $
-        unsafePerformIO $
             evalAtPtChebBasis 
                 polyFP 
                 (map hpolyVar varNames) 

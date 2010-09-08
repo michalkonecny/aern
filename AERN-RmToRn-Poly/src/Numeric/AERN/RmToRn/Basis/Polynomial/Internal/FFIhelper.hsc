@@ -12,7 +12,9 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Data.Word
 
 import Numeric.AERN.Basics.Mutable
-import Control.Monad.ST (ST)
+import Control.Monad.ST (ST, unsafeIOToST, unsafeSTToIO)
+
+import System.IO.Unsafe
 
 --import Foreign.C.String(CString)
 --import Foreign.C.Types(CULong, CLong, CInt, CUInt, CDouble, CChar)
@@ -82,6 +84,7 @@ instance (Storable cf) => Storable (Term cf) where
         #{poke Term, coeff} ptr cf
 
 newtype PolyFP cf = PolyFP (ForeignPtr (Poly cf))
+newtype PolyMutableFP cf s = PolyMutableFP (ForeignPtr (Poly (Mutable cf s)))
 
 data Poly cf = 
     Poly 
@@ -108,18 +111,27 @@ instance (Storable cf) => Storable (Poly cf) where
 
 
 {-# INLINE peekSizes #-}
-peekSizes      :: (PolyFP cf) -> IO (Var, Size)
-peekSizes (PolyFP fp) =
-    withForeignPtr fp $ \ptr -> 
+peekSizes :: (PolyFP cf) -> (Var, Size)
+peekSizes p =
+    unsafePerformIO $ peekSizesIO p
+
+peekSizesIO :: (PolyFP cf) -> IO (Var, Size)
+peekSizesIO (PolyFP fp) =
+        withForeignPtr fp $ \ptr -> 
             do
             maxArityC <- #{peek Poly, maxArity} ptr
             maxSizeC <- #{peek Poly, maxSize} ptr
             return (fromCVar maxArityC, fromCSize maxSizeC)            
 
 {-# INLINE peekArity #-}
-peekArity      :: (PolyFP cf) -> IO (Var)
-peekArity (PolyFP fp) =
-    withForeignPtr fp $ \ptr -> 
+peekArity :: (PolyFP cf) -> Var
+peekArity p =
+    unsafePerformIO $ peekArityIO p
+    
+{-# INLINE peekArityIO #-}
+peekArityIO :: (PolyFP cf) -> IO Var
+peekArityIO (PolyFP fp) =
+        withForeignPtr fp $ \ptr -> 
             do
             maxArityC <- #{peek Poly, maxArity} ptr
             return (fromCVar maxArityC)            
@@ -128,9 +140,6 @@ type UnaryOp t = t -> t
 type BinaryOp t =  t -> t -> t
 type ConvertOp t1 t2 = t1 -> t2
 type ComparisonOp t =  t -> t -> (Maybe PartialOrdering)
-
-type UnaryOpInPlace s t = Mutable s t -> Mutable s t -> ST s ()
-type BinaryOpInPlace s t = Mutable s t -> Mutable s t -> Mutable s t -> ST s ()
 
 data Ops_Pure t =
     Ops_Pure
@@ -145,6 +154,21 @@ data Ops_Pure t =
         ops_timesDn :: {-# UNPACK #-} ! (StablePtr (BinaryOp t))
     }
 
+instance (Storable cf) => Storable (Ops_Pure cf) where
+    sizeOf _ = #size Ops_Pure
+    alignment _ = #{alignment Ops_Pure}
+    peek = error "Ops_Pure.peek: Not needed and not applicable"
+    poke ptr (Ops_Pure absUp absDn plusUp plusDn minusUp minusDn timesUp timesDn) = 
+        do 
+        #{poke Ops_Pure, absUp} ptr absUp
+        #{poke Ops_Pure, absDn} ptr absDn
+        #{poke Ops_Pure, plusUp} ptr plusUp
+        #{poke Ops_Pure, plusDn} ptr plusDn
+        #{poke Ops_Pure, minusUp} ptr minusUp
+        #{poke Ops_Pure, minusDn} ptr minusDn
+        #{poke Ops_Pure, timesUp} ptr timesUp
+        #{poke Ops_Pure, timesDn} ptr timesDn
+
 newOps ::
     (Storable cf) =>
     (Ops_Pure cf) ->
@@ -157,19 +181,6 @@ newOps ops =
     
 freeOps :: (Ptr (Ops_Pure cf)) -> IO ()
 freeOps = free
-
-data Ops_InPlace s t =
-    Ops_InPlace
-    {
-        ops_absUpInPlace :: {-# UNPACK #-} ! (StablePtr (UnaryOpInPlace s t)),
-        ops_absDnInPlace :: {-# UNPACK #-} ! (StablePtr (UnaryOpInPlace s t)),
-        ops_plusUpInPlace :: {-# UNPACK #-} ! (StablePtr (BinaryOpInPlace s t)),
-        ops_plusDnInPlace :: {-# UNPACK #-} ! (StablePtr (BinaryOpInPlace s t)),
-        ops_minusUpInPlace :: {-# UNPACK #-} ! (StablePtr (BinaryOpInPlace s t)),
-        ops_minusDnInPlace :: {-# UNPACK #-} ! (StablePtr (BinaryOpInPlace s t)),
-        ops_timesUpInPlace :: {-# UNPACK #-} ! (StablePtr (BinaryOpInPlace s t)),
-        ops_timesDnInPlace :: {-# UNPACK #-} ! (StablePtr (BinaryOpInPlace s t))
-    }
 
 mkOpsPure ::
     (UnaryOp t) ->
@@ -218,40 +229,162 @@ mkOpsPureArithUpDn sample effort =
         (ArithUpDn.multUpEff multEffort)
         (ArithUpDn.multDnEff multEffort)
 
+newOpsPureArithUpDn ::
+    (ArithUpDn.RoundedReal t, Storable t) => 
+    t ->
+    ArithUpDn.RoundedRealEffortIndicator t -> 
+    Ptr (Ops_Pure t)
+newOpsPureArithUpDn sample effort =
+    unsafePerformIO $
+        do
+        ops <- mkOpsPureArithUpDn sample effort
+        newOps ops
 
-instance (Storable cf) => Storable (Ops_Pure cf) where
-    sizeOf _ = #size Ops_Pure
-    alignment _ = #{alignment Ops_Pure}
-    peek = error "Ops_Pure.peek: Not needed and not applicable"
-    poke ptr (Ops_Pure absUp absDn plusUp plusDn minusUp minusDn timesUp timesDn) = 
-        do 
-        #{poke Ops_Pure, absUp} ptr absUp
-        #{poke Ops_Pure, absDn} ptr absDn
-        #{poke Ops_Pure, plusUp} ptr plusUp
-        #{poke Ops_Pure, plusDn} ptr plusDn
-        #{poke Ops_Pure, minusUp} ptr minusUp
-        #{poke Ops_Pure, minusDn} ptr minusDn
-        #{poke Ops_Pure, timesUp} ptr timesUp
-        #{poke Ops_Pure, timesDn} ptr timesDn
+newOpsPureArithUpDnDefaultEffort ::
+    (ArithUpDn.RoundedReal t, Storable t) => 
+    t ->
+    Ptr (Ops_Pure t)
+newOpsPureArithUpDnDefaultEffort sample =
+    newOpsPureArithUpDn sample (ArithUpDn.roundedRealDefaultEffort sample)
 
-instance (Storable cf) => Storable (Ops_InPlace s cf) where
-    sizeOf _ = #size Ops_InPlace
-    alignment _ = #{alignment Ops_InPlace}
-    peek = error "Ops_InPlace.peek: Not needed and not applicable"
+type NewOpMutable s t = t -> ST s (Mutable t s)
+type CloneOpMutable s t = Mutable t s -> ST s (Mutable t s)
+type UnaryOpMutable s t = Mutable t s -> Mutable t s -> ST s ()
+type BinaryOpMutable s t = Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
+
+data Ops_Mutable s t =
+    Ops_Mutable
+    {
+        ops_sample :: {-# UNPACK #-} ! (StablePtr t),
+        ops_new :: {-# UNPACK #-} ! (StablePtr (NewOpMutable s t)),
+        ops_clone :: {-# UNPACK #-} ! (StablePtr (CloneOpMutable s t)),
+        ops_assign :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s t)),
+        ops_absUpMutable :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s t)),
+        ops_absDnMutable :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s t)),
+        ops_plusUpMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s t)),
+        ops_plusDnMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s t)),
+        ops_minusUpMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s t)),
+        ops_minusDnMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s t)),
+        ops_timesUpMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s t)),
+        ops_timesDnMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s t))
+    }
+
+instance (Storable cf) => Storable (Ops_Mutable s cf) where
+    sizeOf _ = #size Ops_Mutable
+    alignment _ = #{alignment Ops_Mutable}
+    peek = error "Ops_Mutable.peek: Not needed and not applicable"
     poke ptr 
-            (Ops_InPlace absUpInPlace absDnInPlace 
-             plusUpInPlace plusDnInPlace 
-             minusUpInPlace minusDnInPlace 
-             timesUpInPlace timesDnInPlace) = 
+            (Ops_Mutable
+              sample new clone assign 
+              absUpMutable absDnMutable 
+              plusUpMutable plusDnMutable 
+              minusUpMutable minusDnMutable 
+              timesUpMutable timesDnMutable) = 
         do 
-        #{poke Ops_InPlace, absUpInPlace} ptr absUpInPlace
-        #{poke Ops_InPlace, absDnInPlace} ptr absDnInPlace
-        #{poke Ops_InPlace, plusUpInPlace} ptr plusUpInPlace
-        #{poke Ops_InPlace, plusDnInPlace} ptr plusDnInPlace
-        #{poke Ops_InPlace, minusUpInPlace} ptr minusUpInPlace
-        #{poke Ops_InPlace, minusDnInPlace} ptr minusDnInPlace
-        #{poke Ops_InPlace, timesUpInPlace} ptr timesUpInPlace
-        #{poke Ops_InPlace, timesDnInPlace} ptr timesDnInPlace
+        #{poke Ops_Mutable, sample} ptr sample
+        #{poke Ops_Mutable, new} ptr new
+        #{poke Ops_Mutable, clone} ptr clone
+        #{poke Ops_Mutable, assign} ptr assign
+        #{poke Ops_Mutable, absUpMutable} ptr absUpMutable
+        #{poke Ops_Mutable, absDnMutable} ptr absDnMutable
+        #{poke Ops_Mutable, plusUpMutable} ptr plusUpMutable
+        #{poke Ops_Mutable, plusDnMutable} ptr plusDnMutable
+        #{poke Ops_Mutable, minusUpMutable} ptr minusUpMutable
+        #{poke Ops_Mutable, minusDnMutable} ptr minusDnMutable
+        #{poke Ops_Mutable, timesUpMutable} ptr timesUpMutable
+        #{poke Ops_Mutable, timesDnMutable} ptr timesDnMutable
+
+newOps_Mutable ::
+    (Storable cf) =>
+    (Ops_Mutable s cf) ->
+    IO (Ptr (Ops_Mutable s cf))
+newOps_Mutable ops =
+    do
+    opsP <- malloc
+    poke opsP ops
+    return opsP
+    
+freeOps_Mutable :: (Ptr (Ops_Mutable s cf)) -> IO ()
+freeOps_Mutable = free
+
+mkOpsMutable ::
+    t ->
+    (NewOpMutable s t) ->
+    (CloneOpMutable s t) ->
+    (UnaryOpMutable s t) ->
+    (UnaryOpMutable s t) ->
+    (UnaryOpMutable s t) ->
+    (BinaryOpMutable s t) ->
+    (BinaryOpMutable s t) ->
+    (BinaryOpMutable s t) ->
+    (BinaryOpMutable s t) ->
+    (BinaryOpMutable s t) ->
+    (BinaryOpMutable s t) ->
+    IO (Ops_Mutable s t)
+mkOpsMutable sample new clone assign absUp absDn addUp addDn subtrUp subtrDn multUp multDn =
+    do
+    sampleSP <- newStablePtr sample
+    newSP <- newStablePtr new
+    cloneSP <- newStablePtr clone  
+    assignSP <- newStablePtr assign  
+    absUpSP <- newStablePtr absUp  
+    absDnSP <- newStablePtr absDn
+    addUpSP <- newStablePtr addUp   
+    subtrDnSP <- newStablePtr subtrDn
+    subtrUpSP <- newStablePtr subtrUp   
+    addDnSP <- newStablePtr addDn
+    multUpSP <- newStablePtr multUp   
+    multDnSP <- newStablePtr multDn
+    return $
+      Ops_Mutable
+        sampleSP newSP
+        cloneSP assignSP
+        absUpSP absDnSP
+        addUpSP addDnSP
+        subtrUpSP subtrDnSP
+        multUpSP multDnSP
+
+mkOpsMutableArithUpDn ::
+    (ArithUpDn.RoundedRealInPlace t, CanBeMutable t) => 
+    t ->
+    ArithUpDn.RoundedRealEffortIndicator t -> 
+    IO (Ops_Mutable s t)
+mkOpsMutableArithUpDn sample effort =
+    let absEffort = ArithUpDn.rrEffortAbs sample effort in
+    let fldEffort = ArithUpDn.rrEffortField sample effort in
+    let addEffort = ArithUpDn.fldEffortAdd sample fldEffort in
+    let multEffort = ArithUpDn.fldEffortMult sample fldEffort in
+    mkOpsMutable
+        sample
+        (makeMutable)
+        (cloneMutable sample)
+        (assignMutable sample)
+        (ArithUpDn.absUpInPlaceEff sample absEffort)
+        (ArithUpDn.absDnInPlaceEff sample absEffort)
+        (ArithUpDn.addUpInPlaceEff sample addEffort)
+        (ArithUpDn.addDnInPlaceEff sample addEffort)
+        (ArithUpDn.subtrUpInPlaceEff sample addEffort)
+        (ArithUpDn.subtrDnInPlaceEff sample addEffort)
+        (ArithUpDn.multUpInPlaceEff sample multEffort)
+        (ArithUpDn.multDnInPlaceEff sample multEffort)
+
+newOpsMutableArithUpDn ::
+    (ArithUpDn.RoundedRealInPlace t, CanBeMutable t, Storable t) => 
+    t ->
+    ArithUpDn.RoundedRealEffortIndicator t -> 
+    Ptr (Ops_Mutable s t)
+newOpsMutableArithUpDn sample effort =
+    unsafePerformIO $
+        do
+        ops <- mkOpsMutableArithUpDn sample effort
+        newOps_Mutable ops
+
+newOpsMutableArithUpDnDefaultEffort ::
+    (ArithUpDn.RoundedRealInPlace t, CanBeMutable t, Storable t) => 
+    t ->
+    Ptr (Ops_Mutable s t)
+newOpsMutableArithUpDnDefaultEffort sample =
+    newOpsMutableArithUpDn sample (ArithUpDn.roundedRealDefaultEffort sample)
 
 ----------------------------------------------------------------
 
@@ -269,6 +402,10 @@ foreign import ccall unsafe "newConstPoly"
             CVar -> CSize -> 
             IO (Ptr (Poly cf))  
 
+constPoly :: cf -> Var -> Size -> (PolyFP cf)
+constPoly c maxArity maxSize =
+    unsafePerformIO $ newConstPoly c maxArity maxSize
+
 newConstPoly :: cf -> Var -> Size -> IO (PolyFP cf)
 newConstPoly c maxArity maxSize =
     do
@@ -277,6 +414,21 @@ newConstPoly c maxArity maxSize =
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyFP fp
 
+constPolyMutable :: (CanBeMutable cf) => cf -> Var -> Size -> (PolyMutableFP cf s)
+constPolyMutable c maxArity maxSize =
+    unsafePerformIO $ newConstPolyMutable c maxArity maxSize
+
+
+newConstPolyMutable :: (CanBeMutable cf) => cf -> Var -> Size -> IO (PolyMutableFP cf s)
+newConstPolyMutable c maxArity maxSize =
+    do
+    var <- unsafeSTToIO $ makeMutable c
+    varSP <- newStablePtr var
+    pP <- poly_newConstPoly varSP (toCVar maxArity) (toCSize maxSize)
+    fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
+    return $ PolyMutableFP fp
+
+
 ----------------------------------------------------------------
 
 foreign import ccall unsafe "newProjectionPoly"
@@ -284,6 +436,12 @@ foreign import ccall unsafe "newProjectionPoly"
             (StablePtr cf) -> (StablePtr cf) -> 
             CVar -> CVar -> CSize -> 
             IO (Ptr (Poly cf))  
+
+projectionPoly :: 
+    (Storable cf, HasOne cf, HasZero cf) => 
+    cf -> Var -> Var -> Size -> (PolyFP cf)
+projectionPoly sample x maxArity maxSize =
+    unsafePerformIO $ newProjectionPoly sample x maxArity maxSize
 
 newProjectionPoly :: 
     (Storable cf, HasOne cf, HasZero cf) => 
@@ -308,27 +466,80 @@ foreign import ccall safe "addUp"
             (Ptr (Poly cf)) -> 
             IO ()
 
-polyAddUp :: 
+foreign import ccall safe "addDn"
+        poly_addDn :: 
+            (StablePtr cf) ->
+            (StablePtr (ComparisonOp cf)) ->
+            (Ptr (Ops_Pure cf)) ->
+            (Ptr (Poly cf)) -> 
+            (Ptr (Poly cf)) -> 
+            (Ptr (Poly cf)) -> 
+            IO ()
+
+polyAddUp ::
     (HasZero cf, NumOrd.PartialComparison cf) =>
     cf -> 
     Size ->
     (Ptr (Ops_Pure cf)) ->
     PolyFP cf ->
     PolyFP cf ->
-    IO (PolyFP cf)
-polyAddUp sample maxSize opsPtr p1@(PolyFP p1FP) (PolyFP p2FP) =
+    PolyFP cf
+polyAddUp = polyBinaryOp poly_addUp
+
+polyAddDn ::
+    (HasZero cf, NumOrd.PartialComparison cf) =>
+    cf -> 
+    Size ->
+    (Ptr (Ops_Pure cf)) ->
+    PolyFP cf ->
+    PolyFP cf ->
+    PolyFP cf
+polyAddDn = polyBinaryOp poly_addDn
+
+polyBinaryOp binaryOp sample maxSize opsPtr p1@(PolyFP p1FP) (PolyFP p2FP) =
+    unsafePerformIO $
     do
-    maxArity <- peekArity p1
+    maxArity <- peekArityIO p1
     zeroSP <- newStablePtr $ head [zero, sample]
     resP <- poly_newConstPoly zeroSP (toCVar maxArity) (toCSize maxSize)
     compareSP <- newStablePtr $ (NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample))
-    withForeignPtr p1FP $ \p1 ->
-        withForeignPtr p2FP $ \p2 ->
-            poly_addUp zeroSP compareSP opsPtr resP p1 p2
+    _ <- withForeignPtr p1FP $ \p1 ->
+             withForeignPtr p2FP $ \p2 ->
+                 binaryOp zeroSP compareSP opsPtr resP p1 p2
     freeStablePtr compareSP
     resFP <- Conc.newForeignPtr resP (concFinalizerFreePoly resP)
     return $ PolyFP resFP
 
+
+----------------------------------------------------------------
+foreign import ccall safe "testAssign"
+        poly_testAssign :: 
+            (StablePtr t) ->
+            (StablePtr (UnaryOpMutable s t)) ->
+            (StablePtr (Mutable t s)) ->
+            (StablePtr (Mutable t s)) ->
+            IO ()
+            
+testAssign ::
+    (CanBeMutable t) =>
+    t -> 
+    Mutable t s -> 
+    Mutable t s -> 
+    ST s ()
+testAssign sample to from =
+    do
+    fromV <- unsafeReadMutable from
+    toV <- unsafeReadMutable to
+    let _ = [fromV, toV, sample]
+    unsafeIOToST $ 
+        do
+        sampleSP <- newStablePtr sample
+        assignSP <- newStablePtr $ \ to from -> assignMutable sample to from
+        toSP <- newStablePtr to
+        fromSP <- newStablePtr from
+        poly_testAssign sampleSP assignSP toSP fromSP
+    
+      
 ----------------------------------------------------------------
 
 foreign import ccall safe "evalAtPtChebBasis"
@@ -351,8 +562,9 @@ evalAtPtChebBasis ::
     (BinaryOp val) {-^ subtraction -} -> 
     (BinaryOp val) {-^ multiplication -} -> 
     (ConvertOp cf val) ->
-    IO val
+    val
 evalAtPtChebBasis (PolyFP polyFP) vals one add subtr mult cf2val =
+    unsafePerformIO $
     do
     valSPs <- mapM newStablePtr vals
     valSPsPtr <- newArray valSPs
