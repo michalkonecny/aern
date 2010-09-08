@@ -1,14 +1,18 @@
 #include <stdint.h>
 
 /* The following are provided for better code readability: */
-typedef void * Coeff; // pointer to undisclosed Haskell type t
+typedef void * ConversionOp; // pointer to Haskell type t1 -> t2
 typedef void * ComparisonOp; // pointer to Haskell type t -> t -> Int
+
+typedef void * Coeff; // pointer to undisclosed Haskell type t
 typedef void * UnaryOp; // pointer to Haskell type t -> t
 typedef void * BinaryOp; // pointer to Haskell type t -> t -> t
-typedef void * ConversionOp; // pointer to Haskell type t1 -> t2
-typedef void * CoeffInPlace; // pointer to Haskell type Ptr t -> IO ()
-typedef void * UnaryOpInPlace; // pointer to Haskell type Ptr t -> Ptr t -> IO ()
-typedef void * BinaryOpInPlace; // pointer to Haskell type Ptr t -> Ptr t -> Ptr t -> IO ()
+
+typedef void * CoeffMutable; // pointer to undisclosed Haskell type (Mutable t s)
+typedef void * NewOpMutable; // pointer to undisclosed Haskell type t -> ST s (Mutable t s)
+typedef void * CloneOpMutable; // pointer to undisclosed Haskell type (Mutable t s) -> ST s (Mutable t s)
+typedef void * UnaryOpMutable; // pointer to Haskell type Mutable t s -> Mutable t s -> ST s ()
+typedef void * BinaryOpMutable; // pointer to Haskell type Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
 
 typedef uint32_t Var;
 typedef uint32_t Power;
@@ -28,17 +32,21 @@ typedef struct OPS_PURE
 } Ops_Pure;
 
 /* References to operations provided by Haskell: */
-typedef struct OPS_INPLACE
+typedef struct OPS_MUTABLE
 {
-  UnaryOpInPlace absUpInPlace;
-  UnaryOpInPlace absDnInPlace;
-  BinaryOpInPlace plusUpInPlace;
-  BinaryOpInPlace plusDnInPlace;
-  BinaryOpInPlace minusUpInPlace;
-  BinaryOpInPlace minusDnInPlace;
-  BinaryOpInPlace timesUpInPlace;
-  BinaryOpInPlace timesDnInPlace;
-} Ops_InPlace;
+  Coeff sample;
+  NewOpMutable new;
+  CloneOpMutable clone;
+  UnaryOpMutable assign;
+  UnaryOpMutable absUpMutable;
+  UnaryOpMutable absDnMutable;
+  BinaryOpMutable plusUpMutable;
+  BinaryOpMutable plusDnMutable;
+  BinaryOpMutable minusUpMutable;
+  BinaryOpMutable minusDnMutable;
+  BinaryOpMutable timesUpMutable;
+  BinaryOpMutable timesDnMutable;
+} Ops_Mutable;
 
 /*
  * polynomial term
@@ -111,6 +119,17 @@ newProjectionPoly(const Coeff zero, const Coeff one, Var var, Var maxArity,
 void
 addUp(Coeff zero, const ComparisonOp compare, const Ops_Pure * ops,
     Poly *res, const Poly * p1, const Poly * p2);
+
+void
+addDn(Coeff zero, const ComparisonOp compare, const Ops_Pure * ops,
+    Poly *res, const Poly * p1, const Poly * p2);
+
+void
+addUpMutable(Coeff zero, const ComparisonOp compare, const Ops_Mutable * ops,
+    Poly *res, const Poly * p1, const Poly * p2);
+
+void
+testAssign(Coeff sample, UnaryOpMutable assign, CoeffMutable to, CoeffMutable from);
 
 typedef void * Value; // A Haskell value passed via StablePtr
 
