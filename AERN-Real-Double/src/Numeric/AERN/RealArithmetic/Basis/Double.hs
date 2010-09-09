@@ -55,3 +55,4 @@ instance RoundedReal Double where
     rrEffortDoubleMixedField _ _ = ()
     rrEffortRationalMixedField _ _ = ()
     
+instance RoundedRealInPlace Double
