@@ -83,6 +83,9 @@ typedef struct POLY
 void
 freePoly(Poly *p);
 
+void
+mapCoeffsInPlace(ConversionOp convert, Poly *p);
+
 /*
  * preconditions:
  * no persistent references to c and this pointer is unique for each call
@@ -117,19 +120,21 @@ newProjectionPoly(const Coeff zero, const Coeff one, Var var, Var maxArity,
  */
 
 void
-addUp(Coeff zero, const ComparisonOp compare, const Ops_Pure * ops,
-    Poly *res, const Poly * p1, const Poly * p2);
+addUpUsingPureOps(Coeff zero, const ComparisonOp compare, const Ops_Pure * ops,
+    const Ops_Mutable * _opsM, Poly *res, const Poly * p1, const Poly * p2);
 
 void
-addDn(Coeff zero, const ComparisonOp compare, const Ops_Pure * ops,
-    Poly *res, const Poly * p1, const Poly * p2);
+addDnUsingPureOps(Coeff zero, const ComparisonOp compare, const Ops_Pure * ops,
+    const Ops_Mutable * _opsM, Poly *res, const Poly * p1, const Poly * p2);
 
 void
-addUpMutable(Coeff zero, const ComparisonOp compare, const Ops_Mutable * ops,
-    Poly *res, const Poly * p1, const Poly * p2);
+addUpUsingMutableOps(Coeff zero, const ComparisonOp compare,
+    const Ops_Pure * opsP, const Ops_Mutable * opsM, Poly *res, const Poly * p1,
+    const Poly * p2);
 
 void
-testAssign(Coeff sample, UnaryOpMutable assign, CoeffMutable to, CoeffMutable from);
+testAssign(Coeff sample, UnaryOpMutable assign, CoeffMutable to,
+    CoeffMutable from);
 
 typedef void * Value; // A Haskell value passed via StablePtr
 
