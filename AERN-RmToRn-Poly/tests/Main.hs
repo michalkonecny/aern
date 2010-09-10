@@ -62,11 +62,14 @@ testMutablePolys =
     putStrLn $ "p3 = " ++ show p3
     putStrLn $ "p11 = " ++ show p11
     putStrLn $ "p12 = " ++ show p12
-    putStrLn $ "pb123 = " ++ show pb123
+    putStrLn $ "p22 = " ++ show p22
+    putStrLn $ "p1b23 = " ++ show p1b23
+    putStrLn $ "p23s1 = " ++ show p23s1
+    putStrLn $ "pb223s1 = " ++ show pb223s1
     where
     opsPtr = newOpsPureArithUpDnDefaultEffort sampleD
     opsMutablePtr = newOpsMutableArithUpDnDefaultEffort sampleD
-    [p1,p2,p3,p11,p12,pb123] = runST $
+    [p1,p2,p3,p11,p12,p22,p1b23,p23s1,pb223s1] = runST $
         do
         p1M <- constPolyMutable (3::Double) (Var 2) (Size 10)
         p2M <- projectionPolyMutable sampleD (Var 0) (Var 2) (Size 10)
@@ -75,10 +78,16 @@ testMutablePolys =
         polyAddUpMutableUsingMutableOps sampleD opsMutablePtr p11M p1M p1M
         p12M <- constPolyMutable (0::Double) (Var 2) (Size 2)
         polyAddUpMutableUsingMutableOps sampleD opsMutablePtr p12M p1M p2M
-        pb123M <- constPolyMutable (0::Double) (Var 2) (Size 2)
-        polyAddUpMutableUsingMutableOps sampleD opsMutablePtr pb123M p1M p2M
-        polyAddUpMutableUsingMutableOps sampleD opsMutablePtr pb123M pb123M p3M
-        mapM (unsafeReadPolyMutable sampleD) [p1M, p2M, p3M, p11M, p12M, pb123M]
+        p22M <- constPolyMutable (0::Double) (Var 2) (Size 2)
+        polyAddUpMutableUsingMutableOps sampleD opsMutablePtr p22M p2M p2M
+        p1b23M <- constPolyMutable (0::Double) (Var 2) (Size 2)
+        polyAddUpMutableUsingMutableOps sampleD opsMutablePtr p1b23M p2M p3M
+        polyAddUpMutableUsingMutableOps sampleD opsMutablePtr p1b23M p1M p1b23M
+        p23s1M <- constPolyMutable (0::Double) (Var 2) (Size 1)
+        polyAddUpMutableUsingMutableOps sampleD opsMutablePtr p23s1M p2M p3M
+        pb223s1M <- constPolyMutable (0::Double) (Var 2) (Size 1)
+        polyAddUpMutableUsingMutableOps sampleD opsMutablePtr pb223s1M p22M p3M
+        mapM (unsafeReadPolyMutable sampleD) [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, p23s1M, pb223s1M]
     
 testAssignST =
     do
