@@ -86,7 +86,7 @@ newProjectionPoly(const Coeff zero, const Coeff one, Var var, Var maxArity,
   return poly;
 }
 
-// auxiliary structure and associated functions for arithmetic ops:
+// auxiliary structure and associated functions for addition:
 
 typedef struct COEFFN
 {
@@ -533,7 +533,7 @@ addTermsAndReturnMaxErrorUsingMutableOps(Coeff sample,
               //                  "addTermsAndReturnMaxError: coeff %d: copying terms1[%d]\n",
               //                  i, i1);
               newCoeffs[i].cf = eval_cloneMutable_hs(sample, opsM -> clone,
-                  terms2[i1].coeff);
+                  terms1[i1].coeff);
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = -1;
               i1++;
