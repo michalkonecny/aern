@@ -1,4 +1,5 @@
-{-# LANGUAGE ForeignFunctionInterface, DeriveDataTypeable, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, EmptyDataDecls #-}
 #include <poly.h>
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.FFIhelper where
@@ -56,56 +57,12 @@ fromCPower pwr = Power (fromIntegral pwr)
 toCPower :: Power -> CPower
 toCPower (Power pwr) = fromIntegral pwr
     
-data Term cf = 
-    Term
-    { 
-        term_powers :: {-# UNPACK #-} !(ForeignPtr CPower),
-        term_coeff :: {-# UNPACK #-} !(StablePtr cf)
-    } 
-    deriving (Typeable)
-
 #let alignment t = "%lu", (unsigned long)offsetof(struct {char x__; t (y__); }, y__)
 
-instance (Storable cf) => Storable (Term cf) where
-    sizeOf _ = #size Term
-    alignment _ = #{alignment Var}
-    peek =
---        do
---        powers <- #{peek Term, powers} ptr
---        coeff <- #{peek Term, coeff} ptr
---        return $ Term powers coeff
-        error "Term.peek: Not needed and not applicable"
-    poke ptr (Term powers cf) = 
-        do 
-        withForeignPtr powers $ \p1 -> #{poke Term, powers} ptr p1
-        #{poke Term, coeff} ptr cf
+data Poly cf -- defined in poly.c, opaque to Haskell  
 
 newtype PolyFP cf = PolyFP (ForeignPtr (Poly cf))
 newtype PolyMutableFP cf s = PolyMutableFP (ForeignPtr (Poly (Mutable cf s)))
-
-data Poly cf = 
-    Poly 
-    { 
-        poly_maxArity :: {-# UNPACK #-} ! CVar,
-        poly_maxSize :: {-# UNPACK #-} ! CSize,
-        poly_psize :: {-# UNPACK #-} ! CSize,
-        poly_constTerm :: {-# UNPACK #-} !(StablePtr cf),
-        poly_terms :: {-# UNPACK #-} !(ForeignPtr (Term cf))
-    } 
-    deriving (Typeable)
-
-instance (Storable cf) => Storable (Poly cf) where
-    sizeOf _ = #size Poly
-    alignment _ = #{alignment Poly}
-    peek = error "Poly.peek: Not needed and not applicable"
-    poke ptr (Poly maxArity maxSize psize constTerm terms) = 
-        do 
-        #{poke Poly, maxArity} ptr maxArity
-        #{poke Poly, maxSize} ptr maxSize
-        #{poke Poly, psize} ptr psize
-        #{poke Poly, constTerm} ptr constTerm
-        withForeignPtr terms $ \p1 -> #{poke Poly, terms} ptr p1
-
 
 {-# INLINE peekSizes #-}
 peekSizes :: (PolyFP cf) -> (Var, Size)

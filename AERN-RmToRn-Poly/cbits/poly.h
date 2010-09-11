@@ -133,6 +133,11 @@ addUpUsingMutableOps(Coeff zero, const ComparisonOp compare,
     const Poly * p2);
 
 void
+addDnUsingMutableOps(Coeff zero, const ComparisonOp compare,
+    const Ops_Pure * opsP, const Ops_Mutable * opsM, Poly *res, const Poly * p1,
+    const Poly * p2);
+
+void
 testAssign(Coeff sample, UnaryOpMutable assign, CoeffMutable to,
     CoeffMutable from);
 

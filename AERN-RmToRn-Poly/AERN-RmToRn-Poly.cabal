@@ -37,6 +37,8 @@ Library
     
   c-sources:
     cbits/poly.c
+    cbits/evaluation.c
+    cbits/addition.c
   include-dirs: 
     cbits
 
