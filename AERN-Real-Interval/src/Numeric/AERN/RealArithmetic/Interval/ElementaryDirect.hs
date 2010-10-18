@@ -30,7 +30,6 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Interval
 
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.CInterval
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 

@@ -23,7 +23,6 @@ import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.CInterval
 import Numeric.AERN.Basics.Consistency
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut

@@ -28,7 +28,6 @@ import Prelude hiding (LT,EQ)
 import Numeric.AERN.Basics.PartialOrdering
 
 import Numeric.AERN.Basics.Interval.Basics
-import Numeric.AERN.Basics.CInterval
 
 import Numeric.AERN.Basics.Consistency
 
@@ -68,7 +67,7 @@ instance (NumOrd.ArbitraryOrderedTuple e) => Arbitrary (Interval e)
     arbitrary = 
         do
         (NumOrd.UniformlyOrderedPair (l,h)) <- arbitrary 
-        return $ fromEndpoints (l,h)
+        return $ Interval l h
 
 {-| type for random generation of consistent intervals -}       
 data ConsistentInterval e = ConsistentInterval (Interval e) deriving (Show)

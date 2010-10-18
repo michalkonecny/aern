@@ -20,7 +20,6 @@
 module Numeric.AERN.RealArithmetic.Interval.FieldOps where
 
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.CInterval
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Interval.ExactOps

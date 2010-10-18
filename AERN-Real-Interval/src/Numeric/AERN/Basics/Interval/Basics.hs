@@ -17,13 +17,13 @@
 -}
 module Numeric.AERN.Basics.Interval.Basics 
 (
-   Interval(..)
+   Interval(..),
+   getEndpoints, fromEndpoints, mapBothEndpoints, mapEachEndpoint, mapEndpointPair 
 )
 where
 
 import Prelude hiding (EQ, LT, GT)
 
-import Numeric.AERN.Basics.CInterval
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.PartialOrdering
 
@@ -71,16 +71,14 @@ instance (NFData e) => NFData (Interval e) where
     rnf (Interval l h) =
         rnf l `seq` rnf h `seq` () 
 
-instance CInterval (Interval e) where
-    type Endpoint (Interval e) = e
-    getEndpoints (Interval l h) = (l, h)
-    fromEndpoints (l,h) = Interval l h     
-    mapEndpoints f (Interval l h) = Interval (f l) (f h)
-    mapBothEndpoints fl fh (Interval l h) = Interval (fl l) (fh h)
-    mapEndpointPair f (Interval l h) = 
-        Interval l2 h2
-        where
-        (l2, h2) = f (l, h)
+getEndpoints (Interval l h) = (l, h)
+fromEndpoints (l,h) = Interval l h  
+mapBothEndpoints f (Interval l h) = Interval (f l) (f h)
+mapEachEndpoint fl fh (Interval l h) = Interval (fl l) (fh h)
+mapEndpointPair f (Interval l h) = 
+    Interval fl fh
+    where
+    (fl, fh) = f (l, h)
 
 
 

@@ -23,7 +23,6 @@ import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
 import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
 
-import Numeric.AERN.Basics.CInterval
 import Numeric.AERN.Basics.ShowInternals
 
 import Control.Concurrent
