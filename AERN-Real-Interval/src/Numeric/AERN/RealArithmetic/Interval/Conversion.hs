@@ -27,7 +27,6 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.CInterval
 
 import Control.Exception
 

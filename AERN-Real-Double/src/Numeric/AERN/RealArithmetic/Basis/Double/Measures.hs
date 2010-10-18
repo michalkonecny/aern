@@ -28,7 +28,7 @@ import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.Interval
 import Numeric.AERN.RealArithmetic.Interval.Double
 
-import Numeric.AERN.Basics.CInterval
+import Numeric.AERN.Basics.Interval
 
 instance HasDistance Double where
     type Distance Double = DI
@@ -39,8 +39,8 @@ instance HasDistance Double where
 --          -- distance between two infinities is zero (beware: distance not continuous at infinities!)  
 --        | d1 == -1/0 && d2 == -1/0 = zero
 --        | otherwise =
-            let ?addInOutEffort = effort :: ArithInOut.AddEffortIndicator (Distance Double) in
+            let ?addInOutEffort = effort :: ArithInOut.AddEffortIndicator (Interval Double) in
             ArithInOut.absOutEff ((),()) (d2I <-> d1I)
             where
-            d1I = fromEndpoints (d1, d1)
-            d2I = fromEndpoints (d2, d2)
+            d1I = Interval d1 d1
+            d2I = Interval d2 d2

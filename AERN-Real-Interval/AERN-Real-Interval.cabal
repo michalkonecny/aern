@@ -39,9 +39,6 @@ Library
         deepseq >= 1.1 && < 2.0,
         AERN-Basics == 2010.1, AERN-Real == 2010.1
   Exposed-modules:
-    Numeric.AERN.Basics.CInterval
-    Numeric.AERN.Basics.CInterval.NumericOrder
-    Numeric.AERN.Basics.CInterval.RefinementOrder
     Numeric.AERN.Basics.Interval
     Numeric.AERN.RealArithmetic.Interval
     Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
