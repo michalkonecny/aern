@@ -49,6 +49,7 @@ Library
     Numeric.AERN.Basics.Interval.Consistency
     Numeric.AERN.Basics.Interval.NumericOrder
     Numeric.AERN.Basics.Interval.RefinementOrder
+    Numeric.AERN.Basics.Interval.Mutable
     Numeric.AERN.RealArithmetic.Interval.ExactOps
     Numeric.AERN.RealArithmetic.Interval.Measures
     Numeric.AERN.RealArithmetic.Interval.Conversion
