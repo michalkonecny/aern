@@ -38,6 +38,15 @@ Library
         criterion >= 0.5 && < 0.6,
         AERN-Basics == 2010.1, AERN-Real == 2010.1
   Exposed-modules:
-    
-  Other-modules:
+    Numeric.AERN.RmToRn.NumericOrderRounding.Domain    
+--    Numeric.AERN.RmToRn.NumericOrderRounding    
+--    Numeric.AERN.RmToRn.RefinementOrderRounding
+--    Numeric.AERN.RmToRn.RefinementOrderRounding.Interval
 
+--    Numeric.AERN.RmToRn.TranslateFromUnitDom
+--    Numeric.AERN.RmToRn.SeparateEdges
+--    Numeric.AERN.RmToRn.PieceWise
+--    Numeric.AERN.RmToRn.AutoDifferentiation
+        
+  Other-modules:
+--    Numeric.AERN.RmToRn.RefinementOrderRounding.DomainSplit
