@@ -40,6 +40,15 @@ class CanBeMutable t where
         a <- unsafeReadMutable aM
         let _ = [a, sample]
         writeMutable rM a 
+    {-| swap the values of two mutable variables  -}
+    swapMutable :: t -> Mutable t s -> Mutable t s -> ST s ()
+    swapMutable sample aM bM =
+        do
+        a <- unsafeReadMutable aM
+        b <- unsafeReadMutable bM
+        let _ = [a, b, sample]
+        writeMutable aM b 
+        writeMutable bM a 
     {-| clone a mutable variable, the first parameter only aids type checking  -}
     cloneMutable :: t -> Mutable t s -> ST s (Mutable t s)
     cloneMutable sample aM =
