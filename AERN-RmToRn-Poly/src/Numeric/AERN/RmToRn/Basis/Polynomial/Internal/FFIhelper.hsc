@@ -606,7 +606,7 @@ evalAtPtChebBasis ::
     (Storable cf) => 
     (PolyFP cf) ->
     [val] {-^ values to substitute for variables @[0..(maxArity-1)]@ -} ->
-    val -> {-^ number @1@ -}
+    val {-^ number @1@ -} ->
     (BinaryOp val) {-^ addition -} -> 
     (BinaryOp val) {-^ subtraction -} -> 
     (BinaryOp val) {-^ multiplication -} -> 
