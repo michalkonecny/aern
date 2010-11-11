@@ -19,8 +19,10 @@ module Numeric.AERN.Basics.Interval.Mutable where
 import Numeric.AERN.Basics.Interval.Basics
 import Numeric.AERN.Basics.Mutable
 
+import Numeric.AERN.RealArithmetic.ExactOps
+
 data MInterval e s = 
-    MInterval { left :: e s, right :: e s }
+    MInterval { mIntervalLeft :: e s, mIntervalRight :: e s }
 
 instance (CanBeMutable e) => CanBeMutable (Interval e) where
     type Mutable (Interval e) = MInterval (Mutable e)
@@ -52,3 +54,5 @@ instance (CanBeMutable e) => CanBeMutable (Interval e) where
         l <- unsafeReadMutable lM 
         h <- unsafeReadMutable hM 
         return $ Interval l h
+
+        
