@@ -70,6 +70,7 @@ instance (ShowInternals e, NumOrd.PartialComparison e) => (Show (Interval e))
 instance (NFData e) => NFData (Interval e) where
     rnf (Interval l h) =
         rnf l `seq` rnf h `seq` () 
+--        l `seq` h `seq` () 
 
 getEndpoints (Interval l h) = (l, h)
 fromEndpoints (l,h) = Interval l h  
