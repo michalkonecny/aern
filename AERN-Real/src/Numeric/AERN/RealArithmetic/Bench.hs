@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Bench
     Description :  benchmarking utilities  
@@ -23,7 +24,30 @@ import Numeric.AERN.RealArithmetic.Measures
 
 import Numeric.AERN.Misc.Debug
 
-mkCommentImprecision op effort a =
+{-| Approximate the imprecision of an operation by measuring
+    the distance between its outer rounded result and inner rounded result 
+-}
+mkCommentImprecision1 ::
+    (HasDistance t,
+     ArithUpDn.Convertible (Distance t) Double,
+     Show (Distance t)) =>
+    (ei -> t -> t) ->
+    (ei -> t -> t) ->
+    ei -> t -> String
+mkCommentImprecision1 opOut opIn effort a =
+    show $ imprecisionD
+    where
+    imprecisionD :: Double
+    imprecisionD =
+        case ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort imprecision sampleD) imprecision of
+            Just imprecisionUp -> imprecisionUp
+            Nothing -> error $ "mkCommentImprecision: cannot convert up to a Double: " ++ show imprecision
+    sampleD = 0 :: Double
+    imprecision = distanceBetweenEff (distanceDefaultEffort resultOut) resultOut resultIn
+    resultOut = opOut effort a   
+    resultIn = opIn effort a   
+
+mkCommentAreaImprecision op effort a =
     unsafePrint
     (
         "mkCommentImprecision: " 
