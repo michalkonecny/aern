@@ -1,6 +1,6 @@
 {-|
     Module      :  Main
-    Description :  run all tests defined in the AERN-Real package  
+    Description :  run all benchmarks defined in the AERN-Real package  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -24,12 +24,12 @@ import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
-import Progression.Main
+import Numeric.AERN.Basics.Bench
+import Criterion.Main
 import Criterion
 
 main =
-    defaultMain $
-        bgroup ""
+    defaultMainWith (criterionConfig "bench-Double" 20) (return ()) $
         [
             ArithInOut.benchInOutExp ("DI", sampleDI)
         ]
