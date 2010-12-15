@@ -141,6 +141,6 @@ testsInOutExp (name, sample) =
             
 benchInOutExp (name, sample) =
     bgroup (name ++ " exp") $ 
-        mkBenchSequence1 (mkCommentImprecision expOutEff) expOutEff (expDefaultEffort sample) sample 
+        mkBenchSequence1 (mkCommentImprecision1 expOutEff expInEff) expOutEff (expDefaultEffort sample) sample 
 
         
