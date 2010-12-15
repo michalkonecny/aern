@@ -14,19 +14,44 @@ module Numeric.AERN.Basics.Bench where
 
 import Numeric.AERN.Basics.Effort 
 
+import Control.DeepSeq
 import Criterion
+import Criterion.Config
+import qualified Criterion.MultiMap as M
 import Test.QuickCheck
 import Test.QuickCheck.Gen
 import System.Random
 
+--runBenchmarksQ ::
+--    [(Benchmark, q)] -> [(Double,q)]
+--runBenchmarksQ
+
+criterionConfig name samples =
+    defaultConfig 
+    { 
+        cfgSummaryFile = ljust $ name ++ ".csv", 
+        cfgSamples = ljust samples, 
+        cfgResamples = ljust 200, 
+        cfgPlotSameAxis = ljust True,
+        cfgPerformGC = ljust True
+--        ,
+--        cfgPlot = M.singleton KernelDensity (PDF 1024 780) 
+    }
+
+mkBenchSequence1 ::
+    (Arbitrary t, EffortIndicator ei, NFData t) =>
+    (ei -> t -> String) {-^ function constructing benchmark names -} ->
+    (ei -> t -> t) {-^ function to benchmark -} ->
+    ei -> t -> [Benchmark]
 mkBenchSequence1 mkComment fnEff initEffort sample =
-    map mkBench $ zip3 [1..7] efforts inputs 
+    map mkBench $ zip3 [1..10] efforts inputs
     where
     mkBench (n, effort, input) =
         bench name (nf (\(e,i) -> fnEff e i) (effort, input))
         where
         name =
-           "" ++ showPad 2 n ++ ":" ++ mkComment effort input ++ ""
+--           "" ++ showPad 2 n ++ ":" ++ 
+           mkComment effort input ++ ""
     showPad l n = 
         replicate (max 0 (l - (length sn))) '0' ++ sn 
         where sn = show n
