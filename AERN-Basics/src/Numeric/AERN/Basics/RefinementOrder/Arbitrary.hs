@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.Arbitrary
     Description :  random generation of tuples with various relation constraints  
@@ -38,6 +40,21 @@ import System.IO.Unsafe
     where such pairs are rare.
 -}
 class ArbitraryOrderedTuple t where
+    {-| a type of meaningful constraints to place on generation of arbitrary values -}
+    type Area t
+    {-| a special area that puts no constaints on the values -}
+    areaWhole :: t -> Area t
+    {-| generator of tuples that satisfy the given relation requirements
+        and area restriction, 
+        nothing if in this structure there are no tuples satisfying these requirements -}
+    arbitraryTupleInAreaRelatedBy ::
+        (Ord ix, Show ix) =>
+        t {-^ sample for type checking -} ->
+        (Area t) -> 
+        [ix] {-^ how many elements should be generated and with what names -} -> 
+        [((ix, ix),[PartialOrdering])]
+           {-^ required orderings for some pairs of elements -} -> 
+        Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}   
     {-| generator of tuples that satisfy the given relation requirements, 
         nothing if in this structure there are no tuples satisfying these requirements -}
     arbitraryTupleRelatedBy ::
