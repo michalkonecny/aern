@@ -93,9 +93,14 @@ instance (NumOrd.HasHighest e) => (NumOrd.HasHighest (Interval e))
 instance (NumOrd.HasExtrema e) => (NumOrd.HasExtrema (Interval e))
 
 instance (NumOrd.ArbitraryOrderedTuple e) => NumOrd.ArbitraryOrderedTuple (Interval e) where
-   arbitraryTupleRelatedBy = arbitraryIntervalTupleNumericallyRelatedBy
+   type NumOrd.Area (Interval e) = NumOrd.Area e
+   areaWhole (Interval l h) = NumOrd.areaWhole l
+   arbitraryTupleInAreaRelatedBy area = 
+       arbitraryIntervalTupleInAreaNumericallyRelatedBy (Just area)
+   arbitraryTupleRelatedBy = 
+       arbitraryIntervalTupleInAreaNumericallyRelatedBy Nothing
 
-arbitraryIntervalTupleNumericallyRelatedBy indices constraints =
+arbitraryIntervalTupleInAreaNumericallyRelatedBy maybeArea indices constraints =
     case endpointGens of 
         [] -> Nothing
         _ -> Just $
@@ -104,9 +109,16 @@ arbitraryIntervalTupleNumericallyRelatedBy indices constraints =
             endpointTuple <- gen
             return $ endpointsToIntervals endpointTuple
     where
-    endpointGens = 
-        catMaybes $
-           map (NumOrd.arbitraryTupleRelatedBy endpointIndices) endpointConstraintsVersions
+    endpointGens =
+        case maybeArea of
+            (Just area) ->
+                catMaybes $
+                   map (NumOrd.arbitraryTupleInAreaRelatedBy area endpointIndices) 
+                       endpointConstraintsVersions
+            Nothing -> 
+                catMaybes $
+                   map (NumOrd.arbitraryTupleRelatedBy endpointIndices) 
+                       endpointConstraintsVersions
     endpointIndices = 
         concat $ map (\ix -> [(ix,-1), (ix,1)]) indices
     endpointsToIntervals [] = []

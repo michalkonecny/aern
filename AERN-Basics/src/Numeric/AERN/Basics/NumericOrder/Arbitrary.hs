@@ -57,7 +57,6 @@ class ArbitraryOrderedTuple t where
         nothing if in this structure there are no tuples satisfying these requirements -}
     arbitraryTupleInAreaRelatedBy ::
         (Ord ix, Show ix) =>
-        t {-^ sample for type checking -} ->
         (Area t) -> 
         [ix] {-^ how many elements should be generated and with what names -} -> 
         [((ix, ix),[PartialOrdering])]
@@ -144,7 +143,7 @@ arbitraryLinear (least, greatest) succ pred choose
 instance ArbitraryOrderedTuple Int where
     type (Area Int) = AreaWholeOnly Int
     areaWhole _ = AreaWholeOnly [-1,0,1]
-    arbitraryTupleInAreaRelatedBy sample area = 
+    arbitraryTupleInAreaRelatedBy area = 
         linearArbitraryTupleRelatedBy $ arbitraryWhole area
     arbitraryTupleRelatedBy =
         linearArbitraryTupleRelatedBy $ incrSize arbitrary
@@ -152,7 +151,7 @@ instance ArbitraryOrderedTuple Int where
 instance ArbitraryOrderedTuple Integer where
     type (Area Integer) = AreaWholeOnly Integer
     areaWhole _ = AreaWholeOnly [-1,0,1]
-    arbitraryTupleInAreaRelatedBy sample area = 
+    arbitraryTupleInAreaRelatedBy area = 
         linearArbitraryTupleRelatedBy $ arbitraryWhole area
     arbitraryTupleRelatedBy =
         linearArbitraryTupleRelatedBy $ incrSize arbitrary
@@ -160,7 +159,7 @@ instance ArbitraryOrderedTuple Integer where
 instance ArbitraryOrderedTuple Rational where
     type (Area Rational) = (AreaLinear Int, AreaLinear Int)
     areaWhole _ = (areaLinearWhole [-1,0,1], areaLinearWhole [0])
-    arbitraryTupleInAreaRelatedBy sample (numeratorArea, preDenominatorArea) = 
+    arbitraryTupleInAreaRelatedBy (numeratorArea, preDenominatorArea) = 
         linearArbitraryTupleRelatedBy chooseRational
         where
         chooseRational = 
@@ -190,7 +189,7 @@ areaDoubleSmall =
 instance ArbitraryOrderedTuple Double where
     type (Area Double) = AreaLinear Double
     areaWhole _ = areaLinearWhole [-1/0,-1,0,1,1/0]
-    arbitraryTupleInAreaRelatedBy sample area = 
+    arbitraryTupleInAreaRelatedBy area = 
         linearArbitraryTupleRelatedBy 
                 (arbitraryLinear (-maxDbl, maxDbl) id id chooseDbl area)
         where
@@ -239,9 +238,9 @@ instance ArbitraryOrderedTuple Double where
                 filter valid [d,-d]
                 where
                 valid d = lb <= d && d <= ub
-        (minExp, maxExp) = floatRange sample
+        (minExp, maxExp) = floatRange (0 :: Double)
     arbitraryTupleRelatedBy =
-        arbitraryTupleInAreaRelatedBy (0 :: Double) areaDoubleSmall
+        arbitraryTupleInAreaRelatedBy areaDoubleSmall
        -- When generating Double numbers for testing, try to avoid overflows
        -- as we cannot usually overcome overflows when we cannot increase 
        -- the granularity (aka precision) of the floating point type.

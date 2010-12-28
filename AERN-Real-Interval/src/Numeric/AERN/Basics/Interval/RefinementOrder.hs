@@ -162,9 +162,14 @@ instance
     (RefOrd.RoundedLattice (Interval e))
 
 instance (NumOrd.ArbitraryOrderedTuple e) => RefOrd.ArbitraryOrderedTuple (Interval e) where
-   arbitraryTupleRelatedBy = arbitraryIntervalTupleRefinementRelatedBy
+   type RefOrd.Area (Interval e) = NumOrd.Area e
+   areaWhole (Interval l h) = NumOrd.areaWhole l
+   arbitraryTupleInAreaRelatedBy area = 
+       arbitraryIntervalTupleInAreaRefinementRelatedBy (Just area)
+   arbitraryTupleRelatedBy = 
+       arbitraryIntervalTupleInAreaRefinementRelatedBy Nothing
 
-arbitraryIntervalTupleRefinementRelatedBy indices thinIndices constraints =
+arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices thinIndices constraints =
     case endpointGens of 
         [] -> Nothing
         _ -> Just $
@@ -173,9 +178,16 @@ arbitraryIntervalTupleRefinementRelatedBy indices thinIndices constraints =
             endpointTuple <- gen
             return $ endpointsToIntervals endpointTuple
     where
-    endpointGens = 
-        catMaybes $
-           map (NumOrd.arbitraryTupleRelatedBy endpointIndices) endpointConstraintsVersions
+    endpointGens =
+        case maybeArea of
+            (Just area) ->
+                catMaybes $
+                   map (NumOrd.arbitraryTupleInAreaRelatedBy area endpointIndices)
+                       endpointConstraintsVersions
+            Nothing ->
+                catMaybes $
+                   map (NumOrd.arbitraryTupleRelatedBy endpointIndices) 
+                       endpointConstraintsVersions
     endpointIndices = 
         concat $ map (\ix -> [(ix,-1), (ix,1)]) indices
     endpointsToIntervals [] = []
