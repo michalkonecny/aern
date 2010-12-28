@@ -49,9 +49,11 @@ class ArbitraryOrderedTuple t where
         nothing if in this structure there are no tuples satisfying these requirements -}
     arbitraryTupleInAreaRelatedBy ::
         (Ord ix, Show ix) =>
-        t {-^ sample for type checking -} ->
         (Area t) -> 
-        [ix] {-^ how many elements should be generated and with what names -} -> 
+        [ix] 
+           {-^ how many elements should be generated and with what names -} -> 
+        [ix]
+           {-^ a subset of elements that have to be thin approximations -} -> 
         [((ix, ix),[PartialOrdering])]
            {-^ required orderings for some pairs of elements -} -> 
         Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}   
@@ -62,7 +64,7 @@ class ArbitraryOrderedTuple t where
         [ix]
            {-^ how many elements should be generated and with what names -} -> 
         [ix]
-           {-^ a subset of elements that have to thin approximations -} -> 
+           {-^ a subset of elements that have to be thin approximations -} -> 
         [((ix, ix),[PartialOrdering])]
            {-^ required orderings for some pairs of elements -} -> 
         Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}   
