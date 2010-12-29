@@ -12,6 +12,8 @@
 -}
 module Numeric.AERN.Basics.Bench where
 
+import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+
 import Numeric.AERN.Basics.Effort 
 
 import Control.DeepSeq
@@ -38,15 +40,32 @@ criterionConfig name samples =
 --        cfgPlot = M.singleton KernelDensity (PDF 1024 780) 
     }
 
-mkBenchSequence1 ::
-    (Arbitrary t, EffortIndicator ei, NFData t) =>
+mkBenchAreasSequences1 ::
+    (RefOrd.ArbitraryOrderedTuple t, EffortIndicator ei, NFData t) =>
     (ei -> t -> String) {-^ function constructing benchmark names -} ->
     (ei -> t -> t) {-^ function to benchmark -} ->
+    [(String, RefOrd.Area t)] {-^ areas in the input space and their descriptions; empty means whole space only -} ->
+    Int {-^ how many benchmarks to generate -} ->
     ei -> t -> [Benchmark]
-mkBenchSequence1 mkComment fnEff initEffort sample =
-    map mkBench $ zip3 [1..10] efforts inputs
+mkBenchAreasSequences1 mkComment fnEff [] n initEffort sample =
+    mkBenchSequence1 mkComment fnEff Nothing n initEffort sample
+mkBenchAreasSequences1 mkComment fnEff areas n initEffort sample =
+    map areaSequence areas
     where
-    mkBench (n, effort, input) =
+    areaSequence (descr, area) = 
+       bgroup descr $ mkBenchSequence1 mkComment fnEff (Just area) n initEffort sample
+
+mkBenchSequence1 ::
+    (RefOrd.ArbitraryOrderedTuple t, EffortIndicator ei, NFData t) =>
+    (ei -> t -> String) {-^ function constructing benchmark names -} ->
+    (ei -> t -> t) {-^ function to benchmark -} ->
+    (Maybe (RefOrd.Area t))  {-^ area in the input space; Nothing means whole space only -} ->
+    Int {-^ how many benchmarks to generate -} ->
+    ei -> t -> [Benchmark]
+mkBenchSequence1 mkComment fnEff maybeArea n initEffort sample =
+    map mkBench $ zip3 [1..n] efforts inputs
+    where
+    mkBench (n, effort, [input]) =
         bench name (nf (\(e,i) -> fnEff e i) (effort, input))
         where
         name =
@@ -55,13 +74,18 @@ mkBenchSequence1 mkComment fnEff initEffort sample =
     showPad l n = 
         replicate (max 0 (l - (length sn))) '0' ++ sn 
         where sn = show n
-    _ = sample : inputs
+    _ = [sample] : inputs
     inputs = 
-        map (\(g, size) -> unGen arbitrary g size) $ zip gs sizes
-        -- get a sample sequence (always the same!)  
+        map (\(g, size) -> unGen arbitraryInArea g size) $ zip gs sizes
+        -- get a sample sequence (always the same!)
     gs = 
         iterate (snd . next) $ mkStdGen 111111321
         -- sequence of random generators
+    arbitraryInArea =
+       case case maybeArea of
+            Nothing -> RefOrd.arbitraryTupleRelatedBy [1] [] []
+            (Just area) -> RefOrd.arbitraryTupleInAreaRelatedBy area [1] [] []
+       of Just gen -> gen
     sizes = 
         concat $ map (replicate 1) $ scanl1 (*) [2,2..] 
         -- ie [2,4,8,16..]
