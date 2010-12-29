@@ -140,7 +140,18 @@ testsInOutExp (name, sample) =
         ]
             
 benchInOutExp (name, sample) =
-    bgroup (name ++ " exp") $ 
-        mkBenchSequence1 (mkCommentImprecision1 expOutEff expInEff) expOutEff (expDefaultEffort sample) sample 
+    bgroup (name ++ " exp") $
+        mkBenchAreasSequences1 (mkCommentImprecision1 expOutEff expInEff) 
+            expOutEff benchExpAreas 10 (expDefaultEffort sample) sample 
 
-        
+benchExpAreas =
+    [
+        ("near 0", NumOrd.AreaLinear (Just $ -1/2) True (Just $ 1/2) True [])
+    ,
+        ("near -10", NumOrd.AreaLinear (Just $ -10.5) True (Just $ -9.5) True [])
+    ,
+        ("near 10", NumOrd.AreaLinear (Just $ 9.5) True (Just $ 10.5) True [])
+    ,
+        ("near 20", NumOrd.AreaLinear (Just $ 19.5) True (Just $ 20.5) True [])
+    ]
+    
