@@ -31,6 +31,6 @@ import Criterion
 main =
     defaultMainWith (criterionConfig "bench-Double" 20) (return ()) $
         [
-            ArithInOut.benchInOutExp ("DI", sampleDI)
+            ArithInOut.benchInOutExp ("DI", sampleDI) ArithInOut.benchExpAreasReal
         ]
 

@@ -139,12 +139,12 @@ testsInOutExp (name, sample) =
             testProperty "e^(a + b) = e^a * e^b" (propExpOfAddToMult sample)
         ]
             
-benchInOutExp (name, sample) =
+benchInOutExp (name, sample) areas =
     bgroup (name ++ " exp") $
         mkBenchAreasSequences1 (mkCommentImprecision1 expOutEff expInEff) 
-            expOutEff benchExpAreas 10 (expDefaultEffort sample) sample 
+            expOutEff areas 10 (expDefaultEffort sample) sample 
 
-benchExpAreas =
+benchExpAreasReal =
     [
         ("near 0", NumOrd.AreaLinear (Just $ -1/2) True (Just $ 1/2) True [])
     ,
