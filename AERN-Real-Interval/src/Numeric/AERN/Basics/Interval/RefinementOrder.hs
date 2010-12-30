@@ -35,8 +35,7 @@ import Test.QuickCheck
 import Data.Maybe
 
 instance 
-    (NumOrd.PartialComparison e 
-     ) => 
+    (NumOrd.PartialComparison e) => 
     (RefOrd.PartialComparison (Interval e))
     where
     type RefOrd.PartialCompareEffortIndicator (Interval e) = 
@@ -69,9 +68,7 @@ instance (NumOrd.HasExtrema e) => (RefOrd.HasBottom (Interval e))
 instance (NumOrd.HasExtrema e) => (RefOrd.HasExtrema (Interval e))
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
---     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)
-     ) => 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
     (RefOrd.OuterRoundedBasis (Interval e)) 
     where
     type RefOrd.PartialJoinOutEffortIndicator (Interval e) = 
@@ -88,9 +85,7 @@ instance
             h = NumOrd.minUpEff effort h1 h2
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
---     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)
-     ) => 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
     (RefOrd.InnerRoundedBasis (Interval e)) 
     where
     type RefOrd.PartialJoinInEffortIndicator (Interval e) = 
@@ -114,9 +109,7 @@ instance
 
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
---     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)
-     ) => 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
     (RefOrd.OuterRoundedLattice (Interval e)) 
     where
     type RefOrd.JoinMeetOutEffortIndicator (Interval e) = 
@@ -135,9 +128,7 @@ instance
             h = NumOrd.maxUpEff effort h1 h2
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
---     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)
-     ) => 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
     (RefOrd.InnerRoundedLattice (Interval e)) 
     where
     type RefOrd.JoinMeetInEffortIndicator (Interval e) = 
@@ -156,9 +147,7 @@ instance
             h = NumOrd.maxDnEff effort h1 h2
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
---     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)
-     ) => 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
     (RefOrd.RoundedLattice (Interval e))
 
 instance (NumOrd.ArbitraryOrderedTuple e) => RefOrd.ArbitraryOrderedTuple (Interval e) where
