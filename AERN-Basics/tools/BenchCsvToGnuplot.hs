@@ -1,6 +1,7 @@
 module Main where
 
 import System.Environment
+import System.Exit
 import System.Directory
 import qualified Data.Map as Map
 import qualified Data.Set as Set
@@ -8,13 +9,28 @@ import qualified Data.List as List
 
 main =
     do
-    [inFileName] <- getArgs
-    (_, benchRecords) <- readCSV inFileName
+    args <- getArgs
+    inFileNames <- checkArgs args
+    recordLists <- mapM readCSV inFileNames
+    let benchRecords = concat $ map snd recordLists
     let outputData = processData $ map separateImprecision benchRecords
-    let fileNameBase = map slash2dash $ take (length inFileName - 4) inFileName
-    let outFileNames = map (makeOutFileName fileNameBase) $ map fst outputData 
+    let outFileNames = map makeOutFileName $ map fst outputData 
     mapM_ writeOutputFile $ zip outFileNames outputData
-    writeFile (fileNameBase ++ ".gnuplot") $ makeGnuplot inFileName outFileNames
+    writeFile "plotAll.gnuplot" $ makeGnuplot inFileNames outFileNames
+
+checkArgs [] = usageAndQuit
+checkArgs inFileNames =
+    do
+    results <- mapM doesFileExist inFileNames
+    case and results of
+        True -> return inFileNames
+        False -> usageAndQuit
+        
+usageAndQuit =
+     do
+     progName <- getProgName
+     putStrLn $ "usage: " ++ progName ++ " <file1>.csv [<file2>.csv ...]"
+     exitFailure
 
 slash2dash '/' = '-'
 slash2dash c = c
@@ -24,9 +40,8 @@ writeOutputFile (outFileName, (name, benchRecords)) =
     putStrLn outFileName
     writeCSV outFileName (["Imprecision", "Mean"], benchRecords)
     
-makeOutFileName fileNameBase name =
---        fileNameBase ++ "-" ++ 
-        (map space2underscore name) ++ ".csv"
+makeOutFileName name =
+    (map space2underscore name) ++ ".csv"
     
 space2underscore ' ' = '_'
 space2underscore c = c
@@ -50,12 +65,12 @@ processData benchRecords =
         (name, 
          filter (\r -> lookupKey r "Name" == name) benchRecords)
     
-makeGnuplot inFileName outFileNames =
+makeGnuplot inFileNames outFileNames =
     unlines $
         [
-         "# AUTO GENERATED FROM " ++ inFileName
+         "# AUTO GENERATED FROM " ++ (List.intercalate ", " inFileNames)
          ,"set term postscript eps enhanced"
-         ,"set output \"" ++ inFileName ++ ".eps" ++ "\""
+         ,"set output \"plotAll.eps\""
          ,"set title 'computation time based on result imprecision'"
          ,"set key right bottom"
          ,"set key box linestyle 1"
