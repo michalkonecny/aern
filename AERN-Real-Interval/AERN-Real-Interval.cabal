@@ -55,4 +55,5 @@ Library
     Numeric.AERN.RealArithmetic.Interval.Conversion
     Numeric.AERN.RealArithmetic.Interval.FieldOps
     Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
+    Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps
 

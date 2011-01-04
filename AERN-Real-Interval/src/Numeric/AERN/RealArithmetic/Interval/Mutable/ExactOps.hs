@@ -17,12 +17,16 @@ module Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps where
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Interval.ExactOps
+
+import Numeric.AERN.Basics.Mutable
 
 instance (NegInPlace e, Neg e) => NegInPlace (Interval e)
     where
-    negInPlace (Interval sample _) (MInterval lM hM) =
+    negInPlace (Interval sample _) (MInterval lRes hRes) (MInterval lM hM) =
         do
-        negInPlace sample lM
-        negInPlace sample hM
-        swapMutable sample lM hM
+        temp <- makeMutable sample
+        negInPlace sample temp lM -- mind potential aliasing hRes - hM
+        negInPlace sample lRes hM
+        assignMutable sample hRes temp
           
