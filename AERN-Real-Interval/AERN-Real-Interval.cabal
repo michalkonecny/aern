@@ -41,6 +41,7 @@ Library
   Exposed-modules:
     Numeric.AERN.Basics.Interval
     Numeric.AERN.RealArithmetic.Interval
+    Numeric.AERN.RealArithmetic.Interval.Mutable
     Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
     Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
     
@@ -55,5 +56,6 @@ Library
     Numeric.AERN.RealArithmetic.Interval.Conversion
     Numeric.AERN.RealArithmetic.Interval.FieldOps
     Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
-    Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps
+    Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps, 
+    Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps
 

@@ -15,11 +15,11 @@
 
 module Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps where
 
+import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Interval
+
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Interval.ExactOps
-
-import Numeric.AERN.Basics.Mutable
 
 instance (NegInPlace e, Neg e) => NegInPlace (Interval e)
     where
