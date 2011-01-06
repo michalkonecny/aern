@@ -44,45 +44,42 @@ Library
         random >= 1.0 && < 2.0,
         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4
   Exposed-modules:
-    Numeric.AERN.Basics.ShowInternals
-    Numeric.AERN.Basics.Exception
-    Numeric.AERN.Basics.Effort
-    Numeric.AERN.Basics.Mutable
-    Numeric.AERN.Basics.Bench
-    Numeric.AERN.Basics.PartialOrdering
-    Numeric.AERN.Basics.NumericOrder
-    Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
-    Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
-    Numeric.AERN.Basics.RefinementOrder
-    Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
-    Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
-    Numeric.AERN.Basics.Consistency
-    Numeric.AERN.Basics.Laws.Utilities
-    Numeric.AERN.Basics.Laws.Relation
-    Numeric.AERN.Basics.Laws.PartialRelation
-    Numeric.AERN.Basics.Laws.Operation
-    Numeric.AERN.Basics.Laws.RoundedOperation
-    Numeric.AERN.Basics.Laws.OperationRelation
-    Numeric.AERN.Misc.Bool
-    Numeric.AERN.Misc.List
-    Numeric.AERN.Misc.Maybe
-    Numeric.AERN.Misc.QuickCheck
+    Numeric.AERN.Basics.ShowInternals, 
+    Numeric.AERN.Basics.Exception, 
+    Numeric.AERN.Basics.Effort, 
+    Numeric.AERN.Basics.Mutable, 
+    Numeric.AERN.Basics.Bench, 
+    Numeric.AERN.Basics.PartialOrdering, 
+    Numeric.AERN.Basics.NumericOrder, 
+    Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort, 
+    Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort, 
+    Numeric.AERN.Basics.RefinementOrder, 
+    Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort, 
+    Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort, 
+    Numeric.AERN.Basics.Consistency, 
+    Numeric.AERN.Basics.Laws.Utilities, 
+    Numeric.AERN.Basics.Laws.Relation, 
+    Numeric.AERN.Basics.Laws.PartialRelation, 
+    Numeric.AERN.Basics.Laws.Operation, 
+    Numeric.AERN.Basics.Laws.RoundedOperation, 
+    Numeric.AERN.Basics.Laws.OperationRelation, 
+    Numeric.AERN.Basics.Laws.RoundedOpInPlace, 
+    Numeric.AERN.Misc.Bool, 
+    Numeric.AERN.Misc.List, 
+    Numeric.AERN.Misc.Maybe, 
+    Numeric.AERN.Misc.QuickCheck, 
     Numeric.AERN.Misc.Debug
     
   Other-modules:
     Numeric.AERN.Basics.NumericOrder.PartialComparison
---    Numeric.AERN.Basics.NumericOrder.Comparison
     Numeric.AERN.Basics.NumericOrder.Arbitrary
     Numeric.AERN.Basics.NumericOrder.Extrema
---    Numeric.AERN.Basics.NumericOrder.Lattice
     Numeric.AERN.Basics.NumericOrder.RoundedLattice
     Numeric.AERN.Basics.NumericOrder.RefinementRoundedLattice
+    Numeric.AERN.Basics.NumericOrder.InPlace.RoundedLattice
     Numeric.AERN.Basics.RefinementOrder.PartialComparison
---    Numeric.AERN.Basics.RefinementOrder.Comparison
     Numeric.AERN.Basics.RefinementOrder.Arbitrary
---    Numeric.AERN.Basics.RefinementOrder.Basis
     Numeric.AERN.Basics.RefinementOrder.Extrema
---    Numeric.AERN.Basics.RefinementOrder.Lattice
     Numeric.AERN.Basics.RefinementOrder.RoundedBasis
     Numeric.AERN.Basics.RefinementOrder.RoundedLattice
 
