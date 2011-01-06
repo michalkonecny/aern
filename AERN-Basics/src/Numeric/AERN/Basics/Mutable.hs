@@ -64,6 +64,9 @@ type OpMutable1 t s =
 type OpMutable1Eff ei t s = 
     ei -> (Mutable t s) -> (Mutable t s) -> ST s () 
 
+type OpMutable2 t s = 
+    (Mutable t s) -> (Mutable t s) -> (Mutable t s) -> ST s () 
+
 type OpMutable2Eff ei t s = 
     ei -> (Mutable t s) -> (Mutable t s) -> (Mutable t s) -> ST s () 
 
@@ -90,6 +93,18 @@ mutable1EffToPure mutableFn eff a =
         do
         aM <- makeMutable a
         mutableFn eff aM aM
+        unsafeReadMutable aM
+
+mutable2ToPure ::
+    (CanBeMutable t) =>
+    (forall s. OpMutable2 t s) ->
+    (t -> t -> t)
+mutable2ToPure mutableFn a b =
+    runST $
+        do
+        aM <- makeMutable a
+        bM <- makeMutable b
+        mutableFn aM aM bM
         unsafeReadMutable aM
 
 mutable2EffToPure ::

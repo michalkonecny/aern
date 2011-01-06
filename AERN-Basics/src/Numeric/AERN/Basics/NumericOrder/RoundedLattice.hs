@@ -22,9 +22,6 @@ import Prelude hiding ((<=))
 
 import Numeric.AERN.Basics.Exception
 
-import Numeric.AERN.Basics.Mutable
-import Control.Monad.ST (ST)
-
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.NumericOrder.Arbitrary 
@@ -211,20 +208,3 @@ testsRoundedLatticeDistributive (name, sample) maybeIllegalArg =
         ,
          testProperty "distributive" (propRoundedLatticeDistributive sample)
         ]
-
---{-|
---    A type with directed-rounding lattice operations
---    that also supported in-place.
----}
---class (RoundedLattice t, CanBeMutable t) => RoundedLatticeMutable t where
---    {-| maxUpMutable e a b c means a := maxUp e b c; a can be the same as b and/or c -}
---    maxUpMutable :: [EffortIndicator] -> Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
---    {-| maxDnMutable e a b c means a := maxDn e b c; a can be the same as b and/or c -}
---    maxDnMutable :: [EffortIndicator] -> Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
---    {-| minUpMutable e a b c means a := minUp e b c; a can be the same as b and/or c -}
---    minUpMutable :: [EffortIndicator] -> Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
---    {-| minDnMutable e a b c means a := minDn e b c; a can be the same as b and/or c -}
---    minDnMutable :: [EffortIndicator] -> Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
---
---    -- TODO: add default implementations using read/write
---    
