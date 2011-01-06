@@ -27,7 +27,7 @@ import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.NumericOrder.Arbitrary 
+import Numeric.AERN.Basics.NumericOrder.Arbitrary
 import Numeric.AERN.Basics.NumericOrder.PartialComparison 
 import Numeric.AERN.Basics.NumericOrder.Extrema
 import Numeric.AERN.Basics.NumericOrder.RoundedLattice
@@ -43,12 +43,15 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 {-|
     A type with directed-rounding lattice operations.
 -}
-class (RoundedLattice t) => RoundedLatticeInPlace t where
+class (RoundedLattice t, CanBeMutable t) => RoundedLatticeInPlace t where
     maxUpInPlaceEff :: t -> OpMutable2Eff (MinmaxEffortIndicator t) t s
     maxDnInPlaceEff :: t -> OpMutable2Eff (MinmaxEffortIndicator t) t s
     minUpInPlaceEff :: t -> OpMutable2Eff (MinmaxEffortIndicator t) t s
     minDnInPlaceEff :: t -> OpMutable2Eff (MinmaxEffortIndicator t) t s
-
+    maxUpInPlaceEff sample = pureToMutable2Eff sample maxUpEff 
+    maxDnInPlaceEff sample = pureToMutable2Eff sample maxDnEff 
+    minUpInPlaceEff sample = pureToMutable2Eff sample minUpEff 
+    minDnInPlaceEff sample = pureToMutable2Eff sample minDnEff 
 
 propRoundedLatticeJoinInPlaceConsistentWithPure ::
     (PartialComparison t, RoundedLatticeInPlace t, CanBeMutable t) => 
