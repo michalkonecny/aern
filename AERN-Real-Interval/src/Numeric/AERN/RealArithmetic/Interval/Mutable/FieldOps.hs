@@ -397,5 +397,21 @@ multiplyIntervalsInPlace
                 timesRInPlace temp2 h1M h2M 
                 combineRInPlace hResM temp1 temp2
 
+instance 
+    (RoundedSubtrInPlace (Interval e), 
+     RoundedMultiplyInPlace (Interval e)) => 
+    RoundedRingInPlace (Interval e)
 
+instance
+    (RoundedPowerToNonnegInt (Interval e),
+     RoundedMultiplyInPlace (Interval e),
+     HasOne e,
+     CanBeMutable e
+     ) => 
+    RoundedPowerToNonnegIntInPlace (Interval e)
+    where
+    powerToNonnegIntInInPlaceEff sample (_, _, effMult) = 
+        powerToNonnegIntInInPlaceEffFromMult sample effMult
+    powerToNonnegIntOutInPlaceEff sample (_, _, effMult) = 
+        powerToNonnegIntOutInPlaceEffFromMult sample effMult
     
