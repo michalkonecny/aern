@@ -17,7 +17,7 @@
     This module is hidden and reexported via its parent Interval. 
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.FieldOps where
+module Numeric.AERN.RealArithmetic.Interval.FieldOps() where
 
 import Numeric.AERN.Basics.Interval
 
@@ -100,7 +100,7 @@ instance
             (NumOrd.minDnEff effortMinmax) 
             i1 i2
     
-multiplyIntervals 
+multiplyIntervals
         pNonnegNonpos timesL timesR minL minR maxL maxR 
         combineL combineR 
         (Interval l1 h1) (Interval l2 h2) =
