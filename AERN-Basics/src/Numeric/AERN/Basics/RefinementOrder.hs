@@ -10,7 +10,7 @@
     
     Type classes representing classical as well as approximate 
     Comparisons, domain bases and lattices with the refinement order notation 
-    (&#8849;⊑,&#8851;⊓,&#8852;⊔).
+    (&#8849;,&#8851;,&#8852;).
     
     This module is meant to be imported qualified.
     It is recommended to use the prefix RefOrd.
