@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE ImplicitParams, RankNTypes #-}
 {-|
     Module      :  Numeric.AERN.Basics.Laws.Relation
     Description :  common properties of arithmetic operations arbitrarily-little rounded  
@@ -22,6 +22,7 @@ import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Laws.Utilities
+import Numeric.AERN.Basics.Mutable
 
 import Numeric.AERN.Misc.Bool
 import Numeric.AERN.Misc.Debug
@@ -245,6 +246,7 @@ roundedImprovingIdempotent =
          opEff effort e
     expr2 opEff effort e = 
          opEff effort (opEff effort e)
+
 
 
 
@@ -570,4 +572,68 @@ equalRoundingUpDnImprovement
         val2Up = expr2Up effortOp
         (<=) = assumeTotal2 (<=?)
         (<=?) = pCompareEff effortRel
+
+roundedImprovingInPlace1ConsistentWithPure ::
+    (EffortIndicator eiMeasure, EffortIndicator eiRel, EffortIndicator eiOp,
+     Show eiMeasure, Show eiOp, Show eiRel,
+     NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap, 
+     CanBeMutable t, Show t) =>
+    (forall s. eiOp -> OpMutable1 t s) {-^ left hand side expression UP -} -> 
+    (forall s. eiOp -> OpMutable1 t s) {-^ left hand side expression DN -} -> 
+    (eiOp -> UnaryOp t) {-^ right hand side expression UP -} -> 
+    (eiOp -> UnaryOp t) {-^ right hand side expression DN -} -> 
+    (PRelEff eiRel t) -> (eiMeasure -> t -> t -> gap) -> 
+    (NumOrd.PartialCompareEffortIndicator gap) -> 
+    (eiMeasure, eiRel, eiOp) -> 
+    t ->
+    Bool
+roundedImprovingInPlace1ConsistentWithPure
+        opUpInPlaceEff opDnInPlaceEff opUpEff opDnEff 
+        pLeqEff distanceBetweenEff effortDistComp initEffort
+        e
+        =
+    equalRoundingUpDnImprovement
+        expr1Up expr1Dn expr2Up expr2Dn 
+        pLeqEff distanceBetweenEff effortDistComp initEffort
+    where
+    opUpEffViaInPlace = mutable1EffToPure (opUpInPlaceEff)
+    opDnEffViaInPlace = mutable1EffToPure (opDnInPlaceEff)
+    expr1Up eff = opUpEff eff e
+    expr1Dn eff = opDnEff eff e
+    expr2Up eff = opUpEffViaInPlace eff e
+    expr2Dn eff = opDnEffViaInPlace eff e
+
+roundedImprovingInPlace2ConsistentWithPure ::
+    (EffortIndicator eiMeasure, EffortIndicator eiRel, EffortIndicator eiOp,
+     Show eiMeasure, Show eiOp, Show eiRel,
+     NumOrd.PartialComparison gap, HasZero gap, HasInfinities gap, Show gap, 
+     CanBeMutable t, Show t) =>
+    (forall s. eiOp -> OpMutable2 t s) {-^ left hand side expression UP -} -> 
+    (forall s. eiOp -> OpMutable2 t s) {-^ left hand side expression DN -} -> 
+    (eiOp -> Op t) {-^ right hand side expression UP -} -> 
+    (eiOp -> Op t) {-^ right hand side expression DN -} -> 
+    (PRelEff eiRel t) -> (eiMeasure -> t -> t -> gap) -> 
+    (NumOrd.PartialCompareEffortIndicator gap) -> 
+    (eiMeasure, eiRel, eiOp) -> 
+    t -> t ->
+    Bool
+roundedImprovingInPlace2ConsistentWithPure
+        opUpInPlaceEff opDnInPlaceEff opUpEff opDnEff 
+        pLeqEff distanceBetweenEff effortDistComp initEffort
+        e1 e2
+        =
+    equalRoundingUpDnImprovement
+        expr1Up expr1Dn expr2Up expr2Dn 
+        pLeqEff distanceBetweenEff effortDistComp initEffort
+    where
+    opUpEffViaInPlace = mutable2EffToPure (opUpInPlaceEff)
+    opDnEffViaInPlace = mutable2EffToPure (opDnInPlaceEff)
+    expr1Up eff =
+        let (*^) = opUpEff eff in e1 *^ e2
+    expr1Dn eff =
+        let (*.) = opDnEff eff in e1 *. e2
+    expr2Up eff =
+        let (*^) = opUpEffViaInPlace eff in e1 *^ e2
+    expr2Dn eff =
+        let (*.) = opDnEffViaInPlace eff in e1 *. e2
 
