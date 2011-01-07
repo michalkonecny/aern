@@ -86,7 +86,7 @@ instance
             r i1 i2
     
 multiplyIntervalsInPlace ::
-    (CanBeMutable e) =>
+    (CanBeMutable e, HasZero e) =>
     e ->
     (e -> (Maybe Bool, Maybe Bool)) ->
     (OpMutable2 e s) ->
@@ -125,107 +125,277 @@ multiplyIntervalsInPlace
             -----------------------------------------------------------
             -- i1 negative, i2 positive
             ((_, Just True), (_, Just True), (Just True, _), (Just True, _)) ->
+--                (l1 `timesL` h2, h1 `timesR` l2)
                 do
                 timesLInPlace lResM l1M h2M 
                 timesRInPlace hResM h1M l2M 
---                (l1 `timesL` h2, h1 `timesR` l2)
---            -- i1 negative, i2 negative
---            ((_, Just True), (_, Just True), (_, Just True), (_, Just True)) -> 
+            -- i1 negative, i2 negative
+            ((_, Just True), (_, Just True), (_, Just True), (_, Just True)) -> 
 --                (h1 `timesL` h2, l1 `timesR` l2)
---            -- i1 negative, i2 consistent and containing zero
---            ((_, Just True), (_, Just True), (_, Just True), (Just True, _)) -> 
+                do
+                timesLInPlace lResM h1M h2M 
+                timesRInPlace hResM l1M l2M 
+            -- i1 negative, i2 consistent and containing zero
+            ((_, Just True), (_, Just True), (_, Just True), (Just True, _)) -> 
 --                (l1 `timesL` h2, l1 `timesR` l2)
---            -- i1 negative, i2 anti-consistent and anti-containing zero
---            ((_, Just True), (_, Just True), (Just True, _), (_, Just True)) -> 
+                do
+                timesLInPlace lResM l1M h2M 
+                timesRInPlace hResM l1M l2M 
+            -- i1 negative, i2 anti-consistent and anti-containing zero
+            ((_, Just True), (_, Just True), (Just True, _), (_, Just True)) -> 
 --                (h1 `timesL` h2, h1 `timesR` l2)
---            -- i1 negative, nothing known about i2:
---            ((_, Just True), (_, Just True), _, _) -> 
+                do
+                timesLInPlace lResM h1M h2M 
+                timesRInPlace hResM h1M l2M 
+            -- i1 negative, nothing known about i2:
+            ((_, Just True), (_, Just True), _, _) -> 
 --                ((h1 `timesL` h2) `combineL` (l1 `timesL` h2), 
 --                 (h1 `timesR` l2) `combineR` (l1 `timesR` l2))
---
---            -- i1 positive, i2 positive
---            ((Just True, _), (Just True, _), (Just True, _), (Just True, _)) -> 
+                do
+                temp1 <- makeMutable sample 
+                temp2 <- makeMutable sample
+                timesLInPlace temp1 h1M h2M 
+                timesLInPlace temp2 l1M h2M 
+                combineLInPlace lResM temp1 temp2
+                timesRInPlace temp1 h1M l2M 
+                timesRInPlace temp2 l1M l2M 
+                combineRInPlace hResM temp1 temp2
+
+            -- i1 positive, i2 positive
+            ((Just True, _), (Just True, _), (Just True, _), (Just True, _)) -> 
 --                (l1 `timesL` l2, h1 `timesR` h2)
---            -- i1 positive, i2 negative
---            ((Just True, _), (Just True, _), (_, Just True), (_, Just True)) -> 
+                do
+                timesLInPlace lResM l1M l2M 
+                timesRInPlace hResM h1M h2M 
+            -- i1 positive, i2 negative
+            ((Just True, _), (Just True, _), (_, Just True), (_, Just True)) -> 
 --                (h1 `timesL` l2, l1 `timesR` h2)
---            -- i1 positive, i2 consistent and containing zero
---            ((Just True, _), (Just True, _), (_, Just True), (Just True, _)) -> 
+                do
+                timesLInPlace lResM h1M l2M 
+                timesRInPlace hResM l1M h2M 
+            -- i1 positive, i2 consistent and containing zero
+            ((Just True, _), (Just True, _), (_, Just True), (Just True, _)) -> 
 --                (h1 `timesL` l2, h1 `timesR` h2)
---            -- i1 positive, i2 anti-consistent and anti-containing zero
---            ((Just True, _), (Just True, _), (Just True, _), (_, Just True)) -> 
+                do
+                timesLInPlace lResM h1M l2M 
+                timesRInPlace hResM h1M h2M 
+            -- i1 positive, i2 anti-consistent and anti-containing zero
+            ((Just True, _), (Just True, _), (Just True, _), (_, Just True)) -> 
 --                (l1 `timesL` l2, l1 `timesR` h2)
---
---            -- i1 positive, nothing known about i2:
---            ((Just True, _), (Just True, _), _, _) -> 
+                do
+                timesLInPlace lResM l1M l2M 
+                timesRInPlace hResM l1M h2M 
+
+            -- i1 positive, nothing known about i2:
+            ((Just True, _), (Just True, _), _, _) -> 
 --                ((h1 `timesL` l2) `combineL` (l1 `timesL` l2), 
 --                 (h1 `timesR` h2) `combineR` (l1 `timesR` h2))
---            
--- 
---            -- i1 consistent and containing zero, i2 positive
---            ((_, Just True), (Just True, _), (Just True, _), (Just True, _)) -> 
+                do
+                temp1 <- makeMutable sample 
+                temp2 <- makeMutable sample
+                timesLInPlace temp1 h1M l2M 
+                timesLInPlace temp2 l1M l2M 
+                combineLInPlace lResM temp1 temp2
+                timesRInPlace temp1 h1M h2M 
+                timesRInPlace temp2 l1M h2M 
+                combineRInPlace hResM temp1 temp2
+            
+ 
+            -- i1 consistent and containing zero, i2 positive
+            ((_, Just True), (Just True, _), (Just True, _), (Just True, _)) -> 
 --                (l1 `timesL` h2, h1 `timesR` h2)
---            -- i1 anti-consistent and anti-containing zero, i2 positive
---            ((Just True, _), (_, Just True), (Just True, _), (Just True, _)) -> 
+                do
+                timesLInPlace lResM l1M h2M 
+                timesRInPlace hResM h1M h2M 
+            -- i1 anti-consistent and anti-containing zero, i2 positive
+            ((Just True, _), (_, Just True), (Just True, _), (Just True, _)) -> 
 --                (l1 `timesL` l2, h1 `timesR` l2)
---            -- nothing known about i1, i2 positive
---            (_, _, (Just True, _), (Just True, _)) -> 
+                do
+                timesLInPlace lResM l1M l2M 
+                timesRInPlace hResM h1M l2M 
+            -- nothing known about i1, i2 positive
+            (_, _, (Just True, _), (Just True, _)) -> 
 --                ((l1 `timesL` h2) `combineL` (l1 `timesL` l2), 
 --                 (h1 `timesR` h2) `combineR` (h1 `timesR` l2))
---
---            -- i1 consistent and containing zero, i2 negative
---            ((_, Just True), (Just True, _), (_, Just True), (_, Just True)) -> 
+                do
+                temp1 <- makeMutable sample 
+                temp2 <- makeMutable sample
+                timesLInPlace temp1 l1M h2M 
+                timesLInPlace temp2 l1M l2M 
+                combineLInPlace lResM temp1 temp2
+                timesRInPlace temp1 h1M h2M 
+                timesRInPlace temp2 h1M l2M 
+                combineRInPlace hResM temp1 temp2
+
+            -- i1 consistent and containing zero, i2 negative
+            ((_, Just True), (Just True, _), (_, Just True), (_, Just True)) -> 
 --                (h1 `timesL` l2, l1 `timesR` l2)
---            -- i1 anti-consistent and anti-containing zero, i2 negative
---            ((Just True, _), (_, Just True), (_, Just True), (_, Just True)) -> 
+                do
+                timesLInPlace lResM h1M l2M 
+                timesRInPlace hResM l1M l2M 
+            -- i1 anti-consistent and anti-containing zero, i2 negative
+            ((Just True, _), (_, Just True), (_, Just True), (_, Just True)) -> 
 --                (h1 `timesL` h2, l1 `timesR` h2)
---            -- nothing known about i1, i2 negative
---            (_, _, (_, Just True), (_, Just True)) -> 
+                do
+                timesLInPlace lResM h1M h2M 
+                timesRInPlace hResM l1M h2M 
+            -- nothing known about i1, i2 negative
+            (_, _, (_, Just True), (_, Just True)) -> 
 --                ((h1 `timesL` h2) `combineL` (h1 `timesL` l2), 
 --                 (l1 `timesR` h2) `combineR` (l1 `timesR` l2))
---
---            -----------------------------------------------------------
---            -- cases where both i1 or i2 are around zero
---            -----------------------------------------------------------
---
---            -- i1 consistent and containing zero, i2 consistent and containing zero
---            ((_, Just True), (Just True, _), (_, Just True), (Just True, _)) ->
+                do
+                temp1 <- makeMutable sample 
+                temp2 <- makeMutable sample
+                timesLInPlace temp1 h1M h2M 
+                timesLInPlace temp2 h1M l2M 
+                combineLInPlace lResM temp1 temp2
+                timesRInPlace temp1 l1M h2M 
+                timesRInPlace temp2 l1M l2M 
+                combineRInPlace hResM temp1 temp2
+
+            -----------------------------------------------------------
+            -- cases where both i1 or i2 are around zero
+            -----------------------------------------------------------
+
+            -- i1 consistent and containing zero, i2 consistent and containing zero
+            ((_, Just True), (Just True, _), (_, Just True), (Just True, _)) ->
 --                ((l1 `timesL` h2) `minL` (h1 `timesL` l2), 
 --                 (l1 `timesR` l2) `maxR` (h1 `timesR` h2))
---            -- i1 consistent and containing zero, i2 anti-consistent and anti-containing zero
---            ((_, Just True), (Just True, _), (Just True, _), (_, Just True)) ->
+                do
+                temp1 <- makeMutable sample 
+                temp2 <- makeMutable sample
+                timesLInPlace temp1 l1M h2M 
+                timesLInPlace temp2 h1M l2M 
+                minLInPlace lResM temp1 temp2
+                timesRInPlace temp1 l1M l2M 
+                timesRInPlace temp2 h1M h2M 
+                maxRInPlace hResM temp1 temp2
+            -- i1 consistent and containing zero, i2 anti-consistent and anti-containing zero
+            ((_, Just True), (Just True, _), (Just True, _), (_, Just True)) ->
 --                (zero, zero)
---            -- i1 consistent and containing zero, i2 unknown
---            ((_, Just True), (Just True, _), _, _) ->
+                do
+                let z = zero
+                let _ = [z,sample]
+                writeMutable lResM z
+                writeMutable hResM z
+            -- i1 consistent and containing zero, i2 unknown
+            ((_, Just True), (Just True, _), _, _) ->
 --                (((l1 `timesL` h2) `combineL` (h1 `timesL` l2)) `combineL` zero,
 --                 ((l1 `timesR` l2) `combineR` (h1 `timesR` h2)) `combineR` zero)
---                
---            -- i1 anti-consistent and anti-containing zero, i2 consistent and containing zero
---            ((Just True, _), (_, Just True), (_, Just True), (Just True, _)) ->
+                do
+                temp1 <- makeMutable sample
+                temp2 <- makeMutable sample
+                timesLInPlace temp1 l1M h2M 
+                timesLInPlace temp2 h1M l2M 
+                combineLInPlace lResM temp1 temp2
+                timesRInPlace temp1 l1M l2M 
+                timesRInPlace temp2 h1M h2M 
+                combineRInPlace hResM temp1 temp2
+                let z = zero
+                let _ = [z,sample]
+                writeMutable temp1 z
+                combineLInPlace lResM lResM temp1
+                combineRInPlace hResM hResM temp1
+                
+            -- i1 anti-consistent and anti-containing zero, i2 consistent and containing zero
+            ((Just True, _), (_, Just True), (_, Just True), (Just True, _)) ->
 --                (zero, zero)
---            -- i1 anti-consistent and anti-containing zero, i2 anti-consistent and anti-containing zero
---            ((Just True, _), (_, Just True), (Just True, _), (_, Just True)) ->
+                do
+                let z = zero
+                let _ = [z,sample]
+                writeMutable lResM z
+                writeMutable hResM z
+            -- i1 anti-consistent and anti-containing zero, i2 anti-consistent and anti-containing zero
+            ((Just True, _), (_, Just True), (Just True, _), (_, Just True)) ->
 --                ((l1 `timesL` l2) `maxL` (h1 `timesL` h2),
 --                 (l1 `timesR` h2) `minR` (h1 `timesR` l2)) 
---            -- i1 anti-consistent and anti-containing zero, i2 unknown
---            ((Just True, _), (_, Just True), _, _) -> 
+                do
+                temp1 <- makeMutable sample 
+                temp2 <- makeMutable sample
+                timesLInPlace temp1 l1M l2M 
+                timesLInPlace temp2 h1M h2M 
+                maxLInPlace lResM temp1 temp2
+                timesRInPlace temp1 l1M h2M 
+                timesRInPlace temp2 h1M l2M 
+                minRInPlace hResM temp1 temp2
+            -- i1 anti-consistent and anti-containing zero, i2 unknown
+            ((Just True, _), (_, Just True), _, _) -> 
 --                ((l1 `timesL` l2) `combineL` (h1 `timesL` h2) `combineL` zero,
 --                 (l1 `timesR` h2) `combineR` (h1 `timesR` l2) `combineR` zero) 
---                
---            -- i1 unknown, i2 anti-consistent and anti-containing zero
---            (_, _, (Just True, _), (_, Just True)) -> 
+                do
+                temp1 <- makeMutable sample
+                temp2 <- makeMutable sample
+                timesLInPlace temp1 l1M l2M 
+                timesLInPlace temp2 h1M h2M 
+                combineLInPlace lResM temp1 temp2
+                timesRInPlace temp1 l1M h2M 
+                timesRInPlace temp2 h1M l2M 
+                combineRInPlace hResM temp1 temp2
+                let z = zero
+                let _ = [z,sample]
+                writeMutable temp1 z
+                combineLInPlace lResM lResM temp1
+                combineRInPlace hResM hResM temp1
+                
+            -- i1 unknown, i2 anti-consistent and anti-containing zero
+            (_, _, (Just True, _), (_, Just True)) -> 
 --                ((l1 `timesL` l2) `combineL` (h1 `timesL` h2) `combineL` zero,
 --                 (l1 `timesR` h2) `combineR` (h1 `timesR` l2) `combineR` zero) 
---
---            -- i1 unknown, i2 consistent and containing zero
---            (_, _, (_, Just True), (Just True, _)) -> 
+                do
+                temp1 <- makeMutable sample
+                temp2 <- makeMutable sample
+                timesLInPlace temp1 l1M l2M 
+                timesLInPlace temp2 h1M h2M 
+                combineLInPlace lResM temp1 temp2
+                timesRInPlace temp1 l1M h2M 
+                timesRInPlace temp2 h1M l2M 
+                combineRInPlace hResM temp1 temp2
+                let z = zero
+                let _ = [z,sample]
+                writeMutable temp1 z
+                combineLInPlace lResM lResM temp1
+                combineRInPlace hResM hResM temp1
+
+            -- i1 unknown, i2 consistent and containing zero
+            (_, _, (_, Just True), (Just True, _)) -> 
 --                ((l1 `timesL` h2) `combineL` (h1 `timesL` l2) `combineL` zero, 
 --                 (l1 `timesR` l2) `combineR` (h1 `timesR` h2) `combineR` zero)
---
---            -- both i1 and i2 unknown sign
---            _ ->
+                do
+                temp1 <- makeMutable sample
+                temp2 <- makeMutable sample
+                timesLInPlace temp1 l1M h2M 
+                timesLInPlace temp2 h1M l2M 
+                combineLInPlace lResM temp1 temp2
+                timesRInPlace temp1 l1M l2M 
+                timesRInPlace temp2 h1M h2M 
+                combineRInPlace hResM temp1 temp2
+                let z = zero
+                let _ = [z,sample]
+                writeMutable temp1 z
+                combineLInPlace lResM lResM temp1
+                combineRInPlace hResM hResM temp1
+
+            -- both i1 and i2 unknown sign
+            _ ->
 --                (foldl1 combineL [l1 `timesL` h2, h1 `timesL` l2, l1 `timesL` l2, h1 `timesL` h2], 
 --                 foldl1 combineR [l1 `timesR` h2, h1 `timesR` l2, l1 `timesR` l2, h1 `timesR` h2])
---
---
---    
+                do
+                temp1 <- makeMutable sample
+                temp2 <- makeMutable sample
+                timesLInPlace temp1 l1M h2M 
+                timesLInPlace temp2 h1M l2M
+                combineLInPlace temp1 temp1 temp2
+                timesLInPlace temp2 l1M l2M
+                combineLInPlace temp1 temp1 temp2
+                timesLInPlace temp2 h1M h2M
+                combineLInPlace lResM temp1 temp2
+                timesRInPlace temp1 l1M h2M 
+                timesRInPlace temp2 h1M l2M 
+                combineRInPlace temp1 temp1 temp2
+                timesRInPlace temp2 l1M l2M 
+                combineRInPlace temp1 temp1 temp2
+                timesRInPlace temp2 h1M h2M 
+                combineRInPlace hResM temp1 temp2
+
+
+    
