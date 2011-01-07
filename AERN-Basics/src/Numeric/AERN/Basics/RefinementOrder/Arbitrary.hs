@@ -95,6 +95,8 @@ arbitraryTripleRelatedBy (r1, r2, r3) =
 {-| type for generating random thin elements -}
 newtype Thin t = Thin t deriving (Show)
 
+newtype UniformlyOrderedSingleton t = UniformlyOrderedSingleton t deriving (Show)
+
 {-| type for generating pairs distributed in such a way that all ordering relations 
     permitted by this structure have similar probabilities of occurrence -}
 data UniformlyOrderedPair t = UniformlyOrderedPair (t,t) deriving (Show)
@@ -118,6 +120,14 @@ instance (ArbitraryOrderedTuple t) => Arbitrary (Thin t) where
         return $ Thin thinElement
         where
         Just gen = arbitraryTupleRelatedBy [1] [1] []
+
+instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedSingleton t) where
+    arbitrary =
+        do
+        [elem] <- gen
+        return $ UniformlyOrderedSingleton elem
+        where
+        Just gen = arbitraryTupleRelatedBy [1] [] []
 
 instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedPair t) where
     arbitrary =
