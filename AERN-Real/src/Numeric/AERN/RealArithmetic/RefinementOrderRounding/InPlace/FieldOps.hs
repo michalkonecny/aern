@@ -88,22 +88,12 @@ propInOutAddInPlace ::
     (DistanceEffortIndicator t, 
      RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> t -> Bool
-propInOutAddInPlace sample effortDistComp initEffort e1 e2 =
-    equalRoundingUpDnImprovement
-        expr1In expr1Out expr2In expr2Out 
+    (RefOrd.UniformlyOrderedPair t) -> Bool
+propInOutAddInPlace sample effortDistComp initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
+    roundedImprovingInPlace2ConsistentWithPure
+        (addInInPlaceEff sample) (addOutInPlaceEff sample) addInEff addOutEff
         RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
-    where
-    addInEffViaInPlace = mutable2EffToPure (addInInPlaceEff sample)
-    addOutEffViaInPlace = mutable2EffToPure (addOutInPlaceEff sample)
-    expr1In eff =
-        let (>+<) = addInEff eff in e1 >+< e2
-    expr1Out eff =
-        let (<+>) = addOutEff eff in e1 <+> e2
-    expr2In eff =
-        let (>+<) = addInEffViaInPlace eff in e1 >+< e2
-    expr2Out eff =
-        let (<+>) = addOutEffViaInPlace eff in e1 <+> e2
+        e1 e2
 
 class (RoundedAddInPlace t,  RoundedSubtr t, NegInPlace t) => RoundedSubtrInPlace t where
     subtrInInPlaceEff :: t -> OpMutable2Eff (AddEffortIndicator t) t s
@@ -136,23 +126,12 @@ propInOutSubtrInPlace ::
     (DistanceEffortIndicator t, 
      RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> t -> Bool
-propInOutSubtrInPlace sample effortDistComp initEffort e1 e2 =
-    equalRoundingUpDnImprovement
-        expr1In expr1Out expr2In expr2Out 
+    (RefOrd.UniformlyOrderedPair t) -> Bool
+propInOutSubtrInPlace sample effortDistComp initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
+    roundedImprovingInPlace2ConsistentWithPure
+        (subtrInInPlaceEff sample) (subtrOutInPlaceEff sample) subtrInEff subtrOutEff
         RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
-    where
-    subtrInEffViaInPlace = mutable2EffToPure (subtrInInPlaceEff sample)
-    subtrOutEffViaInPlace = mutable2EffToPure (subtrOutInPlaceEff sample)
-    expr1In eff =
-        let (>-<) = subtrInEff eff in e1 >-< e2
-    expr1Out eff =
-        let (<->) = subtrOutEff eff in e1 <-> e2
-    expr2In eff =
-        let (>-<) = subtrInEffViaInPlace eff in e1 >-< e2
-    expr2Out eff =
-        let (<->) = subtrOutEffViaInPlace eff in e1 <-> e2
-
+        e1 e2
 
 class (RoundedAbs t, CanBeMutable t) => RoundedAbsInPlace t where
     absInInPlaceEff :: t -> OpMutable1Eff (AbsEffortIndicator t) t s
@@ -177,18 +156,12 @@ propInOutAbsInPlace ::
     (DistanceEffortIndicator t, 
      RefOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
-    t -> Bool
-propInOutAbsInPlace sample effortDistComp initEffort e1 =
-    equalRoundingUpDnImprovement
-        expr1In expr1Out expr2In expr2Out 
+    (RefOrd.UniformlyOrderedSingleton t) -> Bool
+propInOutAbsInPlace sample effortDistComp initEffort (RefOrd.UniformlyOrderedSingleton e) =
+    roundedImprovingInPlace1ConsistentWithPure
+        (absInInPlaceEff sample) (absOutInPlaceEff sample) absInEff absOutEff
         RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
-    where
-    absInEffViaInPlace = mutable1EffToPure (absInInPlaceEff sample)
-    absOutEffViaInPlace = mutable1EffToPure (absOutInPlaceEff sample)
-    expr1In eff = absInEff eff e1
-    expr1Out eff = absOutEff eff e1
-    expr2In eff = absInEffViaInPlace eff e1
-    expr2Out eff = absOutEffViaInPlace eff e1
+        e
 
 
 class (RoundedMultiply t, CanBeMutable t) => RoundedMultiplyInPlace t where
@@ -214,22 +187,12 @@ propInOutMultInPlace ::
     (DistanceEffortIndicator t, 
      RefOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
-    t -> t -> Bool
-propInOutMultInPlace sample effortDistComp initEffort e1 e2 =
-    equalRoundingUpDnImprovement
-        expr1In expr1Out expr2In expr2Out 
+    (RefOrd.UniformlyOrderedPair t) -> Bool
+propInOutMultInPlace sample effortDistComp initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
+    roundedImprovingInPlace2ConsistentWithPure
+        (multInInPlaceEff sample) (multOutInPlaceEff sample) multInEff multOutEff
         RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
-    where
-    multInEffViaInPlace = mutable2EffToPure (multInInPlaceEff sample)
-    multOutEffViaInPlace = mutable2EffToPure (multOutInPlaceEff sample)
-    expr1In eff =
-        let (>*<) = multInEff eff in e1 >*< e2
-    expr1Out eff =
-        let (<*>) = multOutEff eff in e1 <*> e2
-    expr2In eff =
-        let (>*<) = multInEffViaInPlace eff in e1 >*< e2
-    expr2Out eff =
-        let (<*>) = multOutEffViaInPlace eff in e1 <*> e2
+        e1 e2
 
 powerToNonnegIntInInPlaceEffFromMult ::
     (RoundedMultiplyInPlace t, HasOne t) =>
@@ -273,24 +236,15 @@ propInOutPowerToNonnegInPlace ::
     (DistanceEffortIndicator t, 
      RefOrd.PartialCompareEffortIndicator t, 
      PowerToNonnegIntEffortIndicator t) -> 
-    t -> Int -> Bool
-propInOutPowerToNonnegInPlace sample effortDistComp initEffort e1 n =
-    equalRoundingUpDnImprovement
-        expr1In expr1Out expr2In expr2Out 
+    (RefOrd.UniformlyOrderedSingleton t) -> Int -> Bool
+propInOutPowerToNonnegInPlace sample effortDistComp initEffort (RefOrd.UniformlyOrderedSingleton e) n =
+    roundedImprovingInPlace1ConsistentWithPure
+        (\eff r e -> powerToNonnegIntInInPlaceEff sample eff r e n) 
+        (\eff r e -> powerToNonnegIntOutInPlaceEff sample eff r e n) 
+        (\eff e -> powerToNonnegIntInEff eff e n) 
+        (\eff e -> powerToNonnegIntOutEff eff e n)
         RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
-    where
-    powerToNonnegIntInEffViaInPlace = 
-        mutableNonmutEffToPure (powerToNonnegIntInInPlaceEff sample)
-    powerToNonnegIntOutEffViaInPlace = 
-        mutableNonmutEffToPure (powerToNonnegIntOutInPlaceEff sample)
-    expr1In eff =
-        let (>^<) = powerToNonnegIntInEff eff in e1 >^< n
-    expr1Out eff =
-        let (<^>) = powerToNonnegIntOutEff eff in e1 <^> n
-    expr2In eff =
-        let (>^<) = powerToNonnegIntInEffViaInPlace eff in e1 >^< n
-    expr2Out eff =
-        let (<^>) = powerToNonnegIntOutEffViaInPlace eff in e1 <^> n
+        e
 
 class (RoundedDivide t, CanBeMutable t) => RoundedDivideInPlace t where
     divInInPlaceEff :: t -> OpMutable2Eff (DivEffortIndicator t) t s
@@ -315,25 +269,16 @@ propInOutDivInPlace ::
     (DistanceEffortIndicator t, 
      RefOrd.PartialCompareEffortIndicator t, 
      DivEffortIndicator t) -> 
-    t -> t -> Bool
-propInOutDivInPlace sample effortDistComp initEffort@(_, effComp, _) e1 e2 =
+    (RefOrd.UniformlyOrderedPair t) -> Bool
+propInOutDivInPlace sample effortDistComp initEffort@(_, effComp, _) (RefOrd.UniformlyOrderedPair (e1, e2)) =
     let ?pCompareEffort = effComp in
     case (e2 ⊑? zero, zero ⊑? e2) of
         (Just False, Just False) ->
-            equalRoundingUpDnImprovement
-                expr1In expr1Out expr2In expr2Out 
+            roundedImprovingInPlace2ConsistentWithPure
+                (divInInPlaceEff sample) (divOutInPlaceEff sample) divInEff divOutEff
                 RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
-    where
-    divInEffViaInPlace = mutable2EffToPure (divInInPlaceEff sample)
-    divOutEffViaInPlace = mutable2EffToPure (divOutInPlaceEff sample)
-    expr1In eff =
-        let (>/<) = divInEff eff in e1 >/< e2
-    expr1Out eff =
-        let (</>) = divOutEff eff in e1 </> e2
-    expr2In eff =
-        let (>/<) = divInEffViaInPlace eff in e1 >/< e2
-    expr2Out eff =
-        let (</>) = divOutEffViaInPlace eff in e1 </> e2
+                e1 e2
+        _ -> True 
 
 testsInOutFieldOpsInPlace (name, sample) =
     testGroup (name ++ " in-place up/down rounded ops match pure ops") $
