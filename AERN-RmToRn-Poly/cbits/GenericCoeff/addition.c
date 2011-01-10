@@ -19,7 +19,7 @@ typedef struct COEFFN
 int
 compareCoeffNsByCoeffDecreasing(const CoeffN * cn1, const CoeffN * cn2)
 {
-  return eval_compare_hs(cn1 -> cfCompare, cn2 -> cf, cn1 -> cf);
+  return CF_COMPARE(cn1 -> cfCompare, cn2 -> cf, cn1 -> cf);
 }
 
 int
@@ -166,7 +166,7 @@ addTermsAndReturnMaxError(Coeff zero, const ComparisonOp compare,
       // free previous term coefficients in res:
       for (int j = 0; j < res -> psize; ++j)
         {
-          free_SP_hs(terms[j].coeff);
+          CF_FREE(terms[j].coeff);
         }
 
       res -> psize = 0;
@@ -211,22 +211,19 @@ addTermsAndReturnMaxError(Coeff zero, const ComparisonOp compare,
               //                  "addTermsAndReturnMaxError: coeff %d: adding terms1[%d] and terms2[%d]\n",
               //                  i, i1, i2);
               // compute sum of the two coefficients and its error bound:
-              Coeff newCfUp = eval_binary_hs(ops -> plusUp, terms1[i1].coeff,
-                  terms2[i2].coeff);
-              Coeff newCfDn = eval_binary_hs(ops -> plusDn, terms1[i1].coeff,
-                  terms2[i2].coeff);
-              Coeff newCfMaxError = eval_binary_hs(ops -> minusUp, newCfUp,
-                  newCfDn);
+              Coeff newCfUp = CF_ADD_UP(ops, terms1[i1].coeff, terms2[i2].coeff);
+              Coeff newCfDn = CF_ADD_DN(ops, terms1[i1].coeff, terms2[i2].coeff);
+              Coeff newCfMaxError = CF_SUB_UP(ops, newCfUp, newCfDn);
               newCoeffs[i].cf = newCfUp;
 
               // add the error bound to the accumulated error:
               Coeff temp = maxError;
-              maxError = eval_binary_hs(ops -> plusUp, maxError, newCfMaxError);
+              maxError = CF_ADD_UP(ops, maxError, newCfMaxError);
 
               // free temp numbers:
-              free_SP_hs(temp);
-              free_SP_hs(newCfDn);
-              free_SP_hs(newCfMaxError);
+              CF_FREE(temp);
+              CF_FREE(newCfDn);
+              CF_FREE(newCfMaxError);
 
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = i2;
@@ -238,7 +235,7 @@ addTermsAndReturnMaxError(Coeff zero, const ComparisonOp compare,
               //              printf(
               //                  "addTermsAndReturnMaxError: coeff %d: copying terms2[%d]\n",
               //                  i, i2);
-              newCoeffs[i].cf = clone_SP_hs(terms2[i2].coeff);
+              newCoeffs[i].cf = CF_CLONE(terms2[i2].coeff);
               newCoeffs[i].n1 = -1;
               newCoeffs[i].n2 = i2;
               i2++;
@@ -248,7 +245,7 @@ addTermsAndReturnMaxError(Coeff zero, const ComparisonOp compare,
               //              printf(
               //                  "addTermsAndReturnMaxError: coeff %d: copying terms1[%d]\n",
               //                  i, i1);
-              newCoeffs[i].cf = clone_SP_hs(terms1[i1].coeff);
+              newCoeffs[i].cf = CF_CLONE(terms1[i1].coeff);
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = -1;
               i1++;
@@ -270,13 +267,13 @@ addTermsAndReturnMaxError(Coeff zero, const ComparisonOp compare,
           // the remaining coeffs' absolute values are added to the constant term:
           for (int j = maxSize; j < i; ++j)
             {
-              Coeff coeffAbs = eval_unary_hs(ops -> absUp, newCoeffs[j].cf);
+              Coeff coeffAbs = CF_ABS_UP(ops, newCoeffs[j].cf);
               Coeff temp = maxError;
-              maxError = eval_binary_hs(ops -> plusUp, maxError, coeffAbs);
+              maxError = CF_ADD_UP(ops, maxError, coeffAbs);
 
-              free_SP_hs(temp);
-              free_SP_hs(coeffAbs);
-              free_SP_hs(newCoeffs[j].cf);
+              CF_FREE(temp);
+              CF_FREE(coeffAbs);
+              CF_FREE(newCoeffs[j].cf);
             }
 
           // from now on, pretend that there are only maxSize terms:
@@ -286,7 +283,7 @@ addTermsAndReturnMaxError(Coeff zero, const ComparisonOp compare,
       // free previous term coefficients in res:
       for (int j = 0; j < res -> psize; ++j)
         {
-          free_SP_hs(terms[j].coeff);
+          CF_FREE(terms[j].coeff);
         }
 
       // set the actual term size of the result:
@@ -311,12 +308,12 @@ addUpUsingPureOps(Coeff zero, const ComparisonOp compare, const Ops_Pure * ops,
   Coeff maxError = addTermsAndReturnMaxError(zero, compare, ops, res, p1, p2);
 
   // compute the constant term coefficient rounding up:
-  Coeff temp = eval_binary_hs(ops -> plusUp, p1 -> constTerm, p2 -> constTerm);
+  Coeff temp = CF_ADD_UP(ops, p1 -> constTerm, p2 -> constTerm);
   // also add maxError to the constant term coefficient:
-  res -> constTerm = eval_binary_hs(ops -> plusUp, temp, maxError);
+  res -> constTerm = CF_ADD_UP(ops, temp, maxError);
 
-  free_SP_hs(temp);
-  free_SP_hs(maxError);
+  CF_FREE(temp);
+  CF_FREE(maxError);
 }
 
 void
@@ -326,11 +323,12 @@ addDnUsingPureOps(Coeff zero, const ComparisonOp compare, const Ops_Pure * ops,
   Coeff maxError = addTermsAndReturnMaxError(zero, compare, ops, res, p1, p2);
 
   // compute the constant term coefficient rounding down:
-  Coeff temp = eval_binary_hs(ops -> plusDn, p1 -> constTerm, p2 -> constTerm);
+  Coeff temp = CF_ADD_DN(ops, p1 -> constTerm, p2 -> constTerm);
   // also subtract maxError from the constant term coefficient:
-  res -> constTerm = eval_binary_hs(ops -> minusDn, temp, maxError);
-  free(temp);
-  free(maxError);
+  res -> constTerm = CF_SUB_DN(ops, temp, maxError);
+
+  CF_FREE(temp);
+  CF_FREE(maxError);
 }
 
 void
