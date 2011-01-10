@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "poly.h"
+#include "GenericCoeff/coeff.h"
+#include "GenericCoeff/poly.h"
 #include "EvalExport_stub.h"
 
 void

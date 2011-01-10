@@ -25,11 +25,13 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport
 )
 where
 
+import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics 
+
 import Prelude hiding (EQ, LT, GT)
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Mutable
 
-import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.FFIhelper
+--import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly
 
 --import Foreign.Ptr
 import Foreign.StablePtr

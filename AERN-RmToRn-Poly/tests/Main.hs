@@ -6,8 +6,8 @@ import Numeric.AERN.Basics.Mutable
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.Basis.Double
 
-import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.FFIhelper
-import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Show()
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show
 
 import Control.Monad.ST (runST)
 
