@@ -1,8 +1,10 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving, EmptyDataDecls #-}
-#include <poly.h>
+#include <GenericCoeff/poly.h>
 
-module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.FFIhelper where
+module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly where
+
+import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
 
 import Numeric.AERN.Basics.PartialOrdering
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
@@ -89,11 +91,6 @@ peekArityIO (PolyFP fp) =
             do
             maxArityC <- #{peek Poly, maxArity} ptr
             return (fromCVar maxArityC)            
-
-type UnaryOp t = t -> t
-type BinaryOp t =  t -> t -> t
-type ConvertOp t1 t2 = t1 -> t2
-type ComparisonOp t =  t -> t -> (Maybe PartialOrdering)
 
 data Ops_Pure t =
     Ops_Pure
@@ -200,11 +197,6 @@ newOpsPureArithUpDnDefaultEffort ::
     Ptr (Ops_Pure t)
 newOpsPureArithUpDnDefaultEffort sample =
     newOpsPureArithUpDn sample (ArithUpDn.roundedRealDefaultEffort sample)
-
-type NewOpMutable s t = t -> ST s (Mutable t s)
-type CloneOpMutable s t = Mutable t s -> ST s (Mutable t s)
-type UnaryOpMutable s t = Mutable t s -> Mutable t s -> ST s ()
-type BinaryOpMutable s t = Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
 
 data Ops_Mutable s t =
     Ops_Mutable

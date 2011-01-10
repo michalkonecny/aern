@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Show
+    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show
     Description :  string representation of Poly
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -8,16 +8,16 @@
     Stability   :  experimental
     Portability :  portable
 
-    String representation of Poly.
+    String representation of Poly with generic coefficients.
 -}
 
-module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Show 
+module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show 
 (
     showPolyFPWithVars
 )
 where
 
-import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.FFIhelper
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly
 
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Interval
