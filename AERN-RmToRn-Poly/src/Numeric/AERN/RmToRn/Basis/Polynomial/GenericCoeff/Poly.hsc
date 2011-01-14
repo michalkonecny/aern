@@ -1,5 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving, EmptyDataDecls #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE EmptyDataDecls #-}
 #include <GenericCoeff/poly.h>
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly where
@@ -27,8 +28,7 @@ import Foreign.StablePtr (StablePtr, newStablePtr, deRefStablePtr, freeStablePtr
 import Foreign.ForeignPtr (ForeignPtr, withForeignPtr, castForeignPtr)
 import qualified Foreign.Concurrent as Conc (newForeignPtr)
 
-import Data.Typeable(Typeable)
-
+--import Data.Typeable(Typeable)
 --import Data.Function(on)
     
 type CVar = #type Var
@@ -334,14 +334,14 @@ newOpsMutableArithUpDnDefaultEffort sample =
 
 ----------------------------------------------------------------
 
-foreign import ccall unsafe "freePoly"
+foreign import ccall unsafe "freePolyGenCf"
         poly_freePoly :: (Ptr (Poly cf)) -> IO ()  
 
 concFinalizerFreePoly :: (Ptr (Poly cf)) -> IO ()
 concFinalizerFreePoly = poly_freePoly
 
 ----------------------------------------------------------------
-foreign import ccall safe "mapCoeffsInPlace"
+foreign import ccall safe "mapCoeffsInPlaceGenCf"
         poly_mapCoeffsInPlace ::
             (StablePtr (cf1 -> cf2)) -> 
             (Ptr (Poly cf1)) -> 
@@ -369,7 +369,7 @@ unsafeReadPolyMutable sample (PolyMutableFP fp) =
      
 ----------------------------------------------------------------
 
-foreign import ccall unsafe "newConstPoly"
+foreign import ccall unsafe "newConstPolyGenCf"
         poly_newConstPoly :: 
             (StablePtr cf) -> 
             CVar -> CSize -> 
@@ -404,7 +404,7 @@ newConstPolyMutable c maxArity maxSize =
 
 ----------------------------------------------------------------
 
-foreign import ccall unsafe "newProjectionPoly"
+foreign import ccall unsafe "newProjectionPolyGenCf"
         poly_newProjectionPoly :: 
             (StablePtr cf) -> (StablePtr cf) -> 
             CVar -> CVar -> CSize -> 
@@ -449,7 +449,7 @@ newProjectionPolyMutable sample x maxArity maxSize =
 
 ----------------------------------------------------------------
 
-foreign import ccall safe "addUpUsingPureOps"
+foreign import ccall safe "addUpUsingPureOpsGenCf"
         poly_addUpUsingPureOps :: 
             (StablePtr cf) ->
             (StablePtr (ComparisonOp cf)) ->
@@ -459,7 +459,7 @@ foreign import ccall safe "addUpUsingPureOps"
             (Ptr (Poly cf)) -> 
             IO ()
 
-foreign import ccall safe "addDnUsingPureOps"
+foreign import ccall safe "addDnUsingPureOpsGenCf"
         poly_addDnUsingPureOps :: 
             (StablePtr cf) ->
             (StablePtr (ComparisonOp cf)) ->
@@ -507,7 +507,7 @@ polyBinaryOpPure binaryOp sample maxSize opsPtr p1@(PolyFP p1FP) (PolyFP p2FP) =
 
 ----------------------------------------------------------------
 
-foreign import ccall safe "addUpUsingMutableOps"
+foreign import ccall safe "addUpUsingMutableOpsGenCf"
         poly_addUpUsingMutableOps :: 
             (StablePtr cf) ->
             (StablePtr (ComparisonOp (Mutable cf s))) ->
@@ -581,7 +581,7 @@ polyBinaryOpMutable binaryOp sample opsPtr opsMutablePtr
       
 ----------------------------------------------------------------
 
-foreign import ccall safe "evalAtPtChebBasis"
+foreign import ccall safe "evalAtPtChebBasisGenCf"
         poly_evalAtPtChebBasis :: 
             (Ptr (Poly cf)) -> 
             (Ptr (StablePtr val)) -> 

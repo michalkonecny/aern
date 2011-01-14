@@ -1,7 +1,7 @@
 Name:           AERN-RmToRn-Poly
 Version:        2010.1
 Cabal-Version:  >= 1.8
-Build-Type:     Simple
+Build-Type:     Custom
 License:        BSD3
 License-File:   LICENCE
 Author:         Michal Konecny (Aston University)
@@ -17,6 +17,9 @@ Description:
     and common operations for continous functions, including evalution,
     composition and integration.
     Any up/down rounded real approximations can be used as coefficients.
+
+extra-source-files:
+  Makefile
 
 Library
   hs-source-dirs: src
