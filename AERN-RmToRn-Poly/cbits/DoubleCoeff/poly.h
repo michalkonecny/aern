@@ -48,7 +48,7 @@ typedef struct POLY
 } Poly;
 
 void
-freePoly(Poly *p);
+ADD_COEFF_CODE(freePoly)(Poly *p);
 
 //void
 //mapCoeffsInPlace(ConversionOp convert, Poly *p);
@@ -58,7 +58,7 @@ freePoly(Poly *p);
  * no persistent references to c and this pointer is unique for each call
  */
 Poly *
-newConstPoly(const Coeff c, Var maxArity, Size maxSize);
+ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize);
 
 /*
  * preconditions:
@@ -67,7 +67,7 @@ newConstPoly(const Coeff c, Var maxArity, Size maxSize);
  * no persistent references to zero, one and these pointers are unique to each call
  */
 Poly *
-newProjectionPoly(const Coeff zero, const Coeff one, Var var, Var maxArity,
+ADD_COEFF_CODE(newProjectionPoly)(const Coeff zero, const Coeff one, Var var, Var maxArity,
     Size maxSize);
 
 ///*
@@ -87,12 +87,12 @@ newProjectionPoly(const Coeff zero, const Coeff one, Var var, Var maxArity,
  */
 
 void
-addUpUsingPureOps(Coeff zero, ComparisonOp compare, const Ops_Pure * ops,
-    Poly *res, const Poly * p1, const Poly * p2);
+ADD_COEFF_CODE(addUpUsingPureOps)(Coeff zero, ComparisonOp compare,
+    const Ops_Pure * ops, Poly *res, const Poly * p1, const Poly * p2);
 
 void
-addDnUsingPureOps(Coeff zero, ComparisonOp compare, const Ops_Pure * ops,
-    Poly *res, const Poly * p1, const Poly * p2);
+ADD_COEFF_CODE(addDnUsingPureOps)(Coeff zero, ComparisonOp compare,
+    const Ops_Pure * ops, Poly *res, const Poly * p1, const Poly * p2);
 
 typedef void * Value; // A Haskell value passed via StablePtr
 
@@ -102,7 +102,7 @@ typedef void * Value; // A Haskell value passed via StablePtr
  * Haskell operations.
  */
 Value
-evalAtPtChebBasis(const Poly *, const Value *, const Value, const BinaryOp,
-    const BinaryOp, const BinaryOp, const ConversionOp);
+ADD_COEFF_CODE(evalAtPtChebBasis)(const Poly *, const Value *, const Value,
+    const BinaryOp, const BinaryOp, const BinaryOp, const ConversionOp);
 
 #endif /* POLY_H_ */

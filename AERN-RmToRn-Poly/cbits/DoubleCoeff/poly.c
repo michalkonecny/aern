@@ -11,7 +11,7 @@
 #include "EvalExport_stub.h"
 
 void
-freePoly(Poly *p)
+ADD_COEFF_CODE(freePoly)(Poly *p)
 {
   // free the Poly struct:
   Size maxSize = p -> maxSize;
@@ -43,7 +43,7 @@ freePoly(Poly *p)
 //}
 
 Poly *
-newConstPoly(const Coeff c, Var maxArity, Size maxSize)
+ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize)
 {
   Poly * poly = (Poly *) malloc(sizeof(Poly));
   poly -> maxArity = maxArity;
@@ -64,10 +64,10 @@ newConstPoly(const Coeff c, Var maxArity, Size maxSize)
 }
 
 Poly *
-newProjectionPoly(const Coeff zero, const Coeff one, Var var, Var maxArity,
-    Size maxSize)
+ADD_COEFF_CODE(newProjectionPoly)(const Coeff zero, const Coeff one, Var var,
+    Var maxArity, Size maxSize)
 {
-  Poly * poly = newConstPoly(zero, maxArity, maxSize);
+  Poly * poly = ADD_COEFF_CODE(newConstPoly)(zero, maxArity, maxSize);
 
   // add one term for the variable:
   poly -> psize = 1;
