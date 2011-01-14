@@ -410,6 +410,7 @@ instance
      ) => 
     RoundedPowerToNonnegIntInPlace (Interval e)
     where
+    -- TODO: use endpoints like for the pure case 
     powerToNonnegIntInInPlaceEff sample (_, _, effMult) = 
         powerToNonnegIntInInPlaceEffFromMult sample effMult
     powerToNonnegIntOutInPlaceEff sample (_, _, effMult) = 

@@ -1,5 +1,5 @@
 Name:           AERN-RmToRn-Poly
-Version:        2010.1
+Version:        2011.1
 Cabal-Version:  >= 1.8
 Build-Type:     Custom
 License:        BSD3
@@ -11,7 +11,7 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       arbitrary precision real interval arithmetic
-Tested-with:    GHC ==6.12.1
+Tested-with:    GHC ==6.12.3
 Description:
     Multi-variate polynomials with up/down rounded point-wise real arithmetic
     and common operations for continous functions, including evalution,
@@ -31,8 +31,8 @@ Library
         QuickCheck >= 2.1 && < 3,
         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
         criterion >= 0.5 && < 0.6,
-        AERN-Basics == 2010.1, AERN-Real == 2010.1, AERN-RmToRn == 2010.1, 
-        AERN-Real-Interval == 2010.1
+        AERN-Basics == 2011.1, AERN-Real == 2011.1, AERN-RmToRn == 2011.1, 
+        AERN-Real-Interval == 2011.1
   Exposed-modules:
     Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics,
     Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport, 
@@ -58,8 +58,8 @@ Executable testAERN-RmToRn-Poly
         containers >= 0.3 && < 0.4,
         QuickCheck >= 2.1 && < 3,
         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
-        AERN-Basics == 2010.1, AERN-Real == 2010.1, AERN-RmToRn == 2010.1, 
-        AERN-Real-Interval == 2010.1,
-        AERN-Real-Double == 2010.1, 
-        AERN-RmToRn-Poly == 2010.1
+        AERN-Basics == 2011.1, AERN-Real == 2011.1, AERN-RmToRn == 2011.1, 
+        AERN-Real-Interval == 2011.1,
+        AERN-Real-Double == 2011.1, 
+        AERN-RmToRn-Poly == 2011.1
   
