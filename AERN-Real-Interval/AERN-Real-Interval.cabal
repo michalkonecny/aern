@@ -1,5 +1,5 @@
 Name:           AERN-Real-Interval
-Version:        2010.1
+Version:        2011.1
 Cabal-Version:  >= 1.2
 Build-Type:     Simple
 License:        BSD3
@@ -11,7 +11,7 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       arbitrary precision real interval arithmetic
-Tested-with:    GHC ==6.12.1
+Tested-with:    GHC ==6.12.3
 Description:
     A concrete implementation for the refinement-order type classes from AERN-Real in the form
     of interval arithmetic.  The arithmetic supports also anti-consistent
@@ -37,7 +37,7 @@ Library
         QuickCheck >= 2.1 && < 3,
         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
         deepseq >= 1.1 && < 2.0,
-        AERN-Basics == 2010.1, AERN-Real == 2010.1
+        AERN-Basics == 2011.1, AERN-Real == 2011.1
   Exposed-modules:
     Numeric.AERN.Basics.Interval
     Numeric.AERN.RealArithmetic.Interval
