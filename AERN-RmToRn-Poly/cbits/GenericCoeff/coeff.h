@@ -6,22 +6,18 @@
 #define COEFF_H_
 
 #define COEFF_VERSION GenericCoeff
+#define COEFF_CODE GenCf
+
+#include "haskell_fn_types.h"
 
 /* The following are provided for better code readability: */
-typedef void * ConversionOp; // pointer to Haskell type t1 -> t2
 typedef void * ComparisonOp; // pointer to Haskell type t -> t -> Int
 
 #define CF_COMPARE(op, d1, d2) (eval_compare_hs(op, d1, d1))
 
 typedef void * Coeff; // pointer to undisclosed Haskell type t
-typedef void * UnaryOp; // pointer to Haskell type t -> t
-typedef void * BinaryOp; // pointer to Haskell type t -> t -> t
 
 typedef void * CoeffMutable; // pointer to undisclosed Haskell type (Mutable t s)
-typedef void * NewOpMutable; // pointer to undisclosed Haskell type t -> ST s (Mutable t s)
-typedef void * CloneOpMutable; // pointer to undisclosed Haskell type (Mutable t s) -> ST s (Mutable t s)
-typedef void * UnaryOpMutable; // pointer to Haskell type Mutable t s -> Mutable t s -> ST s ()
-typedef void * BinaryOpMutable; // pointer to Haskell type Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
 
 /* References to operations provided by Haskell: */
 typedef struct OPS_PURE
@@ -65,5 +61,28 @@ typedef struct OPS_MUTABLE
   BinaryOpMutable timesDnMutable;
 } Ops_Mutable;
 
+#define CFM_SAMPLE(ops) (ops -> sample)
+#define CFM_NEW(ops,v) (eval_newMutable_hs(v, ops -> new))
+#define CFM_CLONE(ops,rp,sp) ((rp)=eval_cloneMutable_hs(sample, ops -> clone, sp))
+#define CFM_ASSIGN(ops,rp,sp) \
+    (eval_assignMutable_hs(ops -> sample, ops -> assign, rp, sp))
+#define CFM_ABS_UP(ops,rp,dp) \
+    (eval_unaryMutable_hs(ops -> sample, ops -> absUpMutable, rp, dp))
+#define CFM_ABS_DN(ops,rp,dp) \
+    (eval_unaryMutable_hs(ops -> sample, ops -> absDnMutable, rp, dp))
+#define CFM_ADD_UP(ops,rp,dp1,dp2) \
+    (eval_binaryMutable_hs(ops -> sample, ops -> plusUpMutable, rp, dp1, dp2))
+#define CFM_ADD_DN(ops,rp,dp1,dp2) \
+    (eval_binaryMutable_hs(ops -> sample, ops -> plusDnMutable, rp, dp1, dp2))
+#define CFM_SUB_UP(ops,rp,dp1,dp2) \
+    (eval_binaryMutable_hs(ops -> sample, ops -> minusUpMutable, rp, dp1, dp2))
+#define CFM_SUB_DN(ops,rp,dp1,dp2) \
+    (eval_binaryMutable_hs(ops -> sample, ops -> minusDnMutable, rp, dp1, dp2))
+#define CFM_MUL_UP(ops,rp,dp1,dp2) \
+    (eval_binaryMutable_hs(ops -> sample, ops -> timesUpMutable, rp, dp1, dp2))
+#define CFM_MUL_DN(ops,rp,dp1,dp2) \
+    (eval_binaryMutable_hs(ops -> sample, ops -> timesDnMutable, rp, dp1, dp2))
+
+#define CFM_FREE(dp) (free_SP_hs(dp))
 
 #endif /* COEFF_H_ */

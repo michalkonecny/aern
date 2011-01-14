@@ -2,8 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "GenericCoeff/coeff.h"
-#include "GenericCoeff/poly.h"
+/*
+ * This file should differ from its GenericCoeff analogue
+ * only in the following two include lines.
+ */
+#include "DoubleCoeff/coeff.h"
+#include "DoubleCoeff/poly.h"
 #include "EvalExport_stub.h"
 
 void
@@ -26,17 +30,17 @@ freePoly(Poly *p)
   free(terms);
 }
 
-void
-mapCoeffsInPlace(ConversionOp convert, Poly *p)
-{
-  p -> constTerm = CF_CONVERT(convert, p -> constTerm);
-  Size psize = p -> psize;
-  Term * terms = p -> terms;
-  for (Size i = 0; i < psize; ++i)
-    {
-      terms[i].coeff = CF_CONVERT(convert, terms[i].coeff);
-    }
-}
+//void
+//mapCoeffsInPlace(ConversionOp convert, Poly *p)
+//{
+//  p -> constTerm = CF_CONVERT(convert, p -> constTerm);
+//  Size psize = p -> psize;
+//  Term * terms = p -> terms;
+//  for (Size i = 0; i < psize; ++i)
+//    {
+//      terms[i].coeff = CF_CONVERT(convert, terms[i].coeff);
+//    }
+//}
 
 Poly *
 newConstPoly(const Coeff c, Var maxArity, Size maxSize)

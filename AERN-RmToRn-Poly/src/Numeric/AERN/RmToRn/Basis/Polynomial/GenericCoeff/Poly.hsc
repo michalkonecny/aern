@@ -454,7 +454,6 @@ foreign import ccall safe "addUpUsingPureOps"
             (StablePtr cf) ->
             (StablePtr (ComparisonOp cf)) ->
             (Ptr (Ops_Pure cf)) ->
-            (Ptr (Ops_Mutable s cf)) ->
             (Ptr (Poly cf)) -> 
             (Ptr (Poly cf)) -> 
             (Ptr (Poly cf)) -> 
@@ -465,7 +464,6 @@ foreign import ccall safe "addDnUsingPureOps"
             (StablePtr cf) ->
             (StablePtr (ComparisonOp cf)) ->
             (Ptr (Ops_Pure cf)) ->
-            (Ptr (Ops_Mutable s cf)) ->
             (Ptr (Poly cf)) -> 
             (Ptr (Poly cf)) -> 
             (Ptr (Poly cf)) -> 
@@ -480,7 +478,7 @@ polyAddUpPureUsingPureOps ::
     PolyFP cf ->
     PolyFP cf
 polyAddUpPureUsingPureOps zero size opsPtr = 
-    polyBinaryOpPure poly_addUpUsingPureOps zero size opsPtr nullPtr
+    polyBinaryOpPure poly_addUpUsingPureOps zero size opsPtr
 
 polyAddDnPureUsingPureOps ::
     (HasZero cf, NumOrd.PartialComparison cf) =>
@@ -491,9 +489,9 @@ polyAddDnPureUsingPureOps ::
     PolyFP cf ->
     PolyFP cf
 polyAddDnPureUsingPureOps zero size opsPtr = 
-    polyBinaryOpPure poly_addDnUsingPureOps zero size opsPtr nullPtr
+    polyBinaryOpPure poly_addDnUsingPureOps zero size opsPtr
 
-polyBinaryOpPure binaryOp sample maxSize opsPtr opsMutablePtr p1@(PolyFP p1FP) (PolyFP p2FP) =
+polyBinaryOpPure binaryOp sample maxSize opsPtr p1@(PolyFP p1FP) (PolyFP p2FP) =
     unsafePerformIO $
     do
     maxArity <- peekArityIO p1
@@ -502,7 +500,7 @@ polyBinaryOpPure binaryOp sample maxSize opsPtr opsMutablePtr p1@(PolyFP p1FP) (
     compareSP <- newStablePtr $ (NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample))
     _ <- withForeignPtr p1FP $ \p1 ->
              withForeignPtr p2FP $ \p2 ->
-                 binaryOp zeroSP compareSP opsPtr opsMutablePtr resP p1 p2
+                 binaryOp zeroSP compareSP opsPtr resP p1 p2
     freeStablePtr compareSP
     resFP <- Conc.newForeignPtr resP (concFinalizerFreePoly resP)
     return $ PolyFP resFP
@@ -553,32 +551,32 @@ polyBinaryOpMutable binaryOp sample opsPtr opsMutablePtr
 
 ----------------------------------------------------------------
 
-foreign import ccall safe "testAssign"
-        poly_testAssign :: 
-            (StablePtr t) ->
-            (StablePtr (UnaryOpMutable s t)) ->
-            (StablePtr (Mutable t s)) ->
-            (StablePtr (Mutable t s)) ->
-            IO ()
-            
-testAssign ::
-    (CanBeMutable t) =>
-    t -> 
-    Mutable t s -> 
-    Mutable t s -> 
-    ST s ()
-testAssign sample to from =
-    do
-    fromV <- unsafeReadMutable from
-    toV <- unsafeReadMutable to
-    let _ = [fromV, toV, sample]
-    unsafeIOToST $ 
-        do
-        sampleSP <- newStablePtr sample
-        assignSP <- newStablePtr $ \ to from -> assignMutable sample to from
-        toSP <- newStablePtr to
-        fromSP <- newStablePtr from
-        poly_testAssign sampleSP assignSP toSP fromSP
+--foreign import ccall safe "testAssign"
+--        poly_testAssign :: 
+--            (StablePtr t) ->
+--            (StablePtr (UnaryOpMutable s t)) ->
+--            (StablePtr (Mutable t s)) ->
+--            (StablePtr (Mutable t s)) ->
+--            IO ()
+--            
+--testAssign ::
+--    (CanBeMutable t) =>
+--    t -> 
+--    Mutable t s -> 
+--    Mutable t s -> 
+--    ST s ()
+--testAssign sample to from =
+--    do
+--    fromV <- unsafeReadMutable from
+--    toV <- unsafeReadMutable to
+--    let _ = [fromV, toV, sample]
+--    unsafeIOToST $ 
+--        do
+--        sampleSP <- newStablePtr sample
+--        assignSP <- newStablePtr $ \ to from -> assignMutable sample to from
+--        toSP <- newStablePtr to
+--        fromSP <- newStablePtr from
+--        poly_testAssign sampleSP assignSP toSP fromSP
     
       
 ----------------------------------------------------------------

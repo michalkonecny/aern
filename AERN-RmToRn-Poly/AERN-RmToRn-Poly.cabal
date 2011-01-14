@@ -31,16 +31,18 @@ Library
         AERN-Basics == 2010.1, AERN-Real == 2010.1, AERN-RmToRn == 2010.1, 
         AERN-Real-Interval == 2010.1
   Exposed-modules:
+    Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics,
+    Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport, 
     Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly,
     Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show
-  other-modules:
-    Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics,
-    Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport 
     
   c-sources:
     cbits/GenericCoeff/poly.c
     cbits/GenericCoeff/evaluation.c
     cbits/GenericCoeff/addition.c
+    cbits/DoubleCoeff/poly.c
+    cbits/DoubleCoeff/evaluation.c
+    cbits/DoubleCoeff/addition.c
   include-dirs: 
     cbits
 
