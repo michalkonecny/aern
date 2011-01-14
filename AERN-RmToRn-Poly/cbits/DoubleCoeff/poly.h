@@ -3,7 +3,12 @@
 
 #include <stdint.h>
 
-#include "GenericCoeff/coeff.h"
+/*
+ * This file should differ from its GenericCoeff analogue
+ * only in the following include line and by omitting
+ * the ...UsingMutableOps functions.
+ */
+#include "DoubleCoeff/coeff.h"
 #include "EvalExport_stub.h"
 
 typedef uint32_t Var;
@@ -45,8 +50,8 @@ typedef struct POLY
 void
 freePoly(Poly *p);
 
-void
-mapCoeffsInPlace(ConversionOp convert, Poly *p);
+//void
+//mapCoeffsInPlace(ConversionOp convert, Poly *p);
 
 /*
  * preconditions:
@@ -88,18 +93,6 @@ addUpUsingPureOps(Coeff zero, ComparisonOp compare, const Ops_Pure * ops,
 void
 addDnUsingPureOps(Coeff zero, ComparisonOp compare, const Ops_Pure * ops,
     Poly *res, const Poly * p1, const Poly * p2);
-
-void
-addUpUsingMutableOps(Coeff zero, ComparisonOp compare,
-    const Ops_Mutable * opsM, Poly *res, const Poly * p1, const Poly * p2);
-
-void
-addDnUsingMutableOps(Coeff zero, ComparisonOp compare,
-    const Ops_Mutable * opsM, Poly *res, const Poly * p1, const Poly * p2);
-
-//void
-//testAssign(Coeff sample, UnaryOpMutable assign, CoeffMutable to,
-//    CoeffMutable from);
 
 typedef void * Value; // A Haskell value passed via StablePtr
 

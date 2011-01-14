@@ -89,17 +89,17 @@ testMutablePolys =
         polyAddUpMutableUsingMutableOps sampleD opsMutablePtr pb223s1M p22M p3M
         mapM (unsafeReadPolyMutable sampleD) [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, p23s1M, pb223s1M]
     
-testAssignST =
-    do
-    putStrLn $ "after testAssign (v1=0) (v2=1) we have: v1 = " ++ show v1 ++ "; v2 = " ++ show v2
-    where
-    (v1,v2) = 
-        runST $
-            do
-            m1 <- makeMutable (0 :: Double)
-            m2 <- makeMutable (1 :: Double)
-            testAssign sampleD m1 m2
-            v1 <- readMutable m1
-            v2 <- readMutable m2
-            return (v1 :: Double, v2 :: Double)
+--testAssignST =
+--    do
+--    putStrLn $ "after testAssign (v1=0) (v2=1) we have: v1 = " ++ show v1 ++ "; v2 = " ++ show v2
+--    where
+--    (v1,v2) = 
+--        runST $
+--            do
+--            m1 <- makeMutable (0 :: Double)
+--            m2 <- makeMutable (1 :: Double)
+--            testAssign sampleD m1 m2
+--            v1 <- readMutable m1
+--            v2 <- readMutable m2
+--            return (v1 :: Double, v2 :: Double)
     

@@ -2,7 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "GenericCoeff/poly.h"
+/*
+ * This file should differ from its GenericCoeff analogue
+ * only in the following include line and in two places
+ * where a coefficient is to be converted to a Haskell value,
+ * a & is added to send a pointer to the conversion instead of
+ * a C double.
+ */
+#include "DoubleCoeff/poly.h"
 #include "EvalExport_stub.h"
 
 Value
@@ -15,7 +22,7 @@ evalAtPtChebBasis(const Poly * p, const Value * values, const Value one,
   Term * terms = p -> terms;
 
   // initialise the result variable using the constant term:
-  Value result = eval_convert_hs(cf2val, p -> constTerm);
+  Value result = eval_convert_hs(cf2val, &(p -> constTerm));
 
   // return if this is a constant polynomial:
   if (psize == 0)
@@ -74,7 +81,7 @@ evalAtPtChebBasis(const Poly * p, const Value * values, const Value one,
   for (Size termNo = 0; termNo < psize; ++termNo)
     {
       //      printf("processing term %d...\n", termNo);
-      Value termValue = eval_convert_hs(cf2val, terms[termNo].coeff);
+      Value termValue = eval_convert_hs(cf2val, &(terms[termNo].coeff));
 
       for (Var var = 0; var < maxArity; ++var)
         {

@@ -6,26 +6,21 @@
 #define COEFF_H_
 
 #define COEFF_VERSION DoubleCoeff
+#define COEFF_CODE DblCf
 
 #include <float.h>
 #include <fenv.h>
 
+#include "haskell_fn_types.h"
+
 /* The following are provided for better code readability: */
-typedef double ConversionOp(double);
-
-#define CF_CONVERT(convOp,d) (convOp(d))
-
-typedef int ComparisonOp(double, double);
-
-#define CF_COMPARE(op, d1, d2) (((d1)>(d2))? 1 : ((d1)<(d2)? -1 : 0)
-
 typedef double Coeff;
 
-typedef double CoeffMutable;
-   // deliberately not introducing a pointer here - in C a normal
-   // variable is also mutable; we will ensure
-typedef double NewOpMutable(double);
-typedef double CloneOpMutable(double);
+
+/* dummy type to keep similar function signatures as in the GenericCoeff version */
+typedef void * ComparisonOp;
+
+#define CF_COMPARE(op, d1, d2) (((d1)>(d2))? 1 : ((d1)<(d2)? -1 : 0))
 
 /* a dummy type shadowing an important type in the generic coefficient version */
 typedef struct OPS_PURE
@@ -39,12 +34,12 @@ typedef struct OPS_PURE
  * what has to be done for the generic coefficient version */
 #define CF_ABS_UP(ops,d) (fabs(d))
 #define CF_ABS_DN(ops,d) (fabs(d))
-#define CF_ADD_UP(ops,d1,d2) (fesetround(ROUND_UP); ((d1)+(d2)))
-#define CF_ADD_DN(ops,d1,d2) (fesetround(ROUND_UP); (-((-(d1))+(-(d2)))))
-#define CF_SUB_UP(ops,d1,d2) (fesetround(ROUND_UP); ((d1)-(d2)))
-#define CF_SUB_DN(ops,d1,d2) (fesetround(ROUND_UP); (-((d2)-(d1)))
-#define CF_MUL_UP(ops,d1,d2) (fesetround(ROUND_UP); ((d1)*(d2)))
-#define CF_MUL_DN(ops,d1,d2) (fesetround(ROUND_UP); (-((-(d1))*(d2))))
+#define CF_ADD_UP(ops,d1,d2) (fesetround(ROUND_UP), ((d1)+(d2)))
+#define CF_ADD_DN(ops,d1,d2) (fesetround(ROUND_UP), (-((-(d1))+(-(d2)))))
+#define CF_SUB_UP(ops,d1,d2) (fesetround(ROUND_UP), ((d1)-(d2)))
+#define CF_SUB_DN(ops,d1,d2) (fesetround(ROUND_UP), (-((d2)-(d1))))
+#define CF_MUL_UP(ops,d1,d2) (fesetround(ROUND_UP), ((d1)*(d2)))
+#define CF_MUL_DN(ops,d1,d2) (fesetround(ROUND_UP), (-((-(d1))*(d2))))
 
 #define CF_FREE(d) (1) // signal success without doing anything
 #define CF_CLONE(d) (d) // not a pointed type, normal assignment clones
