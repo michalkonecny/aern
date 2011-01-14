@@ -6,7 +6,7 @@
 #define COEFF_H_
 
 #define COEFF_VERSION GenericCoeff
-#define COEFF_CODE GenCf
+#define ADD_COEFF_CODE(name) name##GenCf
 
 #include "haskell_fn_types.h"
 

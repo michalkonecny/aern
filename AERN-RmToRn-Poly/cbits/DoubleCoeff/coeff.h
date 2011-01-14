@@ -6,8 +6,9 @@
 #define COEFF_H_
 
 #define COEFF_VERSION DoubleCoeff
-#define COEFF_CODE DblCf
+#define ADD_COEFF_CODE(name) name##DblCf
 
+#include <math.h>
 #include <float.h>
 #include <fenv.h>
 

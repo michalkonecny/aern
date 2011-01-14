@@ -13,7 +13,7 @@
 #include "EvalExport_stub.h"
 
 Value
-evalAtPtChebBasis(const Poly * p, const Value * values, const Value one,
+ADD_COEFF_CODE(evalAtPtChebBasis)(const Poly * p, const Value * values, const Value one,
     const BinaryOp add, const BinaryOp subtr, const BinaryOp mult,
     const ConversionOp cf2val)
 {

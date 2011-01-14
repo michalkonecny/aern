@@ -17,32 +17,34 @@ typedef struct COEFFN
 } CoeffN;
 
 int
-compareCoeffNsByCoeffDecreasing(const CoeffN * cn1, const CoeffN * cn2)
+ADD_COEFF_CODE(compareCoeffNsByCoeffDecreasing)(const CoeffN * cn1,
+    const CoeffN * cn2)
 {
   return CF_COMPARE(cn1 -> cfCompare, cn2 -> cf, cn1 -> cf);
 }
 
 int
-compareCoeffNsByN(const CoeffN * cn1, const CoeffN * cn2)
+ADD_COEFF_CODE(compareCoeffNsByN)(const CoeffN * cn1, const CoeffN * cn2)
 {
   return (cn1 -> n - cn2 -> n);
 }
 
 void
-sortCoeffNsByCoeffDecreasing(int size, CoeffN * cns)
+ADD_COEFF_CODE(sortCoeffNsByCoeffDecreasing)(int size, CoeffN * cns)
 {
-  qsort(cns, size, sizeof(CoeffN), (__compar_fn_t)&compareCoeffNsByCoeffDecreasing);
+  qsort(cns, size, sizeof(CoeffN),
+      (__compar_fn_t ) &ADD_COEFF_CODE(compareCoeffNsByCoeffDecreasing));
 }
 
 void
-sortCoeffNsByN(int size, CoeffN * cns)
+ADD_COEFF_CODE(sortCoeffNsByN)(int size, CoeffN * cns)
 {
-  qsort(cns, size, sizeof(CoeffN), (__compar_fn_t)&compareCoeffNsByN);
+  qsort(cns, size, sizeof(CoeffN), (__compar_fn_t ) &ADD_COEFF_CODE(compareCoeffNsByN));
 }
 
 void
-copyTerms(CoeffN * newCoeffs, Size i, Var arity, Term * terms, Term * terms1,
-    Term * terms2)
+ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
+    Term * terms1, Term * terms2)
 {
   if (terms != terms1 && terms != terms2)// no aliasing with result
     {
@@ -142,8 +144,9 @@ copyTerms(CoeffN * newCoeffs, Size i, Var arity, Term * terms, Term * terms1,
 }
 
 Coeff
-addTermsAndReturnMaxError(Coeff zero, const ComparisonOp compare,
-    const Ops_Pure * ops, Poly *res, const Poly * p1, const Poly * p2)
+ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
+    const ComparisonOp compare, const Ops_Pure * ops, Poly *res,
+    const Poly * p1, const Poly * p2)
 {
 
   Var arity = res -> maxArity;
@@ -211,8 +214,10 @@ addTermsAndReturnMaxError(Coeff zero, const ComparisonOp compare,
               //                  "addTermsAndReturnMaxError: coeff %d: adding terms1[%d] and terms2[%d]\n",
               //                  i, i1, i2);
               // compute sum of the two coefficients and its error bound:
-              Coeff newCfUp = CF_ADD_UP(ops, terms1[i1].coeff, terms2[i2].coeff);
-              Coeff newCfDn = CF_ADD_DN(ops, terms1[i1].coeff, terms2[i2].coeff);
+              Coeff newCfUp =
+                  CF_ADD_UP(ops, terms1[i1].coeff, terms2[i2].coeff);
+              Coeff newCfDn =
+                  CF_ADD_DN(ops, terms1[i1].coeff, terms2[i2].coeff);
               Coeff newCfMaxError = CF_SUB_UP(ops, newCfUp, newCfDn);
               newCoeffs[i].cf = newCfUp;
 
@@ -260,9 +265,9 @@ addTermsAndReturnMaxError(Coeff zero, const ComparisonOp compare,
         {
           //          printf("addTermsAndReturnMaxError: reducing number of coeffs from %d to %d.\n", i, maxSize);
           // need to reduce the size, sort them from largest to smallest:
-          sortCoeffNsByCoeffDecreasing(i, newCoeffs);
+          ADD_COEFF_CODE(sortCoeffNsByCoeffDecreasing)(i, newCoeffs);
           // now sort the first maxSize coeffs by N, ie the power order:
-          sortCoeffNsByN(maxSize, newCoeffs);
+          ADD_COEFF_CODE(sortCoeffNsByN)(maxSize, newCoeffs);
           // first maxSize coeffs to be used with their terms,
           // the remaining coeffs' absolute values are added to the constant term:
           for (int j = maxSize; j < i; ++j)
@@ -291,7 +296,7 @@ addTermsAndReturnMaxError(Coeff zero, const ComparisonOp compare,
 
       //      printf("addTermsAndReturnMaxError: about to construct %d resulting term(s)\n", i);
       // construct the resulting terms:
-      copyTerms(newCoeffs, i, arity, terms, terms1, terms2);
+      ADD_COEFF_CODE(copyTerms)(newCoeffs, i, arity, terms, terms1, terms2);
 
       free(newCoeffs);
     }
@@ -302,10 +307,11 @@ addTermsAndReturnMaxError(Coeff zero, const ComparisonOp compare,
 }
 
 void
-addUpUsingPureOps(Coeff zero, ComparisonOp compare, const Ops_Pure * ops,
-    Poly *res, const Poly * p1, const Poly * p2)
+ADD_COEFF_CODE(addUpUsingPureOps)(Coeff zero, ComparisonOp compare,
+    const Ops_Pure * ops, Poly *res, const Poly * p1, const Poly * p2)
 {
-  Coeff maxError = addTermsAndReturnMaxError(zero, compare, ops, res, p1, p2);
+  Coeff maxError = ADD_COEFF_CODE(addTermsAndReturnMaxError)(zero, compare,
+      ops, res, p1, p2);
 
   // compute the constant term coefficient rounding up:
   Coeff temp = CF_ADD_UP(ops, p1 -> constTerm, p2 -> constTerm);
@@ -317,10 +323,11 @@ addUpUsingPureOps(Coeff zero, ComparisonOp compare, const Ops_Pure * ops,
 }
 
 void
-addDnUsingPureOps(Coeff zero, ComparisonOp compare, const Ops_Pure * ops,
-    Poly *res, const Poly * p1, const Poly * p2)
+ADD_COEFF_CODE(addDnUsingPureOps)(Coeff zero, ComparisonOp compare,
+    const Ops_Pure * ops, Poly *res, const Poly * p1, const Poly * p2)
 {
-  Coeff maxError = addTermsAndReturnMaxError(zero, compare, ops, res, p1, p2);
+  Coeff maxError = ADD_COEFF_CODE(addTermsAndReturnMaxError)(zero, compare,
+      ops, res, p1, p2);
 
   // compute the constant term coefficient rounding down:
   Coeff temp = CF_ADD_DN(ops, p1 -> constTerm, p2 -> constTerm);
@@ -339,7 +346,7 @@ addDnUsingPureOps(Coeff zero, ComparisonOp compare, const Ops_Pure * ops,
 //}
 
 void
-addTermsAndReturnMaxErrorUsingMutableOps(Coeff sample,
+ADD_COEFF_CODE(addTermsAndReturnMaxErrorUsingMutableOps)(Coeff sample,
     const ComparisonOp compare, const Ops_Mutable * opsM, Poly *res,
     const Poly * p1, const Poly * p2, CoeffMutable maxError)
 {
@@ -459,9 +466,9 @@ addTermsAndReturnMaxErrorUsingMutableOps(Coeff sample,
         {
           //          printf("addTermsAndReturnMaxError: reducing number of coeffs from %d to %d.\n", i, maxSize);
           // need to reduce the size, sort them from largest to smallest:
-          sortCoeffNsByCoeffDecreasing(i, newCoeffs);
+          ADD_COEFF_CODE(sortCoeffNsByCoeffDecreasing)(i, newCoeffs);
           // now sort the first maxSize coeffs by N, ie the power order:
-          sortCoeffNsByN(maxSize, newCoeffs);
+          ADD_COEFF_CODE(sortCoeffNsByN)(maxSize, newCoeffs);
           // first maxSize coeffs to be used with their terms,
           // the remaining coeffs' absolute values are added to the constant term:
           for (int j = maxSize; j < i; ++j)
@@ -485,7 +492,7 @@ addTermsAndReturnMaxErrorUsingMutableOps(Coeff sample,
       res -> psize = i;
 
       //      printf("addTermsAndReturnMaxError: about to construct %d resulting term(s)\n", i);
-      copyTerms(newCoeffs, i, arity, terms, terms1, terms2);
+      ADD_COEFF_CODE(copyTerms)(newCoeffs, i, arity, terms, terms1, terms2);
 
       free(newCoeffs);
     }
@@ -494,14 +501,13 @@ addTermsAndReturnMaxErrorUsingMutableOps(Coeff sample,
 }
 
 void
-addUpUsingMutableOps(Coeff zero, ComparisonOp compare,
-    const Ops_Mutable * opsM, Poly *res,
-    const Poly * p1, const Poly * p2)
+ADD_COEFF_CODE(addUpUsingMutableOps)(Coeff zero, ComparisonOp compare,
+    const Ops_Mutable * opsM, Poly *res, const Poly * p1, const Poly * p2)
 {
   CoeffMutable maxError = CFM_NEW(opsM, zero);
 
-  addTermsAndReturnMaxErrorUsingMutableOps(zero, compare, opsM, res, p1, p2,
-      maxError);
+  ADD_COEFF_CODE(addTermsAndReturnMaxErrorUsingMutableOps)(zero, compare, opsM,
+      res, p1, p2, maxError);
 
   // compute the constant term coefficient rounding up:
   CFM_ADD_UP(opsM, res -> constTerm, p1 -> constTerm, p2 -> constTerm);
@@ -512,14 +518,13 @@ addUpUsingMutableOps(Coeff zero, ComparisonOp compare,
 }
 
 void
-addDnUsingMutableOps(Coeff zero, ComparisonOp compare,
-    const Ops_Mutable * opsM, Poly *res,
-    const Poly * p1, const Poly * p2)
+ADD_COEFF_CODE(addDnUsingMutableOps)(Coeff zero, ComparisonOp compare,
+    const Ops_Mutable * opsM, Poly *res, const Poly * p1, const Poly * p2)
 {
   CoeffMutable maxError = CFM_NEW(opsM, zero);
 
-  addTermsAndReturnMaxErrorUsingMutableOps(zero, compare, opsM, res, p1, p2,
-      maxError);
+  ADD_COEFF_CODE(addTermsAndReturnMaxErrorUsingMutableOps)(zero, compare, opsM,
+      res, p1, p2, maxError);
 
   // compute the constant term coefficient rounding down:
   CFM_ADD_DN(opsM, res -> constTerm, p1 -> constTerm, p2 -> constTerm);
