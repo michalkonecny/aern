@@ -504,10 +504,14 @@ void
 ADD_COEFF_CODE(addUpUsingMutableOps)(Coeff zero, ComparisonOp compare,
     const Ops_Mutable * opsM, Poly *res, const Poly * p1, const Poly * p2)
 {
+//  printf("addUpUsingMutableOps: starting\n");
+
   CoeffMutable maxError = CFM_NEW(opsM, zero);
+//  printf("created maxError\n");
 
   ADD_COEFF_CODE(addTermsAndReturnMaxErrorUsingMutableOps)(zero, compare, opsM,
       res, p1, p2, maxError);
+//  printf("performed main addition\n");
 
   // compute the constant term coefficient rounding up:
   CFM_ADD_UP(opsM, res -> constTerm, p1 -> constTerm, p2 -> constTerm);
@@ -515,6 +519,7 @@ ADD_COEFF_CODE(addUpUsingMutableOps)(Coeff zero, ComparisonOp compare,
   CFM_ADD_UP(opsM, res -> constTerm, res -> constTerm, maxError);
 
   CFM_FREE(maxError);
+//  printf("addUpUsingMutableOps: returning\n");
 }
 
 void

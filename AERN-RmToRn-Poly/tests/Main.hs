@@ -9,7 +9,7 @@ import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show
 
-import Control.Monad.ST (runST)
+import Control.Monad.ST (runST,unsafeIOToST)
 
 --import Foreign.StablePtr
 
@@ -23,7 +23,7 @@ main =
 testPurePolys :: IO ()
 testPurePolys =
     do
---    putStrLn $ show (maxArity, maxSize)
+    putStrLn $ show (maxArity, maxSize)
     putStrLn $ "p1 = " ++ show p1
     putStrLn $ "p2 = " ++ show p2
     putStrLn $ "p3 = " ++ show p3
@@ -50,7 +50,7 @@ testPurePolys =
     pb223 = polyAddUpPureUsingPureOps sampleD (Size 2) opsPtr p22 p3
     p1bb223 = polyAddUpPureUsingPureOps sampleD (Size 2) opsPtr p1 pb223
     p1bb223s1 = polyAddUpPureUsingPureOps sampleD (Size 1) opsPtr p1 pb223
---    (maxArity, maxSize) = peekSizes p2
+    (maxArity, maxSize) = peekSizes p1
         
 testMutablePolys :: IO ()
 testMutablePolys =
@@ -75,7 +75,9 @@ testMutablePolys =
         p2M <- projectionPolyMutable sampleD (Var 0) (Var 2) (Size 10)
         p3M <- projectionPolyMutable sampleD (Var 1) (Var 2) (Size 10)
         p11M <- constPolyMutable (0::Double) (Var 2) (Size 2)
+--        unsafeIOToST $ putStrLn $ "A"
         polyAddUpMutableUsingMutableOps sampleD opsMutablePtr p11M p1M p1M
+--        unsafeIOToST $ putStrLn $ "A"
         p12M <- constPolyMutable (0::Double) (Var 2) (Size 2)
         polyAddUpMutableUsingMutableOps sampleD opsMutablePtr p12M p1M p2M
         p22M <- constPolyMutable (0::Double) (Var 2) (Size 2)

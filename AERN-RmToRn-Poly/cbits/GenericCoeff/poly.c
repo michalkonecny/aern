@@ -41,6 +41,7 @@ ADD_COEFF_CODE(mapCoeffsInPlace)(ConversionOp convert, Poly *p)
 Poly *
 ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize)
 {
+//  printf("newConstPoly: starting\n");
   Poly * poly = (Poly *) malloc(sizeof(Poly));
   poly -> maxArity = maxArity;
   poly -> maxSize = maxSize;
@@ -56,6 +57,7 @@ ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize)
       // coefficients as these terms are inactive
     }
 
+//  printf("newConstPoly: returning\n");
   return poly;
 }
 
