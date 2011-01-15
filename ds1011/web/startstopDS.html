@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>CS3250 09/10 Distributed Systems: startDS, et al</title>
+  </head>
+
+  <body>
+    <h1>CS3250 09/10 Distributed Systems: how to use the startDS, et al scripts</h1>
+
+    <ul>
+       <li>
+         Some programs are <b>very slow</b> in the labs due to the central filesystem.
+         <br/>
+         To speed it up, log in to <b>Ubuntu</b> and use the following programs:
+         <br/>
+         <a href=labs/startDS>startDS</a>,
+         <a href=labs/saveDS>saveDS</a>,
+         <a href=labs/stopDS>stopDS</a>
+         <br/>
+         to create, save and remove a folder CS3250-DS-0910
+         that appears in you home but is in fact on the local
+         computer's disk.
+         <br/>
+         detailed instructions:
+         <ul>
+            <hr/>
+            <li>
+              the following steps need to be carried out <b>only once</b> initially:
+	          <ul>
+	            <li>
+	                download the above programs and save them in your <b>home folder</b> (<i>not</i> Desktop)
+	            </li>
+	            <li>
+	                open a terminal and execute: <code>chmod +x *DS</code> 
+	            </li>
+	            <li>
+	               if you already have a folder called CS3250-DS-0910, rename it, eg to 
+	               CS3250-DS-0910-OLD
+	            </li>
+                <li>
+                    execute: <code>./startDS</code> 
+                    (this should create the CS3250-DS-0910 temporary folder) 
+                </li>
+                <li>
+                    start eclipseEE with the workspace
+                    <code>CS3250-DS-0910/workspace</code>
+                    instead of the default one 
+                </li>
+                <li>
+                    execute <code>firefox -p</code> and create a new profile
+                    <br/>
+                    in the folder <code>CS3250-DS-0910/firefox</code>,
+                    <br/>
+                    which you create within the select folder dialogue
+                </li>
+                <li>
+                    move your previous DS work into the CS3250-DS-0910 folder
+                </li>
+                <li>
+                    ensure you have at least 50MB free space
+                    <br/> 
+                    (to get a nice tool to do this,
+                    press Alt-F2 and type baobab and press Enter, then click "analyse home")
+                </li>
+                <li>
+                    execute: <code>./stopDS</code> 
+                    (this backs up and removes the CS3250-DS-0910 folder) 
+                </li>
+	          </ul>
+            </li>
+            <hr/>
+            <li>
+              the following steps need to be carried out <b>in each lab session</b>:
+              <ul>
+                <li>login to Ubuntu</li>
+                <li>
+                    execute: <code>./startDS</code> 
+                    (this should create the CS3250-DS-0910 temporary folder) 
+                </li>
+                <li>
+                    extract any given DS projects inside CS3250-DS-0910
+                </li>
+                <li>
+                    open firefox, eclipse, etc and work on given tasks
+                </li>
+                <li>
+                    whenever you want to backup your work, execute <code>./saveDS</code>
+                </li>
+                <li>
+                    <b>stop firefox and eclipse</b>
+                </li>
+                <li>
+                    ensure you have at least <b>50MB free space</b>
+                    <br/> 
+                    (to get a nice tool to do this,
+                    press Alt-F2 and type baobab and press Enter, then click "analyse home")
+                </li>
+                <li>
+                    execute: <code>./stopDS</code> 
+                    (this backs up and removes the CS3250-DS-0910 folder) 
+                    <br/>
+                    <b>if you omit this step, you are likely to lose your data!</b>
+                </li>
+                <li>
+                    press Ctrl-Alt-Del and click Shutdown
+                </li>
+              </ul>
+            </li>
+         </ul>
+       </li>
+    </ul>
+    <hr/>
+    <address><a href="http://www.aston.ac.uk/~konecnym">Michal Konecny</a></address>
+  </body>
+</html>
