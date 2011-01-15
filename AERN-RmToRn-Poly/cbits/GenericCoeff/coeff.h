@@ -62,7 +62,7 @@ typedef struct OPS_MUTABLE
 } Ops_Mutable;
 
 #define CFM_SAMPLE(ops) (ops -> sample)
-#define CFM_NEW(ops,v) (eval_newMutable_hs(v, ops -> new))
+#define CFM_NEW(ops,v) (eval_newMutable_hs(ops -> new, v))
 #define CFM_CLONE(ops,rp,sp) ((rp)=eval_cloneMutable_hs(sample, ops -> clone, sp))
 #define CFM_ASSIGN(ops,rp,sp) \
     (eval_assignMutable_hs(ops -> sample, ops -> assign, rp, sp))

@@ -375,15 +375,17 @@ foreign import ccall unsafe "newConstPolyGenCf"
             CVar -> CSize -> 
             IO (Ptr (Poly cf))  
 
-constPoly :: cf -> Var -> Size -> (PolyFP cf)
+constPoly :: (Show cf) => cf -> Var -> Size -> (PolyFP cf)
 constPoly c maxArity maxSize =
     unsafePerformIO $ newConstPoly c maxArity maxSize
 
-newConstPoly :: cf -> Var -> Size -> IO (PolyFP cf)
+newConstPoly :: (Show cf) => cf -> Var -> Size -> IO (PolyFP cf)
 newConstPoly c maxArity maxSize =
     do
     cSP <- newStablePtr c
+--    putStrLn $ "calling newConstPoly for " ++ show c
     pP <- poly_newConstPoly cSP (toCVar maxArity) (toCSize maxSize)
+--    putStrLn $ "newConstPoly for " ++ show c ++ " returned"
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyFP fp
 
@@ -511,7 +513,6 @@ foreign import ccall safe "addUpUsingMutableOpsGenCf"
         poly_addUpUsingMutableOps :: 
             (StablePtr cf) ->
             (StablePtr (ComparisonOp (Mutable cf s))) ->
-            (Ptr (Ops_Pure cf)) ->
             (Ptr (Ops_Mutable s cf)) ->
             (Ptr (Poly (Mutable cf s))) -> 
             (Ptr (Poly (Mutable cf s))) -> 
@@ -527,9 +528,9 @@ polyAddUpMutableUsingMutableOps ::
     PolyMutableFP cf s ->
     ST s ()
 polyAddUpMutableUsingMutableOps sample opsMutablePtr = 
-    polyBinaryOpMutable poly_addUpUsingMutableOps sample nullPtr opsMutablePtr
+    polyBinaryOpMutable poly_addUpUsingMutableOps sample opsMutablePtr
 
-polyBinaryOpMutable binaryOp sample opsPtr opsMutablePtr 
+polyBinaryOpMutable binaryOp sample opsMutablePtr 
         (PolyMutableFP resFP) (PolyMutableFP p1FP) (PolyMutableFP p2FP) =
     unsafeIOToST $
     do
@@ -538,7 +539,7 @@ polyBinaryOpMutable binaryOp sample opsPtr opsMutablePtr
     _ <- withForeignPtr p1FP $ \p1 ->
              withForeignPtr p2FP $ \p2 ->
                  withForeignPtr resFP $ \resP ->
-                     binaryOp zeroSP compareSP opsPtr opsMutablePtr resP p1 p2
+                     binaryOp zeroSP compareSP opsMutablePtr resP p1 p2
     freeStablePtr compareSP
     where
     compareMutable v1M v2M =
