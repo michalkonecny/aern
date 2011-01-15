@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>CS3250 10/11 Distributed Systems: own Ubuntu</title>
+  </head>
+
+  <body>
+    <h1>CS3250 10/11 Distributed Systems: setting up a minimal Ubuntu installation for DS</h1>
+
+    <ul>
+        <li>
+            install base Ubuntu (32-bit recommended)
+            <ul>
+                <li>
+                    on top of Windows: use <a href="http://wubi-installer.org/">wubi</a>
+                </li>
+                <li>
+                    OR from an <a href="http://www.ubuntu.com/getubuntu/download">installation CD</a>
+                    on a real or virtual computer
+                </li>
+            </ul>
+        </li>
+        <li>
+            install Java, eg by executing the following in a terminal:
+            <br/>
+            <code>sudo apt-get install sun-java6-jdk</code>
+        </li>
+        <li>
+            install Eclipse EE
+            <ul>
+<!--                <li>-->
+<!--                    create the folder <code>/usr/local/scripts</code> as super-user.-->
+<!--                    <br/>-->
+<!--                    eg execute in a terminal:-->
+<!--                    <br/>-->
+<!--                    <code>-->
+<!--                        sudo mkdir /usr/local/scripts; sudo chmod 777 /usr/local/scripts-->
+<!--                    </code>-->
+<!--                </li>-->
+                <li>
+                   open a file manager with administrative privileges,
+                   eg by executing the following in a terminal:
+                   <br/>
+                   <code>
+                        sudo nautilus /usr/local &amp;
+                   </code>
+                </li>
+                <li> download and extract Eclipse:
+                    <ul>
+                       <li>
+                        download Eclipse IDE for Java EE Developers from
+                        <a href="http://www.eclipse.org/downloads/">here</a>
+                        and save it on the desktop
+                       </li>
+                       <li>
+                         drag the archive to <code>/usr/local/</code> in Nautilus
+                       </li>
+                       <li>
+                         within Nautilus, extract the archive to the folder <code>/usr/local/</code>
+                       </li>
+                    </ul>
+                </li>
+                <li>
+                   Create a launch script for eclipse by executing the following in a terminal:
+                   <br/>
+                   <pre>
+sudo touch /usr/local/bin/eeclipse.sh
+sudo chmod 755 /usr/local/bin/eeclipse.sh
+sudo gedit /usr/local/bin/eeclipse.sh
+                   </pre>
+                   and then cutting and pasting the following into the file in gedit:
+                   <br/>
+                   <pre>
+#!/bin/sh
+export ECLIPSE_HOME=/usr/local/eclipse
+export GDK_NATIVE_WINDOWS=1
+$ECLIPSE_HOME/eclipse $*
+                   </pre>
+                   and then saving and closing gedit.
+                </li>
+            </ul>
+        </li>
+        <li>
+            install Mantaray
+            <ul>
+                <li>
+                    Download
+                    <a href="http://mesh.dl.sourceforge.net/sourceforge/mantaray/mantaray_java_2.0.1_bin.zip">mantaray_java_2.0.1_bin.zip</a> 
+                    and extract it to <code>/usr/local/</code> in the same way as eclipse.
+                </li>
+                <li>
+                   Rename the extracted folder in <code>/usr/local/</code> as follows:
+                   <ul>
+                     <li>
+                       <code>mantaray_2.0.1_bin</code> &rarr; <code>mantaray</code>
+                     </li>
+                   </ul>
+                </li>
+                <li>
+                  Disable IPv6 networking support in the kernel:
+                  <ul>
+                    <li>
+                    edit the file <code>/etc/default/grub</code>, eg by executing:
+                    <br/>
+                    <code>
+                      sudo gedit /etc/default/grub
+                    </code>
+                    </li>
+                    <li>
+                      find the line that says <code>GRUB_CMDLINE_LINUX=""</code>
+                    </li>
+                    <li>
+                      change the line to: <code>GRUB_CMDLINE_LINUX="ipv6.disable=1"</code>
+                    </li>
+                    <li>
+                      save the file, close the editor and execute the following:
+                      <br/>
+                      <code>
+                        sudo update-grub
+                      </code>
+                    </li>
+                    <li>
+                      this change will take effect after the next reboot
+                      as is only needed when using Mantaray
+                    </li>
+                  </ul>
+                </li>
+            </ul>
+        </li>
+        <li>
+            install Tomcat
+            <ul>
+                <li>
+                    Download 
+                    <a href="http://apache.mirrors.timporter.net//tomcat/tomcat-6/v6.0.29/bin/apache-tomcat-6.0.29.tar.gz">
+                        Tomcat archive
+                    </a>,
+                    and extract it to <code>/usr/local/</code> in the same way as eclipse.
+                </li>
+                <li>
+                   Rename the extracted folder in <code>/usr/local/</code> as follows:
+                   <ul>
+                     <li>
+                       <code>apache-tomcat-6.0.29</code> &rarr; <code>tomcat</code>
+                     </li>
+                   </ul>
+                </li>
+            </ul>
+        </li>
+        <li>
+            install Jersey
+                    <ul>
+                      <li>
+                        In Nautilus, create folder <code>jersey</code> in <code>/usr/local/</code>.
+                      </li>
+                      <li>
+                        Download the following archives and move them into <code>/usr/local/jersey</code>:
+                        <br/>
+                        <a href="http://download.java.net/maven/2/com/sun/jersey/jersey-bundle/1.3/jersey-bundle-1.3.jar">jersey-bundle-1.3.jar</a>,
+                        <a href="http://download.java.net/maven/2/javax/ws/rs/jsr311-api/1.1/jsr311-api-1.1.jar">jsr311-api-1.1.jar</a>,
+                        <a href="http://repo1.maven.org/maven2/asm/asm/3.1/asm-3.1.jar">asm-3.1.jar</a>
+                      </li>
+                    </ul>
+        </li>
+        <li>
+            You should now be able to do all DS practical tasks on your minimal Ubuntu system
+            with minimal changes.
+        </li>
+    </ul>
+    <hr/>
+    <address><a href="http://www.aston.ac.uk/~konecnym">Michal Konecny</a></address>
+  </body>
+</html>
