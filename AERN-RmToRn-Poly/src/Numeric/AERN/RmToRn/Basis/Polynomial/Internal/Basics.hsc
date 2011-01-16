@@ -1,5 +1,17 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 #include <basics.h>
+{-|
+    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
+    Description :  simple Haskell definitions etc for polynomials in C
+    Copyright   :  (c) Michal Konecny
+    License     :  BSD3
+
+    Maintainer  :  mikkonecny@gmail.com
+    Stability   :  experimental
+    Portability :  portable
+
+    Simple Haskell definitions etc for polynomials in C.
+-}
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics where
 
