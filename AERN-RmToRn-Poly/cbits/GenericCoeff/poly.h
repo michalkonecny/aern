@@ -6,10 +6,6 @@
 #include "GenericCoeff/coeff.h"
 #include "EvalExport_stub.h"
 
-typedef uint32_t Var;
-typedef uint32_t Power;
-typedef uint32_t Size;
-
 /*
  * polynomial term
  *

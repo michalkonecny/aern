@@ -8,7 +8,7 @@
 #define COEFF_VERSION GenericCoeff
 #define ADD_COEFF_CODE(name) name##GenCf
 
-#include "haskell_fn_types.h"
+#include "basics.h"
 
 /* The following are provided for better code readability: */
 typedef void * ComparisonOp; // pointer to Haskell type t -> t -> Int

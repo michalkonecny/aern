@@ -18,6 +18,7 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show
 where
 
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly
+import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
 
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Interval

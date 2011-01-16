@@ -5,6 +5,12 @@
 #ifndef HASKELL_FN_TYPES_H_
 #define HASKELL_FN_TYPES_H_
 
+#include <stdint.h>
+
+typedef uint32_t Var;
+typedef uint32_t Power;
+typedef uint32_t Size;
+
 /* The following are provided for better code readability: */
 
 typedef void * ConversionOp; // pointer to Haskell type t1 -> t2
