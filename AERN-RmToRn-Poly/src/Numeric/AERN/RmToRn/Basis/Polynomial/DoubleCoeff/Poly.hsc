@@ -15,7 +15,12 @@
     Haskell interface to C polynomials with native Double coefficients.
 -}
 
-module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly where
+module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly
+(
+    module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly,
+    module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
+)
+where
 
 import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
 
