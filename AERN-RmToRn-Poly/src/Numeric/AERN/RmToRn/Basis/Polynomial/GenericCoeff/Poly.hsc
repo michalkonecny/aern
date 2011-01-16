@@ -2,6 +2,18 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE EmptyDataDecls #-}
 #include <GenericCoeff/poly.h>
+{-|
+    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly
+    Description :  Haskell interface to C polynomials with Haskell coefficients
+    Copyright   :  (c) Michal Konecny
+    License     :  BSD3
+
+    Maintainer  :  mikkonecny@gmail.com
+    Stability   :  experimental
+    Portability :  portable
+
+    Haskell interface to C polynomials with Haskell coefficients.
+-}
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly 
 (

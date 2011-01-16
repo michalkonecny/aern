@@ -2,6 +2,18 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE EmptyDataDecls #-}
 #include <DoubleCoeff/poly.h>
+{-|
+    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly
+    Description :  Haskell interface to C polynomials with native Double coefficients
+    Copyright   :  (c) Michal Konecny
+    License     :  BSD3
+
+    Maintainer  :  mikkonecny@gmail.com
+    Stability   :  experimental
+    Portability :  portable
+
+    Haskell interface to C polynomials with native Double coefficients.
+-}
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly where
 
