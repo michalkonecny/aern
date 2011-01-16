@@ -3,7 +3,12 @@
 {-# LANGUAGE EmptyDataDecls #-}
 #include <GenericCoeff/poly.h>
 
-module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly where
+module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly 
+(
+    module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly,
+    module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
+)
+where
 
 import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
 
@@ -30,34 +35,6 @@ import qualified Foreign.Concurrent as Conc (newForeignPtr)
 
 --import Data.Typeable(Typeable)
 --import Data.Function(on)
-    
-type CVar = #type Var
-type CSize = #type Size
-type CPower = #type Power
-
-newtype Var = Var Word32 deriving (Eq, Ord, Show, Enum)
-{-# INLINE fromCVar #-}
-fromCVar :: CVar -> Var
-fromCVar v = Var (fromIntegral v)
-{-# INLINE toCVar #-}
-toCVar :: Var -> CVar
-toCVar (Var v) = fromIntegral v
-
-newtype Size = Size Word32 deriving (Eq, Ord, Show, Enum)
-{-# INLINE fromCSize #-}
-fromCSize :: CSize -> Size
-fromCSize s = Size (fromIntegral s)
-{-# INLINE toCSize #-}
-toCSize :: Size -> CSize
-toCSize (Size s) = fromIntegral s
-
-newtype Power = Power Word32 deriving (Eq, Ord, Show, Enum)
-{-# INLINE fromCPower #-}
-fromCPower :: CPower -> Power
-fromCPower pwr = Power (fromIntegral pwr)
-{-# INLINE toCPower #-}
-toCPower :: Power -> CPower
-toCPower (Power pwr) = fromIntegral pwr
     
 #let alignment t = "%lu", (unsigned long)offsetof(struct {char x__; t (y__); }, y__)
 

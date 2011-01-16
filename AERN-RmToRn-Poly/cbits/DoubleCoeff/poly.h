@@ -5,15 +5,12 @@
 
 /*
  * This file should differ from its GenericCoeff analogue
- * only in the following include line and by omitting
- * the ...UsingMutableOps functions.
+ * only in:
+ *   * the following include line
+ *   * by omitting the ...UsingMutableOps functions
  */
 #include "DoubleCoeff/coeff.h"
 #include "EvalExport_stub.h"
-
-typedef uint32_t Var;
-typedef uint32_t Power;
-typedef uint32_t Size;
 
 /*
  * polynomial term
