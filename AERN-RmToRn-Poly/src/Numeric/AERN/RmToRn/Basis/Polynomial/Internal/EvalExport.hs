@@ -15,6 +15,7 @@
 module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport 
 (
         eval_convert_hs,
+        eval_convertFromDouble_hs,
         eval_unary_hs,
         eval_binary_hs,
         free_SP_hs
@@ -55,6 +56,22 @@ eval_convert_hs opSP v1SP =
 
 foreign export ccall eval_convert_hs :: 
         (StablePtr (ConvertOp v1 v2)) -> (StablePtr v1) -> IO (StablePtr v2) 
+        
+{-|
+   Allow C programs to use a Haskell type conversion operator that has been
+   sent to it as a StablePtr.  Its result is opaque to C.
+-}
+{-# INLINE eval_convertFromDouble_hs #-}
+eval_convertFromDouble_hs :: 
+        (StablePtr (ConvertFromDoubleOp v2)) -> CDouble -> IO (StablePtr v2) 
+eval_convertFromDouble_hs opSP dC =
+    do
+    op <- deRefStablePtr opSP
+    let d = cDouble2Double dC
+    newStablePtr $ op d
+
+foreign export ccall eval_convertFromDouble_hs :: 
+        (StablePtr (ConvertFromDoubleOp v2)) -> CDouble -> IO (StablePtr v2) 
         
 {-|
    Allow C programs to use a Haskell comparison operator that has been

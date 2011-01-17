@@ -12,7 +12,7 @@
 #include <float.h>
 #include <fenv.h>
 
-#include "haskell_fn_types.h"
+#include "basics.h"
 
 /* The following are provided for better code readability: */
 typedef double Coeff;

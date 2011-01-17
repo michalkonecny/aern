@@ -2,8 +2,25 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE EmptyDataDecls #-}
 #include <GenericCoeff/poly.h>
+{-|
+    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly
+    Description :  Haskell interface to C polynomials with Haskell coefficients
+    Copyright   :  (c) Michal Konecny
+    License     :  BSD3
 
-module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly where
+    Maintainer  :  mikkonecny@gmail.com
+    Stability   :  experimental
+    Portability :  portable
+
+    Haskell interface to C polynomials with Haskell coefficients.
+-}
+
+module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly 
+(
+    module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly,
+    module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
+)
+where
 
 import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
 
@@ -30,34 +47,6 @@ import qualified Foreign.Concurrent as Conc (newForeignPtr)
 
 --import Data.Typeable(Typeable)
 --import Data.Function(on)
-    
-type CVar = #type Var
-type CSize = #type Size
-type CPower = #type Power
-
-newtype Var = Var Word32 deriving (Eq, Ord, Show, Enum)
-{-# INLINE fromCVar #-}
-fromCVar :: CVar -> Var
-fromCVar v = Var (fromIntegral v)
-{-# INLINE toCVar #-}
-toCVar :: Var -> CVar
-toCVar (Var v) = fromIntegral v
-
-newtype Size = Size Word32 deriving (Eq, Ord, Show, Enum)
-{-# INLINE fromCSize #-}
-fromCSize :: CSize -> Size
-fromCSize s = Size (fromIntegral s)
-{-# INLINE toCSize #-}
-toCSize :: Size -> CSize
-toCSize (Size s) = fromIntegral s
-
-newtype Power = Power Word32 deriving (Eq, Ord, Show, Enum)
-{-# INLINE fromCPower #-}
-fromCPower :: CPower -> Power
-fromCPower pwr = Power (fromIntegral pwr)
-{-# INLINE toCPower #-}
-toCPower :: Power -> CPower
-toCPower (Power pwr) = fromIntegral pwr
     
 #let alignment t = "%lu", (unsigned long)offsetof(struct {char x__; t (y__); }, y__)
 
@@ -375,15 +364,17 @@ foreign import ccall unsafe "newConstPolyGenCf"
             CVar -> CSize -> 
             IO (Ptr (Poly cf))  
 
-constPoly :: cf -> Var -> Size -> (PolyFP cf)
+constPoly :: (Show cf) => cf -> Var -> Size -> (PolyFP cf)
 constPoly c maxArity maxSize =
     unsafePerformIO $ newConstPoly c maxArity maxSize
 
-newConstPoly :: cf -> Var -> Size -> IO (PolyFP cf)
+newConstPoly :: (Show cf) => cf -> Var -> Size -> IO (PolyFP cf)
 newConstPoly c maxArity maxSize =
     do
     cSP <- newStablePtr c
+--    putStrLn $ "calling newConstPoly for " ++ show c
     pP <- poly_newConstPoly cSP (toCVar maxArity) (toCSize maxSize)
+--    putStrLn $ "newConstPoly for " ++ show c ++ " returned"
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyFP fp
 
@@ -511,7 +502,6 @@ foreign import ccall safe "addUpUsingMutableOpsGenCf"
         poly_addUpUsingMutableOps :: 
             (StablePtr cf) ->
             (StablePtr (ComparisonOp (Mutable cf s))) ->
-            (Ptr (Ops_Pure cf)) ->
             (Ptr (Ops_Mutable s cf)) ->
             (Ptr (Poly (Mutable cf s))) -> 
             (Ptr (Poly (Mutable cf s))) -> 
@@ -527,9 +517,9 @@ polyAddUpMutableUsingMutableOps ::
     PolyMutableFP cf s ->
     ST s ()
 polyAddUpMutableUsingMutableOps sample opsMutablePtr = 
-    polyBinaryOpMutable poly_addUpUsingMutableOps sample nullPtr opsMutablePtr
+    polyBinaryOpMutable poly_addUpUsingMutableOps sample opsMutablePtr
 
-polyBinaryOpMutable binaryOp sample opsPtr opsMutablePtr 
+polyBinaryOpMutable binaryOp sample opsMutablePtr 
         (PolyMutableFP resFP) (PolyMutableFP p1FP) (PolyMutableFP p2FP) =
     unsafeIOToST $
     do
@@ -538,7 +528,7 @@ polyBinaryOpMutable binaryOp sample opsPtr opsMutablePtr
     _ <- withForeignPtr p1FP $ \p1 ->
              withForeignPtr p2FP $ \p2 ->
                  withForeignPtr resFP $ \resP ->
-                     binaryOp zeroSP compareSP opsPtr opsMutablePtr resP p1 p2
+                     binaryOp zeroSP compareSP opsMutablePtr resP p1 p2
     freeStablePtr compareSP
     where
     compareMutable v1M v2M =
