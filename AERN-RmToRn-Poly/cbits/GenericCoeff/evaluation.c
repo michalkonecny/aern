@@ -10,6 +10,7 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(const Poly * p, const Value * values, const Va
     const BinaryOp add, const BinaryOp subtr, const BinaryOp mult,
     const ConversionOp cf2val)
 {
+//  printf("evalAtPtChebBasis: starting\n");
   Var maxArity = p -> maxArity;
   Var psize = p -> psize;
   Term * terms = p -> terms;
@@ -110,5 +111,6 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(const Poly * p, const Value * values, const Va
   // free the array with maximum powers for each variable:
   free(maxPowers);
 
+//  printf("evalAtPtChebBasis: returning\n");
   return result;
 }
