@@ -11,11 +11,14 @@
 #include "basics.h"
 
 /* The following are provided for better code readability: */
-typedef void * ComparisonOp; // pointer to Haskell type t -> t -> Int
+typedef void * Coeff; // pointer to undisclosed Haskell type t
+
+typedef void * ComparisonOp;
+   // Pointer to a Haskell value of type t -> t -> Int, which should be
+   // a numerical comparison operator suitable for use in
+   // the standard C sort function.
 
 #define CF_COMPARE(op, d1, d2) (eval_compare_hs(op, d1, d1))
-
-typedef void * Coeff; // pointer to undisclosed Haskell type t
 
 typedef void * CoeffMutable; // pointer to undisclosed Haskell type (Mutable t s)
 

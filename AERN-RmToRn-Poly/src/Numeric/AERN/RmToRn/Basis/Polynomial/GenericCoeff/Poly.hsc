@@ -361,34 +361,34 @@ unsafeReadPolyMutable sample (PolyMutableFP fp) =
 foreign import ccall unsafe "newConstPolyGenCf"
         poly_newConstPoly :: 
             (StablePtr cf) -> 
-            CVar -> CSize -> 
+            CVar -> CSize -> CPower -> 
             IO (Ptr (Poly cf))  
 
-constPoly :: (Show cf) => cf -> Var -> Size -> (PolyFP cf)
-constPoly c maxArity maxSize =
-    unsafePerformIO $ newConstPoly c maxArity maxSize
+constPoly :: (Show cf) => cf -> Var -> Size -> Power -> (PolyFP cf)
+constPoly c maxArity maxSize maxDeg =
+    unsafePerformIO $ newConstPoly c maxArity maxSize maxDeg
 
-newConstPoly :: (Show cf) => cf -> Var -> Size -> IO (PolyFP cf)
-newConstPoly c maxArity maxSize =
+newConstPoly :: (Show cf) => cf -> Var -> Size -> Power -> IO (PolyFP cf)
+newConstPoly c maxArity maxSize maxDeg =
     do
     cSP <- newStablePtr c
 --    putStrLn $ "calling newConstPoly for " ++ show c
-    pP <- poly_newConstPoly cSP (toCVar maxArity) (toCSize maxSize)
+    pP <- poly_newConstPoly cSP (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
 --    putStrLn $ "newConstPoly for " ++ show c ++ " returned"
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyFP fp
 
-constPolyMutable :: (CanBeMutable cf) => cf -> Var -> Size -> ST s (PolyMutableFP cf s)
-constPolyMutable c maxArity maxSize =
-    unsafeIOToST $ newConstPolyMutable c maxArity maxSize
+constPolyMutable :: (CanBeMutable cf) => cf -> Var -> Size -> Power -> ST s (PolyMutableFP cf s)
+constPolyMutable c maxArity maxSize maxDeg =
+    unsafeIOToST $ newConstPolyMutable c maxArity maxSize maxDeg
 
 
-newConstPolyMutable :: (CanBeMutable cf) => cf -> Var -> Size -> IO (PolyMutableFP cf s)
-newConstPolyMutable c maxArity maxSize =
+newConstPolyMutable :: (CanBeMutable cf) => cf -> Var -> Size -> Power -> IO (PolyMutableFP cf s)
+newConstPolyMutable c maxArity maxSize maxDeg =
     do
     var <- unsafeSTToIO $ makeMutable c
     varSP <- newStablePtr var
-    pP <- poly_newConstPoly varSP (toCVar maxArity) (toCSize maxSize)
+    pP <- poly_newConstPoly varSP (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyMutableFP fp
 
@@ -398,43 +398,43 @@ newConstPolyMutable c maxArity maxSize =
 foreign import ccall unsafe "newProjectionPolyGenCf"
         poly_newProjectionPoly :: 
             (StablePtr cf) -> (StablePtr cf) -> 
-            CVar -> CVar -> CSize -> 
+            CVar -> CVar -> CSize -> CPower -> 
             IO (Ptr (Poly cf))  
 
 projectionPoly :: 
     (Storable cf, HasOne cf, HasZero cf) => 
-    cf -> Var -> Var -> Size -> (PolyFP cf)
-projectionPoly sample x maxArity maxSize =
-    unsafePerformIO $ newProjectionPoly sample x maxArity maxSize
+    cf -> Var -> Var -> Size -> Power -> (PolyFP cf)
+projectionPoly sample x maxArity maxSize maxDeg =
+    unsafePerformIO $ newProjectionPoly sample x maxArity maxSize maxDeg
 
 newProjectionPoly :: 
     (Storable cf, HasOne cf, HasZero cf) => 
-    cf -> Var -> Var -> Size -> IO (PolyFP cf)
-newProjectionPoly _sample x maxArity maxSize =
+    cf -> Var -> Var -> Size -> Power -> IO (PolyFP cf)
+newProjectionPoly _sample x maxArity maxSize maxDeg =
     do
     zeroSP <- newStablePtr zero
     oneSP <- newStablePtr one
-    pP <- poly_newProjectionPoly zeroSP oneSP (toCVar x) (toCVar maxArity) (toCSize maxSize)
+    pP <- poly_newProjectionPoly zeroSP oneSP (toCVar x) (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyFP fp
 
 projectionPolyMutable :: 
     (CanBeMutable cf, HasOne cf, HasZero cf) => 
-    cf -> Var -> Var -> Size -> ST s (PolyMutableFP cf s)
-projectionPolyMutable sample x maxArity maxSize =
-    unsafeIOToST $ newProjectionPolyMutable sample x maxArity maxSize
+    cf -> Var -> Var -> Size -> Power -> ST s (PolyMutableFP cf s)
+projectionPolyMutable sample x maxArity maxSize maxDeg =
+    unsafeIOToST $ newProjectionPolyMutable sample x maxArity maxSize maxDeg
 
 
 newProjectionPolyMutable :: 
     (CanBeMutable cf, HasOne cf, HasZero cf) => 
-    cf -> Var -> Var -> Size -> IO (PolyMutableFP cf s)
-newProjectionPolyMutable sample x maxArity maxSize =
+    cf -> Var -> Var -> Size -> Power -> IO (PolyMutableFP cf s)
+newProjectionPolyMutable sample x maxArity maxSize maxDeg =
     do
     zeroM <- unsafeSTToIO $ makeMutable $ head [zero, sample]
     zeroSP <- newStablePtr zeroM
     oneM <- unsafeSTToIO $ makeMutable $ head [one, sample]
     oneSP <- newStablePtr oneM
-    pP <- poly_newProjectionPoly zeroSP oneSP (toCVar x) (toCVar maxArity) (toCSize maxSize)
+    pP <- poly_newProjectionPoly zeroSP oneSP (toCVar x) (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyMutableFP fp
 
@@ -464,30 +464,32 @@ polyAddUpPureUsingPureOps ::
     (HasZero cf, NumOrd.PartialComparison cf) =>
     cf -> 
     Size ->
+    Power ->
     (Ptr (Ops_Pure cf)) ->
     PolyFP cf ->
     PolyFP cf ->
     PolyFP cf
-polyAddUpPureUsingPureOps zero size opsPtr = 
-    polyBinaryOpPure poly_addUpUsingPureOps zero size opsPtr
+polyAddUpPureUsingPureOps zero size deg opsPtr = 
+    polyBinaryOpPure poly_addUpUsingPureOps zero size deg opsPtr
 
 polyAddDnPureUsingPureOps ::
     (HasZero cf, NumOrd.PartialComparison cf) =>
     cf -> 
     Size ->
+    Power ->
     (Ptr (Ops_Pure cf)) ->
     PolyFP cf ->
     PolyFP cf ->
     PolyFP cf
-polyAddDnPureUsingPureOps zero size opsPtr = 
-    polyBinaryOpPure poly_addDnUsingPureOps zero size opsPtr
+polyAddDnPureUsingPureOps zero size deg opsPtr = 
+    polyBinaryOpPure poly_addDnUsingPureOps zero size deg opsPtr
 
-polyBinaryOpPure binaryOp sample maxSize opsPtr p1@(PolyFP p1FP) (PolyFP p2FP) =
+polyBinaryOpPure binaryOp sample maxSize maxDeg opsPtr p1@(PolyFP p1FP) (PolyFP p2FP) =
     unsafePerformIO $
     do
     maxArity <- peekArityIO p1
     zeroSP <- newStablePtr $ head [zero, sample]
-    resP <- poly_newConstPoly zeroSP (toCVar maxArity) (toCSize maxSize)
+    resP <- poly_newConstPoly zeroSP (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     compareSP <- newStablePtr $ (NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample))
     _ <- withForeignPtr p1FP $ \p1 ->
              withForeignPtr p2FP $ \p2 ->

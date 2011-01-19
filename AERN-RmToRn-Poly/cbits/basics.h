@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 typedef uint32_t Var;
-typedef uint32_t Power;
+typedef uint8_t Power;
 typedef uint32_t Size;
 
 /* The following are provided for better code readability: */
