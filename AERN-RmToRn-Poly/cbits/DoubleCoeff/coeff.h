@@ -43,7 +43,7 @@ typedef struct OPS_PURE
 #define CF_MUL_DN(ops,d1,d2) (fesetround(ROUND_UP), (-((-(d1))*(d2))))
 
 #define CF_FREE(d) (1) // signal success without doing anything
-#define CF_CLONE(d) (d) // not a pointed type, normal assignment clones
+#define CF_CLONE(d) (d) // not a pointer type, normal assignment clones
 
 // there is no need to distinguish a polynomial with mutable coefficients
 // from one with immutable coefficients in the case of double implemented

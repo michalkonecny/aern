@@ -39,12 +39,14 @@ ADD_COEFF_CODE(mapCoeffsInPlace)(ConversionOp convert, Poly *p)
 }
 
 Poly *
-ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize)
+ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize,
+    Power maxDeg)
 {
 //  printf("newConstPoly: starting\n");
   Poly * poly = (Poly *) malloc(sizeof(Poly));
   poly -> maxArity = maxArity;
   poly -> maxSize = maxSize;
+  poly -> maxDeg = maxDeg;
   poly -> psize = 0;
   poly -> constTerm = c;
   poly -> terms = malloc(maxSize * sizeof(Term));
@@ -63,9 +65,9 @@ ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize)
 
 Poly *
 ADD_COEFF_CODE(newProjectionPoly)(const Coeff zero, const Coeff one, Var var,
-    Var maxArity, Size maxSize)
+    Var maxArity, Size maxSize, Power maxDeg)
 {
-  Poly * poly = ADD_COEFF_CODE(newConstPoly)(zero, maxArity, maxSize);
+  Poly * poly = ADD_COEFF_CODE(newConstPoly)(zero, maxArity, maxSize, maxDeg);
 
   // add one term for the variable:
   poly -> psize = 1;

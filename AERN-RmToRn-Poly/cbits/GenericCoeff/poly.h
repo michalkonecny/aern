@@ -31,9 +31,10 @@ typedef struct TERM
  */
 typedef struct POLY
 {
-  Var maxArity; // nominal number of variables
-  Size maxSize; // maximal number of non-constant terms
-  Size psize; // actual number of non-constant terms
+  Var maxArity; // nominal number of variables (0 < maxArity < 2^32)
+  Size maxSize; // maximal number of non-constant terms (0 < maxSize < 2^10)
+  Power maxDeg; // maximal degree of a term (ie sum of powers for all variables) (0 <= maxPow < 2^8)
+  Size psize; // actual number of non-constant terms (0<=psize<=maxSize)
   Coeff constTerm;
   Term * terms;
 } Poly;
@@ -49,7 +50,7 @@ ADD_COEFF_CODE(mapCoeffsInPlace)(ConversionOp convert, Poly *p);
  * no persistent references to c and this pointer is unique for each call
  */
 Poly *
-ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize);
+ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize, Power maxDeg);
 
 /*
  * preconditions:
@@ -59,7 +60,7 @@ ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize);
  */
 Poly *
 ADD_COEFF_CODE(newProjectionPoly)(const Coeff zero, const Coeff one, Var var,
-    Var maxArity, Size maxSize);
+    Var maxArity, Size maxSize, Power maxDeg);
 
 ///*
 // * preconditions:

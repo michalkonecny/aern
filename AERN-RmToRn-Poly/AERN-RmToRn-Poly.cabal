@@ -43,7 +43,7 @@ Library
     Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly,
     Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show
   other-modules:
-    Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics,
+    Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics, 
     Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport, 
     Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Symbolic
     
