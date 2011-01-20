@@ -188,7 +188,7 @@ ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
       int i2 = 0;
 
       //      printf("addTermsAndReturnMaxError: about to compute coeffs\n");
-      // compute new coefficients in the order of increasing powers:
+      // compute new coefficients in the order of lexicographically increasing powers:
       while (i1 < p1Size || i2 < p2Size)
         {
           //          printf(
@@ -197,7 +197,7 @@ ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
           newCoeffs[i].n = i;
           newCoeffs[i].cfCompare = compare;
 
-          // work out which polynomial(s) to read the next term from:
+          // work out which polynomial(s) to read newCoeffs[i] from:
           int powerComparison;
           if (i1 == p1Size)
             {
@@ -213,6 +213,9 @@ ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
                   arity * (sizeof(Power)));
             }
 
+          Power degree;
+
+          // fill in newCoeffs[i] and degree:
           if (powerComparison == 0)
             {
               //              printf(
@@ -235,6 +238,7 @@ ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
 
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = i2;
+              degree = ADD_COEFF_CODE(getPowersDegree)(terms2[i2].powers, arity);
               i1++;
               i2++;
             }
@@ -246,6 +250,7 @@ ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
               newCoeffs[i].cf = CF_CLONE(terms2[i2].coeff);
               newCoeffs[i].n1 = -1;
               newCoeffs[i].n2 = i2;
+              degree = ADD_COEFF_CODE(getPowersDegree)(terms2[i2].powers, arity);
               i2++;
             }
           else if (powerComparison < 0) // i1 is smaller
@@ -256,10 +261,29 @@ ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
               newCoeffs[i].cf = CF_CLONE(terms1[i1].coeff);
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = -1;
+              degree = ADD_COEFF_CODE(getPowersDegree)(terms2[i1].powers, arity);
               i1++;
             }
 
-          i++;
+          // check the term's degree is not above the limit:
+          if(degree <= res -> maxDeg)
+            {
+              // finalise the new term by increasing the term counter:
+              i++;
+            }
+          else
+            {
+              // ignore the term by not increasing i
+              // instead, add the absolute value of its coefficient to maxError:
+              Coeff temp1 = CF_ABS_UP(ops, newCoeffs[i].cf);
+              Coeff temp2 = maxError;
+              maxError = CF_ADD_UP(ops, maxError, temp1);
+
+              // and tidy up:
+              CF_FREE(newCoeffs[i].cf);
+              CF_FREE(temp1);
+              CF_FREE(temp2);
+            }
         }
 
       // i now holds the number of new coefficients,
