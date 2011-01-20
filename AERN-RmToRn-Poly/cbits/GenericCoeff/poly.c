@@ -91,3 +91,15 @@ ADD_COEFF_CODE(newProjectionPoly)(const Coeff zero, const Coeff one, Var var,
   return poly;
 }
 
+Power
+ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity)
+{
+   Power result = 0;
+
+   for(int i = 0; i < arity; i++)
+     {
+       result += powers[i];
+     }
+
+   return result;
+}

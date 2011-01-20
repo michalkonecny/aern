@@ -77,6 +77,9 @@ ADD_COEFF_CODE(newProjectionPoly)(const Coeff zero, const Coeff one, Var var,
 //void
 //incrementArity(Poly * res, Poly *p, Var * old2new);
 
+Power
+ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity);
+
 /*
  * The following operations expect all polynomial parameters and result space to
  * have matching maxArities.

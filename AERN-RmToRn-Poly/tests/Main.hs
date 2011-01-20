@@ -21,9 +21,9 @@ import System.IO.Unsafe
 main :: IO ()
 main = 
     do
-    testPureDCPolys
+--    testPureDCPolys
 --    testPureGCPolys
---    testMutableGCPolys
+    testMutableGCPolys
 
 testPureDCPolys :: IO ()
 testPureDCPolys =
@@ -41,6 +41,7 @@ testPureDCPolys =
     putStrLn $ "(p2 +^ p2) +^ p3 = " ++ show pb223
     putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ show p1bb223
     putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show p1bb223s1
+    putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show p1bb223d0
     where
     opsPtr = unsafePerformIO $ DCPoly.newOps DCPoly.Ops_Pure
     p1 = DCPoly.constPoly 3 (Var 2) (Size 10) (Power 3)
@@ -55,6 +56,7 @@ testPureDCPolys =
     pb223 = DCPoly.polyAddUpPureUsingPureOps (Size 2) (Power 3) opsPtr p22 p3
     p1bb223 = DCPoly.polyAddUpPureUsingPureOps (Size 2) (Power 3) opsPtr p1 pb223
     p1bb223s1 = DCPoly.polyAddUpPureUsingPureOps (Size 1) (Power 3) opsPtr p1 pb223
+    p1bb223d0 = DCPoly.polyAddUpPureUsingPureOps (Size 2) (Power 0) opsPtr p1 pb223
     (maxArity, maxSize) = DCPoly.peekSizes p1
 
 testPureGCPolys :: IO ()
@@ -73,6 +75,7 @@ testPureGCPolys =
     putStrLn $ "(p2 +^ p2) +^ p3 = " ++ show pb223
     putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ show p1bb223
     putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show p1bb223s1
+    putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show p1bb223d0
     where
     opsPtr = GCPoly.newOpsPureArithUpDnDefaultEffort sampleD
     p1 = GCPoly.constPoly (3::Double) (Var 2) (Size 10) (Power 3)
@@ -87,6 +90,7 @@ testPureGCPolys =
     pb223 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p22 p3
     p1bb223 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p1 pb223
     p1bb223s1 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 1) (Power 3) opsPtr p1 pb223
+    p1bb223d0 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 0) opsPtr p1 pb223
     (maxArity, maxSize) = GCPoly.peekSizes p1
         
 testMutableGCPolys :: IO ()
@@ -101,12 +105,14 @@ testMutableGCPolys =
     putStrLn $ "p12 = " ++ show p12
     putStrLn $ "p22 = " ++ show p22
     putStrLn $ "p1b23 = " ++ show p1b23
+    putStrLn $ "pb223 = " ++ show pb223
     putStrLn $ "p23s1 = " ++ show p23s1
     putStrLn $ "pb223s1 = " ++ show pb223s1
+    putStrLn $ "pb223d0 = " ++ show pb223d0
     where
     opsPtr = GCPoly.newOpsPureArithUpDnDefaultEffort sampleD
     opsMutablePtr = GCPoly.newOpsMutableArithUpDnDefaultEffort sampleD
-    [p1,p2,p3,p11,p12,p22,p1b23,p23s1,pb223s1] = runST $
+    [p1,p2,p3,p11,p12,p22,p1b23,pb223,p23s1,pb223s1, pb223d0] = runST $
         do
         p1M <- GCPoly.constPolyMutable (3::Double) (Var 2) (Size 10) (Power 3)
         p2M <- GCPoly.projectionPolyMutable sampleD (Var 0) (Var 2) (Size 10) (Power 3)
@@ -122,9 +128,13 @@ testMutableGCPolys =
         p1b23M <- GCPoly.constPolyMutable (0::Double) (Var 2) (Size 2) (Power 3)
         GCPoly.polyAddUpMutableUsingMutableOps sampleD opsMutablePtr p1b23M p2M p3M
         GCPoly.polyAddUpMutableUsingMutableOps sampleD opsMutablePtr p1b23M p1M p1b23M
+        pb223M <- GCPoly.constPolyMutable (0::Double) (Var 2) (Size 2) (Power 3)
+        GCPoly.polyAddUpMutableUsingMutableOps sampleD opsMutablePtr pb223M p22M p3M
         p23s1M <- GCPoly.constPolyMutable (0::Double) (Var 2) (Size 1) (Power 3)
         GCPoly.polyAddUpMutableUsingMutableOps sampleD opsMutablePtr p23s1M p2M p3M
         pb223s1M <- GCPoly.constPolyMutable (0::Double) (Var 2) (Size 1) (Power 3)
         GCPoly.polyAddUpMutableUsingMutableOps sampleD opsMutablePtr pb223s1M p22M p3M
-        mapM (GCPoly.unsafeReadPolyMutable sampleD) [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, p23s1M, pb223s1M]
+        pb223d0M <- GCPoly.constPolyMutable (0::Double) (Var 2) (Size 2) (Power 0)
+        GCPoly.polyAddUpMutableUsingMutableOps sampleD opsMutablePtr pb223d0M p22M p3M
+        mapM (GCPoly.unsafeReadPolyMutable sampleD) [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M]
     
