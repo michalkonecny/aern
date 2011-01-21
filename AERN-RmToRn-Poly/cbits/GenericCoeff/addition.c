@@ -39,7 +39,8 @@ ADD_COEFF_CODE(sortCoeffNsByCoeffDecreasing)(int size, CoeffN * cns)
 void
 ADD_COEFF_CODE(sortCoeffNsByN)(int size, CoeffN * cns)
 {
-  qsort(cns, size, sizeof(CoeffN), (__compar_fn_t ) &ADD_COEFF_CODE(compareCoeffNsByN));
+  qsort(cns, size, sizeof(CoeffN),
+      (__compar_fn_t ) &ADD_COEFF_CODE(compareCoeffNsByN));
 }
 
 void
@@ -143,10 +144,15 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
     }
 }
 
-Coeff
-ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
-    const ComparisonOp compare, const Ops_Pure * ops, Poly *res,
-    const Poly * p1, const Poly * p2)
+/**
+ * Perform addition of all terms except the constant terms.
+ * Also set the errorBound in res to be the combined errorBounds
+ * of p1 and p2 plus an upper bound on the accumulated error
+ * of the addition.
+ */
+void
+ADD_COEFF_CODE(addTermsAndErrorBounds)(ComparisonOp compare, Ops_Pure * ops,
+    Poly *res, Poly * p1, Poly * p2)
 {
 
   Var arity = res -> maxArity;
@@ -159,7 +165,7 @@ ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
   Size p1Size = p1 -> psize;
   Size p2Size = p2 -> psize;
 
-  Coeff maxError = zero;
+  Coeff maxError = CF_ADD_UP(ops, p1 -> errorBound, p2 -> errorBound);
 
   //  printf("addTermsAndReturnMaxError: p1Size = %d \n", p1Size);
   //  printf("addTermsAndReturnMaxError: p2Size = %d \n", p2Size);
@@ -210,15 +216,17 @@ ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
 
           Power degree;
 
-          // fill in newCoeffs[i] and degree
+          // fill in newCoeffs[i] and degree:
           if (powerComparison == 0)
             {
               //              printf(
               //                  "addTermsAndReturnMaxError: coeff %d: adding terms1[%d] and terms2[%d]\n",
               //                  i, i1, i2);
               // compute sum of the two coefficients and its error bound:
-              Coeff newCfUp = CF_ADD_UP(ops, terms1[i1].coeff, terms2[i2].coeff);
-              Coeff newCfDn = CF_ADD_DN(ops, terms1[i1].coeff, terms2[i2].coeff);
+              Coeff newCfUp =
+                  CF_ADD_UP(ops, terms1[i1].coeff, terms2[i2].coeff);
+              Coeff newCfDn =
+                  CF_ADD_DN(ops, terms1[i1].coeff, terms2[i2].coeff);
               Coeff newCfMaxError = CF_SUB_UP(ops, newCfUp, newCfDn);
               newCoeffs[i].cf = newCfUp;
 
@@ -233,7 +241,8 @@ ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
 
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = i2;
-              degree = ADD_COEFF_CODE(getPowersDegree)(terms2[i2].powers, arity);
+              degree
+                  = ADD_COEFF_CODE(getPowersDegree)(terms2[i2].powers, arity);
               i1++;
               i2++;
             }
@@ -245,7 +254,8 @@ ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
               newCoeffs[i].cf = CF_CLONE(terms2[i2].coeff);
               newCoeffs[i].n1 = -1;
               newCoeffs[i].n2 = i2;
-              degree = ADD_COEFF_CODE(getPowersDegree)(terms2[i2].powers, arity);
+              degree
+                  = ADD_COEFF_CODE(getPowersDegree)(terms2[i2].powers, arity);
               i2++;
             }
           else if (powerComparison < 0) // i1 is smaller
@@ -256,12 +266,13 @@ ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
               newCoeffs[i].cf = CF_CLONE(terms1[i1].coeff);
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = -1;
-              degree = ADD_COEFF_CODE(getPowersDegree)(terms2[i1].powers, arity);
+              degree
+                  = ADD_COEFF_CODE(getPowersDegree)(terms2[i1].powers, arity);
               i1++;
             }
 
           // check the term's degree is not above the limit:
-          if(degree <= res -> maxDeg)
+          if (degree <= res -> maxDeg)
             {
               // finalise the new term by increasing the term counter:
               i++;
@@ -321,56 +332,75 @@ ADD_COEFF_CODE(addTermsAndReturnMaxError)(Coeff zero,
       ADD_COEFF_CODE(copyTerms)(newCoeffs, i, arity, terms, terms1, terms2);
 
       free(newCoeffs);
+
     }
 
-  //  printf("addTermsAndReturnMaxError: finished, returning maxError\n");
-
-  return maxError;
+  // set the errorBound in res to be the inherited and accumulated error:
+  CF_FREE(res -> errorBound);
+  res -> errorBound = maxError;
+  //  printf("addTermsAndReturnMaxError: finished\n");
 }
 
 void
 ADD_COEFF_CODE(addUpUsingPureOps)(Coeff zero, ComparisonOp compare,
-    const Ops_Pure * ops, Poly *res, const Poly * p1, const Poly * p2)
+    Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2)
 {
-  Coeff maxError = ADD_COEFF_CODE(addTermsAndReturnMaxError)(zero, compare,
-      ops, res, p1, p2);
+  ADD_COEFF_CODE(addTermsAndErrorBounds)(compare, ops, res, p1, p2);
 
   // compute the constant term coefficient rounding up:
   Coeff temp = CF_ADD_UP(ops, p1 -> constTerm, p2 -> constTerm);
-  // also add maxError to the constant term coefficient:
-  res -> constTerm = CF_ADD_UP(ops, temp, maxError);
 
+  // add errorBound to the constant term coefficient:
+  res -> constTerm = CF_ADD_UP(ops, temp, res -> errorBound);
   CF_FREE(temp);
-  CF_FREE(maxError);
+
+  // make this a thin enclosure, ie a simple polynomial:
+  CF_FREE(res -> errorBound);
+  res -> errorBound = zero;
 }
 
 void
 ADD_COEFF_CODE(addDnUsingPureOps)(Coeff zero, ComparisonOp compare,
-    const Ops_Pure * ops, Poly *res, const Poly * p1, const Poly * p2)
+    Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2)
 {
-  Coeff maxError = ADD_COEFF_CODE(addTermsAndReturnMaxError)(zero, compare,
-      ops, res, p1, p2);
+  ADD_COEFF_CODE(addTermsAndErrorBounds)(compare, ops, res, p1, p2);
 
   // compute the constant term coefficient rounding down:
   Coeff temp = CF_ADD_DN(ops, p1 -> constTerm, p2 -> constTerm);
-  // also subtract maxError from the constant term coefficient:
-  res -> constTerm = CF_SUB_DN(ops, temp, maxError);
 
+  // subtract errorBound from the constant term coefficient:
+  res -> constTerm = CF_SUB_DN(ops, temp, res -> errorBound);
   CF_FREE(temp);
-  CF_FREE(maxError);
+
+  // make this a thin enclosure, ie a simple polynomial:
+  CF_FREE(res -> errorBound);
+  res -> errorBound = zero;
 }
 
-//void
-//testAssign(Coeff sample, UnaryOpMutable assign, CoeffMutable to,
-//    CoeffMutable from)
-//{
-//  eval_unaryMutable_hs(sample, assign, to, from);
-//}
+void
+ADD_COEFF_CODE(addEnclUsingPureOps)(ComparisonOp compare, Ops_Pure * ops,
+    Poly *res, Poly * p1, Poly * p2)
+{
+  ADD_COEFF_CODE(addTermsAndErrorBounds)(compare, ops, res, p1, p2);
+
+  // compute the constant term coefficient rounding up and down:
+  res -> constTerm = CF_ADD_UP(ops, p1 -> constTerm, p2 -> constTerm);
+  Coeff temp = CF_ADD_DN(ops, p1 -> constTerm, p2 -> constTerm);
+
+  // work out a bound on the error made in the constant term:
+  Coeff constTermErr = CF_SUB_UP(ops, res -> constTerm, temp);
+  CF_FREE(temp);
+
+  // update the radius of the enclosure:
+  temp = res -> errorBound;
+  res -> errorBound = CF_ADD_UP(ops, temp, constTermErr);
+  CF_FREE(temp);
+  CF_FREE(constTermErr);
+}
 
 void
-ADD_COEFF_CODE(addTermsAndReturnMaxErrorUsingMutableOps)(Coeff sample,
-    const ComparisonOp compare, const Ops_Mutable * opsM, Poly *res,
-    const Poly * p1, const Poly * p2, CoeffMutable maxError)
+ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(ComparisonOp compare,
+    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
 {
 
   Var arity = res -> maxArity;
@@ -384,9 +414,12 @@ ADD_COEFF_CODE(addTermsAndReturnMaxErrorUsingMutableOps)(Coeff sample,
   Size p1Size = p1 -> psize;
   Size p2Size = p2 -> psize;
 
-  //  printf("addTermsAndReturnMaxErrorMutable: p1Size = %d \n", p1Size);
-  //  printf("addTermsAndReturnMaxErrorMutable: p2Size = %d \n", p2Size);
+  // create an easy to refer to alias
+  // of the mutable variable for result's error bounds:
+  CoeffMutable maxError = res -> errorBound;
 
+  // combine the errorBounds from parameter polynomials:
+  CFM_ADD_UP(opsM, maxError, p1 -> errorBound, p2 -> errorBound);
 
   if (p1Size + p2Size == 0) // no need to compute any terms
     {
@@ -458,7 +491,8 @@ ADD_COEFF_CODE(addTermsAndReturnMaxErrorUsingMutableOps)(Coeff sample,
 
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = i2;
-              degree = ADD_COEFF_CODE(getPowersDegree)(terms2[i2].powers, arity);
+              degree
+                  = ADD_COEFF_CODE(getPowersDegree)(terms2[i2].powers, arity);
               i1++;
               i2++;
             }
@@ -470,7 +504,8 @@ ADD_COEFF_CODE(addTermsAndReturnMaxErrorUsingMutableOps)(Coeff sample,
               CFM_CLONE(opsM, newCoeffs[i].cf, terms2[i2].coeff);
               newCoeffs[i].n1 = -1;
               newCoeffs[i].n2 = i2;
-              degree = ADD_COEFF_CODE(getPowersDegree)(terms2[i2].powers, arity);
+              degree
+                  = ADD_COEFF_CODE(getPowersDegree)(terms2[i2].powers, arity);
               i2++;
             }
           else if (powerComparison < 0) // i1 is smaller
@@ -481,12 +516,13 @@ ADD_COEFF_CODE(addTermsAndReturnMaxErrorUsingMutableOps)(Coeff sample,
               CFM_CLONE(opsM, newCoeffs[i].cf, terms1[i1].coeff);
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = -1;
-              degree = ADD_COEFF_CODE(getPowersDegree)(terms1[i1].powers, arity);
+              degree
+                  = ADD_COEFF_CODE(getPowersDegree)(terms1[i1].powers, arity);
               i1++;
             }
 
           // check the term's degree is not above the limit:
-          if(degree <= res -> maxDeg)
+          if (degree <= res -> maxDeg)
             {
               // finalise the new term by increasing the term counter:
               i++;
@@ -545,40 +581,60 @@ ADD_COEFF_CODE(addTermsAndReturnMaxErrorUsingMutableOps)(Coeff sample,
 
 void
 ADD_COEFF_CODE(addUpUsingMutableOps)(Coeff zero, ComparisonOp compare,
-    const Ops_Mutable * opsM, Poly *res, const Poly * p1, const Poly * p2)
+    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
 {
-//  printf("addUpUsingMutableOps: starting\n");
+  //  printf("addUpUsingMutableOps: starting\n");
 
-  CoeffMutable maxError = CFM_NEW(opsM, zero);
-//  printf("created maxError\n");
-
-  ADD_COEFF_CODE(addTermsAndReturnMaxErrorUsingMutableOps)(zero, compare, opsM,
-      res, p1, p2, maxError);
-//  printf("performed main addition\n");
+  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(compare, opsM, res, p1,
+      p2);
+  //  printf("performed main addition\n");
 
   // compute the constant term coefficient rounding up:
   CFM_ADD_UP(opsM, res -> constTerm, p1 -> constTerm, p2 -> constTerm);
-  // also add maxError to the constant term coefficient:
-  CFM_ADD_UP(opsM, res -> constTerm, res -> constTerm, maxError);
+  // also add the errorBound to the constant term coefficient:
+  CFM_ADD_UP(opsM, res -> constTerm, res -> constTerm, res -> errorBound);
 
-  CFM_FREE(maxError);
-//  printf("addUpUsingMutableOps: returning\n");
+  CFM_ASSIGN_VAL(opsM, res -> errorBound, zero);
+  //  printf("addUpUsingMutableOps: finished\n");
 }
 
 void
 ADD_COEFF_CODE(addDnUsingMutableOps)(Coeff zero, ComparisonOp compare,
-    const Ops_Mutable * opsM, Poly *res, const Poly * p1, const Poly * p2)
+    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
 {
-  CoeffMutable maxError = CFM_NEW(opsM, zero);
+  //  printf("addUpUsingMutableOps: starting\n");
 
-  ADD_COEFF_CODE(addTermsAndReturnMaxErrorUsingMutableOps)(zero, compare, opsM,
-      res, p1, p2, maxError);
+  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(compare, opsM, res, p1,
+      p2);
+  //  printf("performed main addition\n");
 
   // compute the constant term coefficient rounding down:
   CFM_ADD_DN(opsM, res -> constTerm, p1 -> constTerm, p2 -> constTerm);
-  // also subtract maxError from the constant term coefficient:
-  CFM_SUB_DN(opsM, res -> constTerm, res -> constTerm, maxError);
+  // also subtract the errorBound from the constant term coefficient:
+  CFM_SUB_DN(opsM, res -> constTerm, res -> constTerm, res -> errorBound);
 
-  CFM_FREE(maxError);
+  CFM_ASSIGN_VAL(opsM, res -> errorBound, zero);
+  //  printf("addUpUsingMutableOps: finished\n");
+}
+
+void
+ADD_COEFF_CODE(addEnclUsingMutableOps)(ComparisonOp compare,
+    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
+{
+  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(compare, opsM, res, p1,
+      p2);
+
+  // compute the constant term coefficient rounding up and down:
+  CFM_ADD_UP(opsM, res -> constTerm, p1 -> constTerm, p2 -> constTerm);
+
+  CoeffMutable temp = CFM_NEW(opsM, CFM_SAMPLE(opsM));
+  CFM_ADD_DN(opsM, temp, p1 -> constTerm, p2 -> constTerm);
+
+  // get a bound on the rounding error:
+  CFM_SUB_UP(opsM, temp, res -> constTerm, temp);
+
+  // add this to the overall errorBound:
+  CFM_ADD_UP(opsM, res -> errorBound, res -> errorBound, temp);
+  CFM_FREE(temp);
 }
 

@@ -13,17 +13,7 @@
 -}
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport 
-(
-        eval_convert_hs,
-        eval_convertFromDouble_hs,
-        eval_unary_hs,
-        eval_binary_hs,
-        free_SP_hs
-        ,
-        eval_unaryMutable_hs
---        ,
---        eval_binaryMutable_hs
-)
+()
 where
 
 import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics 
@@ -194,6 +184,51 @@ foreign export ccall eval_cloneMutable_hs ::
     (StablePtr (CloneOpMutable s t)) -> 
     (StablePtr (Mutable t s)) -> 
     IO (StablePtr (Mutable t s)) 
+
+{-|
+   Allow C programs to set the value of a Haskell variable.
+-}
+eval_assignMutableFromPure_hs ::
+    (StablePtr (UnaryFromPureOpMutable s t)) -> 
+    (StablePtr (Mutable t s)) -> 
+    (StablePtr t) -> 
+    IO () 
+eval_assignMutableFromPure_hs opSP resSP valSP =
+    do
+    op <- deRefStablePtr opSP
+    res <- deRefStablePtr resSP
+    val <- deRefStablePtr valSP
+    unsafeSTToIO $ op res val
+
+foreign export ccall eval_assignMutableFromPure_hs ::
+    (StablePtr (UnaryFromPureOpMutable s t)) -> 
+    (StablePtr (Mutable t s)) -> 
+    (StablePtr t) -> 
+    IO () 
+
+{-|
+   Allow C programs to copy the value among Haskell variables.
+-}
+eval_assignMutable_hs ::
+    (StablePtr t) -> 
+    (StablePtr (UnaryOpMutable s t)) -> 
+    (StablePtr (Mutable t s)) -> 
+    (StablePtr (Mutable t s)) -> 
+    IO () 
+eval_assignMutable_hs _ opSP resSP varSP =
+    do
+    op <- deRefStablePtr opSP
+    res <- deRefStablePtr resSP
+    var <- deRefStablePtr varSP
+    unsafeSTToIO $ op res var
+
+foreign export ccall eval_assignMutable_hs ::
+    (StablePtr t) -> 
+    (StablePtr (UnaryOpMutable s t)) -> 
+    (StablePtr (Mutable t s)) -> 
+    (StablePtr (Mutable t s)) -> 
+    IO () 
+
 
 {-|
    Allow C programs to use a Haskell in-place unary operator that has been

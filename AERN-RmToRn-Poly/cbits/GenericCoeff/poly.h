@@ -36,6 +36,9 @@ typedef struct POLY
   Power maxDeg; // maximal degree of a term (ie sum of powers for all variables) (0 <= maxPow < 2^8)
   Size psize; // actual number of non-constant terms (0<=psize<=maxSize)
   Coeff constTerm;
+  Coeff errorBound;
+    // if non-zero, this structure represents a function enclosure
+    // centred around the polynomial with radius errorBound in the max norm
   Term * terms;
 } Poly;
 
@@ -47,20 +50,23 @@ ADD_COEFF_CODE(mapCoeffsInPlace)(ConversionOp convert, Poly *p);
 
 /*
  * preconditions:
- * no persistent references to c and this pointer is unique for each call
+ * no other persistent references to c and errorBound
+ *   so that there is no coefficient aliasing
  */
 Poly *
-ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize, Power maxDeg);
+ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
+    Size maxSize, Power maxDeg);
 
 /*
  * preconditions:
  * 0 <= var && var < maxArity
  * 0 < maxSize
- * no persistent references to zero, one and these pointers are unique to each call
+ * no persistent references to zero, one and errorBound
+ *   so that there is no coefficient aliasing
  */
 Poly *
-ADD_COEFF_CODE(newProjectionPoly)(const Coeff zero, const Coeff one, Var var,
-    Var maxArity, Size maxSize, Power maxDeg);
+ADD_COEFF_CODE(newProjectionPoly)(Coeff zero, Coeff one, Coeff errorBound,
+    Var var, Var maxArity, Size maxSize, Power maxDeg);
 
 ///*
 // * preconditions:
@@ -83,19 +89,27 @@ ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity);
 
 void
 ADD_COEFF_CODE(addUpUsingPureOps)(Coeff zero, ComparisonOp compare,
-    const Ops_Pure * ops, Poly *res, const Poly * p1, const Poly * p2);
+    Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2);
 
 void
 ADD_COEFF_CODE(addDnUsingPureOps)(Coeff zero, ComparisonOp compare,
-    const Ops_Pure * ops, Poly *res, const Poly * p1, const Poly * p2);
+    Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2);
+
+void
+ADD_COEFF_CODE(addEnclUsingPureOps)(ComparisonOp compare, Ops_Pure * ops,
+    Poly *res, Poly * p1, Poly * p2);
 
 void
 ADD_COEFF_CODE(addUpUsingMutableOps)(Coeff zero, ComparisonOp compare,
-    const Ops_Mutable * opsM, Poly *res, const Poly * p1, const Poly * p2);
+    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
 
 void
 ADD_COEFF_CODE(addDnUsingMutableOps)(Coeff zero, ComparisonOp compare,
-    const Ops_Mutable * opsM, Poly *res, const Poly * p1, const Poly * p2);
+    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
+
+void
+ADD_COEFF_CODE(addEnclUsingMutableOps)(ComparisonOp compare,
+    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
 
 //void
 //testAssign(Coeff sample, UnaryOpMutable assign, CoeffMutable to,

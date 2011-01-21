@@ -194,6 +194,7 @@ data Ops_Mutable s t =
         ops_new :: {-# UNPACK #-} ! (StablePtr (NewOpMutable s t)),
         ops_clone :: {-# UNPACK #-} ! (StablePtr (CloneOpMutable s t)),
         ops_assign :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s t)),
+        ops_assignFromPure :: {-# UNPACK #-} ! (StablePtr (UnaryFromPureOpMutable s t)),
         ops_absUpMutable :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s t)),
         ops_absDnMutable :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s t)),
         ops_plusUpMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s t)),
@@ -210,7 +211,7 @@ instance (Storable cf) => Storable (Ops_Mutable s cf) where
     peek = error "Ops_Mutable.peek: Not needed and not applicable"
     poke ptr 
             (Ops_Mutable
-              sample new clone assign 
+              sample new clone assign assignFromPure
               absUpMutable absDnMutable 
               plusUpMutable plusDnMutable 
               minusUpMutable minusDnMutable 
@@ -220,6 +221,7 @@ instance (Storable cf) => Storable (Ops_Mutable s cf) where
         #{poke Ops_Mutable, new} ptr new
         #{poke Ops_Mutable, clone} ptr clone
         #{poke Ops_Mutable, assign} ptr assign
+        #{poke Ops_Mutable, assignFromPure} ptr assignFromPure
         #{poke Ops_Mutable, absUpMutable} ptr absUpMutable
         #{poke Ops_Mutable, absDnMutable} ptr absDnMutable
         #{poke Ops_Mutable, plusUpMutable} ptr plusUpMutable
@@ -247,6 +249,7 @@ mkOpsMutable ::
     (NewOpMutable s t) ->
     (CloneOpMutable s t) ->
     (UnaryOpMutable s t) ->
+    (UnaryFromPureOpMutable s t) ->
     (UnaryOpMutable s t) ->
     (UnaryOpMutable s t) ->
     (BinaryOpMutable s t) ->
@@ -256,12 +259,14 @@ mkOpsMutable ::
     (BinaryOpMutable s t) ->
     (BinaryOpMutable s t) ->
     IO (Ops_Mutable s t)
-mkOpsMutable sample new clone assign absUp absDn addUp addDn subtrUp subtrDn multUp multDn =
+mkOpsMutable sample new clone assign assignFromPure 
+        absUp absDn addUp addDn subtrUp subtrDn multUp multDn =
     do
     sampleSP <- newStablePtr sample
     newSP <- newStablePtr new
     cloneSP <- newStablePtr clone  
     assignSP <- newStablePtr assign  
+    assignFromPureSP <- newStablePtr assignFromPure  
     absUpSP <- newStablePtr absUp  
     absDnSP <- newStablePtr absDn
     addUpSP <- newStablePtr addUp   
@@ -273,7 +278,7 @@ mkOpsMutable sample new clone assign absUp absDn addUp addDn subtrUp subtrDn mul
     return $
       Ops_Mutable
         sampleSP newSP
-        cloneSP assignSP
+        cloneSP assignSP assignFromPureSP
         absUpSP absDnSP
         addUpSP addDnSP
         subtrUpSP subtrDnSP
@@ -294,6 +299,7 @@ mkOpsMutableArithUpDn sample effort =
         (makeMutable)
         (cloneMutable sample)
         (assignMutable sample)
+        (writeMutable)
         (ArithUpDn.absUpInPlaceEff sample absEffort)
         (ArithUpDn.absDnInPlaceEff sample absEffort)
         (ArithUpDn.addUpInPlaceEff sample addEffort)
@@ -361,34 +367,38 @@ unsafeReadPolyMutable sample (PolyMutableFP fp) =
 foreign import ccall unsafe "newConstPolyGenCf"
         poly_newConstPoly :: 
             (StablePtr cf) -> 
+            (StablePtr cf) -> 
             CVar -> CSize -> CPower -> 
             IO (Ptr (Poly cf))  
 
-constPoly :: (Show cf) => cf -> Var -> Size -> Power -> (PolyFP cf)
-constPoly c maxArity maxSize maxDeg =
-    unsafePerformIO $ newConstPoly c maxArity maxSize maxDeg
+constPoly :: (Show cf) => cf -> cf -> Var -> Size -> Power -> (PolyFP cf)
+constPoly c radius maxArity maxSize maxDeg =
+    unsafePerformIO $ newConstPoly c radius maxArity maxSize maxDeg
 
-newConstPoly :: (Show cf) => cf -> Var -> Size -> Power -> IO (PolyFP cf)
-newConstPoly c maxArity maxSize maxDeg =
+newConstPoly :: (Show cf) => cf -> cf -> Var -> Size -> Power -> IO (PolyFP cf)
+newConstPoly c radius maxArity maxSize maxDeg =
     do
     cSP <- newStablePtr c
+    radiusSP <- newStablePtr radius
 --    putStrLn $ "calling newConstPoly for " ++ show c
-    pP <- poly_newConstPoly cSP (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
+    pP <- poly_newConstPoly cSP radiusSP (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
 --    putStrLn $ "newConstPoly for " ++ show c ++ " returned"
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyFP fp
 
-constPolyMutable :: (CanBeMutable cf) => cf -> Var -> Size -> Power -> ST s (PolyMutableFP cf s)
-constPolyMutable c maxArity maxSize maxDeg =
-    unsafeIOToST $ newConstPolyMutable c maxArity maxSize maxDeg
+constPolyMutable :: (CanBeMutable cf) => cf -> cf -> Var -> Size -> Power -> ST s (PolyMutableFP cf s)
+constPolyMutable c radius maxArity maxSize maxDeg =
+    unsafeIOToST $ newConstPolyMutable c radius maxArity maxSize maxDeg
 
 
-newConstPolyMutable :: (CanBeMutable cf) => cf -> Var -> Size -> Power -> IO (PolyMutableFP cf s)
-newConstPolyMutable c maxArity maxSize maxDeg =
+newConstPolyMutable :: (CanBeMutable cf) => cf -> cf -> Var -> Size -> Power -> IO (PolyMutableFP cf s)
+newConstPolyMutable c radius maxArity maxSize maxDeg =
     do
     var <- unsafeSTToIO $ makeMutable c
     varSP <- newStablePtr var
-    pP <- poly_newConstPoly varSP (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
+    rad <- unsafeSTToIO $ makeMutable radius
+    radSP <- newStablePtr rad
+    pP <- poly_newConstPoly varSP radSP (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyMutableFP fp
 
@@ -397,7 +407,7 @@ newConstPolyMutable c maxArity maxSize maxDeg =
 
 foreign import ccall unsafe "newProjectionPolyGenCf"
         poly_newProjectionPoly :: 
-            (StablePtr cf) -> (StablePtr cf) -> 
+            (StablePtr cf) -> (StablePtr cf) -> (StablePtr cf) ->
             CVar -> CVar -> CSize -> CPower -> 
             IO (Ptr (Poly cf))  
 
@@ -414,7 +424,8 @@ newProjectionPoly _sample x maxArity maxSize maxDeg =
     do
     zeroSP <- newStablePtr zero
     oneSP <- newStablePtr one
-    pP <- poly_newProjectionPoly zeroSP oneSP (toCVar x) (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
+    radSP <- newStablePtr zero
+    pP <- poly_newProjectionPoly zeroSP oneSP radSP (toCVar x) (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyFP fp
 
@@ -434,7 +445,9 @@ newProjectionPolyMutable sample x maxArity maxSize maxDeg =
     zeroSP <- newStablePtr zeroM
     oneM <- unsafeSTToIO $ makeMutable $ head [one, sample]
     oneSP <- newStablePtr oneM
-    pP <- poly_newProjectionPoly zeroSP oneSP (toCVar x) (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
+    radM <- unsafeSTToIO $ makeMutable $ head [zero, sample]
+    radSP <- newStablePtr radM
+    pP <- poly_newProjectionPoly zeroSP oneSP radSP (toCVar x) (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyMutableFP fp
 
@@ -489,7 +502,8 @@ polyBinaryOpPure binaryOp sample maxSize maxDeg opsPtr p1@(PolyFP p1FP) (PolyFP 
     do
     maxArity <- peekArityIO p1
     zeroSP <- newStablePtr $ head [zero, sample]
-    resP <- poly_newConstPoly zeroSP (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
+    radSP <- newStablePtr $ head [zero, sample]
+    resP <- poly_newConstPoly zeroSP radSP (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     compareSP <- newStablePtr $ (NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample))
     _ <- withForeignPtr p1FP $ \p1 ->
              withForeignPtr p2FP $ \p2 ->
@@ -541,36 +555,6 @@ polyBinaryOpMutable binaryOp sample opsMutablePtr
         let _ = [v1,v2,sample] 
         return $ NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 v2
 
-----------------------------------------------------------------
-
---foreign import ccall safe "testAssign"
---        poly_testAssign :: 
---            (StablePtr t) ->
---            (StablePtr (UnaryOpMutable s t)) ->
---            (StablePtr (Mutable t s)) ->
---            (StablePtr (Mutable t s)) ->
---            IO ()
---            
---testAssign ::
---    (CanBeMutable t) =>
---    t -> 
---    Mutable t s -> 
---    Mutable t s -> 
---    ST s ()
---testAssign sample to from =
---    do
---    fromV <- unsafeReadMutable from
---    toV <- unsafeReadMutable to
---    let _ = [fromV, toV, sample]
---    unsafeIOToST $ 
---        do
---        sampleSP <- newStablePtr sample
---        assignSP <- newStablePtr $ \ to from -> assignMutable sample to from
---        toSP <- newStablePtr to
---        fromSP <- newStablePtr from
---        poly_testAssign sampleSP assignSP toSP fromSP
-    
-      
 ----------------------------------------------------------------
 
 foreign import ccall safe "evalAtPtChebBasisGenCf"

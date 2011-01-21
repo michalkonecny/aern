@@ -122,19 +122,21 @@ concFinalizerFreePoly = poly_freePoly
 foreign import ccall unsafe "newConstPolyDblCf"
         poly_newConstPoly :: 
             CDouble -> 
+            CDouble ->
             CVar -> CSize -> CPower -> 
             IO (Ptr (Poly))  
 
-constPoly :: Double -> Var -> Size -> Power -> (PolyFP)
-constPoly c maxArity maxSize maxDeg =
-    unsafePerformIO $ newConstPoly c maxArity maxSize maxDeg
+constPoly :: Double -> Double -> Var -> Size -> Power -> (PolyFP)
+constPoly c radius maxArity maxSize maxDeg =
+    unsafePerformIO $ newConstPoly c radius maxArity maxSize maxDeg
 
-newConstPoly :: Double -> Var -> Size -> Power -> IO (PolyFP)
-newConstPoly c maxArity maxSize maxDeg =
+newConstPoly :: Double -> Double -> Var -> Size -> Power -> IO (PolyFP)
+newConstPoly c radius maxArity maxSize maxDeg =
     do
-    let cC = double2CDouble c -- TODO
+    let cC = double2CDouble c
+    let radiusC = double2CDouble radius
 --    putStrLn $ "calling newConstPoly for " ++ show c
-    pP <- poly_newConstPoly cC (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
+    pP <- poly_newConstPoly cC radiusC (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
 --    putStrLn $ "newConstPoly for " ++ show c ++ " returned"
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyFP fp
@@ -143,7 +145,7 @@ newConstPoly c maxArity maxSize maxDeg =
 
 foreign import ccall unsafe "newProjectionPolyDblCf"
         poly_newProjectionPoly :: 
-            CDouble -> CDouble -> 
+            CDouble -> CDouble -> CDouble -> 
             CVar -> CVar -> CSize -> CPower ->
             IO (Ptr (Poly))  
 
@@ -156,7 +158,7 @@ newProjectionPoly ::
     Var -> Var -> Size -> Power -> IO (PolyFP)
 newProjectionPoly x maxArity maxSize maxDeg =
     do
-    pP <- poly_newProjectionPoly 0 1 (toCVar x) (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
+    pP <- poly_newProjectionPoly 0 1 0 (toCVar x) (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyFP fp
 
@@ -206,7 +208,7 @@ polyBinaryOpPure binaryOp maxSize maxDeg opsPtr p1@(PolyFP p1FP) (PolyFP p2FP) =
     unsafePerformIO $
     do
     maxArity <- peekArityIO p1
-    resP <- poly_newConstPoly 0 (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
+    resP <- poly_newConstPoly 0 0 (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     compareSP <- newStablePtr $ ()
     _ <- withForeignPtr p1FP $ \p1 ->
              withForeignPtr p2FP $ \p2 ->
@@ -215,38 +217,6 @@ polyBinaryOpPure binaryOp maxSize maxDeg opsPtr p1@(PolyFP p1FP) (PolyFP p2FP) =
     resFP <- Conc.newForeignPtr resP (concFinalizerFreePoly resP)
     return $ PolyFP resFP
 
-----------------------------------------------------------------
-
-----------------------------------------------------------------
-
---foreign import ccall safe "testAssign"
---        poly_testAssign :: 
---            (StablePtr t) ->
---            (StablePtr (UnaryOpMutable s t)) ->
---            (StablePtr (Mutable t s)) ->
---            (StablePtr (Mutable t s)) ->
---            IO ()
---            
---testAssign ::
---    (CanBeMutable t) =>
---    t -> 
---    Mutable t s -> 
---    Mutable t s -> 
---    ST s ()
---testAssign sample to from =
---    do
---    fromV <- unsafeReadMutable from
---    toV <- unsafeReadMutable to
---    let _ = [fromV, toV, sample]
---    unsafeIOToST $ 
---        do
---        sampleSP <- newStablePtr sample
---        assignSP <- newStablePtr $ \ to from -> assignMutable sample to from
---        toSP <- newStablePtr to
---        fromSP <- newStablePtr from
---        poly_testAssign sampleSP assignSP toSP fromSP
-    
-      
 ----------------------------------------------------------------
 
 foreign import ccall safe "evalAtPtChebBasisDblCf"
