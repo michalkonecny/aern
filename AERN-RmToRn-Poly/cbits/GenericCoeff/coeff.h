@@ -54,6 +54,7 @@ typedef struct OPS_MUTABLE
   NewOpMutable new;
   CloneOpMutable clone;
   UnaryOpMutable assign;
+  UnaryOpMutable assignFromPure;
   UnaryOpMutable absUpMutable;
   UnaryOpMutable absDnMutable;
   BinaryOpMutable plusUpMutable;
@@ -69,6 +70,8 @@ typedef struct OPS_MUTABLE
 #define CFM_CLONE(ops,rp,sp) ((rp)=eval_cloneMutable_hs(ops -> sample, ops -> clone, sp))
 #define CFM_ASSIGN(ops,rp,sp) \
     (eval_assignMutable_hs(ops -> sample, ops -> assign, rp, sp))
+#define CFM_ASSIGN_VAL(ops,rp,v) \
+    (eval_assignMutableFromPure_hs(ops -> assignFromPure, rp, v))
 #define CFM_ABS_UP(ops,rp,dp) \
     (eval_unaryMutable_hs(ops -> sample, ops -> absUpMutable, rp, dp))
 #define CFM_ABS_DN(ops,rp,dp) \

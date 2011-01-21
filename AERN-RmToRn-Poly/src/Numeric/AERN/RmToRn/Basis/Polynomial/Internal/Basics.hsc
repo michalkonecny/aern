@@ -65,6 +65,7 @@ type ComparisonOp t =  t -> t -> (Maybe PartialOrdering)
 
 type NewOpMutable s t = t -> ST s (Mutable t s)
 type CloneOpMutable s t = Mutable t s -> ST s (Mutable t s)
+type UnaryFromPureOpMutable s t = Mutable t s -> t -> ST s ()
 type UnaryOpMutable s t = Mutable t s -> Mutable t s -> ST s ()
 type BinaryOpMutable s t = Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
 

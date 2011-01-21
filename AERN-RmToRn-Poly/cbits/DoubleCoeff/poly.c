@@ -43,13 +43,14 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
 //}
 
 Poly *
-ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize,
-    Power maxDeg)
+ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
+    Size maxSize, Power maxDeg)
 {
   Poly * poly = (Poly *) malloc(sizeof(Poly));
   poly -> maxArity = maxArity;
   poly -> maxSize = maxSize;
   poly -> maxDeg = maxDeg;
+  poly -> errorBound = errorBound;
   poly -> psize = 0;
   poly -> constTerm = c;
   poly -> terms = malloc(maxSize * sizeof(Term));
@@ -66,10 +67,11 @@ ADD_COEFF_CODE(newConstPoly)(const Coeff c, Var maxArity, Size maxSize,
 }
 
 Poly *
-ADD_COEFF_CODE(newProjectionPoly)(const Coeff zero, const Coeff one, Var var,
-    Var maxArity, Size maxSize, Power maxDeg)
+ADD_COEFF_CODE(newProjectionPoly)(Coeff zero, Coeff one, Coeff errorBound,
+    Var var, Var maxArity, Size maxSize, Power maxDeg)
 {
-  Poly * poly = ADD_COEFF_CODE(newConstPoly)(zero, maxArity, maxSize, maxDeg);
+  Poly * poly = ADD_COEFF_CODE(newConstPoly)(zero, errorBound, maxArity,
+      maxSize, maxDeg);
 
   // add one term for the variable:
   poly -> psize = 1;
