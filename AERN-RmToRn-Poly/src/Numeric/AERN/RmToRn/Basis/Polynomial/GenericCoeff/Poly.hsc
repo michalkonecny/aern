@@ -344,6 +344,16 @@ newOpsMutableArithUpDnDefaultEffort sample =
 
 ----------------------------------------------------------------
 
+foreign import ccall safe "printPolyGenCf"
+        poly_printPoly :: (Ptr (Poly cf)) -> IO ()  
+
+printPoly :: (PolyFP cf) -> IO ()
+printPoly (PolyFP fp) =
+    withForeignPtr fp $ \ ptr ->
+        poly_printPoly ptr
+
+----------------------------------------------------------------
+
 foreign import ccall safe "freePolyGenCf"
         poly_freePoly :: (Ptr (Poly cf)) -> IO ()  
 

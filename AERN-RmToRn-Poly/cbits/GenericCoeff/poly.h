@@ -42,9 +42,23 @@ typedef struct POLY
   Term * terms;
 } Poly;
 
+/**
+ * Print the internal representation of a polynomial to the console.
+ * Mainly intended for debugging and checking aliasing.
+ */
+void
+ADD_COEFF_CODE(printPoly)(Poly *p);
+
+/**
+ * Deallocate a polynomial including all its terms, power arrays and coefficients.
+ */
 void
 ADD_COEFF_CODE(freePoly)(Poly *p);
 
+/**
+ * Apply the given Haskell function to all coefficients, including the errorBound.
+ * The old coefficients are also deallocated.
+ */
 void
 ADD_COEFF_CODE(mapCoeffsInPlace)(ConversionOp convert, Poly *p);
 
