@@ -23,8 +23,8 @@ main :: IO ()
 main = 
     do
 --    testPureDCPolys
---    testPureGCPolys
-    testMutableGCPolys
+    testPureGCPolys
+--    testMutableGCPolys
 
 testPureDCPolys :: IO ()
 testPureDCPolys =
@@ -73,18 +73,31 @@ testPureGCPolys =
     putStrLn $ "p1.maxSize = " ++ show maxSize
     putStrLn $ "p1.constTerm = " ++ show constTerm
     putStrLn $ "p1 = " ++ showP p1
+    GCPoly.printPoly p1
     putStrLn $ "p2 = " ++ showP p2
+    GCPoly.printPoly p2
     putStrLn $ "p3 = " ++ showP p3
+    GCPoly.printPoly p3
     putStrLn $ "p1 +^ p1 = " ++ showP p11
+    GCPoly.printPoly p11
     putStrLn $ "p1 +^ p2 = " ++ showP p12
+    GCPoly.printPoly p22
     putStrLn $ "p2 +^ p2 = " ++ showP p22
+    GCPoly.printPoly p22
     putStrLn $ "p2 +^ p3 = " ++ showP p23
+    GCPoly.printPoly p23
     putStrLn $ "p1 +^ (p2 +^ p3) = " ++ showP p1b23
+    GCPoly.printPoly p1b23
     putStrLn $ "size 1 $ p1 +^ (p2 +^ p3) = " ++ showP p1b23s1
+    GCPoly.printPoly p1b23s1
     putStrLn $ "(p2 +^ p2) +^ p3 = " ++ showP pb223
+    GCPoly.printPoly pb223
     putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223
+    GCPoly.printPoly p1bb223
     putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223s1
+    GCPoly.printPoly p1bb223s1
     putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223d0
+    GCPoly.printPoly p1bb223d0
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True

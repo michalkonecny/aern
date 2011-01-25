@@ -4,7 +4,8 @@
 
 /*
  * This file should differ from its GenericCoeff analogue
- * only in the following two include lines.
+ * only in the following two include lines
+ * and by omitting methods: printPoly, mapCoeffsInPlace.
  */
 #include "DoubleCoeff/coeff.h"
 #include "DoubleCoeff/poly.h"
@@ -36,18 +37,6 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
   // free the terms array:
   free(terms);
 }
-
-//void
-//mapCoeffsInPlace(ConversionOp convert, Poly *p)
-//{
-//  p -> constTerm = CF_CONVERT(convert, p -> constTerm);
-//  Size psize = p -> psize;
-//  Term * terms = p -> terms;
-//  for (Size i = 0; i < psize; ++i)
-//    {
-//      terms[i].coeff = CF_CONVERT(convert, terms[i].coeff);
-//    }
-//}
 
 Poly *
 ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,

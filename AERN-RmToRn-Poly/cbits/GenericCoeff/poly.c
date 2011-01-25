@@ -7,6 +7,31 @@
 #include "EvalExport_stub.h"
 
 void
+ADD_COEFF_CODE(printPoly)(Poly *p)
+{
+  printf("\nPolynomial C-level details:\n");
+
+  Size arity = p -> maxArity;
+  Size psize = p -> psize;
+  Term * terms = p -> terms;
+
+  printf("  maxArity = %d\n", p -> maxArity);
+  printf("  maxSize = %d\n", p -> maxSize);
+  printf("    constant term addr = %p\n", p -> constTerm);
+  printf("  psize = %d\n", psize);
+
+  for(int i = 0; i < psize; i++)
+    {
+      printf("    term ");
+      for(int j = 0; j < arity; j++)
+        {
+          printf("[%d]", terms[i].powers[j]);
+        }
+      printf(" coeff addr = %p\n", terms[i].coeff);
+    }
+}
+
+void
 ADD_COEFF_CODE(freePoly)(Poly *p)
 {
 //  printf("freePoly: starting\n");
@@ -38,12 +63,21 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
 void
 ADD_COEFF_CODE(mapCoeffsInPlace)(ConversionOp convert, Poly *p)
 {
+  Coeff temp = p -> constTerm;
   p -> constTerm = CF_CONVERT(convert, p -> constTerm);
+  CF_FREE(temp);
+
+  temp = p -> errorBound;
+  p -> errorBound = CF_CONVERT(convert, p -> errorBound);
+  CF_FREE(temp);
+
   Size psize = p -> psize;
   Term * terms = p -> terms;
   for (Size i = 0; i < psize; ++i)
     {
+      temp = terms[i].coeff;
       terms[i].coeff = CF_CONVERT(convert, terms[i].coeff);
+      CF_FREE(temp);
     }
 }
 
