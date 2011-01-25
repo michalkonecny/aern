@@ -17,7 +17,8 @@ import Control.Monad.ST (runST,unsafeIOToST)
 
 import System.IO.Unsafe
 
---import Foreign.StablePtr
+import Foreign.StablePtr
+import System.Mem
 
 main :: IO ()
 main = 

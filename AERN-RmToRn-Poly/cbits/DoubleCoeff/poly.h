@@ -33,7 +33,7 @@ typedef struct TERM
  *   all terms are private to one instance of Poly,
  *   no aliasing allowed internally nor externally
  *
- *   the constTerm is private to one instance of Poly
+ *   the constTerm and errorBound are private to one instance of Poly
  */
 typedef struct POLY
 {
