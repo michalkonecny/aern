@@ -130,6 +130,8 @@ clone_SP_hs sampleSP =
     do
     sample <- deRefStablePtr sampleSP
     newStablePtr sample
+    -- this actually returns the same stable pointer
+    -- but increments its reference count
      
 foreign export ccall clone_SP_hs :: (StablePtr t) -> IO (StablePtr t)  
         
@@ -138,6 +140,7 @@ foreign export ccall clone_SP_hs :: (StablePtr t) -> IO (StablePtr t)
 -}
 free_SP_hs :: (StablePtr t) -> IO ()
 free_SP_hs = freeStablePtr
+    -- note that this decrements the reference count of the pointer
 
 foreign export ccall free_SP_hs :: (StablePtr t) -> IO ()  
 

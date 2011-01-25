@@ -27,7 +27,12 @@ typedef struct TERM
  *   all terms are private to one instance of Poly,
  *   no aliasing allowed internally nor externally
  *
- *   the constTerm is private to one instance of Poly
+ *   the constTerm and errorBound are private to one instance of Poly
+ *
+ *   (Note that coefficients of equal value will typically be given
+ *   the same stable pointer by ghc but these pointers are reference
+ *   counted so that they could be safely treated as independent clones of
+ *   the same immutable value.)
  */
 typedef struct POLY
 {

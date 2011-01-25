@@ -9,7 +9,7 @@
 void
 ADD_COEFF_CODE(printPoly)(Poly *p)
 {
-  printf("\nPolynomial C-level details:\n");
+  printf("Polynomial C-level details:\n");
 
   Size arity = p -> maxArity;
   Size psize = p -> psize;
