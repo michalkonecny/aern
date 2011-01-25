@@ -24,8 +24,13 @@ newtype HPoly cf = HPoly (Map.Map HTerm cf) -- deriving (Show)
 newtype HTerm = HTerm (Map.Map HVar Int) deriving (Eq, Ord) -- Show)
 type HVar = String
 
-instance (Show cf, HasZero cf, HasOne cf, NumOrd.PartialComparison cf) => Show (HPoly cf) where
-    show (HPoly terms) 
+showSymbolicPoly ::
+    (HasZero cf, HasOne cf, NumOrd.PartialComparison cf) =>
+    (cf -> String) {-^ how to format coefficients -} ->
+    (String -> Int -> String) {-^ how to format individual variable powers -} ->
+    (HPoly cf) ->
+    String 
+showSymbolicPoly showCoeff showVar (HPoly terms) 
         | null termsNonZero = "0"
         | otherwise =
             intercalate " + " $
@@ -37,22 +42,21 @@ instance (Show cf, HasZero cf, HasOne cf, NumOrd.PartialComparison cf) => Show (
                 case (coeff ==? zero) of
                     (Just b) -> not b
                     _ -> True 
-        showTerm (t@(HTerm term), coeff) = 
-                case (coeff ==? one, Map.null term) of
+        showTerm (HTerm vars, coeff) = 
+                case (coeff ==? one, Map.null vars) of
                     (Just True, True) -> "1"
-                    (Just True, _) -> show t  
-                    (_, True) -> show coeff
-                    _ -> show coeff ++ "*" ++ show t
+                    (Just True, _) -> showVars showVar vars  
+                    (_, True) -> showCoeff coeff
+                    _ -> showCoeff coeff ++ "*" ++ (showVars showVar vars)
 
-instance Show HTerm where
-    show (HTerm vars) =
-        intercalate "*" $ map showVar $ Map.toList vars
-        where
-        showVar (var, power) 
-            | power == 1 = 
-                var
-            | otherwise = 
-                var ++ "^" ++ show power
+showVars showVar vars =
+    intercalate "*" $ map (\(v,p) -> showVar v p) $ Map.toList vars
+    
+defaultShowVar var power    
+    | power == 1 = 
+        var
+    | otherwise = 
+        var ++ "^" ++ show power
 
 --hpolyZero :: HPoly cf
 --hpolyZero = HPoly Map.empty

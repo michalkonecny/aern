@@ -60,6 +60,7 @@ peekSizes :: (PolyFP cf) -> (Var, Size)
 peekSizes p =
     unsafePerformIO $ peekSizesIO p
 
+{-# INLINE peekSizesIO #-}
 peekSizesIO :: (PolyFP cf) -> IO (Var, Size)
 peekSizesIO (PolyFP fp) =
         withForeignPtr fp $ \ptr -> 
@@ -76,10 +77,24 @@ peekArity p =
 {-# INLINE peekArityIO #-}
 peekArityIO :: (PolyFP cf) -> IO Var
 peekArityIO (PolyFP fp) =
-        withForeignPtr fp $ \ptr -> 
-            do
-            maxArityC <- #{peek Poly, maxArity} ptr
-            return (fromCVar maxArityC)            
+    withForeignPtr fp $ \ptr -> 
+        do
+        maxArityC <- #{peek Poly, maxArity} ptr
+        return (fromCVar maxArityC)
+
+{-# INLINE peekConst #-}
+peekConst :: (PolyFP cf) -> cf
+peekConst p =
+    unsafePerformIO $ peekConstIO p
+    
+{-# INLINE peekConstIO #-}
+peekConstIO :: (PolyFP cf) -> IO cf
+peekConstIO (PolyFP fp) =
+    withForeignPtr fp $ \ptr -> 
+        do
+        constSP <- #{peek Poly, constTerm} ptr
+        const <- deRefStablePtr constSP
+        return const
 
 data Ops_Pure t =
     Ops_Pure
@@ -329,11 +344,14 @@ newOpsMutableArithUpDnDefaultEffort sample =
 
 ----------------------------------------------------------------
 
-foreign import ccall unsafe "freePolyGenCf"
+foreign import ccall safe "freePolyGenCf"
         poly_freePoly :: (Ptr (Poly cf)) -> IO ()  
 
 concFinalizerFreePoly :: (Ptr (Poly cf)) -> IO ()
-concFinalizerFreePoly = poly_freePoly
+concFinalizerFreePoly p =
+    do
+--    putStrLn "concFinalizerFreePoly"
+    poly_freePoly p
 
 ----------------------------------------------------------------
 foreign import ccall safe "mapCoeffsInPlaceGenCf"
@@ -592,6 +610,46 @@ evalAtPtChebBasis (PolyFP polyFP) vals one add subtr mult cf2val =
         poly_evalAtPtChebBasis polyPtr valSPsPtr oneSP addSP subtrSP multSP cf2valSP
     freeStablePtr oneSP
     _ <- mapM freeStablePtr [addSP, subtrSP, multSP]
+    free valSPsPtr
+    _ <- mapM freeStablePtr valSPs
+    res <- deRefStablePtr resSP 
+    freeStablePtr resSP
+    return res
+
+foreign import ccall safe "evalAtPtPowerBasisGenCf"
+        poly_evalAtPtPowerBasis :: 
+            (Ptr (Poly cf)) -> 
+            (Ptr (StablePtr val)) -> 
+            (StablePtr val) ->
+            (StablePtr (BinaryOp val)) -> 
+            (StablePtr (BinaryOp val)) ->
+            (StablePtr (ConvertOp cf val)) ->
+            IO (StablePtr val)  
+
+evalAtPtPowerBasis :: 
+    (Storable cf) => 
+    (PolyFP cf) ->
+    [val] {-^ values to substitute for variables @[0..(maxArity-1)]@ -} ->
+    val {-^ number @1@ -} ->
+    (BinaryOp val) {-^ addition -} -> 
+    (BinaryOp val) {-^ multiplication -} -> 
+    (ConvertOp cf val) ->
+    val
+evalAtPtPowerBasis (PolyFP polyFP) vals one add mult cf2val =
+    unsafePerformIO $
+    do
+    valSPs <- mapM newStablePtr vals
+    valSPsPtr <- newArray valSPs
+    oneSP <- newStablePtr one
+    addSP <- newStablePtr add
+    multSP <- newStablePtr mult
+    cf2valSP <- newStablePtr cf2val
+    resSP <- withForeignPtr polyFP $ \polyPtr ->
+        poly_evalAtPtPowerBasis polyPtr valSPsPtr oneSP addSP multSP cf2valSP
+    freeStablePtr oneSP
+    _ <- mapM freeStablePtr [addSP, multSP]
+    free valSPsPtr
+    _ <- mapM freeStablePtr valSPs
     res <- deRefStablePtr resSP 
     freeStablePtr resSP
     return res

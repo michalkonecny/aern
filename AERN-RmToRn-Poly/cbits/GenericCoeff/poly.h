@@ -123,7 +123,16 @@ typedef void * Value; // A Haskell value passed via StablePtr
  * Haskell operations.
  */
 Value
-ADD_COEFF_CODE(evalAtPtChebBasis)(const Poly *, const Value *, const Value,
-    const BinaryOp, const BinaryOp, const BinaryOp, const ConversionOp);
+ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
+    BinaryOp add, BinaryOp subtr, BinaryOp mult, ConversionOp cf2val);
+
+/*
+ * Interpret the terms as ordinary powers and evaluate them for the
+ * given values assigned to variables using the given addition and multiplication
+ * Haskell operations.
+ */
+Value
+ADD_COEFF_CODE(evalAtPtPowerBasis)(Poly * p, Value * values, Value one,
+    BinaryOp add, BinaryOp mult, ConversionOp cf2val);
 
 #endif /* POLY_H_ */
