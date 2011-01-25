@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show
     Description :  string representation of Poly
@@ -13,7 +15,8 @@
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show 
 (
-    showPolyFPWithVars
+    showPolyFPWithVars,
+    showPolyFPChebTermsWithVars
 )
 where
 
@@ -36,9 +39,23 @@ import Numeric.AERN.RealArithmetic.Interval.Double()
 instance 
         (Show (PolyFP)) 
     where
-    show polyFP =
-        showPolyFPWithVars polyFP $ varNames (fromIntegral maxArity)
+    show = showUsingShowInternals
+
+instance
+        (ShowInternals (PolyFP))
+    where
+    type ShowInternalsIndicator (PolyFP) = 
+        (Bool, ShowInternalsIndicator Double)
+    defaultShowIndicator _ = (False, False)
+    showInternals (showChebyshevTerms, coeffShowIndicator) polyFP =
+        showPolyFPWithVars polyFP coeffShowIndicator varNamesArity
+        ++
+        (case showChebyshevTerms of
+            True -> 
+                " [" ++ showPolyFPChebTermsWithVars polyFP coeffShowIndicator varNamesArity ++ "]"
+            False -> "")
         where
+        varNamesArity = varNames (fromIntegral maxArity)
         (Var maxArity) = peekArity polyFP
         varNames arity = 
             take arity $ 
@@ -46,9 +63,9 @@ instance
                 ++ (map (\n -> "v" ++ show n ) [3..(arity - 1)])
         
 showPolyFPWithVars :: 
-    PolyFP -> [HVar] -> String
-showPolyFPWithVars polyFP varNames =
-    show $
+    PolyFP -> (ShowInternalsIndicator Double) -> [HVar] -> String
+showPolyFPWithVars polyFP coeffShowIndicator varNames =
+    showSymbolicPoly (showInternals coeffShowIndicator) defaultShowVar $
             evalAtPtChebBasis 
                 polyFP 
                 (map hpolyVar varNames) 
@@ -57,4 +74,20 @@ showPolyFPWithVars polyFP varNames =
                 (hpolySubtr neg (<+>))
                 (hpolyMult (<+>) (<*>))
                 (\coeff -> hpolyConst $ Interval coeff coeff)
+        
+showPolyFPChebTermsWithVars :: 
+    PolyFP -> (ShowInternalsIndicator Double) -> [HVar] -> String
+showPolyFPChebTermsWithVars polyFP coeffShowIndicator varNames =
+    showSymbolicPoly (showInternals coeffShowIndicator) chebyShowVar $
+            evalAtPtPowerBasis
+            -- trick: treat the polynomial as if it was in power basis
+            --        thus obtaining the raw coefficients of the Chebyshev terms
+                polyFP 
+                (map hpolyVar varNames) 
+                hpolyOne
+                (hpolyAdd (<+>))
+                (hpolyMult (<+>) (<*>))
+                (\coeff -> hpolyConst $ Interval coeff coeff)
 
+chebyShowVar var power = 
+    "T_" ++ show power ++ "(" ++ var ++ ")"

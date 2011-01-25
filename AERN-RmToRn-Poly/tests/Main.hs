@@ -1,10 +1,11 @@
 
 module Main where
 
-import Numeric.AERN.Basics.Mutable
-
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.Basis.Double
+
+import Numeric.AERN.Basics.ShowInternals
+import Numeric.AERN.Basics.Mutable
 
 import qualified Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly as GCPoly
 import qualified Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly as DCPoly
@@ -28,21 +29,26 @@ main =
 testPureDCPolys :: IO ()
 testPureDCPolys =
     do
-    putStrLn $ show (maxArity, maxSize)
-    putStrLn $ "p1 = " ++ show p1
-    putStrLn $ "p2 = " ++ show p2
-    putStrLn $ "p3 = " ++ show p3
-    putStrLn $ "p1 +^ p1 = " ++ show p11
-    putStrLn $ "p1 +^ p2 = " ++ show p12
-    putStrLn $ "p2 +^ p2 = " ++ show p22
-    putStrLn $ "p2 +^ p3 = " ++ show p23
-    putStrLn $ "p1 +^ (p2 +^ p3) = " ++ show p1b23
-    putStrLn $ "size 1 $ p1 +^ (p2 +^ p3) = " ++ show p1b23s1
-    putStrLn $ "(p2 +^ p2) +^ p3 = " ++ show pb223
-    putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ show p1bb223
-    putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show p1bb223s1
-    putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show p1bb223d0
+    putStrLn $ "p1.maxArity = " ++ show maxArity
+    putStrLn $ "p1.maxSize = " ++ show maxSize
+    putStrLn $ "p1.constTerm = " ++ show constTerm
+    putStrLn $ "p1 = " ++ showP p1
+    putStrLn $ "p2 = " ++ showP p2
+    putStrLn $ "p3 = " ++ showP p3
+    putStrLn $ "p1 +^ p1 = " ++ showP p11
+    putStrLn $ "p1 +^ p2 = " ++ showP p12
+    putStrLn $ "p2 +^ p2 = " ++ showP p22
+    putStrLn $ "p2 +^ p3 = " ++ showP p23
+    putStrLn $ "p1 +^ (p2 +^ p3) = " ++ showP p1b23
+    putStrLn $ "size 1 $ p1 +^ (p2 +^ p3) = " ++ showP p1b23s1
+    putStrLn $ "(p2 +^ p2) +^ p3 = " ++ showP pb223
+    putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223
+    putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223s1
+    putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223d0
     where
+    showP = showInternals (showChebTerms, showCoeffInternals)
+    showChebTerms = True
+    showCoeffInternals = False
     opsPtr = unsafePerformIO $ DCPoly.newOps DCPoly.Ops_Pure
     p1 = DCPoly.constPoly 3 0 (Var 2) (Size 10) (Power 3)
     p2 = DCPoly.projectionPoly (Var 0) (Var 2) (Size 10) (Power 3)
@@ -58,25 +64,31 @@ testPureDCPolys =
     p1bb223s1 = DCPoly.polyAddUpPureUsingPureOps (Size 1) (Power 3) opsPtr p1 pb223
     p1bb223d0 = DCPoly.polyAddUpPureUsingPureOps (Size 2) (Power 0) opsPtr p1 pb223
     (maxArity, maxSize) = DCPoly.peekSizes p1
+    constTerm = DCPoly.peekConst p1
 
 testPureGCPolys :: IO ()
 testPureGCPolys =
     do
-    putStrLn $ show (maxArity, maxSize)
-    putStrLn $ "p1 = " ++ show p1
-    putStrLn $ "p2 = " ++ show p2
-    putStrLn $ "p3 = " ++ show p3
-    putStrLn $ "p1 +^ p1 = " ++ show p11
-    putStrLn $ "p1 +^ p2 = " ++ show p12
-    putStrLn $ "p2 +^ p2 = " ++ show p22
-    putStrLn $ "p2 +^ p3 = " ++ show p23
-    putStrLn $ "p1 +^ (p2 +^ p3) = " ++ show p1b23
-    putStrLn $ "size 1 $ p1 +^ (p2 +^ p3) = " ++ show p1b23s1
-    putStrLn $ "(p2 +^ p2) +^ p3 = " ++ show pb223
-    putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ show p1bb223
-    putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show p1bb223s1
-    putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show p1bb223d0
+    putStrLn $ "p1.maxArity = " ++ show maxArity
+    putStrLn $ "p1.maxSize = " ++ show maxSize
+    putStrLn $ "p1.constTerm = " ++ show constTerm
+    putStrLn $ "p1 = " ++ showP p1
+    putStrLn $ "p2 = " ++ showP p2
+    putStrLn $ "p3 = " ++ showP p3
+    putStrLn $ "p1 +^ p1 = " ++ showP p11
+    putStrLn $ "p1 +^ p2 = " ++ showP p12
+    putStrLn $ "p2 +^ p2 = " ++ showP p22
+    putStrLn $ "p2 +^ p3 = " ++ showP p23
+    putStrLn $ "p1 +^ (p2 +^ p3) = " ++ showP p1b23
+    putStrLn $ "size 1 $ p1 +^ (p2 +^ p3) = " ++ showP p1b23s1
+    putStrLn $ "(p2 +^ p2) +^ p3 = " ++ showP pb223
+    putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223
+    putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223s1
+    putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223d0
     where
+    showP = showInternals (showChebTerms, showCoeffInternals)
+    showChebTerms = True
+    showCoeffInternals = False
     opsPtr = GCPoly.newOpsPureArithUpDnDefaultEffort sampleD
     p1 = GCPoly.constPoly (3::Double) 0 (Var 2) (Size 10) (Power 3)
     p2 = GCPoly.projectionPoly sampleD (Var 0) (Var 2) (Size 10) (Power 3)
@@ -92,24 +104,28 @@ testPureGCPolys =
     p1bb223s1 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 1) (Power 3) opsPtr p1 pb223
     p1bb223d0 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 0) opsPtr p1 pb223
     (maxArity, maxSize) = GCPoly.peekSizes p1
+    constTerm = GCPoly.peekConst p1
         
 testMutableGCPolys :: IO ()
 testMutableGCPolys =
     do
     arity <- GCPoly.peekArityIO p1
-    putStrLn $ "arity = " ++ show arity
-    putStrLn $ "p1 = " ++ show p1
-    putStrLn $ "p2 = " ++ show p2
-    putStrLn $ "p3 = " ++ show p3
-    putStrLn $ "p11 = " ++ show p11
-    putStrLn $ "p12 = " ++ show p12
-    putStrLn $ "p22 = " ++ show p22
-    putStrLn $ "p1b23 = " ++ show p1b23
-    putStrLn $ "pb223 = " ++ show pb223
-    putStrLn $ "p23s1 = " ++ show p23s1
-    putStrLn $ "pb223s1 = " ++ show pb223s1
-    putStrLn $ "pb223d0 = " ++ show pb223d0
+    putStrLn $ "maxArity = " ++ show arity
+    putStrLn $ "p1 = " ++ showP p1
+    putStrLn $ "p2 = " ++ showP p2
+    putStrLn $ "p3 = " ++ showP p3
+    putStrLn $ "p11 = " ++ showP p11
+    putStrLn $ "p12 = " ++ showP p12
+    putStrLn $ "p22 = " ++ showP p22
+    putStrLn $ "p1b23 = " ++ showP p1b23
+    putStrLn $ "pb223 = " ++ showP pb223
+    putStrLn $ "p23s1 = " ++ showP p23s1
+    putStrLn $ "pb223s1 = " ++ showP pb223s1
+    putStrLn $ "pb223d0 = " ++ showP pb223d0
     where
+    showP = showInternals (showChebTerms, showCoeffInternals)
+    showChebTerms = True
+    showCoeffInternals = False
     opsPtr = GCPoly.newOpsPureArithUpDnDefaultEffort sampleD
     opsMutablePtr = GCPoly.newOpsMutableArithUpDnDefaultEffort sampleD
     [p1,p2,p3,p11,p12,p22,p1b23,pb223,p23s1,pb223s1, pb223d0] = runST $

@@ -15,14 +15,21 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
 {
   // free the Poly struct:
   Size maxSize = p -> maxSize;
+  Size psize = p -> psize;
   Term * terms = p -> terms;
   CF_FREE(p -> constTerm);
+  CF_FREE(p -> errorBound);
   free(p);
 
-  // free the power arrays and coeffs:
+  // free the power arrays:
   for (Size i = 0; i < maxSize; i++)
     {
       free(terms[i].powers);
+    }
+
+  // free the coeffs:
+  for (Size i = 0; i < psize; i++)
+    {
       CF_FREE(terms[i].coeff);
     }
 

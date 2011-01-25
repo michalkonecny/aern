@@ -60,6 +60,7 @@ peekSizes :: (PolyFP) -> (Var, Size)
 peekSizes p =
     unsafePerformIO $ peekSizesIO p
 
+{-# INLINE peekSizesIO #-}
 peekSizesIO :: (PolyFP) -> IO (Var, Size)
 peekSizesIO (PolyFP fp) =
         withForeignPtr fp $ \ptr -> 
@@ -76,10 +77,23 @@ peekArity p =
 {-# INLINE peekArityIO #-}
 peekArityIO :: (PolyFP) -> IO Var
 peekArityIO (PolyFP fp) =
-        withForeignPtr fp $ \ptr -> 
-            do
-            maxArityC <- #{peek Poly, maxArity} ptr
-            return (fromCVar maxArityC)            
+    withForeignPtr fp $ \ptr -> 
+        do
+        maxArityC <- #{peek Poly, maxArity} ptr
+        return (fromCVar maxArityC)
+
+{-# INLINE peekConst #-}
+peekConst :: (PolyFP) -> Double
+peekConst p =
+    unsafePerformIO $ peekConstIO p
+    
+{-# INLINE peekConstIO #-}
+peekConstIO :: (PolyFP) -> IO Double
+peekConstIO (PolyFP fp) =
+    withForeignPtr fp $ \ptr -> 
+        do
+        constC <- #{peek Poly, constTerm} ptr
+        return $ cDouble2Double constC
 
 data Ops_Pure = Ops_Pure
 
@@ -111,7 +125,7 @@ mkOpsPure =
 
 ----------------------------------------------------------------
 
-foreign import ccall unsafe "freePolyDblCf"
+foreign import ccall safe "freePolyDblCf"
         poly_freePoly :: (Ptr (Poly)) -> IO ()  
 
 concFinalizerFreePoly :: (Ptr (Poly)) -> IO ()
@@ -253,7 +267,48 @@ evalAtPtChebBasis (PolyFP polyFP) vals one add subtr mult cf2val =
         poly_evalAtPtChebBasis polyPtr valSPsPtr oneSP addSP subtrSP multSP cf2valSP
     freeStablePtr oneSP
     _ <- mapM freeStablePtr [addSP, subtrSP, multSP]
+    free valSPsPtr
+    _ <- mapM freeStablePtr valSPs
     res <- deRefStablePtr resSP 
     freeStablePtr resSP
     return res
+
+
+foreign import ccall safe "evalAtPtPowerBasisDblCf"
+        poly_evalAtPtPowerBasis :: 
+            (Ptr (Poly)) -> 
+            (Ptr (StablePtr val)) -> 
+            (StablePtr val) ->
+            (StablePtr (BinaryOp val)) -> 
+            (StablePtr (BinaryOp val)) ->
+            (StablePtr (ConvertFromDoubleOp val)) ->
+            IO (StablePtr val)  
+
+evalAtPtPowerBasis :: 
+    (PolyFP) ->
+    [val] {-^ values to substitute for variables @[0..(maxArity-1)]@ -} ->
+    val {-^ number @1@ -} ->
+    (BinaryOp val) {-^ addition -} -> 
+    (BinaryOp val) {-^ multiplication -} -> 
+    (ConvertFromDoubleOp val) ->
+    val
+evalAtPtPowerBasis (PolyFP polyFP) vals one add mult cf2val =
+    unsafePerformIO $
+    do
+    valSPs <- mapM newStablePtr vals
+    valSPsPtr <- newArray valSPs
+    oneSP <- newStablePtr one
+    addSP <- newStablePtr add
+    multSP <- newStablePtr mult
+    cf2valSP <- newStablePtr cf2val
+    resSP <- withForeignPtr polyFP $ \polyPtr ->
+        poly_evalAtPtPowerBasis polyPtr valSPsPtr oneSP addSP multSP cf2valSP
+    freeStablePtr oneSP
+    _ <- mapM freeStablePtr [addSP, multSP]
+    free valSPsPtr
+    _ <- mapM freeStablePtr valSPs
+    res <- deRefStablePtr resSP 
+    freeStablePtr resSP
+    return res
+
     
