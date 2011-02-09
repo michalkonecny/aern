@@ -1,0 +1,61 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-|
+    Module      :  Numeric.AERN.RmToRn.Domain
+    Description :  operations focusing on function domains  
+    Copyright   :  (c) Michal Konecny
+    License     :  BSD3
+
+    Maintainer  :  mikkonecny@gmail.com
+    Stability   :  experimental
+    Portability :  portable
+    
+    Operations focusing on function domains.
+-}
+
+module Numeric.AERN.RmToRn.Domain where
+
+import Numeric.AERN.Basics.Interval
+
+class (HasVarValue 
+        (VarBox f (Interval (Domain f))) 
+        (Var f) 
+        (Interval (Domain f))) 
+        => HasDomainBox f 
+    where
+    type Var f
+    type Domain f
+    type VarBox f :: * -> *
+    getDomainBox :: f -> DomainBox f
+    defaultDomSplit ::
+        Maybe f {-^ dummy parameter that aids typechecking -} -> 
+        (Interval (Domain f)) -> 
+        (Interval (Domain f), Interval (Domain f))
+
+type DomainBox f = VarBox f (Interval (Domain f))
+
+--type DomainPointBox f = VarBox f (Domain f)
+--
+--class (HasDomainBox f, 
+--       HasVarValue 
+--        (VarBox f (Domain f)) 
+--        (Var f) 
+--        (Domain f)) => HasDomainPtBox f
+
+class HasVarValue vbox var val 
+    | vbox -> var val
+    where
+    unitVarBox :: var -> val -> vbox
+    lookupVar :: vbox -> var -> Maybe val
+    -- TODO add much more (see hsreals DomainBox)
+
+class (HasDomainBox f) => HasProjections f where
+    newProjection :: 
+        Maybe f {-^ dummy parameter that aids typechecking -} -> 
+        (DomainBox f) {-^ the domain @box@ of the function -} -> 
+        (Var f) {-^ the variable @x@ being projected -} -> 
+        f {-^ @ \box -> x @ -}
+
+           
