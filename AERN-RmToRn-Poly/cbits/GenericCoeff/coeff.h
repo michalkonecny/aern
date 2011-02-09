@@ -25,6 +25,7 @@ typedef void * CoeffMutable; // pointer to undisclosed Haskell type (Mutable t s
 /* References to operations provided by Haskell: */
 typedef struct OPS_PURE
 {
+  UnaryOp neg;
   UnaryOp absUp;
   UnaryOp absDn;
   BinaryOp plusUp;
@@ -43,6 +44,8 @@ typedef struct OPS_PURE
 #define CF_SUB_DN(ops,d1,d2) (eval_binary_hs(ops -> minusDn,d1,d2))
 #define CF_MUL_UP(ops,d1,d2) (eval_binary_hs(ops -> timesUp,d1,d2))
 #define CF_MUL_DN(ops,d1,d2) (eval_binary_hs(ops -> timesDn,d1,d2))
+#define CF_NEG(ops,d) (eval_unary_hs(ops -> neg,d))
+
 
 #define CF_FREE(dp) (free_SP_hs(dp))
 #define CF_CLONE(dp) (clone_SP_hs(dp))

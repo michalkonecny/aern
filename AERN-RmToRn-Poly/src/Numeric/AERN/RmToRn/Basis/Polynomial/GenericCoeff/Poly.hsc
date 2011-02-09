@@ -99,6 +99,7 @@ peekConstIO (PolyFP fp) =
 data Ops_Pure t =
     Ops_Pure
     {
+        ops_neg :: {-# UNPACK #-} ! (StablePtr (UnaryOp t)),
         ops_absUp :: {-# UNPACK #-} ! (StablePtr (UnaryOp t)),
         ops_absDn :: {-# UNPACK #-} ! (StablePtr (UnaryOp t)),
         ops_plusUp :: {-# UNPACK #-} ! (StablePtr (BinaryOp t)),
@@ -113,8 +114,9 @@ instance (Storable cf) => Storable (Ops_Pure cf) where
     sizeOf _ = #size Ops_Pure
     alignment _ = #{alignment Ops_Pure}
     peek = error "Ops_Pure.peek: Not needed and not applicable"
-    poke ptr (Ops_Pure absUp absDn plusUp plusDn minusUp minusDn timesUp timesDn) = 
+    poke ptr (Ops_Pure neg absUp absDn plusUp plusDn minusUp minusDn timesUp timesDn) = 
         do 
+        #{poke Ops_Pure, neg} ptr neg
         #{poke Ops_Pure, absUp} ptr absUp
         #{poke Ops_Pure, absDn} ptr absDn
         #{poke Ops_Pure, plusUp} ptr plusUp
@@ -140,6 +142,7 @@ freeOps = free
 mkOpsPure ::
     (UnaryOp t) ->
     (UnaryOp t) ->
+    (UnaryOp t) ->
     (BinaryOp t) ->
     (BinaryOp t) ->
     (BinaryOp t) ->
@@ -147,8 +150,9 @@ mkOpsPure ::
     (BinaryOp t) ->
     (BinaryOp t) ->
     IO (Ops_Pure t)
-mkOpsPure absUp absDn addUp addDn subtrUp subtrDn multUp multDn =
+mkOpsPure neg absUp absDn addUp addDn subtrUp subtrDn multUp multDn =
     do
+    negSP <- newStablePtr neg  
     absUpSP <- newStablePtr absUp  
     absDnSP <- newStablePtr absDn
     addUpSP <- newStablePtr addUp   
@@ -159,6 +163,7 @@ mkOpsPure absUp absDn addUp addDn subtrUp subtrDn multUp multDn =
     multDnSP <- newStablePtr multDn
     return $
       Ops_Pure
+        negSP
         absUpSP absDnSP
         addUpSP addDnSP
         subtrUpSP subtrDnSP
@@ -175,6 +180,7 @@ mkOpsPureArithUpDn sample effort =
     let addEffort = ArithUpDn.fldEffortAdd sample fldEffort in
     let multEffort = ArithUpDn.fldEffortMult sample fldEffort in
     mkOpsPure
+        (neg)
         (ArithUpDn.absUpEff absEffort)
         (ArithUpDn.absDnEff absEffort)
         (ArithUpDn.addUpEff addEffort)
@@ -210,6 +216,7 @@ data Ops_Mutable s t =
         ops_clone :: {-# UNPACK #-} ! (StablePtr (CloneOpMutable s t)),
         ops_assign :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s t)),
         ops_assignFromPure :: {-# UNPACK #-} ! (StablePtr (UnaryFromPureOpMutable s t)),
+--        ops_negMutable :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s t)),
         ops_absUpMutable :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s t)),
         ops_absDnMutable :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s t)),
         ops_plusUpMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s t)),

@@ -41,6 +41,7 @@ typedef struct OPS_PURE
 #define CF_SUB_DN(ops,d1,d2) (fesetround(ROUND_UP), (-((d2)-(d1))))
 #define CF_MUL_UP(ops,d1,d2) (fesetround(ROUND_UP), ((d1)*(d2)))
 #define CF_MUL_DN(ops,d1,d2) (fesetround(ROUND_UP), (-((-(d1))*(d2))))
+#define CF_NEG(ops,d) (-d)
 
 #define CF_FREE(d) (1) // signal success without doing anything
 #define CF_CLONE(d) (d) // not a pointer type, normal assignment clones
