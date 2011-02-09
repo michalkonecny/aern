@@ -51,11 +51,5 @@ class HasVarValue vbox var val
     lookupVar :: vbox -> var -> Maybe val
     -- TODO add much more (see hsreals DomainBox)
 
-class (HasDomainBox f) => HasProjections f where
-    newProjection :: 
-        Maybe f {-^ dummy parameter that aids typechecking -} -> 
-        (DomainBox f) {-^ the domain @box@ of the function -} -> 
-        (Var f) {-^ the variable @x@ being projected -} -> 
-        f {-^ @ \box -> x @ -}
 
            

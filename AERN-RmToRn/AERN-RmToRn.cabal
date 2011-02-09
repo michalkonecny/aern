@@ -37,10 +37,10 @@ Library
         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
         criterion >= 0.5 && < 0.6,
         AERN-Basics == 2011.1, AERN-Real == 2011.1, AERN-Real-Interval == 2011.1
-  exposed-modules:        
-    Numeric.AERN.RmToRn.Domain,
-    Numeric.AERN.RmToRn.NumericOrderRounding.Substitute,
-    Numeric.AERN.RmToRn.RefinementOrderRounding.Substitute
-  --    Numeric.AERN.RmToRn.AutoDifferentiation
+  exposed-modules:       
+      Numeric.AERN.RmToRn.Domain, 
+      Numeric.AERN.RmToRn.New, 
+      Numeric.AERN.RmToRn.NumericOrderRounding.Substitute, 
+      Numeric.AERN.RmToRn.RefinementOrderRounding.Substitute
 
     
