@@ -8,10 +8,6 @@
 #include "DoubleCoeff/coeff.h"
 #include "DoubleCoeff/poly.h"
 
-/*
- *  Upper bound for sum of absolute values of coefficients
- */
-
 Coeff
 ADD_COEFF_CODE(sumUpAbsCoeffs)(Coeff zero, Ops_Pure * ops, Poly * p)
 {
@@ -30,69 +26,44 @@ ADD_COEFF_CODE(sumUpAbsCoeffs)(Coeff zero, Ops_Pure * ops, Poly * p)
 	return res;
 }
 
-/*
- *  Upper bound for a polynomial ignoring errorBound
- *
- *  WARNING : does not check for thinness
- */
-
 Coeff
 ADD_COEFF_CODE(boundUpThin)(Ops_Pure * ops, Poly * p)
 {
-	return ADD_COEFF_CODE(sumUpAbsCoeffs)(p -> constTerm, ops, p);
+	Coeff constTerm = CF_CLONE(p -> constTerm);
+	return ADD_COEFF_CODE(sumUpAbsCoeffs)(constTerm, ops, p);
+	// no need to free constTerm as sumUpAbsCoeffs does this
 }
-
-/*
- *  Lower bound for a polynomial ignoring errorBound
- *
- *  WARNING : does not check for thinness
- */
 
 Coeff
 ADD_COEFF_CODE(boundDnThin)(Ops_Pure * ops, Poly * p)
 {
-	return -ADD_COEFF_CODE(sumUpAbsCoeffs)(-(p -> constTerm), ops, p);
+	Coeff negConstTerm = CF_NEG(ops, p -> constTerm);
+	Coeff res = ADD_COEFF_CODE(sumUpAbsCoeffs)(negConstTerm, ops, p);
+	// no need to free negConstTerm as sumUpAbsCoeffs does this
+	Coeff oldRes = res;
+	res = CF_NEG(ops, res);
+	CF_FREE(oldRes);
+	return res;
 }
-
-/*
- *  Upper bound for a polynomial (centred enclosure)
- *
- *  WARNING : assumes errorBound >= 0
- */
 
 Coeff
 ADD_COEFF_CODE(boundUp)(Ops_Pure * ops, Poly * p)
 {
-	Coeff res = CF_ADD_UP(ops, p -> constTerm, p -> errorBound);
-	Term * terms = p -> terms;
-	Size pSize = p -> psize;
-	int i = 0;
-	while (i < pSize) {
-		res = CF_ADD_UP(ops, res, CF_ABS_UP(ops, terms[i].coeff));
-		i++;
-	}
-	return res;
+	Coeff constPlusError = CF_ADD_UP(ops, p -> constTerm, p -> errorBound);
+	return ADD_COEFF_CODE(sumUpAbsCoeffs)(constPlusError, ops, p);
+	// no need to free constPlusError as sumUpAbsCoeffs does this
 }
-
-/*
- *  Lower bound for a polynomial (centred enclosure)
- *
- *  WARNING : assumes errorBound >= 0
- */
 
 Coeff
 ADD_COEFF_CODE(boundDn)(Ops_Pure * ops, Poly * p)
 {
-	Coeff res = CF_SUB_DN(ops, p -> constTerm, p -> errorBound);
-	Term * terms = p -> terms;
-	Size pSize = p -> psize;
-	int i = 0;
-	while (i < pSize) {
-		res = CF_SUB_DN(ops, res, CF_ABS_DN(ops, terms[i].coeff));
-		i++;
-	}
+	Coeff constMinusError = CF_SUB_DN(ops, p -> constTerm, p -> errorBound);
+	Coeff negConstMinusError = CF_NEG(ops, constMinusError);
+	CF_FREE(constMinusError);
+	Coeff res = ADD_COEFF_CODE(sumUpAbsCoeffs)(negConstMinusError, ops, p);
+	// no need to free negConstMinusError as sumUpAbsCoeffs does this
+	Coeff oldRes = res;
+	res = CF_NEG(ops, res);
+	CF_FREE(oldRes);
 	return res;
 }
-
-
-

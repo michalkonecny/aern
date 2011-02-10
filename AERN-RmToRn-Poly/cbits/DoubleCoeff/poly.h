@@ -135,4 +135,44 @@ Value
 ADD_COEFF_CODE(evalAtPtPowerBasis)(Poly * p, Value * values, Value one,
     BinaryOp add, BinaryOp mult, ConversionOp cf2val);
 
+/*
+ * Upper bound for sum of absolute values of coefficients
+ * DEALLOCATES : zero
+ */
+
+Coeff
+ADD_COEFF_CODE(sumUpAbsCoeffs)(Coeff zero, Ops_Pure * ops, Poly * p);
+
+/*
+ *  Upper bound for a polynomial ignoring errorBound
+ *  WARNING : does not check for thinness
+ */
+
+Coeff
+ADD_COEFF_CODE(boundUpThin)(Ops_Pure * ops, Poly * p);
+
+/*
+ *  Lower bound for a polynomial ignoring errorBound
+ *  WARNING : does not check for thinness
+ */
+
+Coeff
+ADD_COEFF_CODE(boundDnThin)(Ops_Pure * ops, Poly * p);
+
+/*
+ *  Upper bound for a polynomial (centred enclosure)
+ *  WARNING : assumes errorBound >= 0
+ */
+
+Coeff
+ADD_COEFF_CODE(boundUp)(Ops_Pure * ops, Poly * p);
+
+/*
+ *  Lower bound for a polynomial (centred enclosure)
+ *  WARNING : assumes errorBound >= 0
+ */
+
+Coeff
+ADD_COEFF_CODE(boundDn)(Ops_Pure * ops, Poly * p);
+
 #endif /* POLY_H_ */

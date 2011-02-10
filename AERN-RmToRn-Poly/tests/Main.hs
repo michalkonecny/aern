@@ -23,8 +23,8 @@ import System.Mem
 main :: IO ()
 main = 
     do
---    testPureDCPolys
-    testPureGCPolys
+    testPureDCPolys
+--    testPureGCPolys
 --    testMutableGCPolys
 
 testPureDCPolys :: IO ()
@@ -47,6 +47,7 @@ testPureDCPolys =
     putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223
     putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223s1
     putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223d0
+    putStrLn $ "boundUpThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdp1bb223d0
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True
@@ -67,6 +68,7 @@ testPureDCPolys =
     p1bb223d0 = DCPoly.polyAddUpPureUsingPureOps (Size 2) (Power 0) opsPtr p1 pb223
     (maxArity, maxSize, maxDegree) = DCPoly.peekSizes p1
     constTerm = DCPoly.peekConst p1
+    bdp1bb223d0 = DCPoly.polyBoundUpThin opsPtr p1bb223d0
 
 testPureGCPolys :: IO ()
 testPureGCPolys =
