@@ -32,6 +32,7 @@ testPureDCPolys =
     do
     putStrLn $ "p1.maxArity = " ++ show maxArity
     putStrLn $ "p1.maxSize = " ++ show maxSize
+    putStrLn $ "p1.maxDegree = " ++ show maxDegree
     putStrLn $ "p1.constTerm = " ++ show constTerm
     putStrLn $ "p1 = " ++ showP p1
     putStrLn $ "p2 = " ++ showP p2
@@ -64,7 +65,7 @@ testPureDCPolys =
     p1bb223 = DCPoly.polyAddUpPureUsingPureOps (Size 2) (Power 3) opsPtr p1 pb223
     p1bb223s1 = DCPoly.polyAddUpPureUsingPureOps (Size 1) (Power 3) opsPtr p1 pb223
     p1bb223d0 = DCPoly.polyAddUpPureUsingPureOps (Size 2) (Power 0) opsPtr p1 pb223
-    (maxArity, maxSize) = DCPoly.peekSizes p1
+    (maxArity, maxSize, maxDegree) = DCPoly.peekSizes p1
     constTerm = DCPoly.peekConst p1
 
 testPureGCPolys :: IO ()
@@ -72,6 +73,7 @@ testPureGCPolys =
     do
     putStrLn $ "p1.maxArity = " ++ show maxArity
     putStrLn $ "p1.maxSize = " ++ show maxSize
+    putStrLn $ "p1.maxDegree = " ++ show maxDegree
     putStrLn $ "p1.constTerm = " ++ show constTerm
     putStrLn $ "p1 = " ++ showP p1
     GCPoly.printPoly p1
@@ -117,7 +119,7 @@ testPureGCPolys =
     p1bb223 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p1 pb223
     p1bb223s1 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 1) (Power 3) opsPtr p1 pb223
     p1bb223d0 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 0) opsPtr p1 pb223
-    (maxArity, maxSize) = GCPoly.peekSizes p1
+    (maxArity, maxSize, maxDegree) = GCPoly.peekSizes p1
     constTerm = GCPoly.peekConst p1
         
 testMutableGCPolys :: IO ()

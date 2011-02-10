@@ -56,18 +56,19 @@ data Poly -- defined in poly.c, opaque to Haskell
 newtype PolyFP = PolyFP (ForeignPtr (Poly))
 
 {-# INLINE peekSizes #-}
-peekSizes :: (PolyFP) -> (Var, Size)
+peekSizes :: (PolyFP) -> (Var, Size, Power)
 peekSizes p =
     unsafePerformIO $ peekSizesIO p
 
 {-# INLINE peekSizesIO #-}
-peekSizesIO :: (PolyFP) -> IO (Var, Size)
+peekSizesIO :: (PolyFP) -> IO (Var, Size, Power)
 peekSizesIO (PolyFP fp) =
         withForeignPtr fp $ \ptr -> 
             do
             maxArityC <- #{peek Poly, maxArity} ptr
             maxSizeC <- #{peek Poly, maxSize} ptr
-            return (fromCVar maxArityC, fromCSize maxSizeC)            
+            maxDegreeC <- #{peek Poly, maxDeg} ptr
+            return (fromCVar maxArityC, fromCSize maxSizeC, fromCPower maxDegreeC)            
 
 {-# INLINE peekArity #-}
 peekArity :: (PolyFP) -> Var
