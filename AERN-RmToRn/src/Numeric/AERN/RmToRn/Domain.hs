@@ -2,6 +2,7 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Domain
     Description :  operations focusing on function domains  
@@ -18,6 +19,10 @@
 module Numeric.AERN.RmToRn.Domain where
 
 import Numeric.AERN.Basics.Interval
+
+import qualified Data.Map as Map
+import qualified Data.IntMap as IntMap
+
 
 class (HasVarValue 
         (VarBox f (Interval (Domain f))) 
@@ -48,8 +53,24 @@ class HasVarValue vbox var val
     | vbox -> var val
     where
     unitVarBox :: var -> val -> vbox
+    fromList :: [(var, val)] -> vbox
+    fromAscList :: [(var, val)] -> vbox
     lookupVar :: vbox -> var -> Maybe val
     -- TODO add much more (see hsreals DomainBox)
 
 
+instance HasVarValue (IntMap.IntMap val) Int val
+    where
+    unitVarBox var val = IntMap.singleton var val
+    fromList varVals = IntMap.fromList varVals
+    fromAscList varVals = IntMap.fromAscList varVals
+    lookupVar map var = IntMap.lookup var map 
+
+instance (Ord var) => HasVarValue (Map.Map var val) var val
+    where
+    unitVarBox var val = Map.singleton var val
+    fromList varVals = Map.fromList varVals
+    fromAscList varVals = Map.fromAscList varVals
+    lookupVar map var = Map.lookup var map 
+     
            
