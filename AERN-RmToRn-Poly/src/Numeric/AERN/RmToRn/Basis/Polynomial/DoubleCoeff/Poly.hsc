@@ -312,4 +312,25 @@ evalAtPtPowerBasis (PolyFP polyFP) vals one add mult cf2val =
     freeStablePtr resSP
     return res
 
-    
+----------------------------------------------------------------
+
+foreign import ccall safe "boundUpThinDblCf"
+    poly_boundUpThin ::
+        (Ptr (Ops_Pure)) ->
+        (Ptr (Poly)) -> 
+        IO CDouble
+
+polyBoundUpThin :: 
+    (Ptr Ops_Pure) ->
+    PolyFP ->
+    Double
+polyBoundUpThin opsPtr =
+    polyEval poly_boundUpThin opsPtr
+
+polyEval unary ops (PolyFP pFP) =
+    unsafePerformIO $
+    do
+    resD <- withForeignPtr pFP $ \p ->
+        unary ops p
+    return $ cDouble2Double resD
+
