@@ -50,7 +50,7 @@ type CPower = #type Power
 
 {- Haskell analogues of some C types defined in Basics.h -}
 
-newtype Var = Var Word32 deriving (Eq, Ord, Show, Enum)
+newtype Var = Var { unVar :: Word32 } deriving (Eq, Ord, Show, Enum)
 {-# INLINE fromCVar #-}
 fromCVar :: CVar -> Var
 fromCVar v = Var (fromIntegral v)
@@ -58,7 +58,7 @@ fromCVar v = Var (fromIntegral v)
 toCVar :: Var -> CVar
 toCVar (Var v) = fromIntegral v
 
-newtype Size = Size Word32 deriving (Eq, Ord, Show, Enum)
+newtype Size = Size { unSize :: Word32 } deriving (Eq, Ord, Show, Enum)
 {-# INLINE fromCSize #-}
 fromCSize :: CSize -> Size
 fromCSize s = Size (fromIntegral s)
@@ -66,7 +66,7 @@ fromCSize s = Size (fromIntegral s)
 toCSize :: Size -> CSize
 toCSize (Size s) = fromIntegral s
 
-newtype Power = Power Word32 deriving (Eq, Ord, Show, Enum)
+newtype Power = Power { unPower :: Word32 } deriving (Eq, Ord, Show, Enum)
 {-# INLINE fromCPower #-}
 fromCPower :: CPower -> Power
 fromCPower pwr = Power (fromIntegral pwr)
