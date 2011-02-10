@@ -56,18 +56,19 @@ newtype PolyFP cf = PolyFP (ForeignPtr (Poly cf))
 newtype PolyMutableFP cf s = PolyMutableFP (ForeignPtr (Poly (Mutable cf s)))
 
 {-# INLINE peekSizes #-}
-peekSizes :: (PolyFP cf) -> (Var, Size)
+peekSizes :: (PolyFP cf) -> (Var, Size, Power)
 peekSizes p =
     unsafePerformIO $ peekSizesIO p
 
 {-# INLINE peekSizesIO #-}
-peekSizesIO :: (PolyFP cf) -> IO (Var, Size)
+peekSizesIO :: (PolyFP cf) -> IO (Var, Size, Power)
 peekSizesIO (PolyFP fp) =
         withForeignPtr fp $ \ptr -> 
             do
             maxArityC <- #{peek Poly, maxArity} ptr
             maxSizeC <- #{peek Poly, maxSize} ptr
-            return (fromCVar maxArityC, fromCSize maxSizeC)            
+            maxDegreeC <- #{peek Poly, maxDeg} ptr
+            return (fromCVar maxArityC, fromCSize maxSizeC, fromCPower maxDegreeC)            
 
 {-# INLINE peekArity #-}
 peekArity :: (PolyFP cf) -> Var
