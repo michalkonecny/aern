@@ -672,3 +672,26 @@ evalAtPtPowerBasis (PolyFP polyFP) vals one add mult cf2val =
     freeStablePtr resSP
     return res
     
+----------------------------------------------------------------
+
+foreign import ccall safe "boundUpThinGenCf"
+    poly_boundUpThin ::
+        (Ptr (Ops_Pure cf)) ->
+        (Ptr (Poly cf)) -> 
+        IO (StablePtr cf)
+
+polyBoundUpThin :: 
+    (HasZero cf, NumOrd.PartialComparison cf) =>
+    (Ptr (Ops_Pure cf)) ->
+    PolyFP cf ->
+    cf
+polyBoundUpThin opsPtr =
+    polyEval poly_boundUpThin opsPtr
+
+polyEval unary ops (PolyFP pFP) =
+    unsafePerformIO $
+    do
+    resSP <- withForeignPtr pFP $ \p ->
+        unary ops p
+    res <- deRefStablePtr resSP
+    return res

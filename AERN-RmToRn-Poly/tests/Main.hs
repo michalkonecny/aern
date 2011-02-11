@@ -23,8 +23,8 @@ import System.Mem
 main :: IO ()
 main = 
     do
-    testPureDCPolys
---    testPureGCPolys
+--    testPureDCPolys
+    testPureGCPolys
 --    testMutableGCPolys
 
 testPureDCPolys :: IO ()
@@ -78,31 +78,19 @@ testPureGCPolys =
     putStrLn $ "p1.maxDegree = " ++ show maxDegree
     putStrLn $ "p1.constTerm = " ++ show constTerm
     putStrLn $ "p1 = " ++ showP p1
-    GCPoly.printPoly p1
     putStrLn $ "p2 = " ++ showP p2
-    GCPoly.printPoly p2
     putStrLn $ "p3 = " ++ showP p3
-    GCPoly.printPoly p3
     putStrLn $ "p1 +^ p1 = " ++ showP p11
-    GCPoly.printPoly p11
     putStrLn $ "p1 +^ p2 = " ++ showP p12
-    GCPoly.printPoly p22
     putStrLn $ "p2 +^ p2 = " ++ showP p22
-    GCPoly.printPoly p22
     putStrLn $ "p2 +^ p3 = " ++ showP p23
-    GCPoly.printPoly p23
     putStrLn $ "p1 +^ (p2 +^ p3) = " ++ showP p1b23
-    GCPoly.printPoly p1b23
     putStrLn $ "size 1 $ p1 +^ (p2 +^ p3) = " ++ showP p1b23s1
-    GCPoly.printPoly p1b23s1
     putStrLn $ "(p2 +^ p2) +^ p3 = " ++ showP pb223
-    GCPoly.printPoly pb223
     putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223
-    GCPoly.printPoly p1bb223
     putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223s1
-    GCPoly.printPoly p1bb223s1
     putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223d0
-    GCPoly.printPoly p1bb223d0
+    putStrLn $ "boundUpThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdp1bb223d0
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True
@@ -123,6 +111,7 @@ testPureGCPolys =
     p1bb223d0 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 0) opsPtr p1 pb223
     (maxArity, maxSize, maxDegree) = GCPoly.peekSizes p1
     constTerm = GCPoly.peekConst p1
+    bdp1bb223d0 = GCPoly.polyBoundUpThin opsPtr p1bb223d0
         
 testMutableGCPolys :: IO ()
 testMutableGCPolys =

@@ -1,12 +1,12 @@
 /*
- * DoubleCoeff/bounds.c
+ * GenericCoeff/bounds.c
  *
  *  Created on: 3 Feb 2011
  *      Author: jan
  */
 
-#include "DoubleCoeff/coeff.h"
-#include "DoubleCoeff/poly.h"
+#include "GenericCoeff/coeff.h"
+#include "GenericCoeff/poly.h"
 
 Coeff
 ADD_COEFF_CODE(sumUpAbsCoeffs)(Coeff zero, Ops_Pure * ops, Poly * p)
