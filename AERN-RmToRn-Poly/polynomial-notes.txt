@@ -4,10 +4,14 @@ What should be in C:
 
 * operations exposed to Haskell:
   * creation of constant and projection polynomials
+  * rounded + for centered polynomial enclosures
+  * rounded (d +) for centered polynomial enclosures
+  * rounded (d *) for centered polynomial enclosures
+  * rounded * for centered polynomial enclosures in power basis
+  * rounded * for centered polynomial enclosures in Chebyshev basis
   * eval at a point using given +,*,1 and coeff conversion
-  * rounded field ops for polynomials
-  * increase of polynomial arity
-  * (?) rounded partial eval of polynomials 
+  * substitution of polynomials inside polynomials (for splitting and merging)
+  
 
 Values provided by Haskell as StablePtrs:
   * coefficients
