@@ -688,6 +688,48 @@ polyBoundUpThin ::
 polyBoundUpThin opsPtr =
     polyEval poly_boundUpThin opsPtr
 
+foreign import ccall safe "boundDnThinGenCf"
+    poly_boundDnThin ::
+        (Ptr (Ops_Pure cf)) ->
+        (Ptr (Poly cf)) -> 
+        IO (StablePtr cf)
+
+polyBoundDnThin :: 
+    (HasZero cf, NumOrd.PartialComparison cf) =>
+    (Ptr (Ops_Pure cf)) ->
+    PolyFP cf ->
+    cf
+polyBoundDnThin opsPtr =
+    polyEval poly_boundDnThin opsPtr
+
+foreign import ccall safe "boundUpGenCf"
+    poly_boundUp ::
+        (Ptr (Ops_Pure cf)) ->
+        (Ptr (Poly cf)) -> 
+        IO (StablePtr cf)
+
+polyBoundUp :: 
+    (HasZero cf, NumOrd.PartialComparison cf) =>
+    (Ptr (Ops_Pure cf)) ->
+    PolyFP cf ->
+    cf
+polyBoundUp opsPtr =
+    polyEval poly_boundUp opsPtr
+
+foreign import ccall safe "boundDnGenCf"
+    poly_boundDn ::
+        (Ptr (Ops_Pure cf)) ->
+        (Ptr (Poly cf)) -> 
+        IO (StablePtr cf)
+
+polyBoundDn :: 
+    (HasZero cf, NumOrd.PartialComparison cf) =>
+    (Ptr (Ops_Pure cf)) ->
+    PolyFP cf ->
+    cf
+polyBoundDn opsPtr =
+    polyEval poly_boundDn opsPtr
+
 polyEval unary ops (PolyFP pFP) =
     unsafePerformIO $
     do

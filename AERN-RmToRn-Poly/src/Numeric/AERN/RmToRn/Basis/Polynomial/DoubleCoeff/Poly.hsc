@@ -327,6 +327,45 @@ polyBoundUpThin ::
 polyBoundUpThin opsPtr =
     polyEval poly_boundUpThin opsPtr
 
+foreign import ccall safe "boundDnThinDblCf"
+    poly_boundDnThin ::
+        (Ptr (Ops_Pure)) ->
+        (Ptr (Poly)) -> 
+        IO CDouble
+
+polyBoundDnThin :: 
+    (Ptr Ops_Pure) ->
+    PolyFP ->
+    Double
+polyBoundDnThin opsPtr =
+    polyEval poly_boundDnThin opsPtr
+
+foreign import ccall safe "boundUpDblCf"
+    poly_boundUp ::
+        (Ptr (Ops_Pure)) ->
+        (Ptr (Poly)) -> 
+        IO CDouble
+
+polyBoundUp :: 
+    (Ptr Ops_Pure) ->
+    PolyFP ->
+    Double
+polyBoundUp opsPtr =
+    polyEval poly_boundUp opsPtr
+
+foreign import ccall safe "boundDnDblCf"
+    poly_boundDn ::
+        (Ptr (Ops_Pure)) ->
+        (Ptr (Poly)) -> 
+        IO CDouble
+
+polyBoundDn :: 
+    (Ptr Ops_Pure) ->
+    PolyFP ->
+    Double
+polyBoundDn opsPtr =
+    polyEval poly_boundDn opsPtr
+
 polyEval unary ops (PolyFP pFP) =
     unsafePerformIO $
     do
