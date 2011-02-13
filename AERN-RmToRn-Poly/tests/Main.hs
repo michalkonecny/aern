@@ -47,7 +47,10 @@ testPureDCPolys =
     putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223
     putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223s1
     putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223d0
-    putStrLn $ "boundUpThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdp1bb223d0
+    putStrLn $ "boundUpThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdupthp1bb223d0
+    putStrLn $ "boundDnThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bddnthp1bb223d0
+    putStrLn $ "boundUp $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdupp1bb223d0
+    putStrLn $ "boundDn $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bddnp1bb223d0
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True
@@ -68,7 +71,10 @@ testPureDCPolys =
     p1bb223d0 = DCPoly.polyAddUpPureUsingPureOps (Size 2) (Power 0) opsPtr p1 pb223
     (maxArity, maxSize, maxDegree) = DCPoly.peekSizes p1
     constTerm = DCPoly.peekConst p1
-    bdp1bb223d0 = DCPoly.polyBoundUpThin opsPtr p1bb223d0
+    bdupthp1bb223d0 = DCPoly.polyBoundUpThin opsPtr p1bb223d0
+    bddnthp1bb223d0 = DCPoly.polyBoundDnThin opsPtr p1bb223d0
+    bdupp1bb223d0 = DCPoly.polyBoundUp opsPtr p1bb223d0
+    bddnp1bb223d0 = DCPoly.polyBoundDn opsPtr p1bb223d0
 
 testPureGCPolys :: IO ()
 testPureGCPolys =
@@ -90,7 +96,10 @@ testPureGCPolys =
     putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223
     putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223s1
     putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223d0
-    putStrLn $ "boundUpThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdp1bb223d0
+    putStrLn $ "boundUpThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdupthp1bb223d0
+    putStrLn $ "boundDnThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bddnthp1bb223d0
+    putStrLn $ "boundUp $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdupp1bb223d0
+    putStrLn $ "boundDn $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bddnp1bb223d0
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True
@@ -111,7 +120,10 @@ testPureGCPolys =
     p1bb223d0 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 0) opsPtr p1 pb223
     (maxArity, maxSize, maxDegree) = GCPoly.peekSizes p1
     constTerm = GCPoly.peekConst p1
-    bdp1bb223d0 = GCPoly.polyBoundUpThin opsPtr p1bb223d0
+    bdupthp1bb223d0 = GCPoly.polyBoundUpThin opsPtr p1bb223d0
+    bddnthp1bb223d0 = GCPoly.polyBoundDnThin opsPtr p1bb223d0
+    bdupp1bb223d0 = GCPoly.polyBoundUp opsPtr p1bb223d0
+    bddnp1bb223d0 = GCPoly.polyBoundDn opsPtr p1bb223d0
         
 testMutableGCPolys :: IO ()
 testMutableGCPolys =
