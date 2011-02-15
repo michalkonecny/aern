@@ -156,6 +156,10 @@ newConstPoly c radius maxArity maxSize maxDeg =
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyFP fp
 
+constPolyMutable :: Double -> Double -> Var -> Size -> Power -> ST s (PolyFP)
+constPolyMutable c radius maxArity maxSize maxDeg =
+    unsafeIOToST $ newConstPoly c radius maxArity maxSize maxDeg
+
 ----------------------------------------------------------------
 
 foreign import ccall unsafe "newProjectionPolyDblCf"
@@ -177,10 +181,15 @@ newProjectionPoly x maxArity maxSize maxDeg =
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyFP fp
 
+projectionPolyMutable :: 
+    Var -> Var -> Size -> Power -> ST s (PolyFP)
+projectionPolyMutable x maxArity maxSize maxDeg =
+    unsafeIOToST $ newProjectionPoly x maxArity maxSize maxDeg
+
 ----------------------------------------------------------------
 
 foreign import ccall safe "addUpUsingPureOpsDblCf"
-        poly_addUpUsingPureOps :: 
+        poly_addUp :: 
             CDouble ->
             (StablePtr ()) ->
             (Ptr (Ops_Pure)) ->
@@ -190,7 +199,7 @@ foreign import ccall safe "addUpUsingPureOpsDblCf"
             IO ()
 
 foreign import ccall safe "addDnUsingPureOpsDblCf"
-        poly_addDnUsingPureOps :: 
+        poly_addDn :: 
             CDouble ->
             (StablePtr ()) ->
             (Ptr (Ops_Pure)) ->
@@ -199,25 +208,25 @@ foreign import ccall safe "addDnUsingPureOpsDblCf"
             (Ptr (Poly)) -> 
             IO ()
 
-polyAddUpPureUsingPureOps ::
+polyAddUpPure ::
     Size ->
     Power ->
     (Ptr Ops_Pure) ->
     PolyFP ->
     PolyFP ->
     PolyFP
-polyAddUpPureUsingPureOps size deg opsPtr = 
-    polyBinaryOpPure poly_addUpUsingPureOps size deg opsPtr
+polyAddUpPure size deg opsPtr = 
+    polyBinaryOpPure poly_addUp size deg opsPtr
 
-polyAddDnPureUsingPureOps ::
+polyAddDnPure ::
     Size ->
     Power ->
     (Ptr (Ops_Pure)) ->
     PolyFP ->
     PolyFP ->
     PolyFP
-polyAddDnPureUsingPureOps size deg opsPtr = 
-    polyBinaryOpPure poly_addDnUsingPureOps size deg opsPtr
+polyAddDnPure size deg opsPtr = 
+    polyBinaryOpPure poly_addDn size deg opsPtr
 
 polyBinaryOpPure binaryOp maxSize maxDeg opsPtr p1@(PolyFP p1FP) (PolyFP p2FP) =
     unsafePerformIO $
@@ -225,12 +234,42 @@ polyBinaryOpPure binaryOp maxSize maxDeg opsPtr p1@(PolyFP p1FP) (PolyFP p2FP) =
     maxArity <- peekArityIO p1
     resP <- poly_newConstPoly 0 0 (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     compareSP <- newStablePtr $ ()
-    _ <- withForeignPtr p1FP $ \p1 ->
-             withForeignPtr p2FP $ \p2 ->
-                 binaryOp 0 compareSP opsPtr resP p1 p2
+    _ <- withForeignPtr p1FP $ \p1P ->
+             withForeignPtr p2FP $ \p2P ->
+                 binaryOp 0 compareSP opsPtr resP p1P p2P
     freeStablePtr compareSP
     resFP <- Conc.newForeignPtr resP (concFinalizerFreePoly resP)
     return $ PolyFP resFP
+
+polyAddUpMutable ::
+    (Ptr Ops_Pure) ->
+    PolyFP ->
+    PolyFP ->
+    PolyFP ->
+    ST s ()
+polyAddUpMutable opsPtr =
+    polyBinaryOpMutable poly_addUp opsPtr
+    
+polyAddDnMutable ::
+    (Ptr Ops_Pure) ->
+    PolyFP ->
+    PolyFP ->
+    PolyFP ->
+    ST s ()
+polyAddDnMutable opsPtr =
+    polyBinaryOpMutable poly_addDn opsPtr
+    
+polyBinaryOpMutable binaryOp opsMutablePtr 
+        (PolyFP resFP) (PolyFP p1FP) (PolyFP p2FP) =
+    unsafeIOToST $
+    do
+    compareSP <- newStablePtr $ ()
+    _ <- withForeignPtr p1FP $ \p1P ->
+             withForeignPtr p2FP $ \p2P ->
+                 withForeignPtr resFP $ \resP ->
+                     binaryOp 0 compareSP opsMutablePtr resP p1P p2P
+    freeStablePtr compareSP
+    
 
 ----------------------------------------------------------------
 
