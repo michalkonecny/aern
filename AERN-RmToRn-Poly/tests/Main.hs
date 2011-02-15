@@ -23,8 +23,8 @@ import System.Mem
 main :: IO ()
 main = 
     do
---    testPureDCPolys
-    testMutableDCPolys
+    testPureDCPolys
+--    testMutableDCPolys
 --    testPureGCPolys
 --    testMutableGCPolys
 
@@ -72,10 +72,10 @@ testPureDCPolys =
     p1bb223d0 = DCPoly.polyAddUpPure (Size 2) (Power 0) opsPtr p1 pb223
     (maxArity, maxSize, maxDegree) = DCPoly.peekSizes p1
     constTerm = DCPoly.peekConst p1
-    bdupthp1bb223d0 = DCPoly.polyBoundUpThin opsPtr p1bb223d0
-    bddnthp1bb223d0 = DCPoly.polyBoundDnThin opsPtr p1bb223d0
-    bdupp1bb223d0 = DCPoly.polyBoundUp opsPtr p1bb223d0
-    bddnp1bb223d0 = DCPoly.polyBoundDn opsPtr p1bb223d0
+    bdupthp1bb223d0 = DCPoly.polyBoundUpThin opsPtr p1bb223
+    bddnthp1bb223d0 = DCPoly.polyBoundDnThin opsPtr p1bb223
+    bdupp1bb223d0 = DCPoly.polyBoundUp opsPtr p1bb223
+    bddnp1bb223d0 = DCPoly.polyBoundDn opsPtr p1bb223
 
 testMutableDCPolys :: IO ()
 testMutableDCPolys =
