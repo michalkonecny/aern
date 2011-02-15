@@ -541,9 +541,9 @@ polyBinaryOpPure binaryOp sample maxSize maxDeg opsPtr p1@(PolyFP p1FP) (PolyFP 
     radSP <- newStablePtr $ head [zero, sample]
     resP <- poly_newConstPoly zeroSP radSP (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     compareSP <- newStablePtr $ (NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample))
-    _ <- withForeignPtr p1FP $ \p1 ->
-             withForeignPtr p2FP $ \p2 ->
-                 binaryOp zeroSP compareSP opsPtr resP p1 p2
+    _ <- withForeignPtr p1FP $ \p1P ->
+             withForeignPtr p2FP $ \p2P ->
+                 binaryOp zeroSP compareSP opsPtr resP p1P p2P
     freeStablePtr compareSP
     resFP <- Conc.newForeignPtr resP (concFinalizerFreePoly resP)
     return $ PolyFP resFP
@@ -577,10 +577,10 @@ polyBinaryOpMutable binaryOp sample opsMutablePtr
     do
     zeroSP <- newStablePtr $ head [zero, sample]
     compareSP <- newStablePtr compareMutable
-    _ <- withForeignPtr p1FP $ \p1 ->
-             withForeignPtr p2FP $ \p2 ->
+    _ <- withForeignPtr p1FP $ \p1P ->
+             withForeignPtr p2FP $ \p2P ->
                  withForeignPtr resFP $ \resP ->
-                     binaryOp zeroSP compareSP opsMutablePtr resP p1 p2
+                     binaryOp zeroSP compareSP opsMutablePtr resP p1P p2P
     freeStablePtr compareSP
     where
     compareMutable v1M v2M =
