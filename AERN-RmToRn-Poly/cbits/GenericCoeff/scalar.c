@@ -9,7 +9,7 @@
 #include "GenericCoeff/poly.h"
 
 void
-ADD_COEFF_CODE(scaleTerms)(Ops_Pure * ops, Coeff c, Poly * p)
+ADD_COEFF_CODE(scaleTermsUsingPureOps)(Ops_Pure * ops, Coeff c, Poly * p)
 {
   Term * terms = p -> terms;
   Var pSize = p -> psize;
@@ -34,7 +34,7 @@ ADD_COEFF_CODE(scaleTerms)(Ops_Pure * ops, Coeff c, Poly * p)
 void
 ADD_COEFF_CODE(scaleUpThinUsingPureOps)(Coeff zero, Ops_Pure * ops, Coeff c, Poly * p)
 {
-  ADD_COEFF_CODE(scaleTerms)(ops, c, p); // scale term coefficients
+  ADD_COEFF_CODE(scaleTermsUsingPureOps)(ops, c, p); // scale term coefficients
   Coeff oldConstTerm = p -> constTerm;
   Coeff constTermScaledUp = CF_MUL_UP(ops, c, oldConstTerm); // scale constTerm up
   CF_FREE(oldConstTerm);
@@ -48,7 +48,7 @@ ADD_COEFF_CODE(scaleUpThinUsingPureOps)(Coeff zero, Ops_Pure * ops, Coeff c, Pol
 void
 ADD_COEFF_CODE(scaleDnThinUsingPureOps)(Coeff zero, Ops_Pure * ops, Coeff c, Poly * p)
 {
-  ADD_COEFF_CODE(scaleTerms)(ops, c, p); // scale term coefficients
+  ADD_COEFF_CODE(scaleTermsUsingPureOps)(ops, c, p); // scale term coefficients
   Coeff oldConstTerm = p -> constTerm;
   Coeff constTermScaledDn = CF_MUL_DN(ops, c, oldConstTerm); // scale constTerm down
   CF_FREE(oldConstTerm);
@@ -62,7 +62,7 @@ ADD_COEFF_CODE(scaleDnThinUsingPureOps)(Coeff zero, Ops_Pure * ops, Coeff c, Pol
 void
 ADD_COEFF_CODE(scaleEnclUsingPureOps)(Ops_Pure * ops, Coeff c, Poly * p)
 {
-  ADD_COEFF_CODE(scaleTerms)(ops, c, p); // scale non-constant terms
+  ADD_COEFF_CODE(scaleTermsUsingPureOps)(ops, c, p); // scale non-constant terms
 
   Coeff oldConstTerm = p -> constTerm;
   Coeff constTermScaledUp = CF_MUL_UP(ops, c, oldConstTerm);
