@@ -194,4 +194,22 @@ ADD_COEFF_CODE(boundUp)(Ops_Pure * ops, Poly * p);
 Coeff
 ADD_COEFF_CODE(boundDn)(Ops_Pure * ops, Poly * p);
 
+/*
+ * Scale p in place by c rounding upwards, collapsing errorTerm into constTerm.
+ */
+void
+ADD_COEFF_CODE(scaleUpThinUsingPureOps)(Coeff zero, Ops_Pure * ops, Coeff c, Poly * p);
+
+/*
+ * Scale p in place by c rounding downwards, collapsing errorTerm into constTerm.
+ */
+void
+ADD_COEFF_CODE(scaleDnThinUsingPureOps)(Coeff zero, Ops_Pure * ops, Coeff c, Poly * p);
+
+/*
+ * Scale p in place by c while increasing errorTerm to take rounding into account.
+ */
+void
+ADD_COEFF_CODE(scaleEnclUsingPureOps)(Ops_Pure * ops, Coeff c, Poly * p);
+
 #endif /* POLY_H_ */
