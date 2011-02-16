@@ -7,7 +7,7 @@
  * This file should differ from its GenericCoeff analogue
  * only in:
  *   * the following include line
- *   * by omitting the ...UsingMutableOps functions
+ *   * by omitting the ...UsingPureOps functions
  */
 #include "DoubleCoeff/coeff.h"
 #include "EvalExport_stub.h"
@@ -104,16 +104,16 @@ ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity);
  */
 
 void
-ADD_COEFF_CODE(addUpUsingPureOps)(Coeff zero, ComparisonOp compare,
-    Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2);
+ADD_COEFF_CODE(addUpUsingMutableOps)(Coeff zero, ComparisonOp compare,
+    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
 
 void
-ADD_COEFF_CODE(addDnUsingPureOps)(Coeff zero, ComparisonOp compare,
-    Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2);
+ADD_COEFF_CODE(addDnUsingMutableOps)(Coeff zero, ComparisonOp compare,
+    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
 
 void
-ADD_COEFF_CODE(addEnclUsingPureOps)(ComparisonOp compare, Ops_Pure * ops,
-    Poly *res, Poly * p1, Poly * p2);
+ADD_COEFF_CODE(addEnclUsingMutableOps)(ComparisonOp compare,
+    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
 
 typedef void * Value; // A Haskell value passed via StablePtr
 
