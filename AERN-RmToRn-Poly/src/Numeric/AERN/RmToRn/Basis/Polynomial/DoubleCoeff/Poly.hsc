@@ -188,7 +188,7 @@ projectionPolyMutable x maxArity maxSize maxDeg =
 
 ----------------------------------------------------------------
 
-foreign import ccall safe "addUpUsingPureOpsDblCf"
+foreign import ccall safe "addUpUsingMutableOpsDblCf"
         poly_addUp :: 
             CDouble ->
             (StablePtr ()) ->
@@ -198,7 +198,7 @@ foreign import ccall safe "addUpUsingPureOpsDblCf"
             (Ptr (Poly)) -> 
             IO ()
 
-foreign import ccall safe "addDnUsingPureOpsDblCf"
+foreign import ccall safe "addDnUsingMutableOpsDblCf"
         poly_addDn :: 
             CDouble ->
             (StablePtr ()) ->

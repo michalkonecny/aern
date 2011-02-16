@@ -170,10 +170,10 @@ testPureGCPolys =
     p1bb223d0 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 0) opsPtr p1 pb223
     (maxArity, maxSize, maxDegree) = GCPoly.peekSizes p1
     constTerm = GCPoly.peekConst p1
-    bdupthp1bb223d0 = GCPoly.polyBoundUpThin opsPtr p1bb223d0
-    bddnthp1bb223d0 = GCPoly.polyBoundDnThin opsPtr p1bb223d0
-    bdupp1bb223d0 = GCPoly.polyBoundUp opsPtr p1bb223d0
-    bddnp1bb223d0 = GCPoly.polyBoundDn opsPtr p1bb223d0
+    bdupthp1bb223d0 = GCPoly.polyBoundUpThin opsPtr p1bb223
+    bddnthp1bb223d0 = GCPoly.polyBoundDnThin opsPtr p1bb223
+    bdupp1bb223d0 = GCPoly.polyBoundUp opsPtr p1bb223
+    bddnp1bb223d0 = GCPoly.polyBoundDn opsPtr p1bb223
         
 testMutableGCPolys :: IO ()
 testMutableGCPolys =

@@ -151,7 +151,7 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
  * of the addition.
  */
 void
-ADD_COEFF_CODE(addTermsAndErrorBounds)(ComparisonOp compare, Ops_Pure * ops,
+ADD_COEFF_CODE(addTermsAndErrorBoundsUsingPureOps)(ComparisonOp compare, Ops_Pure * ops,
     Poly *res, Poly * p1, Poly * p2)
 {
 
@@ -345,7 +345,7 @@ void
 ADD_COEFF_CODE(addUpUsingPureOps)(Coeff zero, ComparisonOp compare,
     Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2)
 {
-  ADD_COEFF_CODE(addTermsAndErrorBounds)(compare, ops, res, p1, p2);
+  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingPureOps)(compare, ops, res, p1, p2);
 
   // compute the constant term coefficient rounding up:
   Coeff temp = CF_ADD_UP(ops, p1 -> constTerm, p2 -> constTerm);
@@ -363,7 +363,7 @@ void
 ADD_COEFF_CODE(addDnUsingPureOps)(Coeff zero, ComparisonOp compare,
     Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2)
 {
-  ADD_COEFF_CODE(addTermsAndErrorBounds)(compare, ops, res, p1, p2);
+  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingPureOps)(compare, ops, res, p1, p2);
 
   // compute the constant term coefficient rounding down:
   Coeff temp = CF_ADD_DN(ops, p1 -> constTerm, p2 -> constTerm);
@@ -381,7 +381,7 @@ void
 ADD_COEFF_CODE(addEnclUsingPureOps)(ComparisonOp compare, Ops_Pure * ops,
     Poly *res, Poly * p1, Poly * p2)
 {
-  ADD_COEFF_CODE(addTermsAndErrorBounds)(compare, ops, res, p1, p2);
+  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingPureOps)(compare, ops, res, p1, p2);
 
   // compute the constant term coefficient rounding up and down:
   res -> constTerm = CF_ADD_UP(ops, p1 -> constTerm, p2 -> constTerm);
