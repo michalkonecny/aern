@@ -126,7 +126,7 @@ mkOpsPure =
 
 ----------------------------------------------------------------
 
-foreign import ccall safe "freePolyDblCf"
+foreign import ccall unsafe "freePolyDblCf"
         poly_freePoly :: (Ptr (Poly)) -> IO ()  
 
 concFinalizerFreePoly :: (Ptr (Poly)) -> IO ()
@@ -188,7 +188,7 @@ projectionPolyMutable x maxArity maxSize maxDeg =
 
 ----------------------------------------------------------------
 
-foreign import ccall safe "addUpUsingMutableOpsDblCf"
+foreign import ccall unsafe "addUpUsingMutableOpsDblCf"
         poly_addUp :: 
             CDouble ->
             (StablePtr ()) ->
@@ -198,7 +198,7 @@ foreign import ccall safe "addUpUsingMutableOpsDblCf"
             (Ptr (Poly)) -> 
             IO ()
 
-foreign import ccall safe "addDnUsingMutableOpsDblCf"
+foreign import ccall unsafe "addDnUsingMutableOpsDblCf"
         poly_addDn :: 
             CDouble ->
             (StablePtr ()) ->
@@ -353,7 +353,7 @@ evalAtPtPowerBasis (PolyFP polyFP) vals one add mult cf2val =
 
 ----------------------------------------------------------------
 
-foreign import ccall safe "boundUpThinDblCf"
+foreign import ccall unsafe "boundUpThinDblCf"
     poly_boundUpThin ::
         (Ptr (Ops_Pure)) ->
         (Ptr (Poly)) -> 
@@ -366,7 +366,7 @@ polyBoundUpThin ::
 polyBoundUpThin opsPtr =
     polyEval poly_boundUpThin opsPtr
 
-foreign import ccall safe "boundDnThinDblCf"
+foreign import ccall unsafe "boundDnThinDblCf"
     poly_boundDnThin ::
         (Ptr (Ops_Pure)) ->
         (Ptr (Poly)) -> 
@@ -379,7 +379,7 @@ polyBoundDnThin ::
 polyBoundDnThin opsPtr =
     polyEval poly_boundDnThin opsPtr
 
-foreign import ccall safe "boundUpDblCf"
+foreign import ccall unsafe "boundUpDblCf"
     poly_boundUp ::
         (Ptr (Ops_Pure)) ->
         (Ptr (Poly)) -> 
@@ -392,7 +392,7 @@ polyBoundUp ::
 polyBoundUp opsPtr =
     polyEval poly_boundUp opsPtr
 
-foreign import ccall safe "boundDnDblCf"
+foreign import ccall unsafe "boundDnDblCf"
     poly_boundDn ::
         (Ptr (Ops_Pure)) ->
         (Ptr (Poly)) -> 
