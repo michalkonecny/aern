@@ -74,25 +74,19 @@ class (RoundedAdd t, CanBeMutable t) => RoundedAddInPlace t where
 propUpDnAddInPlace ::
     (NumOrd.PartialComparison t, RoundedAddInPlace t, Neg t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     NumOrd.PartialCompareEffortIndicator t, 
+    (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
     t -> t -> Bool
-propUpDnAddInPlace sample effortDistComp initEffort e1 e2 =
-    equalRoundingUpDnImprovement
+propUpDnAddInPlace sample initEffort e1 e2 =
+    equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        NumOrd.pLeqEff initEffort
     where
     addUpEffViaInPlace = mutable2EffToPure (addUpInPlaceEff sample)
     addDnEffViaInPlace = mutable2EffToPure (addDnInPlaceEff sample)
@@ -122,25 +116,19 @@ class (RoundedAddInPlace t,  RoundedSubtr t, NegInPlace t) => RoundedSubtrInPlac
 propUpDnSubtrInPlace ::
     (NumOrd.PartialComparison t, RoundedSubtrInPlace t, Neg t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     NumOrd.PartialCompareEffortIndicator t, 
+    (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
     t -> t -> Bool
-propUpDnSubtrInPlace sample effortDistComp initEffort e1 e2 =
-    equalRoundingUpDnImprovement
+propUpDnSubtrInPlace sample initEffort e1 e2 =
+    equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        NumOrd.pLeqEff initEffort
     where
     subtrUpEffViaInPlace = mutable2EffToPure (subtrUpInPlaceEff sample)
     subtrDnEffViaInPlace = mutable2EffToPure (subtrDnInPlaceEff sample)
@@ -163,25 +151,19 @@ class (RoundedAbs t, CanBeMutable t) => RoundedAbsInPlace t where
 propUpDnAbsInPlace ::
     (NumOrd.PartialComparison t, RoundedAbsInPlace t, Neg t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     NumOrd.PartialCompareEffortIndicator t, 
+    (NumOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
     t -> Bool
-propUpDnAbsInPlace sample effortDistComp initEffort e1 =
-    equalRoundingUpDnImprovement
+propUpDnAbsInPlace sample initEffort e1 =
+    equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        NumOrd.pLeqEff initEffort
     where
     absUpEffViaInPlace = mutable1EffToPure (absUpInPlaceEff sample)
     absDnEffViaInPlace = mutable1EffToPure (absDnInPlaceEff sample)
@@ -199,25 +181,19 @@ class (RoundedMultiply t, CanBeMutable t) => RoundedMultiplyInPlace t where
 propUpDnMultInPlace ::
     (NumOrd.PartialComparison t, RoundedMultiplyInPlace t, Neg t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     NumOrd.PartialCompareEffortIndicator t, 
+    (NumOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
     t -> t -> Bool
-propUpDnMultInPlace sample effortDistComp initEffort e1 e2 =
-    equalRoundingUpDnImprovement
+propUpDnMultInPlace sample initEffort e1 e2 =
+    equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        NumOrd.pLeqEff initEffort
     where
     multUpEffViaInPlace = mutable2EffToPure (multUpInPlaceEff sample)
     multDnEffViaInPlace = mutable2EffToPure (multDnInPlaceEff sample)
@@ -272,25 +248,19 @@ class (RoundedPowerToNonnegInt t, CanBeMutable t) => RoundedPowerToNonnegIntInPl
 propUpDnPowerToNonnegInPlace ::
     (NumOrd.PartialComparison t, RoundedPowerToNonnegIntInPlace t, Neg t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (PowerToNonnegIntEffortIndicator t),
      EffortIndicator (PowerToNonnegIntEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     NumOrd.PartialCompareEffortIndicator t, 
+    (NumOrd.PartialCompareEffortIndicator t, 
      PowerToNonnegIntEffortIndicator t) -> 
     t -> Int -> Bool
-propUpDnPowerToNonnegInPlace sample effortDistComp initEffort e1 n =
-    equalRoundingUpDnImprovement
+propUpDnPowerToNonnegInPlace sample initEffort e1 n =
+    equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        NumOrd.pLeqEff initEffort
     where
     powerToNonnegIntUpEffViaInPlace = 
         mutableNonmutEffToPure (powerToNonnegIntUpInPlaceEff sample)
@@ -314,28 +284,22 @@ class (RoundedDivide t, CanBeMutable t) => RoundedDivideInPlace t where
 propUpDnDivInPlace ::
     (NumOrd.PartialComparison t, RoundedDivideInPlace t, Neg t,
      Show t, HasZero t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     NumOrd.PartialCompareEffortIndicator t, 
+    (NumOrd.PartialCompareEffortIndicator t, 
      DivEffortIndicator t) -> 
     t -> t -> Bool
-propUpDnDivInPlace sample effortDistComp initEffort@(_, effComp, _) e1 e2 =
+propUpDnDivInPlace sample initEffort@(effComp, _) e1 e2 =
     let ?pCompareEffort = effComp in
     case e2 ==? zero of
         Just False ->
-            equalRoundingUpDnImprovement
+            equalRoundingUpDn
                 expr1Up expr1Dn expr2Up expr2Dn 
-                NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+                NumOrd.pLeqEff initEffort
         _ -> True
     where
     divUpEffViaInPlace = mutable2EffToPure (divUpInPlaceEff sample)
