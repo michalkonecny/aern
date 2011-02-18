@@ -571,6 +571,38 @@ polyAddUpMutableUsingMutableOps ::
 polyAddUpMutableUsingMutableOps sample opsMutablePtr = 
     polyBinaryOpMutable poly_addUpUsingMutableOps sample opsMutablePtr
 
+----------------------------------------------------------------
+
+foreign import ccall safe "scaleUpThinUsingMutableOpsGenCf"
+        poly_scaleUpThinUsingMutableOps :: 
+            (StablePtr cf) ->
+            (Ptr (Ops_Mutable s cf)) ->
+            (StablePtr cf) ->
+            (Ptr (Poly (Mutable cf s))) -> 
+            IO ()
+
+polyScaleUpMutableUsingMutableOps ::
+    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
+    cf -> 
+    (Ptr (Ops_Mutable s cf)) ->
+    cf ->
+    PolyMutableFP cf s ->
+    ST s ()
+polyScaleUpMutableUsingMutableOps sample opsMutablePtr = 
+    polyScalingOpMutable poly_scaleUpThinUsingMutableOps sample opsMutablePtr
+
+polyScalingOpMutable scalingOp sample opsMutablePtr 
+        scalingFactor (PolyMutableFP pFP) =
+    unsafeIOToST $
+    do
+    zeroSP <- newStablePtr $ head [zero, sample]
+    factorSP <- newStablePtr $ scalingFactor
+    _ <- withForeignPtr pFP $ \pP ->
+        scalingOp zeroSP opsMutablePtr factorSP pP
+    return ()
+
+----------------------------------------------------------------
+
 polyBinaryOpMutable binaryOp sample opsMutablePtr 
         (PolyMutableFP resFP) (PolyMutableFP p1FP) (PolyMutableFP p2FP) =
     unsafeIOToST $
