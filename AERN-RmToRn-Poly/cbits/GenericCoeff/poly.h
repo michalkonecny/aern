@@ -2,6 +2,7 @@
 #define POLY_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "GenericCoeff/coeff.h"
 #include "EvalExport_stub.h"
@@ -211,5 +212,21 @@ ADD_COEFF_CODE(scaleDnThinUsingPureOps)(Coeff zero, Ops_Pure * ops, Coeff c, Pol
  */
 void
 ADD_COEFF_CODE(scaleEnclUsingPureOps)(Ops_Pure * ops, Coeff c, Poly * p);
+
+void
+ADD_COEFF_CODE(scaleUpThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, Coeff c, Poly * p);
+
+void
+ADD_COEFF_CODE(scaleDnThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, Coeff c, Poly * p);
+
+void
+ADD_COEFF_CODE(scaleEnclUsingMutableOps)(Ops_Mutable * ops, Coeff c, Poly * p);
+
+/*
+ * returns pointer to array of size coeffCount with true in the positions of the
+ * maxSize number of coefficients of greatest absolute value
+ */
+bool *
+ADD_COEFF_CODE(markLargestCoefficients)(Coeff ** coeffs, Size coeffCount, Size maxSize);
 
 #endif /* POLY_H_ */

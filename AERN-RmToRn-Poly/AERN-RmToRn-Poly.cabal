@@ -54,6 +54,7 @@ Library
     cbits/GenericCoeff/evaluation.c
     cbits/GenericCoeff/addition.c
     cbits/GenericCoeff/bounds.c
+    cbits/GenericCoeff/scalar.c
     cbits/DoubleCoeff/poly.c
     cbits/DoubleCoeff/evaluation.c
     cbits/DoubleCoeff/addition.c
