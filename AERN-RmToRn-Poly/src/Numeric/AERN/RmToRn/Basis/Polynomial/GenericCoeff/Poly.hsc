@@ -22,6 +22,8 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly
 )
 where
 
+import Numeric.AERN.Misc.Debug
+
 import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
 
 import Numeric.AERN.Basics.PartialOrdering
@@ -595,10 +597,15 @@ polyScalingOpMutable scalingOp sample opsMutablePtr
         scalingFactor (PolyMutableFP pFP) =
     unsafeIOToST $
     do
-    zeroSP <- newStablePtr $ head [zero, sample]
-    factorSP <- newStablePtr $ scalingFactor
-    _ <- withForeignPtr pFP $ \pP ->
-        scalingOp zeroSP opsMutablePtr factorSP pP
+    zeroSP <- unsafePrint "1" $ newStablePtr $ unsafePrint "2" $ head [unsafePrint "3" $ zero, sample]
+    factorSP <- unsafePrint "4" $ newStablePtr $ unsafePrint "5" $ scalingFactor
+    _ <- withForeignPtr (unsafePrint "6" $ pFP) $ \pP ->
+        unsafePrint "7" $ 
+          scalingOp 
+            (unsafePrint "8" $ zeroSP) 
+            (unsafePrint "9" $ opsMutablePtr) 
+            (unsafePrint "10" $ factorSP)
+            (unsafePrint "11" $ pP)
     return ()
 
 ----------------------------------------------------------------
