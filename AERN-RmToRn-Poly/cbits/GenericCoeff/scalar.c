@@ -9,19 +9,26 @@
 #include "GenericCoeff/poly.h"
 
 void
-ADD_COEFF_CODE(scaleTermsUsingMutableOps)(Ops_Mutable * ops, Coeff c, Poly * p)
+ADD_COEFF_CODE(scaleTermsUsingMutableOps)(Ops_Mutable * ops, CoeffMutable c, Poly * p)
 {
+  printf("a\n");
   Var pSize = p -> psize;
+  printf("ab\n");
   if (pSize > 0) // any terms to scale?
   {
+	printf("abb\n");
     Term * terms = p -> terms;
-
+    printf("abbb\n");
     CoeffMutable coeffScaledDn = CFM_NEW(ops, CFM_SAMPLE(ops));
+    printf("b\n");
     CoeffMutable maxError = CFM_NEW(ops, CFM_SAMPLE(ops));
+    printf("c\n");
     CoeffMutable errorBound = CFM_NEW(ops, CFM_SAMPLE(ops));
+    printf("d\n");
     for (int i = 0; i < pSize; i++)
     {
       CFM_MUL_DN(ops, coeffScaledDn, c, terms[i].coeff);
+      printf("e\n");
       CFM_MUL_UP(ops, terms[i].coeff, c, terms[i].coeff); // scale coefficient
       // note that we choose the upward rounded scaled constant term, can cause upward drift
       CFM_SUB_UP(ops, maxError, terms[i].coeff, coeffScaledDn); // bound rounding error
@@ -29,13 +36,14 @@ ADD_COEFF_CODE(scaleTermsUsingMutableOps)(Ops_Mutable * ops, Coeff c, Poly * p)
     }
     CFM_FREE(coeffScaledDn);
     CFM_FREE(maxError);
-    CFM_ASSIGN_VAL(ops, p -> errorBound, errorBound); // account for rounding errors
+    CFM_ASSIGN(ops, p -> errorBound, errorBound); // account for rounding errors
     CFM_FREE(errorBound);
   }
+  printf("f\n");
 }
 
 void
-ADD_COEFF_CODE(scaleUpThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, Coeff c, Poly * p)
+ADD_COEFF_CODE(scaleUpThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, CoeffMutable c, Poly * p)
 {
   ADD_COEFF_CODE(scaleTermsUsingMutableOps)(ops, c, p); // scale non-constant terms
   CoeffMutable constTerm = CFM_NEW(ops, CFM_SAMPLE(ops));
@@ -46,7 +54,7 @@ ADD_COEFF_CODE(scaleUpThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, Coeff 
 }
 
 void
-ADD_COEFF_CODE(scaleDnThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, Coeff c, Poly * p)
+ADD_COEFF_CODE(scaleDnThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, CoeffMutable c, Poly * p)
 {
   ADD_COEFF_CODE(scaleTermsUsingMutableOps)(ops, c, p); // scale non-constant terms
   CoeffMutable constTerm = CFM_NEW(ops, CFM_SAMPLE(ops));
@@ -57,7 +65,7 @@ ADD_COEFF_CODE(scaleDnThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, Coeff 
 }
 
 void
-ADD_COEFF_CODE(scaleEnclUsingMutableOps)(Ops_Mutable * ops, Coeff c, Poly * p)
+ADD_COEFF_CODE(scaleEnclUsingMutableOps)(Ops_Mutable * ops, CoeffMutable c, Poly * p)
 {
   ADD_COEFF_CODE(scaleTermsUsingMutableOps)(ops, c, p); // scale non-constant terms
   CoeffMutable oldConstTerm = CFM_NEW(ops, CFM_SAMPLE(ops));
