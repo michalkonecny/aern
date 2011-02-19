@@ -11,24 +11,16 @@
 void
 ADD_COEFF_CODE(scaleTermsUsingMutableOps)(Ops_Mutable * ops, CoeffMutable c, Poly * p)
 {
-  printf("a\n");
   Var pSize = p -> psize;
-  printf("ab\n");
   if (pSize > 0) // any terms to scale?
   {
-	printf("abb\n");
     Term * terms = p -> terms;
-    printf("abbb\n");
     CoeffMutable coeffScaledDn = CFM_NEW(ops, CFM_SAMPLE(ops));
-    printf("b\n");
     CoeffMutable maxError = CFM_NEW(ops, CFM_SAMPLE(ops));
-    printf("c\n");
     CoeffMutable errorBound = CFM_NEW(ops, CFM_SAMPLE(ops));
-    printf("d\n");
     for (int i = 0; i < pSize; i++)
     {
       CFM_MUL_DN(ops, coeffScaledDn, c, terms[i].coeff);
-      printf("e\n");
       CFM_MUL_UP(ops, terms[i].coeff, c, terms[i].coeff); // scale coefficient
       // note that we choose the upward rounded scaled constant term, can cause upward drift
       CFM_SUB_UP(ops, maxError, terms[i].coeff, coeffScaledDn); // bound rounding error
@@ -39,7 +31,6 @@ ADD_COEFF_CODE(scaleTermsUsingMutableOps)(Ops_Mutable * ops, CoeffMutable c, Pol
     CFM_ASSIGN(ops, p -> errorBound, errorBound); // account for rounding errors
     CFM_FREE(errorBound);
   }
-  printf("f\n");
 }
 
 void
