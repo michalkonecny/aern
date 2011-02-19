@@ -579,7 +579,7 @@ foreign import ccall safe "scaleUpThinUsingMutableOpsGenCf"
         poly_scaleUpThinUsingMutableOps :: 
             (StablePtr cf) ->
             (Ptr (Ops_Mutable s cf)) ->
-            (StablePtr cf) ->
+            (StablePtr (Mutable cf s)) ->
             (Ptr (Poly (Mutable cf s))) -> 
             IO ()
 
@@ -593,20 +593,16 @@ polyScaleUpMutableUsingMutableOps ::
 polyScaleUpMutableUsingMutableOps sample opsMutablePtr = 
     polyScalingOpMutable poly_scaleUpThinUsingMutableOps sample opsMutablePtr
 
-polyScalingOpMutable scalingOp sample opsMutablePtr 
-        scalingFactor (PolyMutableFP pFP) =
-    unsafeIOToST $
+polyScalingOpMutable scalingOp sample opsMutablePtr scalingFactor (PolyMutableFP pFP) =
     do
-    zeroSP <- unsafePrint "1" $ newStablePtr $ unsafePrint "2" $ head [unsafePrint "3" $ zero, sample]
-    factorSP <- unsafePrint "4" $ newStablePtr $ unsafePrint "5" $ scalingFactor
-    _ <- withForeignPtr (unsafePrint "6" $ pFP) $ \pP ->
-        unsafePrint "7" $ 
-          scalingOp 
-            (unsafePrint "8" $ zeroSP) 
-            (unsafePrint "9" $ opsMutablePtr) 
-            (unsafePrint "10" $ factorSP)
-            (unsafePrint "11" $ pP)
-    return ()
+    sfM <- unsafeMakeMutable scalingFactor 
+    unsafeIOToST $
+      do
+      zeroSP <- newStablePtr $ head [zero, sample]
+      factorSP <- newStablePtr sfM
+      _ <- withForeignPtr pFP $ \pP ->
+            scalingOp zeroSP opsMutablePtr factorSP pP
+      return ()
 
 ----------------------------------------------------------------
 

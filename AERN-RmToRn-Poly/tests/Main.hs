@@ -191,14 +191,14 @@ testMutableGCPolys =
     putStrLn $ "p23s1 = " ++ showP p23s1
     putStrLn $ "pb223s1 = " ++ showP pb223s1
     putStrLn $ "pb223d0 = " ++ showP pb223d0
-    putStrLn $ "sp2 = " ++ show sp2
+    putStrLn $ "scaleUpThin 0.1 x = " ++ show zpox
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True
     showCoeffInternals = False
     opsPtr = GCPoly.newOpsPureArithUpDnDefaultEffort sampleD
     opsMutablePtr = GCPoly.newOpsMutableArithUpDnDefaultEffort sampleD
-    [p1,p2,p3,p11,p12,p22,p1b23,pb223,p23s1,pb223s1, pb223d0,sp2] = runST $
+    [p1,p2,p3,p11,p12,p22,p1b23,pb223,p23s1,pb223s1, pb223d0,zpox] = runST $
         do
         let mkConst c = GCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 10) (Power 3)
         let mkVar n = GCPoly.projectionPolyMutable sampleD (Var n) (Var 2) (Size 10) (Power 3)
@@ -225,8 +225,8 @@ testMutableGCPolys =
         addUp pb223s1M p22M p3M
         pb223d0M <- GCPoly.constPolyMutable (0::Double) 0 (Var 2) (Size 2) (Power 0)
         addUp pb223d0M p22M p3M
-        sp2M <- mkConst 0
-        scaleUpThin 0.1 sp2M
-        mapM (GCPoly.unsafeReadPolyMutable sampleD) [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, sp2M]
-    
+        zpoxM <- mkVar 0
+        scaleUpThin 0.1 zpoxM
+        mapM (GCPoly.unsafeReadPolyMutable sampleD) [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, zpoxM]
+
     
