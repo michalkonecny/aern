@@ -214,13 +214,13 @@ void
 ADD_COEFF_CODE(scaleEnclUsingPureOps)(Ops_Pure * ops, Coeff c, Poly * p);
 
 void
-ADD_COEFF_CODE(scaleUpThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, Coeff c, Poly * p);
+ADD_COEFF_CODE(scaleUpThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, CoeffMutable c, Poly * p);
 
 void
-ADD_COEFF_CODE(scaleDnThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, Coeff c, Poly * p);
+ADD_COEFF_CODE(scaleDnThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, CoeffMutable c, Poly * p);
 
 void
-ADD_COEFF_CODE(scaleEnclUsingMutableOps)(Ops_Mutable * ops, Coeff c, Poly * p);
+ADD_COEFF_CODE(scaleEnclUsingMutableOps)(Ops_Mutable * ops, CoeffMutable c, Poly * p);
 
 /*
  * returns pointer to array of size coeffCount with true in the positions of the

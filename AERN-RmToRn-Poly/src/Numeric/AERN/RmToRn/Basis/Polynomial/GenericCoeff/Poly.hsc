@@ -583,6 +583,21 @@ foreign import ccall safe "scaleUpThinUsingMutableOpsGenCf"
             (Ptr (Poly (Mutable cf s))) -> 
             IO ()
 
+foreign import ccall safe "scaleDnThinUsingMutableOpsGenCf"
+        poly_scaleDnThinUsingMutableOps :: 
+            (StablePtr cf) ->
+            (Ptr (Ops_Mutable s cf)) ->
+            (StablePtr (Mutable cf s)) ->
+            (Ptr (Poly (Mutable cf s))) -> 
+            IO ()
+
+foreign import ccall safe "scaleEnclUsingMutableOpsGenCf"
+        poly_scaleEnclUsingMutableOps :: 
+            (Ptr (Ops_Mutable s cf)) ->
+            (StablePtr (Mutable cf s)) ->
+            (Ptr (Poly (Mutable cf s))) -> 
+            IO ()
+
 polyScaleUpMutableUsingMutableOps ::
     (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     cf -> 
@@ -593,6 +608,27 @@ polyScaleUpMutableUsingMutableOps ::
 polyScaleUpMutableUsingMutableOps sample opsMutablePtr = 
     polyScalingOpMutable poly_scaleUpThinUsingMutableOps sample opsMutablePtr
 
+polyScaleDnMutableUsingMutableOps ::
+    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
+    cf -> 
+    (Ptr (Ops_Mutable s cf)) ->
+    cf ->
+    PolyMutableFP cf s ->
+    ST s ()
+polyScaleDnMutableUsingMutableOps sample opsMutablePtr = 
+    polyScalingOpMutable poly_scaleDnThinUsingMutableOps sample opsMutablePtr
+
+polyScaleEnclMutableUsingMutableOps ::
+    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
+    (Ptr (Ops_Mutable s cf)) ->
+    cf ->
+    PolyMutableFP cf s ->
+    ST s ()
+polyScaleEnclMutableUsingMutableOps opsMutablePtr = 
+    polyScalingOpMutableNoZero poly_scaleEnclUsingMutableOps opsMutablePtr
+
+----------------------------------------------------------------
+
 polyScalingOpMutable scalingOp sample opsMutablePtr scalingFactor (PolyMutableFP pFP) =
     do
     sfM <- unsafeMakeMutable scalingFactor 
@@ -602,6 +638,18 @@ polyScalingOpMutable scalingOp sample opsMutablePtr scalingFactor (PolyMutableFP
       factorSP <- newStablePtr sfM
       _ <- withForeignPtr pFP $ \pP ->
             scalingOp zeroSP opsMutablePtr factorSP pP
+      return ()
+
+----------------------------------------------------------------
+
+polyScalingOpMutableNoZero scalingOp opsMutablePtr scalingFactor (PolyMutableFP pFP) =
+    do
+    sfM <- unsafeMakeMutable scalingFactor 
+    unsafeIOToST $
+      do
+      factorSP <- newStablePtr sfM
+      _ <- withForeignPtr pFP $ \pP ->
+            scalingOp opsMutablePtr factorSP pP
       return ()
 
 ----------------------------------------------------------------
