@@ -44,25 +44,19 @@ class (RoundedExponentiation t, CanBeMutable t) => RoundedExponentiationInPlace 
 propInOutExpInPlace ::
     (RefOrd.PartialComparison t, RoundedExponentiationInPlace t, Neg t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (ExpEffortIndicator t),
      EffortIndicator (ExpEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     RefOrd.PartialCompareEffortIndicator t, 
+    (RefOrd.PartialCompareEffortIndicator t, 
      ExpEffortIndicator t) -> 
     t -> Bool
-propInOutExpInPlace sample effortDistComp initEffort e1 =
-    equalRoundingUpDnImprovement
+propInOutExpInPlace sample initEffort e1 =
+    equalRoundingUpDn
         expr1In expr1Out expr2In expr2Out 
-        RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        RefOrd.pLeqEff initEffort
     where
     expInEffViaInPlace = mutable1EffToPure (expInInPlaceEff sample)
     expOutEffViaInPlace = mutable1EffToPure (expOutInPlaceEff sample)

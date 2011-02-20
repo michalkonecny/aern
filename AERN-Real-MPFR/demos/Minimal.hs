@@ -23,26 +23,21 @@ import Numeric.AERN.RealArithmetic.Basis.MPFR
 import Numeric.AERN.RealArithmetic.Interval.MPFR
 import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
 
-import Numeric.AERN.Basics.CInterval
+import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.ShowInternals
 
 import Control.Concurrent
 
 main =
     do
---    setMachineRoundingModeUp 
-    -- not sure why the above is sometimes needed...
-    -- the unsafePerformIO embedded in rounded ops sometimes 
-    -- does not work when run standalone, 
-    -- but they seem to work when run from ghci 
     putStrLn $ "oo - oo = " ++ showInternals shouldShowInternals inftyMinusInftyOut
     putStrLn $ "0</>0 = " ++ showInternals shouldShowInternals zeroOverZeroOut
     putStrLn $ "0>/<0 = " ++ showInternals shouldShowInternals zeroOverZeroIn
---    putStrLn $ "exp 1 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp1efforts)
---    putStrLn $ "exp 3 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp3efforts)
---    putStrLn $ "exp 10 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp10efforts)
---    putStrLn $ "exp 100 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp100efforts)
---    putStrLn $ "exp 1000 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp1000efforts)
+    putStrLn $ "exp 1 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp1efforts)
+    putStrLn $ "exp 3 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp3efforts)
+    putStrLn $ "exp 10 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp10efforts)
+    putStrLn $ "exp 100 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp100efforts)
+    putStrLn $ "exp 1000 = \n" ++ (unlines $ map (showInternals shouldShowInternals) exp1000efforts)
     return ()
 
 shouldShowInternals = (30,False)

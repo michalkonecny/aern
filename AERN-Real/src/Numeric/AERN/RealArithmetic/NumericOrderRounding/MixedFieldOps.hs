@@ -83,32 +83,25 @@ propMixedAddEqualsConvert ::
     (NumOrd.PartialComparison t, Convertible tn t,
      RoundedMixedAdd t tn, RoundedAdd t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), 
-     HasInfinities (Distance t), HasZero (Distance t),
      Show (MixedAddEffortIndicator t tn),
      EffortIndicator (MixedAddEffortIndicator t tn),
      Show (ConvertEffortIndicator tn t),
      EffortIndicator (ConvertEffortIndicator tn t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t -> tn ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t,
-     NumOrd.PartialCompareEffortIndicator t,
+    (NumOrd.PartialCompareEffortIndicator t,
      (MixedAddEffortIndicator t tn,      
       AddEffortIndicator t,
       ConvertEffortIndicator tn t)) -> 
     t -> tn -> Bool
-propMixedAddEqualsConvert sampleN sample effortDistComp initEffort d n =
-    equalRoundingUpDnImprovement
+propMixedAddEqualsConvert sampleN sample initEffort d n =
+    equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        NumOrd.pLeqEff initEffort
     where
     expr1Up (effMAdd,_,_) =
         let (+^|) = mixedAddUpEff effMAdd in d +^| n
@@ -180,9 +173,6 @@ propMixedMultEqualsConvert ::
      Convertible tn t,
      RoundedMixedMultiply t tn, RoundedMultiply t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), 
-     HasInfinities (Distance t), HasZero (Distance t),
      Show (MixedMultEffortIndicator t tn),
      EffortIndicator (MixedMultEffortIndicator t tn),
      Show (ConvertEffortIndicator tn t),
@@ -191,24 +181,20 @@ propMixedMultEqualsConvert ::
      EffortIndicator (MultEffortIndicator t),
      Show (NumOrd.MinmaxEffortIndicator t),
      EffortIndicator (NumOrd.MinmaxEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t -> tn ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     NumOrd.PartialCompareEffortIndicator t,
+    (NumOrd.PartialCompareEffortIndicator t,
      (MixedMultEffortIndicator t tn,      
       (MultEffortIndicator t,
        ConvertEffortIndicator tn t,
        NumOrd.MinmaxEffortIndicator t))) -> 
     t -> tn -> Bool
-propMixedMultEqualsConvert sample sampleN effortDistComp initEffort d n =
-    equalRoundingUpDnImprovement
+propMixedMultEqualsConvert sample sampleN initEffort d n =
+    equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        NumOrd.pLeqEff initEffort
     where
     expr1Up (effMMult,_) =
         let (*^|) = mixedMultUpEff effMMult in d *^| n
@@ -312,9 +298,6 @@ propMixedDivEqualsConvert ::
      RoundedMixedDivide t tn, RoundedDivide t,
      Show t, 
      HasZero t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), 
-     HasInfinities (Distance t), HasZero (Distance t),
      Show (MixedDivEffortIndicator t tn),
      EffortIndicator (MixedDivEffortIndicator t tn),
      Show (ConvertEffortIndicator tn t),
@@ -323,25 +306,21 @@ propMixedDivEqualsConvert ::
      EffortIndicator (DivEffortIndicator t),
      Show (NumOrd.MinmaxEffortIndicator t),
      EffortIndicator (NumOrd.MinmaxEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t -> tn ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t,
-     NumOrd.PartialCompareEffortIndicator t,
+    (NumOrd.PartialCompareEffortIndicator t,
      (MixedDivEffortIndicator t tn,      
       (DivEffortIndicator t,
        ConvertEffortIndicator tn t,
        NumOrd.MinmaxEffortIndicator t))) -> 
     t -> tn -> Bool
-propMixedDivEqualsConvert sample sampleN effortDistComp initEffort@(_,effComp,(_,(_,effConv,_))) d n
+propMixedDivEqualsConvert sample sampleN initEffort@(effComp,(_,(_,effConv,_))) d n
     | awayFromZero =
-            equalRoundingUpDnImprovement
+            equalRoundingUpDn
                 expr1Up expr1Dn expr2Up expr2Dn 
-                NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+                NumOrd.pLeqEff initEffort
     | otherwise = True
     where
     awayFromZero =
