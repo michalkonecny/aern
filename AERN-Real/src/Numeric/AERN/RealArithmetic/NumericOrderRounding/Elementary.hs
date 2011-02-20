@@ -78,7 +78,20 @@ propExpOfNegRecip _ initEffort e1 =
         prod
     expr2Dn (effExp, effMult) =
         let (*.) = multDnEff effMult in
-        (expDnEff effExp e1) *. (expDnEff effExp (neg e1))
+        let expE1 = expDnEff effExp e1 in
+        let negE1 = (neg e1) in
+        let expNegE1 = expDnEff effExp negE1 in
+        let prod = expE1 *. expNegE1 in
+--        unsafePrintReturn
+--        (
+--          "propExpOfNegRecip: expr2Dn: e1 = " ++ show e1 
+--          ++ "; expE1 = " ++ show expE1 
+--          ++ "; negE1 = " ++ show negE1 
+--          ++ "; expNegE1 = " ++ show expNegE1 
+--          ++ "; prod = " ++ showUsingShowInternals prod
+--          ++ "; result = " 
+--        )$
+        prod
 
 -- | @e^(b+c) = e^b * e^c@
 propExpOfAddToMult ::
