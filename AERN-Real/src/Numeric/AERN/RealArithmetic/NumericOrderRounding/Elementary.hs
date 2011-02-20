@@ -44,27 +44,21 @@ propExpOfNegRecip ::
      RoundedExponentiation t, RoundedMultiply t, Neg t, HasOne t,
      Show t,
      ShowInternals t,
-     HasDistance t,  Show (Distance t), HasInfinities (Distance t), HasZero (Distance t),  
-     NumOrd.PartialComparison (Distance t),
      Show (ExpEffortIndicator t),
      EffortIndicator (ExpEffortIndicator t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t,
-     NumOrd.PartialCompareEffortIndicator t, 
+    (NumOrd.PartialCompareEffortIndicator t, 
      (ExpEffortIndicator t, MultEffortIndicator t)) -> 
     t -> Bool
-propExpOfNegRecip _ effortDistComp initEffort e1 =
-    equalRoundingUpDnImprovement
+propExpOfNegRecip _ initEffort e1 =
+    equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        NumOrd.pLeqEff initEffort
     where
     expr1Up (effExp, effMult) = one
     expr1Dn (effExp, effMult) = one
@@ -84,36 +78,43 @@ propExpOfNegRecip _ effortDistComp initEffort e1 =
         prod
     expr2Dn (effExp, effMult) =
         let (*.) = multDnEff effMult in
-        (expDnEff effExp e1) *. (expDnEff effExp (neg e1))
+        let expE1 = expDnEff effExp e1 in
+        let negE1 = (neg e1) in
+        let expNegE1 = expDnEff effExp negE1 in
+        let prod = expE1 *. expNegE1 in
+--        unsafePrintReturn
+--        (
+--          "propExpOfNegRecip: expr2Dn: e1 = " ++ show e1 
+--          ++ "; expE1 = " ++ show expE1 
+--          ++ "; negE1 = " ++ show negE1 
+--          ++ "; expNegE1 = " ++ show expNegE1 
+--          ++ "; prod = " ++ showUsingShowInternals prod
+--          ++ "; result = " 
+--        )$
+        prod
 
 -- | @e^(b+c) = e^b * e^c@
 propExpOfAddToMult ::
     (NumOrd.PartialComparison t,
      RoundedExponentiation t, RoundedMultiply t,  RoundedAdd t,
      Show t,
-     HasDistance t,  Show (Distance t), HasInfinities (Distance t), HasZero (Distance t),  
-     NumOrd.PartialComparison (Distance t),
      Show (ExpEffortIndicator t),
      EffortIndicator (ExpEffortIndicator t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
      EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t,
-     NumOrd.PartialCompareEffortIndicator t, 
+    (NumOrd.PartialCompareEffortIndicator t, 
      (ExpEffortIndicator t, MultEffortIndicator t, AddEffortIndicator t)) -> 
     t -> t -> Bool
-propExpOfAddToMult _ effortDistComp initEffort e1 e2 =
-    equalRoundingUpDnImprovement
+propExpOfAddToMult _ initEffort e1 e2 =
+    equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
-        NumOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        NumOrd.pLeqEff initEffort
     where
     expr1Up (effExp, effMult, effAdd) =
         let (+^) = addUpEff effAdd in

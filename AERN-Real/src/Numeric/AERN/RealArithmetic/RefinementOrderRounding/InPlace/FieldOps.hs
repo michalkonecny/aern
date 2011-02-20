@@ -74,25 +74,19 @@ class (RoundedAdd t, CanBeMutable t) => RoundedAddInPlace t where
 propInOutAddInPlace ::
     (RefOrd.PartialComparison t, RoundedAddInPlace t, Neg t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     RefOrd.PartialCompareEffortIndicator t, 
+    (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedPair t) -> Bool
-propInOutAddInPlace sample effortDistComp initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
-    roundedImprovingInPlace2ConsistentWithPure
+propInOutAddInPlace sample initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
+    roundedInPlace2ConsistentWithPure
         (addInInPlaceEff sample) (addOutInPlaceEff sample) addInEff addOutEff
-        RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        RefOrd.pLeqEff initEffort
         e1 e2
 
 class (RoundedAddInPlace t,  RoundedSubtr t, NegInPlace t) => RoundedSubtrInPlace t where
@@ -112,25 +106,19 @@ class (RoundedAddInPlace t,  RoundedSubtr t, NegInPlace t) => RoundedSubtrInPlac
 propInOutSubtrInPlace ::
     (RefOrd.PartialComparison t, RoundedSubtrInPlace t, Neg t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     RefOrd.PartialCompareEffortIndicator t, 
+    (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedPair t) -> Bool
-propInOutSubtrInPlace sample effortDistComp initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
-    roundedImprovingInPlace2ConsistentWithPure
+propInOutSubtrInPlace sample initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
+    roundedInPlace2ConsistentWithPure
         (subtrInInPlaceEff sample) (subtrOutInPlaceEff sample) subtrInEff subtrOutEff
-        RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        RefOrd.pLeqEff initEffort
         e1 e2
 
 class (RoundedAbs t, CanBeMutable t) => RoundedAbsInPlace t where
@@ -142,25 +130,19 @@ class (RoundedAbs t, CanBeMutable t) => RoundedAbsInPlace t where
 propInOutAbsInPlace ::
     (RefOrd.PartialComparison t, RoundedAbsInPlace t, Neg t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     RefOrd.PartialCompareEffortIndicator t, 
+    (RefOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedSingleton t) -> Bool
-propInOutAbsInPlace sample effortDistComp initEffort (RefOrd.UniformlyOrderedSingleton e) =
-    roundedImprovingInPlace1ConsistentWithPure
+propInOutAbsInPlace sample initEffort (RefOrd.UniformlyOrderedSingleton e) =
+    roundedInPlace1ConsistentWithPure
         (absInInPlaceEff sample) (absOutInPlaceEff sample) absInEff absOutEff
-        RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        RefOrd.pLeqEff initEffort
         e
 
 
@@ -173,25 +155,19 @@ class (RoundedMultiply t, CanBeMutable t) => RoundedMultiplyInPlace t where
 propInOutMultInPlace ::
     (RefOrd.PartialComparison t, RoundedMultiplyInPlace t, Neg t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     RefOrd.PartialCompareEffortIndicator t, 
+    (RefOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedPair t) -> Bool
-propInOutMultInPlace sample effortDistComp initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
-    roundedImprovingInPlace2ConsistentWithPure
+propInOutMultInPlace sample initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
+    roundedInPlace2ConsistentWithPure
         (multInInPlaceEff sample) (multOutInPlaceEff sample) multInEff multOutEff
-        RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        RefOrd.pLeqEff initEffort
         e1 e2
 
 powerToNonnegIntInInPlaceEffFromMult ::
@@ -222,28 +198,22 @@ class (RoundedPowerToNonnegInt t, CanBeMutable t) => RoundedPowerToNonnegIntInPl
 propInOutPowerToNonnegInPlace ::
     (RefOrd.PartialComparison t, RoundedPowerToNonnegIntInPlace t, Neg t,
      Show t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (PowerToNonnegIntEffortIndicator t),
      EffortIndicator (PowerToNonnegIntEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     RefOrd.PartialCompareEffortIndicator t, 
+    (RefOrd.PartialCompareEffortIndicator t, 
      PowerToNonnegIntEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedSingleton t) -> Int -> Bool
-propInOutPowerToNonnegInPlace sample effortDistComp initEffort (RefOrd.UniformlyOrderedSingleton e) n =
-    roundedImprovingInPlace1ConsistentWithPure
+propInOutPowerToNonnegInPlace sample initEffort (RefOrd.UniformlyOrderedSingleton e) n =
+    roundedInPlace1ConsistentWithPure
         (\eff r e -> powerToNonnegIntInInPlaceEff sample eff r e n) 
         (\eff r e -> powerToNonnegIntOutInPlaceEff sample eff r e n) 
         (\eff e -> powerToNonnegIntInEff eff e n) 
         (\eff e -> powerToNonnegIntOutEff eff e n)
-        RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+        RefOrd.pLeqEff initEffort
         e
 
 class (RoundedDivide t, CanBeMutable t) => RoundedDivideInPlace t where
@@ -255,28 +225,22 @@ class (RoundedDivide t, CanBeMutable t) => RoundedDivideInPlace t where
 propInOutDivInPlace ::
     (RefOrd.PartialComparison t, RoundedDivideInPlace t, Neg t,
      Show t, HasZero t,
-     HasDistance t,  Show (Distance t),  
-     NumOrd.PartialComparison (Distance t), HasInfinities (Distance t), HasZero (Distance t),
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
-     Show (DistanceEffortIndicator t),
-     EffortIndicator (DistanceEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
-    (NumOrd.PartialCompareEffortIndicator (Distance t)) -> 
-    (DistanceEffortIndicator t, 
-     RefOrd.PartialCompareEffortIndicator t, 
+    (RefOrd.PartialCompareEffortIndicator t, 
      DivEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedPair t) -> Bool
-propInOutDivInPlace sample effortDistComp initEffort@(_, effComp, _) (RefOrd.UniformlyOrderedPair (e1, e2)) =
+propInOutDivInPlace sample initEffort@(effComp, _) (RefOrd.UniformlyOrderedPair (e1, e2)) =
     let ?pCompareEffort = effComp in
     case (e2 ⊑? zero, zero ⊑? e2) of
         (Just False, Just False) ->
-            roundedImprovingInPlace2ConsistentWithPure
+            roundedInPlace2ConsistentWithPure
                 (divInInPlaceEff sample) (divOutInPlaceEff sample) divInEff divOutEff
-                RefOrd.pLeqEff distanceBetweenEff effortDistComp initEffort
+                RefOrd.pLeqEff initEffort
                 e1 e2
         _ -> True 
 
