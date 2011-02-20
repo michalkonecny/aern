@@ -193,7 +193,7 @@ testMutableGCPolys =
     putStrLn $ "pb223d0 = " ++ showP pb223d0
     putStrLn $ "scaleUpThin 0.1 x = " ++ show sux
     putStrLn $ "scaleDnThin 0.1 x = " ++ show sdx
-    putStrLn $ "scaleEnclThin 0.1 x = " ++ show sex
+    putStrLn $ "scaleEncl 0.1 x = " ++ show sex
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True
