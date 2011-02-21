@@ -296,7 +296,6 @@ foreign import ccall unsafe "scaleEnclUsingMutableOpsDblCf"
             IO ()
 
 polyScaleUpInPlace ::
---    CDouble -> 
     (Ptr (Ops_Pure)) ->
     CDouble ->
     PolyFP ->
@@ -305,7 +304,6 @@ polyScaleUpInPlace opsPtr =
     polyScalingOpInPlace poly_scaleUp opsPtr
 
 polyScaleDnInPlace ::
---    CDouble -> 
     (Ptr (Ops_Pure)) ->
     CDouble ->
     PolyFP ->
