@@ -107,8 +107,8 @@ testMutableDCPolys =
         let mkConst c = DCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 10) (Power 3)
         let mkVar n = DCPoly.projectionPolyMutable (Var n) (Var 2) (Size 10) (Power 3)
         let addUp = DCPoly.polyAddUpMutable opsMutablePtr
-        let scaleUpThin = DCPoly.polyScaleUpInPlace 0 opsMutablePtr
-        let scaleDnThin = DCPoly.polyScaleDnInPlace 0 opsMutablePtr
+        let scaleUpThin = DCPoly.polyScaleUpInPlace opsMutablePtr
+        let scaleDnThin = DCPoly.polyScaleDnInPlace opsMutablePtr
         let scaleEncl = DCPoly.polyScaleEnclInPlace opsMutablePtr
         
         p1M <- mkConst 0

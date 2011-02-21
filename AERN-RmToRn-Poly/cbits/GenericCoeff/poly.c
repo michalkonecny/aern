@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <tree234.h>
+
 #include "GenericCoeff/coeff.h"
 #include "GenericCoeff/poly.h"
 #include "EvalExport_stub.h"
@@ -147,4 +149,10 @@ ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity)
     }
 
   return result;
+}
+
+bool *
+ADD_COEFF_CODE(markLargestCoefficients)(Coeff ** coeffs, Size coeffCount, Size maxSize)
+{
+
 }
