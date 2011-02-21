@@ -175,4 +175,13 @@ ADD_COEFF_CODE(boundUp)(Ops_Pure * ops, Poly * p);
 Coeff
 ADD_COEFF_CODE(boundDn)(Ops_Pure * ops, Poly * p);
 
+void
+ADD_COEFF_CODE(scaleUpThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, CoeffMutable c, Poly * p);
+
+void
+ADD_COEFF_CODE(scaleDnThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, CoeffMutable c, Poly * p);
+
+void
+ADD_COEFF_CODE(scaleEnclUsingMutableOps)(Ops_Mutable * ops, CoeffMutable c, Poly * p);
+
 #endif /* POLY_H_ */

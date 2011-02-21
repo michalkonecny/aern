@@ -24,9 +24,9 @@ main :: IO ()
 main = 
     do
 --    testPureDCPolys
---    testMutableDCPolys
+    testMutableDCPolys
 --    testPureGCPolys
-    testMutableGCPolys
+--    testMutableGCPolys
 
 testPureDCPolys :: IO ()
 testPureDCPolys =
@@ -93,16 +93,23 @@ testMutableDCPolys =
     putStrLn $ "p23s1 = " ++ showP p23s1
     putStrLn $ "pb223s1 = " ++ showP pb223s1
     putStrLn $ "pb223d0 = " ++ showP pb223d0
+    putStrLn $ "pb223d0 = " ++ showP pb223d0
+    putStrLn $ "scaleUpThin 0.1 x = " ++ show sux
+    putStrLn $ "scaleDnThin 0.1 x = " ++ show sdx
+    putStrLn $ "scaleEncl 0.1 x = " ++ show sex
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True
     showCoeffInternals = False
     opsMutablePtr = unsafePerformIO $ DCPoly.newOps DCPoly.Ops_Pure
-    [p1,p2,p3,p11,p12,p22,p1b23,pb223,p23s1,pb223s1, pb223d0] = runST $
+    [p1,p2,p3,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,sux,sdx,sex] = runST $
         do
         let mkConst c = DCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 10) (Power 3)
         let mkVar n = DCPoly.projectionPolyMutable (Var n) (Var 2) (Size 10) (Power 3)
         let addUp = DCPoly.polyAddUpMutable opsMutablePtr
+        let scaleUpThin = DCPoly.polyScaleUpInPlace 0 opsMutablePtr
+        let scaleDnThin = DCPoly.polyScaleDnInPlace 0 opsMutablePtr
+        let scaleEncl = DCPoly.polyScaleEnclInPlace opsMutablePtr
         
         p1M <- mkConst 0
         p2M <- mkVar 0 -- "x"
@@ -124,7 +131,13 @@ testMutableDCPolys =
         addUp pb223s1M p22M p3M
         pb223d0M <- DCPoly.constPolyMutable (0::Double) 0 (Var 2) (Size 2) (Power 0)
         addUp pb223d0M p22M p3M
-        return [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M]
+        suxM <- mkVar 0
+        scaleUpThin 0.1 suxM
+        sdxM <- mkVar 0
+        scaleDnThin 0.1 sdxM
+        sexM <- mkVar 0
+        scaleEncl 0.1 sexM
+        return [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, suxM, sdxM, sexM]
     
 testPureGCPolys :: IO ()
 testPureGCPolys =
@@ -235,6 +248,7 @@ testMutableGCPolys =
         scaleDnThin 0.1 sdxM
         sexM <- mkVar 0
         scaleEncl 0.1 sexM
-        mapM (GCPoly.unsafeReadPolyMutable sampleD) [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, suxM, sdxM, sexM]
+        mapM (GCPoly.unsafeReadPolyMutable sampleD) 
+          [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, suxM, sdxM, sexM]
 
     

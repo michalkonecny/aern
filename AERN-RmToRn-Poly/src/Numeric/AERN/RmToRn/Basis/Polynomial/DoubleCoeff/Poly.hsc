@@ -270,6 +270,70 @@ polyBinaryOpMutable binaryOp opsMutablePtr
                      binaryOp 0 compareSP opsMutablePtr resP p1P p2P
     freeStablePtr compareSP
     
+----------------------------------------------------------------
+
+foreign import ccall unsafe "scaleUpThinUsingMutableOpsDblCf"
+        poly_scaleUp :: 
+            CDouble ->
+            (Ptr (Ops_Pure)) ->
+            CDouble -> 
+            (Ptr (Poly)) -> 
+            IO ()
+
+foreign import ccall unsafe "scaleDnThinUsingMutableOpsDblCf"
+        poly_scaleDn :: 
+            CDouble ->
+            (Ptr (Ops_Pure)) ->
+            CDouble -> 
+            (Ptr (Poly)) -> 
+            IO ()
+
+foreign import ccall unsafe "scaleEnclUsingMutableOpsDblCf"
+        poly_scaleEncl :: 
+            (Ptr (Ops_Pure)) ->
+            CDouble -> 
+            (Ptr (Poly)) -> 
+            IO ()
+
+polyScaleUpInPlace ::
+    CDouble -> 
+    (Ptr (Ops_Pure)) ->
+    CDouble ->
+    PolyFP ->
+    ST s ()
+polyScaleUpInPlace _ opsPtr = 
+    polyScalingOpInPlace poly_scaleUp opsPtr
+
+polyScaleDnInPlace ::
+    CDouble -> 
+    (Ptr (Ops_Pure)) ->
+    CDouble ->
+    PolyFP ->
+    ST s ()
+polyScaleDnInPlace _ opsPtr = 
+    polyScalingOpInPlace poly_scaleDn opsPtr
+
+polyScalingOpInPlace scalingOp opsPtr scalingFactor (PolyFP pFP) =
+    unsafeIOToST $
+      do
+      _ <- withForeignPtr pFP $ \pP ->
+                       scalingOp 0 opsPtr scalingFactor pP
+      return ()
+
+polyScaleEnclInPlace ::
+    (Ptr (Ops_Pure)) ->
+    CDouble ->
+    PolyFP ->
+    ST s ()
+polyScaleEnclInPlace opsPtr = 
+    polyScalingOpInPlaceNoZero poly_scaleEncl opsPtr
+
+polyScalingOpInPlaceNoZero scalingOp opsPtr scalingFactor (PolyFP pFP) =
+    unsafeIOToST $
+      do
+      _ <- withForeignPtr pFP $ \pP ->
+                       scalingOp opsPtr scalingFactor pP
+      return ()
 
 ----------------------------------------------------------------
 
