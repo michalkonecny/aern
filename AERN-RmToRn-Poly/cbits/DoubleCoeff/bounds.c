@@ -1,10 +1,8 @@
 /*
- * DoubleCoeff/bounds.c
- *
- *  Created on: 3 Feb 2011
- *      Author: jan
+ * This file should differ from its GenericCoeff analogue
+ * only in the following include line and by omitting
+ * the ...UsingPureOps functions.
  */
-
 #include "DoubleCoeff/coeff.h"
 #include "DoubleCoeff/poly.h"
 

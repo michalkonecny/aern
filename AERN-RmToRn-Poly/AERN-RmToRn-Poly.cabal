@@ -59,6 +59,7 @@ Library
     cbits/DoubleCoeff/evaluation.c
     cbits/DoubleCoeff/addition.c
     cbits/DoubleCoeff/bounds.c
+    cbits/DoubleCoeff/scalar.c
   include-dirs: 
     cbits
 
