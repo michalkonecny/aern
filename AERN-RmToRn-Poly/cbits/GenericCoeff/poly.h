@@ -222,11 +222,8 @@ ADD_COEFF_CODE(scaleDnThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, CoeffM
 void
 ADD_COEFF_CODE(scaleEnclUsingMutableOps)(Ops_Mutable * ops, CoeffMutable c, Poly * p);
 
-/*
- * returns pointer to array of size coeffCount with true in the positions of the
- * maxSize number of coefficients of greatest absolute value
- */
-bool *
-ADD_COEFF_CODE(markLargestCoefficients)(Coeff ** coeffs, Size coeffCount, Size maxSize);
+tree234 *
+ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, Ops_Pure * ops,
+    Term ** termsArray, Size coeffCount, Size maxSize, Power maxDegree);
 
 #endif /* POLY_H_ */

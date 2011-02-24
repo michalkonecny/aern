@@ -151,8 +151,49 @@ ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity)
   return result;
 }
 
-bool *
-ADD_COEFF_CODE(markLargestCoefficients)(Coeff ** coeffs, Size coeffCount, Size maxSize)
+typedef struct { Coeff coeff; int index; ComparisonOp compare; } CoeffFor234;
+
+int compareFor234(CoeffFor234 * dp1, CoeffFor234 * dp2)
+{
+	return CF_COMPARE(dp1 -> compare, dp1 -> coeff, dp2 -> coeff);
+}
+
+tree234 *
+ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, Ops_Pure * ops,
+    Term ** termsArray, Size coeffCount, Size maxSize, Power maxDegree)
+{
+  if (coeffCount > 0) // anything to do?
+  {
+	tree234 * markUs = newtree234(&compareFor234);
+
+	Term * terms = *termsArray;
+    int i = 0;
+    while (i < maxSize)
+    {
+      CoeffFor234 * c = malloc(sizeof(CoeffFor234));
+      c -> coeff = CF_ABS_UP(ops, terms[i].coeff);
+      c -> index = i;
+      c -> compare = compare;
+      add234(markUs, c);
+      i++;
+    }
+    while (i < coeffCount)
+    {
+      CoeffFor234 * c = malloc(sizeof(CoeffFor234));
+      c -> coeff = CF_ABS_UP(ops, terms[i].coeff);
+      c -> index = i;
+      c -> compare = compare;
+      add234(markUs, c);
+      i++;
+      CoeffFor234 oldAbsCoeff = delpos234(markUs, 0);
+      CF_FREE(oldAbsCoeff -> coeff);
+      free(oldAbsCoeff);
+    }
+  }
+  return markUs;
+}
+
+void ADD_COEFF_CODE(copy)(Poly * res, Poly * src)
 {
 
 }
