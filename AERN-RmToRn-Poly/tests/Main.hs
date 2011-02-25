@@ -23,10 +23,10 @@ import System.Mem
 main :: IO ()
 main = 
     do
---    testPureDCPolys
+    testPureDCPolys
 --    testMutableDCPolys
 --    testPureGCPolys
-    testMutableGCPolys
+--    testMutableGCPolys
 
 testPureDCPolys :: IO ()
 testPureDCPolys =
