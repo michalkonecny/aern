@@ -24,9 +24,9 @@ main :: IO ()
 main = 
     do
 --    testPureDCPolys
-    testMutableDCPolys
+--    testMutableDCPolys
 --    testPureGCPolys
---    testMutableGCPolys
+    testMutableGCPolys
 
 testPureDCPolys :: IO ()
 testPureDCPolys =
