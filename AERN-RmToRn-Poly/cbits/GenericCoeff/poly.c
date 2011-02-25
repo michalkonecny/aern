@@ -160,34 +160,46 @@ int compareFor234(CoeffFor234 * dp1, CoeffFor234 * dp2)
 
 tree234 *
 ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, Ops_Pure * ops,
-    Term ** termsArray, Size coeffCount, Size maxSize, Power maxDegree)
+    Term ** termsArray, Size termCount, Size maxSize, Power maxDegree)
 {
-  if (coeffCount > 0) // anything to do?
+  if (termCount > 0) // anything to do?
   {
 	tree234 * markUs = newtree234(&compareFor234);
 
 	Term * terms = *termsArray;
+    Power termDegree = 0;
+	Power * powers;
     int i = 0;
     while (i < maxSize)
     {
-      CoeffFor234 * c = malloc(sizeof(CoeffFor234));
-      c -> coeff = CF_ABS_UP(ops, terms[i].coeff);
-      c -> index = i;
-      c -> compare = compare;
-      add234(markUs, c);
-      i++;
+      powers = terms[i].powers;
+      for (int j = 0; NULL != (termDegree += powers[j]); j++); // sum up powers of the term
+      if (termDegree <= maxDegree) // anything to do?
+      {
+        CoeffFor234 * c = malloc(sizeof(CoeffFor234));
+        c -> coeff = CF_ABS_UP(ops, terms[i].coeff);
+        c -> index = i;
+        c -> compare = compare;
+        add234(markUs, c);
+        i++;
+      }
     }
-    while (i < coeffCount)
+    while (i < termCount)
     {
-      CoeffFor234 * c = malloc(sizeof(CoeffFor234));
-      c -> coeff = CF_ABS_UP(ops, terms[i].coeff);
-      c -> index = i;
-      c -> compare = compare;
-      add234(markUs, c);
-      i++;
-      CoeffFor234 oldAbsCoeff = delpos234(markUs, 0);
-      CF_FREE(oldAbsCoeff -> coeff);
-      free(oldAbsCoeff);
+      powers = terms[i].powers;
+      for (int j = 0; NULL != (termDegree += powers[j]); j++); // sum up powers of the term
+      if (termDegree <= maxDegree) // anything to do?
+      {
+        CoeffFor234 * c = malloc(sizeof(CoeffFor234));
+        c -> coeff = CF_ABS_UP(ops, terms[i].coeff);
+        c -> index = i;
+        c -> compare = compare;
+        add234(markUs, c);
+        i++;
+        CoeffFor234 oldAbsCoeff = delpos234(markUs, 0);
+        CF_FREE(oldAbsCoeff -> coeff);
+        free(oldAbsCoeff);
+      }
     }
   }
   return markUs;
