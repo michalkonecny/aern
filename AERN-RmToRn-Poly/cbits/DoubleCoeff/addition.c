@@ -65,12 +65,14 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
               // copy powers of variables from terms1:
               memmove(terms[j].powers, terms1[newCoeffs[j].n1].powers, arity
                   * sizeof(Power));
+              terms[j].degree = terms1[newCoeffs[j].n1].degree;
             }
           else
             {
               // copy powers of variables from terms2:
               memmove(terms[j].powers, terms2[newCoeffs[j].n2].powers, arity
                   * sizeof(Power));
+              terms[j].degree = terms2[newCoeffs[j].n2].degree;
             }
 
         }
@@ -88,6 +90,7 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
               // copy powers of variables from terms1 if they are moving to the left:
               memmove(terms[j].powers, terms1[newCoeffs[j].n1].powers, arity
                   * sizeof(Power));
+              terms[j].degree = terms1[newCoeffs[j].n1].degree;
             }
         }
       // pass 2 right to left from term1 or term2:
@@ -101,6 +104,7 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
                   // copy powers of variables from terms1:
                   memmove(terms[j].powers, terms1[newCoeffs[j].n1].powers,
                       arity * sizeof(Power));
+                  terms[j].degree = terms1[newCoeffs[j].n1].degree;
                 }
             }
           else
@@ -108,6 +112,7 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
               // copy powers of variables from terms2:
               memmove(terms[j].powers, terms2[newCoeffs[j].n2].powers, arity
                   * sizeof(Power));
+              terms[j].degree = terms2[newCoeffs[j].n2].degree;
             }
         }
     }
@@ -124,6 +129,7 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
               // copy powers of variables from terms2 if they are moving to the left:
               memmove(terms[j].powers, terms2[newCoeffs[j].n2].powers, arity
                   * sizeof(Power));
+              terms[j].degree = terms2[newCoeffs[j].n2].degree;
             }
         }
       // pass 2 right to left from term1 or term2:
@@ -137,6 +143,7 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
                   // copy powers of variables from terms1:
                   memmove(terms[j].powers, terms2[newCoeffs[j].n2].powers,
                       arity * sizeof(Power));
+                  terms[j].degree = terms2[newCoeffs[j].n2].degree;
                 }
             }
           else
@@ -144,6 +151,7 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
               // copy powers of variables from terms1:
               memmove(terms[j].powers, terms1[newCoeffs[j].n1].powers, arity
                   * sizeof(Power));
+              terms[j].degree = terms1[newCoeffs[j].n1].degree;
             }
         }
     }
