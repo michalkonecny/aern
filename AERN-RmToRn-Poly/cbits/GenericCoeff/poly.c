@@ -168,48 +168,68 @@ ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, O
     Term ** termsArray, Size termCount, Size maxSize, Power maxDegree)
 {
   tree234 * markUs = newtree234(&compareFor234);
-  if (termCount > 0) // anything to do?
+  Term * terms = *termsArray;
+  Power degree = 0;
+  int i = 0;
+  // !!! add int counting the actual number of terms added to markUs
+  // !!! make sure loops iterate the right number of times.
+  while (i < maxSize)
   {
-    Term * terms = *termsArray;
-    Power termDegree = 0;
-    Power * powers;
-    int i = 0;
-    while (i < maxSize)
+    if (terms[i].degree <= maxDegree) // anything to do?
     {
-      powers = terms[i].powers;
-      for (int j = 0; NULL != (termDegree += powers[j]); j++); // sum up powers of the term
-      if (termDegree <= maxDegree) // anything to do?
-      {
-        CoeffFor234 * c = malloc(sizeof(CoeffFor234));
-        c -> coeff = CF_ABS_UP(ops, terms[i].coeff);
-        c -> index = i;
-        c -> compare = compare;
-        add234(markUs, c);
-        i++;
-      }
+      CoeffFor234 * c = malloc(sizeof(CoeffFor234));
+      c -> coeff = CF_ABS_UP(ops, terms[i].coeff);
+      c -> index = i;
+      c -> compare = compare;
+      add234(markUs, c);
     }
-    while (i < termCount)
+    i++;
+  }
+  while (i < termCount)
+  {
+    if (terms[i].degree <= maxDegree) // anything to do?
     {
-      powers = terms[i].powers;
-      for (int j = 0; NULL != (termDegree += powers[j]); j++); // sum up powers of the term
-      if (termDegree <= maxDegree) // anything to do?
-      {
-        CoeffFor234 * c = malloc(sizeof(CoeffFor234));
-        c -> coeff = CF_ABS_UP(ops, terms[i].coeff);
-        c -> index = i;
-        c -> compare = compare;
-        add234(markUs, c);
-        i++;
-        CoeffFor234 * oldAbsCoeff = (CoeffFor234 *)delpos234(markUs, 0);
-        CF_FREE(oldAbsCoeff -> coeff);
-        free(oldAbsCoeff);
-      }
+      CoeffFor234 * c = malloc(sizeof(CoeffFor234));
+      c -> coeff = CF_ABS_UP(ops, terms[i].coeff);
+      c -> index = i;
+      c -> compare = compare;
+      add234(markUs, c);
+      CoeffFor234 * oldAbsCoeff = (CoeffFor234 *)delpos234(markUs, 0);
+      CF_FREE(oldAbsCoeff -> coeff);
+      free(oldAbsCoeff);
     }
+    i++;
   }
   return markUs;
 }
 
-void ADD_COEFF_CODE(copy)(Poly * res, Poly * src)
+/*
+ * ASSUMES: res -> maxArity == src -> maxArity
+ *
+ * WARNING: does not check ASSUMPTION
+ */
+
+void ADD_COEFF_CODE(copy)(ComparisonOp compare, Ops_Pure * ops,
+    Poly * res, Poly * src)
 {
+  Size srcSize = src -> psize;
+  Term * srcTerms = src -> terms;
+
+  Size resSize = res -> psize;
+  Power maxDeg = res -> maxDeg;
+
+  tree234 * termsToCopy =
+    markTermsWithDegreeBelowAndLargestCoeffsGenCf(compare, ops,
+      srcTerms, srcSize, resSize, maxDeg);
+
 
 }
+
+
+
+
+
+
+
+
+
