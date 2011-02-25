@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <tree234.h>
-
 #include "GenericCoeff/coeff.h"
 #include "GenericCoeff/poly.h"
 #include "EvalExport_stub.h"
@@ -135,6 +133,9 @@ ADD_COEFF_CODE(newProjectionPoly)(Coeff zero, Coeff one, Coeff errorBound,
   // except the chosen var:
   powers[var] = 1;
 
+  // also initialise the "cache" of the monomial degree:
+  term -> degree = 1;
+
   return poly;
 }
 
@@ -162,13 +163,12 @@ tree234 *
 ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, Ops_Pure * ops,
     Term ** termsArray, Size termCount, Size maxSize, Power maxDegree)
 {
+  tree234 * markUs = newtree234(&compareFor234);
   if (termCount > 0) // anything to do?
   {
-	tree234 * markUs = newtree234(&compareFor234);
-
-	Term * terms = *termsArray;
+    Term * terms = *termsArray;
     Power termDegree = 0;
-	Power * powers;
+    Power * powers;
     int i = 0;
     while (i < maxSize)
     {
@@ -196,7 +196,7 @@ ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, O
         c -> compare = compare;
         add234(markUs, c);
         i++;
-        CoeffFor234 oldAbsCoeff = delpos234(markUs, 0);
+        CoeffFor234 * oldAbsCoeff = (CoeffFor234 *)delpos234(markUs, 0);
         CF_FREE(oldAbsCoeff -> coeff);
         free(oldAbsCoeff);
       }

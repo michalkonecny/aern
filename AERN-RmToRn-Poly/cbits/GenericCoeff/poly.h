@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <tree234.h>
+
 #include "GenericCoeff/coeff.h"
 #include "EvalExport_stub.h"
 
@@ -17,7 +19,8 @@
  */
 typedef struct TERM
 {
-  Power * powers;
+  Power degree; // monomial degree, ie the sum of the powers for all variables
+  Power * powers; // the size of this array is given by maxArity
   Coeff coeff;
 } Term;
 
@@ -224,6 +227,6 @@ ADD_COEFF_CODE(scaleEnclUsingMutableOps)(Ops_Mutable * ops, CoeffMutable c, Poly
 
 tree234 *
 ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, Ops_Pure * ops,
-    Term ** termsArray, Size coeffCount, Size maxSize, Power maxDegree);
+    Term * * termsArray, Size termCount, Size maxSize, Power maxDegree);
 
 #endif /* POLY_H_ */

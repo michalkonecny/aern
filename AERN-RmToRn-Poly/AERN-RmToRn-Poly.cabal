@@ -50,6 +50,7 @@ Library
       Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Symbolic 
     
   c-sources:
+    cbits/tree234.c
     cbits/GenericCoeff/poly.c
     cbits/GenericCoeff/evaluation.c
     cbits/GenericCoeff/addition.c
