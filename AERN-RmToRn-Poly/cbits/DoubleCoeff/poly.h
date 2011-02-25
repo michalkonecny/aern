@@ -22,7 +22,8 @@
  */
 typedef struct TERM
 {
-  Power * powers;
+  Power degree; // monomial degree, ie the sum of the powers for all variables
+  Power * powers; // the size of this array is given by maxArity
   Coeff coeff;
 } Term;
 

@@ -45,7 +45,7 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
 
   Size i = 0;
   // free the power arrays:
-  while( i < maxSize )
+  while( i < psize )
     {
       free(terms[i].powers);
       CF_FREE(terms[i].coeff);
@@ -53,9 +53,9 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
     }
 
   // free the coeffs:
-  while( i < psize )
+  while( i < maxSize )
     {
-      CF_FREE(terms[i].coeff);
+      free(terms[i].powers);
       i++;
     }
 
