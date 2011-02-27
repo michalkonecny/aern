@@ -222,7 +222,7 @@ testMutableGCPolys =
         let scaleUpThin c = GCPoly.polyScaleUpMutableUsingMutableOps 0 opsMutablePtr (c::Double) 
         let scaleDnThin c = GCPoly.polyScaleDnMutableUsingMutableOps 0 opsMutablePtr (c::Double) 
         let scaleEncl c = GCPoly.polyScaleEnclMutableUsingMutableOps opsMutablePtr (c::Double) 
-        let reduceDegree p = GCPoly.polyReduceDegreeMutableUsingMutableOps opsMutablePtr (c::Power) 
+        let reduceDegree d = GCPoly.polyReduceDegreeMutableUsingMutableOps opsMutablePtr (Power d) 
         
         p1M <- mkConst 0
         p2M <- mkVar 0 -- "x"
@@ -254,5 +254,3 @@ testMutableGCPolys =
         reduceDegree 0 rd0xM
         mapM (GCPoly.unsafeReadPolyMutable sampleD) 
           [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, suxM, sdxM, sexM,rd0xM]
-
-    
