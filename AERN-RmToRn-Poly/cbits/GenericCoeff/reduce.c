@@ -29,7 +29,7 @@ ADD_COEFF_CODE(reduceDegreeUsingMutableOps)(Ops_Mutable * ops, Power maxDeg, Pol
   {
     // QUESTION: cheaper to use a local Coeff coeffLast = terms[lastTermIndex].coeff ?
 
-    Coeff maxError = CF_ABS_UP(ops, terms[lastTermIndex].coeff); // compute reduction error
+    CFM_ABS_UP(ops, maxError, terms[lastTermIndex].coeff); // compute reduction error
     CFM_FREE(terms[lastTermIndex].coeff); // free last coefficient
     CFM_ADD_UP(ops, errorBound, errorBound, maxError); // accumulate rounding error
 
@@ -45,6 +45,8 @@ ADD_COEFF_CODE(reduceDegreeUsingMutableOps)(Ops_Mutable * ops, Power maxDeg, Pol
     p -> psize = lastTermIndex; // update psize
   }
 }
+
+/*
 
 void
 ADD_COEFF_CODE(reduceDegreeUsingPureOps)(Ops_Pure * ops, Power maxDeg, Poly * p)
@@ -143,12 +145,6 @@ ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, O
   return markUs;
 }
 
-/*
- * ASSUMES: res -> maxArity == src -> maxArity
- *
- * WARNING: does not check ASSUMPTION
- */
-
 void ADD_COEFF_CODE(copy)(ComparisonOp compare, Ops_Pure * ops,
     Poly * res, Poly * src)
 {
@@ -161,6 +157,6 @@ void ADD_COEFF_CODE(copy)(ComparisonOp compare, Ops_Pure * ops,
   tree234 * termsToCopy =
     markTermsWithDegreeBelowAndLargestCoeffsGenCf(compare, ops,
       srcTerms, srcSize, resSize, maxDeg);
-
-
 }
+
+*/
