@@ -83,18 +83,18 @@ ADD_COEFF_CODE(scaleTermsUsingPureOps)(Ops_Pure * ops, Coeff c, Poly * p)
 
   for (int i = 0; i < pSize; i++)
   {
-	Coeff oldCoeff = terms[i].coeff;
-	Coeff coeffScaledUp = CF_MUL_UP(ops, c, oldCoeff);
-	Coeff coeffScaledDn = CF_MUL_DN(ops, c, oldCoeff);
-	CF_FREE(oldCoeff);
-	terms[i].coeff = coeffScaledUp; // scale term coefficient
-	Coeff maxError = CF_SUB_UP(ops, coeffScaledUp, coeffScaledDn); // bound rounding error
-	CF_FREE(coeffScaledUp);
-	CF_FREE(coeffScaledDn);
-	Coeff oldErrorBound = p -> errorBound;
-	p -> errorBound = CF_ADD_UP(ops, oldErrorBound, maxError); // accumulate the error
-	CF_FREE(oldErrorBound);
-	CF_FREE(maxError);
+    Coeff oldCoeff = terms[i].coeff;
+    Coeff coeffScaledUp = CF_MUL_UP(ops, c, oldCoeff);
+    Coeff coeffScaledDn = CF_MUL_DN(ops, c, oldCoeff);
+    CF_FREE(oldCoeff);
+    terms[i].coeff = coeffScaledUp; // scale term coefficient
+    Coeff maxError = CF_SUB_UP(ops, coeffScaledUp, coeffScaledDn); // bound rounding error
+    CF_FREE(coeffScaledUp);
+    CF_FREE(coeffScaledDn);
+    Coeff oldErrorBound = p -> errorBound;
+    p -> errorBound = CF_ADD_UP(ops, oldErrorBound, maxError); // accumulate the error
+    CF_FREE(oldErrorBound);
+    CF_FREE(maxError);
   }
 }
 
