@@ -10,14 +10,13 @@ ADD_COEFF_CODE(reduceDegreeUsingMutableOps)(Ops_Mutable * ops, Power maxDeg, Pol
   Size lastTermIndex = oldSize-1; // track last term for swapping
   CoeffMutable maxError = CFM_NEW(ops, CFM_SAMPLE(ops));
   CoeffMutable errorBound = CFM_NEW(ops, CFM_SAMPLE(ops));
-  for (int i = 0; i <= lastTermIndex; i++)
+  for (int i = 0; i <= lastTermIndex && true; i++)
   {
-    if (terms[i].degree > maxDeg) // reduce term?
+    if (terms[i].degree > maxDeg && lastTermIndex > 0) // reduce term?
     {
       CFM_ABS_UP(ops, maxError, terms[i].coeff); // compute reduction error
       CFM_FREE(terms[i].coeff); // free ith coefficient
       CFM_ADD_UP(ops, errorBound, errorBound, maxError); // accumulate rounding error
-
       // shift terms cheaply by swapping the ith and the last term
       terms[i].degree = terms[lastTermIndex].degree; // overwrite ith degree with last
       terms[i].powers = terms[lastTermIndex].powers; // point ith powers to last
