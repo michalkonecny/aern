@@ -17,7 +17,11 @@ Description:
     point numbers provided by the library MPFR (via the Haskell library hmpfr)
     as endpoints for the interval arithmetic defined in packages AERN-Basics and
     AERN-Real.
-
+    .
+    /Since MPFR uses GMP, this library does not work correctly/
+    /with a ghc that has been compiled with integer-gmp./  
+    /When using ghc, this library will require that the ghc/
+    /is compiled  with integer-simple./
 Extra-Source-Files:
     CHANGES
 
