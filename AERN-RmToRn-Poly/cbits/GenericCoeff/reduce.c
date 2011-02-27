@@ -10,7 +10,7 @@ ADD_COEFF_CODE(reduceDegreeUsingMutableOps)(Ops_Mutable * ops, Power maxDeg, Pol
   Size lastTermIndex = oldSize-1; // track last term for swapping
   CoeffMutable maxError = CFM_NEW(ops, CFM_SAMPLE(ops));
   CoeffMutable errorBound = CFM_NEW(ops, CFM_SAMPLE(ops));
-  for (int i = 0; i <= lastTermIndex && true; i++)
+  for (int i = 0; i <= lastTermIndex; i++)
   {
     if (terms[i].degree > maxDeg && lastTermIndex > 0) // reduce term?
     {
