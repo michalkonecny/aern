@@ -229,4 +229,11 @@ tree234 *
 ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, Ops_Pure * ops,
     Term * * termsArray, Size termCount, Size maxSize, Power maxDegree);
 
+/*
+ * NOTE: does not check p -> maxDeg > maxDeg
+ */
+void
+ADD_COEFF_CODE(reduceDegreeInPlace)(Ops_Pure * ops, Poly * p, Power maxDeg);
+
+
 #endif /* POLY_H_ */
