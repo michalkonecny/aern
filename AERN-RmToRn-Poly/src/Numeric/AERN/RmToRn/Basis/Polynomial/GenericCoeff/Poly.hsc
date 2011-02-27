@@ -99,6 +99,20 @@ peekConstIO (PolyFP fp) =
         const <- deRefStablePtr constSP
         return const
 
+{-# INLINE peekError #-}
+peekError :: (PolyFP cf) -> cf
+peekError p =
+    unsafePerformIO $ peekErrorIO p
+    
+{-# INLINE peekErrorIO #-}
+peekErrorIO :: (PolyFP cf) -> IO cf
+peekErrorIO (PolyFP fp) =
+    withForeignPtr fp $ \ptr -> 
+        do
+        errorSP <- #{peek Poly, errorBound} ptr
+        error <- deRefStablePtr errorSP
+        return error
+
 data Ops_Pure t =
     Ops_Pure
     {
