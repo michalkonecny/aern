@@ -1,43 +1,100 @@
 
-#include <coeff.h>
-#include <poly.h>
+#include <GenericCoeff/coeff.h>
+#include <GenericCoeff/poly.h>
 
 void
-ADD_COEFF_CODE(reduceDegreeInPlaceUsingPureOps)(Ops_Pure * ops, Poly * p, Power maxDeg)
+ADD_COEFF_CODE(reduceDegreeUsingMutableOps)(Ops_Mutable * ops, Power maxDeg, Poly * p)
 {
   Term * terms = p -> terms;
-  Size pMaxDeg = p -> maxDeg;
-  if (pMaxDeg > maxDeg) // anything to do?
+  Size oldSize = p -> psize;
+  Size lastTermIndex = oldSize-1; // track last term for swapping
+  CoeffMutable maxError = CFM_NEW(ops, CFM_SAMPLE(ops));
+  CoeffMutable errorBound = CFM_NEW(ops, CFM_SAMPLE(ops));
+  for (int i = 0; i <= lastTermIndex; i++)
   {
-    Size lastTermIndex = p -> psize - 1; // track last term in case reduction occurs
-    for (int i = 0; i <= lastTermIndex; i++)
+    if (terms[i].degree > maxDeg) // reduce term?
     {
-      if (terms[i].degree > maxDeg) // reduce term?
-      {
-        // QUESTION: cheaper to use a local Coeff coeffi = terms[i].coeff ?
+      CFM_ABS_UP(ops, maxError, terms[i].coeff); // compute reduction error
+      CFM_FREE(terms[i].coeff); // free ith coefficient
+      CFM_ADD_UP(ops, errorBound, errorBound, maxError); // accumulate rounding error
 
-        Coeff maxError = CF_ABS_UP(ops, terms[i].coeff); // compute reduction error
-        CF_FREE(terms[i].coeff); // free ith coefficient
-
-        // account for reduction error
-        Coeff oldErrorBound = p -> errorBound;
-        p -> errorBound = CF_ADD_UP(ops, oldErrorBound, maxError);
-        CF_FREE(oldErrorBound);
-        CF_FREE(maxError);
-
-        // shift terms cheaply by swapping the ith and the last term
-        terms[i].degree = terms[lastTermIndex].degree; // overwrite ith degree with last
-        terms[i].powers = terms[lastTermIndex].powers; // overwrite ith power with last
-        terms[i].coeff = terms[lastTermIndex].coeff; // overwrite ith coefficient with last
-        lastTermIndex--; // forget last term, i.e. decrement psize (implicitly)
-      }
+      // shift terms cheaply by swapping the ith and the last term
+      terms[i].degree = terms[lastTermIndex].degree; // overwrite ith degree with last
+      terms[i].powers = terms[lastTermIndex].powers; // point ith powers to last
+      terms[i].coeff = terms[lastTermIndex].coeff; // point ith coefficient to last
+      lastTermIndex--; // forget last term, i.e. decrement psize (implicitly)
     }
+  }
+  if (terms[lastTermIndex].degree > maxDeg) // reduce last term?
+  {
+    // QUESTION: cheaper to use a local Coeff coeffLast = terms[lastTermIndex].coeff ?
+
+    Coeff maxError = CF_ABS_UP(ops, terms[lastTermIndex].coeff); // compute reduction error
+    CFM_FREE(terms[lastTermIndex].coeff); // free last coefficient
+    CFM_ADD_UP(ops, errorBound, errorBound, maxError); // accumulate rounding error
+
+    lastTermIndex--; // forget last term, i.e. decrement psize (implicitly)
+  }
+  CFM_FREE(maxError);
+  CFM_ASSIGN(ops, p -> errorBound, errorBound); // account for rounding errors
+  CFM_FREE(errorBound);
+
+  lastTermIndex++; // set lastTermIndex to psize
+  if (oldSize > lastTermIndex) // any terms reduced?
+  {
     p -> psize = lastTermIndex; // update psize
-    p -> maxDeg = maxDeg; // update maxDeg
   }
 }
 
+void
+ADD_COEFF_CODE(reduceDegreeUsingPureOps)(Ops_Pure * ops, Power maxDeg, Poly * p)
+{
+  Term * terms = p -> terms;
+  Size oldSize = p -> psize;
+  Size lastTermIndex = p -> psize - 1; // track last term for swapping
+  for (int i = 0; i <= lastTermIndex; i++)
+  {
+    if (terms[i].degree > maxDeg) // reduce term?
+    {
+      // QUESTION: cheaper to use a local Coeff coeffi = terms[i].coeff ?
 
+      Coeff maxError = CF_ABS_UP(ops, terms[i].coeff); // compute reduction error
+      CF_FREE(terms[i].coeff); // free ith coefficient
+
+      // account for reduction error
+      Coeff oldErrorBound = p -> errorBound;
+      p -> errorBound = CF_ADD_UP(ops, oldErrorBound, maxError);
+      CF_FREE(oldErrorBound);
+      CF_FREE(maxError);
+
+      // shift terms cheaply by swapping the ith and the last term
+      terms[i].degree = terms[lastTermIndex].degree; // overwrite ith degree with last
+      terms[i].powers = terms[lastTermIndex].powers; // point ith power to last
+      terms[i].coeff = terms[lastTermIndex].coeff; // point ith coefficient to last
+      lastTermIndex--; // forget last term, i.e. decrement psize (implicitly)
+    }
+  }
+  if (terms[lastTermIndex].degree > maxDeg) // reduce last term?
+  {
+    // QUESTION: cheaper to use a local Coeff coeffLast = terms[lastTermIndex].coeff ?
+
+    Coeff maxError = CF_ABS_UP(ops, terms[lastTermIndex].coeff); // compute reduction error
+    CF_FREE(terms[lastTermIndex].coeff); // free last coefficient
+
+    // account for reduction error
+    Coeff oldErrorBound = p -> errorBound;
+    p -> errorBound = CF_ADD_UP(ops, oldErrorBound, maxError);
+    CF_FREE(oldErrorBound);
+    CF_FREE(maxError);
+
+    lastTermIndex--; // forget last term, i.e. decrement psize (implicitly)
+  }
+  lastTermIndex++; // set lastTermIndex to psize
+  if (oldSize > lastTermIndex) // any terms reduced?
+  {
+    p -> psize = lastTermIndex; // update psize
+  }
+}
 
 typedef struct { Coeff coeff; int index; ComparisonOp compare; } CoeffFor234;
 

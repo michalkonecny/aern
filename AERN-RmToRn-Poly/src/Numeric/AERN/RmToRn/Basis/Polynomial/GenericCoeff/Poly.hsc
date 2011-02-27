@@ -820,3 +820,29 @@ polyEval unary ops (PolyFP pFP) =
         unary ops p
     res <- deRefStablePtr resSP
     return res
+
+----------------------------------------------------------------
+
+foreign import ccall safe "reduceDegreeUsingMutableOpsGenCf"
+        poly_reduceDegreeUsingMutableOps :: 
+            (Ptr (Ops_Mutable s cf)) ->
+            CInt ->
+            (Ptr (Poly (Mutable cf s))) -> 
+            IO ()
+
+polyReduceDegreeMutableUsingMutableOps ::
+    (CanBeMutable cf) =>
+    (Ptr (Ops_Mutable s cf)) ->
+    Power ->
+    PolyMutableFP cf s ->
+    ST s ()
+polyReduceDegreeMutableUsingMutableOps opsMutablePtr = 
+    polyReductionOpMutable poly_reduceDegreeUsingMutableOps opsMutablePtr
+
+polyReductionOpMutable reductionOp opsMutablePtr maxdeg (PolyMutableFP pFP) =
+    do
+    unsafeIOToST $
+      do
+      _ <- withForeignPtr pFP $ \pP ->
+            scalingOp opsMutablePtr maxdeg pP
+      return ()
