@@ -230,10 +230,9 @@ ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, O
     Term * * termsArray, Size termCount, Size maxSize, Power maxDegree);
 
 /*
- * NOTE: does not check p -> maxDeg > maxDeg
+ * Reduce maxDegree of p in place, collapsing higher degree terms into errorTerm
  */
 void
 ADD_COEFF_CODE(reduceDegreeInPlace)(Ops_Pure * ops, Poly * p, Power maxDeg);
-
 
 #endif /* POLY_H_ */

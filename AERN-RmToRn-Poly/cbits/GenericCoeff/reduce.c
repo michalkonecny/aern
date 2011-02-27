@@ -6,30 +6,35 @@ void
 ADD_COEFF_CODE(reduceDegreeInPlaceUsingPureOps)(Ops_Pure * ops, Poly * p, Power maxDeg)
 {
   Term * terms = p -> terms;
-  Size lastTermIndex = p -> psize - 1; // track last term in case reduction occurs
-  for (int i = 0; i <= lastTermIndex; i++)
+  Size pMaxDeg = p -> maxDeg;
+  if (pMaxDeg > maxDeg) // anything to do?
   {
-    if (terms[i].degree > maxDeg) // reduce term?
+    Size lastTermIndex = p -> psize - 1; // track last term in case reduction occurs
+    for (int i = 0; i <= lastTermIndex; i++)
     {
-      // QUESTION: cheaper to use a local Coeff termsi = terms[i].coeff ?
+      if (terms[i].degree > maxDeg) // reduce term?
+      {
+        // QUESTION: cheaper to use a local Coeff coeffi = terms[i].coeff ?
 
-      Coeff maxError = CF_ABS_UP(ops, terms[i].coeff); // compute reduction error
-      CF_FREE(terms[i].coeff); // free ith coefficient
+        Coeff maxError = CF_ABS_UP(ops, terms[i].coeff); // compute reduction error
+        CF_FREE(terms[i].coeff); // free ith coefficient
 
-      // account for reduction error
-      Coeff oldErrorBound = p -> errorBound;
-      p -> errorBound = CF_ADD_UP(ops, oldErrorBound, maxError);
-      CF_FREE(oldErrorBound);
-      CF_FREE(maxError);
+        // account for reduction error
+        Coeff oldErrorBound = p -> errorBound;
+        p -> errorBound = CF_ADD_UP(ops, oldErrorBound, maxError);
+        CF_FREE(oldErrorBound);
+        CF_FREE(maxError);
 
-      // shift terms cheaply by swapping the ith and the last term
-      terms[i].degree = terms[lastTermIndex].degree; // overwrite ith degree with last
-      terms[i].powers = terms[lastTermIndex].powers; // overwrite ith power with last
-      terms[i].coeff = terms[lastTermIndex].coeff; // overwrite ith coefficient with last
-      lastTermIndex--; // forget last term, i.e. decrement psize (implicitly)
+        // shift terms cheaply by swapping the ith and the last term
+        terms[i].degree = terms[lastTermIndex].degree; // overwrite ith degree with last
+        terms[i].powers = terms[lastTermIndex].powers; // overwrite ith power with last
+        terms[i].coeff = terms[lastTermIndex].coeff; // overwrite ith coefficient with last
+        lastTermIndex--; // forget last term, i.e. decrement psize (implicitly)
+      }
     }
+    p -> psize = lastTermIndex; // update psize
+    p -> maxDeg = maxDeg; // update maxDeg
   }
-  p -> psize = lastTermIndex; // update psize
 }
 
 
