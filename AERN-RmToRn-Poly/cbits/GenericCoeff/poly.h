@@ -14,7 +14,6 @@
  *
  * invariants:
  *   the power array is private to one instance of Term
- *
  *   the coeff is private to one instance of Term
  */
 typedef struct TERM

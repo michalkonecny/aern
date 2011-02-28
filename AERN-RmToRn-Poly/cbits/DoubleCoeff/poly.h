@@ -17,15 +17,21 @@
  *
  * invariants:
  *   the power array is private to one instance of Term
- *
  *   the coeff is private to one instance of Term
  */
 typedef struct TERM
 {
-  Power degree; // monomial degree, ie the sum of the powers for all variables
-  Power * powers; // the size of this array is given by maxArity
+  Power * powers;
+  /* the size of this array is given by (maxArity+1)
+   * the first element is the monomial degree, ie the sum of the powers for all variables
+   * variables are numbered from 0, thus one can say powers[var] to get the power of var
+   */
   Coeff coeff;
 } Term;
+
+#define MONOMIAL_DEGREE(powers) (powers[0])
+#define POWER_OF_VAR(powers,var) (powers[var + 1])
+#define SIZEOF_POWERS(arity) (sizeof(Power) * (arity+1))
 
 /*
  * polynomial
