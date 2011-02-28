@@ -204,12 +204,10 @@ testMutableGCPolys =
     putStrLn $ "p23s1 = " ++ showP p23s1
     putStrLn $ "pb223s1 = " ++ showP pb223s1
     putStrLn $ "pb223d0 = " ++ showP pb223d0
-    putStrLn $ "scaleUpThin 0.1 x = " ++ show sux
-    putStrLn $ "scaleDnThin 0.1 x = " ++ show sdx
-    putStrLn $ "scaleEncl 0.1 x = " ++ show sex
-    ebrd0pb223 <- GCPoly.peekErrorIO rd0pb223
-    putStrLn $ "reduceDegreeEncl 0 pb223 = " ++ show rd0pb223 ++
-               " (errorBound = " ++ show ebrd0pb223 ++ ")"
+    putStrLn $ "scaleUpThin 0.1 x = " ++ showP sux
+    putStrLn $ "scaleDnThin 0.1 x = " ++ showP sdx
+    putStrLn $ "scaleEncl 0.1 x = " ++ showP sex
+    putStrLn $ "reduceDegreeEncl 0 pb223 = " ++ showP rd0pb223
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True
