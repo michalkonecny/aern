@@ -208,7 +208,7 @@ testMutableGCPolys =
     putStrLn $ "scaleDnThin 0.1 x = " ++ show sdx
     putStrLn $ "scaleEncl 0.1 x = " ++ show sex
     ebrd0pb223 <- GCPoly.peekErrorIO rd0pb223
-    putStrLn $ "reduceDegree 0 pb223 = " ++ show rd0pb223 ++
+    putStrLn $ "reduceDegreeEncl 0 pb223 = " ++ show rd0pb223 ++
                " (errorBound = " ++ show ebrd0pb223 ++ ")"
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
@@ -224,7 +224,7 @@ testMutableGCPolys =
         let scaleUpThin c = GCPoly.polyScaleUpMutableUsingMutableOps 0 opsMutablePtr (c::Double) 
         let scaleDnThin c = GCPoly.polyScaleDnMutableUsingMutableOps 0 opsMutablePtr (c::Double) 
         let scaleEncl c = GCPoly.polyScaleEnclMutableUsingMutableOps opsMutablePtr (c::Double) 
-        let reduceDegree d = GCPoly.polyReduceDegreeMutableUsingMutableOps opsMutablePtr (Power d) 
+        let reduceDegree d = GCPoly.polyReduceDegreeEnclMutableUsingMutableOps opsMutablePtr (Power d) 
         
         p1M <- mkConst 0
         p2M <- mkVar 0 -- "x"

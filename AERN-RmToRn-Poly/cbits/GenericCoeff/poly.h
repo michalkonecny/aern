@@ -233,9 +233,9 @@ ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, O
  * Reduce maxDegree of p in place, collapsing higher degree terms into errorTerm
  */
 void
-ADD_COEFF_CODE(reduceDegreeUsingMutableOps)(Ops_Mutable * ops, Power maxDeg, Poly * p);
+ADD_COEFF_CODE(reduceDegreeEnclUsingMutableOps)(Ops_Mutable * ops, Power maxDeg, Poly * p);
 
-void
-ADD_COEFF_CODE(reduceDegreeUsingPureOps)(Ops_Pure * ops, Power maxDeg, Poly * p);
+//void
+//ADD_COEFF_CODE(reduceDegreeEnclUsingPureOps)(Ops_Pure * ops, Power maxDeg, Poly * p);
 
 #endif /* POLY_H_ */
