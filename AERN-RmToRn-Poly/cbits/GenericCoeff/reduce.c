@@ -3,7 +3,7 @@
 #include <GenericCoeff/poly.h>
 
 void
-ADD_COEFF_CODE(reduceDegreeUsingMutableOps)(Ops_Mutable * ops, Power maxDeg, Poly * p)
+ADD_COEFF_CODE(reduceDegreeEnclUsingMutableOps)(Ops_Mutable * ops, Power maxDeg, Poly * p)
 {
   Term * terms = p -> terms;
   Size oldSize = p -> psize;
