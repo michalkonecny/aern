@@ -19,10 +19,17 @@
  */
 typedef struct TERM
 {
-  Power degree; // monomial degree, ie the sum of the powers for all variables
-  Power * powers; // the size of this array is given by maxArity
+  Power * powers;
+  /* the size of this array is given by (maxArity+1)
+   * the first element is the monomial degree, ie the sum of the powers for all variables
+   * variables are numbered from 0, thus one can say powers[var] to get the power of var
+   */
   Coeff coeff;
 } Term;
+
+#define MONOMIAL_DEGREE(powers) (powers[0])
+#define POWER_OF_VAR(powers,var) (powers[var + 1])
+#define SIZEOF_POWERS(arity) (sizeof(Power) * (arity+1))
 
 /*
  * polynomial
@@ -102,6 +109,7 @@ ADD_COEFF_CODE(newProjectionPoly)(Coeff zero, Coeff one, Coeff errorBound,
 
 Power
 ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity);
+
 
 /*
  * The following operations expect all polynomial parameters and result space to

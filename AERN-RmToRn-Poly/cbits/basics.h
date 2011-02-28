@@ -8,6 +8,10 @@
 #include <stdint.h>
 
 typedef uint32_t Var;
+/* variables in polynomials range from 0 to arity-1 */
+
+#define FOREACH_VAR_ARITY(var,arity) for(Var var = 0; var < arity; var++)
+
 typedef uint8_t Power;
 typedef uint32_t Size;
 
