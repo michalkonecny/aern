@@ -28,11 +28,11 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
   for (Size termNo = 0; termNo < psize; ++termNo)
     {
       Power * powers = terms[termNo].powers;
-      for (int var = 0; var < maxArity; ++var)
+      FOREACH_VAR_ARITY(var, maxArity)
         {
-          if (powers[var] > maxPowers[var])
+          if (POWER_OF_VAR(powers,var) > maxPowers[var])
             {
-              maxPowers[var] = powers[var];
+              maxPowers[var] = POWER_OF_VAR(powers,var);
               //              printf("powers[%d]=%d\n", var, powers[var]);
             }
         }
@@ -40,7 +40,7 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
 
   // compute Chebyshev powers for all values up to the variable's maximum power:
   Value ** varPowers = malloc(maxArity * sizeof(Value *));
-  for (Var var = 0; var < maxArity; ++var)
+  FOREACH_VAR_ARITY(var, maxArity)
     {
       Power varMaxN = maxPowers[var];
       Value x = values[var];
@@ -77,9 +77,9 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
       // printf("evalAtPtPowerBasis: coeff addr = %p\n", terms[termNo].coeff);
       Value termValue = eval_convert_hs(cf2val, terms[termNo].coeff);
 
-      for (Var var = 0; var < maxArity; ++var)
+      FOREACH_VAR_ARITY(var, maxArity)
         {
-          Power pwr = terms[termNo].powers[var];
+          Power pwr = POWER_OF_VAR(terms[termNo].powers,var);
           if (pwr > 0)
             {
               //              printf(" multiplying for var %d with power %d\n", var, pwr);
@@ -96,7 +96,7 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
     }
 
   // free pre-computed Chebyshev powers:
-  for (Var var = 0; var < maxArity; ++var)
+  FOREACH_VAR_ARITY(var, maxArity)
     {
       // free the haskell values pointed to by this array:
       for (Power power = 2; power < maxPowers[var]; ++power)
@@ -141,9 +141,9 @@ ADD_COEFF_CODE(evalAtPtPowerBasis)(Poly * p, Value * values, Value one,
       Power * powers = terms[termNo].powers;
       for (int var = 0; var < maxArity; ++var)
         {
-          if (powers[var] > maxPowers[var])
+          if (POWER_OF_VAR(powers,var) > maxPowers[var])
             {
-              maxPowers[var] = powers[var];
+              maxPowers[var] = POWER_OF_VAR(powers,var);
               //              printf("powers[%d]=%d\n", var, powers[var]);
             }
         }
@@ -191,7 +191,7 @@ ADD_COEFF_CODE(evalAtPtPowerBasis)(Poly * p, Value * values, Value one,
 
       for (Var var = 0; var < maxArity; ++var)
         {
-          Power pwr = terms[termNo].powers[var];
+          Power pwr = POWER_OF_VAR(terms[termNo].powers,var);
           if (pwr > 0)
             {
               //              printf(" multiplying for var %d with power %d\n", var, pwr);

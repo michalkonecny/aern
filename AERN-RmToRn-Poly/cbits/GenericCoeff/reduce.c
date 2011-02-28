@@ -12,19 +12,18 @@ ADD_COEFF_CODE(reduceDegreeEnclUsingMutableOps)(Ops_Mutable * ops, Power maxDeg,
   CoeffMutable errorBound = CFM_NEW(ops, CFM_SAMPLE(ops));
   for (int i = 0; i <= lastTermIndex; i++)
   {
-    if (terms[i].degree > maxDeg && lastTermIndex > 0) // reduce term?
+    if (MONOMIAL_DEGREE(terms[i].powers) > maxDeg && lastTermIndex > 0) // reduce term?
     {
       CFM_ABS_UP(ops, maxError, terms[i].coeff); // compute reduction error
       CFM_FREE(terms[i].coeff); // free ith coefficient
       CFM_ADD_UP(ops, errorBound, errorBound, maxError); // accumulate rounding error
       // shift terms cheaply by swapping the ith and the last term
-      terms[i].degree = terms[lastTermIndex].degree; // overwrite ith degree with last
       terms[i].powers = terms[lastTermIndex].powers; // point ith powers to last
       terms[i].coeff = terms[lastTermIndex].coeff; // point ith coefficient to last
       lastTermIndex--; // forget last term, i.e. decrement psize (implicitly)
     }
   }
-  if (terms[lastTermIndex].degree > maxDeg) // reduce last term?
+  if (MONOMIAL_DEGREE(terms[lastTermIndex].powers) > maxDeg) // reduce last term?
   {
     // QUESTION: cheaper to use a local Coeff coeffLast = terms[lastTermIndex].coeff ?
 
