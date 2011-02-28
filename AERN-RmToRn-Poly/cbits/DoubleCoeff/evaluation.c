@@ -4,9 +4,9 @@
 
 /*
  * This file should differ from its GenericCoeff analogue
- * only in the following include line and in two places
- * where a coefficient is to be converted to a Haskell value,
- * a different conversion evaluation function has to be called.
+ * only:
+ * - in the following include line
+ * - by replacing eval_convert_hs with eval_convertFromDouble_hs (4 occurrences)
  */
 #include "DoubleCoeff/poly.h"
 #include "EvalExport_stub.h"
@@ -15,6 +15,7 @@ Value
 ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
     BinaryOp add, BinaryOp subtr, BinaryOp mult, ConversionOp cf2val)
 {
+  //  printf("evalAtPtChebBasis: starting\n");
   Var maxArity = p -> maxArity;
   Var psize = p -> psize;
   Term * terms = p -> terms;
@@ -33,11 +34,11 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
   for (Size termNo = 0; termNo < psize; ++termNo)
     {
       Power * powers = terms[termNo].powers;
-      for (int var = 0; var < maxArity; ++var)
+      FOREACH_VAR_ARITY(var, maxArity)
         {
-          if (powers[var] > maxPowers[var])
+          if (POWER_OF_VAR(powers,var) > maxPowers[var])
             {
-              maxPowers[var] = powers[var];
+              maxPowers[var] = POWER_OF_VAR(powers,var);
               //              printf("powers[%d]=%d\n", var, powers[var]);
             }
         }
@@ -45,7 +46,7 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
 
   // compute Chebyshev powers for all values up to the variable's maximum power:
   Value ** varPowers = malloc(maxArity * sizeof(Value *));
-  for (Var var = 0; var < maxArity; ++var)
+  FOREACH_VAR_ARITY(var, maxArity)
     {
       Power varMaxN = maxPowers[var];
       Value x = values[var];
@@ -82,9 +83,9 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
       // printf("evalAtPtPowerBasis: coeff addr = %p\n", terms[termNo].coeff);
       Value termValue = eval_convertFromDouble_hs(cf2val, terms[termNo].coeff);
 
-      for (Var var = 0; var < maxArity; ++var)
+      FOREACH_VAR_ARITY(var, maxArity)
         {
-          Power pwr = terms[termNo].powers[var];
+          Power pwr = POWER_OF_VAR(terms[termNo].powers,var);
           if (pwr > 0)
             {
               //              printf(" multiplying for var %d with power %d\n", var, pwr);
@@ -101,7 +102,7 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
     }
 
   // free pre-computed Chebyshev powers:
-  for (Var var = 0; var < maxArity; ++var)
+  FOREACH_VAR_ARITY(var, maxArity)
     {
       // free the haskell values pointed to by this array:
       for (Power power = 2; power < maxPowers[var]; ++power)
@@ -116,14 +117,16 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
   // free the array with maximum powers for each variable:
   free(maxPowers);
 
+  //  printf("evalAtPtChebBasis: returning\n");
   return result;
 }
+
 
 Value
 ADD_COEFF_CODE(evalAtPtPowerBasis)(Poly * p, Value * values, Value one,
     BinaryOp add, BinaryOp mult, ConversionOp cf2val)
 {
-  //  printf("evalAtPtPowerBasis: starting\n");
+//  printf("evalAtPtPowerBasis: starting\n");
   Var maxArity = p -> maxArity;
   Var psize = p -> psize;
   Term * terms = p -> terms;
@@ -144,9 +147,9 @@ ADD_COEFF_CODE(evalAtPtPowerBasis)(Poly * p, Value * values, Value one,
       Power * powers = terms[termNo].powers;
       for (int var = 0; var < maxArity; ++var)
         {
-          if (powers[var] > maxPowers[var])
+          if (POWER_OF_VAR(powers,var) > maxPowers[var])
             {
-              maxPowers[var] = powers[var];
+              maxPowers[var] = POWER_OF_VAR(powers,var);
               //              printf("powers[%d]=%d\n", var, powers[var]);
             }
         }
@@ -194,7 +197,7 @@ ADD_COEFF_CODE(evalAtPtPowerBasis)(Poly * p, Value * values, Value one,
 
       for (Var var = 0; var < maxArity; ++var)
         {
-          Power pwr = terms[termNo].powers[var];
+          Power pwr = POWER_OF_VAR(terms[termNo].powers,var);
           if (pwr > 0)
             {
               //              printf(" multiplying for var %d with power %d\n", var, pwr);
@@ -221,11 +224,13 @@ ADD_COEFF_CODE(evalAtPtPowerBasis)(Poly * p, Value * values, Value one,
       // free the array of pointers to power values:
       free(varPowers[var]);
     }
+
   // free the array of pointers to arrays that point to power values:
   free(varPowers);
+
   // free the array with maximum powers for each variable:
   free(maxPowers);
 
-  //  printf("evalAtPtPowerBasis: returning\n");
+//  printf("evalAtPtPowerBasis: returning\n");
   return result;
 }

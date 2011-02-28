@@ -14,6 +14,7 @@
 void
 ADD_COEFF_CODE(freePoly)(Poly *p)
 {
+//  printf("freePoly: starting\n");
   // free the Poly struct:
   Size maxSize = p -> maxSize;
   Size psize = p -> psize;
@@ -40,12 +41,14 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
 
   // free the terms array:
   free(terms);
+//  printf("freePoly: finished\n");
 }
 
 Poly *
 ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
     Size maxSize, Power maxDeg)
 {
+  //  printf("newConstPoly: starting\n");
   Poly * poly = (Poly *) malloc(sizeof(Poly));
   poly -> maxArity = maxArity;
   poly -> maxSize = maxSize;
@@ -58,11 +61,12 @@ ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
   // allocate space for terms' powers:
   for (Size i = 0; i < maxSize; i++)
     {
-      (poly -> terms)[i].powers = (Power *) malloc(sizeof(Power) * maxArity);
+      (poly -> terms)[i].powers = (Power *) malloc(SIZEOF_POWERS(maxArity));
       // no need to initialise powers and
       // coefficients as these terms are inactive
     }
 
+  //  printf("newConstPoly: returning\n");
   return poly;
 }
 
@@ -84,29 +88,17 @@ ADD_COEFF_CODE(newProjectionPoly)(Coeff zero, Coeff one, Coeff errorBound,
   // initialise the term's powers:
   Power * powers = term -> powers;
 
-  // all zero:
-  for (Var i = 0; i < maxArity; ++i)
-    {
-      powers[i] = 0;
-    }
-  // except the chosen var:
-  powers[var] = 1;
+  // initialise the "cache" of the monomial degree:
+  MONOMIAL_DEGREE(powers) = 1;
 
-  // also initialise the "cache" of the monomial degree:
-  term -> degree = 1;
+  // all zero:
+  FOREACH_VAR_ARITY(var,maxArity)
+    {
+      POWER_OF_VAR(powers,var) = 0;
+    }
+
+  // except the chosen var:
+  POWER_OF_VAR(powers,var) = 1;
 
   return poly;
-}
-
-Power
-ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity)
-{
-   Power result = 0;
-
-   for(int i = 0; i < arity; i++)
-     {
-       result += powers[i];
-     }
-
-   return result;
 }
