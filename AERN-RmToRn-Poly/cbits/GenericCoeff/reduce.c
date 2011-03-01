@@ -38,12 +38,12 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(Ops_Mutable * ops, Poly * res, Poly * sr
   Power deg = (size == 0) ? 0 : MONOMIAL_DEGREE(terms[size-1].powers);
 
   Size resSize = res -> psize;
-  Power maxDeg = res -> maxDeg;
+  Power resMaxDeg = res -> maxDeg;
   Term * resTerms = res -> terms;
 
   CFM_ASSIGN(ops, res -> constTerm, src -> constTerm);
 
-  if (deg <= maxDeg && size <= resSize) // just copy src terms into res?
+  if (deg <= resMaxDeg && size <= resSize) // just copy src terms into res?
   {
     ADD_COEFF_CODE(copyTermsWithoutReduction)(ops, arity,
         res, resTerms, resSize,
@@ -54,7 +54,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(Ops_Mutable * ops, Poly * res, Poly * sr
   {
     CoeffMutable absError = CFM_NEW(ops, CFM_SAMPLE(ops)); // reduction error
     CoeffMutable errorBound = CFM_NEW(ops, src -> errorBound); // accumulator
-    while (deg > maxDeg) // degree reduce i.e. truncate last term?
+    while (deg > resMaxDeg) // degree reduce i.e. truncate last term?
     {
       size--; // now size == index of truncated term
       CFM_ABS_UP(ops, absError, terms[size].coeff); // compute truncation error
