@@ -6,23 +6,19 @@
 /*
  * ASSUMES: deg <= maxDeg && size <= resSize
  */
-ADD_COEFF_CODE(copyTermsWithoutRecduction)(Ops_Mutable * ops, Var arity,
+ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops_Mutable * ops, Var arity,
     Poly * res, Term * resTerms, Size resSize,
     Poly * src, Term * terms, Size size)
 {
-  printf("0\n");
   int i = 0; // save allocating and initialising one int by using two whiles
   while (i < size) // for each term in src
   {
-    printf("1\n");
     CFM_ASSIGN(ops, resTerms[i].coeff, terms[i].coeff); // copy the coefficient
     memmove(resTerms[i].powers, terms[i].powers, SIZEOF_POWERS(arity)); // and powers
     i++;
   }
-  printf("2\n");
   while (i < resSize) // any terms left unassigned in res?
   {
-    printf("3\n");
     CFM_FREE(resTerms[i].coeff); // free their coefficients
   }
   res -> psize = size; // forget remaining terms in res
@@ -49,7 +45,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(Ops_Mutable * ops, Poly * res, Poly * sr
 
   if (deg <= maxDeg && size <= resSize) // just copy src terms into res?
   {
-    ADD_COEFF_CODE(copyTermsWithoutRecduction)(ops, arity,
+    ADD_COEFF_CODE(copyTermsWithoutReduction)(ops, arity,
         res, resTerms, resSize,
         src, terms, size);
     CFM_ASSIGN(ops, res -> errorBound, src -> errorBound);
@@ -67,7 +63,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(Ops_Mutable * ops, Poly * res, Poly * sr
     }
     if (size <= resSize) // just copy remaining src terms into res?
     {
-      ADD_COEFF_CODE(copyTermsWithoutRecduction)(ops, arity,
+      ADD_COEFF_CODE(copyTermsWithoutReduction)(ops, arity,
           res, resTerms, resSize,
           src, terms, size);
       CFM_ASSIGN(ops, res -> errorBound, errorBound);
