@@ -4,6 +4,31 @@
 #include <GenericCoeff/poly.h>
 
 /*
+ * ASSUMES: deg <= maxDeg && size <= resSize
+ */
+ADD_COEFF_CODE(copyTermsWithoutRecduction)(Ops_Mutable * ops, Var arity,
+    Poly * res, Term * resTerms, Size resSize,
+    Poly * src, Term * terms, Size size)
+{
+  printf("0\n");
+  int i = 0; // save allocating and initialising one int by using two whiles
+  while (i < size) // for each term in src
+  {
+    printf("1\n");
+    CFM_ASSIGN(ops, resTerms[i].coeff, terms[i].coeff); // copy the coefficient
+    memmove(resTerms[i].powers, terms[i].powers, SIZEOF_POWERS(arity)); // and powers
+    i++;
+  }
+  printf("2\n");
+  while (i < resSize) // any terms left unassigned in res?
+  {
+    printf("3\n");
+    CFM_FREE(resTerms[i].coeff); // free their coefficients
+  }
+  res -> psize = size; // forget remaining terms in res
+}
+
+/*
  * ASSUMES: maxArity and maxSize of src and res are the same
  * INVARIANT : leaves maxDeg of res unchanged
  */
@@ -20,22 +45,37 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(Ops_Mutable * ops, Poly * res, Poly * sr
   Power maxDeg = res -> maxDeg;
   Term * resTerms = res -> terms;
 
-  if (deg <= maxDeg && size <= resSize) // just copy src into res?
+  CFM_ASSIGN(ops, res -> constTerm, src -> constTerm);
+
+  if (deg <= maxDeg && size <= resSize) // just copy src terms into res?
   {
-    int i = 0; // save allocating and initialising one int by using two whiles
-    while (i < size) // for each term in src
-    {
-      CFM_ASSIGN(ops, resTerms[i].coeff, terms[i].coeff); // copy the coefficient
-      memmove(resTerms[i].powers, terms[i].powers, SIZEOF_POWERS(arity)); // and powers
-      i++;
-    }
-    while (i < resSize) // any terms left unassigned in res?
-    {
-      CFM_FREE(resTerms[i].coeff); // free their coefficients
-    }
-    res -> psize = size; // forget remaining terms in res
-    CFM_ASSIGN(ops, res -> constTerm, src -> constTerm);
+    ADD_COEFF_CODE(copyTermsWithoutRecduction)(ops, arity,
+        res, resTerms, resSize,
+        src, terms, size);
     CFM_ASSIGN(ops, res -> errorBound, src -> errorBound);
+  }
+  else // some reduction will be needed
+  {
+    CoeffMutable absError = CFM_NEW(ops, CFM_SAMPLE(ops)); // reduction error
+    CoeffMutable errorBound = CFM_NEW(ops, src -> errorBound); // accumulator
+    while (deg > maxDeg) // degree reduce i.e. truncate last term?
+    {
+      size--; // now size == index of truncated term
+      CFM_ABS_UP(ops, absError, terms[size].coeff); // compute truncation error
+      CFM_ADD_UP(ops, errorBound, errorBound, absError); // accumulate error
+      deg = (size == 0) ? 0 : MONOMIAL_DEGREE(terms[size].powers); // update degree
+    }
+    if (size <= resSize) // just copy remaining src terms into res?
+    {
+      ADD_COEFF_CODE(copyTermsWithoutRecduction)(ops, arity,
+          res, resTerms, resSize,
+          src, terms, size);
+      CFM_ASSIGN(ops, res -> errorBound, errorBound);
+    }
+//    else // some reduction will be needed
+//    {
+//
+//    }
   }
 }
 
