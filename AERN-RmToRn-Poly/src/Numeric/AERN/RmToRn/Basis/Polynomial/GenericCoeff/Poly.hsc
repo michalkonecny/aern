@@ -860,3 +860,30 @@ polyReductionOpMutable reductionOp opsMutablePtr maxDeg (PolyMutableFP pFP) =
       _ <- withForeignPtr pFP $ \pP ->
             reductionOp opsMutablePtr (toCPower maxDeg) pP
       return ()
+
+----------------------------------------------------------------
+
+foreign import ccall safe "copyEnclUsingMutableOpsGenCf"
+        poly_copyEnclUsingMutableOps :: 
+            (Ptr (Ops_Mutable s cf)) ->
+            (Ptr (Poly (Mutable cf s))) -> 
+            (Ptr (Poly (Mutable cf s))) -> 
+            IO ()
+
+polyCopyEnclMutableUsingMutableOpsGenCf ::
+    (CanBeMutable cf) =>
+    (Ptr (Ops_Mutable s cf)) ->
+    PolyMutableFP cf s ->
+    PolyMutableFP cf s ->
+    ST s ()
+polyCopyEnclMutableUsingMutableOpsGenCf opsMutablePtr = 
+    polyCopyOpMutable poly_copyEnclUsingMutableOps opsMutablePtr
+
+polyCopyOpMutable copyOp opsMutablePtr (PolyMutableFP resFP) (PolyMutableFP srcFP) =
+    do
+    unsafeIOToST $
+      do
+      _ <- withForeignPtr resFP $ \resP ->
+             withForeignPtr srcFP $ \srcP ->
+            copyOp opsMutablePtr resP srcP
+      return ()

@@ -1,6 +1,76 @@
+#include <string.h>
 
 #include <GenericCoeff/coeff.h>
 #include <GenericCoeff/poly.h>
+
+/*
+ * ASSUMES: maxArity and maxSize of src and res are the same
+ * INVARIANT : leaves maxDeg of res unchanged
+ */
+
+void
+ADD_COEFF_CODE(copyEnclUsingMutableOps)(Ops_Mutable * ops, Poly * res, Poly * src)
+{
+  Var arity = src -> maxArity;
+  Size size = src -> psize;
+  Term * terms = src -> terms;
+  Power deg = (size == 0) ? 0 : MONOMIAL_DEGREE(terms[size-1].powers);
+
+  Size resSize = res -> psize;
+  Power maxDeg = res -> maxDeg;
+  Term * resTerms = res -> terms;
+
+  if (deg <= maxDeg && size <= resSize) // just copy src into res?
+  {
+    int i = 0; // save allocating and initialising one int by using two whiles
+    while (i < size) // for each term in src
+    {
+      CFM_ASSIGN(ops, resTerms[i].coeff, terms[i].coeff); // copy the coefficient
+      memmove(resTerms[i].powers, terms[i].powers, SIZEOF_POWERS(arity)); // and powers
+      i++;
+    }
+    while (i < resSize) // any terms left unassigned in res?
+    {
+      CFM_FREE(resTerms[i].coeff); // free their coefficients
+    }
+    res -> psize = size; // forget remaining terms in res
+    CFM_ASSIGN(ops, res -> constTerm, src -> constTerm);
+    CFM_ASSIGN(ops, res -> errorBound, src -> errorBound);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void
 ADD_COEFF_CODE(reduceDegreeEnclUsingMutableOps)(Ops_Mutable * ops, Power maxDeg, Poly * p)
