@@ -208,13 +208,14 @@ testMutableGCPolys =
     putStrLn $ "scaleDnThin 0.1 x = " ++ showP sdx
     putStrLn $ "scaleEncl 0.1 x = " ++ showP sex
     putStrLn $ "reduceDegreeEncl 0 pb223 = " ++ showP rd0pb223
+    putStrLn $ "copyEncl x y = " ++ showP cpres
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True
     showCoeffInternals = False
     opsPtr = GCPoly.newOpsPureArithUpDnDefaultEffort sampleD
     opsMutablePtr = GCPoly.newOpsMutableArithUpDnDefaultEffort sampleD
-    [p1,p2,p3,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,sux,sdx,sex,rd0pb223] = runST $
+    [p1,p2,p3,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,sux,sdx,sex,rd0pb223,cpres] = runST $
         do
         let mkConst c = GCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 10) (Power 3)
         let mkVar n = GCPoly.projectionPolyMutable sampleD (Var n) (Var 2) (Size 10) (Power 3)
@@ -223,6 +224,7 @@ testMutableGCPolys =
         let scaleDnThin c = GCPoly.polyScaleDnMutableUsingMutableOps 0 opsMutablePtr (c::Double) 
         let scaleEncl c = GCPoly.polyScaleEnclMutableUsingMutableOps opsMutablePtr (c::Double) 
         let reduceDegree d = GCPoly.polyReduceDegreeEnclMutableUsingMutableOps opsMutablePtr (Power d) 
+        let copyEncl = GCPoly.polyCopyEnclMutableUsingMutableOpsGenCf opsMutablePtr
         
         p1M <- mkConst 0
         p2M <- mkVar 0 -- "x"
@@ -254,6 +256,9 @@ testMutableGCPolys =
         scaleEncl 2.0 rd0pb223M
         addUp rd0pb223M p3M rd0pb223M
         reduceDegree 0 rd0pb223M
+        cpresM <- mkVar 0 --"x"
+        copyEncl cpresM p3M -- copy "y" over "x"
         mapM (GCPoly.unsafeReadPolyMutable sampleD) 
-          [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, suxM, sdxM, sexM,rd0pb223M]
+          [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, 
+           suxM, sdxM, sexM, rd0pb223M, cpresM]
  
