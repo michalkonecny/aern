@@ -5,7 +5,7 @@
 #include <GenericCoeff/poly.h>
 
 /*
- * ASSUMES: deg <= maxDeg && size <= resSize
+ * ASSUMES: deg <= maxDeg && size <= resMaxSize
  */
 ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops_Mutable * ops, Var arity,
     Poly * res, Term * resTerms, Size resSize,
@@ -21,6 +21,7 @@ ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops_Mutable * ops, Var arity,
   while (i < resSize) // any terms left unassigned in res?
   {
     CFM_FREE(resTerms[i].coeff); // free their coefficients
+    i++;
   }
   res -> psize = size; // forget remaining terms in res
 }
@@ -29,11 +30,12 @@ typedef struct { CoeffMutable coeff; int index; ComparisonOp compare; } CoeffFor
 
 int compareFor234(CoeffFor234 * dp1, CoeffFor234 * dp2)
 {
+  printf("2\n");
   return CF_COMPARE(dp1 -> compare, dp1 -> coeff, dp2 -> coeff);
 }
 
 /*
- * ASSUMES: maxArity and maxSize of src and res are the same
+ * ASSUMES: maxArity of src and res are the same
  * INVARIANT : does not change maxDeg and does not increase psize of res
  */
 
@@ -47,14 +49,17 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
   Power deg = (size == 0) ? 0 : MONOMIAL_DEGREE(terms[size-1].powers);
 
   Size resSize = res -> psize;
+  Size resMaxSize = res -> maxSize;
   Power resMaxDeg = res -> maxDeg;
   Term * resTerms = res -> terms;
 
-  CFM_ASSIGN(ops, res -> constTerm, src -> constTerm);
+printf("a");
 
-  printf("0/n");
-  if (deg <= resMaxDeg && size <= resSize) // just copy src terms into res?
+CFM_ASSIGN(ops, res -> constTerm, src -> constTerm);
+
+  if (deg <= resMaxDeg && size <= resMaxSize) // just copy src terms into res?
   {
+printf("b");
     ADD_COEFF_CODE(copyTermsWithoutReduction)(ops, arity,
         res, resTerms, resSize,
         src, terms, size);
@@ -62,8 +67,10 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
   }
   else // some reduction will be needed
   {
+printf("c");
     CoeffMutable absError = CFM_NEW(ops, CFM_SAMPLE(ops)); // reduction error
-    CoeffMutable errorBound = CFM_NEW(ops, src -> errorBound); // accumulator
+    CoeffMutable errorBound = CFM_NEW(ops, CFM_SAMPLE(ops)); // accumulator
+    CFM_ASSIGN(ops, errorBound, src -> errorBound);
     while (deg > resMaxDeg) // degree reduce i.e. truncate last term?
     {
       size--; // now size == index of truncated term
@@ -71,43 +78,56 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
       CFM_ADD_UP(ops, errorBound, errorBound, absError); // accumulate error
       deg = (size == 0) ? 0 : MONOMIAL_DEGREE(terms[size].powers); // update degree
     }
-    if (size <= resSize) // just copy remaining src terms into res?
+    if (size <= resMaxSize) // just copy remaining src terms into res?
     {
       ADD_COEFF_CODE(copyTermsWithoutReduction)(ops, arity,
           res, resTerms, resSize,
           src, terms, size);
       CFM_ASSIGN(ops, res -> errorBound, errorBound);
     }
-    else // size-resSize reductions are needed
+    else // size-resMaxSize reductions are needed
     {
       tree234 * tree = newtree234(&compareFor234);  // get a tree
-      int last = size-resSize-1; // index of last element in the full tree
-      while (size > resSize) // fill the tree
+      int last = size-resMaxSize-1; // index of last element in the full tree
+      while (size > resMaxSize) // fill the tree with last+1 elements
       {
         size--; // now size == index of last term in degree reduced src
         CoeffFor234 * c = malloc(sizeof(CoeffFor234));
+        c -> coeff = CFM_NEW(ops, CFM_SAMPLE(ops));
+printf("0 size=%d resSize=%d last=%d\n", size, resSize, last);
         CFM_ABS_UP(ops, c -> coeff, terms[size].coeff);
+printf("1\n");
         c -> index = size;
         c -> compare = compare;
         add234(tree, c);
+printf("3\n");
       }
       int nextResTermIndex = 0;
       while (size > 0) // add one and delete last from tree, using it to copy to res
       {
         size--; //
         CoeffFor234 * c = malloc(sizeof(CoeffFor234));
+        c -> coeff = CFM_NEW(ops, CFM_SAMPLE(ops));
         CFM_ABS_UP(ops, c -> coeff, terms[size].coeff);
+printf("4\n");
         c -> index = size;
         c -> compare = compare;
         add234(tree, c);
+printf("5\n");
         CoeffFor234 * oldAbsCoeff = (CoeffFor234 *)delpos234(tree, last);
 
+printf("6 size=%d last=%d nextResTermIndex=%d (oldAbsCoeff -> index)=%d\n",
+          size, last, nextResTermIndex, oldAbsCoeff -> index);
         // copy terms[oldAbsCoeff -> index] into resTerms[nextResTermIndex]
         CFM_ASSIGN(ops, resTerms[nextResTermIndex].coeff, terms[oldAbsCoeff -> index].coeff);
+printf("7\n");
         memmove(resTerms[nextResTermIndex].powers, terms[oldAbsCoeff -> index].powers, SIZEOF_POWERS(arity));
-
+printf("8\n");
         CFM_FREE(oldAbsCoeff -> coeff); // free the deleted tree element's coefficient
+printf("9\n");
         free(oldAbsCoeff); // and the deleted element
+printf("10\n");
+        nextResTermIndex++;
       }
       while (last >= 0) // accumulate the reduction errors while emptying the tree
       {
