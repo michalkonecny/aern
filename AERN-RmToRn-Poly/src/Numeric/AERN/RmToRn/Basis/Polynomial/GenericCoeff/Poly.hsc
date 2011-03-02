@@ -865,25 +865,44 @@ polyReductionOpMutable reductionOp opsMutablePtr maxDeg (PolyMutableFP pFP) =
 
 foreign import ccall safe "copyEnclUsingMutableOpsGenCf"
         poly_copyEnclUsingMutableOps :: 
+            (StablePtr (ComparisonOp (Mutable cf s))) ->
             (Ptr (Ops_Mutable s cf)) ->
             (Ptr (Poly (Mutable cf s))) -> 
             (Ptr (Poly (Mutable cf s))) -> 
             IO ()
 
 polyCopyEnclMutableUsingMutableOpsGenCf ::
-    (CanBeMutable cf) =>
+    (Storable cf, CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     (Ptr (Ops_Mutable s cf)) ->
     PolyMutableFP cf s ->
     PolyMutableFP cf s ->
     ST s ()
 polyCopyEnclMutableUsingMutableOpsGenCf opsMutablePtr = 
-    polyCopyOpMutable poly_copyEnclUsingMutableOps opsMutablePtr
+    polyCopyOpMutable poly_copyEnclUsingMutableOps sample opsMutablePtr
+    where
+    sample = zero
+    _ = 
+        do
+        opsMutable <- peek opsMutablePtr
+        sample2 <- deRefStablePtr (ops_sample opsMutable)
+        return [sample,  sample2]
 
-polyCopyOpMutable copyOp opsMutablePtr (PolyMutableFP resFP) (PolyMutableFP srcFP) =
+polyCopyOpMutable copyOp sample opsMutablePtr (PolyMutableFP resFP) (PolyMutableFP srcFP) =
     do
     unsafeIOToST $
       do
+      compareSP <- newStablePtr compareMutable
       _ <- withForeignPtr resFP $ \resP ->
              withForeignPtr srcFP $ \srcP ->
-            copyOp opsMutablePtr resP srcP
+            copyOp compareSP opsMutablePtr resP srcP
+      freeStablePtr compareSP
       return ()
+    where
+    compareMutable v1M v2M =
+        unsafePerformIO $ unsafeSTToIO $
+        do
+        v1 <- unsafeReadMutable v1M
+        v2 <- unsafeReadMutable v2M
+        let _ = [v1,v2,sample] 
+        return $ NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 v2
+      
