@@ -39,7 +39,7 @@ typedef struct { CoeffMutable coeff; int index; ComparisonOp compare; } CoeffFor
 
 int compareFor234(CoeffFor234 * dp1, CoeffFor234 * dp2)
 {
-printf("compare\n");
+  printf("compare\n");
   return CF_COMPARE(dp1 -> compare, dp1 -> coeff, dp2 -> coeff);
 }
 
