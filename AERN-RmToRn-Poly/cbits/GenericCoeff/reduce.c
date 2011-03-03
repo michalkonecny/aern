@@ -11,32 +11,35 @@ ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops_Mutable * ops, Var arity,
     Poly * res, Term * resTerms, Size resPsize,
     Poly * src, Term * terms, Size psize)
 {
-  printf("c\n");
+  printf("copyTerms: entry\n");
   int i = 0; // save allocating and initialising one int by using two whiles
   while (i < psize) // for each term in src
   {
-    printf("\n");
-    // BUG: const polys do not allocate the terms array and so the coeff can't
-    // be written into it! Handle case here or in the calling function?
+    if (resPsize <= i) // ith coefficient in res points to null?
+    {
+      resTerms[i].coeff = CFM_NEW(ops, CFM_SAMPLE(ops)); // new it up
+    }
     CFM_ASSIGN(ops, resTerms[i].coeff, terms[i].coeff); // copy the coefficient
+    printf("copyTerms: copied coeff\n");
     memmove(resTerms[i].powers, terms[i].powers, SIZEOF_POWERS(arity)); // and powers
+    printf("copyTerms: copied powers\n");
     i++;
   }
   while (i < resPsize) // any terms left unassigned in res?
   {
-    printf("e\n");
+    printf("copyTerms: free coeff\n");
     CFM_FREE(resTerms[i].coeff); // free their coefficients
     i++;
   }
-  printf("f\n");
   res -> psize = psize; // forget remaining terms in res
+  printf("copyTerms: exit\n");
 }
 
 typedef struct { CoeffMutable coeff; int index; ComparisonOp compare; } CoeffFor234;
 
 int compareFor234(CoeffFor234 * dp1, CoeffFor234 * dp2)
 {
-printf("2\n");
+printf("compare\n");
   return CF_COMPARE(dp1 -> compare, dp1 -> coeff, dp2 -> coeff);
 }
 
@@ -49,6 +52,7 @@ void
 ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
     Poly * res, Poly * src)
 {
+  printf("copyEncl: entry\n");
   Var arity = src -> maxArity;
   Size psize = src -> psize;
   Term * terms = src -> terms;
@@ -59,16 +63,18 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
   Power resMaxDeg = res -> maxDeg;
   Term * resTerms = res -> terms;
 
-  printf("a\n");
+  CFM_ASSIGN(ops, res -> constTerm, src -> constTerm);
+  printf("copyEncl: assigned constTerm\n");
 
-CFM_ASSIGN(ops, res -> constTerm, src -> constTerm);
-
+  printf("copyEncl: deg=%d maxDeg=%d size=%d resSize=%d maxSize=%d\n",
+                    deg, resMaxDeg, psize, resPsize, resMaxSize);
   if (deg <= resMaxDeg && psize <= resMaxSize) // just copy src terms into res?
   {
-    printf("b\n");
+    printf("copyEncl: just copy terms\n");
     ADD_COEFF_CODE(copyTermsWithoutReduction)(ops, arity,
         res, resTerms, resPsize,
         src, terms, psize);
+    printf("copyEncl: assign errorBound\n");
     CFM_ASSIGN(ops, res -> errorBound, src -> errorBound);
   }
   else // some reduction will be needed
