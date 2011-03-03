@@ -84,7 +84,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
     CFM_ASSIGN(ops, errorBound, src -> errorBound);
     while (deg > resMaxDeg) // degree reduce i.e. truncate last term?
     {
-      printf("degree reducing");
+      printf("degree reducing\n");
       psize--; // now size == index of truncated term
       CFM_ABS_UP(ops, absError, terms[psize].coeff); // compute truncation error
       CFM_ADD_UP(ops, errorBound, errorBound, absError); // accumulate error
@@ -151,7 +151,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
       CFM_ASSIGN(ops, res -> errorBound, errorBound);
     }
   }
-  printf("exit from copyEnclUsingMutableOps reached");
+  printf("copyEncl: exit\n");
 }
 
 //tree234 *
