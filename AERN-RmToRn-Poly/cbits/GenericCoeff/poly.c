@@ -112,6 +112,10 @@ ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
   return poly;
 }
 
+// ASSUMES: 0 <= var < maxArity
+// ASSUMES: 0 < maxSize
+// ASSUMES: 0 < maxDeg
+
 Poly *
 ADD_COEFF_CODE(newProjectionPoly)(Coeff zero, Coeff one, Coeff errorBound,
     Var var, Var maxArity, Size maxSize, Power maxDeg)
@@ -134,9 +138,9 @@ ADD_COEFF_CODE(newProjectionPoly)(Coeff zero, Coeff one, Coeff errorBound,
   MONOMIAL_DEGREE(powers) = 1;
 
   // all zero:
-  FOREACH_VAR_ARITY(var,maxArity)
+  FOREACH_VAR_ARITY(v,maxArity)
     {
-      POWER_OF_VAR(powers,var) = 0;
+      POWER_OF_VAR(powers,v) = 0;
     }
 
   // except the chosen var:
