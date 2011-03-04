@@ -90,7 +90,7 @@ Poly *
 ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
     Size maxSize, Power maxDeg)
 {
-  //  printf("newConstPoly: starting\n");
+//  printf("newConstPoly: starting\n");
   Poly * poly = (Poly *) malloc(sizeof(Poly));
   poly -> maxArity = maxArity;
   poly -> maxSize = maxSize;

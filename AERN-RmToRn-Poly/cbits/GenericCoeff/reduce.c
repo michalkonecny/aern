@@ -11,21 +11,22 @@
  */
 ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops_Mutable * ops, Var arity,
     Poly * res, Term * resTerms, Size resPsize,
-    Poly * src, Term * terms, Size psize)
+    Poly * src, Term * srcTerms, Size curPsize)
 {
   printf("copyTerms: entry\n");
   int i = 0; // save allocating and initialising one int by using two whiles
-  while (i < psize) // for each term in src
+  while (i < curPsize) // for each term in current version of src
   {
     if (resPsize <= i) // ith coefficient in res points to null?
     {
       resTerms[i].coeff = CFM_NEW(ops, CFM_SAMPLE(ops)); // new it up
     }
-    CFM_ASSIGN(ops, resTerms[i].coeff, terms[i].coeff); // copy the coefficient
-    printf("copyTerms: copied coeff\n");
-    memmove(resTerms[i].powers, terms[i].powers, SIZEOF_POWERS(arity)); // and powers
-    printf("copyTerms: copied powers\n");
+    CFM_ASSIGN(ops, resTerms[i].coeff, srcTerms[i].coeff); // copy the coefficient
+//    printf("copyTerms: copied coeff\n");
+    memmove(resTerms[i].powers, srcTerms[i].powers, SIZEOF_POWERS(arity)); // and powers
+    //    printf("copyTerms: copied powers\n");
     i++;
+    printf("copyTerms: copied term\n");
   }
   while (i < resPsize) // any terms left unassigned in res?
   {
@@ -33,7 +34,7 @@ ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops_Mutable * ops, Var arity,
     printf("copyTerms: freed coeff\n");
     i++;
   }
-  res -> psize = psize; // forget remaining terms in res
+  res -> psize = curPsize; // forget remaining terms in res
   printf("copyTerms: exit\n");
 }
 
@@ -54,6 +55,8 @@ void
 ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
     Poly * res, Poly * src)
 {
+  printf("copyEncl: entry\n");
+
   Var srcArity = src -> maxArity;
   Size srcPsize = src -> psize;
   Term * srcTerms = src -> terms;
@@ -65,9 +68,13 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
 
   CFM_ASSIGN(ops, res -> constTerm, src -> constTerm);
 
-  Power deg = (srcPsize == 0) ? 0 : MONOMIAL_DEGREE(srcTerms[srcPsize-1].powers);
-  if (deg <= resMaxDeg && srcPsize <= resMaxSize) // just copy src terms into res?
+  Power curDeg = (srcPsize == 0) ? 0 : MONOMIAL_DEGREE(srcTerms[srcPsize-1].powers);
+
+  printf("copyEncl: srcPsize=%d resMaxSize=%d srcDeg=%d resMaxDeg=%d\n", srcPsize, resMaxSize, curDeg, resMaxDeg);
+
+  if (curDeg <= resMaxDeg && srcPsize <= resMaxSize) // just copy src terms into res?
   {
+    printf("copyEncl: no reduction needed\n");
     ADD_COEFF_CODE(copyTermsWithoutReduction)(ops, srcArity,
         res, resTerms, resPsize,
         src, srcTerms, srcPsize);
@@ -75,20 +82,25 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
   }
   else // some reduction will be needed
   {
+//    printf("copyEncl: some reduction needed\n");
     CoeffMutable absError = CFM_NEW(ops, CFM_SAMPLE(ops)); // reduction error
     CoeffMutable errorBound = CFM_NEW(ops, CFM_SAMPLE(ops)); // accumulator
     CFM_ASSIGN(ops, errorBound, src -> errorBound);
     int currentPsize = srcPsize; // current
-    int currentLastTermIndex = currentPsize-1; // index of current last term in src
-    while (deg > resMaxDeg) // degree reduce i.e. truncate last term?
+    int curLastTermIndex = currentPsize-1; // index of current last term in src
+    printf("copyEncl: curLastTermIndex=%d\n", curLastTermIndex);
+    while (curDeg > resMaxDeg) // degree reduce i.e. truncate last term?
     {
-//      printf("degree reducing\n");
-      CFM_ABS_UP(ops, absError, srcTerms[currentLastTermIndex].coeff); // compute truncation error
+      CFM_ABS_UP(ops, absError, srcTerms[curLastTermIndex].coeff); // compute truncation error
       CFM_ADD_UP(ops, errorBound, errorBound, absError); // accumulate error
-      currentLastTermIndex--; // truncate last term
-      deg = (currentLastTermIndex < 0) ? 0 : MONOMIAL_DEGREE(srcTerms[currentLastTermIndex].powers);
+      curLastTermIndex--; // forget truncated term
+      printf("copyEncl: degree reduced term\n");
+      curDeg = (curLastTermIndex < 0) ? 0 : MONOMIAL_DEGREE(srcTerms[curLastTermIndex].powers);
+      printf("copyEncl: curDeg=%d curLastTermIndex=%d\n", curDeg, curLastTermIndex);
     }
-    if (srcPsize <= resMaxSize) // just copy remaining src terms into res?
+    Size curPsize = curLastTermIndex+1; // truncate reduced terms
+    printf("copyEncl: curPsize=%d resMaxSize=%d curDeg=%d resMaxDeg=%d\n", curPsize, resMaxSize, curDeg, resMaxDeg);
+    if (curPsize < resMaxSize) // just copy remaining src terms into res?
     {
       ADD_COEFF_CODE(copyTermsWithoutReduction)(ops, srcArity,
           res, resTerms, resPsize,
@@ -104,13 +116,10 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
         srcPsize--; // now size == index of last term in degree reduced src
         CoeffFor234 * c = malloc(sizeof(CoeffFor234));
         c -> coeff = CFM_NEW(ops, CFM_SAMPLE(ops));
-//        printf("0 size=%d resSize=%d last=%d\n", psize, resPsize, last);
         CFM_ABS_UP(ops, c -> coeff, srcTerms[srcPsize].coeff);
-//        printf("1\n");
         c -> index = srcPsize;
         c -> compare = compare;
         add234(tree, c);
-//        printf("3\n");
       }
       int nextResTermIndex = 0;
       while (srcPsize > 0) // add one and delete last from tree, using it to copy to res
@@ -119,37 +128,35 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
         CoeffFor234 * c = malloc(sizeof(CoeffFor234));
         c -> coeff = CFM_NEW(ops, CFM_SAMPLE(ops));
         CFM_ABS_UP(ops, c -> coeff, srcTerms[srcPsize].coeff);
-//        printf("4\n");
         c -> index = srcPsize;
         c -> compare = compare;
         add234(tree, c);
-//        printf("5\n");
-        CoeffFor234 * oldAbsCoeff = (CoeffFor234 *)delpos234(tree, last);
+        CoeffFor234 * coeffToCopy = (CoeffFor234 *)delpos234(tree, last);
 
-//        printf("6 size=%d last=%d nextResTermIndex=%d (oldAbsCoeff -> index)=%d\n",
-//          srcPsize, last, nextResTermIndex, oldAbsCoeff -> index);
         // copy terms[oldAbsCoeff -> index] into resTerms[nextResTermIndex]
-        CFM_ASSIGN(ops, resTerms[nextResTermIndex].coeff, srcTerms[oldAbsCoeff -> index].coeff);
-//        printf("7\n");
-        memmove(resTerms[nextResTermIndex].powers, srcTerms[oldAbsCoeff -> index].powers, SIZEOF_POWERS(srcArity));
-//        printf("8\n");
-        CFM_FREE(oldAbsCoeff -> coeff); // free the deleted tree element's coefficient
-//        printf("9\n");
-        free(oldAbsCoeff); // and the deleted element
-//        printf("10\n");
+        if (resPsize <= nextResTermIndex) // unallocated coeff?
+        {
+          resTerms[nextResTermIndex].coeff = CFM_NEW(ops, CFM_SAMPLE(ops)); // new it up
+        }
+        CFM_ASSIGN(ops, resTerms[nextResTermIndex].coeff, srcTerms[coeffToCopy -> index].coeff);
+        memmove(resTerms[nextResTermIndex].powers, srcTerms[coeffToCopy -> index].powers, SIZEOF_POWERS(srcArity));
+        CFM_FREE(coeffToCopy -> coeff); // free the deleted tree element's coefficient
+        free(coeffToCopy); // and the deleted element
         nextResTermIndex++;
       }
-      while (last >= 0) // accumulate the reduction errors while emptying the tree
+      printf("tree size = %d\n", count234(tree));
+      int j = 0;
+      CoeffFor234 * oldAbsCoeff;
+      while ((oldAbsCoeff = (CoeffFor234 *)delpos234(tree, j)) != NULL) // accumulate errors
       {
-        CoeffFor234 * oldAbsCoeff = (CoeffFor234 *)delpos234(tree, last);
         CFM_ADD_UP(ops, errorBound, errorBound, oldAbsCoeff -> coeff);
         CFM_FREE(oldAbsCoeff -> coeff);
-        last--;
+        j++;
       }
       CFM_ASSIGN(ops, res -> errorBound, errorBound);
     }
   }
-//  printf("copyEncl: exit\n");
+  printf("copyEncl: exit\n");
 }
 
 //tree234 *

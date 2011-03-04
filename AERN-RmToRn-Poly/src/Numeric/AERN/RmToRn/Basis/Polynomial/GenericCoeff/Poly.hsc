@@ -894,7 +894,7 @@ polyCopyOpMutable copyOp sample opsMutablePtr (PolyMutableFP resFP) (PolyMutable
       compareSP <- newStablePtr compareMutable
       _ <- withForeignPtr resFP $ \resP ->
              withForeignPtr srcFP $ \srcP ->
-            copyOp compareSP opsMutablePtr resP srcP
+             copyOp compareSP opsMutablePtr resP srcP
       freeStablePtr compareSP
       return ()
     where
