@@ -192,6 +192,7 @@ testPureGCPolys =
 testMutableGCPolys :: IO ()
 testMutableGCPolys =
     do
+{-
     arity <- GCPoly.peekArityIO p1
     putStrLn $ "maxArity = " ++ show arity
     threadDelay 100000
@@ -211,7 +212,7 @@ testMutableGCPolys =
     putStrLn $ "scaleUpThin 0.1 x = " ++ showP sux
     putStrLn $ "scaleDnThin 0.1 x = " ++ showP sdx
     putStrLn $ "scaleEncl 0.1 x = " ++ showP sex
-    
+-}    
     putStrLn $ "copyEncl (" ++ showP cptarg ++ ") (" ++ showP cpsrc ++ ") = " ++ showP cpres
 --    performGC
 --    threadDelay 1000000
@@ -229,7 +230,7 @@ testMutableGCPolys =
      ] = runST $
         do
         let mkConst c =      GCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 10) (Power 3)
-        let mkConstConst c = GCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 1) (Power 3)
+        let mkConstConst c = GCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 10) (Power 0)
         let mkVar n = GCPoly.projectionPolyMutable sampleD (Var n) (Var 2) (Size 10) (Power 3)
         let addUp = GCPoly.polyAddUpMutableUsingMutableOps sampleD opsMutablePtr
         let scaleUpThin c = GCPoly.polyScaleUpMutableUsingMutableOps 0 opsMutablePtr (c::Double) 
@@ -268,9 +269,8 @@ testMutableGCPolys =
         sexM <- mkVar 0
         scaleEncl 0.1 sexM
          
-        cpsrcM  <- mkConst 0.1 
+        cpsrcM  <- mkConst 1 
         addUp cpsrcM cpsrcM p2M
-        scaleEncl 3 cpsrcM
         addUp cpsrcM cpsrcM p3M
         cptargM <- mkConstConst 1
         cpresM  <- mkConstConst 1
