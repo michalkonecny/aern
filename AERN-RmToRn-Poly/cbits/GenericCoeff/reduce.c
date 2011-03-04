@@ -127,7 +127,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
         CoeffFor234 * oldAbsCoeff = (CoeffFor234 *)delpos234(tree, last);
 
 //        printf("6 size=%d last=%d nextResTermIndex=%d (oldAbsCoeff -> index)=%d\n",
-          srcPsize, last, nextResTermIndex, oldAbsCoeff -> index);
+//          srcPsize, last, nextResTermIndex, oldAbsCoeff -> index);
         // copy terms[oldAbsCoeff -> index] into resTerms[nextResTermIndex]
         CFM_ASSIGN(ops, resTerms[nextResTermIndex].coeff, srcTerms[oldAbsCoeff -> index].coeff);
 //        printf("7\n");
