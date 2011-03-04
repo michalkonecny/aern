@@ -18,7 +18,8 @@ import Control.Monad.ST (runST,unsafeIOToST)
 import System.IO.Unsafe
 
 import Foreign.StablePtr
-import System.Mem
+import System.Mem (performGC)
+import Control.Concurrent (threadDelay, yield)
 
 main :: IO ()
 main = 
@@ -193,9 +194,11 @@ testMutableGCPolys =
     do
     arity <- GCPoly.peekArityIO p1
     putStrLn $ "maxArity = " ++ show arity
+    threadDelay 100000
     putStrLn $ "p1 = " ++ showP p1
     putStrLn $ "p2 = " ++ showP p2
     putStrLn $ "p3 = " ++ showP p3
+
     putStrLn $ "p11 = " ++ showP p11
     putStrLn $ "p12 = " ++ showP p12
     putStrLn $ "p22 = " ++ showP p22
@@ -204,22 +207,29 @@ testMutableGCPolys =
     putStrLn $ "p23s1 = " ++ showP p23s1
     putStrLn $ "pb223s1 = " ++ showP pb223s1
     putStrLn $ "pb223d0 = " ++ showP pb223d0
+
     putStrLn $ "scaleUpThin 0.1 x = " ++ showP sux
     putStrLn $ "scaleDnThin 0.1 x = " ++ showP sdx
     putStrLn $ "scaleEncl 0.1 x = " ++ showP sex
-    putStrLn $ "reduceDegreeEncl 0 pb223 = " ++ showP rd0pb223
+    
     putStrLn $ "copyEncl (" ++ showP cptarg ++ ") (" ++ showP cpsrc ++ ") = " ++ showP cpres
+--    performGC
+--    threadDelay 1000000
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
-    showChebTerms = True
+--    showChebTerms = True
+    showChebTerms = False
     showCoeffInternals = False
     opsPtr = GCPoly.newOpsPureArithUpDnDefaultEffort sampleD
     opsMutablePtr = GCPoly.newOpsMutableArithUpDnDefaultEffort sampleD
-    [p1,p2,p3,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,sux,sdx,sex,rd0pb223,
-     cpsrc,cptarg,cpres] = runST $
+    [p1,p2,p3,
+     p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,
+     sux,sdx,sex,
+     cpsrc,cptarg,cpres
+     ] = runST $
         do
-        let mkConst c = GCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 10) (Power 3)
-        let mkConstConst c = GCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 10) (Power 0)
+        let mkConst c =      GCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 10) (Power 3)
+        let mkConstConst c = GCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 1) (Power 3)
         let mkVar n = GCPoly.projectionPolyMutable sampleD (Var n) (Var 2) (Size 10) (Power 3)
         let addUp = GCPoly.polyAddUpMutableUsingMutableOps sampleD opsMutablePtr
         let scaleUpThin c = GCPoly.polyScaleUpMutableUsingMutableOps 0 opsMutablePtr (c::Double) 
@@ -232,6 +242,7 @@ testMutableGCPolys =
         p1M <- mkConst 0
         p2M <- mkVar 0 -- "x"
         p3M <- mkVar 1 -- "y"
+        
         p11M <- mkConst 0 -- allocate space
         addUp p11M p1M p1M -- p11M := p1M +^ p1M
         p12M <- mkConst 0
@@ -249,26 +260,27 @@ testMutableGCPolys =
         addUp pb223s1M p22M p3M
         pb223d0M <- GCPoly.constPolyMutable (0::Double) 0 (Var 2) (Size 2) (Power 0)
         addUp pb223d0M p22M p3M
+        
         suxM <- mkVar 0
         scaleUpThin 0.1 suxM
         sdxM <- mkVar 0
         scaleDnThin 0.1 sdxM
         sexM <- mkVar 0
-        scaleEncl 0.1 sexM 
-        rd0pb223M <- mkVar 0
-        scaleEncl 2.0 rd0pb223M
-        addUp rd0pb223M p3M rd0pb223M
-        reduceDegree 0 rd0pb223M        
-        
+        scaleEncl 0.1 sexM
+         
         cpsrcM  <- mkConst 0.1 
         addUp cpsrcM cpsrcM p2M
         scaleEncl 3 cpsrcM
         addUp cpsrcM cpsrcM p3M
         cptargM <- mkConstConst 1
-        cpresM  <- mkConstConst 1  
+        cpresM  <- mkConstConst 1
         copyEncl cpresM cpsrcM
         
         mapM (GCPoly.unsafeReadPolyMutable sampleD) 
-          [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, 
-           suxM, sdxM, sexM, rd0pb223M, cpsrcM, cptargM, cpresM]
+          [
+           p1M, p2M, p3M, 
+           p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, 
+           suxM, sdxM, sexM, 
+           cpsrcM, cptargM, cpresM
+          ]
  
