@@ -18,6 +18,7 @@ module Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps() where
 
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.Interval.Mutable
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps
@@ -27,6 +28,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 import Numeric.AERN.RealArithmetic.Interval.FieldOps
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 import Control.Monad.ST (ST)
 
@@ -403,16 +405,151 @@ instance
     RoundedRingInPlace (Interval e)
 
 instance
-    (RoundedPowerToNonnegInt (Interval e),
+    (ArithUpDn.RoundedPowerNonnegToNonnegIntInPlace e,
+     RoundedPowerToNonnegInt (Interval e),
      RoundedMultiplyInPlace (Interval e),
-     HasOne e,
+     HasOne e,  HasZero e, NumOrd.PartialComparison e, NegInPlace e,
      CanBeMutable e
      ) => 
     RoundedPowerToNonnegIntInPlace (Interval e)
     where
-    -- TODO: use endpoints like for the pure case 
-    powerToNonnegIntInInPlaceEff sample (_, _, effMult) = 
-        powerToNonnegIntInInPlaceEffFromMult sample effMult
-    powerToNonnegIntOutInPlaceEff sample (_, _, effMult) = 
-        powerToNonnegIntOutInPlaceEffFromMult sample effMult
+    powerToNonnegIntInInPlaceEff sampleI@(Interval sample _)
+            (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
+            res@(MInterval resL resH) a@(MInterval aL aH) n =
+        do
+        l <- readMutable aL 
+        h <- readMutable aH
+        let _ = [sample, l, h] 
+        case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
+            ((Just True, _), (Just True, _)) -> -- both non-negative
+                do
+                ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff sample 
+                    effPowerEndpt resL aL n 
+                ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff sample 
+                    effPowerEndpt resH aH n
+            ((_, Just True), (_, Just True)) -> -- both non-positive
+                do
+                -- negate the parameters, use the result as a temp space (may alias!):
+                negInPlace sampleI res a
+                -- compute the power of the positive interval:
+                ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff sample 
+                    effPowerEndpt resL resL n 
+                ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff sample 
+                    effPowerEndpt resH resH n
+                case even n of
+                    True -> 
+                        return () -- keep result positive
+                    False ->
+                        negInPlace sampleI res res -- back to the original sign
+            _ ->
+                do
+                powerToNonnegIntInInPlaceEffFromMult sampleI effPowerFromMult res a n
+    powerToNonnegIntOutInPlaceEff sampleI@(Interval sample _)
+            (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
+            res@(MInterval resL resH) a@(MInterval aL aH) n =
+        do
+        l <- readMutable aL 
+        h <- readMutable aH
+        let _ = [sample, l, h] 
+        case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
+            ((Just True, _), (Just True, _)) -> -- both non-negative
+                do
+                ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff sample 
+                    effPowerEndpt resL aL n 
+                ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff sample 
+                    effPowerEndpt resH aH n
+            ((_, Just True), (_, Just True)) -> -- both non-positive
+                do
+                -- negate the parameters, use the result as a temp space (may alias!):
+                negInPlace sampleI res a
+                -- compute the power of the positive interval:
+                ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff sample 
+                    effPowerEndpt resL resL n 
+                ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff sample 
+                    effPowerEndpt resH resH n
+                case even n of
+                    True -> 
+                        return () -- keep result positive
+                    False ->
+                        negInPlace sampleI res res -- back to the original sign
+            _ ->
+                do
+                powerToNonnegIntOutInPlaceEffFromMult sampleI effPowerFromMult res a n
+
+instance 
+    (RoundedDivide (Interval e),
+     ArithUpDn.RoundedDivideInPlace e,
+     ArithUpDn.RoundedMultiplyInPlace e,
+     NumOrd.RoundedLatticeInPlace e,
+     HasZero e,  HasOne e, Neg e, 
+     NumOrd.PartialComparison e,  NumOrd.HasExtrema e,
+     CanBeMutable e) => 
+    RoundedDivideInPlace (Interval e) 
+    where
+    divOutInPlaceEff sampleI@(Interval sample _) 
+            (effortComp, effortMinmax, (effortMult, effortDiv)) 
+            res@(MInterval resL resH) a@(MInterval aL aH) b@(MInterval bL bH) =
+        do
+        temp <- makeMutable sampleI
+        recipIntervalInPlace sample
+            (pPosNonnegNegNonposEff effortComp) 
+            divDn
+            divUp
+            bottom
+            temp b
+        multOutInPlaceEff sampleI (effortComp, effortMinmax, effortMult) res a temp
+        where
+        bottom = RefOrd.bottom
+        _ = [bottom, sampleI]
+        divUp = ArithUpDn.divUpInPlaceEff sample effortDiv
+        divDn = ArithUpDn.divDnInPlaceEff sample effortDiv
+    divInInPlaceEff sampleI@(Interval sample _) 
+            (effortComp, effortMinmax, (effortMult, effortDiv)) 
+            res@(MInterval resL resH) a@(MInterval aL aH) b@(MInterval bL bH) =
+        do
+        temp <- makeMutable sampleI
+        recipIntervalInPlace sample
+            (pPosNonnegNegNonposEff effortComp) 
+            divUp
+            divDn
+            top
+            temp b
+        multInInPlaceEff sampleI (effortComp, effortMinmax, effortMult) res a temp
+        where
+        top = RefOrd.top
+        _ = [top, sampleI]
+        divUp = ArithUpDn.divUpInPlaceEff sample effortDiv
+        divDn = ArithUpDn.divDnInPlaceEff sample effortDiv
+
+recipIntervalInPlace sample pPosNonnegNegNonpos divL divR fallback 
+        res@(MInterval resL resH) a@(MInterval aL aH) =
+    do
+    let oneP = one
+    let top = RefOrd.top 
+    let bottom = RefOrd.bottom
+    let _ = [top, bottom, fallback] 
+    oneM <- unsafeMakeMutable oneP  
+    l <- readMutable aL
+    h <- readMutable aH
+    let _ = [sample, l, h, oneP]
+    case (pPosNonnegNegNonpos l, pPosNonnegNegNonpos h) of
+        -- positive:
+        ((Just True, _, _, _), (Just True, _, _, _)) ->
+            do
+            divL resL oneM aH
+            divR resH oneM aL
+        -- negative:
+        ((_, _, Just True, _), (_, _, Just True, _)) ->  
+            do
+            divL resL oneM aH
+            divR resH oneM aL
+        -- consistent around zero:
+        ((_, _, _, Just True), (_, Just True, _, _)) ->
+            writeMutable res bottom
+        -- anti-consistent around zero:
+        ((_, Just True, _, _), (_,_,_, Just True)) ->  
+            writeMutable res top
+        -- unknown:
+        _ ->  
+            writeMutable res fallback
     
