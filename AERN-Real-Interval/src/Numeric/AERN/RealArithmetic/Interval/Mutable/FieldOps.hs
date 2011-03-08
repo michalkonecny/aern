@@ -552,4 +552,13 @@ recipIntervalInPlace sample pPosNonnegNegNonpos divL divR fallback
         -- unknown:
         _ ->  
             writeMutable res fallback
+
+instance 
+    (ArithUpDn.RoundedFieldInPlace e,
+     ArithUpDn.RoundedPowerNonnegToNonnegIntInPlace e,
+     HasZero e, NegInPlace e, HasOne e, 
+     NumOrd.HasExtrema e,
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLatticeInPlace e) => 
+    RoundedFieldInPlace (Interval e)
     
