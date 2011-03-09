@@ -236,7 +236,7 @@ testMutableGCPolys =
         let scaleUpThin c = GCPoly.polyScaleUpMutableUsingMutableOps 0 opsMutablePtr (c::Double) 
         let scaleDnThin c = GCPoly.polyScaleDnMutableUsingMutableOps 0 opsMutablePtr (c::Double) 
         let scaleEncl c = GCPoly.polyScaleEnclMutableUsingMutableOps opsMutablePtr (c::Double) 
-        let reduceDegree d = GCPoly.polyReduceDegreeEnclMutableUsingMutableOps opsMutablePtr (Power d) 
+--        let reduceDegree d = GCPoly.polyReduceDegreeEnclMutableUsingMutableOps opsMutablePtr (Power d) 
         let copyEncl = GCPoly.polyCopyEnclMutableUsingMutableOpsGenCf opsMutablePtr
         let pair x = (x,x)
         

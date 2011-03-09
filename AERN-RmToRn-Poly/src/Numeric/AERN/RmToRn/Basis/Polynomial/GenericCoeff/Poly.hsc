@@ -836,6 +836,7 @@ polyEval unary ops (PolyFP pFP) =
     return res
 
 ----------------------------------------------------------------
+{-
 
 foreign import ccall safe "reduceDegreeEnclUsingMutableOpsGenCf"
         poly_reduceDegreeEnclUsingMutableOps :: 
@@ -861,6 +862,7 @@ polyReductionOpMutable reductionOp opsMutablePtr maxDeg (PolyMutableFP pFP) =
             reductionOp opsMutablePtr (toCPower maxDeg) pP
       return ()
 
+-}
 ----------------------------------------------------------------
 
 foreign import ccall safe "copyEnclUsingMutableOpsGenCf"
