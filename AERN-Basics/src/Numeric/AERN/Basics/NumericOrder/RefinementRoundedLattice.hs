@@ -29,9 +29,6 @@ import Prelude hiding ((<=))
 
 import Numeric.AERN.Basics.Exception 
 
-import Numeric.AERN.Basics.Mutable
-import Control.Monad.ST (ST)
-
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.NumericOrder.Arbitrary 
