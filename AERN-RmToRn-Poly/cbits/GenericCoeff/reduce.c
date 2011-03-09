@@ -54,7 +54,7 @@ void
 ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
     Poly * res, Poly * src)
 {
-  printf("copyEncl: entry\n");
+//  printf("copyEncl: entry\n");
 
   Var srcArity = src -> maxArity;
   Size srcPsize = src -> psize;
@@ -69,11 +69,11 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
 
   Power curDeg = (srcPsize == 0) ? 0 : MONOMIAL_DEGREE(srcTerms[srcPsize-1].powers);
 
-  printf("copyEncl: srcDeg=%d resMaxDeg=%d srcPsize=%d resMaxSize=%d\n", curDeg, resMaxDeg, srcPsize, resMaxSize);
+//  printf("copyEncl: srcDeg=%d resMaxDeg=%d srcPsize=%d resMaxSize=%d\n", curDeg, resMaxDeg, srcPsize, resMaxSize);
 
   if (curDeg <= resMaxDeg && srcPsize <= resMaxSize) // just copy src terms into res?
   {
-    printf("copyEncl: no reduction needed\n");
+//    printf("copyEncl: no reduction needed\n");
     ADD_COEFF_CODE(copyTermsWithoutReduction)(ops, srcArity,
         res, resTerms, resPsize,
         src, srcTerms, srcPsize);
@@ -103,7 +103,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
 //    printf("copyEncl: curDeg=%d resMaxDeg=%d curPsize=%d resMaxSize=%d\n", curDeg, resMaxDeg, curPsize, resMaxSize);
 
     int reductionsNeeded = curPsize-resMaxSize;
-    printf("copyEncl: %d reductionsNeeded\n", reductionsNeeded);
+//    printf("copyEncl: %d reductionsNeeded\n", reductionsNeeded);
     if (reductionsNeeded <= 0) // nothing to reduce i.e. copy remaining src terms into res?
     {
       ADD_COEFF_CODE(copyTermsWithoutReduction)(ops, srcArity,
@@ -117,7 +117,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
       int termIndex = 0;
 
       tree234 * tree = newtree234(&compareFor234); // ordered storage
-      printf("copyEncl: %d elements in tree\n", count234(tree));
+//      printf("copyEncl: %d elements in tree\n", count234(tree));
 
 
 
@@ -125,9 +125,11 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
       if (reductionsNeeded >= resMaxSize) // keep copied i.e. large terms in tree
       { // DONE
 
+//        printf("\nreductionsNeeded >= resMaxSize\n\n");
+
         int fullTreeSize = resMaxSize;
 
-        printf("copyEncl: fullTreeSize=%d\n", fullTreeSize);
+//        printf("copyEncl: fullTreeSize=%d\n", fullTreeSize);
         while (termIndex < fullTreeSize) // fill tree with treeSize elements
         {
           CoeffFor234 * c = malloc(sizeof(CoeffFor234));
@@ -136,11 +138,13 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
           c -> index = termIndex;
           c -> compare = compare;
           add234(tree, c);
-          printf("copyEncl: added element\n");
-          printf("copyEncl: %d elements in tree\n", count234(tree));
+//          printf("copyEncl: added element\n");
+//          printf("copyEncl: %d elements in tree\n", count234(tree));
           termIndex++;
         }
-        printf("copyEncl: tree full\n");
+
+//        printf("copyEncl: tree full\n");
+
         int * redIndexP; // index of reduced element
         CoeffFor234 * coeffP; // pointer to tree element
         while (termIndex < curPsize) // push an element and pop the smallest
@@ -150,41 +154,45 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
           CFM_ABS_UP(ops, c -> coeff, srcTerms[termIndex].coeff);
           c -> index = termIndex;
           c -> compare = compare;
-
           add234(tree, c); // add the element
-          printf("copyEncl: added element\n");
-          printf("copyEncl: %d elements in tree\n", count234(tree));
-
+//          printf("copyEncl: added element\n");
+//          printf("copyEncl: %d elements in tree\n", count234(tree));
           coeffP = findrelpos234(tree, NULL, NULL, REL234_GT, redIndexP); // pop the least element
-          CFM_ADD_UP(ops, errorBound, errorBound, coeffP -> coeff); // compute reduction error
+//          printf("copyEncl: found least element\n");
+          CFM_ADD_UP(ops, errorBound, errorBound, coeffP -> coeff); // accumulate reduction error
+//          printf("copyEncl: accumulated reduction error\n");
           CFM_FREE(coeffP -> coeff);
-
+//          printf("copyEncl: freed coefficient\n");
           reducedTerms[coeffP -> index] = true; // mark the original position of reduced term in srcTerms
-
           free(delpos234(tree, redIndexP)); // delete and free the element
-          printf("copyEncl: deleted element\n");
-          printf("copyEncl: %d elements in tree\n", count234(tree));
+//          printf("copyEncl: deleted least element\n");
+//          printf("copyEncl: %d elements in tree\n", count234(tree));
           termIndex++;
         }
-        printf("copyEncl: reduction complete\n");
+
+//        printf("\ncopyEncl: reduction complete\n\n");
+
         for (int i = 0; i < fullTreeSize; i++) // free tree and contents of elements
         {
-          coeffP = delpos234(tree, i);
-          printf("copyEncl: deleted element\n");
-          printf("copyEncl: %d elements in tree\n", count234(tree));
-          CFM_FREE(coeffP -> coeff);
-          free(coeffP); // REDUNDANT?
+          findrelpos234(tree, NULL, NULL, REL234_GT, redIndexP); // find an element
+          coeffP = delpos234(tree, redIndexP); // delete reference to struct from tree
+//          printf("copyEncl: deleted element number %d\n", i);
+          CFM_FREE(coeffP -> coeff); // TODO: segfaults when uncommented
+//          printf("copyEncl: freed coefficient\n");
+          free(coeffP); // free the struct
+//          printf("copyEncl: freed element\n");
+//          printf("copyEncl: %d elements in tree\n", count234(tree));
         }
-        freetree234(tree);
-        printf("copyEncl: freed tree\n");
+        freetree234(tree); // free the tree
 
-        printf("copyEncl: curPsize=%d\n", curPsize);
+//        printf("\ncopyEncl: tree freed\n\n");
+
+//        printf("copyEncl: curPsize=%d\n", curPsize);
         int srcIndex = 0;
         int resIndex = 0;
-        printf("copyEncl: srcIndex=%d resIndex=%d\n", srcIndex, resIndex);
+//        printf("copyEncl: srcIndex=%d resIndex=%d\n", srcIndex, resIndex);
         while (srcIndex < curPsize)
         {
-  //        printf("%d\n",(int)(reducedTerms[srcIndex] == false));
           if (reducedTerms[srcIndex] == false) // term not reduced i.e. copy term?
           {
             if (resPsize <= resIndex) // coefficient to be written in res not allocated?
@@ -195,11 +203,11 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
             //    printf("copyTerms: copied coeff\n");
             memmove(resTerms[resIndex].powers, srcTerms[srcIndex].powers, SIZEOF_POWERS(srcArity)); // and powers
             //    printf("copyTerms: copied powers\n");
-            printf("copyTerms: copied term\n");
+//            printf("copyEncl: copied term\n");
             resIndex++;
           }
           srcIndex++;
-          printf("copyEncl: srcIndex=%d resIndex=%d\n", srcIndex, resIndex);
+//          printf("copyEncl: srcIndex=%d resIndex=%d\n", srcIndex, resIndex);
         }
       }
 
@@ -208,9 +216,12 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
 
       else // keep reduced i.e. small terms in the tree
       { // TODO
+
+//        printf("\nreductionsNeeded < resMaxSize\n\n");
+
         int fullTreeSize = reductionsNeeded;
 
-        printf("copyEncl: fullTreeSize=%d\n", fullTreeSize);
+//        printf("copyEncl: fullTreeSize=%d\n", fullTreeSize);
         while (termIndex < fullTreeSize) // fill tree with treeSize elements
         {
           CoeffFor234 * c = malloc(sizeof(CoeffFor234));
@@ -219,13 +230,16 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
           c -> index = termIndex;
           c -> compare = compare;
           add234(tree, c);
-          printf("copyEncl: added element\n");
-          printf("copyEncl: %d elements in tree\n", count234(tree));
+//          printf("copyEncl: added element\n");
+//          printf("copyEncl: %d elements in tree\n", count234(tree));
           termIndex++;
         }
-        printf("copyEncl: tree full\n");
+
+//        printf("\ncopyEncl: tree full\n\n");
+
         int * redIndexP; // index of reduced element
         CoeffFor234 * coeffP; // pointer to tree element
+
         while (termIndex < curPsize) // push an element and pop the smallest
         {
           CoeffFor234 * c = malloc(sizeof(CoeffFor234)); // allocate an element
@@ -233,42 +247,47 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
           CFM_ABS_UP(ops, c -> coeff, srcTerms[termIndex].coeff);
           c -> index = termIndex;
           c -> compare = compare;
-
           add234(tree, c); // add the element
-          printf("copyEncl: added element\n");
-          printf("copyEncl: %d elements in tree\n", count234(tree));
-
-//          coeffP = findrelpos234(tree, NULL, NULL, REL234_LT, redIndexP); // pop the greatest element
+//          printf("copyEncl: added element\n");
+//          printf("copyEncl: %d elements in tree\n", count234(tree));
           findrelpos234(tree, NULL, NULL, REL234_LT, redIndexP); // pop the greatest element
-
-
-          free(delpos234(tree, redIndexP)); // delete and free the element
-          printf("copyEncl: deleted element\n");
-          printf("copyEncl: %d elements in tree\n", count234(tree));
+//          printf("copyEncl: found greatest element\n");
+          coeffP = delpos234(tree, redIndexP); // delete reference to element
+//          printf("copyEncl: deleted greatest element\n");
+          CFM_FREE(coeffP -> coeff);
+//          printf("copyEncl: freed the coefficient\n");
+          free(coeffP);
+//          printf("copyEncl: freed the element\n");
+//          printf("copyEncl: %d elements in tree\n", count234(tree));
           termIndex++;
         }
-        printf("copyEncl: reduction complete\n");
+
+//        printf("\ncopyEncl: reduction complete\n\n");
+
         for (int i = 0; i < fullTreeSize; i++) // free tree and contents of elements
         {
-          coeffP = delpos234(tree, i);
-          CFM_ADD_UP(ops, errorBound, errorBound, coeffP -> coeff); // compute reduction error
-          CFM_FREE(coeffP -> coeff);
+          findrelpos234(tree, NULL, NULL, REL234_LT, redIndexP);
+          coeffP = delpos234(tree, redIndexP);
+//          printf("copyEncl: deleted element\n");
+          CFM_ADD_UP(ops, errorBound, errorBound, coeffP -> coeff); // accumulate reduction error
+//          printf("copyEncl: accumulated reduction error\n");
           reducedTerms[coeffP -> index] = true; // mark the original position of reduced term in srcTerms
-          printf("copyEncl: deleted element\n");
-          printf("copyEncl: %d elements in tree\n", count234(tree));
           CFM_FREE(coeffP -> coeff);
-          free(coeffP); // REDUNDANT?
+//          printf("copyEncl: freed the coefficient\n");
+          free(coeffP); // free the element
+//          printf("copyEncl: freed the element\n");
+//          printf("copyEncl: %d elements left in tree\n", count234(tree));
         }
-        freetree234(tree);
-        printf("copyEncl: freed tree\n");
+        freetree234(tree); // free the tree
 
-        printf("copyEncl: curPsize=%d\n", curPsize);
+//        printf("\ncopyEncl: tree freed\n\n");
+
+//        printf("copyEncl: curPsize=%d\n", curPsize);
         int srcIndex = 0;
         int resIndex = 0;
-        printf("copyEncl: srcIndex=%d resIndex=%d\n", srcIndex, resIndex);
+//        printf("copyEncl: srcIndex=%d resIndex=%d\n", srcIndex, resIndex);
         while (srcIndex < curPsize)
         {
-  //        printf("%d\n",(int)(reducedTerms[srcIndex] == false));
           if (reducedTerms[srcIndex] == false) // term not reduced i.e. copy term?
           {
             if (resPsize <= resIndex) // coefficient to be written in res not allocated?
@@ -279,11 +298,11 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
             //    printf("copyTerms: copied coeff\n");
             memmove(resTerms[resIndex].powers, srcTerms[srcIndex].powers, SIZEOF_POWERS(srcArity)); // and powers
             //    printf("copyTerms: copied powers\n");
-            printf("copyTerms: copied term\n");
+//            printf("copyEncl: copied term\n");
             resIndex++;
           }
           srcIndex++;
-          printf("copyEncl: srcIndex=%d resIndex=%d\n", srcIndex, resIndex);
+//          printf("copyEncl: srcIndex=%d resIndex=%d\n", srcIndex, resIndex);
         }
       }
 
@@ -294,8 +313,8 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare, Ops_Mutable * ops,
     }
     CFM_ASSIGN(ops, res -> errorBound, errorBound);
   }
-  printf("copyEncl: res -> psize = %d\n", res -> psize);
-  printf("copyEncl: exit\n");
+//  printf("copyEncl: res -> psize = %d\n", res -> psize);
+//  printf("copyEncl: exit\n");
 }
 
 ///*
