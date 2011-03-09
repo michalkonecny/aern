@@ -203,7 +203,6 @@ ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreCopiedTerms)(
 
   //        printf("copyEncl: tree full\n");
 
-  int redIndexP; // index of reduced element
   CoeffFor234 * coeffP; // pointer to tree element
   while (termIndex < curPsize) // push an element and pop the smallest
     {
@@ -215,14 +214,14 @@ ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreCopiedTerms)(
       add234(tree, c); // add the element
       //          printf("copyEncl: added element\n");
       //          printf("copyEncl: %d elements in tree\n", count234(tree));
-      coeffP = findrelpos234(tree, NULL, NULL, REL234_GT, &redIndexP); // pop the least element
+      coeffP = delpos234(tree, 0); // pop the least element
       //          printf("copyEncl: found least element\n");
       CFM_ADD_UP(ops, errorBound, errorBound, coeffP -> coeff); // accumulate reduction error
       //          printf("copyEncl: accumulated reduction error\n");
       CFM_FREE(coeffP -> coeff);
       //          printf("copyEncl: freed coefficient\n");
       reducedTerms[coeffP -> index] = true; // mark the original position of reduced term in srcTerms
-      free(delpos234(tree, redIndexP)); // delete and free the element
+      free(coeffP); // delete and free the element
       //          printf("copyEncl: deleted least element\n");
       //          printf("copyEncl: %d elements in tree\n", count234(tree));
       termIndex++;
@@ -232,8 +231,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreCopiedTerms)(
 
   for (int i = 0; i < fullTreeSize; i++) // free tree and contents of elements
     {
-      findrelpos234(tree, NULL, NULL, REL234_GT, &redIndexP); // find an element
-      coeffP = delpos234(tree, redIndexP); // delete reference to struct from tree
+      coeffP = delpos234(tree, 0); // delete reference to struct from tree
       //          printf("copyEncl: deleted element number %d\n", i);
       CFM_FREE(coeffP -> coeff);
       //          printf("copyEncl: freed coefficient\n");
@@ -303,10 +301,9 @@ ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreReducedTerms)(
 
   //        printf("\ncopyEncl: tree full\n\n");
 
-  int redIndexP; // index of reduced element
   CoeffFor234 * coeffP; // pointer to tree element
 
-  while (termIndex < curPsize) // push an element and pop the smallest
+  while (termIndex < curPsize) // push an element and pop the largest
     {
       CoeffFor234 * c = malloc(sizeof(CoeffFor234)); // allocate an element
       c -> coeff = CFM_NEW(ops, CFM_SAMPLE(ops));
@@ -316,9 +313,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreReducedTerms)(
       add234(tree, c); // add the element
       //          printf("copyEncl: added element\n");
       //          printf("copyEncl: %d elements in tree\n", count234(tree));
-      findrelpos234(tree, NULL, NULL, REL234_LT, &redIndexP); // pop the greatest element
-      //          printf("copyEncl: found greatest element\n");
-      coeffP = delpos234(tree, redIndexP); // delete reference to element
+      coeffP = delpos234(tree, fullTreeSize); // delete reference to element
       //          printf("copyEncl: deleted greatest element\n");
       CFM_FREE(coeffP -> coeff);
       //          printf("copyEncl: freed the coefficient\n");
@@ -332,8 +327,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreReducedTerms)(
 
   for (int i = 0; i < fullTreeSize; i++) // free tree and contents of elements
     {
-      findrelpos234(tree, NULL, NULL, REL234_LT, &redIndexP);
-      coeffP = delpos234(tree, redIndexP);
+      coeffP = delpos234(tree, 0);
       //          printf("copyEncl: deleted element\n");
       CFM_ADD_UP(ops, errorBound, errorBound, coeffP -> coeff); // accumulate reduction error
       //          printf("copyEncl: accumulated reduction error\n");
