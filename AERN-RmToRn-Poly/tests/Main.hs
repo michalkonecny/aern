@@ -230,7 +230,7 @@ testMutableGCPolys =
      ] = runST $
         do
         let mkConst c =      GCPoly.constPolyMutable (c::Double) 0 (Var 3) (Size 10) (Power 3)
-        let mkConstConst c = GCPoly.constPolyMutable (c::Double) 0 (Var 3) (Size 2) (Power 3)
+        let mkConstConst c = GCPoly.constPolyMutable (c::Double) 0 (Var 3) (Size 3) (Power 3)
         let mkVar n = GCPoly.projectionPolyMutable sampleD (Var n) (Var 3) (Size 10) (Power 3)
         let addUp = GCPoly.polyAddUpMutableUsingMutableOps sampleD opsMutablePtr
         let scaleUpThin c = GCPoly.polyScaleUpMutableUsingMutableOps 0 opsMutablePtr (c::Double) 
