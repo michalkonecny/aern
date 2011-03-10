@@ -21,6 +21,8 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Exception
+import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Bench
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.RealArithmetic.Laws
@@ -142,4 +144,53 @@ benchExpAreasReal =
     ,
         ("near 20", NumOrd.AreaLinear (Just $ 19.5) True (Just $ 20.5) True [])
     ]
+
+class RoundedSquareRoot t where
+    type SqrtEffortIndicator t
+    sqrtDefaultEffort :: t -> SqrtEffortIndicator t
+    sqrtInEff :: (SqrtEffortIndicator t) -> t -> t
+    sqrtOutEff :: (SqrtEffortIndicator t) -> t -> t
+
+propSqrtSquare ::
+    (RefOrd.PartialComparison t, 
+     RoundedSquareRoot t, RoundedMultiply t, HasZero t,
+     Show t,
+--     ShowInternals t,
+     Show (SqrtEffortIndicator t),
+     EffortIndicator (SqrtEffortIndicator t),
+     Show (MultEffortIndicator t),
+     EffortIndicator (MultEffortIndicator t),
+     Show (RefOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (RefOrd.PartialCompareEffortIndicator t, 
+     (SqrtEffortIndicator t, MultEffortIndicator t, RefOrd.PartialCompareEffortIndicator t)) -> 
+    t -> Bool
+propSqrtSquare _ initEffort e1 =
+    case evalCatchDomViolationExceptions
+            (equalRoundingUpDn
+                expr1In expr1Out expr2In expr2Out 
+                RefOrd.pLeqEff initEffort) of
+        Left e -> True -- was unlucky with the params
+        Right r -> r
+    where
+    expr1In (effSqrt, effMult, effCompare) =
+        sqrtE1 >*< sqrtE1
+        where
+        (>*<) = multInEff effMult
+        sqrtE1 = sqrtInEff effSqrt e1
+    expr1Out (effSqrt, effMult, effCompare) =
+        sqrtE1 <*> sqrtE1
+        where
+        (<*>) = multOutEff effMult
+        sqrtE1 = sqrtOutEff effSqrt e1
+    expr2In _ = e1
+    expr2Out _ = e1
+
+testsInOutSqrt (name, sample) =
+    testGroup (name ++ " sqrt in/out") $
+        [
+            testProperty "sqrt(e)^2 = e" (propSqrtSquare sample)
+        ]
     
