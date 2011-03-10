@@ -444,6 +444,12 @@ instance
             _ ->
                 do
                 powerToNonnegIntInInPlaceEffFromMult sampleI effPowerFromMult res a n
+--                case even n of
+--                    True ->
+--                        do
+--                        zeroM <- unsafeMakeMutable zero 
+--                        RefOrd.maxInnerInPlaceEff sampleI res res zeroM
+--                    False -> return ()
     powerToNonnegIntOutInPlaceEff sampleI@(Interval sample _)
             (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
             res@(MInterval resL resH) a@(MInterval aL aH) n =
@@ -475,6 +481,12 @@ instance
             _ ->
                 do
                 powerToNonnegIntOutInPlaceEffFromMult sampleI effPowerFromMult res a n
+--                case even n of
+--                    True ->
+--                        do
+--                        zeroM <- unsafeMakeMutable zero 
+--                        RefOrd.maxOuterInPlaceEff sampleI res res zeroM
+--                    False -> return ()
 
 instance 
     (RoundedDivide (Interval e),

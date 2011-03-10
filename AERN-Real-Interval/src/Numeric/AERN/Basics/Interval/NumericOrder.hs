@@ -24,6 +24,7 @@ import Numeric.AERN.Basics.PartialOrdering
 
 import Numeric.AERN.Basics.Interval.Basics
 import Numeric.AERN.Basics.Interval.Consistency
+import Numeric.AERN.Basics.Interval.Mutable
 
 import Numeric.AERN.Misc.List
 
@@ -81,6 +82,41 @@ instance
 instance 
     (NumOrd.RoundedLattice e) => 
     (NumOrd.RefinementRoundedLattice (Interval e))
+
+instance
+    (NumOrd.RoundedLatticeInPlace e) =>
+    (NumOrd.OuterRoundedLatticeInPlace (Interval e))
+    where
+    minOuterInPlaceEff (Interval sample _) effort 
+            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+        do
+        NumOrd.minDnInPlaceEff sample effort resLM l1M l2M
+        NumOrd.minUpInPlaceEff sample effort resHM h1M h2M
+    maxOuterInPlaceEff (Interval sample _) effort 
+            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+        do
+        NumOrd.maxDnInPlaceEff sample effort resLM l1M l2M
+        NumOrd.maxUpInPlaceEff sample effort resHM h1M h2M
+
+
+instance
+    (NumOrd.RoundedLatticeInPlace e) =>
+    (NumOrd.InnerRoundedLatticeInPlace (Interval e))
+    where
+    minInnerInPlaceEff (Interval sample _) effort 
+            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+        do
+        NumOrd.minUpInPlaceEff sample effort resLM l1M l2M
+        NumOrd.minDnInPlaceEff sample effort resHM h1M h2M
+    maxInnerInPlaceEff (Interval sample _) effort 
+            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+        do
+        NumOrd.maxUpInPlaceEff sample effort resLM l1M l2M
+        NumOrd.maxDnInPlaceEff sample effort resHM h1M h2M
+
+instance 
+    (NumOrd.RoundedLatticeInPlace e) => 
+    (NumOrd.RefinementRoundedLatticeInPlace (Interval e))
 
 instance (NumOrd.HasLeast e) => (NumOrd.HasLeast (Interval e))
     where
