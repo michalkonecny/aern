@@ -44,40 +44,34 @@ data AERNException =
 
 instance Exception AERNException
 
-evalCatchAERNExceptions :: t -> Either String t
+evalCatchAERNExceptions :: t -> Either AERNException t
 evalCatchAERNExceptions a =
     unsafePerformIO $ catch (evaluateEmbed a) handler
     where
-    handler (AERNException msg) =
+    handler e@(AERNException msg) =
         do
         putStrLn $ "caught AERN exception: " ++ msg
-        return (Left msg)
-    handler (AERNDomViolationException msg) =
+        return (Left e)
+    handler e@(AERNDomViolationException msg) =
         do 
         putStrLn $ "caught AERN operation domain violation exception: " ++ msg
-        return (Left $ "DomViolation: " ++ msg)
-    handler (AERNMaybeDomViolationException msg) =
+        return (Left e)
+    handler e@(AERNMaybeDomViolationException msg) =
         do 
         putStrLn $ "caught AERN potential operation domain violation exception: " ++ msg
-        return (Left $ "MaybeDomViolation: " ++ msg)
+        return (Left e)
     evaluateEmbed a =
         do
         aa <- evaluate a
         return $ Right aa
 
-evalCatchDomViolationExceptions :: t -> Either String t
+evalCatchDomViolationExceptions :: t -> Either AERNException t
 evalCatchDomViolationExceptions a =
-    unsafePerformIO $ catch (evaluateEmbed a) handler
-    where
-    handler (AERNDomViolationException msg) = 
-        do 
-        putStrLn $ "caught AERN op domain violation exception: " ++ msg
-        return (Left msg)
-    handler e = throw e -- rethrow other exceptions
-    evaluateEmbed a =
-        do
-        aa <- evaluate a
-        return $ Right aa
+    case evalCatchAERNExceptions a of
+        Left e@(AERNDomViolationException _) -> Left e
+        Left e@(AERNMaybeDomViolationException _) -> Left e
+        Left e -> throw e
+        r -> r
 
 raisesAERNException :: t -> Bool
 raisesAERNException a =
