@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary
     Description :  support for various common elementary functions
@@ -21,10 +22,12 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 
 import Numeric.AERN.Misc.Debug
 
@@ -135,5 +138,59 @@ testsUpDnExp (name, sample) =
             testProperty "e^a * e^(-a) = 1" (propExpOfNegRecip sample)
         ,
             testProperty "e^(a + b) = e^a * e^b" (propExpOfAddToMult sample)
+        ]
+    
+class RoundedSquareRoot t where
+    type SqrtEffortIndicator t
+    sqrtDefaultEffort :: t -> SqrtEffortIndicator t
+    sqrtUpEff :: (SqrtEffortIndicator t) -> t -> t
+    sqrtDnEff :: (SqrtEffortIndicator t) -> t -> t
+
+
+propSqrtSquare ::
+    (NumOrd.PartialComparison t, 
+     RoundedSquareRoot t, RoundedMultiply t, HasZero t,
+     Show t,
+     ShowInternals t,
+     Show (SqrtEffortIndicator t),
+     EffortIndicator (SqrtEffortIndicator t),
+     Show (MultEffortIndicator t),
+     EffortIndicator (MultEffortIndicator t),
+     Show (NumOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (NumOrd.PartialCompareEffortIndicator t, 
+     (SqrtEffortIndicator t, MultEffortIndicator t, NumOrd.PartialCompareEffortIndicator t)) -> 
+    t -> Bool
+propSqrtSquare _ initEffort e1 =
+    case evalCatchDomViolationExceptions
+            (equalRoundingUpDn
+                expr1Up expr1Dn expr2Up expr2Dn 
+                NumOrd.pLeqEff initEffort) of
+        Left e -> True -- was unlucky with the params
+        Right r -> r
+    where
+    expr1Up (effSqrt, effMult, effCompare) =
+        sqrtE1 *^ sqrtE1
+        where
+        (*^) = multUpEff effMult
+        sqrtE1 = sqrtUpEff effSqrt e1
+    expr1Dn (effSqrt, effMult, effCompare)
+        | sqrtE1DefinitelyPositive = sqrtE1 *. sqrtE1
+        | otherwise = zero
+        where
+        sqrtE1DefinitelyPositive =
+            let ?pCompareEffort = effCompare in
+            case sqrtE1 >=? zero of (Just r) -> r; _ -> False
+        (*.) = multDnEff effMult
+        sqrtE1 = sqrtDnEff effSqrt e1
+    expr2Up _ = e1
+    expr2Dn _ = e1
+
+testsUpDnSqrt (name, sample) =
+    testGroup (name ++ " sqrt up/dn") $
+        [
+            testProperty "sqrt(e)^2 = e" (propSqrtSquare sample)
         ]
     
