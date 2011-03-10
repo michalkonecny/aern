@@ -14,6 +14,7 @@ module Main where
 import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
 import Numeric.AERN.RealArithmetic.Interval
+import Numeric.AERN.RealArithmetic.Interval.Mutable
 import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
 import Numeric.AERN.Basics.Interval
 
@@ -80,6 +81,7 @@ testsDI =
        ArithInOut.testsInOutMult ("DI", sampleDI),
        ArithInOut.testsInOutIntPower ("DI", sampleDI),
        ArithInOut.testsInOutDiv ("DI", sampleDI),
+       ArithInOut.testsInOutFieldOpsInPlace ("DI", sampleDI),
        ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Integer", sampleI),
        ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Rational", sampleR),
        ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Double", sampleD)
