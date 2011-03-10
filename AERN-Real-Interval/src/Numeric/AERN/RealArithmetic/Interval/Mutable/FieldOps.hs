@@ -408,7 +408,8 @@ instance
     (ArithUpDn.RoundedPowerNonnegToNonnegIntInPlace e,
      RoundedPowerToNonnegInt (Interval e),
      RoundedMultiplyInPlace (Interval e),
-     HasOne e,  HasZero e, NumOrd.PartialComparison e, NegInPlace e,
+     HasOne e,  HasZero e, NegInPlace e,
+     NumOrd.PartialComparison e, NumOrd.RoundedLatticeInPlace e,
      CanBeMutable e
      ) => 
     RoundedPowerToNonnegIntInPlace (Interval e)
@@ -444,12 +445,14 @@ instance
             _ ->
                 do
                 powerToNonnegIntInInPlaceEffFromMult sampleI effPowerFromMult res a n
---                case even n of
---                    True ->
---                        do
---                        zeroM <- unsafeMakeMutable zero 
---                        RefOrd.maxInnerInPlaceEff sampleI res res zeroM
---                    False -> return ()
+                case even n of
+                    True ->
+                        do
+                        let zeroI = zero 
+                        let _ = [zeroI, sampleI]
+                        zeroM <- unsafeMakeMutable zeroI 
+                        NumOrd.maxInnerInPlaceEff sampleI effMinMax  res res zeroM
+                    False -> return ()
     powerToNonnegIntOutInPlaceEff sampleI@(Interval sample _)
             (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
             res@(MInterval resL resH) a@(MInterval aL aH) n =
@@ -481,12 +484,14 @@ instance
             _ ->
                 do
                 powerToNonnegIntOutInPlaceEffFromMult sampleI effPowerFromMult res a n
---                case even n of
---                    True ->
---                        do
---                        zeroM <- unsafeMakeMutable zero 
---                        RefOrd.maxOuterInPlaceEff sampleI res res zeroM
---                    False -> return ()
+                case even n of
+                    True ->
+                        do
+                        let zeroI = zero 
+                        let _ = [zeroI, sampleI]
+                        zeroM <- unsafeMakeMutable zeroI 
+                        NumOrd.maxOuterInPlaceEff sampleI effMinMax res res zeroM
+                    False -> return ()
 
 instance 
     (RoundedDivide (Interval e),
