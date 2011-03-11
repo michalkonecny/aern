@@ -19,6 +19,8 @@ module Numeric.AERN.RealArithmetic.Interval.ElementaryDirect where
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Implementation.Elementary
 
+import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect.Sqrt
+
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
@@ -111,4 +113,73 @@ instance
                 hI
         lI = Interval l l
         hI = Interval h h
-        
+
+instance 
+    (ArithUpDn.RoundedMixedField e Int,
+     ArithUpDn.RoundedField e, 
+     ArithUpDn.Convertible e Double,
+     HasZero e, HasOne e, 
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLattice e) => 
+    (ArithInOut.RoundedSquareRoot (Interval e))
+    where
+    type ArithInOut.SqrtEffortIndicator (Interval e) = 
+        ((ArithUpDn.FieldOpsEffortIndicator e,
+          ArithUpDn.MixedFieldOpsEffortIndicator e Int)
+        ,
+         Int1To10
+        ,
+         ((NumOrd.MinmaxEffortIndicator e, NumOrd.PartialCompareEffortIndicator e),
+          ArithUpDn.ConvertEffortIndicator e Double)
+        )
+
+    sqrtDefaultEffort i@(Interval l h) = 
+        ((ArithUpDn.fieldOpsDefaultEffort l, 
+          ArithUpDn.mixedFieldOpsDefaultEffort l sampleI)
+        ,
+         Int1To10 10
+        , 
+         ((NumOrd.minmaxDefaultEffort l, NumOrd.pCompareDefaultEffort l), 
+          ArithUpDn.convertDefaultEffort l sampleD)
+        )
+        where
+        sampleI = 1 :: Int
+        sampleD = 1 :: Double
+    sqrtOutEff
+            ((effortField, effortMixedField),
+             (Int1To10 effortNewton),
+             ((effortMinmax, effortComp), effortConv))
+            (Interval l h) =
+                case NumOrd.pEqualEff effortComp l h of
+                    Just True -> sqrtL
+                    _ -> Interval sqrtLL sqrtHH
+                    
+        where
+        sqrtL@(Interval sqrtLL _) = sqrt l 
+        sqrtH@(Interval _ sqrtHH) = sqrt h
+        sqrt = 
+            sqrtOutThinArg 
+                effortField
+                effortMixedField 
+                effortMinmax
+                effortConv
+                effortNewton 
+    sqrtInEff
+            ((effortField, effortMixedField),
+             (Int1To10 effortNewton),
+             ((effortMinmax, effortComp), effortConv))
+            (Interval l h) =
+                case NumOrd.pEqualEff effortComp l h of
+                    Just True -> Interval sqrtLH sqrtLL -- invert
+                    _ -> Interval sqrtLH sqrtHL
+                    
+        where
+        (Interval sqrtLL sqrtLH) = sqrt l 
+        (Interval sqrtHL sqrtHH) = sqrt h
+        sqrt = 
+            sqrtOutThinArg 
+                effortField
+                effortMixedField 
+                effortMinmax
+                effortConv 
+                effortNewton 

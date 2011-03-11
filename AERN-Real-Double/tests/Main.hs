@@ -86,7 +86,8 @@ testsDI =
        ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Rational", sampleR),
        ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Double", sampleD)
        ,
-       ArithInOut.testsInOutExp ("DI", sampleDI)
+       ArithInOut.testsInOutExp ("DI", sampleDI),
+       ArithInOut.testsInOutSqrt ("DI", sampleDI)
     ]
 
 sampleI = 1 :: Integer
