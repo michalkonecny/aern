@@ -15,7 +15,7 @@ main =
     do
     putStrLn $ "x = " ++ showP x
     putStrLn $ "y = " ++ showP y
---    putStrLn $ "c1 = " ++ showP c1
+    putStrLn $ "c1 = " ++ showP c1
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True
@@ -24,6 +24,6 @@ main =
     unitInterval = Interval (-1) 1
     x = newProjection Nothing (10,3) domainBox 0 :: DCPoly.PolyFP
     y = newProjection Nothing (10,3) domainBox 1 :: DCPoly.PolyFP
---    c1 =  newConst (10,3) domainBox (1::Double) :: DCPoly.PolyFP
+    c1 =  newConstFn Nothing (10,3) domainBox 1 :: DCPoly.PolyFP
     
     
