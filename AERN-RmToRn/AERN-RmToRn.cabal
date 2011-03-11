@@ -41,7 +41,7 @@ Library
   exposed-modules:       
       Numeric.AERN.RmToRn.Domain, 
       Numeric.AERN.RmToRn.New, 
-      Numeric.AERN.RmToRn.NumericOrderRounding.Substitute, 
-      Numeric.AERN.RmToRn.RefinementOrderRounding.Substitute
+      Numeric.AERN.RmToRn.Evaluate, 
+      Numeric.AERN.RmToRn.MinimalFnBasis 
 
     
