@@ -168,12 +168,9 @@ propSqrtSquare ::
      (SqrtEffortIndicator t, MultEffortIndicator t, RefOrd.PartialCompareEffortIndicator t)) -> 
     t -> Bool
 propSqrtSquare _ initEffort e1 =
-    case evalCatchDomViolationExceptions
-            (equalRoundingUpDn
-                expr1In expr1Out expr2In expr2Out 
-                RefOrd.pLeqEff initEffort) of
-        Left e -> True -- was unlucky with the params
-        Right r -> r
+    equalRoundingUpDn
+        expr1In expr1Out expr2In expr2Out 
+        RefOrd.pLeqEff initEffort
     where
     expr1In (effSqrt, effMult, effCompare) =
         sqrtE1 >*< sqrtE1

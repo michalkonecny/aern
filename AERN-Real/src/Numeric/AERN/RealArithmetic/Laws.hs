@@ -457,8 +457,8 @@ equalRoundingUpDn
 --    ) 
 --    $
     case evalCatchDomViolationExceptions result of
-            Left e ->
-                unsafePrint ("leqRoundingUpDnImprovement: " ++ show e) True 
+            Left e -> True
+--                unsafePrint ("leqRoundingUpDnImprovement: " ++ show e) True 
             -- ignore tests during which a domain violation exception arises 
             Right res -> res
     where
