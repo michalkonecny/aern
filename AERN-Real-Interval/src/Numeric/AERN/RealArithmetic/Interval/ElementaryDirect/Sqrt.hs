@@ -35,7 +35,7 @@ import Numeric.AERN.Basics.Exception
 import Control.Exception (throw)
 
 sqrtOutThinArg ::
-    (HasZero e, HasOne e,
+    (HasZero e, HasOne e, Show e,
      NumOrd.RoundedLattice e,
      ArithUpDn.Convertible e Double,
      ArithUpDn.RoundedMixedField e Int,
@@ -57,11 +57,11 @@ sqrtOutThinArg
     | not (sureAbove0 x) = 
         case (sureAbove0 (neg x)) of
             True -> 
-                throw $ AERNDomViolationException 
-                    "sqrtOutThinArg: applied to a negative argument"
+                throw $ AERNDomViolationException $ 
+                    "sqrtOutThinArg: applied to a negative argument " ++ show x
             _ ->
-                throw $ AERNMaybeDomViolationException 
-                    "sqrtOutThinArg: cannot check that sqrt is applied to a positive argument"
+                throw $ AERNMaybeDomViolationException $ 
+                    "sqrtOutThinArg: cannot check that sqrt is applied to a positive argument " ++ show x
     | xRecipSqrtDownInFastRegion =
 --            unsafePrint ("AERN: sqrtOutThinArg: lower bound in fast region") $
         Interval 

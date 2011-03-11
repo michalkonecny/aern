@@ -19,6 +19,9 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary where
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps
+
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion as UpDnConversion
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Exception
@@ -154,8 +157,14 @@ class RoundedSquareRoot t where
 propSqrtSquare ::
     (RefOrd.PartialComparison t, 
      RoundedSquareRoot t, RoundedMultiply t, HasZero t,
+     UpDnConversion.Convertible t Double,
+     RoundedMixedAdd t Double,
      Show t,
 --     ShowInternals t,
+     Show (UpDnConversion.ConvertEffortIndicator t Double),
+     EffortIndicator (UpDnConversion.ConvertEffortIndicator t Double),
+     Show (MixedAddEffortIndicator t Double),
+     EffortIndicator (MixedAddEffortIndicator t Double),
      Show (SqrtEffortIndicator t),
      EffortIndicator (SqrtEffortIndicator t),
      Show (MultEffortIndicator t),
@@ -164,26 +173,39 @@ propSqrtSquare ::
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
+    (UpDnConversion.ConvertEffortIndicator t Double, 
+     MixedAddEffortIndicator t Double) ->
     (RefOrd.PartialCompareEffortIndicator t, 
-     (SqrtEffortIndicator t, MultEffortIndicator t, RefOrd.PartialCompareEffortIndicator t)) -> 
+     (SqrtEffortIndicator t, 
+      MultEffortIndicator t, 
+      RefOrd.PartialCompareEffortIndicator t)) -> 
     t -> Bool
-propSqrtSquare _ initEffort e1 =
+propSqrtSquare _ (effortToDbl, effortAddDbl) initEffort e1 =
     equalRoundingUpDn
         expr1In expr1Out expr2In expr2Out 
         RefOrd.pLeqEff initEffort
     where
+    e1Pos =
+        case maybeE1LowerBoundD of
+            Just e1LowerBoundD
+                | e1LowerBoundD <= (0 :: Double) -> 
+                    mixedAddOutEff effortAddDbl e1 (0.5 - e1LowerBoundD)
+                | otherwise -> e1
+            _ -> e1
+        where
+        maybeE1LowerBoundD = UpDnConversion.convertDnEff effortToDbl e1  
     expr1In (effSqrt, effMult, effCompare) =
         sqrtE1 >*< sqrtE1
         where
         (>*<) = multInEff effMult
-        sqrtE1 = sqrtInEff effSqrt e1
+        sqrtE1 = sqrtInEff effSqrt e1Pos
     expr1Out (effSqrt, effMult, effCompare) =
         sqrtE1 <*> sqrtE1
         where
         (<*>) = multOutEff effMult
-        sqrtE1 = sqrtOutEff effSqrt e1
-    expr2In _ = e1
-    expr2Out _ = e1
+        sqrtE1 = sqrtOutEff effSqrt e1Pos
+    expr2In _ = e1Pos
+    expr2Out _ = e1Pos
 
 testsInOutSqrt (name, sample) =
     testGroup (name ++ " sqrt in/out") $
