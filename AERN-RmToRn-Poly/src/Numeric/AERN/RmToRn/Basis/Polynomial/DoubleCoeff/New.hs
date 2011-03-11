@@ -56,3 +56,24 @@ instance HasProjections PolyFP
             True
             &&
             (List.sort vars `List.isPrefixOf` [0,1..])
+
+instance HasConstFns PolyFP
+    where
+    newConstFn _ (maxSize, maxDegree) domainBox value =
+        Poly.constPoly 
+            value
+            0 -- radius. ie errorBound
+            (Poly.Var $ fromIntegral arity)
+            (Poly.Size $ fromIntegral maxSize)
+            (Poly.Power $ fromIntegral maxDegree)
+        where
+        arity 
+            | domainBoxOK = length vars
+            | otherwise = 
+                throw $ AERNException "DoubleCoeff polynomial newProjection called with illegal domain box"
+        vars = Map.keys domainBox
+        domainBoxOK =
+            True
+            &&
+            (List.sort vars `List.isPrefixOf` [0,1..])
+            

@@ -32,6 +32,7 @@ class (HasDomainBox fb,
 --        CanSubstitute fb, -- substitution
         CanEvaluateOtherType fb, -- another interpretation (eg string or interval)
         HasProjections fb, -- variables (but their domain is fixed!)
+        HasConstFns fb, -- constants
         ArithUpDn.Convertible (Domain fb) fb, -- constants
         ArithUpDn.Convertible fb (Domain fb), -- bounds
         ArithUpDn.RoundedAdd fb,
