@@ -55,6 +55,8 @@ class HasVarValue vbox var val
     unitVarBox :: var -> val -> vbox
     fromList :: [(var, val)] -> vbox
     fromAscList :: [(var, val)] -> vbox
+    toAscList :: vbox -> [(var, val)]
+    getVars :: vbox -> [var]
     lookupVar :: vbox -> var -> Maybe val
     -- TODO add much more (see hsreals DomainBox)
 
@@ -64,6 +66,8 @@ instance HasVarValue (IntMap.IntMap val) Int val
     unitVarBox var val = IntMap.singleton var val
     fromList varVals = IntMap.fromList varVals
     fromAscList varVals = IntMap.fromAscList varVals
+    toAscList vbox = IntMap.toAscList vbox
+    getVars vbox = IntMap.keys vbox
     lookupVar map var = IntMap.lookup var map 
 
 instance (Ord var) => HasVarValue (Map.Map var val) var val
@@ -71,6 +75,8 @@ instance (Ord var) => HasVarValue (Map.Map var val) var val
     unitVarBox var val = Map.singleton var val
     fromList varVals = Map.fromList varVals
     fromAscList varVals = Map.fromAscList varVals
+    toAscList vbox = Map.toAscList vbox
+    getVars vbox = Map.keys vbox
     lookupVar map var = Map.lookup var map 
      
            

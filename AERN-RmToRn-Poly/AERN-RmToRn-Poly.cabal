@@ -46,6 +46,7 @@ Library
       Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Domain, 
       Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.New,
       Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Conversion,
+      Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Evaluation,
       Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics,
       Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport,
       Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Symbolic 

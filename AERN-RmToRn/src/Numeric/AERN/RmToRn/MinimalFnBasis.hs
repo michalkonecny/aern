@@ -23,6 +23,7 @@ import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.ShowInternals
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 --import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
@@ -31,6 +32,7 @@ class (HasDomainBox fb,
 --        CanEvaluate fb, -- value at a point
 --        CanSubstitute fb, -- substitution
         CanEvaluateOtherType fb, -- another interpretation (eg string or interval)
+        ShowInternals fb,
         HasProjections fb, -- variables (but their domain is fixed!)
         HasConstFns fb, -- constants
         ArithUpDn.Convertible (Domain fb) fb, -- constants
