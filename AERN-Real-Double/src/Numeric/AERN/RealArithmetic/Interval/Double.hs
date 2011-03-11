@@ -15,8 +15,30 @@ where
 
 import Numeric.AERN.Basics.Interval
 
+import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
+
+import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+
+import Test.QuickCheck
+
 type DI = Interval Double
 
 sampleDI :: DI
 sampleDI = Interval 0 0
 
+newtype PositiveDI = PositiveDI { unPositiveDI :: DI }
+
+instance Show PositiveDI where
+    show (PositiveDI i) = show i
+
+instance Arbitrary PositiveDI
+    where
+    arbitrary =
+        do
+        NumOrd.UniformlyOrderedPair (l,h) <- arbitrary
+        return $ PositiveDI (Interval (pos l) (pos h))
+        where
+        pos e 
+            | e > 0 =  e
+            | e == 0 =  1
+            | otherwise = (-e) 
