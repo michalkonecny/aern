@@ -528,11 +528,15 @@ testsInOutIntPower (name, sample) =
 --            testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
         ]
 
-class RoundedDivide t where
+class (HasOne t) => RoundedDivide t where
     type DivEffortIndicator t
     divDefaultEffort :: t -> DivEffortIndicator t
     divInEff :: DivEffortIndicator t -> t -> t -> t
     divOutEff :: DivEffortIndicator t -> t -> t -> t
+    recipInEff :: DivEffortIndicator t -> t -> t
+    recipOutEff :: DivEffortIndicator t -> t -> t
+    recipInEff eff = divInEff eff one
+    recipOutEff eff = divOutEff eff one
 
 
 propInOutDivMonotone ::

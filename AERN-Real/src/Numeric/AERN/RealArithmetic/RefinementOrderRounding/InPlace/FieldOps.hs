@@ -221,6 +221,10 @@ class (RoundedDivide t, CanBeMutable t) => RoundedDivideInPlace t where
     divOutInPlaceEff :: t -> OpMutable2Eff (DivEffortIndicator t) t s
     divInInPlaceEff sample = pureToMutable2Eff sample divInEff 
     divOutInPlaceEff sample = pureToMutable2Eff sample divOutEff 
+    recipInInPlaceEff :: t -> OpMutable1Eff (DivEffortIndicator t) t s
+    recipOutInPlaceEff :: t -> OpMutable1Eff (DivEffortIndicator t) t s
+    recipInInPlaceEff sample = pureToMutable1Eff sample recipInEff 
+    recipOutInPlaceEff sample = pureToMutable1Eff sample recipOutEff 
 
 propInOutDivInPlace ::
     (RefOrd.PartialComparison t, RoundedDivideInPlace t, Neg t,
