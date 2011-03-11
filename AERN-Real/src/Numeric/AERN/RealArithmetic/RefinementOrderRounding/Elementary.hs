@@ -173,27 +173,28 @@ propSqrtSquare ::
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
+    (tInArea -> t) ->
     (UpDnConversion.ConvertEffortIndicator t Double, 
      MixedAddEffortIndicator t Double) ->
     (RefOrd.PartialCompareEffortIndicator t, 
      (SqrtEffortIndicator t, 
       MultEffortIndicator t, 
       RefOrd.PartialCompareEffortIndicator t)) -> 
-    t -> Bool
-propSqrtSquare _ (effortToDbl, effortAddDbl) initEffort e1 =
+    tInArea -> Bool
+propSqrtSquare _ fromArea (effortToDbl, effortAddDbl) initEffort e1InArea =
     equalRoundingUpDn
         expr1In expr1Out expr2In expr2Out 
         RefOrd.pLeqEff initEffort
     where
-    e1Pos =
-        case maybeE1LowerBoundD of
-            Just e1LowerBoundD
-                | e1LowerBoundD <= (0 :: Double) -> 
-                    mixedAddOutEff effortAddDbl e1 (0.5 - e1LowerBoundD)
-                | otherwise -> e1
-            _ -> e1
-        where
-        maybeE1LowerBoundD = UpDnConversion.convertDnEff effortToDbl e1  
+    e1Pos = fromArea e1InArea
+--        case maybeE1LowerBoundD of
+--            Just e1LowerBoundD
+--                | e1LowerBoundD <= (0 :: Double) -> 
+--                    mixedAddOutEff effortAddDbl e1 (0.5 - e1LowerBoundD)
+--                | otherwise -> e1
+--            _ -> e1
+--        where
+--        maybeE1LowerBoundD = UpDnConversion.convertDnEff effortToDbl e1  
     expr1In (effSqrt, effMult, effCompare) =
         sqrtE1 >*< sqrtE1
         where
@@ -207,9 +208,9 @@ propSqrtSquare _ (effortToDbl, effortAddDbl) initEffort e1 =
     expr2In _ = e1Pos
     expr2Out _ = e1Pos
 
-testsInOutSqrt (name, sample) =
+testsInOutSqrt (name, sample) fromArea =
     testGroup (name ++ " sqrt in/out") $
         [
-            testProperty "sqrt(e)^2 = e" (propSqrtSquare sample)
+            testProperty "sqrt(e)^2 = e" (propSqrtSquare sample fromArea)
         ]
     
