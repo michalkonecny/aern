@@ -14,14 +14,13 @@
 module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff 
 (
     module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly,
-    module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show, 
-    module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Domain,
-    module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.New
+    module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show
 )
 where
 
 import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly (PolyFP)
-import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show
 import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Domain()
 import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.New()
+import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Conversion()
+import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show
 

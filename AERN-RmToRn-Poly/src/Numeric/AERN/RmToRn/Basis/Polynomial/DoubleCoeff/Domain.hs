@@ -12,6 +12,8 @@
     Portability :  portable
     
     Operations focusing on function domains.
+
+    This is a private module reexported publicly via its parent.
 -}
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Domain where
