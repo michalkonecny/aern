@@ -20,7 +20,7 @@ module Numeric.AERN.RmToRn.MinimalFnBasis where
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
-import Numeric.AERN.RmToRn.Evaluate
+import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.Basics.Interval
 

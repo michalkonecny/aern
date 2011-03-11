@@ -39,9 +39,9 @@ Library
         criterion >= 0.5 && < 0.6,
         AERN-Basics == 2011.1, AERN-Real == 2011.1, AERN-Real-Interval == 2011.1
   exposed-modules:       
-      Numeric.AERN.RmToRn.Domain, 
-      Numeric.AERN.RmToRn.New, 
-      Numeric.AERN.RmToRn.Evaluate, 
-      Numeric.AERN.RmToRn.MinimalFnBasis 
+        Numeric.AERN.RmToRn.Domain, 
+        Numeric.AERN.RmToRn.New, 
+        Numeric.AERN.RmToRn.Evaluation, 
+        Numeric.AERN.RmToRn.MinimalFnBasis
 
     
