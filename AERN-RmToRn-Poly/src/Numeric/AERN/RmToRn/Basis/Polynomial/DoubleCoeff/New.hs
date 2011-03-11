@@ -16,7 +16,7 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.New where
 
 import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Domain()
 
-import Numeric.AERN.RmToRn.Domain()
+-- import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 import qualified Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly as Poly
 import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly (PolyFP)
