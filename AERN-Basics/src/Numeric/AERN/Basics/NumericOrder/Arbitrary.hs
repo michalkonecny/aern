@@ -70,6 +70,10 @@ class ArbitraryOrderedTuple t where
         [((ix, ix),[PartialOrdering])]
            {-^ required orderings for some pairs of elements -} -> 
         Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}   
+    arbitraryTuple ::   
+        Int {-^ how many elements should be generated -} -> 
+        Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}
+    arbitraryTuple n = arbitraryTupleRelatedBy [1..n] [] 
 
 data AreaWholeOnly t =
     AreaWholeOnly 

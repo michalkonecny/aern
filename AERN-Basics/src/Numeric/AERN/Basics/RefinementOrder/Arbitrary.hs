@@ -67,7 +67,11 @@ class ArbitraryOrderedTuple t where
            {-^ a subset of elements that have to be thin approximations -} -> 
         [((ix, ix),[PartialOrdering])]
            {-^ required orderings for some pairs of elements -} -> 
-        Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}   
+        Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}
+    arbitraryTuple ::   
+        Int {-^ how many elements should be generated -} -> 
+        Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}
+    arbitraryTuple n = arbitraryTupleRelatedBy [1..n] [] [] 
 
 arbitraryPairRelatedBy ::
     (ArbitraryOrderedTuple t) => PartialOrdering -> Maybe (Gen (t,t))
