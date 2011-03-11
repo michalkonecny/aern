@@ -576,11 +576,15 @@ testsUpDnIntPower (name, sample) =
         ]
 
 
-class RoundedDivide t where
+class (HasOne t) => RoundedDivide t where
     type DivEffortIndicator t
+    divDefaultEffort :: t -> DivEffortIndicator t
     divUpEff :: DivEffortIndicator t -> t -> t -> t
     divDnEff :: DivEffortIndicator t -> t -> t -> t
-    divDefaultEffort :: t -> DivEffortIndicator t
+    recipUpEff :: DivEffortIndicator t -> t -> t
+    recipDnEff :: DivEffortIndicator t -> t -> t
+    recipUpEff eff = divUpEff eff one
+    recipDnEff eff = divDnEff eff one
 
 propUpDnDivElim ::
     (NumOrd.PartialComparison t, RoundedDivide t, HasOne t, HasZero t,
