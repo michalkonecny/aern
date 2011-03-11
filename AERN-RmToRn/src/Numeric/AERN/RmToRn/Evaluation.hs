@@ -12,7 +12,7 @@
     Operations focusing on function evaluation.
 -}
 
-module Numeric.AERN.RmToRn.Evaluate where
+module Numeric.AERN.RmToRn.Evaluation where
 
 import Numeric.AERN.RmToRn.Domain
 
