@@ -120,7 +120,8 @@ instance
      ArithUpDn.Convertible e Double,
      HasZero e, HasOne e, 
      NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e) => 
+     NumOrd.RoundedLattice e,
+     Show e) => 
     (ArithInOut.RoundedSquareRoot (Interval e))
     where
     type ArithInOut.SqrtEffortIndicator (Interval e) = 
