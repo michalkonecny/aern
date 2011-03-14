@@ -41,15 +41,21 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-class (RoundedMixedAdd t tn, CanBeMutable t) => RoundedMixedAddInPlace t tn where
+class (RoundedMixedAddEffort t tn, CanBeMutable t) => RoundedMixedAddInPlace t tn where
     mixedAddUpInPlaceEff :: 
         t -> OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
     mixedAddDnInPlaceEff :: 
         t -> OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
-    mixedAddUpInPlaceEff sample =
-        pureToMutableNonmutEff sample mixedAddUpEff
-    mixedAddDnInPlaceEff sample =
-        pureToMutableNonmutEff sample mixedAddDnEff
+
+mixedAddUpInPlaceEffFromPure sample =
+    pureToMutableNonmutEff sample mixedAddUpEff
+mixedAddDnInPlaceEffFromPure sample =
+    pureToMutableNonmutEff sample mixedAddDnEff
+
+mixedAddUpInPlaceEffFromInPlace sample = 
+    pureToMutableNonmutEff $ mixedAddUpInPlaceEff sample 
+mixedAddDnInPlaceEffFromInPlace sample = 
+    pureToMutableNonmutEff $ mixedAddDnInPlaceEff sample 
 
 -- an alternative default implementation using conversion 
 -- - this could be more efficient
@@ -91,7 +97,9 @@ mixedAddDnInPlaceEffByConversion sample (effAdd, effConv) rM dM n =
 
 propMixedAddInPlaceEqualsConvert ::
     (NumOrd.PartialComparison t, Convertible tn t,
-     RoundedMixedAddInPlace t tn, RoundedAdd t,
+     RoundedMixedAddInPlace t tn, 
+     RoundedMixedAdd t tn, 
+     RoundedAdd t,
      Show t,
      Show (MixedAddEffortIndicator t tn),
      EffortIndicator (MixedAddEffortIndicator t tn),
@@ -134,22 +142,30 @@ propMixedAddInPlaceEqualsConvert sample1 sample2 initEffort d n =
 
 
 
-class (RoundedMixedMultiply t tn, CanBeMutable t) => RoundedMixedMultiplyInPlace t tn where
+class (RoundedMixedMultiplyEffort t tn, CanBeMutable t) => RoundedMixedMultiplyInPlace t tn where
     mixedMultUpInPlaceEff :: 
         t -> OpMutableNonmutEff (MixedMultEffortIndicator t tn) t tn s
     mixedMultDnInPlaceEff :: 
         t -> OpMutableNonmutEff (MixedMultEffortIndicator t tn) t tn s
-    mixedMultUpInPlaceEff sample =
-        pureToMutableNonmutEff sample mixedMultUpEff
-    mixedMultDnInPlaceEff sample =
-        pureToMutableNonmutEff sample mixedMultDnEff
+
+mixedMultUpInPlaceEffFromPure sample =
+    pureToMutableNonmutEff sample mixedMultUpEff
+mixedMultDnInPlaceEffFromPure sample =
+    pureToMutableNonmutEff sample mixedMultDnEff
+
+mixedMultUpInPlaceEffFromInPlace sample = 
+    pureToMutableNonmutEff $ mixedMultUpInPlaceEff sample 
+mixedMultDnInPlaceEffFromInPlace sample = 
+    pureToMutableNonmutEff $ mixedMultDnInPlaceEff sample
 
 {- properties of mixed multiplication -}
 
 propMixedMultInPlaceEqualsConvert ::
     (NumOrd.PartialComparison t,  NumOrd.RoundedLattice t,
      Convertible tn t,
-     RoundedMixedMultiplyInPlace t tn, RoundedMultiply t,
+     RoundedMixedMultiplyInPlace t tn, 
+     RoundedMixedMultiply t tn, 
+     RoundedMultiply t,
      Show t,
      Show (MixedMultEffortIndicator t tn),
      EffortIndicator (MixedMultEffortIndicator t tn),
@@ -204,17 +220,25 @@ class (RoundedMixedDivide t tn, CanBeMutable t) => RoundedMixedDivideInPlace t t
         t -> OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
     mixedDivDnInPlaceEff :: 
         t -> OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
-    mixedDivUpInPlaceEff sample =
-        pureToMutableNonmutEff sample mixedDivUpEff
-    mixedDivDnInPlaceEff sample =
-        pureToMutableNonmutEff sample mixedDivDnEff
+
+mixedDivUpInPlaceEffFromPure sample =
+    pureToMutableNonmutEff sample mixedDivUpEff
+mixedDivDnInPlaceEffFromPure sample =
+    pureToMutableNonmutEff sample mixedDivDnEff
+
+mixedDivUpInPlaceEffFromInPlace sample = 
+    pureToMutableNonmutEff $ mixedDivUpInPlaceEff sample 
+mixedDivDnInPlaceEffFromInPlace sample = 
+    pureToMutableNonmutEff $ mixedDivDnInPlaceEff sample
 
 {- properties of mixed division -}
 
 propMixedDivInPlaceEqualsConvert ::
     (NumOrd.PartialComparison t,  NumOrd.RoundedLattice t,
      Convertible tn t,
-     RoundedMixedDivideInPlace t tn, RoundedDivide t,
+     RoundedMixedDivideInPlace t tn, 
+     RoundedMixedDivide t tn, 
+     RoundedDivide t,
      Show t, HasZero t,
      Show (MixedDivEffortIndicator t tn),
      EffortIndicator (MixedDivEffortIndicator t tn),
@@ -285,7 +309,9 @@ testsUpDnMixedFieldOpsInPlace (name, sample) (nameN, sampleN) =
             testProperty "division" (propMixedDivInPlaceEqualsConvert sample sampleN)
         ]
 
-class (RoundedMixedAddInPlace t tn, RoundedMixedMultiplyInPlace t tn) => RoundedMixedRingInPlace t tn
+class (RoundedMixedAddInPlace t tn, RoundedMixedMultiplyInPlace t tn) => 
+    RoundedMixedRingInPlace t tn
 
-class (RoundedMixedRingInPlace t tn, RoundedMixedDivideInPlace t tn) => RoundedMixedFieldInPlace t tn
+class (RoundedMixedRingInPlace t tn, RoundedMixedDivideInPlace t tn) => 
+    RoundedMixedFieldInPlace t tn
     

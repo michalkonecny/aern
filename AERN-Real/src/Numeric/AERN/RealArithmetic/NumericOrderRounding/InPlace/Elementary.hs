@@ -35,13 +35,22 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 class (RoundedExponentiation t, CanBeMutable t) => RoundedExponentiationInPlace t where
     expUpInPlaceEff :: t -> OpMutable1Eff (ExpEffortIndicator t) t s
     expDnInPlaceEff :: t -> OpMutable1Eff (ExpEffortIndicator t) t s
-    expUpInPlaceEff sample =
-        pureToMutable1Eff sample expUpEff
-    expDnInPlaceEff sample =
-        pureToMutable1Eff sample expDnEff
+
+expUpInPlaceEffFromPure sample =
+    pureToMutable1Eff sample expUpEff
+expDnInPlaceEffFromPure sample =
+    pureToMutable1Eff sample expDnEff
+
+expUpInPlaceEffFromInPlace sample = 
+    mutable1EffToPure $ expUpInPlaceEff sample 
+expDnInPlaceEffFromInPlace sample = 
+    mutable1EffToPure $ expDnInPlaceEff sample 
 
 propUpDnExpInPlace ::
-    (NumOrd.PartialComparison t, RoundedExponentiationInPlace t, Neg t,
+    (NumOrd.PartialComparison t, 
+     RoundedExponentiationInPlace t, 
+     RoundedExponentiation t, 
+     Neg t,
      Show t,
      Show (ExpEffortIndicator t),
      EffortIndicator (ExpEffortIndicator t),
@@ -69,3 +78,52 @@ testsUpDnExpInPlace (name, sample) =
         [
             testProperty "matches pure" (propUpDnExpInPlace sample)
         ]
+
+        
+class (RoundedSquareRoot t, CanBeMutable t) => RoundedSquareRootInPlace t where
+    sqrtUpInPlaceEff :: t -> OpMutable1Eff (SqrtEffortIndicator t) t s
+    sqrtDnInPlaceEff :: t -> OpMutable1Eff (SqrtEffortIndicator t) t s
+
+sqrtUpInPlaceEffFromPure sample =
+    pureToMutable1Eff sample sqrtUpEff
+sqrtDnInPlaceEffFromPure sample =
+    pureToMutable1Eff sample sqrtDnEff
+
+sqrtUpInPlaceEffFromInPlace sample = 
+    mutable1EffToPure $ sqrtUpInPlaceEff sample 
+sqrtDnInPlaceEffFromInPlace sample = 
+    mutable1EffToPure $ sqrtDnInPlaceEff sample 
+
+propUpDnSqrtInPlace ::
+    (NumOrd.PartialComparison t, 
+     RoundedSquareRootInPlace t, 
+     RoundedSquareRoot t, 
+     Neg t,
+     Show t,
+     Show (SqrtEffortIndicator t),
+     EffortIndicator (SqrtEffortIndicator t),
+     Show (NumOrd.PartialCompareEffortIndicator t),
+     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
+     ) =>
+    t ->
+    (NumOrd.PartialCompareEffortIndicator t, 
+     SqrtEffortIndicator t) -> 
+    t -> Bool
+propUpDnSqrtInPlace sample initEffort e1 =
+    equalRoundingUpDn
+        sqrtr1Up sqrtr1Dn sqrtr2Up sqrtr2Dn 
+        NumOrd.pLeqEff initEffort
+    where
+    sqrtUpEffViaInPlace = mutable1EffToPure (sqrtUpInPlaceEff sample)
+    sqrtDnEffViaInPlace = mutable1EffToPure (sqrtDnInPlaceEff sample)
+    sqrtr1Up eff = sqrtUpEff eff e1
+    sqrtr1Dn eff = sqrtDnEff eff e1
+    sqrtr2Up eff = sqrtUpEffViaInPlace eff e1
+    sqrtr2Dn eff = sqrtDnEffViaInPlace eff e1
+
+testsUpDnSqrtInPlace (name, sample) =
+    testGroup (name ++ " in place sqrt") $
+        [
+            testProperty "matches pure" (propUpDnSqrtInPlace sample)
+        ]
+        

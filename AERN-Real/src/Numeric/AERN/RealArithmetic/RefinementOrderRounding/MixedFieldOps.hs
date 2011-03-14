@@ -33,11 +33,13 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-class RoundedMixedAdd t tn where
+class RoundedMixedAddEffort t tn where
     type MixedAddEffortIndicator t tn
+    mixedAddDefaultEffort :: t -> tn -> MixedAddEffortIndicator t tn
+
+class (RoundedMixedAddEffort t tn) => RoundedMixedAdd t tn where
     mixedAddInEff :: MixedAddEffortIndicator t tn -> t -> tn -> t
     mixedAddOutEff :: MixedAddEffortIndicator t tn -> t -> tn -> t
-    mixedAddDefaultEffort :: t -> tn -> MixedAddEffortIndicator t tn
 
 mixedAddDefaultEffortByConversion d n = 
         (addDefaultEffort d, convertDefaultEffort n d)
@@ -91,9 +93,11 @@ propMixedAddEqualsConvert sample sampleN initEffort d n =
         let (<+>) = addOutEff effAdd in  d <+> (convertOutEff effConv n)
 
 
-class RoundedMixedMultiply t tn where
+class RoundedMixedMultiplyEffort t tn where
     type MixedMultEffortIndicator t tn
     mixedMultDefaultEffort :: t -> tn -> MixedMultEffortIndicator t tn
+
+class (RoundedMixedMultiplyEffort t tn) =>  RoundedMixedMultiply t tn where
     mixedMultInEff :: MixedMultEffortIndicator t tn -> t -> tn -> t
     mixedMultOutEff :: MixedMultEffortIndicator t tn -> t -> tn -> t
 
@@ -148,9 +152,11 @@ propMixedMultEqualsConvert sample sampleN initEffort d n =
     expr2Out (_,effMult,effConv) =
         let (<*>) = multOutEff effMult in d <*> (convertOutEff effConv n)
 
-class RoundedMixedDivide t tn where
+class RoundedMixedDivideEffort t tn where
     type MixedDivEffortIndicator t tn
     mixedDivDefaultEffort :: t -> tn -> MixedDivEffortIndicator t tn
+
+class (RoundedMixedDivideEffort t tn) => RoundedMixedDivide t tn where
     mixedDivInEff :: MixedDivEffortIndicator t tn -> t -> tn -> t
     mixedDivOutEff :: MixedDivEffortIndicator t tn -> t -> tn -> t
 

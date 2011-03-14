@@ -35,9 +35,11 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-class RoundedExponentiation t where
+class RoundedExponentiationEffort t where
     type ExpEffortIndicator t
     expDefaultEffort :: t -> ExpEffortIndicator t
+
+class (RoundedExponentiationEffort t) => RoundedExponentiation t where
     expUpEff :: (ExpEffortIndicator t) -> t -> t
     expDnEff :: (ExpEffortIndicator t) -> t -> t
 
@@ -140,12 +142,13 @@ testsUpDnExp (name, sample) =
             testProperty "e^(a + b) = e^a * e^b" (propExpOfAddToMult sample)
         ]
     
-class RoundedSquareRoot t where
+class RoundedSquareRootEffort t where
     type SqrtEffortIndicator t
     sqrtDefaultEffort :: t -> SqrtEffortIndicator t
+
+class (RoundedSquareRootEffort t) => RoundedSquareRoot t where
     sqrtUpEff :: (SqrtEffortIndicator t) -> t -> t
     sqrtDnEff :: (SqrtEffortIndicator t) -> t -> t
-
 
 propSqrtSquare ::
     (NumOrd.PartialComparison t, 

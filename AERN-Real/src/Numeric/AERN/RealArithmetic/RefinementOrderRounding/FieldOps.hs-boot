@@ -9,11 +9,13 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
 import Numeric.AERN.Basics.Effort
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
-class RoundedAdd t where
+class RoundedAddEffort t where
     type AddEffortIndicator t
+    addDefaultEffort :: t -> AddEffortIndicator t
+
+class (RoundedAddEffort t) => RoundedAdd t where
     addInEff :: AddEffortIndicator t -> t -> t -> t
     addOutEff :: AddEffortIndicator t -> t -> t -> t
-    addDefaultEffort :: t -> AddEffortIndicator t
 
 class (RoundedAdd t, Neg t) => RoundedSubtr t where
     subtrInEff :: (AddEffortIndicator t) -> t -> t -> t

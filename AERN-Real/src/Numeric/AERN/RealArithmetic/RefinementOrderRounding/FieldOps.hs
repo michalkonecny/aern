@@ -18,13 +18,16 @@
 -}
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps 
 (
-    RoundedAdd(..), RoundedSubtr(..), testsInOutAdd, testsInOutSubtr,
-    RoundedAbs(..), testsInOutAbs,  absInUsingCompMax, absOutUsingCompMax,
-    RoundedMultiply(..), testsInOutMult,
-    RoundedPowerToNonnegInt(..), testsInOutIntPower,
+    RoundedAdd(..), RoundedAddEffort(..), RoundedSubtr(..), 
+    testsInOutAdd, testsInOutSubtr,
+    RoundedAbs(..), RoundedAbsEffort(..), 
+    testsInOutAbs,  absInUsingCompMax, absOutUsingCompMax,
+    RoundedMultiply(..), RoundedMultiplyEffort(..), testsInOutMult,
+    RoundedPowerToNonnegInt(..), RoundedPowerToNonnegIntEffort(..), 
+    testsInOutIntPower,
     PowerToNonnegIntEffortIndicatorFromMult, powerToNonnegIntDefaultEffortFromMult,
     powerToNonnegIntInEffFromMult, powerToNonnegIntOutEffFromMult,
-    RoundedDivide(..), testsInOutDiv,
+    RoundedDivide(..), RoundedDivideEffort(..), testsInOutDiv,
     RoundedRing(..), RoundedField(..)
 --    ,
 --    FieldOpsEffortIndicator(..), fieldOpsDefaultEffort
@@ -54,11 +57,13 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import Data.Maybe
 
-class RoundedAdd t where
+class RoundedAddEffort t where
     type AddEffortIndicator t
+    addDefaultEffort :: t -> AddEffortIndicator t
+
+class (RoundedAddEffort t) => RoundedAdd t where
     addInEff :: AddEffortIndicator t -> t -> t -> t
     addOutEff :: AddEffortIndicator t -> t -> t -> t
-    addDefaultEffort :: t -> AddEffortIndicator t
 
 --propAddMonotone _ effortDist
 
@@ -210,9 +215,11 @@ testsInOutSubtr (name, sample) =
         ]
 
 
-class RoundedAbs t where
+class RoundedAbsEffort t where
     type AbsEffortIndicator t
     absDefaultEffort :: t -> AbsEffortIndicator t
+
+class (RoundedAbsEffort t) => RoundedAbs t where
     absInEff :: (AbsEffortIndicator t) -> t -> t
     absOutEff :: (AbsEffortIndicator t) -> t -> t
 
@@ -308,10 +315,11 @@ testsInOutAbs (name, sample) =
         ]
 
 
-
-class RoundedMultiply t where
+class RoundedMultiplyEffort t where
     type MultEffortIndicator t
     multDefaultEffort :: t -> MultEffortIndicator t
+
+class (RoundedMultiplyEffort t) => RoundedMultiply t where
     multInEff :: MultEffortIndicator t -> t -> t -> t
     multOutEff :: MultEffortIndicator t -> t -> t -> t
 
@@ -415,10 +423,12 @@ testsInOutMult (name, sample) =
 
 class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t, RoundedPowerToNonnegInt t) => RoundedRing t
     
-class RoundedPowerToNonnegInt t where
+class RoundedPowerToNonnegIntEffort t where
     type PowerToNonnegIntEffortIndicator t
     powerToNonnegIntDefaultEffort :: 
         t -> PowerToNonnegIntEffortIndicator t 
+
+class (RoundedPowerToNonnegIntEffort t) => RoundedPowerToNonnegInt t where
     powerToNonnegIntInEff ::
         (PowerToNonnegIntEffortIndicator t) -> 
         t {-^ @x@ -} -> 
@@ -528,9 +538,11 @@ testsInOutIntPower (name, sample) =
 --            testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
         ]
 
-class (HasOne t) => RoundedDivide t where
+class RoundedDivideEffort t where
     type DivEffortIndicator t
     divDefaultEffort :: t -> DivEffortIndicator t
+
+class (HasOne t, RoundedDivideEffort t) => RoundedDivide t where
     divInEff :: DivEffortIndicator t -> t -> t -> t
     divOutEff :: DivEffortIndicator t -> t -> t -> t
     recipInEff :: DivEffortIndicator t -> t -> t

@@ -42,9 +42,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import Criterion
 
-class RoundedExponentiation t where
+class RoundedExponentiationEffort t where
     type ExpEffortIndicator t
     expDefaultEffort :: t -> ExpEffortIndicator t
+
+class (RoundedExponentiationEffort t) => RoundedExponentiation t where
     expInEff :: (ExpEffortIndicator t) -> t -> t
     expOutEff :: (ExpEffortIndicator t) -> t -> t
 
@@ -148,9 +150,11 @@ benchExpAreasReal =
         ("near 20", NumOrd.AreaLinear (Just $ 19.5) True (Just $ 20.5) True [])
     ]
 
-class RoundedSquareRoot t where
+class RoundedSquareRootEffort t where
     type SqrtEffortIndicator t
     sqrtDefaultEffort :: t -> SqrtEffortIndicator t
+
+class (RoundedSquareRootEffort t) => RoundedSquareRoot t where
     sqrtInEff :: (SqrtEffortIndicator t) -> t -> t
     sqrtOutEff :: (SqrtEffortIndicator t) -> t -> t
 
