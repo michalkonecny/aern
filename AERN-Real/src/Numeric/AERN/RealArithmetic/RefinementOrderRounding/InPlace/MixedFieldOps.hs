@@ -41,21 +41,31 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-class (RoundedMixedAdd t tn, CanBeMutable t) => RoundedMixedAddInPlace t tn where
+class (RoundedMixedAddEffort t tn, CanBeMutable t) => 
+    RoundedMixedAddInPlace t tn 
+    where
     mixedAddInInPlaceEff :: 
         t -> OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
     mixedAddOutInPlaceEff :: 
         t -> OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
-    mixedAddInInPlaceEff sample =
-        pureToMutableNonmutEff sample mixedAddInEff
-    mixedAddOutInPlaceEff sample =
-        pureToMutableNonmutEff sample mixedAddOutEff
+
+mixedAddInInPlaceEffFromPure sample =
+    pureToMutableNonmutEff sample mixedAddInEff
+mixedAddOutInPlaceEffFromPure sample =
+    pureToMutableNonmutEff sample mixedAddOutEff
+
+mixedAddInInPlaceEffFromInPlace sample = 
+    pureToMutableNonmutEff $ mixedAddInInPlaceEff sample 
+mixedAddOutInPlaceEffFromInPlace sample = 
+    pureToMutableNonmutEff $ mixedAddOutInPlaceEff sample 
 
 {- properties of mixed addition -}
 
 propMixedAddInPlaceEqualsConvert ::
     (RefOrd.PartialComparison t, Convertible tn t,
-     RoundedMixedAddInPlace t tn, RoundedAdd t,
+     RoundedMixedAddInPlace t tn, 
+     RoundedMixedAdd t tn, 
+     RoundedAdd t,
      Show t,
      Show (MixedAddEffortIndicator t tn),
      EffortIndicator (MixedAddEffortIndicator t tn),
@@ -98,21 +108,31 @@ propMixedAddInPlaceEqualsConvert sample1 sample2 initEffort d n =
 
 
 
-class (RoundedMixedMultiply t tn, CanBeMutable t) => RoundedMixedMultiplyInPlace t tn where
+class (RoundedMixedMultiplyEffort t tn, CanBeMutable t) => 
+    RoundedMixedMultiplyInPlace t tn 
+    where
     mixedMultInInPlaceEff :: 
         t -> OpMutableNonmutEff (MixedMultEffortIndicator t tn) t tn s
     mixedMultOutInPlaceEff :: 
         t -> OpMutableNonmutEff (MixedMultEffortIndicator t tn) t tn s
-    mixedMultInInPlaceEff sample =
-        pureToMutableNonmutEff sample mixedMultInEff
-    mixedMultOutInPlaceEff sample =
-        pureToMutableNonmutEff sample mixedMultOutEff
+
+mixedMultInInPlaceEffFromPure sample =
+    pureToMutableNonmutEff sample mixedMultInEff
+mixedMultOutInPlaceEffFromPure sample =
+    pureToMutableNonmutEff sample mixedMultOutEff
+
+mixedMultInInPlaceEffFromInPlace sample = 
+    pureToMutableNonmutEff $ mixedMultInInPlaceEff sample 
+mixedMultOutInPlaceEffFromInPlace sample = 
+    pureToMutableNonmutEff $ mixedMultOutInPlaceEff sample
 
 {- properties of mixed multiplication -}
 
 propMixedMultInPlaceEqualsConvert ::
     (RefOrd.PartialComparison t, Convertible tn t,
-     RoundedMixedMultiplyInPlace t tn, RoundedMultiply t,
+     RoundedMixedMultiplyInPlace t tn, 
+     RoundedMixedMultiply t tn, 
+     RoundedMultiply t,
      Show t,
      Show (MixedMultEffortIndicator t tn),
      EffortIndicator (MixedMultEffortIndicator t tn),
@@ -153,21 +173,31 @@ propMixedMultInPlaceEqualsConvert sample1 sample2 initEffort d n =
     expr2Out (_,effMult,effConv) =
         let (<*>) = multOutEff effMult in (convertOutEff effConv n) <*> d
 
-class (RoundedMixedDivide t tn, CanBeMutable t) => RoundedMixedDivideInPlace t tn where
+class (RoundedMixedDivideEffort t tn, CanBeMutable t) => 
+    RoundedMixedDivideInPlace t tn 
+    where
     mixedDivInInPlaceEff :: 
         t -> OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
     mixedDivOutInPlaceEff :: 
         t -> OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
-    mixedDivInInPlaceEff sample =
-        pureToMutableNonmutEff sample mixedDivInEff
-    mixedDivOutInPlaceEff sample =
-        pureToMutableNonmutEff sample mixedDivOutEff
+
+mixedDivInInPlaceEffFromPure sample =
+    pureToMutableNonmutEff sample mixedDivInEff
+mixedDivOutInPlaceEffFromPure sample =
+    pureToMutableNonmutEff sample mixedDivOutEff
+
+mixedDivInInPlaceEffFromInPlace sample = 
+    pureToMutableNonmutEff $ mixedDivInInPlaceEff sample 
+mixedDivOutInPlaceEffFromInPlace sample = 
+    pureToMutableNonmutEff $ mixedDivOutInPlaceEff sample
 
 {- properties of mixed division -}
 
 propMixedDivInPlaceEqualsConvert ::
     (RefOrd.PartialComparison t, Convertible tn t,
-     RoundedMixedDivideInPlace t tn, RoundedDivide t,
+     RoundedMixedDivideInPlace t tn, 
+     RoundedMixedDivide t tn, 
+     RoundedDivide t,
      Show t, HasZero t,
      Show (MixedDivEffortIndicator t tn),
      EffortIndicator (MixedDivEffortIndicator t tn),

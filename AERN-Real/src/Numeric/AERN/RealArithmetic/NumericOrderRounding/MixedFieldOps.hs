@@ -36,9 +36,11 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-class RoundedMixedAdd t tn where
+class RoundedMixedAddEffort t tn where
     type MixedAddEffortIndicator t tn
     mixedAddDefaultEffort :: t -> tn -> MixedAddEffortIndicator t tn
+
+class (RoundedMixedAddEffort t tn) => RoundedMixedAdd t tn where
     mixedAddUpEff :: MixedAddEffortIndicator t tn -> t -> tn -> t
     mixedAddDnEff :: MixedAddEffortIndicator t tn -> t -> tn -> t
 
@@ -112,9 +114,11 @@ propMixedAddEqualsConvert sampleN sample initEffort d n =
     expr2Dn (_,effAdd,effConv) =
         let (+.) = addDnEff effAdd in d +. (fromJust $ convertDnEff effConv n)
 
-class RoundedMixedMultiply t tn where
+class RoundedMixedMultiplyEffort t tn where
     type MixedMultEffortIndicator t tn
     mixedMultDefaultEffort :: t -> tn -> MixedMultEffortIndicator t tn
+
+class (RoundedMixedMultiplyEffort t tn) => RoundedMixedMultiply t tn where
     mixedMultUpEff :: MixedMultEffortIndicator t tn -> t -> tn -> t
     mixedMultDnEff :: MixedMultEffortIndicator t tn -> t -> tn -> t
 
@@ -211,9 +215,11 @@ propMixedMultEqualsConvert sample sampleN initEffort d n =
             (d *. (fromJust $ convertUpEff effConv n))
             (d *. (fromJust $ convertDnEff effConv n))
 
-class RoundedMixedDivide t tn where
+class RoundedMixedDivideEffort t tn where
     type MixedDivEffortIndicator t tn
     mixedDivDefaultEffort :: t -> tn -> MixedDivEffortIndicator t tn
+
+class (RoundedMixedDivideEffort t tn) => RoundedMixedDivide t tn where
     mixedDivUpEff :: MixedDivEffortIndicator t tn -> t -> tn -> t
     mixedDivDnEff :: MixedDivEffortIndicator t tn -> t -> tn -> t
 
