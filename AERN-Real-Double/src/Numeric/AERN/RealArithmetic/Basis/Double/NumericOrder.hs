@@ -48,9 +48,11 @@ instance NumOrd.HasHighest Double where
 
 instance NumOrd.HasExtrema Double where
 
-instance NumOrd.RoundedLattice Double where
+instance NumOrd.RoundedLatticeEffort Double where
     type NumOrd.MinmaxEffortIndicator Double = ()
     minmaxDefaultEffort _ = ()
+
+instance NumOrd.RoundedLattice Double where
     maxUpEff _ a b = Prelude.max a b
     maxDnEff = NumOrd.maxUpEff 
     minUpEff _ a b = Prelude.min a b

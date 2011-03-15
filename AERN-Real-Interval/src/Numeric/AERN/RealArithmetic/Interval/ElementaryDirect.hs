@@ -35,16 +35,14 @@ import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 
-instance 
+instance
     (ArithInOut.RoundedMixedField (Interval e) Int,
      ArithInOut.RoundedField (Interval e), 
      ArithUpDn.Convertible (Interval e) Int,
      ArithInOut.Convertible Double (Interval e),
-     HasZero e, HasOne e, 
-     HasInfinities e,
      NumOrd.PartialComparison e,
-     RefOrd.OuterRoundedLattice (Interval e)) => 
-    (ArithInOut.RoundedExponentiation (Interval e))
+     RefOrd.OuterRoundedLatticeEffort (Interval e)) => 
+    (ArithInOut.RoundedExponentiationEffort (Interval e))
     where
     type ArithInOut.ExpEffortIndicator (Interval e) = 
         ((ArithInOut.FieldOpsEffortIndicator (Interval e),
@@ -71,6 +69,18 @@ instance
         where
         sampleI = 1 :: Int
         sampleD = 1 :: Double
+
+instance
+    (ArithInOut.RoundedMixedField (Interval e) Int,
+     ArithInOut.RoundedField (Interval e), 
+     ArithUpDn.Convertible (Interval e) Int,
+     ArithInOut.Convertible Double (Interval e),
+     HasZero e, HasOne e, 
+     HasInfinities e,
+     NumOrd.PartialComparison e,
+     RefOrd.OuterRoundedLattice (Interval e)) => 
+    (ArithInOut.RoundedExponentiation (Interval e))
+    where
     expOutEff 
             ((effortField, effortMixedField),
              (Int1To10 effortTaylor),
@@ -115,14 +125,12 @@ instance
         hI = Interval h h
 
 instance 
-    (ArithUpDn.RoundedMixedField e Int,
-     ArithUpDn.RoundedField e, 
+    (ArithUpDn.RoundedMixedFieldEffort e Int,
+     ArithUpDn.RoundedFieldEffort e, 
      ArithUpDn.Convertible e Double,
-     HasZero e, HasOne e, 
      NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e,
-     Show e) => 
-    (ArithInOut.RoundedSquareRoot (Interval e))
+     NumOrd.RoundedLatticeEffort e) => 
+    (ArithInOut.RoundedSquareRootEffort (Interval e))
     where
     type ArithInOut.SqrtEffortIndicator (Interval e) = 
         ((ArithUpDn.FieldOpsEffortIndicator e,
@@ -146,6 +154,17 @@ instance
         where
         sampleI = 1 :: Int
         sampleD = 1 :: Double
+
+instance 
+    (ArithUpDn.RoundedMixedField e Int,
+     ArithUpDn.RoundedField e, 
+     ArithUpDn.Convertible e Double,
+     HasZero e, HasOne e, 
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLattice e,
+     Show e) => 
+    (ArithInOut.RoundedSquareRoot (Interval e))
+    where
     sqrtOutEff
             ((effortField, effortMixedField),
              (Int1To10 effortNewton),

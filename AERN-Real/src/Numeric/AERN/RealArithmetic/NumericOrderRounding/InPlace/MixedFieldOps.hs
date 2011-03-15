@@ -309,9 +309,15 @@ testsUpDnMixedFieldOpsInPlace (name, sample) (nameN, sampleN) =
             testProperty "division" (propMixedDivInPlaceEqualsConvert sample sampleN)
         ]
 
-class (RoundedMixedAddInPlace t tn, RoundedMixedMultiplyInPlace t tn) => 
+class 
+        (RoundedMixedAddInPlace t tn, 
+         RoundedMixedMultiplyInPlace t tn, 
+         RoundedMixedRingEffort t tn) => 
     RoundedMixedRingInPlace t tn
 
-class (RoundedMixedRingInPlace t tn, RoundedMixedDivideInPlace t tn) => 
+class 
+        (RoundedMixedRingInPlace t tn, 
+         RoundedMixedDivideInPlace t tn,
+         RoundedMixedFieldEffort t tn) => 
     RoundedMixedFieldInPlace t tn
     

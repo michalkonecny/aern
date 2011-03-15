@@ -43,26 +43,40 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 {-|
     A type with refinement-outer-rounding numerical-order-lattice operations.
 -}
-class (OuterRoundedLattice t, CanBeMutable t) => OuterRoundedLatticeInPlace t where
+class (OuterRoundedLatticeEffort t, CanBeMutable t) => 
+    OuterRoundedLatticeInPlace t 
+    where
     maxOuterInPlaceEff :: t -> OpMutable2Eff (MinmaxOuterEffortIndicator t) t s 
     minOuterInPlaceEff :: t -> OpMutable2Eff (MinmaxOuterEffortIndicator t) t s
-    maxOuterInPlaceEff sample = pureToMutable2Eff sample maxOuterEff
-    minOuterInPlaceEff sample = pureToMutable2Eff sample minOuterEff
+
+maxOuterInPlaceEffFromPure sample = pureToMutable2Eff sample maxOuterEff
+minOuterInPlaceEffFromPure sample = pureToMutable2Eff sample minOuterEff
+
+maxOuterEffFromInPlace sample = mutable2EffToPure $ maxOuterInPlaceEff sample 
+minOuterEffFromInPlace sample = mutable2EffToPure $ minOuterInPlaceEff sample 
 
 {-|
     A type with refinement-inner-rounding numerical-order-lattice operations.
 -}
-class (InnerRoundedLattice t, CanBeMutable t) => InnerRoundedLatticeInPlace t where
+class (InnerRoundedLatticeEffort t, CanBeMutable t) => 
+    InnerRoundedLatticeInPlace t 
+    where
     maxInnerInPlaceEff :: t -> OpMutable2Eff (MinmaxInnerEffortIndicator t) t s 
     minInnerInPlaceEff :: t -> OpMutable2Eff (MinmaxInnerEffortIndicator t) t s
-    maxInnerInPlaceEff sample = pureToMutable2Eff sample maxInnerEff
-    minInnerInPlaceEff sample = pureToMutable2Eff sample minInnerEff
+    
+maxInnerInPlaceEffFromPure sample = pureToMutable2Eff sample maxInnerEff
+minInnerInPlaceEffFromPure sample = pureToMutable2Eff sample minInnerEff
+
+maxInnerEffFromInPlace sample = mutable2EffToPure $ maxInnerInPlaceEff sample 
+minInnerEffFromInPlace sample = mutable2EffToPure $ minInnerInPlaceEff sample 
 
 class (OuterRoundedLatticeInPlace t, InnerRoundedLatticeInPlace t) => 
     RefinementRoundedLatticeInPlace t
 
 propRefinementRoundedLatticeJoinInPlaceConsistentWithPure ::
-    (PartialComparison t, RefinementRoundedLatticeInPlace t, CanBeMutable t) => 
+    (PartialComparison t, 
+     RefinementRoundedLatticeInPlace t, RefinementRoundedLattice t, 
+     CanBeMutable t) => 
     t -> 
     (MinmaxOuterEffortIndicator t, MinmaxInnerEffortIndicator t, PartialCompareEffortIndicator t) -> 
     UniformlyOrderedPair t -> Bool
@@ -76,7 +90,9 @@ propRefinementRoundedLatticeJoinInPlaceConsistentWithPure sample (minmaxOutEffor
         e1 e2  
 
 propRefinementRoundedLatticeMeetInPlaceConsistentWithPure ::
-    (PartialComparison t, RefinementRoundedLatticeInPlace t, CanBeMutable t) => 
+    (PartialComparison t, 
+     RefinementRoundedLatticeInPlace t, RefinementRoundedLattice t, 
+     CanBeMutable t) => 
     t -> 
     (MinmaxOuterEffortIndicator t, MinmaxInnerEffortIndicator t, PartialCompareEffortIndicator t) -> 
     UniformlyOrderedPair t -> Bool
@@ -91,7 +107,7 @@ propRefinementRoundedLatticeMeetInPlaceConsistentWithPure sample (minmaxOutEffor
 
 testsRefinementRoundedLatticeInPlace :: 
     (PartialComparison t,
-     RefinementRoundedLatticeInPlace t,  
+     RefinementRoundedLatticeInPlace t, RefinementRoundedLattice t, 
      CanBeMutable t,
      Arbitrary t, Show t, 
      Arbitrary (MinmaxOuterEffortIndicator t), Show (MinmaxOuterEffortIndicator t), 

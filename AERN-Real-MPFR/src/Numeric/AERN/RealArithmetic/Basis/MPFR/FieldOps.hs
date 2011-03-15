@@ -34,9 +34,11 @@ import Data.Number.MPFR (MPFR)
 import Data.Number.MPFR.Instances.Up
 import qualified Data.Number.MPFR.Mutable as MM
 
-instance RoundedAdd MPFR where
+instance RoundedAddEffort MPFR where
     type AddEffortIndicator MPFR = M.Precision 
     addDefaultEffort _ = 100
+
+instance RoundedAdd MPFR where
     addUpEff prec d1 d2 = 
         detectNaNUp ("addition " ++ show d1 ++ " +^ " ++ show d2 ) $ 
             M.add M.Up prec d1 d2
@@ -46,15 +48,19 @@ instance RoundedAdd MPFR where
     
 instance RoundedSubtr MPFR
 
-instance RoundedAbs MPFR where
+instance RoundedAbsEffort MPFR where
     type AbsEffortIndicator MPFR = ()
     absDefaultEffort _ = ()
+
+instance RoundedAbs MPFR where
     absDnEff _ = abs
     absUpEff _ = abs
 
-instance RoundedMultiply MPFR where
+instance RoundedMultiplyEffort MPFR where
     type MultEffortIndicator MPFR = M.Precision 
     multDefaultEffort _ = 100
+
+instance RoundedMultiply MPFR where
     multUpEff prec d1 d2 = 
 --        unsafePrintReturn
 --        (
@@ -72,27 +78,32 @@ instance RoundedMultiply MPFR where
         detectNaNDn ("multiplication " ++ show d1 ++ " *. " ++ show d2 ) $ 
             M.mul M.Down prec d1 d2
 
-instance RoundedRing MPFR
 
-instance RoundedPowerNonnegToNonnegInt MPFR where
+instance RoundedPowerNonnegToNonnegIntEffort MPFR where
     type PowerNonnegToNonnegIntEffortIndicator MPFR = M.Precision
     powerNonnegToNonnegIntDefaultEffort _ = 100
+
+instance RoundedPowerNonnegToNonnegInt MPFR where
     powerNonnegToNonnegIntUpEff prec x n =
         M.powi M.Up prec x n 
     powerNonnegToNonnegIntDnEff prec x n = 
         M.powi M.Down prec x n 
 
-instance RoundedPowerToNonnegInt MPFR where
+instance RoundedPowerToNonnegIntEffort MPFR where
     type PowerToNonnegIntEffortIndicator MPFR = M.Precision 
     powerToNonnegIntDefaultEffort _ = 100 
+
+instance RoundedPowerToNonnegInt MPFR where
     powerToNonnegIntUpEff prec x n =
         M.powi M.Up prec x n 
     powerToNonnegIntDnEff prec x n = 
         M.powi M.Down prec x n 
 
-instance RoundedDivide MPFR where
+instance RoundedDivideEffort MPFR where
     type DivEffortIndicator MPFR = M.Precision 
     divDefaultEffort _ = 100
+
+instance RoundedDivide MPFR where
     divUpEff prec d1 d2 = 
         detectNaNUp ("division " ++ show d1 ++ " *^ " ++ show d2 ) $ 
             M.div M.Up prec d1 d2
@@ -100,7 +111,17 @@ instance RoundedDivide MPFR where
         detectNaNDn ("division " ++ show d1 ++ " *. " ++ show d2 ) $ 
             M.div M.Down prec d1 d2
 
-instance RoundedField MPFR
+instance RoundedRingEffort MPFR
+    where
+    type RingOpsEffortIndicator MPFR = M.Precision
+    ringOpsDefaultEffort _ = 100
+    ringEffortAdd _ = id
+    ringEffortMult _ = id
+    ringEffortPow _ = id
+
+instance RoundedRing MPFR
+
+instance RoundedFieldEffort MPFR
     where
     type FieldOpsEffortIndicator MPFR = M.Precision
     fieldOpsDefaultEffort _ = 100
@@ -109,6 +130,7 @@ instance RoundedField MPFR
     fldEffortPow _ = id
     fldEffortDiv _ = id
 
+instance RoundedField MPFR
     
 
     

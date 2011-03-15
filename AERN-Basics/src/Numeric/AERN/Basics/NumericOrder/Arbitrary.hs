@@ -200,7 +200,7 @@ instance ArbitraryOrderedTuple Double where
         maxDbl = encodeFloat 1 (maxExp - 1)
         chooseDbl (lb, ub) =
             do
-            exp <- chooseNearerZero (expLb, expUb) -- TODO: prefer exp near 0
+            exp <- chooseNearerZero (expLb, expUb)
             case exp == expUb of
                 True -> choose (lb, ub)
                 False -> chooseWithExp exp

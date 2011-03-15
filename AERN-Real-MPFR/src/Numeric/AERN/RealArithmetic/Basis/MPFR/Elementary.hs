@@ -23,9 +23,11 @@ import Numeric.AERN.RealArithmetic.NumericOrderRounding
 import qualified Data.Number.MPFR as M
 import Data.Number.MPFR (MPFR)
 
-instance RoundedExponentiation MPFR where
+instance RoundedExponentiationEffort MPFR where
     type ExpEffortIndicator MPFR = M.Precision 
     expDefaultEffort _ = 100
+
+instance RoundedExponentiation MPFR where
     expUpEff prec d1 = 
         M.exp M.Up prec d1
     expDnEff prec d1 =

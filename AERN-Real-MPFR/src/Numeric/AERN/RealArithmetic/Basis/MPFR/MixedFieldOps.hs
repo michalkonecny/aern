@@ -30,29 +30,46 @@ import Data.Number.MPFR (MPFR)
 import Data.Number.MPFR.Instances.Up
 import qualified Data.Number.MPFR.Mutable as MM
 
-instance RoundedMixedAdd MPFR Int
+instance RoundedMixedAddEffort MPFR Int
     where
     type MixedAddEffortIndicator MPFR Int = M.Precision
     mixedAddDefaultEffort _ _ = 100 
+
+instance RoundedMixedAdd MPFR Int
+    where
     mixedAddUpEff prec d n = M.addi M.Up prec d n
     mixedAddDnEff prec d n = M.addi M.Down prec d n
 
-instance RoundedMixedMultiply MPFR Int
+instance RoundedMixedMultiplyEffort MPFR Int
     where
     type MixedMultEffortIndicator MPFR Int = M.Precision
     mixedMultDefaultEffort _ _ = 100
+
+instance RoundedMixedMultiply MPFR Int
+    where
     mixedMultUpEff prec d i = M.muli M.Up prec d i
     mixedMultDnEff prec d i = M.muli M.Down prec d i
 
-instance RoundedMixedDivide MPFR Int
+instance RoundedMixedDivideEffort MPFR Int
     where
     type MixedDivEffortIndicator MPFR Int = M.Precision
     mixedDivDefaultEffort _ _ = 100
+
+instance RoundedMixedDivide MPFR Int
+    where
     mixedDivUpEff prec d i = M.divi M.Up prec d i
     mixedDivDnEff prec d i = M.divi M.Down prec d i
 
+instance RoundedMixedRingEffort MPFR Int
+    where
+    type MixedRingOpsEffortIndicator MPFR Int = M.Precision
+    mixedRingOpsDefaultEffort _ _ = 100
+    mxringEffortAdd _ _ = id
+    mxringEffortMult _ _ = id
+
 instance RoundedMixedRing MPFR Int
-instance RoundedMixedField MPFR Int
+
+instance RoundedMixedFieldEffort MPFR Int
     where
     type MixedFieldOpsEffortIndicator MPFR Int = M.Precision
     mixedFieldOpsDefaultEffort _ _ = 100
@@ -60,32 +77,51 @@ instance RoundedMixedField MPFR Int
     mxfldEffortMult _ _ = id
     mxfldEffortDiv _ _ = id
 
-instance RoundedMixedAdd MPFR Integer
+instance RoundedMixedField MPFR Int
+
+instance RoundedMixedAddEffort MPFR Integer
     where
     type MixedAddEffortIndicator MPFR Integer =
         MixedAddEffortIndicatorByConversion MPFR Integer 
     mixedAddDefaultEffort = mixedAddDefaultEffortByConversion 
+
+instance RoundedMixedAdd MPFR Integer
+    where
     mixedAddUpEff = mixedAddUpEffByConversion
     mixedAddDnEff = mixedAddDnEffByConversion
 
-instance RoundedMixedMultiply MPFR Integer
+instance RoundedMixedMultiplyEffort MPFR Integer
     where
     type MixedMultEffortIndicator MPFR Integer =
         MixedMultEffortIndicatorByConversion MPFR Integer 
     mixedMultDefaultEffort = mixedMultDefaultEffortByConversion 
+
+instance RoundedMixedMultiply MPFR Integer
+    where
     mixedMultUpEff = mixedMultUpEffByConversion
     mixedMultDnEff = mixedMultDnEffByConversion
 
-instance RoundedMixedDivide MPFR Integer
+instance RoundedMixedDivideEffort MPFR Integer
     where
     type MixedDivEffortIndicator MPFR Integer =
         MixedDivEffortIndicatorByConversion MPFR Integer 
     mixedDivDefaultEffort = mixedDivDefaultEffortByConversion 
+
+instance RoundedMixedDivide MPFR Integer
+    where
     mixedDivUpEff = mixedDivUpEffByConversion
     mixedDivDnEff = mixedDivDnEffByConversion
 
+instance RoundedMixedRingEffort MPFR Integer
+    where
+    type MixedRingOpsEffortIndicator MPFR Integer = M.Precision
+    mixedRingOpsDefaultEffort _ _ = 100
+    mxringEffortAdd _ _ p = (p,p)
+    mxringEffortMult _ _ p = (p,p,())
+
 instance RoundedMixedRing MPFR Integer
-instance RoundedMixedField MPFR Integer
+
+instance RoundedMixedFieldEffort MPFR Integer
     where
     type MixedFieldOpsEffortIndicator MPFR Integer = M.Precision
     mixedFieldOpsDefaultEffort _ _ = 100
@@ -93,32 +129,53 @@ instance RoundedMixedField MPFR Integer
     mxfldEffortMult _ _ p = (p,p,())
     mxfldEffortDiv _ _ p = (p,p,((),()))
 
-instance RoundedMixedAdd MPFR Rational
+instance RoundedMixedField MPFR Integer
+
+
+
+instance RoundedMixedAddEffort MPFR Rational
     where
     type MixedAddEffortIndicator MPFR Rational =
         MixedAddEffortIndicatorByConversion MPFR Rational 
     mixedAddDefaultEffort = mixedAddDefaultEffortByConversion 
+
+instance RoundedMixedAdd MPFR Rational
+    where
     mixedAddUpEff = mixedAddUpEffByConversion
     mixedAddDnEff = mixedAddDnEffByConversion
 
-instance RoundedMixedMultiply MPFR Rational
+instance RoundedMixedMultiplyEffort MPFR Rational
     where
     type MixedMultEffortIndicator MPFR Rational =
         MixedMultEffortIndicatorByConversion MPFR Rational 
     mixedMultDefaultEffort = mixedMultDefaultEffortByConversion 
+
+instance RoundedMixedMultiply MPFR Rational
+    where
     mixedMultUpEff = mixedMultUpEffByConversion
     mixedMultDnEff = mixedMultDnEffByConversion
 
-instance RoundedMixedDivide MPFR Rational
+instance RoundedMixedDivideEffort MPFR Rational
     where
     type MixedDivEffortIndicator MPFR Rational =
         MixedDivEffortIndicatorByConversion MPFR Rational 
     mixedDivDefaultEffort = mixedDivDefaultEffortByConversion 
+
+instance RoundedMixedDivide MPFR Rational
+    where
     mixedDivUpEff = mixedDivUpEffByConversion
     mixedDivDnEff = mixedDivDnEffByConversion
 
+instance RoundedMixedRingEffort MPFR Rational
+    where
+    type MixedRingOpsEffortIndicator MPFR Rational = M.Precision
+    mixedRingOpsDefaultEffort _ _ = 100
+    mxringEffortAdd _ _ p = (p,p)
+    mxringEffortMult _ _ p = (p,p,())
+
 instance RoundedMixedRing MPFR Rational
-instance RoundedMixedField MPFR Rational
+
+instance RoundedMixedFieldEffort MPFR Rational
     where
     type MixedFieldOpsEffortIndicator MPFR Rational = M.Precision
     mixedFieldOpsDefaultEffort _ _ = 100
@@ -126,33 +183,56 @@ instance RoundedMixedField MPFR Rational
     mxfldEffortMult _ _ p = (p,p,())
     mxfldEffortDiv _ _ p = (p,p,((),()))
 
-instance RoundedMixedAdd MPFR Double
+instance RoundedMixedField MPFR Rational
+
+
+
+instance RoundedMixedAddEffort MPFR Double
     where
     type MixedAddEffortIndicator MPFR Double = M.Precision
     mixedAddDefaultEffort _ _ = 100 
+
+instance RoundedMixedAdd MPFR Double
+    where
     mixedAddUpEff prec d i = M.addd M.Up prec d i
     mixedAddDnEff prec d i = M.addd M.Down prec d i
 
-instance RoundedMixedMultiply MPFR Double
+instance RoundedMixedMultiplyEffort MPFR Double
     where
     type MixedMultEffortIndicator MPFR Double = M.Precision
     mixedMultDefaultEffort _ _ = 100
+
+instance RoundedMixedMultiply MPFR Double
+    where
     mixedMultUpEff prec d i = M.muld M.Up prec d i
     mixedMultDnEff prec d i = M.muld M.Down prec d i
 
-instance RoundedMixedDivide MPFR Double
+instance RoundedMixedDivideEffort MPFR Double
     where
     type MixedDivEffortIndicator MPFR Double = M.Precision
     mixedDivDefaultEffort _ _ = 100
+
+instance RoundedMixedDivide MPFR Double
+    where
     mixedDivUpEff prec d i = M.divd M.Up prec d i
     mixedDivDnEff prec d i = M.divd M.Down prec d i
 
+instance RoundedMixedRingEffort MPFR Double
+    where
+    type MixedRingOpsEffortIndicator MPFR Double = M.Precision
+    mixedRingOpsDefaultEffort _ _ = 100
+    mxringEffortAdd _ _ = id
+    mxringEffortMult _ _ = id
+
 instance RoundedMixedRing MPFR Double
-instance RoundedMixedField MPFR Double
+
+instance RoundedMixedFieldEffort MPFR Double
     where
     type MixedFieldOpsEffortIndicator MPFR Double = M.Precision
     mixedFieldOpsDefaultEffort _ _ = 100
     mxfldEffortAdd _ _ = id
     mxfldEffortMult _ _ = id
     mxfldEffortDiv _ _ = id
+
+instance RoundedMixedField MPFR Double
 

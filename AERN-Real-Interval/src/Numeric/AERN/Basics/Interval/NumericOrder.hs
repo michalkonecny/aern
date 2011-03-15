@@ -58,22 +58,31 @@ instance
             
                 
 instance
-    (NumOrd.RoundedLattice e) =>
-    (NumOrd.OuterRoundedLattice (Interval e))
+    (NumOrd.RoundedLatticeEffort e) =>
+    (NumOrd.OuterRoundedLatticeEffort (Interval e))
     where
     type NumOrd.MinmaxOuterEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
     minmaxOuterDefaultEffort (Interval l h) = NumOrd.minmaxDefaultEffort l  
+
+instance
+    (NumOrd.RoundedLattice e) =>
+    (NumOrd.OuterRoundedLattice (Interval e))
+    where
     minOuterEff effort (Interval l1 h1) (Interval l2 h2) =
         Interval (NumOrd.minDnEff effort l1 l2) (NumOrd.minUpEff effort h1 h2)
     maxOuterEff effort (Interval l1 h1) (Interval l2 h2) =
         Interval (NumOrd.maxDnEff effort l1 l2) (NumOrd.maxUpEff effort h1 h2)
 
 instance
-    (NumOrd.RoundedLattice e) =>
-    (NumOrd.InnerRoundedLattice (Interval e))
+    (NumOrd.RoundedLatticeEffort e) =>
+    (NumOrd.InnerRoundedLatticeEffort (Interval e))
     where
     type NumOrd.MinmaxInnerEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
     minmaxInnerDefaultEffort (Interval l h) = NumOrd.minmaxDefaultEffort l  
+instance
+    (NumOrd.RoundedLattice e) =>
+    (NumOrd.InnerRoundedLattice (Interval e))
+    where
     minInnerEff effort (Interval l1 h1) (Interval l2 h2) =
         Interval (NumOrd.minUpEff effort l1 l2) (NumOrd.minDnEff effort h1 h2)
     maxInnerEff effort (Interval l1 h1) (Interval l2 h2) =

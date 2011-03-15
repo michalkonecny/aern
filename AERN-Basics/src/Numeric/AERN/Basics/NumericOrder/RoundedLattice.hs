@@ -41,14 +41,15 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 {-|
     A type with directed-rounding lattice operations.
 -}
-class RoundedLattice t where
-    type MinmaxEffortIndicator t
-    minmaxDefaultEffort :: t -> MinmaxEffortIndicator t
+class (RoundedLatticeEffort t) => RoundedLattice t where
     maxUpEff :: MinmaxEffortIndicator t -> t -> t -> t
     maxDnEff :: MinmaxEffortIndicator t -> t -> t -> t
     minUpEff :: MinmaxEffortIndicator t -> t -> t -> t
     minDnEff :: MinmaxEffortIndicator t -> t -> t -> t
 
+class RoundedLatticeEffort t where
+    type MinmaxEffortIndicator t
+    minmaxDefaultEffort :: t -> MinmaxEffortIndicator t
 
 propRoundedLatticeIllegalArgException :: 
     (RoundedLattice t) => 
