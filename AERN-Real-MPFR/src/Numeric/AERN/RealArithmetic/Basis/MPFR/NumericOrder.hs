@@ -64,9 +64,11 @@ instance NumOrd.PartialComparison MPFR where
 --           _ -> Just NC 
     pCompareDefaultEffort _ = ()
 
-instance NumOrd.RoundedLattice MPFR where
+instance NumOrd.RoundedLatticeEffort MPFR where
     type NumOrd.MinmaxEffortIndicator MPFR = ()
     minmaxDefaultEffort _ = ()
+
+instance NumOrd.RoundedLattice MPFR where
     maxUpEff _ a b = Prelude.max a b
 --        case (M.isNaN a, M.isNaN b) of
 --           (False, False) -> Prelude.max a b  
@@ -113,11 +115,48 @@ instance Arbitrary MPFR where
             exp = fromInteger expI 
 
 instance NumOrd.ArbitraryOrderedTuple MPFR where
-   arbitraryTupleRelatedBy = 
-       NumOrd.linearArbitraryTupleRelatedBy (arbitrary)
-       -- When generating MPFR numbers for testing, try to avoid overflows
-       -- as we cannot usually overcome overflows when we cannot increase 
-       -- the granularity (aka precision) of the floating point type.
-       -- Exp overflows at around 700.
-       
-
+    type (NumOrd.Area MPFR) = NumOrd.AreaLinear MPFR
+    areaWhole _ = NumOrd.areaLinearWhole [-1/0,-1,0,1,1/0]
+    arbitraryTupleInAreaRelatedBy area = 
+        NumOrd.linearArbitraryTupleRelatedBy 
+                (NumOrd.arbitraryLinear (-1/0, 1/0) id id chooseNearerZero area)
+        where
+        chooseMPFR (lb, ub) 
+            | lbBounded && ubBounded =
+                do
+                precI <- choose (100,10000)
+                let prec = fromIntegral (precI :: Int) 
+                return $ lb + ((xUniform prec)*(ub-lb))
+            | lbBounded =
+                do
+                x <- arbitrary
+                return $ lb + (abs x :: MPFR) 
+            | ubBounded =
+                do
+                x <- arbitrary
+                return $ ub - (abs x :: MPFR)
+            | otherwise = arbitrary 
+            where
+            lbBounded = -1/0 < lb
+            ubBounded = ub < 1/0 
+            xUniform = M.urandomb M.newRandomStatePointer  
+        chooseNearerZero (lo, hi) =
+--                unsafePrint ("chooseNearerZero: "
+--                    ++ "\n loT = " ++ show loT
+--                    ++ "\n hiT = " ++ show hiT
+--                ) $
+            do
+            eT <- chooseMPFR (loT, hiT)
+            return $ transform eT 
+            where
+            loT = transformInv lo
+            hiT = transformInv hi
+            transform :: MPFR -> MPFR
+            transform x = x*x*x/1000000 -- 100^3 = 1000000
+            transformInv x 
+                | x > 0 = 100 * exp ((log x)/3)
+                | x < 0 = - (transformInv (-x))
+                | otherwise = 0
+    arbitraryTupleRelatedBy =
+        NumOrd.arbitraryTupleInAreaRelatedBy (NumOrd.areaWhole (0::MPFR))
+    

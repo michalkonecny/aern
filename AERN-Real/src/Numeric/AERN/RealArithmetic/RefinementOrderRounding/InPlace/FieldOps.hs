@@ -27,18 +27,6 @@
     This module is hidden and reexported via its parent RefinementOrderRounding.InPlace. 
 -}
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.FieldOps 
-(
-    RoundedAddInPlace(..), 
-    RoundedSubtrInPlace(..),
-    RoundedAbsInPlace(..),
-    RoundedMultiplyInPlace(..),
-    RoundedPowerToNonnegIntInPlace(..),
-    powerToNonnegIntInInPlaceEffFromMult,
-    powerToNonnegIntOutInPlaceEffFromMult,
-    RoundedDivideInPlace(..),
-    testsInOutFieldOpsInPlace,
-    RoundedRingInPlace(..), RoundedFieldInPlace(..)
-)
 where
 
 import Prelude hiding (EQ, LT, GT)
@@ -244,11 +232,24 @@ propInOutPowerToNonnegInPlace sample initEffort (RefOrd.UniformlyOrderedSingleto
         RefOrd.pLeqEff initEffort
         e
 
-class (RoundedDivideEffort t, CanBeMutable t) => RoundedDivideInPlace t where
+class (HasOne t, RoundedDivideEffort t, CanBeMutable t) => RoundedDivideInPlace t where
     divInInPlaceEff :: t -> OpMutable2Eff (DivEffortIndicator t) t s
     divOutInPlaceEff :: t -> OpMutable2Eff (DivEffortIndicator t) t s
     recipInInPlaceEff :: t -> OpMutable1Eff (DivEffortIndicator t) t s
     recipOutInPlaceEff :: t -> OpMutable1Eff (DivEffortIndicator t) t s
+    
+    recipInInPlaceEff sample effort resM aM =
+        do
+        let oneP = one
+        let _ = [oneP, sample]
+        oneM <- unsafeMakeMutable oneP
+        divInInPlaceEff sample effort resM oneM aM
+    recipOutInPlaceEff sample effort resM aM =
+        do
+        let oneP = one
+        let _ = [oneP, sample]
+        oneM <- unsafeMakeMutable oneP
+        divOutInPlaceEff sample effort resM oneM aM
     
 divInInPlaceEffFromPure sample = pureToMutable2Eff sample divInEff 
 divOutInPlaceEffFromPure sample = pureToMutable2Eff sample divOutEff 
@@ -304,7 +305,16 @@ testsInOutFieldOpsInPlace (name, sample) =
         ]
 
 
-class (RoundedSubtrInPlace t, RoundedMultiplyInPlace t) => RoundedRingInPlace t
-class (RoundedRingInPlace t, RoundedDivideInPlace t) => RoundedFieldInPlace t
+class 
+        (RoundedSubtrInPlace t, 
+         RoundedMultiplyInPlace t, 
+         RoundedRingEffort t) => 
+    RoundedRingInPlace t
+
+class
+        (RoundedRingInPlace t,
+         RoundedDivideInPlace t,
+         RoundedFieldEffort t) => 
+    RoundedFieldInPlace t
 
     

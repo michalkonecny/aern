@@ -38,10 +38,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 {-|
     A type with outward-rounding lattice operations.
 -}
-class OuterRoundedLattice t where
+class OuterRoundedLatticeEffort t where
     type JoinMeetOutEffortIndicator t
     joinmeetOutDefaultEffort :: t -> JoinMeetOutEffortIndicator t
 
+class (OuterRoundedLatticeEffort t) => OuterRoundedLattice t where
     joinOutEff :: JoinMeetOutEffortIndicator t -> t -> t -> t
     meetOutEff :: JoinMeetOutEffortIndicator t -> t -> t -> t
 
@@ -49,10 +50,11 @@ class OuterRoundedLattice t where
 {-|
     A type with outward-rounding lattice operations.
 -}
-class InnerRoundedLattice t where
+class InnerRoundedLatticeEffort t where
     type JoinMeetInEffortIndicator t
     joinmeetInDefaultEffort :: t -> JoinMeetInEffortIndicator t
     
+class (InnerRoundedLatticeEffort t) => InnerRoundedLattice t where
     joinInEff :: JoinMeetInEffortIndicator t -> t -> t -> t
     meetInEff :: JoinMeetInEffortIndicator t -> t -> t -> t
 

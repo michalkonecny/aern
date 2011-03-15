@@ -28,6 +28,7 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
     PowerToNonnegIntEffortIndicatorFromMult, powerToNonnegIntDefaultEffortFromMult,
     powerToNonnegIntInEffFromMult, powerToNonnegIntOutEffFromMult,
     RoundedDivide(..), RoundedDivideEffort(..), testsInOutDiv,
+    RoundedRingEffort(..), RoundedFieldEffort(..),
     RoundedRing(..), RoundedField(..)
 --    ,
 --    FieldOpsEffortIndicator(..), fieldOpsDefaultEffort
@@ -421,8 +422,6 @@ testsInOutMult (name, sample) =
             testProperty "refinement monotone" (propInOutMultMonotone sample)
         ]
 
-class (RoundedAdd t, RoundedSubtr t, RoundedMultiply t, RoundedPowerToNonnegInt t) => RoundedRing t
-    
 class RoundedPowerToNonnegIntEffort t where
     type PowerToNonnegIntEffortIndicator t
     powerToNonnegIntDefaultEffort :: 
@@ -637,7 +636,27 @@ testsInOutDiv (name, sample) =
             testProperty "refinement monotone" (propInOutDivMonotone sample)
         ]
 
-class (RoundedRing t, RoundedDivide t) => RoundedField t where
+class 
+        (RoundedAddEffort t, 
+         RoundedMultiplyEffort t, 
+         RoundedPowerToNonnegIntEffort t) => 
+    RoundedRingEffort t
+    where
+    type RingOpsEffortIndicator t
+    ringOpsDefaultEffort :: t -> RingOpsEffortIndicator t
+    ringEffortAdd :: t -> (RingOpsEffortIndicator t) -> (AddEffortIndicator t)
+    ringEffortMult :: t ->  (RingOpsEffortIndicator t) -> (MultEffortIndicator t)
+    ringEffortPow :: t -> (RingOpsEffortIndicator t) -> (PowerToNonnegIntEffortIndicator t)
+
+class 
+        (RoundedAdd t, 
+         RoundedSubtr t, 
+         RoundedMultiply t, 
+         RoundedPowerToNonnegInt t,
+         RoundedRingEffort t) => 
+    RoundedRing t
+    
+class (RoundedRingEffort t, RoundedDivideEffort t) => RoundedFieldEffort t where
     type FieldOpsEffortIndicator t
     fieldOpsDefaultEffort :: t -> FieldOpsEffortIndicator t
     fldEffortAdd :: t -> (FieldOpsEffortIndicator t) -> (AddEffortIndicator t)
@@ -645,3 +664,4 @@ class (RoundedRing t, RoundedDivide t) => RoundedField t where
     fldEffortPow :: t -> (FieldOpsEffortIndicator t) -> (PowerToNonnegIntEffortIndicator t)
     fldEffortDiv :: t -> (FieldOpsEffortIndicator t) -> (DivEffortIndicator t)
 
+class (RoundedRing t, RoundedDivide t, RoundedFieldEffort t) => RoundedField t

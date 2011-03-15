@@ -362,9 +362,19 @@ testsUpDnMixedFieldOps (name, sample) (nameN, sampleN) =
             testProperty "division" (propMixedDivEqualsConvert sample sampleN)
         ]
 
-class (RoundedMixedAdd t tn, RoundedMixedMultiply t tn) => RoundedMixedRing t tn
+class (RoundedMixedAddEffort t tn, RoundedMixedMultiplyEffort t tn) => 
+    RoundedMixedRingEffort t tn
+    where
+    type MixedRingOpsEffortIndicator t tn
+    mixedRingOpsDefaultEffort :: t -> tn -> MixedRingOpsEffortIndicator t tn
+    mxringEffortAdd :: t -> tn -> MixedRingOpsEffortIndicator t tn -> MixedAddEffortIndicator t tn
+    mxringEffortMult :: t -> tn -> MixedRingOpsEffortIndicator t tn -> MixedMultEffortIndicator t tn
 
-class (RoundedMixedRing t tn, RoundedMixedDivide t tn) => RoundedMixedField t tn
+class (RoundedMixedAdd t tn, RoundedMixedMultiply t tn, RoundedMixedRingEffort t tn) => 
+    RoundedMixedRing t tn
+
+class (RoundedMixedRingEffort t tn, RoundedMixedDivideEffort t tn) => 
+    RoundedMixedFieldEffort t tn
     where
     type MixedFieldOpsEffortIndicator t tn
     mixedFieldOpsDefaultEffort :: t -> tn -> MixedFieldOpsEffortIndicator t tn
@@ -372,4 +382,6 @@ class (RoundedMixedRing t tn, RoundedMixedDivide t tn) => RoundedMixedField t tn
     mxfldEffortMult :: t -> tn -> MixedFieldOpsEffortIndicator t tn -> MixedMultEffortIndicator t tn
     mxfldEffortDiv :: t -> tn -> MixedFieldOpsEffortIndicator t tn -> MixedDivEffortIndicator t tn
 
+class (RoundedMixedRing t tn, RoundedMixedDivide t tn, RoundedMixedFieldEffort t tn) => 
+    RoundedMixedField t tn
     

@@ -43,18 +43,29 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 {-|
     A type with directed-rounding lattice operations.
 -}
-class (RoundedLattice t, CanBeMutable t) => RoundedLatticeInPlace t where
+class 
+    (RoundedLatticeEffort t, CanBeMutable t) => 
+    RoundedLatticeInPlace t 
+    where
     maxUpInPlaceEff :: t -> OpMutable2Eff (MinmaxEffortIndicator t) t s
     maxDnInPlaceEff :: t -> OpMutable2Eff (MinmaxEffortIndicator t) t s
     minUpInPlaceEff :: t -> OpMutable2Eff (MinmaxEffortIndicator t) t s
     minDnInPlaceEff :: t -> OpMutable2Eff (MinmaxEffortIndicator t) t s
-    maxUpInPlaceEff sample = pureToMutable2Eff sample maxUpEff 
-    maxDnInPlaceEff sample = pureToMutable2Eff sample maxDnEff 
-    minUpInPlaceEff sample = pureToMutable2Eff sample minUpEff 
-    minDnInPlaceEff sample = pureToMutable2Eff sample minDnEff 
+    
+maxUpInPlaceEffFromPure sample = pureToMutable2Eff sample maxUpEff 
+maxDnInPlaceEffFromPure sample = pureToMutable2Eff sample maxDnEff 
+minUpInPlaceEffFromPure sample = pureToMutable2Eff sample minUpEff 
+minDnInPlaceEffFromPure sample = pureToMutable2Eff sample minDnEff 
+
+maxUpEffFromInPlace sample = mutable2EffToPure $ maxUpInPlaceEff sample 
+maxDnEffFromInPlace sample = mutable2EffToPure $ maxDnInPlaceEff sample 
+minUpEffFromInPlace sample = mutable2EffToPure $ minUpInPlaceEff sample 
+minDnEffFromInPlace sample = mutable2EffToPure $ minDnInPlaceEff sample 
 
 propRoundedLatticeJoinInPlaceConsistentWithPure ::
-    (PartialComparison t, RoundedLatticeInPlace t, CanBeMutable t) => 
+    (PartialComparison t, 
+     RoundedLatticeInPlace t, RoundedLattice t, 
+     CanBeMutable t) => 
     t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
     UniformlyOrderedPair t -> Bool
@@ -68,7 +79,9 @@ propRoundedLatticeJoinInPlaceConsistentWithPure sample (minmaxEffort, effortComp
         e1 e2  
 
 propRoundedLatticeMeetInPlaceConsistentWithPure ::
-    (PartialComparison t, RoundedLatticeInPlace t, CanBeMutable t) => 
+    (PartialComparison t, 
+     RoundedLatticeInPlace t, RoundedLattice t, 
+     CanBeMutable t) => 
     t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
     UniformlyOrderedPair t -> Bool
@@ -83,7 +96,7 @@ propRoundedLatticeMeetInPlaceConsistentWithPure sample (minmaxEffort, effortComp
 
 testsRoundedLatticeInPlace :: 
     (PartialComparison t,
-     RoundedLatticeInPlace t,  
+     RoundedLatticeInPlace t, RoundedLattice t, 
      CanBeMutable t,
      Arbitrary t, Show t, 
      Arbitrary (MinmaxEffortIndicator t), Show (MinmaxEffortIndicator t), 

@@ -19,7 +19,7 @@ module Numeric.AERN.Basics.Interval.RefinementOrder where
 
 import Prelude hiding (EQ, LT, GT)
 
-import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Effort 
 import Numeric.AERN.Basics.PartialOrdering
 
 import Numeric.AERN.Basics.Interval.Basics
@@ -109,13 +109,18 @@ instance
 
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
-    (RefOrd.OuterRoundedLattice (Interval e)) 
+    (NumOrd.RoundedLatticeEffort e) => 
+    (RefOrd.OuterRoundedLatticeEffort (Interval e)) 
     where
     type RefOrd.JoinMeetOutEffortIndicator (Interval e) = 
         NumOrd.MinmaxEffortIndicator e
     joinmeetOutDefaultEffort (Interval l h) =
         NumOrd.minmaxDefaultEffort l 
+
+instance 
+    (NumOrd.RoundedLattice e) => 
+    (RefOrd.OuterRoundedLattice (Interval e)) 
+    where
     joinOutEff effort (Interval l1 h1) (Interval l2 h2) =
             Interval l h
             where
@@ -128,13 +133,18 @@ instance
             h = NumOrd.maxUpEff effort h1 h2
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
-    (RefOrd.InnerRoundedLattice (Interval e)) 
+    (NumOrd.RoundedLatticeEffort e) => 
+    (RefOrd.InnerRoundedLatticeEffort (Interval e)) 
     where
     type RefOrd.JoinMeetInEffortIndicator (Interval e) = 
         NumOrd.MinmaxEffortIndicator e
     joinmeetInDefaultEffort (Interval l h) =
         NumOrd.minmaxDefaultEffort l 
+
+instance 
+    (NumOrd.RoundedLattice e) => 
+    (RefOrd.InnerRoundedLattice (Interval e)) 
+    where
     joinInEff effort (Interval l1 h1) (Interval l2 h2) =
             Interval l h
             where

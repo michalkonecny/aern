@@ -55,8 +55,7 @@ instance (RoundedAbs (Interval e), CanBeMutable (Interval e)) =>
     RoundedAbsInPlace (Interval e) 
 
 instance 
-    (RoundedMultiply (Interval e),
-     ArithUpDn.RoundedMultiplyInPlace e,
+    (ArithUpDn.RoundedMultiplyInPlace e,
      NumOrd.RoundedLatticeInPlace e,
      HasZero e,  NumOrd.PartialComparison e,
      CanBeMutable e) => 
@@ -415,7 +414,8 @@ multiplyIntervalsInPlace
 
 instance 
     (RoundedSubtrInPlace (Interval e), 
-     RoundedMultiplyInPlace (Interval e)) => 
+     RoundedMultiplyInPlace (Interval e),
+     RoundedRingEffort (Interval e)) => 
     RoundedRingInPlace (Interval e)
 
 instance
@@ -508,8 +508,7 @@ instance
                     False -> return ()
 
 instance 
-    (RoundedDivide (Interval e),
-     ArithUpDn.RoundedDivideInPlace e,
+    (ArithUpDn.RoundedDivideInPlace e,
      ArithUpDn.RoundedMultiplyInPlace e,
      NumOrd.RoundedLatticeInPlace e,
      HasZero e,  HasOne e, Neg e, 

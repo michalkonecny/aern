@@ -17,7 +17,9 @@
 module Numeric.AERN.Basics.NumericOrder.RefinementRoundedLattice 
 (
     OuterRoundedLattice(..),
+    OuterRoundedLatticeEffort(..),
     InnerRoundedLattice(..),
+    InnerRoundedLatticeEffort(..),
     RefinementRoundedLattice(..),
     testsRefinementRoundedLattice, 
     testsRefinementRoundedLatticeDistributive,
@@ -50,22 +52,24 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 {-|
     A type with refinement-outer-rounding numerical-order-lattice operations.
 -}
-class OuterRoundedLattice t where
-    type MinmaxOuterEffortIndicator t
-    minmaxOuterDefaultEffort :: t -> MinmaxOuterEffortIndicator t
-
+class (OuterRoundedLatticeEffort t) => OuterRoundedLattice t where
     maxOuterEff :: MinmaxOuterEffortIndicator t -> t -> t -> t
     minOuterEff :: MinmaxOuterEffortIndicator t -> t -> t -> t
+
+class OuterRoundedLatticeEffort t where
+    type MinmaxOuterEffortIndicator t
+    minmaxOuterDefaultEffort :: t -> MinmaxOuterEffortIndicator t
 
 {-|
     A type with refinement-inner-rounding numerical-order-lattice operations.
 -}
-class InnerRoundedLattice t where
-    type MinmaxInnerEffortIndicator t
-    minmaxInnerDefaultEffort :: t -> MinmaxInnerEffortIndicator t
-
+class (InnerRoundedLatticeEffort t) => InnerRoundedLattice t where
     maxInnerEff :: MinmaxInnerEffortIndicator t -> t -> t -> t
     minInnerEff :: MinmaxInnerEffortIndicator t -> t -> t -> t
+
+class InnerRoundedLatticeEffort t where
+    type MinmaxInnerEffortIndicator t
+    minmaxInnerDefaultEffort :: t -> MinmaxInnerEffortIndicator t
 
 class (OuterRoundedLattice t, InnerRoundedLattice t) => RefinementRoundedLattice t
 
