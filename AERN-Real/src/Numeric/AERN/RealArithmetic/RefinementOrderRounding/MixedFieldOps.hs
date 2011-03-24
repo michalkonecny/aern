@@ -77,8 +77,10 @@ propMixedAddEqualsConvert ::
      (MixedAddEffortIndicator t tn,      
       AddEffortIndicator t,
       ConvertEffortIndicator tn t)) -> 
-    t -> tn -> Bool
-propMixedAddEqualsConvert sample sampleN initEffort d n =
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    tn -> Bool
+propMixedAddEqualsConvert sample sampleN initEffort 
+        (RefOrd.UniformlyOrderedSingleton d) n =
     equalRoundingUpDn
         expr1In expr1Out expr2In expr2Out
         RefOrd.pLeqEff initEffort
@@ -137,8 +139,10 @@ propMixedMultEqualsConvert ::
       (MixedMultEffortIndicator t tn,      
        MultEffortIndicator t,
        ConvertEffortIndicator tn t)) -> 
-    t -> tn -> Bool
-propMixedMultEqualsConvert sample sampleN initEffort d n =
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    tn -> Bool
+propMixedMultEqualsConvert sample sampleN initEffort 
+        (RefOrd.UniformlyOrderedSingleton d) n =
     equalRoundingUpDn
         expr1In expr1Out expr2In expr2Out
         RefOrd.pLeqEff initEffort
@@ -196,8 +200,10 @@ propMixedDivEqualsConvert ::
      (MixedDivEffortIndicator t tn,      
       DivEffortIndicator t,
       ConvertEffortIndicator tn t)) -> 
-    t -> tn -> Bool
-propMixedDivEqualsConvert sample sampleN initEffort@(effComp,(_,_,effConv)) d n
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    tn -> Bool
+propMixedDivEqualsConvert sample sampleN initEffort@(effComp,(_,_,effConv)) 
+        (RefOrd.UniformlyOrderedSingleton d) n
     | awayFromZero =
             equalRoundingUpDn
                 expr1In expr1Out expr2In expr2Out

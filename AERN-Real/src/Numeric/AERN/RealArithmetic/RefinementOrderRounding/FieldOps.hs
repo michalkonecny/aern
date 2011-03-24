@@ -79,9 +79,10 @@ propInOutAddZero ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> Bool
-propInOutAddZero _ =
-    roundedUnit zero RefOrd.pLeqEff addInEff addOutEff
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propInOutAddZero _ effort (RefOrd.UniformlyOrderedSingleton e) =
+    roundedUnit zero RefOrd.pLeqEff addInEff addOutEff effort e
 
 propInOutAddCommutative ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -94,9 +95,10 @@ propInOutAddCommutative ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> t -> Bool
-propInOutAddCommutative _ =
-    roundedCommutative RefOrd.pLeqEff addInEff addOutEff
+    (RefOrd.UniformlyOrderedPair t) -> 
+    Bool
+propInOutAddCommutative _ effort (RefOrd.UniformlyOrderedPair (e1,e2)) =
+    roundedCommutative RefOrd.pLeqEff addInEff addOutEff effort e1 e2
 
 propInOutAddAssociative ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -109,9 +111,10 @@ propInOutAddAssociative ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> t -> t -> Bool
-propInOutAddAssociative _ =
-    roundedAssociative RefOrd.pLeqEff addInEff addOutEff
+    (RefOrd.UniformlyOrderedTriple t) -> 
+    Bool
+propInOutAddAssociative _ effort (RefOrd.UniformlyOrderedTriple (e1,e2,e3)) =
+    roundedAssociative RefOrd.pLeqEff addInEff addOutEff effort e1 e2 e3
 
 propInOutAddMonotone ::
     (RefOrd.PartialComparison t, RoundedAdd t, Show t,
@@ -159,9 +162,10 @@ propInOutSubtrElim ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> Bool
-propInOutSubtrElim _ =
-    roundedReflexiveCollapse zero RefOrd.pLeqEff subtrInEff subtrOutEff
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propInOutSubtrElim _ effort (RefOrd.UniformlyOrderedSingleton e) =
+    roundedReflexiveCollapse zero RefOrd.pLeqEff subtrInEff subtrOutEff effort e
 
 propInOutSubtrNegAdd ::
     (RefOrd.PartialComparison t, RoundedSubtr t, Neg t,
@@ -174,8 +178,9 @@ propInOutSubtrNegAdd ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> t -> Bool
-propInOutSubtrNegAdd _ initEffort e1 e2 =
+    (RefOrd.UniformlyOrderedPair t) -> 
+    Bool
+propInOutSubtrNegAdd _ initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         RefOrd.pLeqEff initEffort
@@ -269,9 +274,10 @@ propInOutAbsNegSymmetric ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
-    t -> Bool
-propInOutAbsNegSymmetric _ =
-    roundedNegSymmetric RefOrd.pLeqEff absInEff absOutEff
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propInOutAbsNegSymmetric _ effort (RefOrd.UniformlyOrderedSingleton e) =
+    roundedNegSymmetric RefOrd.pLeqEff absInEff absOutEff effort e
 
 propInOutAbsIdempotent ::
     (RefOrd.PartialComparison t, RoundedAbs t, HasZero t,
@@ -284,9 +290,10 @@ propInOutAbsIdempotent ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
-    t -> Bool
-propInOutAbsIdempotent _ =
-    roundedIdempotent RefOrd.pLeqEff absInEff absOutEff
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propInOutAbsIdempotent _ effort (RefOrd.UniformlyOrderedSingleton e) =
+    roundedIdempotent RefOrd.pLeqEff absInEff absOutEff effort e
 
 propInOutAbsMonotone ::
     (RefOrd.PartialComparison t, RoundedAbs t,
@@ -351,9 +358,10 @@ propInOutMultOne ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
-    t -> Bool
-propInOutMultOne _ =
-    roundedUnit one RefOrd.pLeqEff multInEff multOutEff
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propInOutMultOne _ effort (RefOrd.UniformlyOrderedSingleton e) =
+    roundedUnit one RefOrd.pLeqEff multInEff multOutEff effort e
 
 propInOutMultCommutative ::
     (RefOrd.PartialComparison t, RoundedMultiply t, HasZero t,
@@ -366,9 +374,10 @@ propInOutMultCommutative ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
-    t -> t -> Bool
-propInOutMultCommutative _ =
-    roundedCommutative RefOrd.pLeqEff multInEff multOutEff
+    (RefOrd.UniformlyOrderedPair t) -> 
+    Bool
+propInOutMultCommutative _ effort (RefOrd.UniformlyOrderedPair (e1,e2)) =
+    roundedCommutative RefOrd.pLeqEff multInEff multOutEff effort e1 e2
        
 propInOutMultAssociative ::
     (RefOrd.PartialComparison t, 
@@ -382,9 +391,10 @@ propInOutMultAssociative ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
-    t -> t -> t -> Bool
-propInOutMultAssociative _ =
-    roundedAssociative RefOrd.pLeqEff multInEff multOutEff
+    (RefOrd.UniformlyOrderedTriple t) -> 
+    Bool
+propInOutMultAssociative _ effort (RefOrd.UniformlyOrderedTriple (e1,e2,e3)) =
+    roundedAssociative RefOrd.pLeqEff multInEff multOutEff effort e1 e2 e3
 
 propInOutMultDistributesOverAdd ::
     (RefOrd.PartialComparison t,
@@ -401,11 +411,13 @@ propInOutMultDistributesOverAdd ::
     (ConsistencyEffortIndicator t) ->
     (RefOrd.PartialCompareEffortIndicator t, 
      (MultEffortIndicator t, AddEffortIndicator t)) -> 
-    t -> t -> t -> Bool
-propInOutMultDistributesOverAdd _ =
+    (RefOrd.UniformlyOrderedTriple t) -> 
+    Bool
+propInOutMultDistributesOverAdd _ effortConst effort (RefOrd.UniformlyOrderedTriple (e1,e2,e3)) =
     roundedDistributive 
         RefOrd.pLeqEff 
         multInEff addInEff multOutEff addOutEff
+        effortConst effort e1 e2 e3
        
     
 testsInOutMult (name, sample) =
@@ -502,8 +514,10 @@ propInOutPowerSumExponents ::
     (RefOrd.PartialCompareEffortIndicator t,
      (PowerToNonnegIntEffortIndicator t,
       MultEffortIndicator t)) ->
-    t -> Int -> Int -> Bool
-propInOutPowerSumExponents _ effortConsistency initEffort a nR mR =
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    Int -> Int -> Bool
+propInOutPowerSumExponents _ effortConsistency initEffort 
+        (RefOrd.UniformlyOrderedSingleton a) nR mR =
     thinEqualConsLeqRoundingUpDnImprovement [a]
         expr1Up expr1Dn expr2Up expr2Dn 
         RefOrd.pLeqEff
@@ -577,8 +591,9 @@ propInOutDivElim ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      DivEffortIndicator t) -> 
-    t -> Bool
-propInOutDivElim _ efforts2@(effComp, _) a =
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propInOutDivElim _ efforts2@(effComp, _) (RefOrd.UniformlyOrderedSingleton a) =
     let ?pCompareEffort = effComp in
     case (a ⊑? zero, zero ⊑? a) of
         (Just False, Just False) ->
@@ -604,8 +619,9 @@ propInOutDivRecipMult ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      (MultEffortIndicator t, DivEffortIndicator t)) -> 
-    t -> t -> Bool
-propInOutDivRecipMult _ initEffort@(effComp,_) e1 e2 =
+    (RefOrd.UniformlyOrderedPair t) -> 
+    Bool
+propInOutDivRecipMult _ initEffort@(effComp,_) (RefOrd.UniformlyOrderedPair (e1, e2)) =
     let ?pCompareEffort = effComp in
     case (e2 ⊑? zero, zero ⊑? e2) of
         (Just False, Just False) ->
