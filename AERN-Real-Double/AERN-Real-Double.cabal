@@ -41,6 +41,7 @@ Library
     Numeric.AERN.RealArithmetic.Basis.Double.Mutable
     Numeric.AERN.RealArithmetic.Basis.Double.Measures
     Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
+    Numeric.AERN.RealArithmetic.Basis.Double.SpecialConst
 
 Executable testAERN-Real-Double
   hs-source-dirs: src, tests
