@@ -63,8 +63,9 @@ propInOutExpInPlace ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      ExpEffortIndicator t) -> 
-    t -> Bool
-propInOutExpInPlace sample initEffort e1 =
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propInOutExpInPlace sample initEffort (RefOrd.UniformlyOrderedSingleton e1) =
     equalRoundingUpDn
         expr1In expr1Out expr2In expr2Out 
         RefOrd.pLeqEff initEffort
@@ -112,8 +113,9 @@ propInOutSqrtInPlace ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      SqrtEffortIndicator t) -> 
-    t -> Bool
-propInOutSqrtInPlace sample initEffort e1 =
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propInOutSqrtInPlace sample initEffort (RefOrd.UniformlyOrderedSingleton e1) =
     equalRoundingUpDn
         sqrtr1In sqrtr1Out sqrtr2In sqrtr2Out 
         RefOrd.pLeqEff initEffort

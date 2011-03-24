@@ -115,8 +115,10 @@ propMixedAddInPlaceEqualsConvert ::
      (MixedAddEffortIndicator t tn,      
       AddEffortIndicator t,
       ConvertEffortIndicator tn t)) -> 
-    t -> tn -> Bool
-propMixedAddInPlaceEqualsConvert sample1 sample2 initEffort d n =
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    tn -> Bool
+propMixedAddInPlaceEqualsConvert sample1 sample2 initEffort 
+        (NumOrd.UniformlyOrderedSingleton d) n =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -184,8 +186,10 @@ propMixedMultInPlaceEqualsConvert ::
       (MultEffortIndicator t,
        ConvertEffortIndicator tn t,
        NumOrd.MinmaxEffortIndicator t))) -> 
-    t -> tn -> Bool
-propMixedMultInPlaceEqualsConvert sample1 sample2 initEffort d n =
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    tn -> Bool
+propMixedMultInPlaceEqualsConvert sample1 sample2 initEffort 
+        (NumOrd.UniformlyOrderedSingleton d) n =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -257,9 +261,11 @@ propMixedDivInPlaceEqualsConvert ::
       (DivEffortIndicator t,
        ConvertEffortIndicator tn t,
        NumOrd.MinmaxEffortIndicator t))) -> 
-    t -> tn -> Bool
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    tn -> Bool
 propMixedDivInPlaceEqualsConvert sample1 sample2 
-        initEffort@(effComp,(_,(_,effConv,_))) d n
+        initEffort@(effComp,(_,(_,effConv,_))) 
+        (NumOrd.UniformlyOrderedSingleton d) n
     | awayFromZero =
             equalRoundingUpDn
                 expr1Up expr1Dn expr2Up expr2Dn 

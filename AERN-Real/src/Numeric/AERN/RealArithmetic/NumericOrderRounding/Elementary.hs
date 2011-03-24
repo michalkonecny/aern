@@ -59,8 +59,9 @@ propExpOfNegRecip ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      (ExpEffortIndicator t, MultEffortIndicator t)) -> 
-    t -> Bool
-propExpOfNegRecip _ initEffort e1 =
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propExpOfNegRecip _ initEffort (NumOrd.UniformlyOrderedSingleton e1) =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -115,8 +116,9 @@ propExpOfAddToMult ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      (ExpEffortIndicator t, MultEffortIndicator t, AddEffortIndicator t)) -> 
-    t -> t -> Bool
-propExpOfAddToMult _ initEffort e1 e2 =
+    (NumOrd.UniformlyOrderedPair t) -> 
+    Bool
+propExpOfAddToMult _ initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -165,8 +167,9 @@ propSqrtSquare ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      (SqrtEffortIndicator t, MultEffortIndicator t, NumOrd.PartialCompareEffortIndicator t)) -> 
-    t -> Bool
-propSqrtSquare _ initEffort e1 =
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propSqrtSquare _ initEffort (NumOrd.UniformlyOrderedSingleton e1) =
     case evalCatchDomViolationExceptions
             (equalRoundingUpDn
                 expr1Up expr1Dn expr2Up expr2Dn 

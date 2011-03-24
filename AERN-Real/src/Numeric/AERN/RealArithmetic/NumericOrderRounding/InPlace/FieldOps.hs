@@ -74,8 +74,9 @@ propUpDnAddInPlace ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> t -> Bool
-propUpDnAddInPlace sample initEffort e1 e2 =
+    (NumOrd.UniformlyOrderedPair t) -> 
+    Bool
+propUpDnAddInPlace sample initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -118,8 +119,9 @@ propUpDnSubtrInPlace ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> t -> Bool
-propUpDnSubtrInPlace sample initEffort e1 e2 =
+    (NumOrd.UniformlyOrderedPair t) ->
+    Bool
+propUpDnSubtrInPlace sample initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -159,8 +161,9 @@ propUpDnAbsInPlace ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
-    t -> Bool
-propUpDnAbsInPlace sample initEffort e1 =
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propUpDnAbsInPlace sample initEffort (NumOrd.UniformlyOrderedSingleton e1) =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -195,8 +198,9 @@ propUpDnMultInPlace ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
-    t -> t -> Bool
-propUpDnMultInPlace sample initEffort e1 e2 =
+    (NumOrd.UniformlyOrderedPair t) ->
+    Bool
+propUpDnMultInPlace sample initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -281,8 +285,10 @@ propUpDnPowerToNonnegInPlace ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      PowerToNonnegIntEffortIndicator t) -> 
-    t -> Int -> Bool
-propUpDnPowerToNonnegInPlace sample initEffort e1 n =
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    Int -> Bool
+propUpDnPowerToNonnegInPlace sample initEffort 
+        (NumOrd.UniformlyOrderedSingleton e1) n =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -346,8 +352,9 @@ propUpDnDivInPlace ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      DivEffortIndicator t) -> 
-    t -> t -> Bool
-propUpDnDivInPlace sample initEffort@(effComp, _) e1 e2 =
+    (NumOrd.UniformlyOrderedPair t) ->
+    Bool
+propUpDnDivInPlace sample initEffort@(effComp, _) (NumOrd.UniformlyOrderedPair (e1, e2)) =
     let ?pCompareEffort = effComp in
     case e2 ==? zero of
         Just False ->
