@@ -215,6 +215,8 @@ testMutableGCPolys =
     putStrLn $ "scaleEncl 0.1 x = " ++ showP sex
   
     putStrLn $ "copyEncl (" ++ showP cpetarg ++ ") (" ++ showP cpesrc ++ ") = " ++ showP cperes
+    putStrLn $ "copyUpThin (" ++ showP cpuptarg ++ ") (" ++ showP cpupsrc ++ ") = " ++ showP cpupres
+    putStrLn $ "copyDnThin (" ++ showP cpdntarg ++ ") (" ++ showP cpdnsrc ++ ") = " ++ showP cpdnres
 --    performGC
 --    threadDelay 1000000
     where
@@ -226,7 +228,7 @@ testMutableGCPolys =
     opsMutablePtr = GCPoly.newOpsMutableArithUpDnDefaultEffort sampleD
     [
       p1,p2,p3,p4,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,
-      sux,sdx,sex,cpesrc,cpetarg,cperes
+      sux,sdx,sex,cpesrc,cpetarg,cperes,cpupsrc,cpuptarg,cpupres,cpdnsrc,cpdntarg,cpdnres
      ] = runST $
         do
         let mkConst c =      GCPoly.constPolyMutable (c::Double) 0 (Var 3) (Size 10) (Power 3)
@@ -238,7 +240,8 @@ testMutableGCPolys =
         let scaleEncl c = GCPoly.polyScaleEnclMutableUsingMutableOps opsMutablePtr (c::Double) 
 --        let reduceDegree d = GCPoly.polyReduceDegreeEnclMutableUsingMutableOps opsMutablePtr (Power d) 
         let copyEncl = GCPoly.polyCopyEnclMutableUsingMutableOpsGenCf opsMutablePtr
-        let pair x = (x,x)
+        let copyUpThin = GCPoly.polyCopyUpThinMutableUsingMutableOpsGenCf 0 opsMutablePtr
+        let copyDnThin = GCPoly.polyCopyDnThinMutableUsingMutableOpsGenCf 0 opsMutablePtr
         
         p1M <- mkConst 0
         p2M <- mkVar 0 -- "x"
@@ -277,10 +280,27 @@ testMutableGCPolys =
         cpetargM <- mkConstConst 1
         cperesM  <- mkConstConst 1
         copyEncl cperesM cpesrcM
+
+        cpupsrcM  <- mkConst 1 
+        addUp cpupsrcM cpupsrcM p2M
+        addUp cpupsrcM cpupsrcM p3M
+        addUp cpupsrcM cpupsrcM p4M
+        cpuptargM <- mkConstConst 1
+        cpupresM  <- mkConstConst 1
+        copyUpThin cpupresM cpupsrcM
+
+        cpdnsrcM  <- mkConst 1 
+        addUp cpdnsrcM cpdnsrcM p2M
+        addUp cpdnsrcM cpdnsrcM p3M
+        addUp cpdnsrcM cpdnsrcM p4M
+        cpdntargM <- mkConstConst 1
+        cpdnresM  <- mkConstConst 1
+        copyDnThin cpdnresM cpdnsrcM
         
         mapM (GCPoly.unsafeReadPolyMutable sampleD) 
           [
             p1M, p2M, p3M, p4M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, 
-            suxM, sdxM, sexM, cpesrcM, cpetargM, cperesM
+            suxM, sdxM, sexM, cpesrcM, cpetargM, cperesM, cpupsrcM, cpuptargM, cpupresM, 
+            cpdnsrcM, cpdntargM, cpdnresM
            ]
  
