@@ -214,7 +214,7 @@ testMutableGCPolys =
     putStrLn $ "scaleDnThin 0.1 x = " ++ showP sdx
     putStrLn $ "scaleEncl 0.1 x = " ++ showP sex
   
-    putStrLn $ "copyEncl (" ++ showP cptarg ++ ") (" ++ showP cpsrc ++ ") = " ++ showP cpres
+    putStrLn $ "copyEncl (" ++ showP cpetarg ++ ") (" ++ showP cpesrc ++ ") = " ++ showP cperes
 --    performGC
 --    threadDelay 1000000
     where
@@ -226,7 +226,7 @@ testMutableGCPolys =
     opsMutablePtr = GCPoly.newOpsMutableArithUpDnDefaultEffort sampleD
     [
       p1,p2,p3,p4,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,
-      sux,sdx,sex,cpsrc,cptarg,cpres
+      sux,sdx,sex,cpesrc,cpetarg,cperes
      ] = runST $
         do
         let mkConst c =      GCPoly.constPolyMutable (c::Double) 0 (Var 3) (Size 10) (Power 3)
@@ -270,17 +270,17 @@ testMutableGCPolys =
         sexM <- mkVar 0
         scaleEncl 0.1 sexM
         
-        cpsrcM  <- mkConst 1 
-        addUp cpsrcM cpsrcM p2M
-        addUp cpsrcM cpsrcM p3M
-        addUp cpsrcM cpsrcM p4M
-        cptargM <- mkConstConst 1
-        cpresM  <- mkConstConst 1
-        copyEncl cpresM cpsrcM
+        cpesrcM  <- mkConst 1 
+        addUp cpesrcM cpesrcM p2M
+        addUp cpesrcM cpesrcM p3M
+        addUp cpesrcM cpesrcM p4M
+        cpetargM <- mkConstConst 1
+        cperesM  <- mkConstConst 1
+        copyEncl cperesM cpesrcM
         
         mapM (GCPoly.unsafeReadPolyMutable sampleD) 
           [
             p1M, p2M, p3M, p4M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, 
-            suxM, sdxM, sexM, cpsrcM, cptargM, cpresM
+            suxM, sdxM, sexM, cpesrcM, cpetargM, cperesM
            ]
  

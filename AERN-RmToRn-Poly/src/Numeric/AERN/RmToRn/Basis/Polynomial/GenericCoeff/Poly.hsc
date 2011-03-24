@@ -873,6 +873,26 @@ foreign import ccall safe "copyEnclUsingMutableOpsGenCf"
             (Ptr (Poly (Mutable cf s))) -> 
             IO ()
 
+foreign import ccall safe "copyUpThinUsingMutableOpsGenCf"
+        poly_copyUpThinUsingMutableOps :: 
+            (StablePtr cf) ->
+            (StablePtr (ComparisonOp (Mutable cf s))) ->
+            (Ptr (Ops_Mutable s cf)) ->
+            (Ptr (Poly (Mutable cf s))) -> 
+            (Ptr (Poly (Mutable cf s))) -> 
+            IO ()
+
+foreign import ccall safe "copyDnThinUsingMutableOpsGenCf"
+        poly_copyDnThinUsingMutableOps :: 
+            (StablePtr cf) ->
+            (StablePtr (ComparisonOp (Mutable cf s))) ->
+            (Ptr (Ops_Mutable s cf)) ->
+            (Ptr (Poly (Mutable cf s))) -> 
+            (Ptr (Poly (Mutable cf s))) -> 
+            IO ()
+
+----------------------------------------------------------------
+
 polyCopyEnclMutableUsingMutableOpsGenCf ::
     (Storable cf, CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     (Ptr (Ops_Mutable s cf)) ->
@@ -907,4 +927,60 @@ polyCopyOpMutable copyOp sample opsMutablePtr (PolyMutableFP resFP) (PolyMutable
         v2 <- unsafeReadMutable v2M
         let _ = [v1,v2,sample] 
         return $ NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 v2
-      
+
+----------------------------------------------------------------
+        
+polyCopyUpThinMutableUsingMutableOpsGenCf ::
+    (Storable cf, CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
+    cf ->
+    (Ptr (Ops_Mutable s cf)) ->
+    PolyMutableFP cf s ->
+    PolyMutableFP cf s ->
+    ST s ()
+polyCopyUpThinMutableUsingMutableOpsGenCf sample opsMutablePtr = 
+    polyCopyThinOpMutable poly_copyUpThinUsingMutableOps sample opsMutablePtr
+    where
+    sample = zero
+    _ = 
+        do
+        opsMutable <- peek opsMutablePtr
+        sample2 <- deRefStablePtr (ops_sample opsMutable)
+        return [sample,  sample2]
+
+polyCopyDnThinMutableUsingMutableOpsGenCf ::
+    (Storable cf, CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
+    cf ->
+    (Ptr (Ops_Mutable s cf)) ->
+    PolyMutableFP cf s ->
+    PolyMutableFP cf s ->
+    ST s ()
+polyCopyDnThinMutableUsingMutableOpsGenCf sample opsMutablePtr = 
+    polyCopyThinOpMutable poly_copyDnThinUsingMutableOps sample opsMutablePtr
+    where
+    sample = zero
+    _ = 
+        do
+        opsMutable <- peek opsMutablePtr
+        sample2 <- deRefStablePtr (ops_sample opsMutable)
+        return [sample,  sample2]
+
+polyCopyThinOpMutable copyOp sample opsMutablePtr (PolyMutableFP resFP) (PolyMutableFP srcFP) =
+    do
+    unsafeIOToST $
+      do
+      zeroSP <- newStablePtr zero -- $ head [zero, sample]
+      compareSP <- newStablePtr compareMutable
+      _ <- withForeignPtr resFP $ \resP ->
+             withForeignPtr srcFP $ \srcP ->
+             copyOp compareSP zeroSP opsMutablePtr resP srcP
+      freeStablePtr compareSP
+      return ()
+    where
+    compareMutable v1M v2M =
+        unsafePerformIO $ unsafeSTToIO $
+        do
+        v1 <- unsafeReadMutable v1M
+        v2 <- unsafeReadMutable v2M
+        let _ = [v1,v2,sample] 
+        return $ NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 v2
+        
