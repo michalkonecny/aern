@@ -77,8 +77,9 @@ propRefinementRoundedLatticeIllegalArgException ::
     (RefinementRoundedLattice t) => 
     t -> 
     (MinmaxInnerEffortIndicator t, MinmaxOuterEffortIndicator t) -> 
-    t -> Bool
-propRefinementRoundedLatticeIllegalArgException illegalArg (effortIn, effortOut) d =
+    (UniformlyOrderedSingleton t) -> Bool
+propRefinementRoundedLatticeIllegalArgException illegalArg (effortIn, effortOut) 
+        (UniformlyOrderedSingleton d) =
     and $ map raisesAERNException $ 
                 concat [[op d illegalArg, op illegalArg d] 
                           | op <- [maxInnerEff effortIn, maxOuterEff effortOut, 
@@ -90,10 +91,11 @@ propRefinementRoundedLatticeJoinIdempotent ::
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInnerEffortIndicator t, 
      MinmaxOuterEffortIndicator t) -> 
-    t -> Bool
-propRefinementRoundedLatticeJoinIdempotent _ (effortComp, effortIn, effortOut) =
+    (UniformlyOrderedSingleton t) -> Bool
+propRefinementRoundedLatticeJoinIdempotent _ (effortComp, effortIn, effortOut) 
+        (UniformlyOrderedSingleton e) =
     roundedIdempotent (RefOrd.pLeqEff effortComp) 
-        (maxInnerEff effortIn) (maxOuterEff effortOut)
+        (maxInnerEff effortIn) (maxOuterEff effortOut) e
 
 propRefinementRoundedLatticeJoinCommutative :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
@@ -125,10 +127,11 @@ propRefinementRoundedLatticeMeetIdempotent ::
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInnerEffortIndicator t, 
      MinmaxOuterEffortIndicator t) -> 
-    t -> Bool
-propRefinementRoundedLatticeMeetIdempotent _ (effortComp, effortIn, effortOut) = 
+    (UniformlyOrderedSingleton t) -> Bool
+propRefinementRoundedLatticeMeetIdempotent _ (effortComp, effortIn, effortOut) 
+        (UniformlyOrderedSingleton e) = 
     roundedIdempotent (RefOrd.pLeqEff effortComp) 
-        (minInnerEff effortIn) (minOuterEff effortOut)
+        (minInnerEff effortIn) (minOuterEff effortOut) e
 
 propRefinementRoundedLatticeMeetCommutative :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 

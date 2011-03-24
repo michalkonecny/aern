@@ -20,10 +20,12 @@ where
 
 import Prelude hiding (EQ, LT, GT)
 
+import Numeric.AERN.Basics.RefinementOrder.Extrema
+import Numeric.AERN.Basics.RefinementOrder.Arbitrary
+
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.RefinementOrder.Extrema
 import Numeric.AERN.Basics.Laws.PartialRelation
 
 import Numeric.AERN.Misc.Maybe
@@ -64,46 +66,65 @@ class PartialComparison t where
 
 propPartialComparisonReflexiveEQ :: 
     (PartialComparison t) => 
-    t -> (PartialCompareEffortIndicator t) -> t -> Bool
-propPartialComparisonReflexiveEQ _ effort e = 
+    t -> 
+    (PartialCompareEffortIndicator t) -> 
+    (UniformlyOrderedSingleton t) -> 
+    Bool
+propPartialComparisonReflexiveEQ _ effort (UniformlyOrderedSingleton e) = 
     case pCompareEff effort e e of Just EQ -> True; Nothing -> True; _ -> False 
 
 propPartialComparisonAntiSymmetric :: 
     (PartialComparison t) => 
-    t -> (PartialCompareEffortIndicator t) -> t -> t -> Bool
-propPartialComparisonAntiSymmetric _ effort e1 e2 =
+    t -> 
+    (PartialCompareEffortIndicator t) -> 
+    UniformlyOrderedPair t -> 
+    Bool
+propPartialComparisonAntiSymmetric _ effort (UniformlyOrderedPair (e1, e2)) =
     case (pCompareEff effort e2 e1, pCompareEff effort e1 e2) of
         (Just b1, Just b2) -> b1 == partialOrderingTranspose b2
         _ -> True 
 
 propPartialComparisonTransitiveEQ :: 
     (PartialComparison t) => 
-    t -> (PartialCompareEffortIndicator t) -> t -> t -> t -> Bool
-propPartialComparisonTransitiveEQ _ effort = 
-    partialTransitive (pEqualEff effort)
+    t -> 
+    (PartialCompareEffortIndicator t) -> 
+    UniformlyOrderedTriple t -> 
+    Bool
+propPartialComparisonTransitiveEQ _ effort 
+        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    partialTransitive (pEqualEff effort) e1 e2 e3
 
 propPartialComparisonTransitiveLT :: 
     (PartialComparison t) => 
-    t -> (PartialCompareEffortIndicator t) -> t -> t -> t -> Bool
-propPartialComparisonTransitiveLT _ effort = 
-    partialTransitive (pLessEff effort)
+    t -> 
+    (PartialCompareEffortIndicator t) -> 
+    UniformlyOrderedTriple t -> 
+    Bool
+propPartialComparisonTransitiveLT _ effort 
+        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    partialTransitive (pLessEff effort) e1 e2 e3
 
 propPartialComparisonTransitiveLE :: 
     (PartialComparison t) => 
-    t -> (PartialCompareEffortIndicator t) -> t -> t -> t -> Bool
-propPartialComparisonTransitiveLE _ effort =
-    partialTransitive (pLeqEff effort)
+    t -> 
+    (PartialCompareEffortIndicator t) -> 
+    UniformlyOrderedTriple t -> 
+    Bool
+propPartialComparisonTransitiveLE _ effort
+        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    partialTransitive (pLeqEff effort) e1 e2 e3
 
 propExtremaInPartialComparison :: 
     (PartialComparison t, HasExtrema t) => 
-    t -> (PartialCompareEffortIndicator t) -> t -> Bool
-propExtremaInPartialComparison _ effort = 
-    partialOrderExtrema (pLeqEff effort) bottom top
+    t -> (PartialCompareEffortIndicator t) -> 
+    (UniformlyOrderedSingleton t) -> Bool
+propExtremaInPartialComparison _ effort (UniformlyOrderedSingleton e) = 
+    partialOrderExtrema (pLeqEff effort) bottom top e
 
 testsPartialComparison :: 
     (PartialComparison t,
      HasExtrema t,
-     Arbitrary t, Show t,
+     ArbitraryOrderedTuple t, Show t,
      Arbitrary (PartialCompareEffortIndicator t),
      Show (PartialCompareEffortIndicator t)) => 
     (String, t) -> Test

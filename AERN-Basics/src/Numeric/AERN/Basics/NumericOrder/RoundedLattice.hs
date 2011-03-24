@@ -53,11 +53,15 @@ class RoundedLatticeEffort t where
 
 propRoundedLatticeIllegalArgException :: 
     (RoundedLattice t) => 
-    t -> (MinmaxEffortIndicator t) -> t -> Bool
-propRoundedLatticeIllegalArgException illegalArg effort d =
-        and $ map raisesAERNException $ 
-            concat [[op d illegalArg, op illegalArg d] 
-                        | op <- [maxUpEff effort, maxDnEff effort, minUpEff effort, minDnEff effort]] 
+    t -> 
+    (MinmaxEffortIndicator t) -> 
+    (UniformlyOrderedSingleton t) -> 
+    Bool
+propRoundedLatticeIllegalArgException illegalArg effort 
+        (UniformlyOrderedSingleton d) =
+    and $ map raisesAERNException $ 
+        concat [[op d illegalArg, op illegalArg d] 
+                    | op <- [maxUpEff effort, maxDnEff effort, minUpEff effort, minDnEff effort]] 
 
 propRoundedLatticeComparisonCompatible :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -118,9 +122,11 @@ propRoundedLatticeMeetIdempotent ::
     (PartialComparison t, RoundedLattice t) => 
     t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
-    t -> Bool
-propRoundedLatticeMeetIdempotent _ (minmaxEffort, effortComp) = 
-    roundedIdempotent (pLeqEff effortComp) (minUpEff minmaxEffort) (minDnEff minmaxEffort)
+    UniformlyOrderedSingleton t -> 
+    Bool
+propRoundedLatticeMeetIdempotent _ (minmaxEffort, effortComp) 
+        (UniformlyOrderedSingleton e) = 
+    roundedIdempotent (pLeqEff effortComp) (minUpEff minmaxEffort) (minDnEff minmaxEffort) e
 
 propRoundedLatticeMeetCommutative :: 
     (PartialComparison t, RoundedLattice t) => 
