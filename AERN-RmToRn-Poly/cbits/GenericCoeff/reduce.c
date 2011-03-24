@@ -124,7 +124,29 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare,
     }
 }
 
+/*
+ * quick and dirty version using copyEncl.. to be revisited to save errorBound and constCoeff copying
+ */
+void
+ADD_COEFF_CODE(copyUpThinUsingMutableOps)(ComparisonOp compare,
+    Coeff zero, Ops_Mutable * ops, Poly * res, Poly * src)
+{
+  ADD_COEFF_CODE(copyEnclUsingMutableOps)(compare, ops, res, src); // copy src into res
+  CFM_ADD_UP(ops, res -> constTerm, res -> constTerm, res -> errorBound); // account for errorBound
+  CFM_ASSIGN_VAL(ops, res -> errorBound, zero); // collapse errorBound
+}
 
+/*
+ * quick and dirty version using copyEncl.. to be revisited to save errorBound and constCoeff copying
+ */
+void
+ADD_COEFF_CODE(copyDnThinUsingMutableOps)(ComparisonOp compare,
+    Coeff zero, Ops_Mutable * ops, Poly * res, Poly * src)
+{
+  ADD_COEFF_CODE(copyEnclUsingMutableOps)(compare, ops, res, src); // copy src into res
+  CFM_SUB_DN(ops, res -> constTerm, res -> constTerm, res -> errorBound); // account for errorBound
+  CFM_ASSIGN_VAL(ops, res -> errorBound, zero); // collapse errorBound
+}
 
 void
 ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops_Mutable * ops, Var arity,
