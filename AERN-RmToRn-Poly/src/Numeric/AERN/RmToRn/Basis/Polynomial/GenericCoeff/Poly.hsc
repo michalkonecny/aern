@@ -875,8 +875,8 @@ foreign import ccall safe "copyEnclUsingMutableOpsGenCf"
 
 foreign import ccall safe "copyUpThinUsingMutableOpsGenCf"
         poly_copyUpThinUsingMutableOps :: 
-            (StablePtr cf) ->
             (StablePtr (ComparisonOp (Mutable cf s))) ->
+            (StablePtr cf) ->
             (Ptr (Ops_Mutable s cf)) ->
             (Ptr (Poly (Mutable cf s))) -> 
             (Ptr (Poly (Mutable cf s))) -> 
@@ -884,8 +884,8 @@ foreign import ccall safe "copyUpThinUsingMutableOpsGenCf"
 
 foreign import ccall safe "copyDnThinUsingMutableOpsGenCf"
         poly_copyDnThinUsingMutableOps :: 
-            (StablePtr cf) ->
             (StablePtr (ComparisonOp (Mutable cf s))) ->
+            (StablePtr cf) ->
             (Ptr (Ops_Mutable s cf)) ->
             (Ptr (Poly (Mutable cf s))) -> 
             (Ptr (Poly (Mutable cf s))) -> 
