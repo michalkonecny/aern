@@ -60,13 +60,13 @@ expOutThinArg
     -- infinities not handled well by the Taylor formula,
     -- treat them as special cases, adding also 0 for efficiency:
     case (xTooBig, xTooLow, x |>=? zero) of
-        (True, _, _) -> x <|/\> plusInfinity -- x almost oo
-        (_, True, _) -> zero <|/\> (one </> (neg x)) -- x almost -oo
+        (True, _, _) -> x </\> plusInfinity -- x almost oo
+        (_, True, _) -> zero </\> (one </> (neg x)) -- x almost -oo
         (_, _, Just True) -> one -- x = 0
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
             expOutViaTaylorForXScaledNearZero
         _ -> -- not equal to infinity but not excluding infinity:
-            zero <|/\> plusInfinity
+            zero </\> plusInfinity
              -- this is always a valid outer approx
     where
     (xUp, xTooBig) =
@@ -106,11 +106,11 @@ expOutThinArg
                 ithDerivBound =
                     case (pNonnegNonposEff effortCompare x) of
                         (Just True, _) -> -- x >= 0:
-                            one <|/\> eUp
+                            one </\> eUp
                         (_, Just True) -> -- x <= 0:
-                            recipEDn <|/\> one
+                            recipEDn </\> one
                         _ -> -- near or crossing zero:
-                            recipEDn <|/\> eUp
+                            recipEDn </\> eUp
                 eUp =
                     ArithInOut.convertOutEff effortFromDouble (2.718281829 :: Double)
                 recipEDn =
