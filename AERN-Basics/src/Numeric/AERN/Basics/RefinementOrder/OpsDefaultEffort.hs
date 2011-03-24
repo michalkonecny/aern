@@ -18,10 +18,10 @@ import Numeric.AERN.Basics.RefinementOrder
 infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>? 
 infix 4 ⊏?, ⊑?, ⊒?, ⊐?
 
-infixr 2 <|\/>?, <⊔>?, >|\/<?, >⊔<?
+infixr 2 <\/>?, <⊔>?, >\/<?, >⊔<?
 
-infixr 3 <|/\>, <⊓>, >|/\<, >⊓< 
-infixr 2 <|\/>, <⊔>, >|\/<, >⊔< 
+infixr 3 </\>, <⊓>, >/\<, >⊓< 
+infixr 2 <\/>, <⊔>, >\/<, >⊔< 
 
 (|==?), (|<==>?), (|</=>?), (|<?), (|>?), (|<=?), (|>=?) ::
     (PartialComparison t) => 
@@ -40,30 +40,30 @@ infixr 2 <|\/>, <⊔>, >|\/<, >⊔<
 (|>?) a = pGreaterEff (pCompareDefaultEffort a) a
 
 
-(<|\/>?) ::
+(<\/>?) ::
     (OuterRoundedBasis t) => 
     t -> t -> Maybe t
-(<|\/>?) a = partialJoinOutEff (partialJoinOutDefaultEffort a) a 
+(<\/>?) a = partialJoinOutEff (partialJoinOutDefaultEffort a) a 
 
-(>|\/<?) ::
+(>\/<?) ::
     (InnerRoundedBasis t) => 
     t -> t -> Maybe t
-(>|\/<?) a = partialJoinInEff (partialJoinInDefaultEffort a) a 
+(>\/<?) a = partialJoinInEff (partialJoinInDefaultEffort a) a 
 
-(<|\/>), (<|/\>) :: 
+(<\/>), (</\>) :: 
     (OuterRoundedLattice t) => 
     t -> t -> t
     
-(<|\/>) a = joinOutEff (joinmeetOutDefaultEffort a) a 
-(<|/\>) a = meetOutEff (joinmeetOutDefaultEffort a) a 
+(<\/>) a = joinOutEff (joinmeetOutDefaultEffort a) a 
+(</\>) a = meetOutEff (joinmeetOutDefaultEffort a) a 
 
 
-(>|\/<), (>|/\<) :: 
+(>\/<), (>/\<) :: 
     (InnerRoundedLattice t) => 
     t -> t -> t
     
-(>|\/<) a = joinInEff (joinmeetInDefaultEffort a) a 
-(>|/\<) a = meetInEff (joinmeetInDefaultEffort a) a 
+(>\/<) a = joinInEff (joinmeetInDefaultEffort a) a 
+(>/\<) a = meetInEff (joinmeetInDefaultEffort a) a 
 
 -- convenience Unicode operator notation:
 (⊏?), (⊑?), (⊒?), (⊐?) :: 
@@ -75,36 +75,36 @@ infixr 2 <|\/>, <⊔>, >|\/<, >⊔<
 (⊒?) = (|>=?)
 (⊐?) = (|>?)
 
-{-| convenience Unicode notation for '<|\/>?' -}
+{-| convenience Unicode notation for '<\/>?' -}
 (<⊔>?) :: 
     (OuterRoundedBasis t) => 
     t -> t -> Maybe t
-(<⊔>?) = (<|\/>?)
+(<⊔>?) = (<\/>?)
 
-{-| convenience Unicode notation for '>|\/<?' -}
+{-| convenience Unicode notation for '>\/<?' -}
 (>⊔<?) :: 
     (InnerRoundedBasis t) => 
     t -> t -> Maybe t
-(>⊔<?) = (>|\/<?)
+(>⊔<?) = (>\/<?)
 
-{-| convenience Unicode notation for '<|\/>' -}
+{-| convenience Unicode notation for '<\/>' -}
 (<⊔>) :: 
     (OuterRoundedLattice t) => 
     t -> t -> t
-(<⊔>) = (<|\/>)
-{-| convenience Unicode notation for '<|/\>' -}
+(<⊔>) = (<\/>)
+{-| convenience Unicode notation for '</\>' -}
 (<⊓>) :: 
     (OuterRoundedLattice t) => 
     t -> t -> t
-(<⊓>) = (<|/\>)
+(<⊓>) = (</\>)
 
-{-| convenience Unicode notation for '>|\/<' -}
+{-| convenience Unicode notation for '>\/<' -}
 (>⊔<) :: 
     (InnerRoundedLattice t) => 
     t -> t -> t
-(>⊔<) = (>|\/<)
-{-| convenience Unicode notation for '>|/\<' -}
+(>⊔<) = (>\/<)
+{-| convenience Unicode notation for '>/\<' -}
 (>⊓<) :: 
     (InnerRoundedLattice t) => 
     t -> t -> t
-(>⊓<) = (>|/\<)
+(>⊓<) = (>/\<)

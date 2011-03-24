@@ -19,10 +19,10 @@ import Numeric.AERN.Basics.RefinementOrder
 infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>? 
 infix 4 ⊏?, ⊑?, ⊒?, ⊐?
 
-infixr 2 <|\/>?, <⊔>?, >|\/<?, >⊔<?
+infixr 2 <\/>?, <⊔>?, >\/<?, >⊔<?
 
-infixr 3 <|/\>, <⊓>, >|/\<, >⊓< 
-infixr 2 <|\/>, <⊔>, >|\/<, >⊔< 
+infixr 3 </\>, <⊓>, >/\<, >⊓< 
+infixr 2 <\/>, <⊔>, >\/<, >⊔< 
 
 
 (|==?), (|<==>?), (|</=>?), (|<?), (|>?), (|<=?), (|>=?) ::
@@ -39,34 +39,34 @@ infixr 2 <|\/>, <⊔>, >|\/<, >⊔<
 (|>=?) = pGeqEff ?pCompareEffort
 
 
-(<|\/>?) ::
+(<\/>?) ::
     (OuterRoundedBasis t, ?partialJoinOutEffort :: PartialJoinOutEffortIndicator t) => 
     t -> t -> Maybe t
-(<|\/>?) = partialJoinOutEff ?partialJoinOutEffort 
+(<\/>?) = partialJoinOutEff ?partialJoinOutEffort 
 
-(>|\/<?) ::
+(>\/<?) ::
     (InnerRoundedBasis t, ?partialJoinInEffort :: PartialJoinInEffortIndicator t) => 
     t -> t -> Maybe t
     
-(>|\/<?) = partialJoinInEff ?partialJoinInEffort 
+(>\/<?) = partialJoinInEff ?partialJoinInEffort 
 
 
-(<|\/>), (<|/\>) :: 
+(<\/>), (</\>) :: 
     (OuterRoundedLattice t, 
      ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
     t -> t -> t
     
-(<|\/>) = joinOutEff ?joinmeetOutEffort 
-(<|/\>) = meetOutEff ?joinmeetOutEffort 
+(<\/>) = joinOutEff ?joinmeetOutEffort 
+(</\>) = meetOutEff ?joinmeetOutEffort 
 
 
-(>|\/<), (>|/\<) :: 
+(>\/<), (>/\<) :: 
     (InnerRoundedLattice t, 
      ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
     t -> t -> t
     
-(>|\/<) = joinInEff ?joinmeetInEffort 
-(>|/\<) = meetInEff ?joinmeetInEffort 
+(>\/<) = joinInEff ?joinmeetInEffort 
+(>/\<) = meetInEff ?joinmeetInEffort 
 
 
 
@@ -81,36 +81,36 @@ infixr 2 <|\/>, <⊔>, >|\/<, >⊔<
 (⊒?) = (|>=?)
 (⊐?) = (|>?)
 
-{-| convenience Unicode notation for '<|\/>?' -}
+{-| convenience Unicode notation for '<\/>?' -}
 (<⊔>?) :: 
     (OuterRoundedBasis t, ?partialJoinOutEffort :: PartialJoinOutEffortIndicator t) => 
     t -> t -> Maybe t
-(<⊔>?) = (<|\/>?)
+(<⊔>?) = (<\/>?)
 
-{-| convenience Unicode notation for '>|\/<?' -}
+{-| convenience Unicode notation for '>\/<?' -}
 (>⊔<?) :: 
     (InnerRoundedBasis t, ?partialJoinInEffort :: PartialJoinInEffortIndicator t) => 
     t -> t -> Maybe t
-(>⊔<?) = (>|\/<?)
+(>⊔<?) = (>\/<?)
 
-{-| convenience Unicode notation for '<|\/>' -}
+{-| convenience Unicode notation for '<\/>' -}
 (<⊔>) :: 
     (OuterRoundedLattice t, ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
     t -> t -> t
-(<⊔>) = (<|\/>)
-{-| convenience Unicode notation for '<|/\>' -}
+(<⊔>) = (<\/>)
+{-| convenience Unicode notation for '</\>' -}
 (<⊓>) :: 
     (OuterRoundedLattice t, ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
     t -> t -> t
-(<⊓>) = (<|/\>)
+(<⊓>) = (</\>)
 
-{-| convenience Unicode notation for '>|\/<' -}
+{-| convenience Unicode notation for '>\/<' -}
 (>⊔<) :: 
     (InnerRoundedLattice t, ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
     t -> t -> t
-(>⊔<) = (>|\/<)
-{-| convenience Unicode notation for '>|/\<' -}
+(>⊔<) = (>\/<)
+{-| convenience Unicode notation for '>/\<' -}
 (>⊓<) :: 
     (InnerRoundedLattice t, ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
     t -> t -> t
-(>⊓<) = (>|/\<)
+(>⊓<) = (>/\<)
