@@ -102,9 +102,11 @@ propRoundedLatticeJoinIdempotent ::
     (PartialCompareEffortIndicator t, 
      JoinMeetInEffortIndicator t, 
      JoinMeetOutEffortIndicator t) -> 
-    t -> Bool
-propRoundedLatticeJoinIdempotent _ (effortComp, effortIn, effortOut) = 
-    roundedIdempotent (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut)
+    (UniformlyOrderedSingleton t) -> 
+    Bool
+propRoundedLatticeJoinIdempotent _ (effortComp, effortIn, effortOut) 
+        (UniformlyOrderedSingleton e) = 
+    roundedIdempotent (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut) e
 
 propRoundedLatticeJoinCommutative :: 
     (PartialComparison t, RoundedLattice t) => 
@@ -153,9 +155,11 @@ propRoundedLatticeMeetIdempotent ::
     (PartialCompareEffortIndicator t, 
      JoinMeetInEffortIndicator t, 
      JoinMeetOutEffortIndicator t) -> 
-    t -> Bool
-propRoundedLatticeMeetIdempotent _ (effortComp, effortIn, effortOut) = 
-    roundedIdempotent (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut)
+    (UniformlyOrderedSingleton t) -> 
+    Bool
+propRoundedLatticeMeetIdempotent _ (effortComp, effortIn, effortOut) 
+        (UniformlyOrderedSingleton e) = 
+    roundedIdempotent (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut) e
 
 propRoundedLatticeMeetCommutative :: 
     (PartialComparison t, RoundedLattice t) => 
