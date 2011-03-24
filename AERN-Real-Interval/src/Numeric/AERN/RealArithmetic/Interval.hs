@@ -19,7 +19,8 @@ module Numeric.AERN.RealArithmetic.Interval
     module Numeric.AERN.RealArithmetic.Interval.Measures,
     module Numeric.AERN.RealArithmetic.Interval.Conversion,
     module Numeric.AERN.RealArithmetic.Interval.FieldOps,
-    module Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
+    module Numeric.AERN.RealArithmetic.Interval.MixedFieldOps,
+    module Numeric.AERN.RealArithmetic.Interval.SpecialConst
 )
 where
 
@@ -28,6 +29,7 @@ import Numeric.AERN.RealArithmetic.Interval.Measures
 import Numeric.AERN.RealArithmetic.Interval.Conversion
 import Numeric.AERN.RealArithmetic.Interval.FieldOps
 import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
+import Numeric.AERN.RealArithmetic.Interval.SpecialConst
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
