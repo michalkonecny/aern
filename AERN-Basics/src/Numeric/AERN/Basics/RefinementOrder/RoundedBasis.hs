@@ -81,10 +81,12 @@ propRoundedBasisJoinIdempotent ::
     (PartialCompareEffortIndicator t, 
      PartialJoinInEffortIndicator t, 
      PartialJoinOutEffortIndicator t) ->
-    t -> Bool
-propRoundedBasisJoinIdempotent _ (effortComp, effortJoinIn, effortJoinOut) = 
+    (UniformlyOrderedSingleton t) -> 
+    Bool
+propRoundedBasisJoinIdempotent _ (effortComp, effortJoinIn, effortJoinOut) 
+        (UniformlyOrderedSingleton e) = 
     partialRoundedIdempotent (pLeqEff effortComp) 
-        (partialJoinInEff effortJoinIn) (partialJoinOutEff effortJoinOut)
+        (partialJoinInEff effortJoinIn) (partialJoinOutEff effortJoinOut) e
 
 propRoundedBasisJoinCommutative :: 
     (PartialComparison t, RoundedBasis t) => 
@@ -156,4 +158,3 @@ testsRoundedBasis (name, sample) =
          testProperty "rounded join monotone" (propRoundedBasisJoinMonotone sample)
         ]
 
--- mutable versions (TODO)    
