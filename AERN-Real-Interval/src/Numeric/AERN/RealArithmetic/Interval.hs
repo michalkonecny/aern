@@ -40,6 +40,10 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.Exception
+
+instance (HasLegalValues e) => HasLegalValues (Interval e) where
+    isLegal (Interval l h) = isLegal l && isLegal h 
 
 instance 
     (ArithUpDn.Convertible Integer e, 
