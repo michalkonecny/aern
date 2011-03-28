@@ -45,6 +45,7 @@ import Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Exception
 
 import qualified Data.Number.MPFR as M
 import qualified Data.Number.MPFR.Mutable as MM
@@ -87,5 +88,13 @@ instance RoundedReal M.MPFR where
     rrEffortIntegerMixedField _ p = p
     rrEffortDoubleMixedField _ p = p
     rrEffortRationalMixedField _ p = p
+    
+instance HasLegalValues M.MPFR where
+    isLegal d 
+        | d == 0/0 = False
+        | d == 1/0 = False
+        | d == -1/0 = False
+        | otherwise = True
+
     
   

@@ -76,9 +76,10 @@ propUpDnAddZero ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> Bool
-propUpDnAddZero _ =
-    roundedUnit zero NumOrd.pLeqEff addUpEff addDnEff
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propUpDnAddZero _ effort (NumOrd.UniformlyOrderedSingleton e) =
+    roundedUnit zero NumOrd.pLeqEff addUpEff addDnEff effort e
 
 propUpDnAddCommutative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -91,9 +92,10 @@ propUpDnAddCommutative ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> t -> Bool
-propUpDnAddCommutative _ =
-    roundedCommutative NumOrd.pLeqEff addUpEff addDnEff
+    (NumOrd.UniformlyOrderedPair t) -> 
+    Bool
+propUpDnAddCommutative _ effort (NumOrd.UniformlyOrderedPair (e1,e2)) =
+    roundedCommutative NumOrd.pLeqEff addUpEff addDnEff effort e1 e2
        
 propUpDnAddAssociative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -106,9 +108,10 @@ propUpDnAddAssociative ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> t -> t -> Bool
-propUpDnAddAssociative _ =
-    roundedAssociative NumOrd.pLeqEff addUpEff addDnEff
+    (NumOrd.UniformlyOrderedTriple t) -> 
+    Bool
+propUpDnAddAssociative _ effort (NumOrd.UniformlyOrderedTriple (e1,e2,e3)) =
+    roundedAssociative NumOrd.pLeqEff addUpEff addDnEff effort e1 e2 e3
 
 testsUpDnAdd (name, sample) =
     testGroup (name ++ " +. +^") $
@@ -137,9 +140,10 @@ propUpDnSubtrElim ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> Bool
-propUpDnSubtrElim _ =
-    roundedReflexiveCollapse zero NumOrd.pLeqEff subtrUpEff subtrDnEff
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propUpDnSubtrElim _ effort (NumOrd.UniformlyOrderedSingleton e) =
+    roundedReflexiveCollapse zero NumOrd.pLeqEff subtrUpEff subtrDnEff effort e
 
 propUpDnSubtrNegAdd ::
     (NumOrd.PartialComparison t, RoundedSubtr t, Neg t,
@@ -152,8 +156,9 @@ propUpDnSubtrNegAdd ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    t -> t -> Bool
-propUpDnSubtrNegAdd _ initEffort e1 e2 =
+    (NumOrd.UniformlyOrderedPair t) -> 
+    Bool
+propUpDnSubtrNegAdd _ initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -229,9 +234,10 @@ propUpDnAbsNegSymmetric ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
-    t -> Bool
-propUpDnAbsNegSymmetric _ =
-    roundedNegSymmetric NumOrd.pLeqEff absUpEff absDnEff
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propUpDnAbsNegSymmetric _ effort (NumOrd.UniformlyOrderedSingleton e) =
+    roundedNegSymmetric NumOrd.pLeqEff absUpEff absDnEff effort e
 
 propUpDnAbsIdempotent ::
     (NumOrd.PartialComparison t, RoundedAbs t, HasZero t,
@@ -244,9 +250,10 @@ propUpDnAbsIdempotent ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
-    t -> Bool
-propUpDnAbsIdempotent _ =
-    roundedIdempotent NumOrd.pLeqEff absUpEff absDnEff
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propUpDnAbsIdempotent _ effort (NumOrd.UniformlyOrderedSingleton e) =
+    roundedIdempotent NumOrd.pLeqEff absUpEff absDnEff effort e
 
 testsUpDnAbs (name, sample) =
     testGroup (name ++ " up/dn rounded abs") $
@@ -276,9 +283,10 @@ propUpDnMultOne ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
-    t -> Bool
-propUpDnMultOne _ =
-    roundedUnit one NumOrd.pLeqEff multUpEff multDnEff
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propUpDnMultOne _ effort (NumOrd.UniformlyOrderedSingleton e) =
+    roundedUnit one NumOrd.pLeqEff multUpEff multDnEff effort e
 
 propUpDnMultCommutative ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasZero t,
@@ -291,9 +299,10 @@ propUpDnMultCommutative ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
-    t -> t -> Bool
-propUpDnMultCommutative _ =
-    roundedCommutative NumOrd.pLeqEff multUpEff multDnEff
+    (NumOrd.UniformlyOrderedPair t) -> 
+    Bool
+propUpDnMultCommutative _ effort (NumOrd.UniformlyOrderedPair (e1,e2)) =
+    roundedCommutative NumOrd.pLeqEff multUpEff multDnEff effort e1 e2
        
 propUpDnMultAssociative ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t, 
@@ -309,8 +318,9 @@ propUpDnMultAssociative ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      (MultEffortIndicator t, NumOrd.MinmaxEffortIndicator t)) -> 
-    t -> t -> t -> Bool
-propUpDnMultAssociative _ initEffort e1 e2 e3 =
+    (NumOrd.UniformlyOrderedTriple t) -> 
+    Bool
+propUpDnMultAssociative _ initEffort (NumOrd.UniformlyOrderedTriple (e1, e2, e3)) =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -352,8 +362,9 @@ propUpDnMultDistributesOverAdd ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      (MultEffortIndicator t, AddEffortIndicator t, NumOrd.MinmaxEffortIndicator t)) -> 
-    t -> t -> t -> Bool
-propUpDnMultDistributesOverAdd _ initEffort e1 e2 e3 =
+    (NumOrd.UniformlyOrderedTriple t) -> 
+    Bool
+propUpDnMultDistributesOverAdd _ initEffort (NumOrd.UniformlyOrderedTriple (e1, e2, e3)) =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -533,8 +544,9 @@ propUpDnPowerSumExponents ::
       (NumOrd.PartialCompareEffortIndicator t,
        MultEffortIndicator t,
        NumOrd.MinmaxEffortIndicator t))) -> 
-    t -> Int -> Int -> Bool
-propUpDnPowerSumExponents _ initEffort a nR mR =
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    Int -> Int -> Bool
+propUpDnPowerSumExponents _ initEffort (NumOrd.UniformlyOrderedSingleton a) nR mR =
     equalRoundingUpDn
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -613,8 +625,9 @@ propUpDnDivElim ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      DivEffortIndicator t) -> 
-    t -> Bool
-propUpDnDivElim _ efforts2@(effComp, _) a =
+    (NumOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propUpDnDivElim _ efforts2@(effComp, _) (NumOrd.UniformlyOrderedSingleton a) =
     let ?pCompareEffort = effComp in
     case a ==? zero of
         Just False ->
@@ -642,8 +655,9 @@ propUpDnDivRecipMult ::
     t ->
     (NumOrd.PartialCompareEffortIndicator t,
      (MultEffortIndicator t, DivEffortIndicator t, NumOrd.MinmaxEffortIndicator t)) -> 
-    t -> t -> Bool
-propUpDnDivRecipMult _ initEffort@(effComp,_) e1 e2 =
+    (NumOrd.UniformlyOrderedPair t) -> 
+    Bool
+propUpDnDivRecipMult _ initEffort@(effComp,_) (NumOrd.UniformlyOrderedPair (e1, e2)) =
     let ?pCompareEffort = effComp in
     case e2 ==? zero of
         Just False ->

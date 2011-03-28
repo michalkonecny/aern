@@ -66,8 +66,10 @@ propExpOfNegRecip ::
     (ConsistencyEffortIndicator t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      (ExpEffortIndicator t, MultEffortIndicator t)) -> 
-    t -> Bool
-propExpOfNegRecip _ effortConsistency initEffort e1 =
+    (RefOrd.UniformlyOrderedSingleton t) -> 
+    Bool
+propExpOfNegRecip _ effortConsistency initEffort 
+        (RefOrd.UniformlyOrderedSingleton e1) =
     thinEqualConsLeqRoundingUpDnImprovement [e1]
         expr1In expr1Out expr2In expr2Out 
         RefOrd.pLeqEff
@@ -107,8 +109,9 @@ propExpOfAddToMult ::
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      (ExpEffortIndicator t, MultEffortIndicator t, AddEffortIndicator t)) -> 
-    t -> t -> Bool
-propExpOfAddToMult _ initEffort e1 e2 =
+    (RefOrd.UniformlyOrderedPair t) -> 
+    Bool
+propExpOfAddToMult _ initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
     equalRoundingUpDn
         expr1In expr1Out expr2In expr2Out 
         RefOrd.pLeqEff initEffort
