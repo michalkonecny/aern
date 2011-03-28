@@ -13,7 +13,6 @@ import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.Basics.Interval
 
-
 -- compute the integral of f over d to within e accuracy
 riemann :: DI -> (DI -> DI) -> DI -> DI
 riemann e f d =
@@ -51,11 +50,18 @@ zeros e f d =
   where
   zeros' _ _ [] = Nothing
   zeros' e f (d:ds)
-    | certainlyDoesNotContainZero fd = zeros' e f ds
-    | sufficientlyCloseToZero fd = d
+    | doesNotContainZero = zeros' e f ds
+    | reachedSufficientAccuracy = Just d
     | otherwise = zeros' e f (dl:dr:ds)
     where
-    certainlyDoesNotContainZero = \()
+    doesNotContainZero = 
+      case fd |<=? 0 of
+        Just False -> True
+        _ -> False
+    reachedSufficientAccuracy = 
+      case fd <? e of
+        Just True -> True
+        _ -> False        
     fd = f d
     dr = Interval midpoint r
     dl = Interval l midpoint
