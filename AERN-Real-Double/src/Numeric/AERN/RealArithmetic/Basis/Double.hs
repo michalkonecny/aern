@@ -34,6 +34,13 @@ import Numeric.AERN.RealArithmetic.Basis.Double.Measures
 import Numeric.AERN.RealArithmetic.Basis.Double.Mutable
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
+import Numeric.AERN.Basics.Exception
+
+instance HasLegalValues Double where
+    isLegal d 
+        | isNaN d = False
+        | isInfinite d = False
+        | otherwise = True
 
 instance RoundedReal Double where
     type RoundedRealEffortIndicator Double = ()

@@ -85,3 +85,6 @@ raisesDomViolationException a =
         (Left _) -> True
         _ -> False
 
+class HasLegalValues t where
+  isLegal :: t -> Bool
+  
