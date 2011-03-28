@@ -44,3 +44,25 @@ riemann' e f initWidth (d:ds) result
   dl = Interval l midpoint
   midpoint = 0.5*(l + r)
   Interval l r = d
+
+zeros :: DI -> (DI -> DI) -> DI -> Maybe DI
+zeros e f d =
+  zeros' e f [d]
+  where
+  zeros' _ _ [] = Nothing
+  zeros' e f (d:ds)
+    | certainlyDoesNotContainZero fd = zeros' e f ds
+    | sufficientlyCloseToZero fd = d
+    | otherwise = zeros' e f (dl:dr:ds)
+    where
+    certainlyDoesNotContainZero = \()
+    fd = f d
+    dr = Interval midpoint r
+    dl = Interval l midpoint
+    midpoint = 0.5*(l + r)
+    Interval l r = d  
+
+
+
+
+
