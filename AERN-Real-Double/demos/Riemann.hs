@@ -1,17 +1,8 @@
 
 module Riemann where
 
-import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
-import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.Basis.Double
-import Numeric.AERN.RealArithmetic.Interval
 import Numeric.AERN.RealArithmetic.Interval.Double
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
-import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsDefaultEffort
-import Numeric.AERN.RealArithmetic.Measures
-import Numeric.AERN.Basics.Interval
 
 -- compute the integral of f over d to within e accuracy
 riemann :: DI -> (DI -> DI) -> DI -> DI
@@ -38,10 +29,7 @@ riemann' e f initWidth (d:ds) result
   dArea = dWidth * fd
   fd = f d
   dWidth = width d
-  dr = Interval midpoint r
-  dl = Interval l midpoint
-  midpoint = 0.5*(l + r)
-  Interval l r = d
+  (dl, dr) = bisect d
 
 -- find leftmost zero of f in d to within e accuracy
 zero :: DI -> (DI -> DI) -> DI -> Maybe DI
@@ -71,8 +59,19 @@ zero' e f (d:ds)
   midpoint = 0.5*(l + r)
   Interval l r = d  
 
-width i = imprecisionOfEff (imprecisionDefaultEffort i) i
+width i = 
+  irI <-> ilI
+  where
+  irI = Interval ir ir  
+  ilI = Interval il il
+  Interval il ir = i  
 
-
+bisect i =
+  (l,r)
+  where
+  r = Interval midpoint ir
+  l = Interval il midpoint
+  midpoint = 0.5*(il + ir)
+  Interval il ir = i
 
 

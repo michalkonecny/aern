@@ -11,9 +11,26 @@
     Interval Double utilities and tests.
 -}
 module Numeric.AERN.RealArithmetic.Interval.Double 
+(
+    DI,
+    sampleDI,
+    PositiveDI(..),
+    module Numeric.AERN.Basics.Interval,
+    module Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort,
+    module Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort,
+    module Numeric.AERN.RealArithmetic.RefinementOrderRounding,
+    module Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+)
 where
 
 import Numeric.AERN.Basics.Interval
+
+import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+
+import Numeric.AERN.RealArithmetic.Interval
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
 import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
 
