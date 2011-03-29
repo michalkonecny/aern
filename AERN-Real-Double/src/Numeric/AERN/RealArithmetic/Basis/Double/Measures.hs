@@ -22,10 +22,8 @@ import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 import Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
-import Numeric.AERN.RealArithmetic.Interval
 import Numeric.AERN.RealArithmetic.Interval.Double
 
 import Numeric.AERN.Basics.Interval
@@ -39,7 +37,6 @@ instance HasDistance Double where
 --          -- distance between two infinities is zero (beware: distance not continuous at infinities!)  
 --        | d1 == -1/0 && d2 == -1/0 = zero
 --        | otherwise =
-            let ?addInOutEffort = effort :: ArithInOut.AddEffortIndicator (Interval Double) in
             ArithInOut.absOutEff ((),()) (d2I <-> d1I)
             where
             d1I = Interval d1 d1
