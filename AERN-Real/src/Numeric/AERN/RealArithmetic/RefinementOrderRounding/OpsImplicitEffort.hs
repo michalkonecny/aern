@@ -40,6 +40,12 @@ infixl 7 </>|, >/<|
 (>-<) = subtrInEff ?addInOutEffort
 (<->) = subtrOutEff ?addInOutEffort
 
+absIn, absOut ::
+    (RoundedAbs t, ?absInOutEffort :: AbsEffortIndicator t) => 
+    t -> t
+absIn = absInEff ?absInOutEffort
+absOut = absOutEff ?absInOutEffort
+
 (>*<), (<*>) :: 
     (RoundedMultiply t, ?multInOutEffort :: MultEffortIndicator t) => 
     t -> t -> t
@@ -109,4 +115,29 @@ withMixedFieldOpsEffortIndicator effortMixedField expression =
     let ?mixedMultInOutEffort = mxfldEffortMult effortMixedField in
     let ?mixedDivInOutEffort = mxfldEffortDiv effortMixedField in
     expression
+
+
+piIn, piOut ::
+    (RoundedSpecialConst t, ?specialConstInOutEffort :: SpecialConstEffortIndicator t) => 
+    t
+piIn = piInEff ?specialConstInOutEffort
+piOut = piOutEff ?specialConstInOutEffort
+
+eIn, eOut ::
+    (RoundedSpecialConst t, ?specialConstInOutEffort :: SpecialConstEffortIndicator t) => 
+    t
+eIn = eInEff ?specialConstInOutEffort
+eOut = eOutEff ?specialConstInOutEffort
+
+expIn, expOut ::
+    (RoundedExponentiation t, ?expInOutEffort :: ExpEffortIndicator t) => 
+    t -> t
+expIn = expInEff ?expInOutEffort
+expOut = expOutEff ?expInOutEffort
+
+sqrtIn, sqrtOut ::
+    (RoundedSquareRoot t, ?sqrtInOutEffort :: SqrtEffortIndicator t) => 
+    t -> t
+sqrtIn = sqrtInEff ?sqrtInOutEffort
+sqrtOut = sqrtOutEff ?sqrtInOutEffort
 
