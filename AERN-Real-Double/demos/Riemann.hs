@@ -6,14 +6,14 @@ import Numeric.AERN.RealArithmetic.Interval.Double
 
 main =
   do
-  putStrLn $ "riemann   0.1 (\\x -> x^2) (Interval 1 0) = " ++ 
-    show (riemann 0.1 (\x -> x^2) (Interval 1 0))
-  putStrLn $ "riemann   0.1 (\\x -> x^2) (Interval 0 1) = " ++ 
+  putStrLn $ "riemann 0.1 (\\x -> x^2) (Interval 0 1) = " ++
     show (riemann 0.1 (\x -> x^2) (Interval 0 1))
-  putStrLn $ "riemann  0.01 (\\x -> x^2) (Interval 0 1) = " ++ 
-    show (riemann 0.01 (\x -> x^2) (Interval 0 1))
-  putStrLn $ "riemann 0.001 (\\x -> x^2) (Interval 0 1) = " ++ 
-    show (riemann 0.001 (\x -> x^2) (Interval 0 1))
+  putStrLn $ "erf 0.001 1 = " ++ show (erf 0.001 1) 
+
+-- compute the error function to within e accuracy
+erf :: DI -> DI -> DI
+erf e x =
+  2/(sqrtOut (piOut 0)) * riemann e (\t -> expOut (-t^2)) (0 </\> x)
 
 -- compute the integral of f over d to within e accuracy
 riemann :: DI -> (DI -> DI) -> DI -> DI
