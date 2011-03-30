@@ -95,15 +95,27 @@ absDn d = absDnEff (absDefaultEffort d) d
 
 piUp, piDn ::
     (RoundedSpecialConst t) => 
-    t -> t
-piUp sample = piUpEff (specialConstDefaultEffort sample)
-piDn sample = piDnEff (specialConstDefaultEffort sample)
+    t
+piUp = result
+    where
+    result =  
+        piUpEff (specialConstDefaultEffort result)
+piDn = result
+    where
+    result =  
+        piDnEff (specialConstDefaultEffort result)
 
 eUp, eDn ::
     (RoundedSpecialConst t) => 
-    t -> t
-eUp sample = eUpEff (specialConstDefaultEffort sample)
-eDn sample = eDnEff (specialConstDefaultEffort sample)
+    t
+eUp = result
+    where
+    result =  
+        eUpEff (specialConstDefaultEffort result)
+eDn = result
+    where
+    result =  
+        eDnEff (specialConstDefaultEffort result)
 
 expUp, expDn ::
     (RoundedExponentiation t) => 

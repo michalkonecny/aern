@@ -97,15 +97,28 @@ absOut d = absOutEff (absDefaultEffort d) d
 
 piIn, piOut ::
     (RoundedSpecialConst t) => 
-    t -> t
-piIn sample = piInEff (specialConstDefaultEffort sample)
-piOut sample = piOutEff (specialConstDefaultEffort sample)
+    t
+piIn = result
+    where
+    result =  
+        piInEff (specialConstDefaultEffort result)
+piOut = result
+    where
+    result =  
+        piOutEff (specialConstDefaultEffort result)
 
 eIn, eOut ::
     (RoundedSpecialConst t) => 
-    t -> t
-eIn sample = eInEff (specialConstDefaultEffort sample)
-eOut sample = eOutEff (specialConstDefaultEffort sample)
+    t
+eIn = result
+    where
+    result =  
+        eInEff (specialConstDefaultEffort result)
+eOut = result
+    where
+    result =  
+        eOutEff (specialConstDefaultEffort result)
+
 
 expIn, expOut ::
     (RoundedExponentiation t) => 
