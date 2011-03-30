@@ -14,15 +14,7 @@
     rounded elementary operations.
 -}
 module Numeric.AERN.RealArithmetic.Basis.Double 
-(
-   module Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals,
-   module Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder,
-   module Numeric.AERN.RealArithmetic.Basis.Double.Conversion,
-   module Numeric.AERN.RealArithmetic.Basis.Double.FieldOps,
-   module Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps,
-   module Numeric.AERN.RealArithmetic.Basis.Double.Measures,
-   module Numeric.AERN.RealArithmetic.Basis.Double.Mutable
-)
+(sampleD, nanD, MDouble(..))
 where
 
 import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
@@ -32,6 +24,7 @@ import Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
 import Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps
 import Numeric.AERN.RealArithmetic.Basis.Double.Measures
 import Numeric.AERN.RealArithmetic.Basis.Double.Mutable
+import Numeric.AERN.RealArithmetic.Basis.Double.SpecialConst
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
 import Numeric.AERN.Basics.Exception
