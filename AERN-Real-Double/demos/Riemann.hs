@@ -23,7 +23,7 @@ riemann e f d =
 riemann' _ _ _ []     result = result 
 riemann' e f initWidth (d:ds) result
   | reachedSufficientAccuracy =
-      riemann' e f initWidth ds (dArea - 0.5*dError + result)
+      riemann' e f initWidth ds (dArea + result)
   | otherwise = 
       riemann' e f initWidth (dl:dr:ds) result
   where
