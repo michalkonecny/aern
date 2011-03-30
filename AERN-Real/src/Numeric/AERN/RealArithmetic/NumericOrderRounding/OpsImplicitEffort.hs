@@ -39,6 +39,12 @@ infixl 7 /.|, /^|
 (-^) = subtrUpEff ?addUpDnEffort
 (-.) = subtrDnEff ?addUpDnEffort
 
+absUp, absDn ::
+    (RoundedAbs t, ?absUpDnEffort :: AbsEffortIndicator t) => 
+    t -> t
+absUp = absUpEff ?absUpDnEffort
+absDn = absDnEff ?absUpDnEffort
+
 (*^), (*.) :: 
     (RoundedMultiply t, ?multUpDnEffort :: MultEffortIndicator t) => 
     t -> t -> t
@@ -91,4 +97,28 @@ infixl 7 /.|, /^|
     t -> tn -> t
 (/^|) = mixedDivUpEff ?mixedDivUpDnEffort
 (/.|) = mixedDivDnEff ?mixedDivUpDnEffort
+
+piUp, piDn ::
+    (RoundedSpecialConst t, ?specialConstUpDnEffort :: SpecialConstEffortIndicator t) => 
+    t
+piUp = piUpEff ?specialConstUpDnEffort
+piDn = piDnEff ?specialConstUpDnEffort
+
+eUp, eDn ::
+    (RoundedSpecialConst t, ?specialConstUpDnEffort :: SpecialConstEffortIndicator t) => 
+    t
+eUp = eUpEff ?specialConstUpDnEffort
+eDn = eDnEff ?specialConstUpDnEffort
+
+expUp, expDn ::
+    (RoundedExponentiation t, ?expUpDnEffort :: ExpEffortIndicator t) => 
+    t -> t
+expUp = expUpEff ?expUpDnEffort
+expDn = expDnEff ?expUpDnEffort
+
+sqrtUp, sqrtDn ::
+    (RoundedSquareRoot t, ?sqrtUpDnEffort :: SqrtEffortIndicator t) => 
+    t -> t
+sqrtUp = sqrtUpEff ?sqrtUpDnEffort
+sqrtDn = sqrtDnEff ?sqrtUpDnEffort
 
