@@ -8,6 +8,7 @@ main =
   do
   putStrLn $ "riemann 0.1 (\\x -> x^2) (Interval 0 1) = " ++
     show (riemann 0.1 (\x -> x^2) (Interval 0 1))
+  putStrLn "erf e x = 2/(sqrtOut (piOut 0)) * riemann e (\\t -> expOut (-t^2)) (0 </\\> x)"
   putStrLn $ "erf 0.001 1 = " ++ show (erf 0.001 1) 
 
 -- compute the error function to within e accuracy
