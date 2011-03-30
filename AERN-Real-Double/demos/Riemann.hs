@@ -14,7 +14,7 @@ main =
 -- compute the error function to within e accuracy
 erf :: DI -> DI -> DI
 erf e x =
-  2/(sqrtOut (piOut 0)) * riemann e (\t -> expOut (-t^2)) (0 </\> x)
+  2/(sqrtOut piOut) * riemann e (\t -> expOut (-t^2)) (0 </\> x)
 
 -- compute the integral of f over d to within e accuracy
 riemann :: DI -> (DI -> DI) -> DI -> DI
