@@ -4,15 +4,21 @@ module Riemann where
 import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
 
+main =
+  do
+  putStrLn $ "riemann   0.1 (\\x -> x^2) (Interval 1 0) = " ++ 
+    show (riemann 0.1 (\x -> x^2) (Interval 1 0))
+  putStrLn $ "riemann   0.1 (\\x -> x^2) (Interval 0 1) = " ++ 
+    show (riemann 0.1 (\x -> x^2) (Interval 0 1))
+  putStrLn $ "riemann  0.01 (\\x -> x^2) (Interval 0 1) = " ++ 
+    show (riemann 0.01 (\x -> x^2) (Interval 0 1))
+  putStrLn $ "riemann 0.001 (\\x -> x^2) (Interval 0 1) = " ++ 
+    show (riemann 0.001 (\x -> x^2) (Interval 0 1))
+
 -- compute the integral of f over d to within e accuracy
 riemann :: DI -> (DI -> DI) -> DI -> DI
 riemann e f d =
-  riemann' e f initWidthI [d] 0
-  where
-  initWidthI = Interval initWidth initWidth
-  initWidth = r - l
-  Interval l r = d
-
+  riemann' e f (width d) [d] 0
 
 riemann' _ _ _ []     result = result 
 riemann' e f initWidth (d:ds) result
@@ -31,34 +37,6 @@ riemann' e f initWidth (d:ds) result
   dWidth = width d
   (dl, dr) = bisect d
 
--- find leftmost zero of f in d to within e accuracy
-zero :: DI -> (DI -> DI) -> DI -> Maybe DI
-zero e f d =
-  zero' e f [d]
-
-zero' _ _ [] = Nothing 
-zero' e f (d:ds)
-  | imageContainsZero == Just False = 
-      zero' e f ds
-  | imageContainsZero == Just True && reachedSufficientAccuracy = 
-      Just d
-  | cannotSplit =
-      error $ "zero: cannot split interval " ++ show d
-  | otherwise = 
-      zero' e f (dl:dr:ds)
-  where
-  imageContainsZero = fd |<=? 0 
-  reachedSufficientAccuracy = 
-    case width fd <? e of
-      Just True -> True
-      _ -> False
-  cannotSplit = l == midpoint || midpoint == r
-  fd = f d
-  dr = Interval midpoint r
-  dl = Interval l midpoint
-  midpoint = 0.5*(l + r)
-  Interval l r = d  
-
 width i = 
   irI <-> ilI
   where
@@ -73,5 +51,3 @@ bisect i =
   l = Interval il midpoint
   midpoint = 0.5*(il + ir)
   Interval il ir = i
-
-
