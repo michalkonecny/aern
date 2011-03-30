@@ -38,6 +38,12 @@ infixl 7 </>|, >/<|
 (>-<) d = subtrInEff (addDefaultEffort d) d
 (<->) d = subtrOutEff (addDefaultEffort d) d
 
+absIn, absOut ::
+    (RoundedAbs t) => 
+    t -> t
+absIn d = absInEff (absDefaultEffort d) d
+absOut d = absOutEff (absDefaultEffort d) d
+
 (>*<), (<*>) :: 
     (RoundedMultiply t) => 
     t -> t -> t
@@ -87,3 +93,29 @@ infixl 7 </>|, >/<|
     t -> tn -> t
 (>/<|) d n = mixedDivInEff (mixedDivDefaultEffort d n) d n
 (</>|) d n = mixedDivOutEff (mixedDivDefaultEffort d n) d n
+
+
+piIn, piOut ::
+    (RoundedSpecialConst t) => 
+    t -> t
+piIn sample = piInEff (specialConstDefaultEffort sample)
+piOut sample = piOutEff (specialConstDefaultEffort sample)
+
+eIn, eOut ::
+    (RoundedSpecialConst t) => 
+    t -> t
+eIn sample = eInEff (specialConstDefaultEffort sample)
+eOut sample = eOutEff (specialConstDefaultEffort sample)
+
+expIn, expOut ::
+    (RoundedExponentiation t) => 
+    t -> t
+expIn d = expInEff (expDefaultEffort d) d
+expOut d = expOutEff (expDefaultEffort d) d
+
+sqrtIn, sqrtOut ::
+    (RoundedSquareRoot t) => 
+    t -> t
+sqrtIn d = sqrtInEff (sqrtDefaultEffort d) d
+sqrtOut d = sqrtOutEff (sqrtDefaultEffort d) d
+

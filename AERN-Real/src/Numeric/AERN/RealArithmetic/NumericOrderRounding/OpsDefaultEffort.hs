@@ -39,6 +39,12 @@ infixl 7 /.|, /^|
 (-^) d = subtrUpEff (addDefaultEffort d) d
 (-.) d = subtrDnEff (addDefaultEffort d) d
 
+absUp, absDn ::
+    (RoundedAbs t) => 
+    t -> t
+absUp d = absUpEff (absDefaultEffort d) d
+absDn d = absDnEff (absDefaultEffort d) d
+
 (*^), (*.) :: 
     (RoundedMultiply t) => 
     t -> t -> t
@@ -86,4 +92,28 @@ infixl 7 /.|, /^|
     t -> tn -> t
 (/^|) d n = mixedDivUpEff (mixedDivDefaultEffort d n) d n
 (/.|) d n = mixedDivDnEff (mixedDivDefaultEffort d n) d n
+
+piUp, piDn ::
+    (RoundedSpecialConst t) => 
+    t -> t
+piUp sample = piUpEff (specialConstDefaultEffort sample)
+piDn sample = piDnEff (specialConstDefaultEffort sample)
+
+eUp, eDn ::
+    (RoundedSpecialConst t) => 
+    t -> t
+eUp sample = eUpEff (specialConstDefaultEffort sample)
+eDn sample = eDnEff (specialConstDefaultEffort sample)
+
+expUp, expDn ::
+    (RoundedExponentiation t) => 
+    t -> t
+expUp d = expUpEff (expDefaultEffort d) d
+expDn d = expDnEff (expDefaultEffort d) d
+
+sqrtUp, sqrtDn ::
+    (RoundedSquareRoot t) => 
+    t -> t
+sqrtUp d = sqrtUpEff (sqrtDefaultEffort d) d
+sqrtDn d = sqrtDnEff (sqrtDefaultEffort d) d
 
