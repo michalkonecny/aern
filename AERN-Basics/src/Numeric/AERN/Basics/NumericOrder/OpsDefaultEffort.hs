@@ -33,5 +33,23 @@ infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
 (>=?) a = pGeqEff (pCompareDefaultEffort a) a
 (>?) a = pGreaterEff (pCompareDefaultEffort a) a
 
-      
+minDn, minUp, maxDn, maxUp ::
+    (RoundedLattice t) =>
+    t -> t -> t
+minDn a = minDnEff (minmaxDefaultEffort a) a
+minUp a = minUpEff (minmaxDefaultEffort a) a
+maxDn a = maxDnEff (minmaxDefaultEffort a) a
+maxUp a = maxUpEff (minmaxDefaultEffort a) a
+
+minOut, maxOut :: 
+    (OuterRoundedLattice t) =>
+    t -> t -> t
+minOut a = minOuterEff (minmaxOuterDefaultEffort a) a
+maxOut a = maxOuterEff (minmaxOuterDefaultEffort a) a
+
+minIn, maxIn ::
+    (InnerRoundedLattice t) =>
+    t -> t -> t
+minIn a = minInnerEff (minmaxInnerDefaultEffort a) a
+maxIn a = maxInnerEff (minmaxInnerDefaultEffort a) a
 

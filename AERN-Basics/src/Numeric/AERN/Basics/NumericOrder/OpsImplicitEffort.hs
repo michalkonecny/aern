@@ -34,3 +34,25 @@ infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
 (<=?) = pLeqEff ?pCompareEffort
 (>=?) = pGeqEff ?pCompareEffort
 (>?) = pGreaterEff ?pCompareEffort
+
+minDn, minUp, maxDn, maxUp ::
+    (RoundedLattice t, ?minmaxEffort :: MinmaxEffortIndicator t) =>
+    t -> t -> t
+minDn = minDnEff ?minmaxEffort
+minUp = minUpEff ?minmaxEffort
+maxDn = maxDnEff ?minmaxEffort
+maxUp = maxUpEff ?minmaxEffort
+
+minOut, maxOut :: 
+    (OuterRoundedLattice t, 
+     ?minmaxOuterEffort :: MinmaxOuterEffortIndicator t) =>
+    t -> t -> t
+minOut = minOuterEff ?minmaxOuterEffort
+maxOut = maxOuterEff ?minmaxOuterEffort
+
+minIn, maxIn ::
+    (InnerRoundedLattice t,
+     ?minmaxInnerEffort :: MinmaxInnerEffortIndicator t) =>
+    t -> t -> t
+minIn = minInnerEff ?minmaxInnerEffort
+maxIn = maxInnerEff ?minmaxInnerEffort
