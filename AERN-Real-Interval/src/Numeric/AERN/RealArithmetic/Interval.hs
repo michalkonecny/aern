@@ -84,4 +84,26 @@ instance
         where
         result =
             ArithInOut.convertOutEff (ArithInOut.convertDefaultEffort r result) r
-        
+
+instance
+    (ArithUpDn.Convertible Integer e,
+     ArithUpDn.Convertible Rational e,
+     Eq e,
+     ShowInternals e,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLattice e,
+     HasZero e,
+     ArithUpDn.RoundedField e,
+     NumOrd.HasExtrema e,
+     ArithUpDn.RoundedAbs e,
+     ArithUpDn.RoundedSpecialConst e,
+     ArithInOut.RoundedExponentiation (Interval e),
+     ArithInOut.RoundedSquareRoot (Interval e)) =>
+    Floating (Interval e)
+    where
+    pi = piOut
+    exp = expOut
+    sqrt = sqrtOut
+
+
+
