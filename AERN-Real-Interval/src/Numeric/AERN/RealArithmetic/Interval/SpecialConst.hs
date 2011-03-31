@@ -13,6 +13,8 @@
     Portability :  portable
 
     Common constants such as pi.
+    
+    This module is hidden and reexported via its parent Interval. 
 -}
 
 module Numeric.AERN.RealArithmetic.Interval.SpecialConst where
