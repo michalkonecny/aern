@@ -24,6 +24,10 @@ module Numeric.AERN.RealArithmetic.Interval
 )
 where
 
+import Prelude hiding (EQ, LT, GT)
+import qualified Prelude
+import Numeric.AERN.Basics.PartialOrdering
+
 import Numeric.AERN.RealArithmetic.Interval.ExactOps
 import Numeric.AERN.RealArithmetic.Interval.Measures
 import Numeric.AERN.RealArithmetic.Interval.Conversion
@@ -36,18 +40,59 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
+import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Exception
 
+import Control.Exception
+
 instance (HasLegalValues e) => HasLegalValues (Interval e) where
     isLegal (Interval l h) = isLegal l && isLegal h 
 
+instance
+    (NumOrd.PartialComparison e, ShowInternals e) =>
+    Eq (Interval e)
+    where
+    i1 == i2 =
+        case i1 |==? i2 of 
+            Just r -> r
+            _ -> throw $ 
+                AERNException $
+                    "equality cannot be decided for: " 
+                    ++ show i1 ++ " == "
+                    ++ show i2
+                    ++ "\n consider replacing == with NumericOrder.OpsDefaultEffort.|==?"
+                    ++ "\n                    or with NumericOrder.OpsImplicitEffort.|==?"
+                    ++ "\n                    or with NumericOrder.pCompareEff"
+
+instance
+    (NumOrd.PartialComparison e, ShowInternals e, NumOrd.RoundedLattice e) =>
+    Ord (Interval e)
+    where
+    compare i1 i2 =
+        case NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort i1) i1 i2 of 
+            Just EQ -> Prelude.EQ
+            Just LT -> Prelude.LT
+            Just GT -> Prelude.GT
+            _ -> throw $ 
+                AERNException $
+                    "comparison cannot be decided for: compare " 
+                    ++ show i1 ++ " "
+                    ++ show i2
+                    ++ "\n consider replacing with ops defined at NumericOrder.OpsDefaultEffort"
+                    ++ "\n                                  or at NumericOrder.OpsImplicitEffort"
+                    ++ "\n                 or with NumericOrder.pCompareEff"
+    max i1 i2 = maxOut i1 i2
+    min i1 i2 = minOut i1 i2
+
 instance 
     (ArithUpDn.Convertible Integer e, 
-     Eq e, ShowInternals e,
+     ShowInternals e,
      NumOrd.PartialComparison e, 
      NumOrd.RoundedLattice e, 
      HasZero e,
@@ -58,7 +103,7 @@ instance
     negate = neg
     (+) = (<+>)
     (*) = (<*>)
-    abs a = ArithInOut.absOutEff (ArithInOut.absDefaultEffort a) a
+    abs = absOut
     fromInteger n = 
         result
         where

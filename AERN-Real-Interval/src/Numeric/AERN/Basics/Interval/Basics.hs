@@ -42,7 +42,6 @@ data Interval e =
         lowEndpoint :: ! e,
         highEndpoint :: ! e
     }
-    deriving (Eq)
     
 instance (ShowInternals e, NumOrd.PartialComparison e) => (ShowInternals (Interval e))
     where
