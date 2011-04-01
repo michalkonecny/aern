@@ -1,3 +1,52 @@
+{-
+  this file is needed to break the following dependency cycles:
+
+  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Elementary
+    imports: Numeric.AERN.RealArithmetic.Measures
+             Numeric.AERN.RealArithmetic.Laws
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary
+  Numeric.AERN.RealArithmetic.Measures
+    imports: Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
+  Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
+    imports: Numeric.AERN.RealArithmetic.Measures
+             Numeric.AERN.RealArithmetic.Laws
+             Numeric.AERN.RealArithmetic.NumericOrderRounding
+  Numeric.AERN.RealArithmetic.Laws
+    imports: Numeric.AERN.RealArithmetic.Measures
+  Numeric.AERN.RealArithmetic.NumericOrderRounding
+    imports: Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
+  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
+    imports: Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Elementary
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps
+  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps
+    imports: Numeric.AERN.RealArithmetic.Measures
+             Numeric.AERN.RealArithmetic.Laws
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps
+  Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
+    imports: Numeric.AERN.RealArithmetic.Measures
+             Numeric.AERN.RealArithmetic.Laws
+  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps
+    imports: Numeric.AERN.RealArithmetic.Measures
+             Numeric.AERN.RealArithmetic.Laws
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
+  Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps
+    imports: Numeric.AERN.RealArithmetic.Measures
+             Numeric.AERN.RealArithmetic.Laws
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
+  Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary
+    imports: Numeric.AERN.RealArithmetic.Measures
+             Numeric.AERN.RealArithmetic.Laws
+             Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
+  
+-} 
+
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ImplicitParams #-}
 
