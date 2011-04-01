@@ -1,7 +1,7 @@
 
-module Riemann where
+module Main where
 
-import Numeric.AERN.RealArithmetic.Interval.Double
+import Numeric.AERN.Interval.Double
 
 main =
   do
