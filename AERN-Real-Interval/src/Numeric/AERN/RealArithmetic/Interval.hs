@@ -14,15 +14,7 @@
 -}
 
 module Numeric.AERN.RealArithmetic.Interval
-(
-    module Numeric.AERN.RealArithmetic.Interval.ExactOps,
-    module Numeric.AERN.RealArithmetic.Interval.Measures,
-    module Numeric.AERN.RealArithmetic.Interval.Conversion,
-    module Numeric.AERN.RealArithmetic.Interval.FieldOps,
-    module Numeric.AERN.RealArithmetic.Interval.MixedFieldOps,
-    module Numeric.AERN.RealArithmetic.Interval.SpecialConst,
-    module Numeric.AERN.RealArithmetic.Interval.Floating
-)
+()
 where
 
 import Numeric.AERN.RealArithmetic.Interval.ExactOps

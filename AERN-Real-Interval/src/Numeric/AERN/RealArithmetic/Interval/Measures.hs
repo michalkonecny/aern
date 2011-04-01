@@ -17,7 +17,9 @@
     This module is hidden and reexported via its parent Interval. 
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.Measures where
+module Numeric.AERN.RealArithmetic.Interval.Measures 
+()
+where
 
 import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.ExactOps

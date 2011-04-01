@@ -17,15 +17,17 @@
     This module is hidden and reexported via its parent Interval. 
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.SpecialConst where
+module Numeric.AERN.RealArithmetic.Interval.SpecialConst 
+()
+where
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
 import Numeric.AERN.Basics.Interval
 
-instance (ArithUpDn.RoundedSpecialConstEffort e) => 
-    (ArithInOut.RoundedSpecialConstEffort (Interval e)) 
+instance (ArithUpDn.RoundedSpecialConstEffort e) =>
+    (ArithInOut.RoundedSpecialConstEffort (Interval e))
     where
     type ArithInOut.SpecialConstEffortIndicator (Interval e) = 
         ArithUpDn.SpecialConstEffortIndicator e

@@ -13,7 +13,9 @@
     This module is hidden and reexported via its parent Interval. 
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.ExactOps where
+module Numeric.AERN.RealArithmetic.Interval.ExactOps 
+()
+where
 
 import Numeric.AERN.Basics.Interval
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd 
