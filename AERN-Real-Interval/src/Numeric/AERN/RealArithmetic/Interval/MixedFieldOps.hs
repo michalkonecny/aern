@@ -18,7 +18,9 @@
     This module is hidden and reexported via its parent Interval. 
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.MixedFieldOps where
+module Numeric.AERN.RealArithmetic.Interval.MixedFieldOps 
+()
+where
 
 import Numeric.AERN.Basics.Interval
 
