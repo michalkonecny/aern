@@ -16,6 +16,10 @@ Description:
     This package provides bindings and tests for using machine Double
     values as endpoints for the interval arithmetic defined in packages AERN-Basics and
     AERN-Real.
+    .
+    The type DI of intervals with Double endpoints is provided together
+    with a range of useful operations via the module "Numeric.AERN.RealArithmetic.Interval.Double".
+    See this module for a quick-start documentation of this type.
 
 Extra-Source-Files:
     CHANGES
@@ -30,6 +34,8 @@ Library
         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
         AERN-Basics == 2011.1, AERN-Real-Interval == 2011.1, AERN-Real == 2011.1
   Exposed-modules:
+    Numeric.AERN.Interval.Double
+--    Numeric.AERN.Real.DI
     Numeric.AERN.RealArithmetic.Basis.Double
     Numeric.AERN.RealArithmetic.Interval.Double
 
@@ -68,7 +74,22 @@ Executable demoAERN-Real-Double-Minimal
   Build-Depends:
         base >= 4 && < 5,
         AERN-Basics == 2011.1, AERN-Real == 2011.1
-  other-modules:  Riemann, Zero
+
+Executable demoAERN-Real-Double-Riemann
+  hs-source-dirs: src, demos
+  ghc-options: -O2
+  main-is: Riemann.hs
+  Build-Depends:
+        base >= 4 && < 5,
+        AERN-Basics == 2011.1, AERN-Real == 2011.1
+
+Executable demoAERN-Real-Double-Zero
+  hs-source-dirs: src, demos
+  ghc-options: -O2
+  main-is: Zero.hs
+  Build-Depends:
+        base >= 4 && < 5,
+        AERN-Basics == 2011.1, AERN-Real == 2011.1
 
     
     

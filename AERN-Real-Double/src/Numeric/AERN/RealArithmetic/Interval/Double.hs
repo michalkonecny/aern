@@ -15,32 +15,21 @@ module Numeric.AERN.RealArithmetic.Interval.Double
     DI,
     sampleDI,
     PositiveDI(..),
-    module Numeric.AERN.Basics.Interval,
-    module Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort,
-    module Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort,
-    module Numeric.AERN.RealArithmetic.RefinementOrderRounding,
-    module Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+    module Numeric.AERN.Basics.Interval
 )
 where
 
 import Numeric.AERN.Basics.Interval
 
-import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
-import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
-
 import Numeric.AERN.RealArithmetic.Interval
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
-import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
 
---import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
-import Numeric.AERN.RealArithmetic.Basis.Double
+import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Test.QuickCheck
 
-type DI = Interval Double
+type DI = Interval Double 
 
 sampleDI :: DI
 sampleDI = Interval 0 0

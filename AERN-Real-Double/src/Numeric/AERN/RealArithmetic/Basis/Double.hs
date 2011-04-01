@@ -22,7 +22,7 @@ import Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
 import Numeric.AERN.RealArithmetic.Basis.Double.Conversion
 import Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
 import Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps
-import {-# Source #-} Numeric.AERN.RealArithmetic.Basis.Double.Measures
+import Numeric.AERN.RealArithmetic.Basis.Double.Measures
 import Numeric.AERN.RealArithmetic.Basis.Double.Mutable
 import Numeric.AERN.RealArithmetic.Basis.Double.SpecialConst
 
