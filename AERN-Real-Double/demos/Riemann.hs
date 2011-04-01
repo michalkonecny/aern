@@ -1,7 +1,6 @@
 
 module Riemann where
 
-import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
 
 main =

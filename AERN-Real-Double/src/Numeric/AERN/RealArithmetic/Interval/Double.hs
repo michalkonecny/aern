@@ -33,7 +33,8 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
 
-import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
+--import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
+import Numeric.AERN.RealArithmetic.Basis.Double
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
