@@ -26,10 +26,16 @@ infixr 7 |<*>, |>*<
 infixl 7 <*>|, >*<|
 infixl 7 </>|, >/<|
 
-(>+<), (<+>) :: 
+-- | inner rounded addition
+(>+<) :: 
     (RoundedAdd t) => 
     t -> t -> t
 (>+<) d = addInEff (addDefaultEffort d) d
+
+-- | outer rounded addition
+(<+>) :: 
+    (RoundedAdd t) => 
+    t -> t -> t
 (<+>) d = addOutEff (addDefaultEffort d) d
 
 (>-<), (<->) :: 
