@@ -12,13 +12,61 @@
 -}
 module Numeric.AERN.Interval.Double 
 (
-    -- * types
+    -- |
+    -- A convenience module re-exporting various interval operations 
+    -- with default effort indicators.
+
+    -- Interval with Double endpoints
     DI,
-    -- * comparison operators
-    -- * field operators
-    (<+>),
-    (>+<),
-    -- * mixed field operators (e.g. Integer times DI)
+    
+    -- * Order relations
+    -- | 
+    -- There are two types of order relations to consider: the numerical order,
+    -- generalising the order relation on the endpoints and the refinement order.    
+    
+    -- ** Numeric order
+    -- | 
+    -- Interval relations obtained by lifting the corresponding 
+    -- relations from the endpoint poset.
+    (==?),(<==>?),(</=>?),(<?),(>?),(<=?),(>=?),
+    
+    -- ** Refinement order
+    -- | 
+    -- Order relations in the interval poset.
+    (|==?),(|<==>?),(|</=>?),(|<?),(|>?),(|<=?),(|>=?),
+
+    -- * Outward rounded operations
+     
+    -- ** Order operations
+    
+    -- *** Numerical order
+    -- | 
+    -- Outward rounded interval operations obtained by lifting the 
+    -- corresponding operations from the endpoint poset.
+    minOut,maxOut,
+
+    -- *** Refinement order
+    -- | 
+    -- Outward rounded lattice operations in the interval poset.
+    (</\>),(<\/>),(<\/>?),
+
+    -- ** Field operations
+    (<+>),(<->),(<*>),(</>),
+
+    -- * Inward rounded operations 
+
+    -- ** Order operations
+
+    -- *** Numerical order
+    minIn,maxIn,
+
+    -- *** Refinement order
+    (>/\<),(>\/<),
+
+    -- ** Field operations
+    (>+<),(>-<),(>*<),(>/<),
+    
+    -- * Mixed field operators (e.g. Integer times DI)
     -- * temporary exports (to be deleted soon!)
     module Numeric.AERN.Basics.Interval,
     module Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort,
@@ -45,6 +93,7 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Test.QuickCheck
 
+-- | Interval type
 type DI = Interval Double
 
 sampleDI :: DI
