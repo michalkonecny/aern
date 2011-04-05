@@ -456,7 +456,7 @@ equalRoundingUpDn
 --        ++ "\n  5 successes = \n" ++ unlines (map show relevantSuccesses)
 --    ) 
 --    $
-    case evalCatchDomViolationExceptions result of
+    case evalCatchDomViolationExceptions "checking a property" result of
             Left e -> True
 --                unsafePrint ("leqRoundingUpDnImprovement: " ++ show e) True 
             -- ignore tests during which a domain violation exception arises 
@@ -468,15 +468,8 @@ equalRoundingUpDn
     successes = map check efforts
     efforts =
         (initEffort : ) $ take 15 $ effortIncrementSequence initEffort
---            mergeManyLists $
---                map (take 20 . effortIncrementSequence) $ 
---                    effortIncrementVariants initEffort 
     check (effortRel, effortOp) =
-        -- the following catch does not work, currently have to
-        --  catch the exceptions at a higher level 
-        case evalCatchDomViolationExceptions (successWithMsg) of
-            Left msg -> (True, "")
-            Right res -> res 
+        successWithMsg 
         where
         successWithMsg =
             (success,

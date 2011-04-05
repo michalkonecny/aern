@@ -38,19 +38,24 @@ import System.IO.Unsafe
 
 data AERNException =
     AERNException String
+    | AERNIllegalValue String
     | AERNDomViolationException String
     | AERNMaybeDomViolationException String
     deriving (Show, Typeable)
 
 instance Exception AERNException
 
-evalCatchAERNExceptions :: t -> Either AERNException t
-evalCatchAERNExceptions a =
+evalCatchAERNExceptions :: String -> t -> Either AERNException t
+evalCatchAERNExceptions contextDescription a =
     unsafePerformIO $ catch (evaluateEmbed a) handler
     where
     handler e@(AERNException msg) =
         do
         putStrLn $ "caught AERN exception: " ++ msg
+        return (Left e)
+    handler e@(AERNIllegalValue msg) =
+        do 
+        putStrLn $ "caught AERN illegal value exception: " ++ msg
         return (Left e)
     handler e@(AERNDomViolationException msg) =
         do 
@@ -65,26 +70,37 @@ evalCatchAERNExceptions a =
         aa <- evaluate a
         return $ Right aa
 
-evalCatchDomViolationExceptions :: t -> Either AERNException t
-evalCatchDomViolationExceptions a =
-    case evalCatchAERNExceptions a of
+evalCatchDomViolationExceptions :: String -> t -> Either AERNException t
+evalCatchDomViolationExceptions contextDescription a =
+    case evalCatchAERNExceptions contextDescription a of
         Left e@(AERNDomViolationException _) -> Left e
         Left e@(AERNMaybeDomViolationException _) -> Left e
-        Left e -> throw e
+        Left e ->
+            unsafePerformIO $
+            do
+            putStrLn $ contextDescription ++ ": rethrowing" 
+            throw e
         r -> r
 
-raisesAERNException :: t -> Bool
-raisesAERNException a =
-    case (evalCatchAERNExceptions a) of
+raisesAERNException :: String -> t -> Bool
+raisesAERNException contextDescription a =
+    case (evalCatchAERNExceptions contextDescription a) of
         (Left _) -> True
         _ -> False
 
-raisesDomViolationException :: t -> Bool
-raisesDomViolationException a =
-    case (evalCatchDomViolationExceptions a) of
+raisesDomViolationException :: String -> t -> Bool
+raisesDomViolationException contextDescription a =
+    case (evalCatchDomViolationExceptions contextDescription a) of
         (Left _) -> True
         _ -> False
 
 class HasLegalValues t where
   isLegal :: t -> Bool
   
+detectIllegalValues :: (HasLegalValues t, Show t) => String -> t -> t
+detectIllegalValues contextDescription value 
+    | isLegal value = value
+    | otherwise = 
+        throw $ AERNIllegalValue $ 
+            contextDescription ++ ": " ++ show value
+ 
