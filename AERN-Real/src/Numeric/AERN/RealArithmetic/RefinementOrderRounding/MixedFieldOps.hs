@@ -23,6 +23,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Exception (HasLegalValues)
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
@@ -62,7 +63,7 @@ mixedAddOutEffByConversion (effAdd, effConv) d n =
 propMixedAddEqualsConvert ::
     (RefOrd.PartialComparison t, Convertible tn t,
      RoundedMixedAdd t tn, RoundedAdd t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (MixedAddEffortIndicator t tn),
      EffortIndicator (MixedAddEffortIndicator t tn),
      Show (ConvertEffortIndicator tn t),
@@ -81,7 +82,7 @@ propMixedAddEqualsConvert ::
     tn -> Bool
 propMixedAddEqualsConvert sample sampleN initEffort 
         (RefOrd.UniformlyOrderedSingleton d) n =
-    equalRoundingUpDn
+    equalRoundingUpDn "mixed addition by conversion"
         expr1In expr1Out expr2In expr2Out
         RefOrd.pLeqEff initEffort
     where
@@ -124,7 +125,7 @@ mixedMultOutEffByConversion (effMult, effConv) d n =
 propMixedMultEqualsConvert ::
     (RefOrd.PartialComparison t, Convertible tn t,
      RoundedMixedMultiply t tn, RoundedMultiply t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (MixedMultEffortIndicator t tn),
      EffortIndicator (MixedMultEffortIndicator t tn),
      Show (ConvertEffortIndicator tn t),
@@ -143,7 +144,7 @@ propMixedMultEqualsConvert ::
     tn -> Bool
 propMixedMultEqualsConvert sample sampleN initEffort 
         (RefOrd.UniformlyOrderedSingleton d) n =
-    equalRoundingUpDn
+    equalRoundingUpDn "mixed multiplication by conversion"
         expr1In expr1Out expr2In expr2Out
         RefOrd.pLeqEff initEffort
     where
@@ -185,7 +186,7 @@ mixedDivOutEffByConversion (effDiv, effConv) d n =
 propMixedDivEqualsConvert ::
     (RefOrd.PartialComparison t, Convertible tn t,
      RoundedMixedDivide t tn, RoundedDivide t,
-     Show t, HasZero t,
+     Show t, HasZero t, HasLegalValues t,
      Show (MixedDivEffortIndicator t tn),
      EffortIndicator (MixedDivEffortIndicator t tn),
      Show (ConvertEffortIndicator tn t),
@@ -205,7 +206,7 @@ propMixedDivEqualsConvert ::
 propMixedDivEqualsConvert sample sampleN initEffort@(effComp,(_,_,effConv)) 
         (RefOrd.UniformlyOrderedSingleton d) n
     | awayFromZero =
-            equalRoundingUpDn
+            equalRoundingUpDn "mixed division by conversion"
                 expr1In expr1Out expr2In expr2Out
                 RefOrd.pLeqEff initEffort
     | otherwise = True

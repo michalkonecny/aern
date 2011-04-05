@@ -84,7 +84,7 @@ mixedAddDnEffByConversion (effAdd, effConv) d n =
 propMixedAddEqualsConvert ::
     (NumOrd.PartialComparison t, Convertible tn t,
      RoundedMixedAdd t tn, RoundedAdd t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (MixedAddEffortIndicator t tn),
      EffortIndicator (MixedAddEffortIndicator t tn),
      Show (ConvertEffortIndicator tn t),
@@ -104,7 +104,7 @@ propMixedAddEqualsConvert ::
     Bool
 propMixedAddEqualsConvert sampleN sample initEffort 
         (NumOrd.UniformlyOrderedSingleton d) n =
-    equalRoundingUpDn
+    equalRoundingUpDn "mixed addition by conversion"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -179,7 +179,7 @@ propMixedMultEqualsConvert ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t, 
      Convertible tn t,
      RoundedMixedMultiply t tn, RoundedMultiply t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (MixedMultEffortIndicator t tn),
      EffortIndicator (MixedMultEffortIndicator t tn),
      Show (ConvertEffortIndicator tn t),
@@ -201,7 +201,7 @@ propMixedMultEqualsConvert ::
     tn -> Bool
 propMixedMultEqualsConvert sample sampleN initEffort 
         (NumOrd.UniformlyOrderedSingleton d) n =
-    equalRoundingUpDn
+    equalRoundingUpDn "mixed multiplication by conversion"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -307,7 +307,7 @@ propMixedDivEqualsConvert ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t, 
      Convertible tn t,
      RoundedMixedDivide t tn, RoundedDivide t,
-     Show t, 
+     Show t, HasLegalValues t,
      HasZero t,
      Show (MixedDivEffortIndicator t tn),
      EffortIndicator (MixedDivEffortIndicator t tn),
@@ -331,7 +331,7 @@ propMixedDivEqualsConvert ::
 propMixedDivEqualsConvert sample sampleN initEffort@(effComp,(_,(_,effConv,_))) 
         (NumOrd.UniformlyOrderedSingleton d) n
     | awayFromZero =
-            equalRoundingUpDn
+            equalRoundingUpDn "mixed division by conversion"
                 expr1Up expr1Dn expr2Up expr2Dn 
                 NumOrd.pLeqEff initEffort
     | otherwise = True

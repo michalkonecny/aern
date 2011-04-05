@@ -39,6 +39,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Exception (HasLegalValues)
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
@@ -68,7 +69,7 @@ propInOutAddInPlace ::
      RoundedAddInPlace t, 
      RoundedAdd t, 
      Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -79,7 +80,7 @@ propInOutAddInPlace ::
      AddEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedPair t) -> Bool
 propInOutAddInPlace sample initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
-    roundedInPlace2ConsistentWithPure
+    roundedInPlace2ConsistentWithPure "addition"
         (addInInPlaceEff sample) (addOutInPlaceEff sample) addInEff addOutEff
         RefOrd.pLeqEff initEffort
         e1 e2
@@ -103,7 +104,7 @@ propInOutSubtrInPlace ::
      RoundedSubtrInPlace t, 
      RoundedSubtr t, 
      Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -114,7 +115,7 @@ propInOutSubtrInPlace ::
      AddEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedPair t) -> Bool
 propInOutSubtrInPlace sample initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
-    roundedInPlace2ConsistentWithPure
+    roundedInPlace2ConsistentWithPure "subtraction"
         (subtrInInPlaceEff sample) (subtrOutInPlaceEff sample) subtrInEff subtrOutEff
         RefOrd.pLeqEff initEffort
         e1 e2
@@ -127,7 +128,7 @@ class (RoundedAbs t, CanBeMutable t) => RoundedAbsInPlace t where
 
 propInOutAbsInPlace ::
     (RefOrd.PartialComparison t, RoundedAbsInPlace t, Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -138,7 +139,7 @@ propInOutAbsInPlace ::
      AbsEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedSingleton t) -> Bool
 propInOutAbsInPlace sample initEffort (RefOrd.UniformlyOrderedSingleton e) =
-    roundedInPlace1ConsistentWithPure
+    roundedInPlace1ConsistentWithPure "abs"
         (absInInPlaceEff sample) (absOutInPlaceEff sample) absInEff absOutEff
         RefOrd.pLeqEff initEffort
         e
@@ -159,7 +160,7 @@ propInOutMultInPlace ::
      RoundedMultiplyInPlace t, 
      RoundedMultiply t, 
      Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -170,7 +171,7 @@ propInOutMultInPlace ::
      MultEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedPair t) -> Bool
 propInOutMultInPlace sample initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
-    roundedInPlace2ConsistentWithPure
+    roundedInPlace2ConsistentWithPure "multiplication"
         (multInInPlaceEff sample) (multOutInPlaceEff sample) multInEff multOutEff
         RefOrd.pLeqEff initEffort
         e1 e2
@@ -213,7 +214,7 @@ propInOutPowerToNonnegInPlace ::
      RoundedPowerToNonnegIntInPlace t, 
      RoundedPowerToNonnegInt t, 
      Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (PowerToNonnegIntEffortIndicator t),
      EffortIndicator (PowerToNonnegIntEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -224,7 +225,7 @@ propInOutPowerToNonnegInPlace ::
      PowerToNonnegIntEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedSingleton t) -> Int -> Bool
 propInOutPowerToNonnegInPlace sample initEffort (RefOrd.UniformlyOrderedSingleton e) n =
-    roundedInPlace1ConsistentWithPure
+    roundedInPlace1ConsistentWithPure "non-neg integer power"
         (\eff r e -> powerToNonnegIntInInPlaceEff sample eff r e n) 
         (\eff r e -> powerToNonnegIntOutInPlaceEff sample eff r e n) 
         (\eff e -> powerToNonnegIntInEff eff e n) 
@@ -268,7 +269,7 @@ propInOutDivInPlace ::
      RoundedDivideInPlace t, 
      RoundedDivide t, 
      Neg t,
-     Show t, HasZero t,
+     Show t, HasZero t, HasLegalValues t,
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -282,7 +283,7 @@ propInOutDivInPlace sample initEffort@(effComp, _) (RefOrd.UniformlyOrderedPair 
     let ?pCompareEffort = effComp in
     case (e2 ⊑? zero, zero ⊑? e2) of
         (Just False, Just False) ->
-            roundedInPlace2ConsistentWithPure
+            roundedInPlace2ConsistentWithPure "division"
                 (divInInPlaceEff sample) (divOutInPlaceEff sample) divInEff divOutEff
                 RefOrd.pLeqEff initEffort
                 e1 e2

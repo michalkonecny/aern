@@ -41,28 +41,37 @@ import Numeric.AERN.Basics.Exception
 import Control.Exception
 
 roundedRefinementMonotone1 ::
-    (RefOrd.PartialComparison t, RefOrd.ArbitraryOrderedTuple t) =>
+    (RefOrd.PartialComparison t, 
+     RefOrd.ArbitraryOrderedTuple t, 
+     Show t, HasLegalValues t) =>
+    String ->
     (Expr1Eff ei t) ->
     (Expr1Eff ei t) ->
     ei -> (RefOrd.LEPair t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
-roundedRefinementMonotone1 exprUp exprDn effort (RefOrd.LEPair (e1L, e1H)) effortComp =
+roundedRefinementMonotone1 contextDescription exprUp exprDn effort (RefOrd.LEPair (e1L, e1H)) effortComp =
     case RefOrd.pLeqEff effortComp resDn resUp of
         Just b -> b
         _ -> True
     where
-    resUp = exprUp effort e1H
-    resDn = exprDn effort e1L
+    resUp = check $ exprUp effort e1H
+    resDn = check $ exprDn effort e1L
+    check = detectIllegalValues $ contextDescription ++ " monotone"
 
 roundedRefinementMonotone2 ::
-    (RefOrd.PartialComparison t, RefOrd.ArbitraryOrderedTuple t, Show t) =>
+    (RefOrd.PartialComparison t, 
+     RefOrd.ArbitraryOrderedTuple t, 
+     Show t, HasLegalValues t) =>
+    String ->
     (Expr2Eff ei t) ->
     (Expr2Eff ei t) ->
     ei -> (RefOrd.LEPair t) -> (RefOrd.LEPair t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
-roundedRefinementMonotone2 exprUp exprDn effort (RefOrd.LEPair (e1L, e1H)) (RefOrd.LEPair (e2L, e2H)) effortComp =
+roundedRefinementMonotone2 
+        contextDescription exprUp exprDn effort 
+        (RefOrd.LEPair (e1L, e1H)) (RefOrd.LEPair (e2L, e2H)) effortComp =
 --    unsafePrint ("\nroundedRefinementMonotone2: " 
 --      ++ "\n Up: op(" ++ show e1H ++ ", " ++ show e2H ++ ") = " ++ show resUp 
 --      ++ "\n Dn: op(" ++ show e1L ++ ", " ++ show e2L ++ ") = " ++ show resDn
@@ -72,21 +81,21 @@ roundedRefinementMonotone2 exprUp exprDn effort (RefOrd.LEPair (e1L, e1H)) (RefO
         Just b -> b
         _ -> True
     where
-    resUp = exprUp effort e1H e2H
-    resDn = exprDn effort e1L e2L
-
+    resUp = check $ exprUp effort e1H e2H
+    resDn = check $ exprDn effort e1L e2L
+    check = detectIllegalValues $ contextDescription ++ " monotone"
 
 roundedUnit ::
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp, Show eiOp, 
-     Show t) =>
+     Show t, HasLegalValues t) =>
     t -> 
     (PRelEff eiRel t) -> 
     (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (eiRel, eiOp) -> 
     t -> Bool
 roundedUnit unit =
-    equalRoundingUpDnBin1Var1 (\_ _ e -> e) expr2
+    equalRoundingUpDnBin1Var1 "roundedUnit" (\_ _ e -> e) expr2
     where
     expr2 opEff effort e = 
         unit * e
@@ -96,14 +105,14 @@ roundedUnit unit =
 roundedReflexiveCollapse ::
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp, Show eiOp, 
-     Show t) =>
+     Show t, HasLegalValues t) =>
     t -> 
     (PRelEff eiRel t) -> 
     (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (eiRel, eiOp) -> 
     t -> Bool
 roundedReflexiveCollapse unit =
-    equalRoundingUpDnBin1Var1 (\_ _ e -> unit) expr2
+    equalRoundingUpDnBin1Var1 "roundedReflexiveCollapse" (\_ _ e -> unit) expr2
     where
     expr2 opEff effort e = 
         e * e
@@ -113,13 +122,13 @@ roundedReflexiveCollapse unit =
 roundedCommutative ::
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp, Show eiOp, 
-     Show t) =>
+     Show t, HasLegalValues t) =>
     (PRelEff eiRel t) -> 
     (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (eiRel, eiOp) -> 
     t -> t -> Bool
 roundedCommutative =
-    equalRoundingUpDnBin1Var2 expr1 expr2
+    equalRoundingUpDnBin1Var2 "roundedCommutative" expr1 expr2
     where
     expr1 opEff effort e1 e2 = 
         e1 * e2
@@ -133,13 +142,13 @@ roundedCommutative =
 roundedAssociative ::
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp, Show eiOp, 
-     Show t) =>
+     Show t, HasLegalValues t) =>
     (PRelEff eiRel t) -> 
     (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (eiRel, eiOp) -> 
     t -> t -> t -> Bool
 roundedAssociative =
-    equalRoundingUpDnBin1Var3 expr1 expr2
+    equalRoundingUpDnBin1Var3 "roundedAssociative" expr1 expr2
     where
     expr1 opEff effort e1 e2 e3 = 
         (e1 * e2) * e3
@@ -154,7 +163,7 @@ roundedDistributive ::
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp1, Show eiOp1, 
      EffortIndicator eiOp2, Show eiOp2,
-     HasAntiConsistency t, Show t) =>
+     HasAntiConsistency t, Show t, HasLegalValues t) =>
     (PRelEff eiRel t) -> 
     (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
     (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
@@ -162,7 +171,7 @@ roundedDistributive ::
     (eiRel, (eiOp1, eiOp2)) -> 
     t -> t -> t -> Bool
 roundedDistributive 
-        pCompareEff 
+        pCompareEff
         op1UpEff op2UpEff 
         op1DnEff op2DnEff 
         effortConsistency
@@ -175,7 +184,7 @@ roundedDistributive
 --        ++ "\n e2 = " ++ show e2
 --        ++ "\n e3 = " ++ show e3
 --    ) $        
-    thinEqualConsLeqRoundingUpDnImprovement 
+    thinEqualConsLeqRoundingUpDnImprovement "roundedDistributive"
         -- cannot get equality when e1 is not thin 
         -- because e1 appears twice in expr1 (dependency error)
         [e1] expr1Up expr1Dn expr2Up expr2Dn 
@@ -203,13 +212,13 @@ roundedNegSymmetric ::
     (Neg t,
      EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp, Show eiOp, 
-     Show t) =>
+     Show t, HasLegalValues t) =>
     (PRelEff eiRel t) -> 
     (UnaryOpEff eiOp t) -> (UnaryOpEff eiOp t) -> 
     (eiRel, eiOp) -> 
     t -> Bool
 roundedNegSymmetric =
-    equalRoundingUpDnUnary1Var1 expr1 expr2
+    equalRoundingUpDnUnary1Var1 "roundedNegSymmetric" expr1 expr2
     where
     expr1 opEff effort e = 
          opEff effort e
@@ -219,13 +228,13 @@ roundedNegSymmetric =
 roundedIdempotent ::
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp, Show eiOp, 
-     Show t) =>
+     Show t, HasLegalValues t) =>
     (PRelEff eiRel t) -> 
     (UnaryOpEff eiOp t) -> (UnaryOpEff eiOp t) -> 
     (eiRel, eiOp) -> 
     t -> Bool
 roundedIdempotent =
-    equalRoundingUpDnUnary1Var1 expr1 expr2
+    equalRoundingUpDnUnary1Var1 "roundedIdempotent" expr1 expr2
     where
     expr1 opEff effort e = 
          opEff effort e
@@ -233,21 +242,20 @@ roundedIdempotent =
          opEff effort (opEff effort e)
 
 
-
-
 equalRoundingUpDnUnary1Var1 :: 
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp, Show eiOp, 
-     Show t) =>
+     Show t, HasLegalValues t) =>
+    String ->
     (Expr1UnaryOp1Eff eiOp t) -> 
     (Expr1UnaryOp1Eff eiOp t) -> 
     (PRelEff eiRel t) -> 
     (UnaryOpEff eiOp t) -> (UnaryOpEff eiOp t) -> 
     (eiRel, eiOp) -> 
     t -> Bool
-equalRoundingUpDnUnary1Var1 expr1 expr2 pCompareEff opUpEff opDnEff 
+equalRoundingUpDnUnary1Var1 contextDescription expr1 expr2 pCompareEff opUpEff opDnEff 
         initEffort e =
-    equalRoundingUpDn expr1Up expr1Dn expr2Up expr2Dn pCompareEff initEffort
+    equalRoundingUpDn contextDescription expr1Up expr1Dn expr2Up expr2Dn pCompareEff initEffort
     where
     expr1Up eff = expr1 opUpEff eff e
     expr1Dn eff = expr1 opDnEff eff e
@@ -257,15 +265,19 @@ equalRoundingUpDnUnary1Var1 expr1 expr2 pCompareEff opUpEff opDnEff
 equalRoundingUpDnBin1Var1 :: 
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp, Show eiOp, 
-     Show t) =>
+     Show t, HasLegalValues t) =>
+    String ->
     (Expr1Op1Eff eiOp t) -> 
     (Expr1Op1Eff eiOp t) -> 
     (PRelEff eiRel t) -> 
     (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (eiRel, eiOp) -> 
     t -> Bool
-equalRoundingUpDnBin1Var1 expr1 expr2 pCompareEff opUpEff opDnEff initEffort e =
-    equalRoundingUpDn expr1Up expr1Dn expr2Up expr2Dn pCompareEff initEffort
+equalRoundingUpDnBin1Var1 
+        contextDescription expr1 expr2 pCompareEff 
+        opUpEff opDnEff initEffort e =
+    equalRoundingUpDn 
+        contextDescription expr1Up expr1Dn expr2Up expr2Dn pCompareEff initEffort
     where
     expr1Up eff = expr1 opUpEff eff e
     expr1Dn eff = expr1 opDnEff eff e
@@ -275,16 +287,17 @@ equalRoundingUpDnBin1Var1 expr1 expr2 pCompareEff opUpEff opDnEff initEffort e =
 equalRoundingUpDnBin1Var2 :: 
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp, Show eiOp, 
-     Show t) =>
+     Show t, HasLegalValues t) =>
+    String ->
     (Expr1Op2Eff eiOp t) -> 
     (Expr1Op2Eff eiOp t) -> 
     (PRelEff eiRel t) -> 
     (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (eiRel, eiOp) -> 
     t -> t -> Bool
-equalRoundingUpDnBin1Var2 expr1 expr2 pCompareEff opUpEff opDnEff 
+equalRoundingUpDnBin1Var2 contextDescription expr1 expr2 pCompareEff opUpEff opDnEff 
         initEffort e1 e2 =
-    equalRoundingUpDn expr1Up expr1Dn expr2Up expr2Dn pCompareEff initEffort
+    equalRoundingUpDn contextDescription expr1Up expr1Dn expr2Up expr2Dn pCompareEff initEffort
     where
     expr1Up eff = expr1 opUpEff eff e1 e2
     expr1Dn eff = expr1 opDnEff eff e1 e2
@@ -294,16 +307,17 @@ equalRoundingUpDnBin1Var2 expr1 expr2 pCompareEff opUpEff opDnEff
 equalRoundingUpDnBin1Var3 :: 
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp, Show eiOp, 
-     Show t) =>
+     Show t, HasLegalValues t) =>
+    String ->
     (Expr1Op3Eff eiOp t) -> 
     (Expr1Op3Eff eiOp t) -> 
     (PRelEff eiRel t) -> 
     (OpEff eiOp t) -> (OpEff eiOp t) -> 
     (eiRel, eiOp) -> 
     t -> t -> t -> Bool
-equalRoundingUpDnBin1Var3 expr1 expr2 pCompareEff opUpEff opDnEff 
+equalRoundingUpDnBin1Var3 contextDescription expr1 expr2 pCompareEff opUpEff opDnEff 
         initEffort e1 e2 e3 =
-    equalRoundingUpDn expr1Up expr1Dn expr2Up expr2Dn pCompareEff initEffort
+    equalRoundingUpDn contextDescription expr1Up expr1Dn expr2Up expr2Dn pCompareEff initEffort
     where
     expr1Up eff = expr1 opUpEff eff e1 e2 e3
     expr1Dn eff = expr1 opDnEff eff e1 e2 e3
@@ -314,7 +328,8 @@ equalRoundingUpDnBin2Var3 ::
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp1, Show eiOp1, 
      EffortIndicator eiOp2, Show eiOp2,
-     Show t) =>
+     Show t, HasLegalValues t) =>
+    String ->
     (Expr2Op3Eff eiOp1 eiOp2 t) -> 
     (Expr2Op3Eff eiOp1 eiOp2 t) -> 
     (PRelEff eiRel t) -> 
@@ -322,11 +337,11 @@ equalRoundingUpDnBin2Var3 ::
     (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
     (eiRel, (eiOp1, eiOp2)) -> 
     t -> t -> t -> Bool
-equalRoundingUpDnBin2Var3 expr1 expr2 pCompareEff 
+equalRoundingUpDnBin2Var3 contextDescription expr1 expr2 pCompareEff 
         op1UpEff op2UpEff 
         op1DnEff op2DnEff 
         initEffort e1 e2 e3 =
-    equalRoundingUpDn expr1Up expr1Dn expr2Up expr2Dn pCompareEff initEffort
+    equalRoundingUpDn contextDescription expr1Up expr1Dn expr2Up expr2Dn pCompareEff initEffort
     where
     expr1Up eff = expr1 op1UpEff op2UpEff eff e1 e2 e3
     expr1Dn eff = expr1 op1DnEff op2DnEff eff e1 e2 e3
@@ -337,7 +352,8 @@ thinEqualConsLeqRoundingUpDnImprovementBin2Var3 ::
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp1, Show eiOp1, 
      EffortIndicator eiOp2, Show eiOp2,
-     HasAntiConsistency t, Show t) =>
+     HasAntiConsistency t, Show t, HasLegalValues t) =>
+    String ->
     (Expr2Op3Eff eiOp1 eiOp2 t) -> 
     (Expr2Op3Eff eiOp1 eiOp2 t) -> 
     (PRelEff eiRel t) -> 
@@ -347,13 +363,15 @@ thinEqualConsLeqRoundingUpDnImprovementBin2Var3 ::
     (eiRel, (eiOp1, eiOp2)) -> 
     t -> t -> t -> Bool
 thinEqualConsLeqRoundingUpDnImprovementBin2Var3
+        contextDescription
         expr1 expr2 pCompareEff 
         op1UpEff op2UpEff 
         op1DnEff op2DnEff 
         effortConsistency
         initEffort 
         e1 e2 e3 =
-    thinEqualConsLeqRoundingUpDnImprovement 
+    thinEqualConsLeqRoundingUpDnImprovement
+        contextDescription
         [e1,e2,e3] expr1Up expr1Dn expr2Up expr2Dn 
         pCompareEff
         effortConsistency 
@@ -370,7 +388,8 @@ equalRoundingUpDnBin2Var2 ::
     (EffortIndicator eiRel, Show eiRel, 
      EffortIndicator eiOp1, Show eiOp1, 
      EffortIndicator eiOp2, Show eiOp2,
-     Show t) =>
+     Show t, HasLegalValues t) =>
+    String ->
     (Expr2Op2Eff eiOp1 eiOp2 t) -> 
     (Expr2Op2Eff eiOp1 eiOp2 t) -> 
     (PRelEff eiRel t) -> 
@@ -378,11 +397,11 @@ equalRoundingUpDnBin2Var2 ::
     (OpEff eiOp1 t) -> (OpEff eiOp2 t) -> 
     (eiRel, (eiOp1, eiOp2)) -> 
     t -> t -> Bool
-equalRoundingUpDnBin2Var2 expr1 expr2 pCompareEff 
+equalRoundingUpDnBin2Var2 contextDescription expr1 expr2 pCompareEff 
         op1UpEff op2UpEff 
         op1DnEff op2DnEff 
         initEffort e1 e2 =
-    equalRoundingUpDn expr1Up expr1Dn expr2Up expr2Dn pCompareEff initEffort
+    equalRoundingUpDn contextDescription expr1Up expr1Dn expr2Up expr2Dn pCompareEff initEffort
     where
     expr1Up eff = expr1 op1UpEff op2UpEff eff e1 e2
     expr1Dn eff = expr1 op1DnEff op2DnEff eff e1 e2
@@ -392,7 +411,8 @@ equalRoundingUpDnBin2Var2 expr1 expr2 pCompareEff
 thinEqualConsLeqRoundingUpDnImprovement :: 
     (EffortIndicator eiRel, EffortIndicator eiOp,
      Show eiOp, Show eiRel,
-     HasAntiConsistency t, Show t) =>
+     HasAntiConsistency t, Show t, HasLegalValues t) =>
+    String ->
     [t] -> 
     (eiOp -> t) {-^ left hand side expression UP -} -> 
     (eiOp -> t) {-^ left hand side expression DN -} -> 
@@ -402,6 +422,7 @@ thinEqualConsLeqRoundingUpDnImprovement ::
     (ConsistencyEffortIndicator t) -> 
     (eiRel, eiOp) -> Bool
 thinEqualConsLeqRoundingUpDnImprovement
+        contextDescription
         parameters
         expr1Up expr1Dn expr2Up expr2Dn
         pCompareEff
@@ -419,7 +440,7 @@ thinEqualConsLeqRoundingUpDnImprovement
     allAntiConsistent =
         and $ map isAntiConsistent parameters
     okIfThin =
-            (equalRoundingUpDn
+            (equalRoundingUpDn contextDescription
                 expr1Up expr1Dn expr2Up expr2Dn 
                 pCompareEff initEffort)
     okIfConsistent =
@@ -439,7 +460,8 @@ thinEqualConsLeqRoundingUpDnImprovement
 equalRoundingUpDn :: 
     (EffortIndicator eiRel, EffortIndicator eiOp,
      Show eiOp, Show eiRel,
-     Show t) =>
+     Show t, HasLegalValues t) =>
+    String ->
     (eiOp -> t) {-^ left hand side expression UP -} -> 
     (eiOp -> t) {-^ left hand side expression DN -} -> 
     (eiOp -> t) {-^ right hand side expression UP -} -> 
@@ -447,6 +469,7 @@ equalRoundingUpDn ::
     (PRelEff eiRel t) -> 
     (eiRel, eiOp) -> Bool
 equalRoundingUpDn 
+        contextDescription
         expr1Up expr1Dn expr2Up expr2Dn 
         pCompareEff initEffort =
 --    unsafePrint 
@@ -458,9 +481,9 @@ equalRoundingUpDn
 --    $
     case evalCatchDomViolationExceptions "checking a property" result of
             Left e -> True
---                unsafePrint ("leqRoundingUpDnImprovement: " ++ show e) True 
-            -- ignore tests during which a domain violation exception arises 
+                -- ignore tests during which a domain violation exception arises 
             Right res -> res
+                -- throw an exception if the result is an illegal values (eg NaN) 
     where
     result = 
         (andUnsafeReportFirstFalse relevantSuccesses)  
@@ -486,17 +509,19 @@ equalRoundingUpDn
             (defined (val1Dn <=? val2Up) ===> (val1Dn <= val2Up))
             &&
             (defined (val2Dn <=? val1Up) ===> (val2Dn <= val1Up))
-        val1Dn = expr1Dn effortOp
-        val1Up = expr1Up effortOp
-        val2Dn = expr2Dn effortOp
-        val2Up = expr2Up effortOp
+        val1Dn = check $ expr1Dn effortOp
+        val1Up = check $ expr1Up effortOp
+        val2Dn = check $ expr2Dn effortOp
+        val2Up = check $ expr2Up effortOp
+        check = detectIllegalValues contextDescription
         (<=) = assumeTotal2 (<=?)
         (<=?) = pCompareEff effortRel
 
 roundedInPlace1ConsistentWithPure ::
     (EffortIndicator eiRel, EffortIndicator eiOp,
      Show eiOp, Show eiRel,
-     CanBeMutable t, Show t) =>
+     CanBeMutable t, Show t, HasLegalValues t) =>
+    String ->
     (forall s. eiOp -> OpMutable1 t s) {-^ left hand side expression UP -} -> 
     (forall s. eiOp -> OpMutable1 t s) {-^ left hand side expression DN -} -> 
     (eiOp -> UnaryOp t) {-^ right hand side expression UP -} -> 
@@ -506,11 +531,13 @@ roundedInPlace1ConsistentWithPure ::
     t ->
     Bool
 roundedInPlace1ConsistentWithPure
+        contextDescription
         opUpInPlaceEff opDnInPlaceEff opUpEff opDnEff 
         pLeqEff initEffort
         e
         =
     equalRoundingUpDn
+        ("in-place" ++ contextDescription ++ " consistent with pure")
         expr1Up expr1Dn expr2Up expr2Dn 
         pLeqEff initEffort
     where
@@ -524,7 +551,8 @@ roundedInPlace1ConsistentWithPure
 roundedInPlace2ConsistentWithPure ::
     (EffortIndicator eiRel, EffortIndicator eiOp,
      Show eiOp, Show eiRel,
-     CanBeMutable t, Show t) =>
+     CanBeMutable t, Show t, HasLegalValues t) =>
+    String ->
     (forall s. eiOp -> OpMutable2 t s) {-^ left hand side expression UP -} -> 
     (forall s. eiOp -> OpMutable2 t s) {-^ left hand side expression DN -} -> 
     (eiOp -> Op t) {-^ right hand side expression UP -} -> 
@@ -534,11 +562,13 @@ roundedInPlace2ConsistentWithPure ::
     t -> t ->
     Bool
 roundedInPlace2ConsistentWithPure
+        contextDescription
         opUpInPlaceEff opDnInPlaceEff opUpEff opDnEff 
         pLeqEff initEffort
         e1 e2
         =
     equalRoundingUpDn
+        ("in-place" ++ contextDescription ++ " consistent with pure")
         expr1Up expr1Dn expr2Up expr2Dn 
         pLeqEff initEffort
     where
