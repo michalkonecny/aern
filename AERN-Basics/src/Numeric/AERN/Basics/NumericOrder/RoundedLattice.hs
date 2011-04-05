@@ -51,18 +51,6 @@ class RoundedLatticeEffort t where
     type MinmaxEffortIndicator t
     minmaxDefaultEffort :: t -> MinmaxEffortIndicator t
 
-propRoundedLatticeIllegalArgException :: 
-    (RoundedLattice t) => 
-    t -> 
-    (MinmaxEffortIndicator t) -> 
-    (UniformlyOrderedSingleton t) -> 
-    Bool
-propRoundedLatticeIllegalArgException illegalArg effort 
-        (UniformlyOrderedSingleton d) =
-    and $ map raisesAERNException $ 
-        concat [[op d illegalArg, op illegalArg d] 
-                    | op <- [maxUpEff effort, maxDnEff effort, minUpEff effort, minDnEff effort]] 
-
 propRoundedLatticeComparisonCompatible :: 
     (PartialComparison t, RoundedLattice t) => 
     t -> 
@@ -185,15 +173,9 @@ testsRoundedLatticeDistributive ::
      ArbitraryOrderedTuple t,
      Eq t
      ) => 
-    (String, t) -> (Maybe (String, t)) -> Test
-testsRoundedLatticeDistributive (name, sample) maybeIllegalArg =
+    (String, t) -> Test
+testsRoundedLatticeDistributive (name, sample) =
     testGroup (name ++ " (min,max) rounded") $
-        (case maybeIllegalArg of 
-            Nothing -> []
-            Just (illegalArgName, illegalArg) -> 
-                [testProperty (illegalArgName ++ " exception") 
-                              (propRoundedLatticeIllegalArgException illegalArg)]) 
-        ++
         [
          testProperty "Comparison compatible" (propRoundedLatticeComparisonCompatible sample)
         ,
