@@ -92,8 +92,8 @@ instance RoundedReal M.MPFR where
 instance HasLegalValues M.MPFR where
     isLegal d 
         | d == 0/0 = False
-        | d == 1/0 = False
-        | d == -1/0 = False
+--        | d == 1/0 = False
+--        | d == -1/0 = False
         | otherwise = True
 
     
