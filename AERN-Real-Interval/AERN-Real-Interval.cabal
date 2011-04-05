@@ -56,8 +56,9 @@ Library
     Numeric.AERN.RealArithmetic.Interval.Conversion
     Numeric.AERN.RealArithmetic.Interval.FieldOps
     Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
-    Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps, 
+    Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps 
     Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps
+    Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps
     Numeric.AERN.RealArithmetic.Interval.SpecialConst
     Numeric.AERN.RealArithmetic.Interval.Floating
     Numeric.AERN.RealArithmetic.Interval.ElementaryDirect.Sqrt
