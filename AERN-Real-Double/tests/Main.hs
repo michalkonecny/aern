@@ -84,7 +84,10 @@ testsDI =
        ArithInOut.testsInOutFieldOpsInPlace ("DI", sampleDI),
        ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Integer", sampleI),
        ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Rational", sampleR),
-       ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Double", sampleD)
+       ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Double", sampleD),
+       ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Integer", sampleI),
+       ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Rational", sampleR),
+       ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Double", sampleD)
        ,
        ArithInOut.testsInOutExp ("DI", sampleDI),
        ArithInOut.testsInOutSqrt ("DI", sampleDI) unPositiveDI

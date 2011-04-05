@@ -19,6 +19,7 @@
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.MixedFieldOps where
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.FieldOps
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
@@ -195,6 +196,30 @@ mixedDivInInPlaceEffFromInPlace sample =
 mixedDivOutInPlaceEffFromInPlace sample = 
     pureToMutableNonmutEff $ mixedDivOutInPlaceEff sample
 
+mixedDivInInPlaceEffByConversion ::
+    (Convertible tn t, RoundedDivideInPlace t) =>
+    t ->
+    (DivEffortIndicator t, ConvertEffortIndicator tn t) ->
+    OpMutableNonmut t tn s
+mixedDivInInPlaceEffByConversion sample (effDiv, effConv) rM dM n =
+    do
+    let nConverted = convertInEff effConv n
+    let _ = [nConverted, sample]
+    nM <- unsafeMakeMutable nConverted
+    divInInPlaceEff sample effDiv rM dM nM
+
+mixedDivOutInPlaceEffByConversion ::
+    (Convertible tn t, RoundedDivideInPlace t) =>
+    t ->
+    (DivEffortIndicator t, ConvertEffortIndicator tn t) ->
+    OpMutableNonmut t tn s
+mixedDivOutInPlaceEffByConversion sample (effDiv, effConv) rM dM n =
+    do
+    let nConverted = convertOutEff effConv n
+    let _ = [nConverted, sample]
+    nM <- unsafeMakeMutable nConverted
+    divOutInPlaceEff sample effDiv rM dM nM
+
 {- properties of mixed division -}
 
 propMixedDivInPlaceEqualsConvert ::
@@ -236,23 +261,23 @@ propMixedDivInPlaceEqualsConvert sample1 sample2
                     (Just False, Just False) -> True
                     _ -> False && (null [d, nOut, nIn]) -- type of e2Up, e2Dn...
     expr1In (effMDiv,_,_) =
-        let (>*<|=) dR = mixedDivInInPlaceEff d effMDiv dR dR in
+        let (>/<|=) dR = mixedDivInInPlaceEff d effMDiv dR dR in
         runST $ 
             do
             dR <- makeMutable d
-            dR >*<|= n
+            dR >/<|= n
             unsafeReadMutable dR
     expr1Out (effMDiv,_,_) =
-        let (<*>|=) dR = mixedDivOutInPlaceEff d effMDiv dR dR in
+        let (</>|=) dR = mixedDivOutInPlaceEff d effMDiv dR dR in
         runST $ 
             do
             dR <- makeMutable d
-            dR <*>|= n
+            dR </>|= n
             unsafeReadMutable dR
     expr2In (_,effDiv,effConv) =
-        let (>*<) = divInEff effDiv in (convertInEff effConv n) >*< d
+        let (>/<) = divInEff effDiv in d >/< (convertInEff effConv n)
     expr2Out (_,effDiv,effConv) =
-        let (<*>) = divOutEff effDiv in (convertOutEff effConv n) <*> d
+        let (</>) = divOutEff effDiv in d </> (convertOutEff effConv n)
     
 testsInOutMixedFieldOpsInPlace (name, sample) (nameN, sampleN) =
     testGroup (name ++ " with " ++ nameN ++ ": in-place mixed up/dn rounded ops") $
