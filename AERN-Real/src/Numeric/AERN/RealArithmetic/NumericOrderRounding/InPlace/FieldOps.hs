@@ -39,6 +39,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Exception (HasLegalValues)
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
@@ -65,7 +66,7 @@ addDnInPlaceEffFromInPlace sample = mutable2EffToPure $ addDnInPlaceEff sample
 propUpDnAddInPlace ::
     (NumOrd.PartialComparison t, Neg t, 
      RoundedAddInPlace t, RoundedAdd t, 
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -77,7 +78,7 @@ propUpDnAddInPlace ::
     (NumOrd.UniformlyOrderedPair t) -> 
     Bool
 propUpDnAddInPlace sample initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
-    equalRoundingUpDn
+    equalRoundingUpDn "in-place rounded addition"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -110,7 +111,7 @@ propUpDnSubtrInPlace ::
     (NumOrd.PartialComparison t, 
      RoundedSubtrInPlace t, RoundedSubtr t, 
      Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -122,7 +123,7 @@ propUpDnSubtrInPlace ::
     (NumOrd.UniformlyOrderedPair t) ->
     Bool
 propUpDnSubtrInPlace sample initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
-    equalRoundingUpDn
+    equalRoundingUpDn "in-place rounded subtraction"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -152,7 +153,7 @@ propUpDnAbsInPlace ::
     (NumOrd.PartialComparison t, 
      RoundedAbsInPlace t, RoundedAbs t,
      Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -164,7 +165,7 @@ propUpDnAbsInPlace ::
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Bool
 propUpDnAbsInPlace sample initEffort (NumOrd.UniformlyOrderedSingleton e1) =
-    equalRoundingUpDn
+    equalRoundingUpDn "in-place rounded abs"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -189,7 +190,7 @@ propUpDnMultInPlace ::
     (NumOrd.PartialComparison t, 
      RoundedMultiplyInPlace t, RoundedMultiply t,
      Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -201,7 +202,7 @@ propUpDnMultInPlace ::
     (NumOrd.UniformlyOrderedPair t) ->
     Bool
 propUpDnMultInPlace sample initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
-    equalRoundingUpDn
+    equalRoundingUpDn "in-place rounded multiplication"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -276,7 +277,7 @@ propUpDnPowerToNonnegInPlace ::
      RoundedPowerToNonnegIntInPlace t, 
      RoundedPowerToNonnegInt t, 
      Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (PowerToNonnegIntEffortIndicator t),
      EffortIndicator (PowerToNonnegIntEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -289,7 +290,7 @@ propUpDnPowerToNonnegInPlace ::
     Int -> Bool
 propUpDnPowerToNonnegInPlace sample initEffort 
         (NumOrd.UniformlyOrderedSingleton e1) n =
-    equalRoundingUpDn
+    equalRoundingUpDn "in-place rounded non-neg integer power"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -343,7 +344,7 @@ propUpDnDivInPlace ::
     (NumOrd.PartialComparison t, 
      RoundedDivideInPlace t, RoundedDivide t,
      Neg t,
-     Show t, HasZero t,
+     Show t, HasZero t, HasLegalValues t,
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -358,7 +359,7 @@ propUpDnDivInPlace sample initEffort@(effComp, _) (NumOrd.UniformlyOrderedPair (
     let ?pCompareEffort = effComp in
     case e2 ==? zero of
         Just False ->
-            equalRoundingUpDn
+            equalRoundingUpDn "in-place rounded division"
                 expr1Up expr1Dn expr2Up expr2Dn 
                 NumOrd.pLeqEff initEffort
         _ -> True

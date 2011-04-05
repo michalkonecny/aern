@@ -44,6 +44,7 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Exception (HasLegalValues)
 import Numeric.AERN.Basics.Consistency
 
 import Numeric.AERN.RealArithmetic.Laws
@@ -70,7 +71,7 @@ class (RoundedAddEffort t) => RoundedAdd t where
 
 propInOutAddZero ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -86,7 +87,7 @@ propInOutAddZero _ effort (RefOrd.UniformlyOrderedSingleton e) =
 
 propInOutAddCommutative ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -102,7 +103,7 @@ propInOutAddCommutative _ effort (RefOrd.UniformlyOrderedPair (e1,e2)) =
 
 propInOutAddAssociative ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -117,7 +118,8 @@ propInOutAddAssociative _ effort (RefOrd.UniformlyOrderedTriple (e1,e2,e3)) =
     roundedAssociative RefOrd.pLeqEff addInEff addOutEff effort e1 e2 e3
 
 propInOutAddMonotone ::
-    (RefOrd.PartialComparison t, RoundedAdd t, Show t,
+    (RefOrd.PartialComparison t, RoundedAdd t, 
+     Show t, HasLegalValues t,
      RefOrd.ArbitraryOrderedTuple t,  
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
@@ -130,7 +132,7 @@ propInOutAddMonotone ::
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 propInOutAddMonotone _ =
-    roundedRefinementMonotone2 addInEff addOutEff
+    roundedRefinementMonotone2 "addition" addInEff addOutEff
 
 testsInOutAdd (name, sample) =
     testGroup (name ++ " >+< <+>") $
@@ -153,7 +155,7 @@ class (RoundedAdd t, Neg t) => RoundedSubtr t where
 
 propInOutSubtrElim ::
     (RefOrd.PartialComparison t, RoundedSubtr t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -169,7 +171,7 @@ propInOutSubtrElim _ effort (RefOrd.UniformlyOrderedSingleton e) =
 
 propInOutSubtrNegAdd ::
     (RefOrd.PartialComparison t, RoundedSubtr t, Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -181,7 +183,7 @@ propInOutSubtrNegAdd ::
     (RefOrd.UniformlyOrderedPair t) -> 
     Bool
 propInOutSubtrNegAdd _ initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
-    equalRoundingUpDn
+    equalRoundingUpDn "a+b=a-(-b)"
         expr1Up expr1Dn expr2Up expr2Dn 
         RefOrd.pLeqEff initEffort
     where
@@ -195,7 +197,8 @@ propInOutSubtrNegAdd _ initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
         let (<+>) = addOutEff eff in e1 <+> e2
 
 propInOutSubtrMonotone ::
-    (RefOrd.PartialComparison t, RoundedSubtr t, Show t,
+    (RefOrd.PartialComparison t, RoundedSubtr t, 
+     Show t, HasLegalValues t,
      RefOrd.ArbitraryOrderedTuple t,  
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
@@ -208,7 +211,7 @@ propInOutSubtrMonotone ::
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 propInOutSubtrMonotone _ =
-    roundedRefinementMonotone2 subtrInEff subtrOutEff
+    roundedRefinementMonotone2 "subtraction" subtrInEff subtrOutEff
 
 testsInOutSubtr (name, sample) =
     testGroup (name ++ " >-< <->") $
@@ -265,7 +268,7 @@ absInUsingCompMax (effortComp, effortMinmax) a =
 
 propInOutAbsNegSymmetric ::
     (RefOrd.PartialComparison t, RoundedAbs t, HasZero t, Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -281,7 +284,7 @@ propInOutAbsNegSymmetric _ effort (RefOrd.UniformlyOrderedSingleton e) =
 
 propInOutAbsIdempotent ::
     (RefOrd.PartialComparison t, RoundedAbs t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -298,7 +301,7 @@ propInOutAbsIdempotent _ effort (RefOrd.UniformlyOrderedSingleton e) =
 propInOutAbsMonotone ::
     (RefOrd.PartialComparison t, RoundedAbs t,
      RefOrd.ArbitraryOrderedTuple t,  
-     Show t,
+     Show t, HasLegalValues t,
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -310,7 +313,7 @@ propInOutAbsMonotone ::
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 propInOutAbsMonotone _ =
-    roundedRefinementMonotone1 absInEff absOutEff
+    roundedRefinementMonotone1 "abs" absInEff absOutEff
 
 testsInOutAbs (name, sample) =
     testGroup (name ++ " in/out rounded abs") $
@@ -332,7 +335,8 @@ class (RoundedMultiplyEffort t) => RoundedMultiply t where
     multOutEff :: MultEffortIndicator t -> t -> t -> t
 
 propInOutMultMonotone ::
-    (RefOrd.PartialComparison t, RoundedMultiply t, Show t,
+    (RefOrd.PartialComparison t, RoundedMultiply t, 
+     Show t, HasLegalValues t,
      RefOrd.ArbitraryOrderedTuple t,  
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
@@ -345,11 +349,11 @@ propInOutMultMonotone ::
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 propInOutMultMonotone _ =
-    roundedRefinementMonotone2 multInEff multOutEff
+    roundedRefinementMonotone2 "multiplication" multInEff multOutEff
 
 propInOutMultOne ::
     (RefOrd.PartialComparison t, RoundedMultiply t, HasOne t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -365,7 +369,7 @@ propInOutMultOne _ effort (RefOrd.UniformlyOrderedSingleton e) =
 
 propInOutMultCommutative ::
     (RefOrd.PartialComparison t, RoundedMultiply t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -382,7 +386,7 @@ propInOutMultCommutative _ effort (RefOrd.UniformlyOrderedPair (e1,e2)) =
 propInOutMultAssociative ::
     (RefOrd.PartialComparison t, 
      RoundedMultiply t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -399,7 +403,7 @@ propInOutMultAssociative _ effort (RefOrd.UniformlyOrderedTriple (e1,e2,e3)) =
 propInOutMultDistributesOverAdd ::
     (RefOrd.PartialComparison t,
      RoundedMultiply t,  RoundedAdd t,
-     HasAntiConsistency t, Show t,
+     HasAntiConsistency t, Show t, HasLegalValues t,
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (AddEffortIndicator t),
@@ -476,7 +480,7 @@ powerToNonnegIntOutEffFromMult effMult e n =
 propInOutPowerMonotone ::
     (RefOrd.PartialComparison t, RoundedPowerToNonnegInt t,
      RefOrd.ArbitraryOrderedTuple t,  
-     Show t,
+     Show t, HasLegalValues t,
      Show (PowerToNonnegIntEffortIndicator t),
      EffortIndicator (PowerToNonnegIntEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -489,7 +493,7 @@ propInOutPowerMonotone ::
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 propInOutPowerMonotone _ nR =
-    roundedRefinementMonotone1 powerNInEff powerNOutEff
+    roundedRefinementMonotone1 "non-neg integer power" powerNInEff powerNOutEff
     where
     n = nR `mod` 10
     powerNInEff eff x = powerToNonnegIntInEff eff x n
@@ -499,7 +503,7 @@ propInOutPowerMonotone _ nR =
 propInOutPowerSumExponents ::
     (RefOrd.PartialComparison t,
      RoundedPowerToNonnegInt t, RoundedMultiply t, 
-     HasOne t, HasAntiConsistency t, Show t,
+     HasOne t, HasAntiConsistency t, Show t, HasLegalValues t,
      Show (PowerToNonnegIntEffortIndicator t),
      EffortIndicator (PowerToNonnegIntEffortIndicator t),
      Show (MultEffortIndicator t),
@@ -518,7 +522,7 @@ propInOutPowerSumExponents ::
     Int -> Int -> Bool
 propInOutPowerSumExponents _ effortConsistency initEffort 
         (RefOrd.UniformlyOrderedSingleton a) nR mR =
-    thinEqualConsLeqRoundingUpDnImprovement [a]
+    thinEqualConsLeqRoundingUpDnImprovement "a^n * a^m ⊑/⊒ a^(n+m)" [a]
         expr1Up expr1Dn expr2Up expr2Dn 
         RefOrd.pLeqEff
         effortConsistency 
@@ -565,7 +569,8 @@ class (HasOne t, RoundedDivideEffort t) => RoundedDivide t where
 
 
 propInOutDivMonotone ::
-    (RefOrd.PartialComparison t, RoundedDivide t, Show t,
+    (RefOrd.PartialComparison t, RoundedDivide t, 
+     Show t, HasLegalValues t,
      RefOrd.ArbitraryOrderedTuple t,  
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
@@ -578,11 +583,11 @@ propInOutDivMonotone ::
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 propInOutDivMonotone _ =
-    roundedRefinementMonotone2 divInEff divOutEff
+    roundedRefinementMonotone2 "division" divInEff divOutEff
 
 propInOutDivElim ::
     (RefOrd.PartialComparison t, RoundedDivide t, HasOne t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -608,7 +613,7 @@ propInOutDivElim _ efforts2@(effComp, _) (RefOrd.UniformlyOrderedSingleton a) =
 propInOutDivRecipMult ::
     (RefOrd.PartialComparison t,
      RoundedMultiply t, RoundedDivide t, HasOne t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (DivEffortIndicator t),
@@ -625,7 +630,7 @@ propInOutDivRecipMult _ initEffort@(effComp,_) (RefOrd.UniformlyOrderedPair (e1,
     let ?pCompareEffort = effComp in
     case (e2 ⊑? zero, zero ⊑? e2) of
         (Just False, Just False) ->
-            equalRoundingUpDnBin2Var2 
+            equalRoundingUpDnBin2Var2 "a/b=a*(1/b)"
                 expr1 expr2 RefOrd.pLeqEff
                 multInEff divInEff
                 multOutEff divOutEff
@@ -643,7 +648,7 @@ propInOutDivRecipMult _ initEffort@(effComp,_) (RefOrd.UniformlyOrderedPair (e1,
         (/) = op2Eff effort2
 
 testsInOutDiv (name, sample) =
-    testGroup (name ++ " /. /^") $
+    testGroup (name ++ " </> >/<") $
         [
 --            testProperty "a/a=1" (propInOutDivElim sample)
 --            ,

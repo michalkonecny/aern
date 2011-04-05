@@ -54,7 +54,7 @@ class (RoundedExponentiationEffort t) => RoundedExponentiation t where
 propExpOfNegRecip ::
     (RefOrd.PartialComparison t,
      RoundedExponentiation t, RoundedMultiply t, Neg t, HasOne t,
-     Show t, HasAntiConsistency t,
+     Show t, HasAntiConsistency t, HasLegalValues t,
      Show (ExpEffortIndicator t),
      EffortIndicator (ExpEffortIndicator t),
      Show (MultEffortIndicator t),
@@ -70,7 +70,7 @@ propExpOfNegRecip ::
     Bool
 propExpOfNegRecip _ effortConsistency initEffort 
         (RefOrd.UniformlyOrderedSingleton e1) =
-    thinEqualConsLeqRoundingUpDnImprovement [e1]
+    thinEqualConsLeqRoundingUpDnImprovement "e^a * e^(-a) ⊑/⊒ 1" [e1]
         expr1In expr1Out expr2In expr2Out 
         RefOrd.pLeqEff
         effortConsistency 
@@ -96,7 +96,7 @@ propExpOfNegRecip _ effortConsistency initEffort
 propExpOfAddToMult ::
     (RefOrd.PartialComparison t,
      RoundedExponentiation t, RoundedMultiply t,  RoundedAdd t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (ExpEffortIndicator t),
      EffortIndicator (ExpEffortIndicator t),
      Show (MultEffortIndicator t),
@@ -112,7 +112,7 @@ propExpOfAddToMult ::
     (RefOrd.UniformlyOrderedPair t) -> 
     Bool
 propExpOfAddToMult _ initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
-    equalRoundingUpDn
+    equalRoundingUpDn "e^(a + b) = e^a * e^b"
         expr1In expr1Out expr2In expr2Out 
         RefOrd.pLeqEff initEffort
     where
@@ -166,7 +166,7 @@ propSqrtSquare ::
      RoundedSquareRoot t, RoundedMultiply t, HasZero t,
      UpDnConversion.Convertible t Double,
      RoundedMixedAdd t Double,
-     Show t,
+     Show t, HasLegalValues t,
 --     ShowInternals t,
      Show (UpDnConversion.ConvertEffortIndicator t Double),
      EffortIndicator (UpDnConversion.ConvertEffortIndicator t Double),
@@ -189,7 +189,7 @@ propSqrtSquare ::
       RefOrd.PartialCompareEffortIndicator t)) -> 
     tInArea -> Bool
 propSqrtSquare _ fromArea (effortToDbl, effortAddDbl) initEffort e1InArea =
-    equalRoundingUpDn
+    equalRoundingUpDn "sqrt(e)^2 = e"
         expr1In expr1Out expr2In expr2Out 
         RefOrd.pLeqEff initEffort
     where

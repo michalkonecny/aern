@@ -46,6 +46,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Exception (HasLegalValues)
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
@@ -67,7 +68,7 @@ class (RoundedAddEffort t) => RoundedAdd t where
 
 propUpDnAddZero ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -83,7 +84,7 @@ propUpDnAddZero _ effort (NumOrd.UniformlyOrderedSingleton e) =
 
 propUpDnAddCommutative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -99,7 +100,7 @@ propUpDnAddCommutative _ effort (NumOrd.UniformlyOrderedPair (e1,e2)) =
        
 propUpDnAddAssociative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -131,7 +132,7 @@ class (RoundedAdd t, Neg t) => RoundedSubtr t where
 
 propUpDnSubtrElim ::
     (NumOrd.PartialComparison t, RoundedSubtr t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -147,7 +148,7 @@ propUpDnSubtrElim _ effort (NumOrd.UniformlyOrderedSingleton e) =
 
 propUpDnSubtrNegAdd ::
     (NumOrd.PartialComparison t, RoundedSubtr t, Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AddEffortIndicator t),
      EffortIndicator (AddEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -159,7 +160,7 @@ propUpDnSubtrNegAdd ::
     (NumOrd.UniformlyOrderedPair t) -> 
     Bool
 propUpDnSubtrNegAdd _ initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
-    equalRoundingUpDn
+    equalRoundingUpDn "a+b=a-(-b)"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -225,7 +226,7 @@ absDnUsingCompMax (effortComp, effortMinmax) a =
 
 propUpDnAbsNegSymmetric ::
     (NumOrd.PartialComparison t, RoundedAbs t, HasZero t,
-     Show t, Neg t,
+     Show t, Neg t, HasLegalValues t,
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -241,7 +242,7 @@ propUpDnAbsNegSymmetric _ effort (NumOrd.UniformlyOrderedSingleton e) =
 
 propUpDnAbsIdempotent ::
     (NumOrd.PartialComparison t, RoundedAbs t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (AbsEffortIndicator t),
      EffortIndicator (AbsEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -274,7 +275,7 @@ class (RoundedMultiplyEffort t) => RoundedMultiply t where
 
 propUpDnMultOne ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasOne t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -290,7 +291,7 @@ propUpDnMultOne _ effort (NumOrd.UniformlyOrderedSingleton e) =
 
 propUpDnMultCommutative ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -306,7 +307,7 @@ propUpDnMultCommutative _ effort (NumOrd.UniformlyOrderedPair (e1,e2)) =
        
 propUpDnMultAssociative ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t, 
-     Show t,
+     Show t, HasLegalValues t,
      RoundedMultiply t, HasZero t,
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
@@ -321,7 +322,7 @@ propUpDnMultAssociative ::
     (NumOrd.UniformlyOrderedTriple t) -> 
     Bool
 propUpDnMultAssociative _ initEffort (NumOrd.UniformlyOrderedTriple (e1, e2, e3)) =
-    equalRoundingUpDn
+    equalRoundingUpDn "associativity"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -348,7 +349,7 @@ propUpDnMultAssociative _ initEffort (NumOrd.UniformlyOrderedTriple (e1, e2, e3)
 
 propUpDnMultDistributesOverAdd ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
-     Show t,
+     Show t, HasLegalValues t,
      RoundedMultiply t,  RoundedAdd t,
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
@@ -365,7 +366,7 @@ propUpDnMultDistributesOverAdd ::
     (NumOrd.UniformlyOrderedTriple t) -> 
     Bool
 propUpDnMultDistributesOverAdd _ initEffort (NumOrd.UniformlyOrderedTriple (e1, e2, e3)) =
-    equalRoundingUpDn
+    equalRoundingUpDn "distributivity"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -528,7 +529,7 @@ propUpDnPowerSumExponents ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
      RoundedPowerToNonnegInt t, RoundedMultiply t, 
      HasOne t, HasZero t, Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (PowerToNonnegIntEffortIndicator t),
      EffortIndicator (PowerToNonnegIntEffortIndicator t),
      Show (MultEffortIndicator t),
@@ -547,7 +548,7 @@ propUpDnPowerSumExponents ::
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Int -> Int -> Bool
 propUpDnPowerSumExponents _ initEffort (NumOrd.UniformlyOrderedSingleton a) nR mR =
-    equalRoundingUpDn
+    equalRoundingUpDn "a^(n+m) = a^n * a^m"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -616,7 +617,7 @@ class (HasOne t, RoundedDivideEffort t) => RoundedDivide t where
 
 propUpDnDivElim ::
     (NumOrd.PartialComparison t, RoundedDivide t, HasOne t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (DivEffortIndicator t),
      EffortIndicator (DivEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -641,7 +642,7 @@ propUpDnDivElim _ efforts2@(effComp, _) (NumOrd.UniformlyOrderedSingleton a) =
         
 propUpDnDivRecipMult ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
-     Show t,
+     Show t, HasLegalValues t,
      RoundedMultiply t, RoundedDivide t, HasOne t, HasZero t,
      Show (MultEffortIndicator t),
      EffortIndicator (MultEffortIndicator t),
@@ -661,7 +662,7 @@ propUpDnDivRecipMult _ initEffort@(effComp,_) (NumOrd.UniformlyOrderedPair (e1, 
     let ?pCompareEffort = effComp in
     case e2 ==? zero of
         Just False ->
-            equalRoundingUpDn
+            equalRoundingUpDn "a/b=a*(1/b)"
                 expr1Up expr1Dn expr2Up expr2Dn 
                 NumOrd.pLeqEff initEffort
         _ -> True

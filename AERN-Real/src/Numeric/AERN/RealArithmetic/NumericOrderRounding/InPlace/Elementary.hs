@@ -23,6 +23,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Exception (HasLegalValues)
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
@@ -51,7 +52,7 @@ propUpDnExpInPlace ::
      RoundedExponentiationInPlace t, 
      RoundedExponentiation t, 
      Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (ExpEffortIndicator t),
      EffortIndicator (ExpEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -63,7 +64,7 @@ propUpDnExpInPlace ::
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Bool
 propUpDnExpInPlace sample initEffort (NumOrd.UniformlyOrderedSingleton e1) =
-    equalRoundingUpDn
+    equalRoundingUpDn "in-place rounded exp"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -100,7 +101,7 @@ propUpDnSqrtInPlace ::
      RoundedSquareRootInPlace t, 
      RoundedSquareRoot t, 
      Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (SqrtEffortIndicator t),
      EffortIndicator (SqrtEffortIndicator t),
      Show (NumOrd.PartialCompareEffortIndicator t),
@@ -112,7 +113,7 @@ propUpDnSqrtInPlace ::
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Bool
 propUpDnSqrtInPlace sample initEffort (NumOrd.UniformlyOrderedSingleton e1) =
-    equalRoundingUpDn
+    equalRoundingUpDn "in-place rounded sqrt"
         sqrtr1Up sqrtr1Dn sqrtr2Up sqrtr2Dn 
         NumOrd.pLeqEff initEffort
     where

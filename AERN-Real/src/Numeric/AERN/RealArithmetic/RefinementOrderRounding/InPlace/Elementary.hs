@@ -23,6 +23,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Exception (HasLegalValues)
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
@@ -54,7 +55,7 @@ propInOutExpInPlace ::
      RoundedExponentiationInPlace t, 
      RoundedExponentiation t, 
      Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (ExpEffortIndicator t),
      EffortIndicator (ExpEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -66,7 +67,7 @@ propInOutExpInPlace ::
     (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
 propInOutExpInPlace sample initEffort (RefOrd.UniformlyOrderedSingleton e1) =
-    equalRoundingUpDn
+    equalRoundingUpDn "in-place exp"
         expr1In expr1Out expr2In expr2Out 
         RefOrd.pLeqEff initEffort
     where
@@ -78,7 +79,7 @@ propInOutExpInPlace sample initEffort (RefOrd.UniformlyOrderedSingleton e1) =
     expr2Out eff = expOutEffViaInPlace eff e1
 
 testsInOutExpInPlace (name, sample) =
-    testGroup (name ++ " in place exp") $
+    testGroup (name ++ " in-place exp") $
         [
             testProperty "matches pure" (propInOutExpInPlace sample)
         ]
@@ -104,7 +105,7 @@ propInOutSqrtInPlace ::
      RoundedSquareRootInPlace t, 
      RoundedSquareRoot t, 
      Neg t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (SqrtEffortIndicator t),
      EffortIndicator (SqrtEffortIndicator t),
      Show (RefOrd.PartialCompareEffortIndicator t),
@@ -116,7 +117,7 @@ propInOutSqrtInPlace ::
     (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
 propInOutSqrtInPlace sample initEffort (RefOrd.UniformlyOrderedSingleton e1) =
-    equalRoundingUpDn
+    equalRoundingUpDn "in-place sqrt"
         sqrtr1In sqrtr1Out sqrtr2In sqrtr2Out 
         RefOrd.pLeqEff initEffort
     where
@@ -128,7 +129,7 @@ propInOutSqrtInPlace sample initEffort (RefOrd.UniformlyOrderedSingleton e1) =
     sqrtr2Out eff = sqrtOutEffViaInPlace eff e1
 
 testsInOutSqrtInPlace (name, sample) =
-    testGroup (name ++ " in place sqrt") $
+    testGroup (name ++ " in-place sqrt") $
         [
             testProperty "matches pure" (propInOutSqrtInPlace sample)
         ]

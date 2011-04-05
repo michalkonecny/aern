@@ -47,7 +47,7 @@ class (RoundedExponentiationEffort t) => RoundedExponentiation t where
 propExpOfNegRecip ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
      RoundedExponentiation t, RoundedMultiply t, Neg t, HasOne t,
-     Show t,
+     Show t, HasLegalValues t,
      ShowInternals t,
      Show (ExpEffortIndicator t),
      EffortIndicator (ExpEffortIndicator t),
@@ -62,7 +62,7 @@ propExpOfNegRecip ::
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Bool
 propExpOfNegRecip _ initEffort (NumOrd.UniformlyOrderedSingleton e1) =
-    equalRoundingUpDn
+    equalRoundingUpDn "e^a * e^(-a) = 1"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -103,7 +103,7 @@ propExpOfNegRecip _ initEffort (NumOrd.UniformlyOrderedSingleton e1) =
 propExpOfAddToMult ::
     (NumOrd.PartialComparison t,
      RoundedExponentiation t, RoundedMultiply t,  RoundedAdd t,
-     Show t,
+     Show t, HasLegalValues t,
      Show (ExpEffortIndicator t),
      EffortIndicator (ExpEffortIndicator t),
      Show (MultEffortIndicator t),
@@ -119,7 +119,7 @@ propExpOfAddToMult ::
     (NumOrd.UniformlyOrderedPair t) -> 
     Bool
 propExpOfAddToMult _ initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
-    equalRoundingUpDn
+    equalRoundingUpDn "e^(a + b) = e^a * e^b"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
@@ -155,7 +155,7 @@ class (RoundedSquareRootEffort t) => RoundedSquareRoot t where
 propSqrtSquare ::
     (NumOrd.PartialComparison t, 
      RoundedSquareRoot t, RoundedMultiply t, HasZero t,
-     Show t,
+     Show t, HasLegalValues t,
      ShowInternals t,
      Show (SqrtEffortIndicator t),
      EffortIndicator (SqrtEffortIndicator t),
@@ -171,7 +171,7 @@ propSqrtSquare ::
     Bool
 propSqrtSquare _ initEffort (NumOrd.UniformlyOrderedSingleton e1) =
     case evalCatchDomViolationExceptions "checking sqrt(x)^2 = x"
-            (equalRoundingUpDn
+            (equalRoundingUpDn "sqrt(x)^2 = x"
                 expr1Up expr1Dn expr2Up expr2Dn 
                 NumOrd.pLeqEff initEffort) of
         Left e -> True -- was unlucky with the params
