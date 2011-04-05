@@ -104,8 +104,8 @@ testsRoundedLatticeInPlace ::
      ArbitraryOrderedTuple t,
      Eq t
      ) => 
-    (String, t) -> (Maybe (String, t)) -> Test
-testsRoundedLatticeInPlace (name, sample) maybeIllegalArg =
+    (String, t) -> Test
+testsRoundedLatticeInPlace (name, sample) =
     testGroup (name ++ " (min,max) rounded in-place") $
         [
          testProperty "join in-place=pure"
