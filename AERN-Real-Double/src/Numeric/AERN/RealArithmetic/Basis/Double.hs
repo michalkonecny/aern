@@ -32,7 +32,7 @@ import Numeric.AERN.Basics.Exception
 instance HasLegalValues Double where
     isLegal d 
         | isNaN d = False
-        | isInfinite d = False
+--        | isInfinite d = False
         | otherwise = True
 
 instance RoundedReal Double where
