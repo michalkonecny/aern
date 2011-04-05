@@ -73,18 +73,6 @@ class InnerRoundedLatticeEffort t where
 
 class (OuterRoundedLattice t, InnerRoundedLattice t) => RefinementRoundedLattice t
 
-propRefinementRoundedLatticeIllegalArgException :: 
-    (RefinementRoundedLattice t) => 
-    t -> 
-    (MinmaxInnerEffortIndicator t, MinmaxOuterEffortIndicator t) -> 
-    (UniformlyOrderedSingleton t) -> Bool
-propRefinementRoundedLatticeIllegalArgException illegalArg (effortIn, effortOut) 
-        (UniformlyOrderedSingleton d) =
-    and $ map raisesAERNException $ 
-                concat [[op d illegalArg, op illegalArg d] 
-                          | op <- [maxInnerEff effortIn, maxOuterEff effortOut, 
-                                   minInnerEff effortIn, minOuterEff effortOut]] 
-
 propRefinementRoundedLatticeJoinIdempotent :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
     t ->
@@ -243,9 +231,9 @@ testsRefinementRoundedLattice ::
      Arbitrary (MinmaxOuterEffortIndicator t), Show (MinmaxOuterEffortIndicator t), 
      Eq t 
      ) => 
-    (String, t) -> (Maybe (String, t)) -> Test
-testsRefinementRoundedLattice (name, sample) maybeIllegalArg =
-    mkTestGroupLattice name (testsRefinementRoundedLatticeL sample maybeIllegalArg)
+    (String, t) -> Test
+testsRefinementRoundedLattice (name, sample) =
+    mkTestGroupLattice name (testsRefinementRoundedLatticeL sample)
 
 testsRefinementRoundedLatticeDistributive :: 
     (RefOrd.PartialComparison t,
@@ -259,9 +247,9 @@ testsRefinementRoundedLatticeDistributive ::
      Arbitrary (MinmaxOuterEffortIndicator t), Show (MinmaxOuterEffortIndicator t), 
      Eq t 
      ) => 
-    (String, t) -> (Maybe (String, t)) -> Test
-testsRefinementRoundedLatticeDistributive (name, sample) maybeIllegalArg =
-    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveL sample maybeIllegalArg)
+    (String, t) -> Test
+testsRefinementRoundedLatticeDistributive (name, sample) =
+    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveL sample)
 
 testsRefinementRoundedLatticeDistributiveMonotone :: 
     (RefOrd.PartialComparison t,
@@ -275,17 +263,11 @@ testsRefinementRoundedLatticeDistributiveMonotone ::
      Arbitrary (MinmaxOuterEffortIndicator t), Show (MinmaxOuterEffortIndicator t), 
      Eq t 
      ) => 
-    (String, t) -> (Maybe (String, t)) -> Test
-testsRefinementRoundedLatticeDistributiveMonotone (name, sample) maybeIllegalArg =
-    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveMonotoneL sample maybeIllegalArg)
+    (String, t) -> Test
+testsRefinementRoundedLatticeDistributiveMonotone (name, sample) =
+    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveMonotoneL sample)
 
-testsRefinementRoundedLatticeL sample maybeIllegalArg =    
-        (case maybeIllegalArg of 
-            Nothing -> []
-            Just (illegalArgName, illegalArg) -> 
-                [testProperty (illegalArgName ++ " exception") 
-                              (propRefinementRoundedLatticeIllegalArgException illegalArg)]) 
-        ++
+testsRefinementRoundedLatticeL sample =    
         [
          testProperty "join idempotent" (propRefinementRoundedLatticeJoinIdempotent sample)
         ,
@@ -300,14 +282,14 @@ testsRefinementRoundedLatticeL sample maybeIllegalArg =
          testProperty "meet associative" (propRefinementRoundedLatticeMeetAssocative sample)
         ]
         
-testsRefinementRoundedLatticeDistributiveL sample maybeIllegalArg =
-    testsRefinementRoundedLatticeL sample maybeIllegalArg ++
+testsRefinementRoundedLatticeDistributiveL sample =
+    testsRefinementRoundedLatticeL sample ++
         [    
          testProperty "distributive" (propRefinementRoundedLatticeDistributive sample)
         ]
         
-testsRefinementRoundedLatticeDistributiveMonotoneL sample maybeIllegalArg =
-    testsRefinementRoundedLatticeDistributiveL sample maybeIllegalArg ++
+testsRefinementRoundedLatticeDistributiveMonotoneL sample =
+    testsRefinementRoundedLatticeDistributiveL sample ++
         [    
          testProperty "join monotone" (propRefinementRoundedLatticeJoinMonotone sample)
         ,
