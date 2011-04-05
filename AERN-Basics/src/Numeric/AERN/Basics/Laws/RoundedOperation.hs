@@ -14,11 +14,16 @@
 module Numeric.AERN.Basics.Laws.RoundedOperation where
 
 import Numeric.AERN.Basics.Laws.Utilities
+import Numeric.AERN.Basics.Exception
 
 import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Misc.Bool
 
-partialRoundedIdempotent :: (PRel t) -> (PartOp t) -> (PartOp t) -> t -> Bool
+partialRoundedIdempotent :: 
+    (Show t, HasLegalValues t) => 
+    (PRel t) -> 
+    (PartOp t) -> (PartOp t) -> 
+    t -> Bool
 partialRoundedIdempotent (<=?) (*^?) (*.?) e =
     (defined (e *.? e) && defined (e *^? e))
     ===>
@@ -27,7 +32,11 @@ partialRoundedIdempotent (<=?) (*^?) (*.?) e =
     (*.) = assumeTotal2 (*.?)
     (*^) = assumeTotal2 (*^?)
 
-partialRoundedCommutative :: (PRel t) -> (PartOp t) -> (PartOp t) -> t -> t -> Bool
+partialRoundedCommutative :: 
+    (Show t, HasLegalValues t) => 
+    (PRel t) -> 
+    (PartOp t) -> (PartOp t) -> 
+    t -> t -> Bool
 partialRoundedCommutative (<=?) (*^?) (*.?) e1 e2 =
     (and $ map defined [e1 *.? e2, e2 *.? e1, e1 *^? e2, e2 *^? e1])
     ===>
@@ -36,7 +45,11 @@ partialRoundedCommutative (<=?) (*^?) (*.?) e1 e2 =
     (*.) = assumeTotal2 (*.?)
     (*^) = assumeTotal2 (*^?)
 
-partialRoundedAssociative :: (PRel t) -> (PartOp t) -> (PartOp t) -> t -> t -> t -> Bool
+partialRoundedAssociative :: 
+    (Show t, HasLegalValues t) => 
+    (PRel t) -> 
+    (PartOp t) -> (PartOp t) -> 
+    t -> t -> t -> Bool
 partialRoundedAssociative (<=?) (*^?) (*.?) e1 e2 e3 =
     (and $ map defined [e1 *.? e2, (e1 *. e2) *.? e3, e2 *.? e3, e1 *.? (e2 *. e3), 
                         e1 *^? e2, (e1 *^ e2) *^? e3, e2 *^? e3, e1 *^? (e2 *^ e3)])
@@ -46,77 +59,112 @@ partialRoundedAssociative (<=?) (*^?) (*.?) e1 e2 e3 =
     (*.) = assumeTotal2 (*.?)
     (*^) = assumeTotal2 (*^?)
 
-roundedUnit :: t -> (PRel t) -> (Op t) -> (Op t) -> t -> Bool
+roundedUnit :: 
+    (Show t, HasLegalValues t) => 
+    t -> (PRel t) -> 
+    (Op t) -> (Op t) -> 
+    t -> Bool
 roundedUnit unit =
-    equalRoundingUpDn11 (\(*) e -> e) (\(*) e -> unit * e)  
+    equalRoundingUpDn11 "roundedUnit" 
+        (\(*) e -> e) (\(*) e -> unit * e)  
 
-roundedIdempotent :: (PRel t) -> (Op t) -> (Op t) -> t -> Bool
+roundedIdempotent :: 
+    (Show t, HasLegalValues t) => 
+    (PRel t) -> 
+    (Op t) -> (Op t) -> 
+    t -> Bool
 roundedIdempotent =
-    equalRoundingUpDn11 (\(*) e -> e) (\(*) e -> e * e)  
+    equalRoundingUpDn11 "roundedIdempotent" 
+        (\(*) e -> e) (\(*) e -> e * e)  
 
-roundedCommutative :: (PRel t) -> (Op t) -> (Op t) -> t -> t -> Bool
+roundedCommutative :: 
+    (Show t, HasLegalValues t) => 
+    (PRel t) -> 
+    (Op t) -> (Op t) -> 
+    t -> t -> Bool
 roundedCommutative = 
-    equalRoundingUpDn12 (\(*) e1 e2 -> e1 * e2) (\(*) e1 e2 -> e2 * e1)  
+    equalRoundingUpDn12 "roundedCommutative" 
+        (\(*) e1 e2 -> e1 * e2) (\(*) e1 e2 -> e2 * e1)  
 
 
-roundedAssociative :: (PRel t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
+roundedAssociative :: 
+    (Show t, HasLegalValues t) => 
+    (PRel t) -> 
+    (Op t) -> (Op t) -> 
+    t -> t -> t -> Bool
 roundedAssociative = 
-    equalRoundingUpDn13 
+    equalRoundingUpDn13 "roundedAssociative"
         (\(*) e1 e2 e3 -> (e1 * e2) * e3) 
         (\(*) e1 e2 e3 -> e1 * (e2 * e3))  
 
 roundedModular :: 
+    (Show t, HasLegalValues t) => 
     (PRel t) -> (Op t) -> (Op t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
 roundedModular = 
-    equalRoundingUpDn23 
+    equalRoundingUpDn23 "roundedModular"
         (\(/\) (\/) e1 e2 e3 -> (e1 /\ e3) \/ (e2 /\ e3)) 
         (\(/\) (\/) e1 e2 e3 -> ((e1 /\ e3) \/ e2) /\ e3)  
 
 roundedLeftDistributive :: 
-    (PRel t) -> (Op t) -> (Op t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
+    (Show t, HasLegalValues t) => 
+    (PRel t) -> 
+    (Op t) -> (Op t) -> (Op t) -> (Op t) -> 
+    t -> t -> t -> Bool
 roundedLeftDistributive = 
-    equalRoundingUpDn23 
+    equalRoundingUpDn23 "roundedLeftDistributive"
         (\(/\) (\/) e1 e2 e3 -> e1 \/ (e2 /\ e3)) 
         (\(/\) (\/) e1 e2 e3 -> (e1 \/ e2) /\ (e1 \/ e3))     
 
-equalRoundingUpDn11 :: (Expr1Op1 t) -> (Expr1Op1 t) -> (PRel t) -> (Op t) -> (Op t) -> t -> Bool
-equalRoundingUpDn11 expr1 expr2  (<=?) (*^) (*.) e =
-    (defined (expr1 (*.) e <=? (expr2 (*^) e)) 
-        ===> (expr1 (*.) e <= (expr2 (*^) e)))
+equalRoundingUpDn11 :: 
+    (Show t, HasLegalValues t) => 
+    String ->
+    (Expr1Op1 t) -> (Expr1Op1 t) -> (PRel t) -> 
+    (Op t) -> (Op t) -> 
+    t -> Bool
+equalRoundingUpDn11 contextDescription expr1 expr2  (<=?) (*^) (*.) e =
+    leqIfDefined contextDescription (<=?) (expr1 (*.) e) (expr2 (*^) e) 
     && 
-    (defined (expr2 (*.) e <=? (expr1 (*^) e)) 
-        ===> (expr2 (*.) e <= (expr1 (*^) e)))
-    where
-    (<=) = assumeTotal2 (<=?)
+    leqIfDefined contextDescription (<=?) (expr2 (*.) e) (expr1 (*^) e) 
     
-equalRoundingUpDn12 :: (Expr1Op2 t) -> (Expr1Op2 t) -> (PRel t) -> (Op t) -> (Op t) -> t -> t -> Bool
-equalRoundingUpDn12 expr1 expr2  (<=?) (*^) (*.) e1 e2 =
-    (defined (expr1 (*.) e1 e2 <=? (expr2 (*^) e1 e2)) 
-        ===> (expr1 (*.) e1 e2 <= (expr2 (*^) e1 e2))) 
+equalRoundingUpDn12 :: 
+    (Show t, HasLegalValues t) => 
+    String ->
+    (Expr1Op2 t) -> (Expr1Op2 t) -> (PRel t) -> 
+    (Op t) -> (Op t) -> 
+    t -> t -> Bool
+equalRoundingUpDn12 contextDescription expr1 expr2  (<=?) (*^) (*.) e1 e2 =
+    leqIfDefined contextDescription (<=?) (expr1 (*.) e1 e2) (expr2 (*^) e1 e2) 
     && 
-    (defined (expr2 (*.) e1 e2 <=? (expr1 (*^) e1 e2)) 
-        ===> (expr2 (*.) e1 e2 <= (expr1 (*^) e1 e2)))
-    where
-    (<=) = assumeTotal2 (<=?)
+    leqIfDefined contextDescription (<=?) (expr2 (*.) e1 e2) (expr1 (*^) e1 e2) 
     
-equalRoundingUpDn13 :: (Expr1Op3 t) -> (Expr1Op3 t) -> (PRel t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
-equalRoundingUpDn13 expr1 expr2  (<=?) (*^) (*.) e1 e2 e3 =
-    (defined (expr1 (*.) e1 e2 e3 <=? (expr2 (*^) e1 e2 e3)) 
-        ===> (expr1 (*.) e1 e2 e3 <= (expr2 (*^) e1 e2 e3)))
+equalRoundingUpDn13 :: 
+    (Show t, HasLegalValues t) => 
+    String ->
+    (Expr1Op3 t) -> (Expr1Op3 t) -> (PRel t) -> 
+    (Op t) -> (Op t) -> 
+    t -> t -> t -> Bool
+equalRoundingUpDn13 contextDescription expr1 expr2  (<=?) (*^) (*.) e1 e2 e3 =
+    leqIfDefined contextDescription (<=?) (expr1 (*.) e1 e2 e3) (expr2 (*^) e1 e2 e3)
     && 
-    (defined (expr2 (*.) e1 e2 e3 <=? (expr1 (*^) e1 e2 e3))
-        ===> (expr2 (*.) e1 e2 e3 <= (expr1 (*^) e1 e2 e3)))
-    where
-    (<=) = assumeTotal2 (<=?)
+    leqIfDefined contextDescription (<=?) (expr2 (*.) e1 e2 e3) (expr1 (*^) e1 e2 e3) 
     
-equalRoundingUpDn23 :: (Expr2Op3 t) -> (Expr2Op3 t) -> (PRel t) -> (Op t) -> (Op t) -> (Op t) -> (Op t) -> t -> t -> t -> Bool
-equalRoundingUpDn23 expr1 expr2  (<=?) (*^) (**^) (*.) (**.) e1 e2 e3 =
-    (defined (expr1 (*.) (**.) e1 e2 e3 <=? (expr2 (*^) (**^) e1 e2 e3)) 
-        ===> (expr1 (*.) (**.) e1 e2 e3 <= (expr2 (*^) (**^) e1 e2 e3)))
+equalRoundingUpDn23 :: 
+    (Show t, HasLegalValues t) => 
+    String ->
+    (Expr2Op3 t) -> (Expr2Op3 t) -> (PRel t) -> 
+    (Op t) -> (Op t) -> (Op t) -> (Op t) -> 
+    t -> t -> t -> Bool
+equalRoundingUpDn23 contextDescription expr1 expr2  (<=?) (*^) (**^) (*.) (**.) e1 e2 e3 =
+    leqIfDefined contextDescription (<=?) (expr1 (*.) (**.) e1 e2 e3) (expr2 (*^) (**^) e1 e2 e3)
     && 
-    (defined (expr2 (*.) (**.) e1 e2 e3 <=? (expr1 (*^) (**^) e1 e2 e3)) 
-        ===> (expr2 (*.) (**.) e1 e2 e3 <= (expr1 (*^) (**^) e1 e2 e3)))
+    leqIfDefined contextDescription (<=?) (expr2 (*.) (**.) e1 e2 e3) (expr1 (*^) (**^) e1 e2 e3) 
+    
+leqIfDefined contextDescription (<=?) val1 val2 =
+    (defined (val1OK <=? val2OK) ===> (val1OK <= val2OK))
     where
+    val1OK = check val1
+    val2OK = check val2
+    check = detectIllegalValues contextDescription
     (<=) = assumeTotal2 (<=?)
     
      

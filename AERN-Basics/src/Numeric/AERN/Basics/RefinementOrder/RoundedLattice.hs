@@ -97,7 +97,7 @@ propRoundedLatticeMeetBelowBoth _ (effortComp, effortOut)
     meetBelowOperands (pLeqEff effortComp) (meetOutEff effortOut) e1 e2
 
 propRoundedLatticeJoinIdempotent :: 
-    (PartialComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      JoinMeetInEffortIndicator t, 
@@ -109,7 +109,7 @@ propRoundedLatticeJoinIdempotent _ (effortComp, effortIn, effortOut)
     roundedIdempotent (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut) e
 
 propRoundedLatticeJoinCommutative :: 
-    (PartialComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      JoinMeetInEffortIndicator t, 
@@ -120,7 +120,7 @@ propRoundedLatticeJoinCommutative _ (effortComp, effortIn, effortOut)
     roundedCommutative (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut) e1 e2
 
 propRoundedLatticeJoinAssocative :: 
-    (PartialComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      JoinMeetInEffortIndicator t, 
@@ -131,7 +131,7 @@ propRoundedLatticeJoinAssocative _ (effortComp, effortIn, effortOut)
     roundedAssociative (pLeqEff effortComp) (joinInEff effortIn) (joinOutEff effortOut) e1 e2 e3
 
 propRoundedLatticeJoinMonotone ::
-    (Eq t, RoundedLattice t, PartialComparison t) => 
+    (Eq t, RoundedLattice t, PartialComparison t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      JoinMeetOutEffortIndicator t, 
@@ -150,7 +150,7 @@ propRoundedLatticeJoinMonotone _ (effortComp, effortOut, effortIn)
     r = joinInEff effortIn e1 e2 
 
 propRoundedLatticeMeetIdempotent :: 
-    (PartialComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      JoinMeetInEffortIndicator t, 
@@ -162,7 +162,7 @@ propRoundedLatticeMeetIdempotent _ (effortComp, effortIn, effortOut)
     roundedIdempotent (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut) e
 
 propRoundedLatticeMeetCommutative :: 
-    (PartialComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      JoinMeetInEffortIndicator t, 
@@ -173,7 +173,7 @@ propRoundedLatticeMeetCommutative _ (effortComp, effortIn, effortOut)
     roundedCommutative (pLeqEff effortComp) (meetInEff effortIn) (meetOutEff effortOut) e1 e2
 
 propRoundedLatticeMeetAssocative :: 
-    (PartialComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      JoinMeetInEffortIndicator t, 
@@ -185,7 +185,7 @@ propRoundedLatticeMeetAssocative _ (effortComp, effortIn, effortOut)
 
 {- optional properties: -}
 propRoundedLatticeModular :: 
-    (PartialComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      JoinMeetInEffortIndicator t, 
@@ -196,7 +196,7 @@ propRoundedLatticeModular _ (effortComp, effortIn, effortOut)
     roundedModular (pLeqEff effortComp) (meetInEff effortIn) (joinInEff effortIn) (meetOutEff effortOut) (joinOutEff effortOut) e1 e2 e3
 
 propRoundedLatticeMeetMonotone ::
-    (Eq t, RoundedLattice t, PartialComparison t) => 
+    (Eq t, RoundedLattice t, PartialComparison t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      JoinMeetOutEffortIndicator t, 
@@ -215,7 +215,7 @@ propRoundedLatticeMeetMonotone _ (effortComp, effortOut, effortIn)
     r = meetInEff effortIn e1 e2 
 
 propRoundedLatticeDistributive :: 
-    (PartialComparison t, RoundedLattice t) => 
+    (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      JoinMeetInEffortIndicator t, 
@@ -231,7 +231,7 @@ propRoundedLatticeDistributive _ (effortComp, effortIn, effortOut)
 testsRoundedLatticeDistributive :: 
     (PartialComparison t,
      RoundedLattice t,
-     Arbitrary t, Show t, 
+     Arbitrary t, Show t, HasLegalValues t,
      Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t), 
      Arbitrary (JoinMeetOutEffortIndicator t), Show (JoinMeetOutEffortIndicator t), 
      Arbitrary (JoinMeetInEffortIndicator t), Show (JoinMeetInEffortIndicator t), 

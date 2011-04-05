@@ -74,7 +74,7 @@ class InnerRoundedLatticeEffort t where
 class (OuterRoundedLattice t, InnerRoundedLattice t) => RefinementRoundedLattice t
 
 propRefinementRoundedLatticeJoinIdempotent :: 
-    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInnerEffortIndicator t, 
@@ -86,7 +86,7 @@ propRefinementRoundedLatticeJoinIdempotent _ (effortComp, effortIn, effortOut)
         (maxInnerEff effortIn) (maxOuterEff effortOut) e
 
 propRefinementRoundedLatticeJoinCommutative :: 
-    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInnerEffortIndicator t, 
@@ -98,7 +98,7 @@ propRefinementRoundedLatticeJoinCommutative _ (effortComp, effortIn, effortOut)
         (maxInnerEff effortIn) (maxOuterEff effortOut) e1 e2
 
 propRefinementRoundedLatticeJoinAssocative :: 
-    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInnerEffortIndicator t, 
@@ -110,7 +110,7 @@ propRefinementRoundedLatticeJoinAssocative _ (effortComp, effortIn, effortOut)
         (maxInnerEff effortIn) (maxOuterEff effortOut) e1 e2 e3
 
 propRefinementRoundedLatticeMeetIdempotent :: 
-    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInnerEffortIndicator t, 
@@ -122,7 +122,7 @@ propRefinementRoundedLatticeMeetIdempotent _ (effortComp, effortIn, effortOut)
         (minInnerEff effortIn) (minOuterEff effortOut) e
 
 propRefinementRoundedLatticeMeetCommutative :: 
-    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInnerEffortIndicator t, 
@@ -134,7 +134,7 @@ propRefinementRoundedLatticeMeetCommutative _  (effortComp, effortIn, effortOut)
         (minInnerEff effortIn) (minOuterEff effortOut) e1 e2
 
 propRefinementRoundedLatticeMeetAssocative :: 
-    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInnerEffortIndicator t, 
@@ -147,7 +147,7 @@ propRefinementRoundedLatticeMeetAssocative _ (effortComp, effortIn, effortOut)
 
 {- optional properties: -}
 propRefinementRoundedLatticeModular :: 
-    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInnerEffortIndicator t, 
@@ -161,7 +161,8 @@ propRefinementRoundedLatticeModular _ (effortComp, effortIn, effortOut)
         e1 e2 e3
 
 propRefinementRoundedLatticeDistributive :: 
-    (RefOrd.PartialComparison t, RefinementRoundedLattice t) => 
+    (RefOrd.PartialComparison t, RefinementRoundedLattice t,
+     Show t, HasLegalValues t) => 
     t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInnerEffortIndicator t, 
@@ -180,7 +181,8 @@ propRefinementRoundedLatticeDistributive _ (effortComp, effortIn, effortOut)
         e1 e2 e3)
     
 propRefinementRoundedLatticeJoinMonotone ::
-    (Eq t, RefinementRoundedLattice t, RefOrd.PartialComparison t) => 
+    (Eq t, RefinementRoundedLattice t, RefOrd.PartialComparison t, 
+     Show t, HasLegalValues t) => 
     t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInnerEffortIndicator t, 
@@ -199,7 +201,8 @@ propRefinementRoundedLatticeJoinMonotone _ (effortComp, effortIn, effortOut)
     r = maxInnerEff effortIn e1 e2 
     
 propRefinementRoundedLatticeMeetMonotone ::
-    (Eq t, RefinementRoundedLattice t, RefOrd.PartialComparison t) => 
+    (Eq t, RefinementRoundedLattice t, RefOrd.PartialComparison t, 
+     Show t, HasLegalValues t) => 
     t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInnerEffortIndicator t, 
@@ -225,7 +228,7 @@ testsRefinementRoundedLattice ::
      HasExtrema t,
      RefinementRoundedLattice t,
      ArbitraryOrderedTuple t,
-     Arbitrary t, Show t, 
+     Arbitrary t, Show t, HasLegalValues t,
      Arbitrary (RefOrd.PartialCompareEffortIndicator t), Show (RefOrd.PartialCompareEffortIndicator t), 
      Arbitrary (MinmaxInnerEffortIndicator t), Show (MinmaxInnerEffortIndicator t), 
      Arbitrary (MinmaxOuterEffortIndicator t), Show (MinmaxOuterEffortIndicator t), 
@@ -241,7 +244,7 @@ testsRefinementRoundedLatticeDistributive ::
      HasExtrema t,
      RefinementRoundedLattice t,
      ArbitraryOrderedTuple t,
-     Arbitrary t, Show t, 
+     Arbitrary t, Show t, HasLegalValues t, 
      Arbitrary (RefOrd.PartialCompareEffortIndicator t), Show (RefOrd.PartialCompareEffortIndicator t), 
      Arbitrary (MinmaxInnerEffortIndicator t), Show (MinmaxInnerEffortIndicator t), 
      Arbitrary (MinmaxOuterEffortIndicator t), Show (MinmaxOuterEffortIndicator t), 
@@ -257,7 +260,7 @@ testsRefinementRoundedLatticeDistributiveMonotone ::
      HasExtrema t,
      RefinementRoundedLattice t,
      ArbitraryOrderedTuple t,
-     Arbitrary t, Show t, 
+     Arbitrary t, Show t, HasLegalValues t, 
      Arbitrary (RefOrd.PartialCompareEffortIndicator t), Show (RefOrd.PartialCompareEffortIndicator t), 
      Arbitrary (MinmaxInnerEffortIndicator t), Show (MinmaxInnerEffortIndicator t), 
      Arbitrary (MinmaxOuterEffortIndicator t), Show (MinmaxOuterEffortIndicator t), 
