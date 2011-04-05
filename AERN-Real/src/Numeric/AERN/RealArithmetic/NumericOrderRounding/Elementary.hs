@@ -170,7 +170,7 @@ propSqrtSquare ::
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Bool
 propSqrtSquare _ initEffort (NumOrd.UniformlyOrderedSingleton e1) =
-    case evalCatchDomViolationExceptions
+    case evalCatchDomViolationExceptions "checking sqrt(x)^2 = x"
             (equalRoundingUpDn
                 expr1Up expr1Dn expr2Up expr2Dn 
                 NumOrd.pLeqEff initEffort) of
