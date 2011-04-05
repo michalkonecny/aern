@@ -21,6 +21,7 @@ import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.RefinementOrder.PartialComparison
 import Numeric.AERN.Basics.RefinementOrder.Arbitrary
@@ -76,7 +77,7 @@ class (OuterRoundedBasis t, InnerRoundedBasis t) => RoundedBasis t
 
 -- properties of RoundedBasis:
 propRoundedBasisJoinIdempotent :: 
-    (PartialComparison t, RoundedBasis t) => 
+    (PartialComparison t, RoundedBasis t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      PartialJoinInEffortIndicator t, 
@@ -89,7 +90,7 @@ propRoundedBasisJoinIdempotent _ (effortComp, effortJoinIn, effortJoinOut)
         (partialJoinInEff effortJoinIn) (partialJoinOutEff effortJoinOut) e
 
 propRoundedBasisJoinCommutative :: 
-    (PartialComparison t, RoundedBasis t) => 
+    (PartialComparison t, RoundedBasis t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      PartialJoinInEffortIndicator t, 
@@ -102,7 +103,7 @@ propRoundedBasisJoinCommutative _ (effortComp, effortJoinIn, effortJoinOut)
         e1 e2
 
 propRoundedBasisJoinAssociative :: 
-    (PartialComparison t, RoundedBasis t) => 
+    (PartialComparison t, RoundedBasis t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
      PartialJoinInEffortIndicator t, 
@@ -140,7 +141,7 @@ propRoundedBasisJoinMonotone _ (effortComp, effortOut, effortIn)
 testsRoundedBasis ::
     (PartialComparison t,
      RoundedBasis t,
-     Arbitrary t, Show t, 
+     Arbitrary t, Show t, HasLegalValues t,
      Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t), 
      Arbitrary (PartialJoinOutEffortIndicator t), Show (PartialJoinOutEffortIndicator t), 
      Arbitrary (PartialJoinInEffortIndicator t), Show (PartialJoinInEffortIndicator t), 
