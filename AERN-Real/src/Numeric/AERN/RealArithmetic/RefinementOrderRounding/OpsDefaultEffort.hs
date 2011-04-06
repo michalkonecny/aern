@@ -26,115 +26,134 @@ infixr 7 |<*>, |>*<
 infixl 7 <*>|, >*<|
 infixl 7 </>|, >/<|
 
--- | inner rounded addition
-(>+<) :: 
-    (RoundedAdd t) => 
-    t -> t -> t
+-- | Inner rounded addition
+(>+<) :: (RoundedAdd t) => t -> t -> t
 (>+<) d = addInEff (addDefaultEffort d) d
 
--- | outer rounded addition
-(<+>) :: 
-    (RoundedAdd t) => 
-    t -> t -> t
+-- | Outer rounded addition
+(<+>) :: (RoundedAdd t) => t -> t -> t
 (<+>) d = addOutEff (addDefaultEffort d) d
 
-(>-<), (<->) :: 
-    (RoundedSubtr t) => 
-    t -> t -> t
+-- | Inner rounded subtraction
+(>-<) :: (RoundedSubtr t) => t -> t -> t
 (>-<) d = subtrInEff (addDefaultEffort d) d
+
+-- | Outer rounded subtraction
+(<->) :: (RoundedSubtr t) => t -> t -> t
 (<->) d = subtrOutEff (addDefaultEffort d) d
 
-absIn, absOut ::
-    (RoundedAbs t) => 
-    t -> t
+-- | Inner rounded absolute value
+absIn :: (RoundedAbs t) => t -> t
 absIn d = absInEff (absDefaultEffort d) d
+
+-- | Outer rounded absolute value
+absOut :: (RoundedAbs t) => t -> t
 absOut d = absOutEff (absDefaultEffort d) d
 
-(>*<), (<*>) :: 
-    (RoundedMultiply t) => 
-    t -> t -> t
+-- | Inner rounded multiplication
+(>*<) :: (RoundedMultiply t) => t -> t -> t
 (>*<) d = multInEff (multDefaultEffort d) d
+
+-- | Outer rounded multiplication
+(<*>) :: (RoundedMultiply t) => t -> t -> t
 (<*>) d = multOutEff (multDefaultEffort d) d
 
-(>^<), (<^>) :: 
-    (RoundedPowerToNonnegInt t) => 
-    t -> Int -> t
+-- | Inner rounded power
+(>^<) :: (RoundedPowerToNonnegInt t) => t -> Int -> t 
 (>^<) d = powerToNonnegIntInEff (powerToNonnegIntDefaultEffort d) d
+
+-- | Outer rounded power
+(<^>) :: (RoundedPowerToNonnegInt t) => t -> Int -> t
 (<^>) d = powerToNonnegIntOutEff (powerToNonnegIntDefaultEffort d) d
 
-(>/<), (</>) :: 
-    (RoundedDivide t) => 
-    t -> t -> t
+-- | Inner rounded division
+(>/<) :: (RoundedDivide t) => t -> t -> t
 (>/<) d = divInEff (divDefaultEffort d) d
+
+-- | Outer rounded division
+(</>) :: (RoundedDivide t) => t -> t -> t
 (</>) d = divOutEff (divDefaultEffort d) d
 
-
-(|>+<), (|<+>) :: 
-    (RoundedMixedAdd t tn) => 
-    tn -> t -> t
+-- | Inner rounded additive scalar left action
+(|>+<) :: (RoundedMixedAdd t tn) => tn -> t -> t
 (|>+<) n d = mixedAddInEff (mixedAddDefaultEffort d n) d n
+
+-- | Outer rounded additive scalar left action
+(|<+>) :: (RoundedMixedAdd t tn) => tn -> t -> t
 (|<+>) n d = mixedAddOutEff (mixedAddDefaultEffort d n) d n
 
-(>+<|), (<+>|) :: 
-    (RoundedMixedAdd t tn) => 
-    t -> tn -> t
+-- | Inner rounded additive scalar right action
+(>+<|) :: (RoundedMixedAdd t tn) => t -> tn -> t
 (>+<|) d n = mixedAddInEff (mixedAddDefaultEffort d n) d n
+
+-- | Outer rounded additive scalar right action
+(<+>|) :: (RoundedMixedAdd t tn) => t -> tn -> t
 (<+>|) d n = mixedAddOutEff (mixedAddDefaultEffort d n) d n
 
-(|>*<), (|<*>) :: 
-    (RoundedMixedMultiply t tn) => 
-    tn -> t -> t
+-- | Inner rounded multiplicative scalar left action
+(|>*<) :: (RoundedMixedMultiply t tn) => tn -> t -> t
 (|>*<) n d = mixedMultInEff (mixedMultDefaultEffort d n) d n
+
+-- | Outer rounded multiplicative scalar left action
+(|<*>) :: (RoundedMixedMultiply t tn) => tn -> t -> t
 (|<*>) n d = mixedMultOutEff (mixedMultDefaultEffort d n) d n
 
-(>*<|), (<*>|) :: 
-    (RoundedMixedMultiply t tn) => 
-    t -> tn -> t
+-- | Inner rounded multiplicative scalar right action
+(>*<|) :: (RoundedMixedMultiply t tn) => t -> tn -> t
 (>*<|) d n = mixedMultInEff (mixedMultDefaultEffort d n) d n
+
+-- | Outer rounded multiplicative scalar right action
+(<*>|) :: (RoundedMixedMultiply t tn) => t -> tn -> t
 (<*>|) d n = mixedMultOutEff (mixedMultDefaultEffort d n) d n
 
-
-(>/<|), (</>|) :: 
-    (RoundedMixedDivide t tn) => 
-    t -> tn -> t
+-- | Inner rounded multiplicative scalar reciprocal right action
+(>/<|) :: (RoundedMixedDivide t tn) => t -> tn -> t
 (>/<|) d n = mixedDivInEff (mixedDivDefaultEffort d n) d n
+
+-- | Outer rounded multiplicative scalar reciprocal right action
+(</>|) :: (RoundedMixedDivide t tn) => t -> tn -> t
 (</>|) d n = mixedDivOutEff (mixedDivDefaultEffort d n) d n
 
-
-piIn, piOut ::
-    (RoundedSpecialConst t) => 
-    t
+-- | Inner rounded pi
+piIn :: (RoundedSpecialConst t) => t
 piIn = result
     where
     result =  
         piInEff (specialConstDefaultEffort result)
+
+-- | Outer rounded pi
+piOut :: (RoundedSpecialConst t) => t
 piOut = result
     where
     result =  
         piOutEff (specialConstDefaultEffort result)
 
-eIn, eOut ::
-    (RoundedSpecialConst t) => 
-    t
+-- | Inner rounded e
+eIn :: (RoundedSpecialConst t) => t
 eIn = result
     where
     result =  
         eInEff (specialConstDefaultEffort result)
+
+-- | Outer rounded e
+eOut :: (RoundedSpecialConst t) => t
 eOut = result
     where
     result =  
         eOutEff (specialConstDefaultEffort result)
 
-
-expIn, expOut ::
-    (RoundedExponentiation t) => 
-    t -> t
+-- | Inner rounded exponential
+expIn :: (RoundedExponentiation t) => t -> t
 expIn d = expInEff (expDefaultEffort d) d
+
+-- | Outer rounded exponential
+expOut :: (RoundedExponentiation t) => t -> t
 expOut d = expOutEff (expDefaultEffort d) d
 
-sqrtIn, sqrtOut ::
-    (RoundedSquareRoot t) => 
-    t -> t
+-- | Inner rounded square root
+sqrtIn :: (RoundedSquareRoot t) => t -> t
 sqrtIn d = sqrtInEff (sqrtDefaultEffort d) d
-sqrtOut d = sqrtOutEff (sqrtDefaultEffort d) d
 
+-- | Outer rounded square root
+sqrtOut :: (RoundedSquareRoot t) => t -> t
+sqrtOut d = sqrtOutEff (sqrtDefaultEffort d) d

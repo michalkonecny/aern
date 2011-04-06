@@ -21,20 +21,38 @@ module Numeric.AERN.Interval.Double
     
     -- * Order relations
     -- | 
-    -- There are two types of order relations to consider: the numerical order,
-    -- generalising the order relation on the endpoints and the refinement order.    
+    -- There are two types of order relations to consider: 
+    -- 
+    --   * the numerical order, generalising the order relation on the endpoints
+    -- 
+    --   * the refinement order, generalising the reverse-inclusion relation on intervals
     
     -- ** Numeric order
     -- | 
-    -- Interval relations obtained by lifting the corresponding 
-    -- relations from the endpoint poset.
-    (==?),(<==>?),(</=>?),(<?),(>?),(<=?),(>=?),
+    -- Tests and relations obtained by lifting the corresponding 
+    -- functions from the endpoint poset.
+    
+    -- *** Comparability tests
+    (==?),(<==>?),(</=>?),
+    
+    -- *** Order relations
+    (<?),(>?),(<=?),(>=?),
     
     -- ** Refinement order
     -- | 
-    -- Order relations in the interval poset.
-    (|==?),(|<==>?),(|</=>?),(|<?),(|>?),(|<=?),(|>=?),
+    -- Tests and relations in the interval poset.
 
+    -- *** Comparability tests
+    (|==?),(|<==>?),(|</=>?),
+
+    -- *** Order relations
+    
+    -- **** ASCII versions
+    (|<?),(|>?),(|<=?),(|>=?),
+    
+    -- **** Unicode versions
+    (⊏?),(⊑?),(⊒?),(⊐?),
+    
     -- * Outward rounded operations
      
     -- ** Order operations
@@ -51,7 +69,12 @@ module Numeric.AERN.Interval.Double
     (</\>),(<\/>),(<\/>?),
 
     -- ** Field operations
+
+    -- *** Interval operations
     (<+>),(<->),(<*>),(</>),
+
+    -- *** Mixed operations
+    (|<+>),(<+>|),(|<*>),(<*>|),(</>|),
 
     -- * Inward rounded operations 
 
@@ -64,9 +87,13 @@ module Numeric.AERN.Interval.Double
     (>/\<),(>\/<),
 
     -- ** Field operations
+    
+    -- *** Interval operations
     (>+<),(>-<),(>*<),(>/<),
     
-    -- * Mixed field operators (e.g. Integer times DI)
+    -- *** Mixed operations
+    (|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
+        
     -- * temporary exports (to be deleted soon!)
     module Numeric.AERN.Basics.Interval,
     module Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort,
