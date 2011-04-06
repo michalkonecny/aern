@@ -16,37 +16,32 @@ module Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort where
 import Numeric.AERN.Basics.NumericOrder
 
 -- | Partial equality
-infix 4 ==?
+infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
+
 (==?) :: (PartialComparison t) => t -> t -> Maybe Bool
 (==?) a = pEqualEff (pCompareDefaultEffort a) a
 
--- | Partial `is comparable to`.
-infix 4 <==>?
+-- | Partial `is comparable to`
 (<==>?) :: (PartialComparison t) => t -> t -> Maybe Bool
 (<==>?) a = pComparableEff (pCompareDefaultEffort a) a
 
--- | Partial `is not comparable to`.
-infix 4 </=>?
+-- | Partial `is not comparable to`
 (</=>?) :: (PartialComparison t) => t -> t -> Maybe Bool
 (</=>?) a = pIncomparableEff (pCompareDefaultEffort a) a
 
--- | Partial `strictly less than`.
-infix 4 <?
+-- | Partial `strictly less than`
 (<?) :: (PartialComparison t) => t -> t -> Maybe Bool
 (<?) a = pLessEff (pCompareDefaultEffort a) a
 
--- | Partial `less than or equal to`.
-infix 4 <=?
+-- | Partial `less than or equal to`
 (<=?) :: (PartialComparison t) => t -> t -> Maybe Bool
 (<=?) a = pLeqEff (pCompareDefaultEffort a) a
 
--- | Partial `greater than or equal to`.
-infix 4 >=?
+-- | Partial `greater than or equal to`
 (>=?) :: (PartialComparison t) => t -> t -> Maybe Bool
 (>=?) a = pGeqEff (pCompareDefaultEffort a) a
 
--- | Partial `strictly greater than`.
-infix 4 >?
+-- | Partial `strictly greater than`
 (>?) :: (PartialComparison t) => t -> t -> Maybe Bool
 (>?) a = pGreaterEff (pCompareDefaultEffort a) a
 
@@ -62,19 +57,19 @@ maxDn a = maxDnEff (minmaxDefaultEffort a) a
 maxUp :: (RoundedLattice t) => t -> t -> t
 maxUp a = maxUpEff (minmaxDefaultEffort a) a
 
--- | Outward rounded minimum.
+-- | Outward rounded minimum
 minOut :: (OuterRoundedLattice t) => t -> t -> t
 minOut a = minOuterEff (minmaxOuterDefaultEffort a) a
 
--- | Outward rounded maximum.
+-- | Outward rounded maximum
 maxOut :: (OuterRoundedLattice t) => t -> t -> t
 maxOut a = maxOuterEff (minmaxOuterDefaultEffort a) a
 
--- | Inward rounded minimum.
+-- | Inward rounded minimum
 minIn :: (InnerRoundedLattice t) => t -> t -> t
 minIn a = minInnerEff (minmaxInnerDefaultEffort a) a
 
--- | Outward rounded maximum.
+-- | Outward rounded maximum
 maxIn :: (InnerRoundedLattice t) => t -> t -> t
 maxIn a = maxInnerEff (minmaxInnerDefaultEffort a) a
 
