@@ -1,4 +1,3 @@
-{-# OPTIONS_HADDOCK hide #-}
 {-|
     Module      :  Numeric.AERN.Interval.Double
     Description :  Interval Double type and operations  
