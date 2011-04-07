@@ -17,7 +17,7 @@
 -}
 module Numeric.AERN.Basics.Interval.Basics 
 (
-   Interval(..),
+   Interval(..), 
    getEndpoints, fromEndpoints, mapBothEndpoints, mapEachEndpoint, mapEndpointPair 
 )
 where
@@ -34,7 +34,7 @@ import Control.DeepSeq
 
 {-|
     Pairs of endpoints.  An end user should not use this type directly
-    but use the classes of which this is an instance.
+    but use the classes of which this is an instance. 
 -}
 data Interval e =
     Interval
@@ -71,8 +71,15 @@ instance (NFData e) => NFData (Interval e) where
         rnf l `seq` rnf h `seq` () 
 --        l `seq` h `seq` () 
 
+-- | Given an argument interval 'i' 'getEndpoints' returns the endpoint pair 
+--   ('lowEndpoint' 'i','highEndpoint' 'i').
+getEndpoints :: Interval t -> (t,t)
 getEndpoints (Interval l h) = (l, h)
+
+-- | Constructs an interval from an endpoint pair.
+fromEndpoints :: (t,t) -> Interval t
 fromEndpoints (l,h) = Interval l h  
+
 mapBothEndpoints f (Interval l h) = Interval (f l) (f h)
 mapEachEndpoint fl fh (Interval l h) = Interval (fl l) (fh h)
 mapEndpointPair f (Interval l h) = 
