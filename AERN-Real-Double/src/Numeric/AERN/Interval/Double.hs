@@ -16,12 +16,8 @@ module Numeric.AERN.Interval.Double
     -- A convenience module re-exporting various interval operations 
     -- with default effort indicators.
 
-    -- * Types 
-    Interval(..), 
+    -- * Main type
     DI,
-
-    -- * Basic functions
-    getEndpoints,fromEndpoints,
     
     -- * Order relations
     -- | 
@@ -75,7 +71,12 @@ module Numeric.AERN.Interval.Double
     -- *** Refinement order
     -- | 
     -- Outward rounded lattice operations in the interval poset.
+    
+    -- **** ASCII versions
     (</\>),(<\/>),(<\/>?),
+
+    -- **** Unicode versions
+    (<⊓>),(<⊔>),(<⊔>?),
 
     -- ** Field operations
 
@@ -84,6 +85,12 @@ module Numeric.AERN.Interval.Double
 
     -- *** Mixed type operations
     (|<+>),(<+>|),(|<*>),(<*>|),(</>|),
+
+    -- ** Special constants 
+    piOut,eOut,
+    
+    -- ** Elementary functions
+    absOut,expOut,sqrtOut,
 
     -- * Inward rounded operations 
 
@@ -96,7 +103,12 @@ module Numeric.AERN.Interval.Double
     minIn,maxIn,
 
     -- *** Refinement order
+
+    -- **** ASCII versions
     (>/\<),(>\/<),
+
+    -- **** Unicode versions
+    (>⊓<),(>⊔<),
 
     -- ** Field operations
     
@@ -105,27 +117,42 @@ module Numeric.AERN.Interval.Double
     
     -- *** Mixed type operations
     (|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
-        
-    -- * temporary exports (to be deleted soon!)
-    module Numeric.AERN.Basics.Interval,
-    module Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort,
-    module Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort,
-    module Numeric.AERN.RealArithmetic.RefinementOrderRounding,
-    module Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+    
+    
+    -- * Low level facilities
+    
+    -- ** Access functions
+    getEndpoints,fromEndpoints,
+
+    -- ** Base type
+    Interval(..),
 )
 where
 
 import Numeric.AERN.Basics.Interval
+  (Interval(..),getEndpoints,fromEndpoints)
 
 import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
+  ((==?),(<==>?),(</=>?),
+   (<?),(>?),(<=?),(>=?),
+   minOut,maxOut,minIn,maxIn)
+
 import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+  ((|==?),(|<==>?),(|</=>?),
+   (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
+   (</\>),(<\/>),(<\/>?),(<⊓>),(<⊔>),(<⊔>?),
+   (>/\<),(>\/<),(>⊓<),(>⊔<))
 
-import Numeric.AERN.RealArithmetic.Interval
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding
+--import Numeric.AERN.RealArithmetic.Interval
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
-import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
+ ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),
+  piOut,eOut,absOut,expOut,sqrtOut,
+  (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
+  piIn,eIn,absIn,expIn,sqrtIn)
+ 
+--import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
 
---import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
 import Numeric.AERN.RealArithmetic.Basis.Double
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
