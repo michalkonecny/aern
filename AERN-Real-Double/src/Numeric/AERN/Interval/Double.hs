@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK hide #-}
 {-|
     Module      :  Numeric.AERN.Interval.Double
     Description :  Interval Double type and operations  
@@ -8,7 +9,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Intervals with Double coeffients.
+    Intervals with Double endpoints.
 -}
 module Numeric.AERN.Interval.Double 
 (
@@ -16,21 +17,27 @@ module Numeric.AERN.Interval.Double
     -- A convenience module re-exporting various interval operations 
     -- with default effort indicators.
 
-    -- Interval with Double endpoints
+    -- * Types 
+    Interval(..), 
     DI,
+
+    -- * Basic functions
+    getEndpoints,fromEndpoints,
     
     -- * Order relations
     -- | 
     -- There are two types of order relations to consider: 
     -- 
-    --   * the numerical order, generalising the order relation on the endpoints
+    --   * the /numerical/ order, generalising the order relation on 
+    --     Doubles.
     -- 
-    --   * the refinement order, generalising the reverse-inclusion relation on intervals
+    --   * the /refinement/ order, generalising the reverse-inclusion 
+    --     relation on intervals.
     
     -- ** Numeric order
     -- | 
-    -- Tests and relations obtained by lifting the corresponding 
-    -- functions from the endpoint poset.
+    -- Interval extensions of the corresponding tests and relations on 
+    -- Double.
     
     -- *** Comparability tests
     (==?),(<==>?),(</=>?),
@@ -54,13 +61,16 @@ module Numeric.AERN.Interval.Double
     (⊏?),(⊑?),(⊒?),(⊐?),
     
     -- * Outward rounded operations
-     
+    -- | 
+    -- Interval extensions of common functions. The 'Num', 'Fractional' 
+    -- and 'Floating' instances for 'DI' use such versions as instance methods.
+    
     -- ** Order operations
     
     -- *** Numerical order
     -- | 
-    -- Outward rounded interval operations obtained by lifting the 
-    -- corresponding operations from the endpoint poset.
+    -- Outward rounded interval extensions of the corresponding 
+    -- operations on Double.
     minOut,maxOut,
 
     -- *** Refinement order
@@ -73,7 +83,7 @@ module Numeric.AERN.Interval.Double
     -- *** Interval operations
     (<+>),(<->),(<*>),(</>),
 
-    -- *** Mixed operations
+    -- *** Mixed type operations
     (|<+>),(<+>|),(|<*>),(<*>|),(</>|),
 
     -- * Inward rounded operations 
@@ -81,6 +91,9 @@ module Numeric.AERN.Interval.Double
     -- ** Order operations
 
     -- *** Numerical order
+    -- | 
+    -- Inward rounded interval extensions of the corresponding 
+    -- operations on Double.
     minIn,maxIn,
 
     -- *** Refinement order
@@ -91,7 +104,7 @@ module Numeric.AERN.Interval.Double
     -- *** Interval operations
     (>+<),(>-<),(>*<),(>/<),
     
-    -- *** Mixed operations
+    -- *** Mixed type operations
     (|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
         
     -- * temporary exports (to be deleted soon!)
@@ -120,7 +133,7 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Test.QuickCheck
 
--- | Interval type
+-- | Intervals with Double endpoints.
 type DI = Interval Double
 
 sampleDI :: DI
