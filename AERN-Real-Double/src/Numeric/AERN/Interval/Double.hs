@@ -35,7 +35,10 @@ module Numeric.AERN.Interval.Double
     -- its argument intervals. The operation is extended to all of 'DI'
     -- by returning the highest interval below both of its argument 
     -- intervals.  
-    --
+    -- 
+    -- The structure ({ 'di' | 'di' is consistent \}, /\\, 
+    -- 'bottom') is a complete meet-semilattice.
+    -- 
     -- Lower and upper approximations of the exact operation /\\ 
     -- are given by '</\>' and '>/\<' respectively.
     --
@@ -43,15 +46,18 @@ module Numeric.AERN.Interval.Double
     -- since the /intersection/ of disjoint sets is empty. Therefore,
     -- the /join/-semilattice structure on 'DI' comes in two flavours:
     --
-    --   * the partial consistent interval-valued join \//? which 
+    --   * the partial consistent interval-valued join \\/\? which 
     --     returns 'Nothing' for disjoint and anticonsistent arguments
     --     and
     --
-    --   * the total join \// which returns the lowest interval in
-    --     'DI' above both of ots argument intervals.
+    --   * the total join \\/ which returns the lowest interval in
+    --     'DI' above both of its argument intervals. 
+    -- 
+    -- The structure ('DI', \/\\, \\\/, 'bottom', 'top') is a complete 
+    -- lattice.
     --
-    -- Lower and upper approximations of the exact operations \//?
-    -- and \// are given by '<\/?>', '<\/>' and '>/\<' respectively.
+    -- Lower and upper approximations of the exact operations \\/\?
+    -- and \\\/ are given by '<\/>?', '<\/>' and '>/\<' respectively.
 
     -- ** Numerical order
     -- | 
