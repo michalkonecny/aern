@@ -28,7 +28,31 @@ module Numeric.AERN.Interval.Double
     -- 
     --   * the /refinement/ order, generalising the reverse-inclusion 
     --     relation on intervals.  
-    
+    --
+    -- The consistent intervals in 'DI' form a /meet/-semilattice
+    -- corresponding to the refiniement order under the operation /\\ 
+    -- returning the subset-least interval containing the /union/ of 
+    -- its argument intervals. The operation is extended to all of 'DI'
+    -- by returning the highest interval below both of its argument 
+    -- intervals.  
+    --
+    -- Lower and upper approximations of the exact operation /\\ 
+    -- are given by '</\>' and '>/\<' respectively.
+    --
+    -- The dual operation to /\\ is partial on consistent intervals, 
+    -- since the /intersection/ of disjoint sets is empty. Therefore,
+    -- the /join/-semilattice structure on 'DI' comes in two flavours:
+    --
+    --   * the partial consistent interval-valued join \//? which 
+    --     returns 'Nothing' for disjoint and anticonsistent arguments
+    --     and
+    --
+    --   * the total join \// which returns the lowest interval in
+    --     'DI' above both of ots argument intervals.
+    --
+    -- Lower and upper approximations of the exact operations \//?
+    -- and \// are given by '<\/?>', '<\/>' and '>/\<' respectively.
+
     -- ** Numerical order
     -- | 
     -- Interval extensions of the corresponding tests and relations on 
