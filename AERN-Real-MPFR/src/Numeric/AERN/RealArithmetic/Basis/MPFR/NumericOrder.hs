@@ -50,8 +50,8 @@ nanM = 0/0
 instance NumOrd.HasLeast MPFR where
     least = - 1/0
 
-instance NumOrd.HasHighest MPFR where
-    highest = 1/0
+instance NumOrd.HasGreatest MPFR where
+    greatest = 1/0
 
 instance NumOrd.HasExtrema MPFR where
 

@@ -43,8 +43,8 @@ nanD = 0/0
 instance NumOrd.HasLeast Double where
     least = - 1/0
 
-instance NumOrd.HasHighest Double where
-    highest = 1/0
+instance NumOrd.HasGreatest Double where
+    greatest = 1/0
 
 instance NumOrd.HasExtrema Double where
 

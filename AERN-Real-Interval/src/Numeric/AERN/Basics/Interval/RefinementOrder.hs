@@ -59,11 +59,11 @@ instance
 
 instance (NumOrd.HasExtrema e) => (RefOrd.HasTop (Interval e))
     where
-    top = Interval NumOrd.highest NumOrd.least
+    top = Interval NumOrd.greatest NumOrd.least
     
 instance (NumOrd.HasExtrema e) => (RefOrd.HasBottom (Interval e))
     where
-    bottom = Interval NumOrd.least NumOrd.highest
+    bottom = Interval NumOrd.least NumOrd.greatest
 
 instance (NumOrd.HasExtrema e) => (RefOrd.HasExtrema (Interval e))
 
