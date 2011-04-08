@@ -23,11 +23,11 @@ module Numeric.AERN.Interval.Double
     -- | 
     -- There are two types of order relations to consider: 
     -- 
-    --   * the /numerical/ order, generalising the order relation on 
-    --     Doubles.
+    --   * the /numerical/ order, generalising the order relation
+    --     on Doubles and
     -- 
     --   * the /refinement/ order, generalising the reverse-inclusion 
-    --     relation on intervals.
+    --     relation on intervals.  
     
     -- ** Numeric order
     -- | 
@@ -58,7 +58,8 @@ module Numeric.AERN.Interval.Double
     -- * Outward rounded operations
     -- | 
     -- Interval extensions of common functions. The 'Num', 'Fractional' 
-    -- and 'Floating' instances for 'DI' use such versions as instance methods.
+    -- and 'Floating' instances for 'DI' use such versions as instance 
+    -- methods.
     
     -- ** Order operations
     
@@ -159,7 +160,18 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Test.QuickCheck
 
--- | Intervals with Double endpoints.
+-- | 
+-- Intervals with Double endpoints. 
+-- 
+-- Note that ('l','r') = 'getEndpoints' ('di' :: 'DI') does not 
+-- fix an ordering of 'l' and 'r'. 
+-- 
+--   * 'di' is called /consistent/ when 'l' '<=' 'r'
+--
+--   * 'di' is called /anticonsistent/ when 'r' '<=' 'l' 
+--
+-- A consistent interval 'di' may be identified with the set defined by
+-- \{ 'x' | 'l' '<=' 'x' and 'x' '<=' 'r' \}.
 type DI = Interval Double
 
 sampleDI :: DI
