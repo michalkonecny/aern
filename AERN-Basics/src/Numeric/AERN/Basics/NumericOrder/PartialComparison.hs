@@ -149,7 +149,7 @@ propExtremaInPartialComparison ::
     Bool
 propExtremaInPartialComparison _ effort 
         (UniformlyOrderedSingleton e) = 
-    partialOrderExtrema (pLeqEff effort) least highest e
+    partialOrderExtrema (pLeqEff effort) least greatest e
 
 testsPartialComparison :: 
     (PartialComparison t,
