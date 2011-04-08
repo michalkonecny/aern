@@ -4,7 +4,7 @@ module Main where
 import Numeric.AERN.Interval.Double
 
 main = do
-  putStrLn "mi"
+  putStrLn $ "quadratic 1 5 6 = " ++ show (quadratic 1 5 6)
 
 -- | 
 -- Returns intervals containing the real roots
