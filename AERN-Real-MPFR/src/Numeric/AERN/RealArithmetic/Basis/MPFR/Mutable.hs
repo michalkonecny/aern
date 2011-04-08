@@ -9,29 +9,16 @@
     Stability   :  experimental
     Portability :  portable
     
-    MPFR mutable version.
+    MPFR mutable version and its mutable operations.
 
     This is a private module reexported publicly via its parent.
 -}
 
-module Numeric.AERN.RealArithmetic.Basis.MPFR.Mutable where
+module Numeric.AERN.RealArithmetic.Basis.MPFR.Mutable 
+(
+)
+where
 
-import Numeric.AERN.Basics.Mutable
-
-import qualified Data.Number.MPFR as M
-import Data.Number.MPFR (MPFR)
-
-import qualified Data.Number.MPFR.Mutable as MM
-import Data.Number.MPFR.Mutable (MMPFR)
-
-instance CanBeMutable MPFR where
-    type Mutable MPFR = MMPFR
-    makeMutable a = MM.thaw a
-    unsafeMakeMutable a = MM.unsafeThaw a
-    writeMutable = MM.writeMMPFR 
-    unsafeWriteMutable = MM.unsafeWriteMMPFR
-    readMutable = MM.freeze 
-    unsafeReadMutable = MM.unsafeFreeze 
-    
-    
-    
+import Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.Basics
+import Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.FieldOps
+import Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.MixedFieldOps

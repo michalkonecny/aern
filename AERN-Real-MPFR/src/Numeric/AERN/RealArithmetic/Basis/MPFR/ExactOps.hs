@@ -15,8 +15,6 @@
 
 module Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps where
 
-import Numeric.AERN.RealArithmetic.Basis.MPFR.Mutable
-
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Data.Number.MPFR as M
@@ -38,12 +36,6 @@ instance HasInfinities MPFR where
     
 instance Neg MPFR where
     neg = negate
-
-instance NegInPlace MPFR where
-    negInPlace _ r a = 
-        do
-        MM.neg r a M.Near
-        return ()
 
 
     
