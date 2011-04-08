@@ -17,17 +17,19 @@ quadratic a b c
   | otherwise =
     undefined  
 
-quadraticFormula a b c
-  | certainlyNonnegative discriminant =
-    [(-b-sqrt discriminant)/(2*a),
-     (-b+sqrt discriminant)/(2*a)]
-  where
-  discriminant = b^2-4*a*c
-
 certainlyDoesNotContainZero x =
   case 0 |>=? x of
     Just False -> True
     _ -> False 
+
+quadraticFormula a b c
+  | certainlyNonnegative discriminant =
+    [(-b-sqrt discriminant)/(2*a),
+     (-b+sqrt discriminant)/(2*a)]
+  | otherwise =
+    undefined
+  where
+  discriminant = b^2-4*a*c
 
 certainlyNonnegative x =
   case x >=? 0 of
