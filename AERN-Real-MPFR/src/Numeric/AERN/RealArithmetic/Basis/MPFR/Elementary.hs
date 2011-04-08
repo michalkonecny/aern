@@ -33,4 +33,14 @@ instance RoundedExponentiation MPFR where
     expDnEff prec d1 =
         M.exp M.Down prec d1
 
+instance RoundedSquareRootEffort MPFR where
+    type SqrtEffortIndicator MPFR = M.Precision 
+    sqrtDefaultEffort _ = 100
+
+instance RoundedSquareRoot MPFR where
+    sqrtUpEff prec d1 = 
+        M.sqrt M.Up prec d1
+    sqrtDnEff prec d1 =
+        M.sqrt M.Down prec d1
+
 

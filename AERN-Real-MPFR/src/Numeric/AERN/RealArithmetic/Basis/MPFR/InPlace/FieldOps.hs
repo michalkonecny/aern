@@ -21,6 +21,8 @@ module Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.FieldOps
 )
 where
 
+import Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.Basics
+
 import Numeric.AERN.RealArithmetic.Basis.MPFR.FieldOps
 
 import Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps

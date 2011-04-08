@@ -48,6 +48,7 @@ Library
     Numeric.AERN.RealArithmetic.Basis.MPFR.SpecialConst
     Numeric.AERN.RealArithmetic.Basis.MPFR.Elementary
     Numeric.AERN.RealArithmetic.Basis.MPFR.Utilities
+    Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.Basics
     Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.FieldOps
     Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.MixedFieldOps
     Numeric.AERN.RealArithmetic.Basis.MPFR.Measures

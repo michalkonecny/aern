@@ -14,7 +14,8 @@ module Main where
 import Numeric.AERN.RealArithmetic.Basis.MPFR
 import Numeric.AERN.RealArithmetic.Interval.MPFR
 import Numeric.AERN.RealArithmetic.Interval
---import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
+import Numeric.AERN.RealArithmetic.Interval.Mutable
+-- import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
 import Numeric.AERN.Basics.Interval
 
@@ -66,7 +67,8 @@ testsMI =
     [
        testsConsistency ("MI", sampleMI),
        NumOrd.testsPartialComparison ("MI", sampleMI),
-       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("MI", sampleMI) Nothing,
+       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("MI", sampleMI),
+       NumOrd.testsRefinementRoundedLatticeInPlace ("MI", sampleMI),
        RefOrd.testsPartialComparison  ("MI", sampleMI), 
        RefOrd.testsRoundedBasis ("MI", sampleMI),
        RefOrd.testsRoundedLatticeDistributive ("MI", sampleMI),
@@ -81,11 +83,16 @@ testsMI =
        ArithInOut.testsInOutMult ("MI", sampleMI),
        ArithInOut.testsInOutIntPower ("MI", sampleMI),
        ArithInOut.testsInOutDiv ("MI", sampleMI),
+       ArithInOut.testsInOutFieldOpsInPlace ("MI", sampleMI),
        ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Integer", sampleI),
        ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Rational", sampleR),
-       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Double", sampleD)
+       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Double", sampleD),
+       ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Integer", sampleI),
+       ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Rational", sampleR),
+       ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Double", sampleD)
        ,
-       ArithInOut.testsInOutExp ("MI", sampleMI)
+       ArithInOut.testsInOutExp ("MI", sampleMI),
+       ArithInOut.testsInOutSqrt ("MI", sampleMI) unPositiveMI
     ]
 
 sampleD = 1 :: Double

@@ -19,8 +19,9 @@
 
 module Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.MixedFieldOps where
 
-import Numeric.AERN.RealArithmetic.Basis.MPFR.MixedFieldOps
+import Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.Basics
 import Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.FieldOps
+import Numeric.AERN.RealArithmetic.Basis.MPFR.MixedFieldOps
 
 import Numeric.AERN.RealArithmetic.Basis.MPFR.Conversion
 import Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder
