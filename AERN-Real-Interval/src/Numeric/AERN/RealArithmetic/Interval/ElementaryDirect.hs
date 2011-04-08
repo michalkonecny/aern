@@ -182,6 +182,7 @@ instance
                 effortField
                 effortMixedField 
                 effortMinmax
+                effortComp
                 effortConv
                 effortNewton 
     sqrtInEff
@@ -201,5 +202,6 @@ instance
                 effortField
                 effortMixedField 
                 effortMinmax
+                effortComp
                 effortConv 
                 effortNewton 

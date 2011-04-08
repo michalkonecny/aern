@@ -37,12 +37,14 @@ import Control.Exception (throw)
 sqrtOutThinArg ::
     (HasZero e, HasOne e, Show e,
      NumOrd.RoundedLattice e,
+     NumOrd.PartialComparison e,
      ArithUpDn.Convertible e Double,
      ArithUpDn.RoundedMixedField e Int,
      ArithUpDn.RoundedField e) =>
     ArithUpDn.FieldOpsEffortIndicator e ->
     ArithUpDn.MixedFieldOpsEffortIndicator e Int ->
     NumOrd.MinmaxEffortIndicator e ->
+    NumOrd.PartialCompareEffortIndicator e ->
     ArithUpDn.ConvertEffortIndicator e Double ->
     Int {-^ the highest number of iterations of Newton method to make -} ->
     e {-^ @x@ as a singleton interval -} -> 
@@ -51,9 +53,11 @@ sqrtOutThinArg
         effortField
         effortMixedField
         effortMinmax
+        effortCompare
         effortToDouble
         maxIters
         x
+    | sureIsZero x = zero
     | not (sureAbove0 x) = 
         case (sureAbove0 (neg x)) of
             True -> 
@@ -100,6 +104,12 @@ sqrtOutThinArg
         case ArithUpDn.convertDnEff effortToDouble t of
             Just lowerBound -> lowerBound > (0 :: Double)
             Nothing -> False
+            
+    sureIsZero t = 
+        case NumOrd.pEqualEff effortCompare t zero of
+            Just True -> True
+            _ -> False
+    
     p1 +^ p2 = ArithUpDn.addUpEff effortAdd p1 p2
     p1 *^ p2 = ArithUpDn.multUpEff effortMult p1 p2
     p1 *. p2 = ArithUpDn.multDnEff effortMult p1 p2
