@@ -29,10 +29,16 @@ module Numeric.AERN.Interval.Double
     --   * the /refinement/ order, generalising the reverse-inclusion 
     --     relation on intervals.  
     
-    -- ** Numeric order
+    -- ** Numerical order
     -- | 
     -- Interval extensions of the corresponding tests and relations on 
     -- Double.
+    
+    -- *** Extrema
+    -- |
+    -- The values retured by 'least' and 'greatest' complete the 
+    -- numerical partial order on 'DI'.
+    least,greatest,
     
     -- *** Comparability tests
     (==?),(<==>?),(</=>?),
@@ -43,7 +49,13 @@ module Numeric.AERN.Interval.Double
     -- ** Refinement order
     -- | 
     -- Tests and relations in the interval poset.
-
+    
+    -- *** Extrema
+    -- |
+    -- The values retured by 'bottom' and 'top' complete the 
+    -- refinement partial order on 'DI'.
+    bottom,top,
+    
     -- *** Comparability tests
     (|==?),(|<==>?),(|</=>?),
 
@@ -133,10 +145,16 @@ where
 import Numeric.AERN.Basics.Interval
   (Interval(..),getEndpoints,fromEndpoints)
 
+import Numeric.AERN.Basics.NumericOrder
+  (least,greatest)
+
 import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
   ((==?),(<==>?),(</=>?),
    (<?),(>?),(<=?),(>=?),
    minOut,maxOut,minIn,maxIn)
+
+import Numeric.AERN.Basics.RefinementOrder
+  (bottom,top)
 
 import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
   ((|==?),(|<==>?),(|</=>?),
