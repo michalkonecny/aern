@@ -27,7 +27,7 @@ module Numeric.AERN.Interval.Double
     --     on Doubles and
     -- 
     --   * the /refinement/ order, generalising the reverse-inclusion 
-    --     relation on intervals.  
+    --     relation on consistent intervals.  
     --
     -- The consistent intervals in 'DI' form a /meet/-semilattice
     -- corresponding to the refiniement order under the operation /\\ 
@@ -84,7 +84,12 @@ module Numeric.AERN.Interval.Double
     -- |
     -- The values retured by 'bottom' and 'top' complete the 
     -- refinement partial order on 'DI'.
+
+    -- **** ASCII versions
     bottom,top,
+    
+    -- **** Unicode versions
+    (⊥),(⊤),
     
     -- *** Comparability tests
     (|==?),(|<==>?),(|</=>?),
@@ -184,7 +189,7 @@ import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
    minOut,maxOut,minIn,maxIn)
 
 import Numeric.AERN.Basics.RefinementOrder
-  (bottom,top)
+  (bottom,top,(⊥),(⊤))
 
 import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
   ((|==?),(|<==>?),(|</=>?),

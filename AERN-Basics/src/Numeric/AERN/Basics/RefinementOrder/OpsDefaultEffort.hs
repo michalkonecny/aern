@@ -1,6 +1,6 @@
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
-    Description :  convenience binary infix operators with default effort parameters  
+    Description :  Convenience binary infix operators with default effort parameters  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -47,19 +47,19 @@ infixr 2 <\/>?, >\/<?, <\/>, >\/<, <⊔>?, >⊔<?, <⊔>, >⊔<
 (|>?) :: (PartialComparison t) => t -> t -> Maybe Bool 
 (|>?) a = pGreaterEff (pCompareDefaultEffort a) a
 
-{-| convenience Unicode notation for '|<?' -}
+{-| Convenience Unicode notation for '|<?' -}
 (⊏?) :: (PartialComparison t) => t -> t -> Maybe Bool
 (⊏?) = (|<?)
 
-{-| convenience Unicode notation for '|<=?' -}
+{-| Convenience Unicode notation for '|<=?' -}
 (⊑?) :: (PartialComparison t) => t -> t -> Maybe Bool
 (⊑?) = (|<=?)
 
-{-| convenience Unicode notation for '|>=?' -}
+{-| Convenience Unicode notation for '|>=?' -}
 (⊒?) :: (PartialComparison t) => t -> t -> Maybe Bool
 (⊒?) = (|>=?)
 
-{-| convenience Unicode notation for '|>?' -}
+{-| Convenience Unicode notation for '|>?' -}
 (⊐?) :: (PartialComparison t) => t -> t -> Maybe Bool
 (⊐?) = (|>?)
 
@@ -87,26 +87,26 @@ infixr 2 <\/>?, >\/<?, <\/>, >\/<, <⊔>?, >⊔<?, <⊔>, >⊔<
 (>\/<) :: (InnerRoundedLattice t) => t -> t -> t
 (>\/<) a = joinInEff (joinmeetInDefaultEffort a) a 
 
-{-| convenience Unicode notation for '<\/>?' -}
+{-| Convenience Unicode notation for '<\/>?' -}
 (<⊔>?) :: (OuterRoundedBasis t) => t -> t -> Maybe t 
 (<⊔>?) = (<\/>?)
 
-{-| convenience Unicode notation for '>\/<?' -}
+{-| Convenience Unicode notation for '>\/<?' -}
 (>⊔<?) :: (InnerRoundedBasis t) => t -> t -> Maybe t
 (>⊔<?) = (>\/<?)
 
-{-| convenience Unicode notation for '<\/>' -}
+{-| Convenience Unicode notation for '<\/>' -}
 (<⊔>) :: (OuterRoundedLattice t) => t -> t -> t
 (<⊔>) = (<\/>)
 
-{-| convenience Unicode notation for '</\>' -}
+{-| Convenience Unicode notation for '</\>' -}
 (<⊓>) :: (OuterRoundedLattice t) => t -> t -> t
 (<⊓>) = (</\>)
 
-{-| convenience Unicode notation for '>\/<' -}
+{-| Convenience Unicode notation for '>\/<' -}
 (>⊔<) :: (InnerRoundedLattice t) => t -> t -> t
 (>⊔<) = (>\/<)
 
-{-| convenience Unicode notation for '>/\<' -}
+{-| Convenience Unicode notation for '>/\<' -}
 (>⊓<) :: (InnerRoundedLattice t) => t -> t -> t
 (>⊓<) = (>/\<)

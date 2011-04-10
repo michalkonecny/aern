@@ -30,8 +30,11 @@ class HasTop t where
 -}
 class HasBottom t where
     bottom :: t
-    
+
+-- | Convenience Unicode notation for 'top'
 (⊤) :: (HasTop t) => t   
 (⊤) = top
+
+-- | Convenience Unicode notation for 'bottom'
 (⊥) :: (HasBottom t) => t   
 (⊥) = bottom
