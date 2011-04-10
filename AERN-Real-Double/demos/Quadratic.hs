@@ -1,7 +1,7 @@
 
 module Main where
 
-import Numeric.AERN.Interval.Double
+import Numeric.AERN.DoubleBasis.Interval
 import Data.List
 
 
@@ -21,7 +21,7 @@ quadratic a b c
   | certainlyDoesNotContainZero a =
     quadraticFormula a b c
   | otherwise =
-    error "quadraticFormula: undefined"
+    error $ "quadratic: " ++ show a ++ " may contain 0"
 
 certainlyDoesNotContainZero x =
   case 0 |>=? x of
