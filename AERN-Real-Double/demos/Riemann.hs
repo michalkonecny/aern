@@ -1,7 +1,7 @@
 
 module Main where
 
-import Numeric.AERN.Interval.Double
+import Numeric.AERN.DoubleBasis.Interval
 
 main =
   do
