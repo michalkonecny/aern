@@ -36,6 +36,7 @@ Library
   Exposed-modules:
 --    Numeric.AERN.Interval.Double
     Numeric.AERN.DoubleBasis.Interval
+    Numeric.AERN.DoubleBasis.MInterval
 --    Numeric.AERN.Real.DI
     Numeric.AERN.RealArithmetic.Basis.Double
     Numeric.AERN.RealArithmetic.Interval.Double
