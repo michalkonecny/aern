@@ -17,30 +17,32 @@ module Numeric.AERN.Basics.Mutable where
 import Control.Monad.ST (ST, runST)
 
 class CanBeMutable t where
-    {-| a mutable version of the type t; 
-        the extra parameter is the state of the ST monad run -}
-    data Mutable t :: * -> *
+    {-| 
+      A mutable version of the type t. 
+      
+      The extra parameter is the state of the ST monad run. -}
+    type Mutable t :: * -> *
 
-    {-| safely create a new mutable variable with the given value -}
+    {-| Safely create a new mutable variable with the given value -}
     makeMutable :: t -> ST s (Mutable t s)
-    {-| create a new mutable variable with the given value, making the value volatile -}
+    {-| Create a new mutable variable with the given value, making the value volatile -}
     unsafeMakeMutable :: t -> ST s (Mutable t s)
-    {-| a safe write/update operation -}
+    {-| A safe write/update operation -}
     writeMutable :: Mutable t s -> t -> ST s ()
-    {-| an unsafe write/update operation; it makes the second argument volatile -}
+    {-| An unsafe write/update operation; it makes the second argument volatile -}
     unsafeWriteMutable :: Mutable t s -> t -> ST s ()
-    {-| a safe read operation, yielding an immutable value -}
+    {-| A safe read operation, yielding an immutable value -}
     readMutable :: Mutable t s -> ST s t
-    {-| an unsafe read operation, yielding an immutable value that may be volatile -}
+    {-| An unsafe read operation, yielding an immutable value that may be volatile -}
     unsafeReadMutable :: Mutable t s -> ST s t
-    {-| assign a value from one mutable variable to another  -}
+    {-| Assign a value from one mutable variable to another  -}
     assignMutable :: t -> Mutable t s -> Mutable t s -> ST s ()
     assignMutable sample rM aM =
         do
         a <- unsafeReadMutable aM
         let _ = [a, sample]
         writeMutable rM a 
-    {-| swap the values of two mutable variables  -}
+    {-| Swap the values of two mutable variables  -}
     swapMutable :: t -> Mutable t s -> Mutable t s -> ST s ()
     swapMutable sample aM bM =
         do
@@ -49,7 +51,7 @@ class CanBeMutable t where
         let _ = [a, b, sample]
         writeMutable aM b 
         writeMutable bM a 
-    {-| clone a mutable variable, the first parameter only aids type checking  -}
+    {-| Clone a mutable variable, the first parameter only aids type checking  -}
     cloneMutable :: t -> Mutable t s -> ST s (Mutable t s)
     cloneMutable sample aM =
         do
