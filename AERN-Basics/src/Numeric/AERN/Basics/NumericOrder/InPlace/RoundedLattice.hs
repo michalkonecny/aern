@@ -47,33 +47,45 @@ class
     (RoundedLatticeEffort t, CanBeMutable t) => 
     RoundedLatticeInPlace t 
     where
-    maxUpInPlaceEff :: t -> OpMutable2Eff (MinmaxEffortIndicator t) t s
-    maxDnInPlaceEff :: t -> OpMutable2Eff (MinmaxEffortIndicator t) t s
-    minUpInPlaceEff :: t -> OpMutable2Eff (MinmaxEffortIndicator t) t s
-    minDnInPlaceEff :: t -> OpMutable2Eff (MinmaxEffortIndicator t) t s
+    maxUpInPlaceEff :: OpMutable2Eff (MinmaxEffortIndicator t) t s
+    maxDnInPlaceEff :: OpMutable2Eff (MinmaxEffortIndicator t) t s
+    minUpInPlaceEff :: OpMutable2Eff (MinmaxEffortIndicator t) t s
+    minDnInPlaceEff :: OpMutable2Eff (MinmaxEffortIndicator t) t s
     
-maxUpInPlaceEffFromPure sample = pureToMutable2Eff sample maxUpEff 
-maxDnInPlaceEffFromPure sample = pureToMutable2Eff sample maxDnEff 
-minUpInPlaceEffFromPure sample = pureToMutable2Eff sample minUpEff 
-minDnInPlaceEffFromPure sample = pureToMutable2Eff sample minDnEff 
+maxUpInPlaceEffFromPure, 
+ maxDnInPlaceEffFromPure, 
+ minUpInPlaceEffFromPure,
+ minDnInPlaceEffFromPure :: 
+    (CanBeMutable t, RoundedLattice t) => 
+    OpMutable2Eff (MinmaxEffortIndicator t) t s  
+maxUpInPlaceEffFromPure = pureToMutable2Eff maxUpEff 
+maxDnInPlaceEffFromPure = pureToMutable2Eff maxDnEff 
+minUpInPlaceEffFromPure = pureToMutable2Eff minUpEff 
+minDnInPlaceEffFromPure = pureToMutable2Eff minDnEff 
 
-maxUpEffFromInPlace sample = mutable2EffToPure $ maxUpInPlaceEff sample 
-maxDnEffFromInPlace sample = mutable2EffToPure $ maxDnInPlaceEff sample 
-minUpEffFromInPlace sample = mutable2EffToPure $ minUpInPlaceEff sample 
-minDnEffFromInPlace sample = mutable2EffToPure $ minDnInPlaceEff sample 
+maxUpEffFromInPlace,
+ maxDnEffFromInPlace,
+ minUpEffFromInPlace,
+ minDnEffFromInPlace ::
+ (CanBeMutable t, RoundedLatticeInPlace t) =>
+ (MinmaxEffortIndicator t) -> t -> t -> t
+maxUpEffFromInPlace = mutable2EffToPure $ maxUpInPlaceEff 
+maxDnEffFromInPlace = mutable2EffToPure $ maxDnInPlaceEff 
+minUpEffFromInPlace = mutable2EffToPure $ minUpInPlaceEff 
+minDnEffFromInPlace = mutable2EffToPure $ minDnInPlaceEff 
 
 propRoundedLatticeJoinInPlaceConsistentWithPure ::
     (PartialComparison t, 
      RoundedLatticeInPlace t, RoundedLattice t, 
-     CanBeMutable t) => 
+     CanBeMutable t) =>
     t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
     UniformlyOrderedPair t -> Bool
-propRoundedLatticeJoinInPlaceConsistentWithPure sample (minmaxEffort, effortComp)
+propRoundedLatticeJoinInPlaceConsistentWithPure _ (minmaxEffort, effortComp)
         (UniformlyOrderedPair (e1,e2)) =
     inPlaceConsistentWithPure2 (pLeqEff effortComp) 
-        (maxDnInPlaceEff sample minmaxEffort)  
-        (maxUpInPlaceEff sample minmaxEffort)
+        (maxDnInPlaceEff minmaxEffort)  
+        (maxUpInPlaceEff minmaxEffort)
         (maxDnEff minmaxEffort) 
         (maxUpEff minmaxEffort) 
         e1 e2  
@@ -85,11 +97,11 @@ propRoundedLatticeMeetInPlaceConsistentWithPure ::
     t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
     UniformlyOrderedPair t -> Bool
-propRoundedLatticeMeetInPlaceConsistentWithPure sample (minmaxEffort, effortComp)
+propRoundedLatticeMeetInPlaceConsistentWithPure _ (minmaxEffort, effortComp)
         (UniformlyOrderedPair (e1,e2)) =
     inPlaceConsistentWithPure2 (pLeqEff effortComp) 
-        (minDnInPlaceEff sample minmaxEffort)  
-        (minUpInPlaceEff sample minmaxEffort)
+        (minDnInPlaceEff minmaxEffort)  
+        (minUpInPlaceEff minmaxEffort)
         (minDnEff minmaxEffort) 
         (minUpEff minmaxEffort) 
         e1 e2  

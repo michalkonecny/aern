@@ -47,23 +47,22 @@ powerFromMult mult x n
 
 powerFromMultInPlace :: 
     (HasOne t, CanBeMutable t) =>
-    t ->
     (Mutable t s -> Mutable t s -> Mutable t s -> ST s ()) {-^ associative binary operation @*@ -} ->
     (Mutable t s) {-^ where to put the resulting power @x^n@  -} ->
     (Mutable t s) {-^ @x@ -} ->
     Int {-^ @n@ positive -} ->
     ST s ()
-powerFromMultInPlace sample mult rM xM n
+powerFromMultInPlace mult rM xM n
     -- beware rM and xM may alias!
     | n < 0 = throw $ AERNException "powerFromMultInPlace does not support negative exponents"
     | otherwise =
         do
-        nrM <- cloneMutable sample xM -- a non-aliased variable for interim results
+        nrM <- cloneMutable xM -- a non-aliased variable for interim results
         p nrM n -- nrM := x^n
-        assignMutable sample rM nrM -- rM := nr
+        assignMutable rM nrM -- rM := nr
     where
     p nrM n -- ensures nrM holds x^n
-        | n == 0 = writeMutable nrM $ head [one, sample]
+        | n == 0 = writeMutable nrM one
         | n == 1 = return () -- assuming nrM already contains x
         | otherwise =
             case even n of
