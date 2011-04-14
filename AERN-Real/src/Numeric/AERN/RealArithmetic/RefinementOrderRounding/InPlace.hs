@@ -17,11 +17,9 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.FieldOps,
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.MixedFieldOps,
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.Elementary,
-    module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort
 )
 where
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.FieldOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.MixedFieldOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.Elementary
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort
