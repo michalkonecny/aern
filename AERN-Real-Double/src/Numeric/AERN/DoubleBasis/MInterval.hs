@@ -4,7 +4,13 @@ module Numeric.AERN.DoubleBasis.MInterval
     MDI,
     makeMutable,writeMutable,readMutable,
     unsafeMakeMutable,unsafeWriteMutable,unsafeReadMutable,
-    assignMutable,swapMutable,cloneMutable
+    assignMutable,swapMutable,cloneMutable,
+    addInInPlace,addOutInPlace,
+    subtrInInPlace,subtrOutInPlace,
+    absInInPlace,absOutInPlace,
+    multInInPlace,multOutInPlace,
+    powerToNonnegIntInInPlace,powerToNonnegIntOutInPlace,
+    divInInPlace,divOutInPlace
 )
 where
 
