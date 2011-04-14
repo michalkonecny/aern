@@ -1,6 +1,6 @@
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
-    Description :  convenience binary infix operators with default effort  
+    Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+    Description :  convenience operators and functions with default effort  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -8,7 +8,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Convenience binary infix operators with default effort.
+    Convenience operators and functions with default effort.
 -}
 
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort where
@@ -69,7 +69,7 @@ absOut d = absOutEff (absDefaultEffort d) d
 -- | Inward rounded division
 (>/<) :: (RoundedDivide t) => t -> t -> t
 (>/<) d = divInEff (divDefaultEffort d) d
-
+  
 -- | Outward rounded division
 (</>) :: (RoundedDivide t) => t -> t -> t
 (</>) d = divOutEff (divDefaultEffort d) d
