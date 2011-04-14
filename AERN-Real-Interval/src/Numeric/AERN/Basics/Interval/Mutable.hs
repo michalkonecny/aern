@@ -21,11 +21,9 @@ import Numeric.AERN.Basics.Mutable
 
 import Numeric.AERN.RealArithmetic.ExactOps
 
-data MInterval e s = 
-    MInterval { mIntervalLeft :: e s, mIntervalRight :: e s }
-
 instance (CanBeMutable e) => CanBeMutable (Interval e) where
-    type Mutable (Interval e) = MInterval (Mutable e)
+    data Mutable (Interval e) s = 
+        MInterval { mIntervalLeft :: Mutable e s, mIntervalRight :: Mutable e s }
     makeMutable (Interval l h) = 
         do
         lM <- makeMutable l

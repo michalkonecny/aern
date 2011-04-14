@@ -88,9 +88,9 @@ multiplySingletonAndIntervalInPlace ::
     (OpMutableNonmut e tn s) ->
     (OpMutable2 e s) ->
     (OpMutable2 e s) ->
-    (MInterval (Mutable e) s) ->
+    (Mutable (Interval e) s) ->
     tn ->
-    (MInterval (Mutable e) s) ->
+    (Mutable (Interval e) s) ->
     ST s ()
 multiplySingletonAndIntervalInPlace sample
         sNonnegNonpos iNonnegNonpos 

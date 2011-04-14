@@ -45,7 +45,7 @@ import Numeric.AERN.Basics.Exception
 import Control.Exception
 import Control.Monad.ST
 
-detectNaNThrow :: String -> MMPFR s -> ST s ()
+detectNaNThrow :: String -> Mutable MPFR s -> ST s ()
 detectNaNThrow msg aM =
     do
     a <- unsafeReadMutable aM
@@ -53,7 +53,7 @@ detectNaNThrow msg aM =
        then throw (AERNDomViolationException $ "domain violation in MPFR: " ++ msg)
        else return () 
 
-detectNaNDir :: String -> MMPFR s -> M.RoundMode -> ST s ()
+detectNaNDir :: String -> Mutable MPFR s -> M.RoundMode -> ST s ()
 detectNaNDir _ aM dir = 
     do
     a <- unsafeReadMutable aM
@@ -68,29 +68,32 @@ setPrec sample prec rM =
     let _ = [r, sample]
     unsafeWriteMutable rM $ M.set M.Up prec r
 
-opMutable1Unit op name symbol dir sample _prec rM dM1 =
-        do
-        op rM dM1 dir
-        d1 <- unsafeReadMutable dM1
-        let _ = [d1,sample]
-        detectNaNDir (name ++ ": " ++ symbol ++ " " ++ show d1) rM dir
+opMutable1Unit op name symbol dir sample _prec 
+        rM@(MMPFR rMM) dM1@(MMPFR dMM1) =
+    do
+    op rMM dMM1 dir
+    d1 <- unsafeReadMutable dM1
+    let _ = [d1,sample]
+    detectNaNDir (name ++ ": " ++ symbol ++ " " ++ show d1) rM dir
 
-opMutable2Prec op name symbol dir sample _prec rM dM1 dM2 =
-        do
---        setPrec sample prec rM
-        op rM dM1 dM2 dir
-        d1 <- unsafeReadMutable dM1
-        d2 <- unsafeReadMutable dM2
-        let _ = [d1,d2,sample]
-        detectNaNDir (name ++ ": " ++ show d1 ++ " " ++ symbol ++ show d2 ) rM dir 
+opMutable2Prec op name symbol dir sample _prec 
+        rM@(MMPFR rMM) dM1@(MMPFR dMM1) dM2@(MMPFR dMM2) =
+    do
+--    setPrec sample prec rM
+    op rMM dMM1 dMM2 dir
+    d1 <- unsafeReadMutable dM1
+    d2 <- unsafeReadMutable dM2
+    let _ = [d1,d2,sample]
+    detectNaNDir (name ++ ": " ++ show d1 ++ " " ++ symbol ++ show d2 ) rM dir 
 
-opMutableNonmutPrec op name symbol dir sample _prec rM dM n =
-        do
---        setPrec sample prec rM
-        op rM dM n dir
-        d <- unsafeReadMutable dM
-        let _ = [d,sample]
-        detectNaNDir (name ++ ": " ++ show d ++ " " ++ symbol ++ show n ) rM dir 
+opMutableNonmutPrec op name symbol dir sample _prec 
+        rM@(MMPFR rMM) dM@(MMPFR dMM) n =
+    do
+--    setPrec sample prec rM
+    op rMM dMM n dir
+    d <- unsafeReadMutable dM
+    let _ = [d,sample]
+    detectNaNDir (name ++ ": " ++ show d ++ " " ++ symbol ++ show n ) rM dir 
 
 instance RoundedAddInPlace MPFR where
     addUpInPlaceEff = opMutable2Prec MM.add "in-place addition" "+^" M.Up

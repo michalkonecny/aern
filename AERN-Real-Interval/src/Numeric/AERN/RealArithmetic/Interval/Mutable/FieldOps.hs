@@ -98,9 +98,9 @@ multiplyIntervalsInPlace ::
     (OpMutable2 e s) ->
     (OpMutable2 e s) ->
     (OpMutable2 e s) ->
-    (MInterval (Mutable e) s) ->
-    (MInterval (Mutable e) s) ->
-    (MInterval (Mutable e) s) ->
+    (Mutable (Interval e) s) ->
+    (Mutable (Interval e) s) ->
+    (Mutable (Interval e) s) ->
     ST s ()
 multiplyIntervalsInPlace
         sample

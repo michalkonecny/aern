@@ -19,7 +19,7 @@ import Control.Monad.ST (ST, runST)
 class CanBeMutable t where
     {-| a mutable version of the type t; 
         the extra parameter is the state of the ST monad run -}
-    type Mutable t :: * -> *
+    data Mutable t :: * -> *
 
     {-| safely create a new mutable variable with the given value -}
     makeMutable :: t -> ST s (Mutable t s)

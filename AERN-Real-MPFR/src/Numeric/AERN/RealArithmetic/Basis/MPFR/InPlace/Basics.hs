@@ -15,8 +15,6 @@
 -}
 
 module Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.Basics 
-(
-)
 where
 
 import Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps
@@ -31,19 +29,18 @@ import qualified Data.Number.MPFR as M
 import Data.Number.MPFR (MPFR)
 
 import qualified Data.Number.MPFR.Mutable as MM
-import Data.Number.MPFR.Mutable (MMPFR)
 
 instance CanBeMutable MPFR where
-    type Mutable MPFR = MMPFR
-    makeMutable a = MM.thaw a
-    unsafeMakeMutable a = MM.unsafeThaw a
-    writeMutable = MM.writeMMPFR 
-    unsafeWriteMutable = MM.unsafeWriteMMPFR
-    readMutable = MM.freeze 
-    unsafeReadMutable = MM.unsafeFreeze 
+    data Mutable MPFR s = MMPFR { unMMPFR :: MM.MMPFR s }
+    makeMutable a = do { aM <- MM.thaw a; return $ MMPFR aM } 
+    unsafeMakeMutable a = do { aM <- MM.unsafeThaw a; return $ MMPFR aM }
+    writeMutable (MMPFR m) = MM.writeMMPFR m 
+    unsafeWriteMutable (MMPFR m) = MM.unsafeWriteMMPFR m
+    readMutable (MMPFR m) = MM.freeze m 
+    unsafeReadMutable (MMPFR m) = MM.unsafeFreeze m 
     
 instance NegInPlace MPFR where
-    negInPlace _ r a = 
+    negInPlace _ (MMPFR r) (MMPFR a) = 
         do
         MM.neg r a M.Near
         return ()

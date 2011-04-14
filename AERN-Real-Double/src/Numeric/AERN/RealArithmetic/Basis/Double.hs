@@ -14,7 +14,7 @@
     rounded elementary operations.
 -}
 module Numeric.AERN.RealArithmetic.Basis.Double 
-(sampleD, nanD, MDouble(..))
+(sampleD, nanD)
 where
 
 import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
