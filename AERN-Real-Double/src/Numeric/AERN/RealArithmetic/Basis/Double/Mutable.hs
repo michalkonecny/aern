@@ -30,10 +30,10 @@ import Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps
 import Data.STRef
 import Data.Ratio
 
-newtype MDouble s = MDouble { unMDouble :: STRef s Double }
 
 instance CanBeMutable Double where
-    type Mutable Double = MDouble
+    data Mutable Double s = 
+        MDouble { unMDouble :: STRef s Double }
     makeMutable a = 
         do
         v <- newSTRef a
