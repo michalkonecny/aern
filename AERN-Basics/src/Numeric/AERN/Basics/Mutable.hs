@@ -21,6 +21,10 @@ class CanBeMutable t where
       A mutable version of the type t. The extra parameter is the state of the ST monad run. -}
     data Mutable t :: * -> *
 
+    getDummySample :: Mutable t s -> t
+    getDummySample _ =
+        error "AERN internal error: getDummySample should never be evaluated, it serves only type inference"
+
     {-| Safely create a new mutable variable with the given value -}
     makeMutable :: t -> ST s (Mutable t s)
     {-| Create a new mutable variable with the given value, making the value volatile -}
@@ -34,27 +38,24 @@ class CanBeMutable t where
     {-| An unsafe read operation, yielding an immutable value that may be volatile -}
     unsafeReadMutable :: Mutable t s -> ST s t
     {-| Assign a value from one mutable variable to another  -}
-    assignMutable :: t -> Mutable t s -> Mutable t s -> ST s ()
-    assignMutable sample rM aM =
+    assignMutable :: Mutable t s -> Mutable t s -> ST s ()
+    assignMutable rM aM =
         do
         a <- unsafeReadMutable aM
-        let _ = [a, sample]
         writeMutable rM a 
     {-| Swap the values of two mutable variables  -}
-    swapMutable :: t -> Mutable t s -> Mutable t s -> ST s ()
-    swapMutable sample aM bM =
+    swapMutable :: Mutable t s -> Mutable t s -> ST s ()
+    swapMutable aM bM =
         do
         a <- unsafeReadMutable aM
         b <- unsafeReadMutable bM
-        let _ = [a, b, sample]
         writeMutable aM b 
         writeMutable bM a 
     {-| Clone a mutable variable, the first parameter only aids type checking  -}
-    cloneMutable :: t -> Mutable t s -> ST s (Mutable t s)
-    cloneMutable sample aM =
+    cloneMutable :: Mutable t s -> ST s (Mutable t s)
+    cloneMutable aM =
         do
         a <- unsafeReadMutable aM
-        let _ = [a, sample]
         makeMutable a 
 
 
@@ -135,47 +136,39 @@ mutableNonmutEffToPure mutableFn eff a b =
 
 pureToMutable1 ::
     (CanBeMutable t) =>
-    t ->
     (t -> t) ->
     OpMutable1 t s
-pureToMutable1 sample pureFn resM aM =
+pureToMutable1 pureFn resM aM =
     do
     a <- readMutable aM
-    let _ = [a,sample]
     unsafeWriteMutable resM (pureFn a)
 
 pureToMutable1Eff ::
     (CanBeMutable t) =>
-    t ->
     (eff -> t -> t) ->
     OpMutable1Eff eff t s
-pureToMutable1Eff sample pureFn eff resM aM =
+pureToMutable1Eff pureFn eff resM aM =
     do
     a <- readMutable aM
-    let _ = [a,sample]
     unsafeWriteMutable resM (pureFn eff a)
 
 pureToMutable2Eff ::
     (CanBeMutable t) =>
-    t ->
     (eff -> t -> t -> t) ->
     OpMutable2Eff eff t s
-pureToMutable2Eff sample pureFn eff resM aM bM =
+pureToMutable2Eff pureFn eff resM aM bM =
     do
     a <- readMutable aM
-    let _ = [a,sample]
     b <- readMutable bM
     unsafeWriteMutable resM (pureFn eff a b)
 
 pureToMutableNonmutEff ::
     (CanBeMutable t) =>
-    t ->
     (eff -> t -> nonmut -> t) ->
     OpMutableNonmutEff eff t nonmut s
-pureToMutableNonmutEff sample pureFn eff resM aM b =
+pureToMutableNonmutEff pureFn eff resM aM b =
     do
     a <- readMutable aM
-    let _ = [a,sample]
     unsafeWriteMutable resM (pureFn eff a b)
 
 --propWriteRead :: 

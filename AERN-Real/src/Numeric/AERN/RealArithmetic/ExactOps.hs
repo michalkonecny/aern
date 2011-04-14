@@ -60,7 +60,7 @@ class Neg t where
 class (Neg t, CanBeMutable t) => NegInPlace t where
     negInPlace :: t -> OpMutable1 t s 
     negInPlace sample =
-        pureToMutable1 sample neg
+        pureToMutable1 neg
 --        
 --        -- default such as this one is very inefficient
 --        -- but facilitates an API that works even for
