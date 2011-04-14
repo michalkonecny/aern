@@ -21,7 +21,7 @@ class CanBeMutable t where
       A mutable version of the type t. 
       
       The extra parameter is the state of the ST monad run. -}
-    type Mutable t :: * -> *
+    data Mutable t :: * -> *
 
     {-| Safely create a new mutable variable with the given value -}
     makeMutable :: t -> ST s (Mutable t s)
