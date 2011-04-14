@@ -1,17 +1,45 @@
 
 module Numeric.AERN.DoubleBasis.MInterval 
-
+(
+    MDI,
+    makeMutable,writeMutable,readMutable,
+    unsafeMakeMutable,unsafeWriteMutable,unsafeReadMutable,
+    assignMutable,swapMutable,cloneMutable
+)
 where
 
-import Numeric.AERN.RealArithmetic.Basis.Double
-  (MDouble(..))
-
+import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Interval
-  (Interval(..),getEndpoints,fromEndpoints)
+import Numeric.AERN.RealArithmetic.Basis.Double
+import Numeric.AERN.RealArithmetic.Interval.Mutable
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as NumOrd
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort
+import Numeric.AERN.DoubleBasis.Interval
 
-import Numeric.AERN.RealArithmetic.NumericOrderRounding
+import Control.Monad.ST (runST)
 
-type MDI s = Interval (MDouble s)
+type MDI = Mutable DI
 
+transl :: DI -> DI -> DI
+transl x y =
+  runST $
+    do
+    xM <- makeMutable x
+    yM <- makeMutable y
+    addOutInPlace x xM xM yM
+--    addOutInPlaceEff x (addDefaultEffort x) xM xM yM 
+    result <- readMutable xM
+    return result
 
-
+pw4 :: DI -> DI
+pw4 x =
+  runST $
+    do
+    xM <- makeMutable x
+    multOutInPlaceEff x eff xM xM xM
+    multOutInPlaceEff x eff xM xM xM
+    result <- readMutable xM
+    return result
+  where
+  eff = multDefaultEffort x
