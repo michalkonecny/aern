@@ -50,16 +50,13 @@ class (RoundedMixedAddEffort t tn, CanBeMutable t) =>
     mixedAddOutInPlaceEff :: 
         OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
 
-mixedAddInInPlaceEffFromPure
--- ,mixedAddOutInPlaceEffFromPure 
- ::
+mixedAddInInPlaceEffFromPure,
+ mixedAddOutInPlaceEffFromPure ::
     (CanBeMutable t, RoundedMixedAdd t tn) =>
     OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
 mixedAddInInPlaceEffFromPure =
     pureToMutableNonmutEff mixedAddInEff
-
--- TODO figure out why the type delcaration doesn't work
-mixedAddOutInPlaceEffFromPure sample =
+mixedAddOutInPlaceEffFromPure =
     pureToMutableNonmutEff mixedAddOutEff
 
 mixedAddInInPlaceEffFromInPlace

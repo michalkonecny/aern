@@ -163,16 +163,13 @@ mixedMultUpInPlaceEffFromPure =
 mixedMultDnInPlaceEffFromPure =
     pureToMutableNonmutEff mixedMultDnEff
 
-mixedMultUpInPlaceEffFromInPlace
--- ,mixedMultDnInPlaceEffFromInPlace 
- ::
+mixedMultUpInPlaceEffFromInPlace,
+ mixedMultDnInPlaceEffFromInPlace ::
     (RoundedMixedMultiplyInPlace t tn) =>
     (MixedMultEffortIndicator t tn) -> t -> tn -> t
 mixedMultUpInPlaceEffFromInPlace = 
     mutableNonmutEffToPure mixedMultUpInPlaceEff 
-
--- TODO figure out why the type declaration doesn't work
-mixedMultDnInPlaceEffFromInPlace sample = 
+mixedMultDnInPlaceEffFromInPlace = 
     mutableNonmutEffToPure mixedMultDnInPlaceEff
 
 {- properties of mixed multiplication -}
