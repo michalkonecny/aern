@@ -54,14 +54,22 @@ import Control.Monad.ST
 import Data.Maybe
 
 class (RoundedAddEffort t, CanBeMutable t) => RoundedAddInPlace t where
-    addUpInPlaceEff :: t -> OpMutable2Eff (AddEffortIndicator t) t s
-    addDnInPlaceEff :: t -> OpMutable2Eff (AddEffortIndicator t) t s
+    addUpInPlaceEff :: OpMutable2Eff (AddEffortIndicator t) t s
+    addDnInPlaceEff :: OpMutable2Eff (AddEffortIndicator t) t s
 
-addUpInPlaceEffFromPure sample = pureToMutable2Eff sample addUpEff 
-addDnInPlaceEffFromPure sample = pureToMutable2Eff sample addDnEff 
+addUpInPlaceEffFromPure,
+ addDnInPlaceEffFromPure ::
+    (CanBeMutable t, RoundedAdd t) =>
+    OpMutable2Eff (AddEffortIndicator t) t s 
+addUpInPlaceEffFromPure = pureToMutable2Eff addUpEff 
+addDnInPlaceEffFromPure = pureToMutable2Eff addDnEff
 
-addUpInPlaceEffFromInPlace sample = mutable2EffToPure $ addUpInPlaceEff sample 
-addDnInPlaceEffFromInPlace sample = mutable2EffToPure $ addDnInPlaceEff sample 
+addUpInPlaceEffFromInPlace,
+ addDnInPlaceEffFromInPlace :: 
+    (RoundedAddInPlace t) =>
+    (AddEffortIndicator t) -> t -> t -> t 
+addUpInPlaceEffFromInPlace = mutable2EffToPure $ addUpInPlaceEff 
+addDnInPlaceEffFromInPlace = mutable2EffToPure $ addDnInPlaceEff 
 
 propUpDnAddInPlace ::
     (NumOrd.PartialComparison t, Neg t, 
@@ -82,8 +90,8 @@ propUpDnAddInPlace sample initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
-    addUpEffViaInPlace = mutable2EffToPure (addUpInPlaceEff sample)
-    addDnEffViaInPlace = mutable2EffToPure (addDnInPlaceEff sample)
+    addUpEffViaInPlace = mutable2EffToPure (addUpInPlaceEff)
+    addDnEffViaInPlace = mutable2EffToPure (addDnInPlaceEff)
     expr1Up eff =
         let (+^) = addUpEff eff in e1 +^ e2
     expr1Dn eff =
@@ -94,18 +102,18 @@ propUpDnAddInPlace sample initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
         let (+.) = addDnEffViaInPlace eff in e1 +. e2
 
 class (RoundedAddInPlace t,  NegInPlace t) => RoundedSubtrInPlace t where
-    subtrUpInPlaceEff :: t -> OpMutable2Eff (AddEffortIndicator t) t s
-    subtrDnInPlaceEff :: t -> OpMutable2Eff (AddEffortIndicator t) t s
-    subtrUpInPlaceEff sample effort rM aM bM =
+    subtrUpInPlaceEff :: OpMutable2Eff (AddEffortIndicator t) t s
+    subtrDnInPlaceEff :: OpMutable2Eff (AddEffortIndicator t) t s
+    subtrUpInPlaceEff effort rM aM bM =
         do
-        bbM <- cloneMutable sample bM
-        negInPlace sample bbM bM
-        addUpInPlaceEff sample effort rM aM bbM
-    subtrDnInPlaceEff sample effort rM aM bM = 
+        bbM <- cloneMutable bM
+        negInPlace bbM bM
+        addUpInPlaceEff effort rM aM bbM
+    subtrDnInPlaceEff effort rM aM bM = 
         do
-        bbM <- cloneMutable sample bM
-        negInPlace sample bbM bM
-        addDnInPlaceEff sample effort rM aM bbM
+        bbM <- cloneMutable bM
+        negInPlace bbM bM
+        addDnInPlaceEff effort rM aM bbM
 
 propUpDnSubtrInPlace ::
     (NumOrd.PartialComparison t, 
@@ -127,8 +135,8 @@ propUpDnSubtrInPlace sample initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
-    subtrUpEffViaInPlace = mutable2EffToPure (subtrUpInPlaceEff sample)
-    subtrDnEffViaInPlace = mutable2EffToPure (subtrDnInPlaceEff sample)
+    subtrUpEffViaInPlace = mutable2EffToPure (subtrUpInPlaceEff)
+    subtrDnEffViaInPlace = mutable2EffToPure (subtrDnInPlaceEff)
     expr1Up eff =
         let (-^) = subtrUpEff eff in e1 -^ e2
     expr1Dn eff =
@@ -140,14 +148,22 @@ propUpDnSubtrInPlace sample initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
 
 
 class (RoundedAbsEffort t, CanBeMutable t) => RoundedAbsInPlace t where
-    absUpInPlaceEff :: t -> OpMutable1Eff (AbsEffortIndicator t) t s
-    absDnInPlaceEff :: t -> OpMutable1Eff (AbsEffortIndicator t) t s
+    absUpInPlaceEff :: OpMutable1Eff (AbsEffortIndicator t) t s
+    absDnInPlaceEff :: OpMutable1Eff (AbsEffortIndicator t) t s
 
-absUpInPlaceEffFromPure sample = pureToMutable1Eff sample absUpEff 
-absDnInPlaceEffFromPure sample = pureToMutable1Eff sample absDnEff 
+absUpInPlaceEffFromPure,
+ absDnInPlaceEffFromPure ::
+    (CanBeMutable t, RoundedAbs t) =>
+    OpMutable1Eff (AbsEffortIndicator t) t s
+absUpInPlaceEffFromPure = pureToMutable1Eff absUpEff 
+absDnInPlaceEffFromPure = pureToMutable1Eff absDnEff 
 
-absUpInPlaceEffFromInPlace sample = mutable1EffToPure $ absUpInPlaceEff sample 
-absDnInPlaceEffFromInPlace sample = mutable1EffToPure $ absDnInPlaceEff sample 
+absUpInPlaceEffFromInPlace,
+ absDnInPlaceEffFromInPlace ::
+    (RoundedAbsInPlace t) =>
+    (AbsEffortIndicator t) -> t -> t
+absUpInPlaceEffFromInPlace = mutable1EffToPure $ absUpInPlaceEff 
+absDnInPlaceEffFromInPlace = mutable1EffToPure $ absDnInPlaceEff 
 
 propUpDnAbsInPlace ::
     (NumOrd.PartialComparison t, 
@@ -169,22 +185,30 @@ propUpDnAbsInPlace sample initEffort (NumOrd.UniformlyOrderedSingleton e1) =
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
-    absUpEffViaInPlace = mutable1EffToPure (absUpInPlaceEff sample)
-    absDnEffViaInPlace = mutable1EffToPure (absDnInPlaceEff sample)
+    absUpEffViaInPlace = mutable1EffToPure (absUpInPlaceEff)
+    absDnEffViaInPlace = mutable1EffToPure (absDnInPlaceEff)
     expr1Up eff = absUpEff eff e1
     expr1Dn eff = absDnEff eff e1
     expr2Up eff = absUpEffViaInPlace eff e1
     expr2Dn eff = absDnEffViaInPlace eff e1
 
 class (RoundedMultiplyEffort t, CanBeMutable t) => RoundedMultiplyInPlace t where
-    multUpInPlaceEff :: t -> OpMutable2Eff (MultEffortIndicator t) t s
-    multDnInPlaceEff :: t -> OpMutable2Eff (MultEffortIndicator t) t s
+    multUpInPlaceEff :: OpMutable2Eff (MultEffortIndicator t) t s
+    multDnInPlaceEff :: OpMutable2Eff (MultEffortIndicator t) t s
 
-multUpInPlaceEffFromPure sample = pureToMutable2Eff sample multUpEff 
-multDnInPlaceEffFromPure sample = pureToMutable2Eff sample multDnEff 
+multUpInPlaceEffFromPure,
+ multDnInPlaceEffFromPure ::
+    (CanBeMutable t, RoundedMultiply t) =>
+    OpMutable2Eff (MultEffortIndicator t) t s
+multUpInPlaceEffFromPure = pureToMutable2Eff multUpEff 
+multDnInPlaceEffFromPure = pureToMutable2Eff multDnEff 
 
-multUpInPlaceEffFromInPlace sample = mutable2EffToPure $ multUpInPlaceEff sample 
-multDnInPlaceEffFromInPlace sample = mutable2EffToPure $ multDnInPlaceEff sample 
+multUpInPlaceEffFromInPlace,
+ multDnInPlaceEffFromInPlace ::
+    (RoundedMultiplyInPlace t) =>
+    (MultEffortIndicator t) -> t -> t -> t
+multUpInPlaceEffFromInPlace = mutable2EffToPure $ multUpInPlaceEff 
+multDnInPlaceEffFromInPlace = mutable2EffToPure $ multDnInPlaceEff 
 
 propUpDnMultInPlace ::
     (NumOrd.PartialComparison t, 
@@ -206,8 +230,8 @@ propUpDnMultInPlace sample initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
-    multUpEffViaInPlace = mutable2EffToPure (multUpInPlaceEff sample)
-    multDnEffViaInPlace = mutable2EffToPure (multDnInPlaceEff sample)
+    multUpEffViaInPlace = mutable2EffToPure (multUpInPlaceEff)
+    multDnEffViaInPlace = mutable2EffToPure (multDnInPlaceEff)
     expr1Up eff =
         let (*^) = multUpEff eff in e1 *^ e2
     expr1Dn eff =
@@ -221,56 +245,70 @@ class (RoundedPowerNonnegToNonnegIntEffort t, CanBeMutable t) =>
         RoundedPowerNonnegToNonnegIntInPlace t
     where
     powerNonnegToNonnegIntUpInPlaceEff ::
-        t -> OpMutableNonmutEff (PowerNonnegToNonnegIntEffortIndicator t) t Int s
+        OpMutableNonmutEff (PowerNonnegToNonnegIntEffortIndicator t) t Int s
     powerNonnegToNonnegIntDnInPlaceEff ::
-        t -> OpMutableNonmutEff (PowerNonnegToNonnegIntEffortIndicator t) t Int s
+        OpMutableNonmutEff (PowerNonnegToNonnegIntEffortIndicator t) t Int s
     -- default implementations, do not use these if the RoundedPowerNonnegToNonnegInt
     -- instance uses the ...fromMult implementation; 
     -- in such cases override this implementation with the ...fromMult implementation below
     -- for improved efficiency
-    
-powerNonnegToNonnegIntUpInPlaceEffFromPure sample =
-    pureToMutableNonmutEff sample powerNonnegToNonnegIntUpEff 
-powerNonnegToNonnegIntDnInPlaceEffFromPure sample =
-    pureToMutableNonmutEff sample powerNonnegToNonnegIntDnEff 
 
-powerNonnegToNonnegIntUpInPlaceEffFromInPlace sample = 
-    mutableNonmutEffToPure $ powerNonnegToNonnegIntUpInPlaceEff sample 
-powerNonnegToNonnegIntDnInPlaceEffFromInPlace sample = 
-    mutableNonmutEffToPure $ powerNonnegToNonnegIntDnInPlaceEff sample
+powerNonnegToNonnegIntUpInPlaceEffFromPure,
+ powerNonnegToNonnegIntDnInPlaceEffFromPure ::
+    (CanBeMutable t, RoundedPowerNonnegToNonnegInt t) =>
+    OpMutableNonmutEff (PowerNonnegToNonnegIntEffortIndicator t) t Int s
+powerNonnegToNonnegIntUpInPlaceEffFromPure =
+    pureToMutableNonmutEff powerNonnegToNonnegIntUpEff 
+powerNonnegToNonnegIntDnInPlaceEffFromPure =
+    pureToMutableNonmutEff powerNonnegToNonnegIntDnEff 
+
+powerNonnegToNonnegIntUpInPlaceEffFromInPlace,
+ powerNonnegToNonnegIntDnInPlaceEffFromInPlace ::
+    (RoundedPowerNonnegToNonnegIntInPlace t) =>
+    (PowerNonnegToNonnegIntEffortIndicator t) -> t -> Int -> t
+powerNonnegToNonnegIntUpInPlaceEffFromInPlace = 
+    mutableNonmutEffToPure $ powerNonnegToNonnegIntUpInPlaceEff 
+powerNonnegToNonnegIntDnInPlaceEffFromInPlace = 
+    mutableNonmutEffToPure $ powerNonnegToNonnegIntDnInPlaceEff
 
 powerNonnegToNonnegIntUpInPlaceEffFromMult ::
     (RoundedMultiplyInPlace t, HasOne t) =>
-    t ->
     OpMutableNonmutEff (PowerNonnegToNonnegIntEffortIndicatorFromMult t) t Int s 
-powerNonnegToNonnegIntUpInPlaceEffFromMult sample effMult rM eM n =
-    powerFromMultInPlace sample (multUpInPlaceEff sample effMult) rM eM n
+powerNonnegToNonnegIntUpInPlaceEffFromMult effMult rM eM n =
+    powerFromMultInPlace (multUpInPlaceEff effMult) rM eM n
 
 powerNonnegToNonnegIntDnInPlaceEffFromMult ::
     (RoundedMultiplyInPlace t, HasOne t) =>
-    t ->
     OpMutableNonmutEff (PowerNonnegToNonnegIntEffortIndicatorFromMult t) t Int s 
-powerNonnegToNonnegIntDnInPlaceEffFromMult sample effMult rM eM n =
-    powerFromMultInPlace sample (multDnInPlaceEff sample effMult) rM eM n
+powerNonnegToNonnegIntDnInPlaceEffFromMult effMult rM eM n =
+    powerFromMultInPlace (multDnInPlaceEff effMult) rM eM n
 
 
 class (RoundedPowerToNonnegIntEffort t, CanBeMutable t) => 
     RoundedPowerToNonnegIntInPlace t 
     where
     powerToNonnegIntUpInPlaceEff ::
-        t -> OpMutableNonmutEff (PowerToNonnegIntEffortIndicator t) t Int s
+        OpMutableNonmutEff (PowerToNonnegIntEffortIndicator t) t Int s
     powerToNonnegIntDnInPlaceEff ::
-        t -> OpMutableNonmutEff (PowerToNonnegIntEffortIndicator t) t Int s
+        OpMutableNonmutEff (PowerToNonnegIntEffortIndicator t) t Int s
 
-powerToNonnegIntUpInPlaceEffFromPure sample =
-    pureToMutableNonmutEff sample powerToNonnegIntUpEff 
-powerToNonnegIntDnInPlaceEffFromPure sample =
-    pureToMutableNonmutEff sample powerToNonnegIntDnEff 
+powerToNonnegIntUpInPlaceEffFromPure,
+ powerToNonnegIntDnInPlaceEffFromPure ::
+    (CanBeMutable t, RoundedPowerToNonnegInt t) =>
+    OpMutableNonmutEff (PowerToNonnegIntEffortIndicator t) t Int s
+powerToNonnegIntUpInPlaceEffFromPure =
+    pureToMutableNonmutEff powerToNonnegIntUpEff 
+powerToNonnegIntDnInPlaceEffFromPure =
+    pureToMutableNonmutEff powerToNonnegIntDnEff 
 
-powerToNonnegIntUpInPlaceEffFromInPlace sample = 
-    mutableNonmutEffToPure $ powerToNonnegIntUpInPlaceEff sample 
-powerToNonnegIntDnInPlaceEffFromInPlace sample = 
-    mutableNonmutEffToPure $ powerToNonnegIntDnInPlaceEff sample
+powerToNonnegIntUpInPlaceEffFromInPlace,
+ powerToNonnegIntDnInPlaceEffFromInPlace ::
+    (RoundedPowerToNonnegIntInPlace t) =>
+    (PowerToNonnegIntEffortIndicator t) -> t -> Int -> t
+powerToNonnegIntUpInPlaceEffFromInPlace = 
+    mutableNonmutEffToPure $ powerToNonnegIntUpInPlaceEff 
+powerToNonnegIntDnInPlaceEffFromInPlace = 
+    mutableNonmutEffToPure $ powerToNonnegIntDnInPlaceEff
 
 propUpDnPowerToNonnegInPlace ::
     (NumOrd.PartialComparison t, 
@@ -295,9 +333,9 @@ propUpDnPowerToNonnegInPlace sample initEffort
         NumOrd.pLeqEff initEffort
     where
     powerToNonnegIntUpEffViaInPlace = 
-        mutableNonmutEffToPure (powerToNonnegIntUpInPlaceEff sample)
+        mutableNonmutEffToPure (powerToNonnegIntUpInPlaceEff)
     powerToNonnegIntDnEffViaInPlace = 
-        mutableNonmutEffToPure (powerToNonnegIntDnInPlaceEff sample)
+        mutableNonmutEffToPure (powerToNonnegIntDnInPlaceEff)
     expr1Up eff =
         let (^^) = powerToNonnegIntUpEff eff in e1 ^^ n
     expr1Dn eff =
@@ -310,35 +348,47 @@ propUpDnPowerToNonnegInPlace sample initEffort
 class (HasOne t, RoundedDivideEffort t, CanBeMutable t) => 
     RoundedDivideInPlace t
     where
-    divUpInPlaceEff :: t -> OpMutable2Eff (DivEffortIndicator t) t s
-    divDnInPlaceEff :: t -> OpMutable2Eff (DivEffortIndicator t) t s
-    recipUpInPlaceEff :: t -> OpMutable1Eff (DivEffortIndicator t) t s
-    recipDnInPlaceEff :: t -> OpMutable1Eff (DivEffortIndicator t) t s
+    divUpInPlaceEff :: OpMutable2Eff (DivEffortIndicator t) t s
+    divDnInPlaceEff :: OpMutable2Eff (DivEffortIndicator t) t s
+    recipUpInPlaceEff :: OpMutable1Eff (DivEffortIndicator t) t s
+    recipDnInPlaceEff :: OpMutable1Eff (DivEffortIndicator t) t s
 
-    recipUpInPlaceEff sample effort resM aM =
+    recipUpInPlaceEff effort resM aM =
         do
-        let oneP = one
-        let _ = [oneP, sample]
-        oneM <- unsafeMakeMutable oneP
-        divUpInPlaceEff sample effort resM oneM aM
-    recipDnInPlaceEff sample effort resM aM =
+        oneM <- unsafeMakeMutable one
+        divUpInPlaceEff effort resM oneM aM
+    recipDnInPlaceEff effort resM aM =
         do
-        let oneP = one
-        let _ = [oneP, sample]
-        oneM <- unsafeMakeMutable oneP
-        divDnInPlaceEff sample effort resM oneM aM
+        oneM <- unsafeMakeMutable one
+        divDnInPlaceEff effort resM oneM aM
 
-divUpInPlaceEffFromPure sample = pureToMutable2Eff sample divUpEff 
-divDnInPlaceEffFromPure sample = pureToMutable2Eff sample divDnEff 
+divUpInPlaceEffFromPure,
+ divDnInPlaceEffFromPure ::
+    (CanBeMutable t, RoundedDivide t) =>
+    OpMutable2Eff (DivEffortIndicator t) t s
+divUpInPlaceEffFromPure = pureToMutable2Eff divUpEff 
+divDnInPlaceEffFromPure = pureToMutable2Eff divDnEff 
 
-divUpInPlaceEffFromInPlace sample = mutable2EffToPure $ divUpInPlaceEff sample 
-divDnInPlaceEffFromInPlace sample = mutable2EffToPure $ divDnInPlaceEff sample 
+divUpInPlaceEffFromInPlace,
+ divDnInPlaceEffFromInPlace ::
+    (RoundedDivideInPlace t) =>
+    (DivEffortIndicator t) -> t -> t -> t
+divUpInPlaceEffFromInPlace = mutable2EffToPure $ divUpInPlaceEff 
+divDnInPlaceEffFromInPlace = mutable2EffToPure $ divDnInPlaceEff 
 
-recipUpInPlaceEffFromPure sample = pureToMutable1Eff sample recipUpEff 
-recipDnInPlaceEffFromPure sample = pureToMutable1Eff sample recipDnEff 
+recipUpInPlaceEffFromPure,
+ recipDnInPlaceEffFromPure ::
+    (CanBeMutable t, RoundedDivide t) =>
+    OpMutable1Eff (DivEffortIndicator t) t s
+recipUpInPlaceEffFromPure = pureToMutable1Eff recipUpEff 
+recipDnInPlaceEffFromPure = pureToMutable1Eff recipDnEff 
 
-recipUpInPlaceEffFromInPlace sample = mutable1EffToPure $ recipUpInPlaceEff sample 
-recipDnInPlaceEffFromInPlace sample = mutable1EffToPure $ recipDnInPlaceEff sample 
+recipUpInPlaceEffFromInPlace,
+ recipDnInPlaceEffFromInPlace ::
+    (RoundedDivideInPlace t) =>
+    (DivEffortIndicator t) -> t -> t
+recipUpInPlaceEffFromInPlace = mutable1EffToPure $ recipUpInPlaceEff 
+recipDnInPlaceEffFromInPlace = mutable1EffToPure $ recipDnInPlaceEff 
 
 propUpDnDivInPlace ::
     (NumOrd.PartialComparison t, 
@@ -364,8 +414,8 @@ propUpDnDivInPlace sample initEffort@(effComp, _) (NumOrd.UniformlyOrderedPair (
                 NumOrd.pLeqEff initEffort
         _ -> True
     where
-    divUpEffViaInPlace = mutable2EffToPure (divUpInPlaceEff sample)
-    divDnEffViaInPlace = mutable2EffToPure (divDnInPlaceEff sample)
+    divUpEffViaInPlace = mutable2EffToPure (divUpInPlaceEff)
+    divDnEffViaInPlace = mutable2EffToPure (divDnInPlaceEff)
     expr1Up eff =
         let (/^) = divUpEff eff in e1 /^ e2
     expr1Dn eff =
