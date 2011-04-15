@@ -43,33 +43,39 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 class (RoundedMixedAddEffort t tn, CanBeMutable t) => RoundedMixedAddInPlace t tn where
     mixedAddUpInPlaceEff :: 
-        t -> OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
+        OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
     mixedAddDnInPlaceEff :: 
-        t -> OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
+        OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
 
-mixedAddUpInPlaceEffFromPure sample =
-    pureToMutableNonmutEff sample mixedAddUpEff
-mixedAddDnInPlaceEffFromPure sample =
-    pureToMutableNonmutEff sample mixedAddDnEff
-
-mixedAddUpInPlaceEffFromInPlace sample = 
-    pureToMutableNonmutEff $ mixedAddUpInPlaceEff sample 
-mixedAddDnInPlaceEffFromInPlace sample = 
-    pureToMutableNonmutEff $ mixedAddDnInPlaceEff sample 
+mixedAddUpInPlaceEffFromPure,
+ mixedAddDnInPlaceEffFromPure ::
+    (CanBeMutable t, RoundedMixedAdd t tn) =>
+    OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
+mixedAddUpInPlaceEffFromPure =
+    pureToMutableNonmutEff mixedAddUpEff
+mixedAddDnInPlaceEffFromPure =
+    pureToMutableNonmutEff mixedAddDnEff
+    
+mixedAddUpInPlaceEffFromInPlace,
+ mixedAddDnInPlaceEffFromInPlace ::
+    (RoundedMixedAddInPlace t tn) =>
+    (MixedAddEffortIndicator t tn) -> t -> tn -> t
+mixedAddUpInPlaceEffFromInPlace = 
+    mutableNonmutEffToPure mixedAddUpInPlaceEff 
+mixedAddDnInPlaceEffFromInPlace = 
+    mutableNonmutEffToPure mixedAddDnInPlaceEff 
 
 -- an alternative default implementation using conversion 
 -- - this could be more efficient
 
 mixedAddUpInPlaceEffByConversion ::
     (Convertible tn t, RoundedAddInPlace t, Show tn) =>
-    t ->
     OpMutableNonmutEff (AddEffortIndicator t, ConvertEffortIndicator tn t) t tn s 
-mixedAddUpInPlaceEffByConversion sample (effAdd, effConv) rM dM n =
+mixedAddUpInPlaceEffByConversion (effAdd, effConv) rM dM n =
     do
     nUpM <- makeMutable nUp
-    addUpInPlaceEff sample effAdd rM dM nUpM
+    addUpInPlaceEff effAdd rM dM nUpM
     where
-    _ = [nUp, sample]
     nUp = 
         case convertUpEff effConv n of
             (Just nUp) -> nUp
@@ -78,14 +84,12 @@ mixedAddUpInPlaceEffByConversion sample (effAdd, effConv) rM dM n =
 
 mixedAddDnInPlaceEffByConversion ::
     (Convertible tn t, RoundedAddInPlace t, Show tn) =>
-    t ->
     OpMutableNonmutEff (AddEffortIndicator t, ConvertEffortIndicator tn t) t tn s 
-mixedAddDnInPlaceEffByConversion sample (effAdd, effConv) rM dM n =
+mixedAddDnInPlaceEffByConversion (effAdd, effConv) rM dM n =
     do
     nDnM <- makeMutable nDn
-    addDnInPlaceEff sample effAdd rM dM nDnM
+    addDnInPlaceEff effAdd rM dM nDnM
     where
-    _ = [nDn, sample]
     nDn = 
         case convertDnEff effConv n of
             (Just nDn) -> nDn
@@ -124,14 +128,14 @@ propMixedAddInPlaceEqualsConvert sample1 sample2 initEffort
         NumOrd.pLeqEff initEffort
     where
     expr1Up (effMAdd,_,_) =
-        let (+^|=) dR = mixedAddUpInPlaceEff d effMAdd dR dR in
+        let (+^|=) dR = mixedAddUpInPlaceEff effMAdd dR dR in
         runST $ 
             do
             dR <- makeMutable d
             dR +^|= n
             unsafeReadMutable dR
     expr1Dn (effMAdd,_,_) =
-        let (+.|=) dR = mixedAddDnInPlaceEff d effMAdd dR dR in
+        let (+.|=) dR = mixedAddDnInPlaceEff effMAdd dR dR in
         runST $ 
             do
             dR <- makeMutable d
@@ -146,19 +150,30 @@ propMixedAddInPlaceEqualsConvert sample1 sample2 initEffort
 
 class (RoundedMixedMultiplyEffort t tn, CanBeMutable t) => RoundedMixedMultiplyInPlace t tn where
     mixedMultUpInPlaceEff :: 
-        t -> OpMutableNonmutEff (MixedMultEffortIndicator t tn) t tn s
+        OpMutableNonmutEff (MixedMultEffortIndicator t tn) t tn s
     mixedMultDnInPlaceEff :: 
-        t -> OpMutableNonmutEff (MixedMultEffortIndicator t tn) t tn s
+        OpMutableNonmutEff (MixedMultEffortIndicator t tn) t tn s
 
-mixedMultUpInPlaceEffFromPure sample =
-    pureToMutableNonmutEff sample mixedMultUpEff
-mixedMultDnInPlaceEffFromPure sample =
-    pureToMutableNonmutEff sample mixedMultDnEff
+mixedMultUpInPlaceEffFromPure,
+ mixedMultDnInPlaceEffFromPure ::
+    (CanBeMutable t, RoundedMixedMultiply t tn) =>
+    OpMutableNonmutEff (MixedMultEffortIndicator t tn) t tn s
+mixedMultUpInPlaceEffFromPure =
+    pureToMutableNonmutEff mixedMultUpEff
+mixedMultDnInPlaceEffFromPure =
+    pureToMutableNonmutEff mixedMultDnEff
 
-mixedMultUpInPlaceEffFromInPlace sample = 
-    pureToMutableNonmutEff $ mixedMultUpInPlaceEff sample 
+mixedMultUpInPlaceEffFromInPlace
+-- ,mixedMultDnInPlaceEffFromInPlace 
+ ::
+    (RoundedMixedMultiplyInPlace t tn) =>
+    (MixedMultEffortIndicator t tn) -> t -> tn -> t
+mixedMultUpInPlaceEffFromInPlace = 
+    mutableNonmutEffToPure mixedMultUpInPlaceEff 
+
+-- TODO figure out why the type declaration doesn't work
 mixedMultDnInPlaceEffFromInPlace sample = 
-    pureToMutableNonmutEff $ mixedMultDnInPlaceEff sample
+    mutableNonmutEffToPure mixedMultDnInPlaceEff
 
 {- properties of mixed multiplication -}
 
@@ -195,14 +210,14 @@ propMixedMultInPlaceEqualsConvert sample1 sample2 initEffort
         NumOrd.pLeqEff initEffort
     where
     expr1Up (effMMult,_) =
-        let (*^|=) dR = mixedMultUpInPlaceEff d effMMult dR dR in
+        let (*^|=) dR = mixedMultUpInPlaceEff effMMult dR dR in
         runST $ 
             do
             dR <- makeMutable d
             dR *^|= n
             unsafeReadMutable dR
     expr1Dn (effMMult,_) =
-        let (*.|=) dR = mixedMultDnInPlaceEff d effMMult dR dR in
+        let (*.|=) dR = mixedMultDnInPlaceEff effMMult dR dR in
         runST $ 
             do
             dR <- makeMutable d
@@ -221,19 +236,27 @@ propMixedMultInPlaceEqualsConvert sample1 sample2 initEffort
 
 class (RoundedMixedDivide t tn, CanBeMutable t) => RoundedMixedDivideInPlace t tn where
     mixedDivUpInPlaceEff :: 
-        t -> OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
+        OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
     mixedDivDnInPlaceEff :: 
-        t -> OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
+        OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
 
-mixedDivUpInPlaceEffFromPure sample =
-    pureToMutableNonmutEff sample mixedDivUpEff
-mixedDivDnInPlaceEffFromPure sample =
-    pureToMutableNonmutEff sample mixedDivDnEff
+mixedDivUpInPlaceEffFromPure,
+ mixedDivDnInPlaceEffFromPure ::
+    (CanBeMutable t, RoundedMixedDivide t tn) =>
+    OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
+mixedDivUpInPlaceEffFromPure =
+    pureToMutableNonmutEff mixedDivUpEff
+mixedDivDnInPlaceEffFromPure =
+    pureToMutableNonmutEff mixedDivDnEff
 
-mixedDivUpInPlaceEffFromInPlace sample = 
-    pureToMutableNonmutEff $ mixedDivUpInPlaceEff sample 
-mixedDivDnInPlaceEffFromInPlace sample = 
-    pureToMutableNonmutEff $ mixedDivDnInPlaceEff sample
+mixedDivUpInPlaceEffFromInPlace,
+ mixedDivDnInPlaceEffFromInPlace ::
+    (RoundedMixedDivideInPlace t tn) =>
+    (MixedDivEffortIndicator t tn) -> t -> tn -> t
+mixedDivUpInPlaceEffFromInPlace = 
+    mutableNonmutEffToPure mixedDivUpInPlaceEff 
+mixedDivDnInPlaceEffFromInPlace = 
+    mutableNonmutEffToPure mixedDivDnInPlaceEff
 
 {- properties of mixed division -}
 
@@ -281,14 +304,14 @@ propMixedDivInPlaceEqualsConvert sample1 sample2
                     (_, Just True) -> True
                     _ -> False && (null [d, nUp, nDn]) -- type of nUp, nDn...
     expr1Up (effMDiv,_) =
-        let (/^|=) dR = mixedDivUpInPlaceEff d effMDiv dR dR in
+        let (/^|=) dR = mixedDivUpInPlaceEff effMDiv dR dR in
         runST $ 
             do
             dR <- makeMutable d
             dR /^|= n
             unsafeReadMutable dR
     expr1Dn (effMDiv,_) =
-        let (/.|=) dR = mixedDivDnInPlaceEff d effMDiv dR dR in
+        let (/.|=) dR = mixedDivDnInPlaceEff effMDiv dR dR in
         runST $ 
             do
             dR <- makeMutable d
