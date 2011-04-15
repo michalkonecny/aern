@@ -34,18 +34,26 @@ import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 class (RoundedExponentiation t, CanBeMutable t) => RoundedExponentiationInPlace t where
-    expUpInPlaceEff :: t -> OpMutable1Eff (ExpEffortIndicator t) t s
-    expDnInPlaceEff :: t -> OpMutable1Eff (ExpEffortIndicator t) t s
+    expUpInPlaceEff :: OpMutable1Eff (ExpEffortIndicator t) t s
+    expDnInPlaceEff :: OpMutable1Eff (ExpEffortIndicator t) t s
 
-expUpInPlaceEffFromPure sample =
-    pureToMutable1Eff sample expUpEff
-expDnInPlaceEffFromPure sample =
-    pureToMutable1Eff sample expDnEff
+expUpInPlaceEffFromPure,
+ expDnInPlaceEffFromPure ::
+    (CanBeMutable t, RoundedExponentiation t) =>
+    OpMutable1Eff (ExpEffortIndicator t) t s
+expUpInPlaceEffFromPure =
+    pureToMutable1Eff expUpEff
+expDnInPlaceEffFromPure =
+    pureToMutable1Eff expDnEff
 
-expUpInPlaceEffFromInPlace sample = 
-    mutable1EffToPure $ expUpInPlaceEff sample 
-expDnInPlaceEffFromInPlace sample = 
-    mutable1EffToPure $ expDnInPlaceEff sample 
+expUpInPlaceEffFromInPlace,
+ expDnInPlaceEffFromInPlace ::
+    (RoundedExponentiationInPlace t) =>
+    (ExpEffortIndicator t) -> t -> t
+expUpInPlaceEffFromInPlace = 
+    mutable1EffToPure expUpInPlaceEff 
+expDnInPlaceEffFromInPlace = 
+    mutable1EffToPure expDnInPlaceEff 
 
 propUpDnExpInPlace ::
     (NumOrd.PartialComparison t, 
@@ -68,8 +76,8 @@ propUpDnExpInPlace sample initEffort (NumOrd.UniformlyOrderedSingleton e1) =
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
-    expUpEffViaInPlace = mutable1EffToPure (expUpInPlaceEff sample)
-    expDnEffViaInPlace = mutable1EffToPure (expDnInPlaceEff sample)
+    expUpEffViaInPlace = mutable1EffToPure expUpInPlaceEff
+    expDnEffViaInPlace = mutable1EffToPure expDnInPlaceEff
     expr1Up eff = expUpEff eff e1
     expr1Dn eff = expDnEff eff e1
     expr2Up eff = expUpEffViaInPlace eff e1
@@ -83,18 +91,26 @@ testsUpDnExpInPlace (name, sample) =
 
         
 class (RoundedSquareRoot t, CanBeMutable t) => RoundedSquareRootInPlace t where
-    sqrtUpInPlaceEff :: t -> OpMutable1Eff (SqrtEffortIndicator t) t s
-    sqrtDnInPlaceEff :: t -> OpMutable1Eff (SqrtEffortIndicator t) t s
+    sqrtUpInPlaceEff :: OpMutable1Eff (SqrtEffortIndicator t) t s
+    sqrtDnInPlaceEff :: OpMutable1Eff (SqrtEffortIndicator t) t s
 
-sqrtUpInPlaceEffFromPure sample =
-    pureToMutable1Eff sample sqrtUpEff
-sqrtDnInPlaceEffFromPure sample =
-    pureToMutable1Eff sample sqrtDnEff
+sqrtUpInPlaceEffFromPure,
+ sqrtDnInPlaceEffFromPure ::
+    (CanBeMutable t, RoundedSquareRoot t) =>
+    OpMutable1Eff (SqrtEffortIndicator t) t s
+sqrtUpInPlaceEffFromPure =
+    pureToMutable1Eff sqrtUpEff
+sqrtDnInPlaceEffFromPure =
+    pureToMutable1Eff sqrtDnEff
 
-sqrtUpInPlaceEffFromInPlace sample = 
-    mutable1EffToPure $ sqrtUpInPlaceEff sample 
-sqrtDnInPlaceEffFromInPlace sample = 
-    mutable1EffToPure $ sqrtDnInPlaceEff sample 
+sqrtUpInPlaceEffFromInPlace,
+ sqrtDnInPlaceEffFromInPlace ::
+    (RoundedSquareRootInPlace t) =>
+    (SqrtEffortIndicator t) -> t -> t 
+sqrtUpInPlaceEffFromInPlace = 
+    mutable1EffToPure sqrtUpInPlaceEff 
+sqrtDnInPlaceEffFromInPlace = 
+    mutable1EffToPure sqrtDnInPlaceEff 
 
 propUpDnSqrtInPlace ::
     (NumOrd.PartialComparison t, 
@@ -117,8 +133,8 @@ propUpDnSqrtInPlace sample initEffort (NumOrd.UniformlyOrderedSingleton e1) =
         sqrtr1Up sqrtr1Dn sqrtr2Up sqrtr2Dn 
         NumOrd.pLeqEff initEffort
     where
-    sqrtUpEffViaInPlace = mutable1EffToPure (sqrtUpInPlaceEff sample)
-    sqrtDnEffViaInPlace = mutable1EffToPure (sqrtDnInPlaceEff sample)
+    sqrtUpEffViaInPlace = mutable1EffToPure sqrtUpInPlaceEff
+    sqrtDnEffViaInPlace = mutable1EffToPure sqrtDnInPlaceEff
     sqrtr1Up eff = sqrtUpEff eff e1
     sqrtr1Dn eff = sqrtDnEff eff e1
     sqrtr2Up eff = sqrtUpEffViaInPlace eff e1
