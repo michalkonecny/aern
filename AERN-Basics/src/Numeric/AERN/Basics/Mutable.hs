@@ -143,6 +143,16 @@ pureToMutable1 pureFn resM aM =
     a <- readMutable aM
     unsafeWriteMutable resM (pureFn a)
 
+pureToMutable2 ::
+    (CanBeMutable t) =>
+    (t -> t -> t) ->
+    OpMutable2 t s
+pureToMutable2 pureFn resM aM bM =
+    do
+    a <- readMutable aM
+    b <- readMutable bM
+    unsafeWriteMutable resM (pureFn a b)
+
 pureToMutable1Eff ::
     (CanBeMutable t) =>
     (eff -> t -> t) ->
