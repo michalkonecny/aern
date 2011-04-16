@@ -60,9 +60,7 @@ mutable2ToMutable1 ::
     (CanBeMutable t) =>
     OpMutable2 t s -> OpMutable1 t s
 mutable2ToMutable1 mutOp aM bM =
-    do
-    resM <- cloneMutable aM
-    mutOp resM aM bM
+    mutOp aM aM bM
 
 ---- | Inward rounded in place addition
 --addInInPlace :: (RoundedAddInPlace t) => OpMutable2 t s
