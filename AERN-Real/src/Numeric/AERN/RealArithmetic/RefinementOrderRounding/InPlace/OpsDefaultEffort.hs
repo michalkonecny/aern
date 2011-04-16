@@ -57,6 +57,7 @@ pureEffToMutableNonmut pureEffFn defEff resM aM b =
     unsafeWriteMutable resM (pureEffFn (defEff d) a b)
 
 mutable2ToMutable1 ::
+    (CanBeMutable t) =>
     OpMutable2 t s -> OpMutable1 t s
 mutable2ToMutable1 mutOp aM bM =
     do
