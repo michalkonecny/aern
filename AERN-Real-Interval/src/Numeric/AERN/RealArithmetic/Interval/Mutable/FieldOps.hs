@@ -511,42 +511,44 @@ instance
      CanBeMutable e) => 
     RoundedDivideInPlace (Interval e) 
     where
-    divOutInPlaceEff sampleI@(Interval sample _) 
+    divOutInPlaceEff 
             (effortComp, effortMinmax, (effortMult, effortDiv)) 
             res@(MInterval resL resH) a@(MInterval aL aH) b@(MInterval bL bH) =
         do
-        temp <- makeMutable sampleI
-        recipIntervalInPlace sample
+        temp <- makeMutable zero
+        recipIntervalInPlace
             (pPosNonnegNegNonposEff effortComp) 
             divDn
             divUp
             bottom
             temp b
-        multOutInPlaceEff sampleI (effortComp, effortMinmax, effortMult) res a temp
+        multOutInPlaceEff (effortComp, effortMinmax, effortMult) res a temp
         where
         bottom = RefOrd.bottom
+        sampleI = getDummySample res
         _ = [bottom, sampleI]
-        divUp = ArithUpDn.divUpInPlaceEff sample effortDiv
-        divDn = ArithUpDn.divDnInPlaceEff sample effortDiv
-    divInInPlaceEff sampleI@(Interval sample _) 
+        divUp = ArithUpDn.divUpInPlaceEff effortDiv
+        divDn = ArithUpDn.divDnInPlaceEff effortDiv
+    divInInPlaceEff 
             (effortComp, effortMinmax, (effortMult, effortDiv)) 
             res@(MInterval resL resH) a@(MInterval aL aH) b@(MInterval bL bH) =
         do
-        temp <- makeMutable sampleI
-        recipIntervalInPlace sample
+        temp <- makeMutable zero
+        recipIntervalInPlace
             (pPosNonnegNegNonposEff effortComp) 
             divUp
             divDn
             top
             temp b
-        multInInPlaceEff sampleI (effortComp, effortMinmax, effortMult) res a temp
+        multInInPlaceEff (effortComp, effortMinmax, effortMult) res a temp
         where
         top = RefOrd.top
+        sampleI = getDummySample res
         _ = [top, sampleI]
-        divUp = ArithUpDn.divUpInPlaceEff sample effortDiv
-        divDn = ArithUpDn.divDnInPlaceEff sample effortDiv
+        divUp = ArithUpDn.divUpInPlaceEff effortDiv
+        divDn = ArithUpDn.divDnInPlaceEff effortDiv
 
-recipIntervalInPlace sample pPosNonnegNegNonpos divL divR fallback 
+recipIntervalInPlace pPosNonnegNegNonpos divL divR fallback 
         res@(MInterval resL resH) a@(MInterval aL aH) =
     do
     let oneP = one
@@ -556,7 +558,7 @@ recipIntervalInPlace sample pPosNonnegNegNonpos divL divR fallback
     oneM <- unsafeMakeMutable oneP  
     l <- readMutable aL
     h <- readMutable aH
-    let _ = [sample, l, h, oneP]
+    let _ = [l, h, oneP]
     case (pPosNonnegNegNonpos l, pPosNonnegNegNonpos h) of
         -- positive:
         ((Just True, _, _, _), (Just True, _, _, _)) ->
