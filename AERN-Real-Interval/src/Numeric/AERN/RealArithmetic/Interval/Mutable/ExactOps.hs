@@ -23,10 +23,9 @@ import Numeric.AERN.RealArithmetic.Interval.ExactOps
 
 instance (NegInPlace e, Neg e) => NegInPlace (Interval e)
     where
-    negInPlace (Interval sample _) (MInterval lRes hRes) (MInterval lM hM) =
+    negInPlace (MInterval lRes hRes) (MInterval lM hM) =
         do
-        temp <- makeMutable sample
-        negInPlace sample temp lM -- mind potential aliasing hRes - hM
-        negInPlace sample lRes hM
-        assignMutable sample hRes temp
-          
+        temp <- cloneMutable hRes
+        negInPlace temp lM -- mind potential aliasing hRes - hM
+        negInPlace lRes hM
+        assignMutable hRes temp
