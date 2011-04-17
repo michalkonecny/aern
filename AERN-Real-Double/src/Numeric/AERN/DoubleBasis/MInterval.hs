@@ -33,7 +33,7 @@ transl x y =
     do
     xM <- makeMutable x
     yM <- makeMutable y
-    addOutInPlace x xM xM yM
+    addOutInPlace xM xM yM
 --    addOutInPlaceEff x (addDefaultEffort x) xM xM yM 
     result <- readMutable xM
     return result
@@ -43,8 +43,8 @@ pw4 x =
   runST $
     do
     xM <- makeMutable x
-    multOutInPlaceEff x eff xM xM xM
-    multOutInPlaceEff x eff xM xM xM
+    multOutInPlaceEff eff xM xM xM
+    multOutInPlaceEff eff xM xM xM
     result <- readMutable xM
     return result
   where
