@@ -96,32 +96,32 @@ instance
     (NumOrd.RoundedLatticeInPlace e) =>
     (NumOrd.OuterRoundedLatticeInPlace (Interval e))
     where
-    minOuterInPlaceEff (Interval sample _) effort 
+    minOuterInPlaceEff effort 
             (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
         do
-        NumOrd.minDnInPlaceEff sample effort resLM l1M l2M
-        NumOrd.minUpInPlaceEff sample effort resHM h1M h2M
-    maxOuterInPlaceEff (Interval sample _) effort 
+        NumOrd.minDnInPlaceEff effort resLM l1M l2M
+        NumOrd.minUpInPlaceEff effort resHM h1M h2M
+    maxOuterInPlaceEff effort 
             (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
         do
-        NumOrd.maxDnInPlaceEff sample effort resLM l1M l2M
-        NumOrd.maxUpInPlaceEff sample effort resHM h1M h2M
+        NumOrd.maxDnInPlaceEff effort resLM l1M l2M
+        NumOrd.maxUpInPlaceEff effort resHM h1M h2M
 
 
 instance
     (NumOrd.RoundedLatticeInPlace e) =>
     (NumOrd.InnerRoundedLatticeInPlace (Interval e))
     where
-    minInnerInPlaceEff (Interval sample _) effort 
+    minInnerInPlaceEff effort 
             (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
         do
-        NumOrd.minUpInPlaceEff sample effort resLM l1M l2M
-        NumOrd.minDnInPlaceEff sample effort resHM h1M h2M
-    maxInnerInPlaceEff (Interval sample _) effort 
+        NumOrd.minUpInPlaceEff effort resLM l1M l2M
+        NumOrd.minDnInPlaceEff effort resHM h1M h2M
+    maxInnerInPlaceEff effort 
             (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
         do
-        NumOrd.maxUpInPlaceEff sample effort resLM l1M l2M
-        NumOrd.maxDnInPlaceEff sample effort resHM h1M h2M
+        NumOrd.maxUpInPlaceEff effort resLM l1M l2M
+        NumOrd.maxDnInPlaceEff effort resHM h1M h2M
 
 instance 
     (NumOrd.RoundedLatticeInPlace e) => 
