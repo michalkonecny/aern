@@ -37,14 +37,14 @@ import Control.Monad.ST (ST)
 instance (ArithUpDn.RoundedMixedAddInPlace t tn, CanBeMutable t) => 
     RoundedMixedAddInPlace (Interval t) tn
     where
-    mixedAddInInPlaceEff (Interval sample _) eff (MInterval resL resH) (MInterval aL aH) n =
+    mixedAddInInPlaceEff eff (MInterval resL resH) (MInterval aL aH) n =
         do
-        ArithUpDn.mixedAddUpInPlaceEff sample eff resL aL n
-        ArithUpDn.mixedAddDnInPlaceEff sample eff resH aH n
-    mixedAddOutInPlaceEff (Interval sample _) eff (MInterval resL resH) (MInterval aL aH) n =
+        ArithUpDn.mixedAddUpInPlaceEff eff resL aL n
+        ArithUpDn.mixedAddDnInPlaceEff eff resH aH n
+    mixedAddOutInPlaceEff eff (MInterval resL resH) (MInterval aL aH) n =
         do
-        ArithUpDn.mixedAddDnInPlaceEff sample eff resL aL n
-        ArithUpDn.mixedAddUpInPlaceEff sample eff resH aH n
+        ArithUpDn.mixedAddDnInPlaceEff eff resL aL n
+        ArithUpDn.mixedAddUpInPlaceEff eff resH aH n
 
 instance    
     (ArithUpDn.RoundedMixedMultiplyInPlace e tn,
@@ -54,34 +54,31 @@ instance
      CanBeMutable e) => 
     RoundedMixedMultiplyInPlace (Interval e) tn
     where
-    mixedMultInInPlaceEff 
-            (Interval sample _) 
+    mixedMultInInPlaceEff  
             ((effortCompS,effortCompE), effortMinmax, effortMult)
             r i1 s =
-        multiplySingletonAndIntervalInPlace sample
+        multiplySingletonAndIntervalInPlace
             (pNonnegNonposEff effortCompS)
             (pNonnegNonposEff effortCompE)
-            (ArithUpDn.mixedMultUpInPlaceEff sample effortMult) 
-            (ArithUpDn.mixedMultDnInPlaceEff sample effortMult)
-            (NumOrd.maxUpInPlaceEff sample effortMinmax)
-            (NumOrd.minDnInPlaceEff sample effortMinmax)
+            (ArithUpDn.mixedMultUpInPlaceEff effortMult) 
+            (ArithUpDn.mixedMultDnInPlaceEff effortMult)
+            (NumOrd.maxUpInPlaceEff effortMinmax)
+            (NumOrd.minDnInPlaceEff effortMinmax)
             r s i1
     mixedMultOutInPlaceEff 
-            (Interval sample _) 
             ((effortCompS,effortCompE), effortMinmax, effortMult)
             r i1 s =
-        multiplySingletonAndIntervalInPlace sample
+        multiplySingletonAndIntervalInPlace
             (pNonnegNonposEff effortCompS)
             (pNonnegNonposEff effortCompE)
-            (ArithUpDn.mixedMultDnInPlaceEff sample effortMult) 
-            (ArithUpDn.mixedMultUpInPlaceEff sample effortMult)
-            (NumOrd.minDnInPlaceEff sample effortMinmax)
-            (NumOrd.maxUpInPlaceEff sample effortMinmax)
+            (ArithUpDn.mixedMultDnInPlaceEff effortMult) 
+            (ArithUpDn.mixedMultUpInPlaceEff effortMult)
+            (NumOrd.minDnInPlaceEff effortMinmax)
+            (NumOrd.maxUpInPlaceEff effortMinmax)
             r s i1
 
 multiplySingletonAndIntervalInPlace ::
     (CanBeMutable e, HasZero e) =>
-    e ->
     (tn -> (Maybe Bool, Maybe Bool)) ->
     (e -> (Maybe Bool, Maybe Bool)) ->
     (OpMutableNonmut e tn s) ->
@@ -92,7 +89,7 @@ multiplySingletonAndIntervalInPlace ::
     tn ->
     (Mutable (Interval e) s) ->
     ST s ()
-multiplySingletonAndIntervalInPlace sample
+multiplySingletonAndIntervalInPlace
         sNonnegNonpos iNonnegNonpos 
         timesLInPlace timesRInPlace
         combineLInPlace combineRInPlace
@@ -101,7 +98,7 @@ multiplySingletonAndIntervalInPlace sample
     let _ = [combineLInPlace, combineRInPlace]
     l2 <- readMutable l2M
     h2 <- readMutable h2M
-    let _ = [l2,h2,sample]
+    let _ = [l2,h2]
     case (sNonnegNonpos s1, -- sign of s1 
               iNonnegNonpos l2, -- sign of l2
               iNonnegNonpos h2 -- sign of h2 
@@ -112,7 +109,7 @@ multiplySingletonAndIntervalInPlace sample
 --                (zero, zero)
                 do
                 let z = zero
-                let _ = [z,sample]
+                let _ = [z,l2]
                 writeMutable lResM z
                 writeMutable hResM z
  
@@ -154,29 +151,29 @@ multiplySingletonAndIntervalInPlace sample
                 do
                 temp1 <- assignResEndpointsUsingBothOptions
                 let z = zero
-                let _ = [z,sample]
+                let _ = [z,l2]
                 writeMutable temp1 z
                 combineLInPlace lResM lResM temp1
                 combineRInPlace hResM hResM temp1
     where
     assignResEndpointsUsingTimesLR l2M h2M =
         do
-        temp1 <- makeMutable sample
+        temp1 <- makeMutable zero
         timesLInPlace temp1 l2M s1 -- beware of aliasing between res and param
         timesRInPlace hResM h2M s1
-        assignMutable sample lResM temp1
+        assignMutable lResM temp1
     assignResEndpointsUsingBothOptions =
         do
-        temp1 <- makeMutable sample
-        temp2 <- makeMutable sample
-        temp3 <- makeMutable sample
+        temp1 <- makeMutable zero
+        temp2 <- makeMutable zero
+        temp3 <- makeMutable zero
         timesLInPlace temp1 h2M s1 
         timesLInPlace temp2 l2M s1 
         combineLInPlace temp3 temp1 temp2
         timesRInPlace temp1 h2M s1 
         timesRInPlace temp2 l2M s1 
         combineRInPlace hResM temp1 temp2
-        assignMutable sample lResM temp3
+        assignMutable lResM temp3
         return temp1
     
 instance (RoundedDivideInPlace (Interval e),
