@@ -36,14 +36,14 @@ import Control.Monad.ST (ST)
 instance (ArithUpDn.RoundedAddInPlace e, CanBeMutable e) => 
     RoundedAddInPlace (Interval e) 
     where
-    addInInPlaceEff (Interval sample _) eff (MInterval resL resH) (MInterval aL aH) (MInterval bL bH) =
+    addInInPlaceEff eff (MInterval resL resH) (MInterval aL aH) (MInterval bL bH) =
         do
-        ArithUpDn.addUpInPlaceEff sample eff resL aL bL
-        ArithUpDn.addDnInPlaceEff sample eff resH aH bH
-    addOutInPlaceEff (Interval sample _) eff (MInterval resL resH) (MInterval aL aH) (MInterval bL bH) =
+        ArithUpDn.addUpInPlaceEff eff resL aL bL
+        ArithUpDn.addDnInPlaceEff eff resH aH bH
+    addOutInPlaceEff eff (MInterval resL resH) (MInterval aL aH) (MInterval bL bH) =
         do
-        ArithUpDn.addDnInPlaceEff sample eff resL aL bL
-        ArithUpDn.addUpInPlaceEff sample eff resH aH bH
+        ArithUpDn.addDnInPlaceEff eff resL aL bL
+        ArithUpDn.addUpInPlaceEff eff resH aH bH
     
 instance 
     (ArithUpDn.RoundedAddInPlace e,
@@ -61,34 +61,33 @@ instance
      CanBeMutable e) => 
     RoundedMultiplyInPlace (Interval e) 
     where
-    multOutInPlaceEff (Interval sample _) (effortComp, effortMinmax, effortMult) r i1 i2 =
-        multiplyIntervalsInPlace sample
+    multOutInPlaceEff (effortComp, effortMinmax, effortMult) r i1 i2 =
+        multiplyIntervalsInPlace
             (pNonnegNonposEff effortComp)
-            (ArithUpDn.multDnInPlaceEff sample effortMult) 
-            (ArithUpDn.multUpInPlaceEff sample effortMult)
-            (NumOrd.minDnInPlaceEff sample effortMinmax) -- minL
-            (NumOrd.minUpInPlaceEff sample effortMinmax) -- minR
-            (NumOrd.maxDnInPlaceEff sample effortMinmax) -- maxL
-            (NumOrd.maxUpInPlaceEff sample effortMinmax) -- maxR
-            (NumOrd.minDnInPlaceEff sample effortMinmax)
-            (NumOrd.maxUpInPlaceEff sample effortMinmax) 
+            (ArithUpDn.multDnInPlaceEff effortMult) 
+            (ArithUpDn.multUpInPlaceEff effortMult)
+            (NumOrd.minDnInPlaceEff effortMinmax) -- minL
+            (NumOrd.minUpInPlaceEff effortMinmax) -- minR
+            (NumOrd.maxDnInPlaceEff effortMinmax) -- maxL
+            (NumOrd.maxUpInPlaceEff effortMinmax) -- maxR
+            (NumOrd.minDnInPlaceEff effortMinmax)
+            (NumOrd.maxUpInPlaceEff effortMinmax) 
             r i1 i2
-    multInInPlaceEff (Interval sample _) (effortComp, effortMinmax, effortMult) r i1 i2 =
-        multiplyIntervalsInPlace sample
+    multInInPlaceEff (effortComp, effortMinmax, effortMult) r i1 i2 =
+        multiplyIntervalsInPlace
             (pNonnegNonposEff effortComp)
-            (ArithUpDn.multUpInPlaceEff sample effortMult) 
-            (ArithUpDn.multDnInPlaceEff sample effortMult)
-            (NumOrd.minUpInPlaceEff sample effortMinmax) -- minL
-            (NumOrd.minDnInPlaceEff sample effortMinmax) -- minR
-            (NumOrd.maxUpInPlaceEff sample effortMinmax) -- maxL
-            (NumOrd.maxDnInPlaceEff sample effortMinmax) -- maxR
-            (NumOrd.maxUpInPlaceEff sample effortMinmax)
-            (NumOrd.minDnInPlaceEff sample effortMinmax) 
+            (ArithUpDn.multUpInPlaceEff effortMult) 
+            (ArithUpDn.multDnInPlaceEff effortMult)
+            (NumOrd.minUpInPlaceEff effortMinmax) -- minL
+            (NumOrd.minDnInPlaceEff effortMinmax) -- minR
+            (NumOrd.maxUpInPlaceEff effortMinmax) -- maxL
+            (NumOrd.maxDnInPlaceEff effortMinmax) -- maxR
+            (NumOrd.maxUpInPlaceEff effortMinmax)
+            (NumOrd.minDnInPlaceEff effortMinmax) 
             r i1 i2
     
 multiplyIntervalsInPlace ::
     (CanBeMutable e, HasZero e) =>
-    e ->
     (e -> (Maybe Bool, Maybe Bool)) ->
     (OpMutable2 e s) ->
     (OpMutable2 e s) ->
@@ -103,7 +102,6 @@ multiplyIntervalsInPlace ::
     (Mutable (Interval e) s) ->
     ST s ()
 multiplyIntervalsInPlace
-        sample
         pNonnegNonpos timesLInPlace timesRInPlace 
         minLInPlace minRInPlace maxLInPlace maxRInPlace 
         combineLInPlace combineRInPlace
@@ -114,7 +112,6 @@ multiplyIntervalsInPlace
     h1 <- readMutable h1M
     l2 <- readMutable l2M
     h2 <- readMutable h2M
-    let _ = [l1,h1,l2,h2,sample]
     case (pNonnegNonpos l1, -- sign of l1 
               pNonnegNonpos h1, -- sign of h1
               pNonnegNonpos l2, -- sign of l2
@@ -145,16 +142,16 @@ multiplyIntervalsInPlace
 --                ((h1 `timesL` h2) `combineL` (l1 `timesL` h2), 
 --                 (h1 `timesR` l2) `combineR` (l1 `timesR` l2))
                 do
-                temp1 <- makeMutable sample 
-                temp2 <- makeMutable sample
-                temp3 <- makeMutable sample
+                temp1 <- makeMutable zero 
+                temp2 <- makeMutable zero
+                temp3 <- makeMutable zero
                 timesLInPlace temp1 h1M h2M 
                 timesLInPlace temp2 l1M h2M 
                 combineLInPlace temp3 temp1 temp2
                 timesRInPlace temp1 h1M l2M 
                 timesRInPlace temp2 l1M l2M 
                 combineRInPlace hResM temp1 temp2
-                assignMutable sample lResM temp3
+                assignMutable lResM temp3
 
             -- i1 positive, i2 positive
             ((Just True, _), (Just True, _), (Just True, _), (Just True, _)) -> 
@@ -179,16 +176,16 @@ multiplyIntervalsInPlace
 --                ((h1 `timesL` l2) `combineL` (l1 `timesL` l2), 
 --                 (h1 `timesR` h2) `combineR` (l1 `timesR` h2))
                 do
-                temp1 <- makeMutable sample 
-                temp2 <- makeMutable sample
-                temp3 <- makeMutable sample
+                temp1 <- makeMutable zero 
+                temp2 <- makeMutable zero
+                temp3 <- makeMutable zero
                 timesLInPlace temp1 h1M l2M 
                 timesLInPlace temp2 l1M l2M 
                 combineLInPlace temp3 temp1 temp2
                 timesRInPlace temp1 h1M h2M 
                 timesRInPlace temp2 l1M h2M 
                 combineRInPlace hResM temp1 temp2
-                assignMutable sample lResM temp3
+                assignMutable lResM temp3
             
  
             -- i1 consistent and containing zero, i2 positive
@@ -204,16 +201,16 @@ multiplyIntervalsInPlace
 --                ((l1 `timesL` h2) `combineL` (l1 `timesL` l2), 
 --                 (h1 `timesR` h2) `combineR` (h1 `timesR` l2))
                 do
-                temp1 <- makeMutable sample 
-                temp2 <- makeMutable sample
-                temp3 <- makeMutable sample
+                temp1 <- makeMutable zero 
+                temp2 <- makeMutable zero
+                temp3 <- makeMutable zero
                 timesLInPlace temp1 l1M h2M 
                 timesLInPlace temp2 l1M l2M 
                 combineLInPlace temp3 temp1 temp2
                 timesRInPlace temp1 h1M h2M 
                 timesRInPlace temp2 h1M l2M 
                 combineRInPlace hResM temp1 temp2
-                assignMutable sample lResM temp3
+                assignMutable lResM temp3
 
             -- i1 consistent and containing zero, i2 negative
             ((_, Just True), (Just True, _), (_, Just True), (_, Just True)) -> 
@@ -228,16 +225,16 @@ multiplyIntervalsInPlace
 --                ((h1 `timesL` h2) `combineL` (h1 `timesL` l2), 
 --                 (l1 `timesR` h2) `combineR` (l1 `timesR` l2))
                 do
-                temp1 <- makeMutable sample 
-                temp2 <- makeMutable sample
-                temp3 <- makeMutable sample
+                temp1 <- makeMutable zero 
+                temp2 <- makeMutable zero
+                temp3 <- makeMutable zero
                 timesLInPlace temp1 h1M h2M 
                 timesLInPlace temp2 h1M l2M 
                 combineLInPlace temp3 temp1 temp2
                 timesRInPlace temp1 l1M h2M 
                 timesRInPlace temp2 l1M l2M 
                 combineRInPlace hResM temp1 temp2
-                assignMutable sample lResM temp3
+                assignMutable lResM temp3
 
             -----------------------------------------------------------
             -- cases where both i1 or i2 are around zero
@@ -248,22 +245,22 @@ multiplyIntervalsInPlace
 --                ((l1 `timesL` h2) `minL` (h1 `timesL` l2), 
 --                 (l1 `timesR` l2) `maxR` (h1 `timesR` h2))
                 do
-                temp1 <- makeMutable sample 
-                temp2 <- makeMutable sample
-                temp3 <- makeMutable sample
+                temp1 <- makeMutable zero 
+                temp2 <- makeMutable zero
+                temp3 <- makeMutable zero
                 timesLInPlace temp1 l1M h2M 
                 timesLInPlace temp2 h1M l2M 
                 minLInPlace temp3 temp1 temp2
                 timesRInPlace temp1 l1M l2M 
                 timesRInPlace temp2 h1M h2M 
                 maxRInPlace hResM temp1 temp2
-                assignMutable sample lResM temp3
+                assignMutable lResM temp3
             -- i1 consistent and containing zero, i2 anti-consistent and anti-containing zero
             ((_, Just True), (Just True, _), (Just True, _), (_, Just True)) ->
 --                (zero, zero)
                 do
                 let z = zero
-                let _ = [z,sample]
+                let _ = [z,l1]
                 writeMutable lResM z
                 writeMutable hResM z
             -- i1 consistent and containing zero, i2 unknown
@@ -271,18 +268,18 @@ multiplyIntervalsInPlace
 --                (((l1 `timesL` h2) `combineL` (h1 `timesL` l2)) `combineL` zero,
 --                 ((l1 `timesR` l2) `combineR` (h1 `timesR` h2)) `combineR` zero)
                 do
-                temp1 <- makeMutable sample
-                temp2 <- makeMutable sample
-                temp3 <- makeMutable sample
+                temp1 <- makeMutable zero
+                temp2 <- makeMutable zero
+                temp3 <- makeMutable zero
                 timesLInPlace temp1 l1M h2M 
                 timesLInPlace temp2 h1M l2M 
                 combineLInPlace temp3 temp1 temp2
                 timesRInPlace temp1 l1M l2M 
                 timesRInPlace temp2 h1M h2M 
                 combineRInPlace hResM temp1 temp2
-                assignMutable sample lResM temp3
+                assignMutable lResM temp3
                 let z = zero
-                let _ = [z,sample]
+                let _ = [z,l1]
                 writeMutable temp1 z
                 combineLInPlace lResM lResM temp1
                 combineRInPlace hResM hResM temp1
@@ -292,7 +289,7 @@ multiplyIntervalsInPlace
 --                (zero, zero)
                 do
                 let z = zero
-                let _ = [z,sample]
+                let _ = [z,l1]
                 writeMutable lResM z
                 writeMutable hResM z
             -- i1 anti-consistent and anti-containing zero, i2 anti-consistent and anti-containing zero
@@ -300,33 +297,33 @@ multiplyIntervalsInPlace
 --                ((l1 `timesL` l2) `maxL` (h1 `timesL` h2),
 --                 (l1 `timesR` h2) `minR` (h1 `timesR` l2)) 
                 do
-                temp1 <- makeMutable sample 
-                temp2 <- makeMutable sample
-                temp3 <- makeMutable sample
+                temp1 <- makeMutable zero 
+                temp2 <- makeMutable zero
+                temp3 <- makeMutable zero
                 timesLInPlace temp1 l1M l2M 
                 timesLInPlace temp2 h1M h2M 
                 maxLInPlace temp3 temp1 temp2
                 timesRInPlace temp1 l1M h2M 
                 timesRInPlace temp2 h1M l2M 
                 minRInPlace hResM temp1 temp2
-                assignMutable sample lResM temp3
+                assignMutable lResM temp3
             -- i1 anti-consistent and anti-containing zero, i2 unknown
             ((Just True, _), (_, Just True), _, _) -> 
 --                ((l1 `timesL` l2) `combineL` (h1 `timesL` h2) `combineL` zero,
 --                 (l1 `timesR` h2) `combineR` (h1 `timesR` l2) `combineR` zero) 
                 do
-                temp1 <- makeMutable sample
-                temp2 <- makeMutable sample
-                temp3 <- makeMutable sample
+                temp1 <- makeMutable zero
+                temp2 <- makeMutable zero
+                temp3 <- makeMutable zero
                 timesLInPlace temp1 l1M l2M 
                 timesLInPlace temp2 h1M h2M 
                 combineLInPlace temp3 temp1 temp2
                 timesRInPlace temp1 l1M h2M 
                 timesRInPlace temp2 h1M l2M 
                 combineRInPlace hResM temp1 temp2
-                assignMutable sample lResM temp3
+                assignMutable lResM temp3
                 let z = zero
-                let _ = [z,sample]
+                let _ = [z,l1]
                 writeMutable temp1 z
                 combineLInPlace lResM lResM temp1
                 combineRInPlace hResM hResM temp1
@@ -336,18 +333,18 @@ multiplyIntervalsInPlace
 --                ((l1 `timesL` l2) `combineL` (h1 `timesL` h2) `combineL` zero,
 --                 (l1 `timesR` h2) `combineR` (h1 `timesR` l2) `combineR` zero) 
                 do
-                temp1 <- makeMutable sample
-                temp2 <- makeMutable sample
-                temp3 <- makeMutable sample
+                temp1 <- makeMutable zero
+                temp2 <- makeMutable zero
+                temp3 <- makeMutable zero
                 timesLInPlace temp1 l1M l2M 
                 timesLInPlace temp2 h1M h2M 
                 combineLInPlace temp3 temp1 temp2
                 timesRInPlace temp1 l1M h2M 
                 timesRInPlace temp2 h1M l2M 
                 combineRInPlace hResM temp1 temp2
-                assignMutable sample lResM temp3
+                assignMutable lResM temp3
                 let z = zero
-                let _ = [z,sample]
+                let _ = [z,l1]
                 writeMutable temp1 z
                 combineLInPlace lResM lResM temp1
                 combineRInPlace hResM hResM temp1
@@ -357,9 +354,9 @@ multiplyIntervalsInPlace
 --                ((l1 `timesL` h2) `combineL` (h1 `timesL` l2) `combineL` zero, 
 --                 (l1 `timesR` l2) `combineR` (h1 `timesR` h2) `combineR` zero)
                 do
-                temp1 <- makeMutable sample
-                temp2 <- makeMutable sample
-                temp3 <- makeMutable sample
+                temp1 <- makeMutable zero
+                temp2 <- makeMutable zero
+                temp3 <- makeMutable zero
                 
                 timesLInPlace temp1 l1M h2M 
                 timesLInPlace temp2 h1M l2M 
@@ -369,10 +366,10 @@ multiplyIntervalsInPlace
                 timesRInPlace temp2 h1M h2M 
                 combineRInPlace hResM temp1 temp2
                 
-                assignMutable sample lResM temp3
+                assignMutable lResM temp3
                 
                 let z = zero
-                let _ = [z,sample]
+                let _ = [z,l1]
                 writeMutable temp1 z
                 combineLInPlace lResM lResM temp1
                 combineRInPlace hResM hResM temp1
@@ -382,9 +379,9 @@ multiplyIntervalsInPlace
 --                (foldl1 combineL [l1 `timesL` h2, h1 `timesL` l2, l1 `timesL` l2, h1 `timesL` h2], 
 --                 foldl1 combineR [l1 `timesR` h2, h1 `timesR` l2, l1 `timesR` l2, h1 `timesR` h2])
                 do
-                temp1 <- makeMutable sample
-                temp2 <- makeMutable sample
-                temp3 <- makeMutable sample
+                temp1 <- makeMutable zero
+                temp2 <- makeMutable zero
+                temp3 <- makeMutable zero
                 
                 timesLInPlace temp1 l1M h2M 
                 timesLInPlace temp2 h1M l2M
@@ -402,14 +399,14 @@ multiplyIntervalsInPlace
                 timesRInPlace temp2 h1M h2M 
                 combineRInPlace hResM temp1 temp2
                 
-                assignMutable sample lResM temp3
+                assignMutable lResM temp3
     where
     assignResEndpointsUsingTimesLR l1M l2M h1M h2M =
         do
-        temp1 <- makeMutable sample
+        temp1 <- makeMutable zero
         timesLInPlace temp1 l1M l2M -- beware of aliasing between res and param
         timesRInPlace hResM h1M h2M
-        assignMutable sample lResM temp1
+        assignMutable lResM temp1
 
 
 instance 
@@ -428,83 +425,81 @@ instance
      ) => 
     RoundedPowerToNonnegIntInPlace (Interval e)
     where
-    powerToNonnegIntInInPlaceEff sampleI@(Interval sample _)
+    powerToNonnegIntInInPlaceEff
             (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
             res@(MInterval resL resH) a@(MInterval aL aH) n =
         do
         l <- readMutable aL 
         h <- readMutable aH
-        let _ = [sample, l, h] 
         case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
             ((Just True, _), (Just True, _)) -> -- both non-negative
                 do
-                ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff sample 
+                ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff 
                     effPowerEndpt resL aL n 
-                ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff sample 
+                ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff 
                     effPowerEndpt resH aH n
             ((_, Just True), (_, Just True)) -> -- both non-positive
                 do
                 -- negate the parameters, use the result as a temp space (may alias!):
-                negInPlace sampleI res a
+                negInPlace res a
                 -- compute the power of the positive interval:
-                ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff sample 
+                ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff 
                     effPowerEndpt resL resL n 
-                ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff sample 
+                ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff 
                     effPowerEndpt resH resH n
                 case even n of
                     True -> 
                         return () -- keep result positive
                     False ->
-                        negInPlace sampleI res res -- back to the original sign
+                        negInPlace res res -- back to the original sign
             _ ->
                 do
-                powerToNonnegIntInInPlaceEffFromMult sampleI effPowerFromMult res a n
+                powerToNonnegIntInInPlaceEffFromMult effPowerFromMult res a n
                 case even n of
                     True ->
                         do
                         let zeroI = zero 
-                        let _ = [zeroI, sampleI]
+                        let _ = [zeroI, Interval l h]
                         zeroM <- unsafeMakeMutable zeroI 
-                        NumOrd.maxInnerInPlaceEff sampleI effMinMax  res res zeroM
+                        NumOrd.maxInnerInPlaceEff effMinMax res res zeroM
                     False -> return ()
-    powerToNonnegIntOutInPlaceEff sampleI@(Interval sample _)
+    powerToNonnegIntOutInPlaceEff
             (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
             res@(MInterval resL resH) a@(MInterval aL aH) n =
         do
         l <- readMutable aL 
         h <- readMutable aH
-        let _ = [sample, l, h] 
         case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
             ((Just True, _), (Just True, _)) -> -- both non-negative
                 do
-                ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff sample 
+                ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff 
                     effPowerEndpt resL aL n 
-                ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff sample 
+                ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff 
                     effPowerEndpt resH aH n
             ((_, Just True), (_, Just True)) -> -- both non-positive
                 do
                 -- negate the parameters, use the result as a temp space (may alias!):
-                negInPlace sampleI res a
+                negInPlace res a
                 -- compute the power of the positive interval:
-                ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff sample 
+                ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff 
                     effPowerEndpt resL resL n 
-                ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff sample 
+                ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff 
                     effPowerEndpt resH resH n
                 case even n of
                     True -> 
                         return () -- keep result positive
                     False ->
-                        negInPlace sampleI res res -- back to the original sign
+                        negInPlace res res -- back to the original sign
             _ ->
                 do
-                powerToNonnegIntOutInPlaceEffFromMult sampleI effPowerFromMult res a n
+                powerToNonnegIntOutInPlaceEffFromMult effPowerFromMult res a n
                 case even n of
                     True ->
                         do
                         let zeroI = zero 
-                        let _ = [zeroI, sampleI]
+                        let _ = [zeroI, Interval l h]
                         zeroM <- unsafeMakeMutable zeroI 
-                        NumOrd.maxOuterInPlaceEff sampleI effMinMax res res zeroM
+                        NumOrd.maxOuterInPlaceEff effMinMax res res zeroM
                     False -> return ()
 
 instance 
