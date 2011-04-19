@@ -1,16 +1,53 @@
+{-|
+    Module      :  Numeric.AERN.DoubleBasis.MInterval
+    Description :  Interval Double type and operations  
+    Copyright   :  (c) Michal Konecny
+    License     :  BSD3
 
+    Maintainer  :  mikkonecny@gmail.com
+    Stability   :  experimental
+    Portability :  portable
+    
+    Mutable intervals with Double endpoints.
+-}
 module Numeric.AERN.DoubleBasis.MInterval 
 (
+    -- |
+    -- A convenience module re-exporting various in-place interval 
+    -- operations with default effort indicators.
+
+    -- * Main type
     MDI,
-    makeMutable,writeMutable,readMutable,
-    unsafeMakeMutable,unsafeWriteMutable,unsafeReadMutable,
-    assignMutable,swapMutable,cloneMutable,
     addInInPlace,addOutInPlace,
     subtrInInPlace,subtrOutInPlace,
     absInInPlace,absOutInPlace,
     multInInPlace,multOutInPlace,
     powerToNonnegIntInInPlace,powerToNonnegIntOutInPlace,
-    divInInPlace,divOutInPlace
+    divInInPlace,divOutInPlace,
+    
+--    -- * Low level facilities
+--    
+--    -- ** Constructor/destructor functions
+--    
+--    -- *** Safe versions
+--    
+--    makeMutable,readMutable,cloneMutable,
+--    
+--    -- *** Unsafe versions
+--    
+--    unsafeMakeMutable,unsafeReadMutable,
+--    
+--    -- ** Update/assignment functions
+--    
+--    -- *** Safe versions
+--    
+--    writeMutable,assignMutable,swapMutable,
+--    
+--    -- *** Unsafe versions
+--    
+--    unsafeWriteMutable,
+    -- * Base class and associted type
+    CanBeMutable(..)
 )
 where
 
@@ -25,6 +62,17 @@ import Numeric.AERN.DoubleBasis.Interval
 
 import Control.Monad.ST (runST)
 
+-- | 
+-- Mutable intervals with Double endpoints. Created and handled using
+-- the instance methods of 'CanBeMutable' as in e.g.
+-- 
+-- > identity :: DI -> DI 
+-- > identity x =
+-- >   runST $
+-- >     do
+-- >     xM <- makeMutable x
+-- >     result <- readMutable xM
+-- >     return result
 type MDI = Mutable DI
 
 transl :: DI -> DI -> DI
