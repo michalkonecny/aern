@@ -21,6 +21,9 @@ class CanBeMutable t where
       A mutable version of the type t. The extra parameter is the state of the ST monad run. -}
     data Mutable t :: * -> *
 
+    {-| 
+      Helper method for extracting the underlying type of a mutable value. Intended only for type inference, 
+      throws error when evaluated. -}
     getDummySample :: Mutable t s -> t
     getDummySample _ =
         error "AERN internal error: getDummySample should never be evaluated, it serves only type inference"
