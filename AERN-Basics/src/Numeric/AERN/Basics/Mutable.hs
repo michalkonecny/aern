@@ -61,7 +61,6 @@ class CanBeMutable t where
         a <- unsafeReadMutable aM
         makeMutable a 
 
-
 type OpMutable1 t s = 
     (Mutable t s) -> (Mutable t s) -> ST s () 
 
@@ -76,6 +75,9 @@ type OpMutable2Eff ei t s =
 
 type OpMutableNonmut t nonmut s = 
     (Mutable t s) -> (Mutable t s) -> nonmut -> ST s () 
+
+type OpNonmut t nonmut s = 
+    (Mutable t s) -> nonmut -> ST s () 
 
 type OpMutableNonmutEff ei t nonmut s = 
     ei -> (Mutable t s) -> (Mutable t s) -> nonmut -> ST s () 
