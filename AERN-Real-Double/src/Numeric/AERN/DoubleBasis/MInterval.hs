@@ -18,34 +18,19 @@ module Numeric.AERN.DoubleBasis.MInterval
 
     -- * Main type
     MDI,
+    
+    -- * In place field operations
+    
+    -- ** Explicit out parameter versions    
     addInInPlace,addOutInPlace,
     subtrInInPlace,subtrOutInPlace,
     absInInPlace,absOutInPlace,
     multInInPlace,multOutInPlace,
     powerToNonnegIntInInPlace,powerToNonnegIntOutInPlace,
     divInInPlace,divOutInPlace,
-    
---    -- * Low level facilities
---    
---    -- ** Constructor/destructor functions
---    
---    -- *** Safe versions
---    
---    makeMutable,readMutable,cloneMutable,
---    
---    -- *** Unsafe versions
---    
---    unsafeMakeMutable,unsafeReadMutable,
---    
---    -- ** Update/assignment functions
---    
---    -- *** Safe versions
---    
---    writeMutable,assignMutable,swapMutable,
---    
---    -- *** Unsafe versions
---    
---    unsafeWriteMutable,
+
+    -- ** Assignment operator versions
+
     -- * Base class and associted type
     CanBeMutable(..)
 )
