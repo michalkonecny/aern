@@ -21,7 +21,7 @@ quadratic a b c
   | certainlyDoesNotContainZero a =
     quadraticFormula a b c
   | otherwise =
-    error $ "quadratic: " ++ show a ++ " may contain 0"
+    [bottom]
 
 certainlyDoesNotContainZero x =
   case 0 |>=? x of
