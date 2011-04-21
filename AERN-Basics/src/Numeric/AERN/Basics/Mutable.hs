@@ -186,6 +186,53 @@ pureToMutableNonmutEff pureFn eff resM aM b =
     a <- readMutable aM
     unsafeWriteMutable resM (pureFn eff a b)
 
+pureEffToMutable1 ::
+    (CanBeMutable t) =>
+    (eff -> t -> t) ->
+    (t -> eff) ->
+    OpMutable1 t s
+pureEffToMutable1 pureEffFn defEff resM aM =
+    do
+    d <- readMutable resM
+    res <- readMutable resM
+    a <- readMutable aM
+    unsafeWriteMutable resM (pureEffFn (defEff d) a)
+
+pureEffToMutable2 ::
+    (CanBeMutable t) =>
+    (eff -> t -> t -> t) ->
+    (t -> eff) ->
+    OpMutable2 t s
+pureEffToMutable2 pureEffFn defEff resM aM bM =
+    do
+    d <- readMutable resM
+    res <- readMutable resM
+    a <- readMutable aM
+    b <- readMutable bM
+    unsafeWriteMutable resM (pureEffFn (defEff d) a b)
+
+pureEffToMutableNonmut ::
+    (CanBeMutable t) =>
+    (eff -> t -> nonmut -> t) ->
+    (t -> eff) ->
+    OpMutableNonmut t nonmut s
+pureEffToMutableNonmut pureEffFn defEff resM aM b =
+    do
+    d <- readMutable resM
+    a <- readMutable aM
+    unsafeWriteMutable resM (pureEffFn (defEff d) a b)
+
+pureMixedEffToMutableNonmut ::
+    (CanBeMutable t) =>
+    (eff -> t -> nonmut -> t) ->
+    (t -> nonmut -> eff) ->
+    OpMutableNonmut t nonmut s
+pureMixedEffToMutableNonmut pureEffFn defEff resM aM b =
+    do
+    d <- readMutable resM
+    a <- readMutable aM
+    unsafeWriteMutable resM (pureEffFn (defEff d b) a b)
+
 --propWriteRead :: 
 --propWriteWriteRead ::
 --propWriteWriteReadConcurrent ::

@@ -16,58 +16,17 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEff
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 
--- TODO move to Numeric.AERN.Basics.Mutable
-pureEffToMutable1 ::
-    (CanBeMutable t) =>
-    (eff -> t -> t) ->
-    (t -> eff) ->
-    OpMutable1 t s
-pureEffToMutable1 pureEffFn defEff resM aM =
-    do
-    d <- readMutable resM
-    res <- readMutable resM
-    a <- readMutable aM
-    unsafeWriteMutable resM (pureEffFn (defEff d) a)
-
--- TODO move to Numeric.AERN.Basics.Mutable
-pureEffToMutable2 ::
-    (CanBeMutable t) =>
-    (eff -> t -> t -> t) ->
-    (t -> eff) ->
-    OpMutable2 t s
-pureEffToMutable2 pureEffFn defEff resM aM bM =
-    do
-    d <- readMutable resM
-    res <- readMutable resM
-    a <- readMutable aM
-    b <- readMutable bM
-    unsafeWriteMutable resM (pureEffFn (defEff d) a b)
-
--- TODO move to Numeric.AERN.Basics.Mutable
-pureEffToMutableNonmut ::
-    (CanBeMutable t) =>
-    (eff -> t -> nonmut -> t) ->
-    (t -> eff) ->
-    OpMutableNonmut t nonmut s
-pureEffToMutableNonmut pureEffFn defEff resM aM b =
-    do
-    d <- readMutable resM
-    res <- readMutable resM
-    a <- readMutable aM
-    unsafeWriteMutable resM (pureEffFn (defEff d) a b)
-
 mutable2ToMutable1 ::
     (CanBeMutable t) =>
     OpMutable2 t s -> OpMutable1 t s
 mutable2ToMutable1 mutOp aM bM =
     mutOp aM aM bM
 
----- | Inward rounded in place addition
---addInInPlace :: (RoundedAddInPlace t) => OpMutable2 t s
---addInInPlace resM lM rM = 
---  do
---  res <- readMutable resM 
---  addInInPlaceEff (addDefaultEffort res) resM lM rM 
+mutableNonmutToNonmut ::
+    (CanBeMutable t) =>
+    OpMutableNonmut t tn s -> OpNonmut t tn s
+mutableNonmutToNonmut mutOp aM b =
+    mutOp aM aM b
 
 -- | Inward rounded in place addition
 addInInPlace :: (CanBeMutable t, RoundedAdd t) => OpMutable2 t s
@@ -133,11 +92,19 @@ powerToNonnegIntInInPlace :: (CanBeMutable t, RoundedPowerToNonnegInt t) =>
 powerToNonnegIntInInPlace = 
     pureEffToMutableNonmut powerToNonnegIntInEff powerToNonnegIntDefaultEffort
 
+-- | Inward rounded in place power assignment
+(>^<=) :: (CanBeMutable t, RoundedPowerToNonnegInt t) => OpNonmut t Int s
+(>^<=) = mutableNonmutToNonmut powerToNonnegIntInInPlace
+
 -- | Outward rounded in place power
 powerToNonnegIntOutInPlace :: (CanBeMutable t, RoundedPowerToNonnegInt t) => 
     OpMutableNonmut t Int s
 powerToNonnegIntOutInPlace = 
     pureEffToMutableNonmut powerToNonnegIntOutEff powerToNonnegIntDefaultEffort
+
+-- | Inward rounded in place power assignment
+(<^>=) :: (CanBeMutable t, RoundedPowerToNonnegInt t) => OpNonmut t Int s
+(<^>=) = mutableNonmutToNonmut powerToNonnegIntOutInPlace
 
 -- | Inward rounded in place division
 divInInPlace :: (CanBeMutable t, RoundedDivide t) => OpMutable2 t s
@@ -155,24 +122,62 @@ divOutInPlace = pureEffToMutable2 divOutEff divDefaultEffort
 (</>=) :: (CanBeMutable t, RoundedDivide t) => OpMutable1 t s
 (</>=) = mutable2ToMutable1 divOutInPlace
 
--- | Inward rounded in place additive scalar left action
+-- | Inward rounded in place mixed addition
+mixedAddInInPlace :: (CanBeMutable t, RoundedMixedAdd t tn) => 
+    OpMutableNonmut t tn s
+mixedAddInInPlace =
+    pureMixedEffToMutableNonmut mixedAddInEff mixedAddDefaultEffort
 
--- | Outward rounded in place additive scalar left action
+-- | Inward rounded additive scalar action assignment
+(>+<|=) :: (CanBeMutable t, RoundedMixedAdd t tn) => OpNonmut t tn s
+(>+<|=) = mutableNonmutToNonmut mixedAddInInPlace
 
--- | Inward rounded in place additive scalar right action
+-- | Outward rounded in place mixed addition
+mixedAddOutInPlace :: (CanBeMutable t, RoundedMixedAdd t tn) =>
+    OpMutableNonmut t tn s
+mixedAddOutInPlace =
+    pureMixedEffToMutableNonmut mixedAddOutEff mixedAddDefaultEffort
 
--- | Outward rounded in place additive scalar right action
+-- | Outward rounded additive scalar action assignment
+(<+>|=) :: (CanBeMutable t, RoundedMixedAdd t tn) => OpNonmut t tn s
+(<+>|=) = mutableNonmutToNonmut mixedAddOutInPlace
 
--- | Inward rounded in place multiplicative scalar left action
+-- | Inward rounded in place mixed multiplication
+mixedMultInInPlace :: (CanBeMutable t, RoundedMixedMultiply t tn) => 
+    OpMutableNonmut t tn s
+mixedMultInInPlace =
+    pureMixedEffToMutableNonmut mixedMultInEff mixedMultDefaultEffort
 
--- | Outward rounded in place multiplicative scalar left action
+-- | Inward rounded multiplicative scalar action assignment
+(>*<|=) :: (CanBeMutable t, RoundedMixedMultiply t tn) => OpNonmut t tn s
+(>*<|=) = mutableNonmutToNonmut mixedMultInInPlace
 
--- | Inward rounded in place multiplicative scalar right action
+-- | Outward rounded in place mixed multiplication
+mixedMultOutInPlace :: (CanBeMutable t, RoundedMixedMultiply t tn) => 
+    OpMutableNonmut t tn s
+mixedMultOutInPlace =
+    pureMixedEffToMutableNonmut mixedMultOutEff mixedMultDefaultEffort
 
--- | Outward rounded in place multiplicative scalar right action
+-- | Outward rounded multiplicative scalar action assignment
+(<*>|=) :: (CanBeMutable t, RoundedMixedMultiply t tn) => OpNonmut t tn s
+(<*>|=) = mutableNonmutToNonmut mixedMultOutInPlace
 
--- | Inward rounded in place multiplicative scalar reciprocal right action
+-- | Inward rounded in place mixed reciprocal
+mixedDivInInPlace :: (CanBeMutable t, RoundedMixedDivide t tn) => 
+    OpMutableNonmut t tn s
+mixedDivInInPlace =
+    pureMixedEffToMutableNonmut mixedDivInEff mixedDivDefaultEffort
 
--- | Outward rounded in place multiplicative scalar reciprocal right action
+-- | Inward rounded multiplicative scalar reciprocal action assignment
+(>/<|=) :: (CanBeMutable t, RoundedMixedDivide t tn) => OpNonmut t tn s
+(>/<|=) = mutableNonmutToNonmut mixedDivOutInPlace
 
+-- | Outward rounded in place mixed reciprocal
+mixedDivOutInPlace :: (CanBeMutable t, RoundedMixedDivide t tn) => 
+    OpMutableNonmut t tn s
+mixedDivOutInPlace =
+    pureMixedEffToMutableNonmut mixedDivOutEff mixedDivDefaultEffort
 
+-- | Outward rounded multiplicative scalar reciprocal action assignment
+(</>|=) :: (CanBeMutable t, RoundedMixedDivide t tn) => OpNonmut t tn s
+(</>|=) = mutableNonmutToNonmut mixedDivOutInPlace
