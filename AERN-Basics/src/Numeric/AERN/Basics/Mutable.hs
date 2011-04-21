@@ -82,6 +82,18 @@ type OpNonmut t nonmut s =
 type OpMutableNonmutEff ei t nonmut s = 
     ei -> (Mutable t s) -> (Mutable t s) -> nonmut -> ST s () 
 
+mutable2ToMutable1 ::
+    (CanBeMutable t) =>
+    OpMutable2 t s -> OpMutable1 t s
+mutable2ToMutable1 mutOp aM bM =
+    mutOp aM aM bM
+
+mutableNonmutToNonmut ::
+    (CanBeMutable t) =>
+    OpMutableNonmut t tn s -> OpNonmut t tn s
+mutableNonmutToNonmut mutOp aM b =
+    mutOp aM aM b
+
 mutable1ToPure ::
     (CanBeMutable t) =>
     (forall s. OpMutable1 t s) ->
