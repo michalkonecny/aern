@@ -18,19 +18,77 @@ module Numeric.AERN.DoubleBasis.MInterval
 
     -- * Main type
     MDI,
-    
-    -- * In place field operations
-    
-    -- ** Explicit out parameter versions    
-    addInInPlace,addOutInPlace,
-    subtrInInPlace,subtrOutInPlace,
-    absInInPlace,absOutInPlace,
-    multInInPlace,multOutInPlace,
-    powerToNonnegIntInInPlace,powerToNonnegIntOutInPlace,
-    divInInPlace,divOutInPlace,
 
-    -- ** Assignment operator versions
+    -- * Outward rounded operations
 
+    -- | In-place interval extensions of common functions.
+
+    -- ** Order operations
+    
+    -- *** Numerical order
+    -- | 
+    -- Outward rounded in-place interval extensions of the corresponding 
+    -- operations on Double.
+    minOuterInPlace,maxOuterInPlace,
+
+    -- *** Refinement order
+    -- | 
+    -- Outward rounded in-place lattice operations in the interval poset.
+    
+
+    -- ** Field operations
+
+    -- *** Interval operations
+
+    -- **** Explicit out parameter versions    
+    addOutInPlace,subtrOutInPlace,absOutInPlace,
+    multOutInPlace,powerToNonnegIntOutInPlace,divOutInPlace,
+
+    -- **** Assignment operator versions
+    (<+>=),(<->=),(<*>=),(<^>=),(</>=),
+
+    -- *** Mixed type operations
+
+    -- **** Explicit out parameter versions    
+    mixedAddOutInPlace,mixedMultOutInPlace,mixedDivOutInPlace,
+
+    -- **** Assignment operator versions
+    (<+>|=),(<*>|=),(</>|=),
+
+    -- * Inward rounded operations
+
+    -- ** Order operations
+    
+    -- *** Numerical order
+    -- | 
+    -- Inward rounded in-place interval extensions of the corresponding 
+    -- operations on Double.
+    minInnerInPlace,maxInnerInPlace,
+
+    -- *** Refinement order
+    -- | 
+    -- Intward rounded in-place lattice operations in the interval poset.
+    
+
+    -- ** Field operations
+
+    -- *** Interval operations
+
+    -- **** Explicit out parameter versions    
+    addInInPlace,subtrInInPlace,absInInPlace,
+    multInInPlace,powerToNonnegIntInInPlace,divInInPlace,
+
+    -- **** Assignment operator versions
+    (>+<=),(>-<=),(>*<=),(>^<=),(>/<=),
+
+    -- *** Mixed type operations
+
+    -- **** Explicit out parameter versions    
+    mixedAddInInPlace,mixedMultInInPlace,mixedDivInInPlace,
+
+    -- **** Assignment operator versions
+    (>+<|=),(>*<|=),(>/<|=),
+    
     -- * Base class and associted type
     CanBeMutable(..)
 )
@@ -38,6 +96,8 @@ where
 
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.NumericOrder
+import Numeric.AERN.Basics.NumericOrder.InPlace.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Mutable
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as NumOrd
