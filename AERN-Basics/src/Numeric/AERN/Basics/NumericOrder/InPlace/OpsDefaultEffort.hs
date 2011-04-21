@@ -1,6 +1,6 @@
 {-|
-    Module      :  Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
-    Description :  convenience binary infix operators with default effort parameters  
+    Module      :  Numeric.AERN.Basics.NumericOrder.InPlace.OpsDefaultEffort
+    Description :  convenience directed-rounded in-place lattice operations with default effort parameters  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -8,7 +8,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Convenience binary infix operators with default effort parameters.
+    Convenience directed-rounded in-place lattice operations with default effort parameters.
 -}
 
 module Numeric.AERN.Basics.NumericOrder.InPlace.OpsDefaultEffort where
