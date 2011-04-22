@@ -19,7 +19,7 @@ import Numeric.AERN.Basics.RefinementOrder
 infixr 3 </\>=, >/\<=, <⊓>=, >⊓<= 
 infixr 2 <\/>=, >\/<=, <⊔>=, >⊔<= 
 
--- | Outward in-place rounded meet
+-- | Outward rounded in-place meet
 meetOut :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable2 t s
 meetOut = pureEffToMutable2 meetOutEff joinmeetOutDefaultEffort 
 
@@ -27,7 +27,7 @@ meetOut = pureEffToMutable2 meetOutEff joinmeetOutDefaultEffort
 (</\>=) :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable1 t s
 (</\>=) = mutable2ToMutable1 meetOut
 
--- | Inward in-place rounded meet
+-- | Inward rounded in-place meet
 meetIn :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable2 t s
 meetIn = pureEffToMutable2 meetInEff joinmeetInDefaultEffort 
 
@@ -35,7 +35,7 @@ meetIn = pureEffToMutable2 meetInEff joinmeetInDefaultEffort
 (>/\<=) :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable1 t s
 (>/\<=) = mutable2ToMutable1 meetIn 
 
--- | Outward in-place rounded join
+-- | Outward rounded in-place join
 joinOut :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable2 t s
 joinOut = pureEffToMutable2 joinOutEff joinmeetOutDefaultEffort 
 
@@ -43,7 +43,7 @@ joinOut = pureEffToMutable2 joinOutEff joinmeetOutDefaultEffort
 (<\/>=) :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable1 t s
 (<\/>=) = mutable2ToMutable1 joinOut 
 
--- | Inward in-place rounded join
+-- | Inward rounded in-place join
 joinIn :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable2 t s
 joinIn = pureEffToMutable2 joinInEff joinmeetInDefaultEffort 
 
