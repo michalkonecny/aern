@@ -141,7 +141,7 @@ import Control.Monad.ST (runST)
 
 -- | 
 -- Mutable intervals with Double endpoints. Created and handled using
--- the instance methods of 'CanBeMutable' as in e.g.
+-- the methods of 'CanBeMutable' as in e.g.
 -- 
 -- > identity :: DI -> DI 
 -- > identity x =
