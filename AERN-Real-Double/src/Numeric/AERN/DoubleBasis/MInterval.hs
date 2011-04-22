@@ -29,14 +29,14 @@ module Numeric.AERN.DoubleBasis.MInterval
     -- | 
     -- Outward rounded in-place interval extensions of the corresponding 
     -- operations on Double.
-    minOuterInPlace,maxOuterInPlace,
+    minOutInPlace,maxOutInPlace,
 
     -- *** Refinement order
     -- | 
     -- Outward rounded in-place lattice operations in the interval poset.
 
     -- **** Operations with explicit out parameter    
-    meetOut,joinOut,
+    meetOutInPlace,joinOutInPlace,
 
     -- **** Assignment operations 
 
@@ -77,14 +77,14 @@ module Numeric.AERN.DoubleBasis.MInterval
     -- | 
     -- Inward rounded in-place interval extensions of the corresponding 
     -- operations on Double.
-    minInnerInPlace,maxInnerInPlace,
+    minInInPlace,maxInInPlace,
 
     -- *** Refinement order
     -- | 
     -- Inward rounded in-place lattice operations in the interval poset.
 
     -- **** Operations with explicit out parameter    
-    meetIn,joinIn,
+    meetInInPlace,joinInInPlace,
 
     -- **** Assignment operations 
 
