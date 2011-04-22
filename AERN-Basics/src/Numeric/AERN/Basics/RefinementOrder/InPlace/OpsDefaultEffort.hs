@@ -20,36 +20,36 @@ infixr 3 </\>=, >/\<=, <⊓>=, >⊓<=
 infixr 2 <\/>=, >\/<=, <⊔>=, >⊔<= 
 
 -- | Outward rounded in-place meet
-meetOut :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable2 t s
-meetOut = pureEffToMutable2 meetOutEff joinmeetOutDefaultEffort 
+meetOutInPlace :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable2 t s
+meetOutInPlace = pureEffToMutable2 meetOutEff joinmeetOutDefaultEffort 
 
 -- | Outward rounded meet assignment
 (</\>=) :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable1 t s
-(</\>=) = mutable2ToMutable1 meetOut
+(</\>=) = mutable2ToMutable1 meetOutInPlace
 
 -- | Inward rounded in-place meet
-meetIn :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable2 t s
-meetIn = pureEffToMutable2 meetInEff joinmeetInDefaultEffort 
+meetInInPlace :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable2 t s
+meetInInPlace = pureEffToMutable2 meetInEff joinmeetInDefaultEffort 
 
 -- | Inward rounded meet assignment
 (>/\<=) :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable1 t s
-(>/\<=) = mutable2ToMutable1 meetIn 
+(>/\<=) = mutable2ToMutable1 meetInInPlace
 
 -- | Outward rounded in-place join
-joinOut :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable2 t s
-joinOut = pureEffToMutable2 joinOutEff joinmeetOutDefaultEffort 
+joinOutInPlace :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable2 t s
+joinOutInPlace = pureEffToMutable2 joinOutEff joinmeetOutDefaultEffort 
 
 -- | Outward rounded join assignment
 (<\/>=) :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable1 t s
-(<\/>=) = mutable2ToMutable1 joinOut 
+(<\/>=) = mutable2ToMutable1 joinOutInPlace
 
 -- | Inward rounded in-place join
-joinIn :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable2 t s
-joinIn = pureEffToMutable2 joinInEff joinmeetInDefaultEffort 
+joinInInPlace :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable2 t s
+joinInInPlace = pureEffToMutable2 joinInEff joinmeetInDefaultEffort 
 
 -- | Inward rounded join assignment
 (>\/<=) :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable1 t s
-(>\/<=) = mutable2ToMutable1 joinIn 
+(>\/<=) = mutable2ToMutable1 joinInInPlace
 
 {-| Convenience Unicode notation for '<\/>=' -}
 (<⊔>=) :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable1 t s
