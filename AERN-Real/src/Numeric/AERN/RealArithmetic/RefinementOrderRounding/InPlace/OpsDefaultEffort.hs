@@ -20,8 +20,6 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 addInInPlace :: (CanBeMutable t, RoundedAdd t) => OpMutable2 t s
 addInInPlace = pureEffToMutable2 addInEff addDefaultEffort
 
--- associated assignment operator
-
 -- | Inward rounded addition assignment
 (>+<=) :: (CanBeMutable t, RoundedAdd t) => OpMutable1 t s
 (>+<=) = mutable2ToMutable1 addInInPlace
@@ -169,3 +167,25 @@ mixedDivOutInPlace =
 -- | Outward rounded multiplicative scalar reciprocal action assignment
 (</>|=) :: (CanBeMutable t, RoundedMixedDivide t tn) => OpNonmut t tn s
 (</>|=) = mutableNonmutToNonmut mixedDivOutInPlace
+
+-- | Inward rounded in-place exponential
+expInInPlace :: (CanBeMutable t, RoundedExponentiation t) => OpMutable1 t s
+expInInPlace = pureEffToMutable1 expInEff expDefaultEffort 
+
+-- | Outward rounded in-place exponential
+expOutInPlace :: (CanBeMutable t, RoundedExponentiation t) => OpMutable1 t s
+expOutInPlace = pureEffToMutable1 expOutEff expDefaultEffort 
+
+-- | Inward rounded in-place square root
+sqrtInInPlace :: (CanBeMutable t, RoundedSquareRoot t) => OpMutable1 t s
+sqrtInInPlace = pureEffToMutable1 sqrtInEff sqrtDefaultEffort 
+
+-- | Outward rounded in-place square root
+sqrtOutInPlace :: (CanBeMutable t, RoundedSquareRoot t) => OpMutable1 t s
+sqrtOutInPlace = pureEffToMutable1 sqrtOutEff sqrtDefaultEffort 
+
+
+
+
+
+

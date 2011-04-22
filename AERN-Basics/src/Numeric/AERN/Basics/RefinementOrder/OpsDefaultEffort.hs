@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
+    Module      :  Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
     Description :  Convenience binary infix operators with default effort parameters  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
