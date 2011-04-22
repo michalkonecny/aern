@@ -13,8 +13,8 @@
 
 module Numeric.AERN.Basics.NumericOrder.InPlace.OpsDefaultEffort where
 
-import Numeric.AERN.Basics.NumericOrder
 import Numeric.AERN.Basics.Mutable
+import Numeric.AERN.Basics.NumericOrder
 
 
 minDnInPlace :: (CanBeMutable t, RoundedLattice t) => OpMutable2 t s
