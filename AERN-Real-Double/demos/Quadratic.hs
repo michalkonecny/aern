@@ -16,17 +16,6 @@ main = do
 -- choosing coefficients u in a, v in b and w in c. 
 quadratic :: DI -> DI -> DI -> [DI]
 quadratic a b c 
-  | certainlyDoesNotContainZero a =
-    quadraticFormula a b c
-  | otherwise =
-    [bottom]
-
-certainlyDoesNotContainZero x =
-  case 0 |>=? x of
-    Just False -> True
-    _ -> False 
-
-quadraticFormula a b c
   | certainlyZero discriminant =
     [-b/(2*a)]
   | certainlyNonnegative discriminant =
