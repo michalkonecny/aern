@@ -21,7 +21,18 @@ module Numeric.AERN.DoubleBasis.MInterval
 
     -- * Outward rounded operations
 
-    -- | In-place interval extensions of common functions.
+    -- | 
+    -- In-place interval extensions of common functions.
+    --
+    -- The /first/ parameter of the in-place operations listed below
+    -- is the /out/ parameter. Actual parameters are allowed to appear 
+    -- both as in and out paramers as in e.g.
+    --
+    -- > meetOutInPlace xM xM yM
+    --
+    -- which is equivalent to the assignment version 
+    --
+    -- > xM </\>= yM
 
     -- ** Order operations
     
@@ -128,15 +139,41 @@ import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.NumericOrder
 import Numeric.AERN.Basics.NumericOrder.InPlace.OpsDefaultEffort
+  (minOutInPlace,maxOutInPlace,
+   minInInPlace,maxInInPlace)
+
 import Numeric.AERN.Basics.RefinementOrder
 import Numeric.AERN.Basics.RefinementOrder.InPlace.OpsDefaultEffort
+  (meetOutInPlace,(</\>=),(<⊓>=),
+   joinOutInPlace,(<\/>=),(<⊔>=),
+   meetInInPlace,(>/\<=),(>⊓<=),
+   joinInInPlace,(>\/<=),(>⊔<=))
+
 import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Mutable
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as NumOrd
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort
-import Numeric.AERN.DoubleBasis.Interval
+  (addOutInPlace,(<+>=),
+   subtrOutInPlace,(<->=),
+   multOutInPlace,(<*>=),
+   divOutInPlace,(</>=),
+   absOutInPlace,expOutInPlace,sqrtOutInPlace,
+   mixedAddOutInPlace,(<+>|=),
+   mixedMultOutInPlace,(<*>|=),
+   mixedDivOutInPlace,(</>|=),
+   powerToNonnegIntOutInPlace,(<^>=),
+   addInInPlace,(>+<=),
+   subtrInInPlace,(>-<=),
+   multInInPlace,(>*<=),
+   divInInPlace,(>/<=),
+   absInInPlace,expInInPlace,sqrtInInPlace,
+   mixedAddInInPlace,(>+<|=),
+   mixedMultInInPlace,(>*<|=),
+   mixedDivInInPlace,(>/<|=),
+   powerToNonnegIntInInPlace,(>^<=))
 
+import Numeric.AERN.DoubleBasis.Interval
 import Control.Monad.ST (runST)
 
 -- | 
@@ -159,7 +196,6 @@ transl x y =
     xM <- makeMutable x
     yM <- makeMutable y
     addOutInPlace xM xM yM
---    addOutInPlaceEff x (addDefaultEffort x) xM xM yM 
     result <- readMutable xM
     return result
 
