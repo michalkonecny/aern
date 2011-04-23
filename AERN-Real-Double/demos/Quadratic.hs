@@ -11,11 +11,9 @@ main = do
   putStrLn $ "quadratic 1 5 6 = " ++ show (quadratic 1 5 6)
 
 -- | 
--- Returns list of intervals containing the real roots
--- of each real polynomial u*x^2+v*x+w obtained by
+-- Returns list such that the union of its members contains all
+-- real roots of each real polynomial u*x^2+v*x+w obtained by
 -- choosing coefficients u in a, v in b and w in c. 
--- 
--- Assumes: a does not contain 0.
 quadratic :: DI -> DI -> DI -> [DI]
 quadratic a b c 
   | certainlyDoesNotContainZero a =
