@@ -49,17 +49,17 @@ quadraticInPlace a b c
     runST $
       do
       [aM,bM,cM] <- mapM makeMutable [a,b,c]
-      bM <^>= 2  -- b^2
-      aM <*>|= 4 -- 4*a
-      aM <*>= cM -- 4*a*c
-      bM <->= aM -- b^2-4*a*c
+      bM <^>= 2              -- b^2
+      aM <*>|= (4 :: Double) -- 4*a
+      aM <*>= cM             -- 4*a*c
+      bM <->= aM             -- b^2-4*a*c
       result <- readMutable bM
       return result
   doubleRoot =
     runST $
       do
       [aM,bM] <- mapM makeMutable [a,b] 
-      bM </>|= (-2) -- -b/2 
+      bM </>|= (-2 :: Double) -- -b/2 
       bM </>= aM    -- -b/(2*a)
       result <- readMutable bM
       return result
@@ -67,12 +67,12 @@ quadraticInPlace a b c
     runST $
       do
       [aM,drM,diM] <- mapM makeMutable [a,doubleRoot,discriminant]
-      sqrtOutInPlace diM diM -- sqrt(b^2-4*a*c)
-      diM </>|= 2            -- (sqrt(b^2-4*a*c))/2 
-      diM </>= aM            -- (sqrt(b^2-4*a*c))/(2*a)
+      sqrtOutInPlace diM diM  -- sqrt(b^2-4*a*c)
+      diM </>|= (2 :: Double) -- (sqrt(b^2-4*a*c))/2 
+      diM </>= aM             -- (sqrt(b^2-4*a*c))/(2*a)
       assignMutable aM drM
-      aM <->= diM            -- (-b-sqrt(b^2-4*a*c))/(2*a)
-      drM <+>= diM           -- (-b+sqrt(b^2-4*a*c))/(2*a)
+      aM <->= diM             -- (-b-sqrt(b^2-4*a*c))/(2*a)
+      drM <+>= diM            -- (-b+sqrt(b^2-4*a*c))/(2*a)
       result <- mapM readMutable [aM,drM]
       return result
 
