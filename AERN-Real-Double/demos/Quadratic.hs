@@ -60,7 +60,7 @@ quadraticInPlace a b c
       do
       [aM,bM] <- mapM makeMutable [a,b] 
       bM </>|= (-2 :: Double) -- -b/2 
-      bM </>= aM    -- -b/(2*a)
+      bM </>= aM              -- -b/(2*a)
       result <- readMutable bM
       return result
   [leftRoot,rightRoot] =
