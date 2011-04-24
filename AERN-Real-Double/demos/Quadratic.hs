@@ -3,7 +3,6 @@ module Main where
 
 import Numeric.AERN.DoubleBasis.Interval
 import Numeric.AERN.DoubleBasis.MInterval
-
 import Control.Monad.ST (runST)
 
 main = do
@@ -17,34 +16,46 @@ main = do
 -- choosing coefficients u in a, v in b and w in c. 
 quadratic :: DI -> DI -> DI -> [DI]
 quadratic a b c 
-  | certainlyZero discriminant =
-    [doubleRoot]
   | certainlyNonnegative discriminant =
     [leftRoot,rightRoot]
   | certainlyNegative discriminant =
     []
+  | certainlyZero discriminant =
+    [doubleRoot]
   | otherwise =
     [bottom]
   where
+  rightRoot = doubleRoot+sqrtDiscriminant/(2*a) -- (-b+sqrt(b^2-4*a*c))/(2*a)
+  leftRoot = doubleRoot-sqrtDiscriminant/(2*a)  -- (-b-sqrt(b^2-4*a*c))/(2*a)
+  sqrtDiscriminant = sqrt discriminant
   discriminant = b^2-4*a*c
   doubleRoot = -b/(2*a)
-  leftRoot = doubleRoot-sqrtDiscriminant/(2*a)  -- (-b-sqrt(b^2-4*a*c))/(2*a)
-  rightRoot = doubleRoot+sqrtDiscriminant/(2*a) -- (-b+sqrt(b^2-4*a*c))/(2*a)
-  sqrtDiscriminant = sqrt discriminant
 
 -- |
 -- In-place quadratic. 
 quadraticInPlace :: DI -> DI -> DI -> [DI]
 quadraticInPlace a b c
-  | certainlyZero discriminant =
-    [doubleRoot]
   | certainlyNonnegative discriminant =
     [leftRoot,rightRoot]
   | certainlyNegative discriminant =
     []
+  | certainlyZero discriminant =
+    [doubleRoot]
   | otherwise =
     [bottom]
   where
+  [leftRoot,rightRoot] =
+    runST $
+      do
+      [aM,drM,diM] <- mapM makeMutable [a,doubleRoot,discriminant]
+      sqrtOutInPlace diM diM -- sqrt(b^2-4*a*c)
+      diM </>|= 2            -- (sqrt(b^2-4*a*c))/2 
+      diM </>= aM            -- (sqrt(b^2-4*a*c))/(2*a)
+      assignMutable aM drM
+      aM <->= diM            -- (-b-sqrt(b^2-4*a*c))/(2*a)
+      drM <+>= diM           -- (-b+sqrt(b^2-4*a*c))/(2*a)
+      result <- mapM readMutable [aM,drM]
+      return result
   discriminant = 
     runST $
       do
@@ -62,18 +73,6 @@ quadraticInPlace a b c
       bM </>|= (-2) -- -b/2 
       bM </>= aM    -- -b/(2*a)
       result <- readMutable bM
-      return result
-  [leftRoot,rightRoot] =
-    runST $
-      do
-      [aM,drM,diM] <- mapM makeMutable [a,doubleRoot,discriminant]
-      sqrtOutInPlace diM diM -- sqrt(b^2-4*a*c)
-      diM </>|= 2            -- (sqrt(b^2-4*a*c))/2 
-      diM </>= aM            -- (sqrt(b^2-4*a*c))/(2*a)
-      assignMutable aM drM
-      aM <->= diM            -- (-b-sqrt(b^2-4*a*c))/(2*a)
-      drM <+>= diM           -- (-b+sqrt(b^2-4*a*c))/(2*a)
-      result <- mapM readMutable [aM,drM]
       return result
 
 certainlyZero x =
