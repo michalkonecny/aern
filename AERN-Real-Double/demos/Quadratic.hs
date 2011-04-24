@@ -25,10 +25,10 @@ quadratic a b c
   | otherwise =
     [bottom]
   where
-  rightRoot = doubleRoot+sqrtDiscriminant/(2*a) -- (-b+sqrt(b^2-4*a*c))/(2*a)
-  leftRoot = doubleRoot-sqrtDiscriminant/(2*a)  -- (-b-sqrt(b^2-4*a*c))/(2*a)
-  sqrtDiscriminant = sqrt discriminant
   discriminant = b^2-4*a*c
+  leftRoot = doubleRoot-sqrtDiscriminant/(2*a)  -- (-b-sqrt(b^2-4*a*c))/(2*a)
+  rightRoot = doubleRoot+sqrtDiscriminant/(2*a) -- (-b+sqrt(b^2-4*a*c))/(2*a)
+  sqrtDiscriminant = sqrt discriminant
   doubleRoot = -b/(2*a)
 
 -- |
@@ -44,6 +44,16 @@ quadraticInPlace a b c
   | otherwise =
     [bottom]
   where
+  discriminant = 
+    runST $
+      do
+      [aM,bM,cM] <- mapM makeMutable [a,b,c]
+      bM <^>= 2  -- b^2
+      aM <*>|= 4 -- 4*a
+      aM <*>= cM -- 4*a*c
+      bM <->= aM -- b^2-4*a*c
+      result <- readMutable bM
+      return result
   [leftRoot,rightRoot] =
     runST $
       do
@@ -55,16 +65,6 @@ quadraticInPlace a b c
       aM <->= diM            -- (-b-sqrt(b^2-4*a*c))/(2*a)
       drM <+>= diM           -- (-b+sqrt(b^2-4*a*c))/(2*a)
       result <- mapM readMutable [aM,drM]
-      return result
-  discriminant = 
-    runST $
-      do
-      [aM,bM,cM] <- mapM makeMutable [a,b,c]
-      bM <^>= 2  -- b^2
-      aM <*>|= 4 -- 4*a
-      aM <*>= cM -- 4*a*c
-      bM <->= aM -- b^2-4*a*c
-      result <- readMutable bM
       return result
   doubleRoot =
     runST $
