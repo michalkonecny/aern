@@ -53,7 +53,8 @@ quadraticInPlace a b c
       aM <*>|= (4 :: Double) -- 4*a
       aM <*>= cM             -- 4*a*c
       bM <->= aM             -- b^2-4*a*c
-      result <- readMutable bM
+      result <- unsafeReadMutable bM
+        -- using unsafeReadMutable is safe becasue bM is no longer reachable 
       return result
   doubleRoot =
     runST $
@@ -61,7 +62,8 @@ quadraticInPlace a b c
       [aM,bM] <- mapM makeMutable [a,b] 
       bM </>|= (-2 :: Double) -- -b/2 
       bM </>= aM              -- -b/(2*a)
-      result <- readMutable bM
+      result <- unsafeReadMutable bM
+        -- using unsafeReadMutable is safe becasue bM is no longer reachable 
       return result
   [leftRoot,rightRoot] =
     runST $
@@ -73,7 +75,8 @@ quadraticInPlace a b c
       assignMutable aM drM
       aM <->= diM             -- (-b-sqrt(b^2-4*a*c))/(2*a)
       drM <+>= diM            -- (-b+sqrt(b^2-4*a*c))/(2*a)
-      result <- mapM readMutable [aM,drM]
+      result <- mapM unsafeReadMutable [aM,drM]
+        -- using unsafeReadMutable is safe becasue aM and drM  are no longer reachable 
       return result
 
 certainlyZero x =
