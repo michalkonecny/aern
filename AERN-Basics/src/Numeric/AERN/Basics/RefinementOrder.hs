@@ -21,7 +21,8 @@ module Numeric.AERN.Basics.RefinementOrder
     module Numeric.AERN.Basics.RefinementOrder.Arbitrary,
     module Numeric.AERN.Basics.RefinementOrder.RoundedBasis,
     module Numeric.AERN.Basics.RefinementOrder.RoundedLattice,
-    module Numeric.AERN.Basics.RefinementOrder.Extrema
+    module Numeric.AERN.Basics.RefinementOrder.Extrema,
+    module Numeric.AERN.Basics.RefinementOrder.InPlace.RoundedLattice
 )
 where
 
@@ -30,3 +31,4 @@ import Numeric.AERN.Basics.RefinementOrder.Arbitrary
 import Numeric.AERN.Basics.RefinementOrder.RoundedBasis
 import Numeric.AERN.Basics.RefinementOrder.RoundedLattice
 import Numeric.AERN.Basics.RefinementOrder.Extrema
+import Numeric.AERN.Basics.RefinementOrder.InPlace.RoundedLattice
