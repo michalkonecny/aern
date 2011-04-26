@@ -20,49 +20,49 @@ infixr 3 </\>=, >/\<=, <⊓>=, >⊓<=
 infixr 2 <\/>=, >\/<=, <⊔>=, >⊔<= 
 
 -- | Outward rounded in-place meet
-meetOutInPlace :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable2 t s
-meetOutInPlace = pureEffToMutable2 meetOutEff joinmeetOutDefaultEffort 
+meetOutInPlace :: (OuterRoundedLatticeInPlace t) => OpMutable2 t s
+meetOutInPlace = mutable2EffToMutable2 meetOutInPlaceEff joinmeetOutDefaultEffort 
 
 -- | Outward rounded meet assignment
-(</\>=) :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable1 t s
+(</\>=) :: (OuterRoundedLatticeInPlace t) => OpMutable1 t s
 (</\>=) = mutable2ToMutable1 meetOutInPlace
 
 -- | Inward rounded in-place meet
-meetInInPlace :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable2 t s
-meetInInPlace = pureEffToMutable2 meetInEff joinmeetInDefaultEffort 
+meetInInPlace :: (InnerRoundedLatticeInPlace t) => OpMutable2 t s
+meetInInPlace = mutable2EffToMutable2 meetInInPlaceEff joinmeetInDefaultEffort 
 
 -- | Inward rounded meet assignment
-(>/\<=) :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable1 t s
+(>/\<=) :: (InnerRoundedLatticeInPlace t) => OpMutable1 t s
 (>/\<=) = mutable2ToMutable1 meetInInPlace
 
 -- | Outward rounded in-place join
-joinOutInPlace :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable2 t s
-joinOutInPlace = pureEffToMutable2 joinOutEff joinmeetOutDefaultEffort 
+joinOutInPlace :: (OuterRoundedLatticeInPlace t) => OpMutable2 t s
+joinOutInPlace = mutable2EffToMutable2 joinOutInPlaceEff joinmeetOutDefaultEffort 
 
 -- | Outward rounded join assignment
-(<\/>=) :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable1 t s
+(<\/>=) :: (OuterRoundedLatticeInPlace t) => OpMutable1 t s
 (<\/>=) = mutable2ToMutable1 joinOutInPlace
 
 -- | Inward rounded in-place join
-joinInInPlace :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable2 t s
-joinInInPlace = pureEffToMutable2 joinInEff joinmeetInDefaultEffort 
+joinInInPlace :: (InnerRoundedLatticeInPlace t) => OpMutable2 t s
+joinInInPlace = mutable2EffToMutable2 joinInInPlaceEff joinmeetInDefaultEffort 
 
 -- | Inward rounded join assignment
-(>\/<=) :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable1 t s
+(>\/<=) :: (InnerRoundedLatticeInPlace t) => OpMutable1 t s
 (>\/<=) = mutable2ToMutable1 joinInInPlace
 
 {-| Convenience Unicode notation for '<\/>=' -}
-(<⊔>=) :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable1 t s
+(<⊔>=) :: (OuterRoundedLatticeInPlace t) => OpMutable1 t s
 (<⊔>=) = (<\/>=)
 
 {-| Convenience Unicode notation for '</\>=' -}
-(<⊓>=) :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable1 t s
+(<⊓>=) :: (OuterRoundedLatticeInPlace t) => OpMutable1 t s
 (<⊓>=) = (</\>=)
 
 {-| Convenience Unicode notation for '>\/<=' -}
-(>⊔<=) :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable1 t s
+(>⊔<=) :: (InnerRoundedLatticeInPlace t) => OpMutable1 t s
 (>⊔<=) = (>\/<=)
 
 {-| Convenience Unicode notation for '>/\<=' -}
-(>⊓<=) :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable1 t s
+(>⊓<=) :: (InnerRoundedLatticeInPlace t) => OpMutable1 t s
 (>⊓<=) = (>/\<=)

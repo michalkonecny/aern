@@ -198,52 +198,86 @@ pureToMutableNonmutEff pureFn eff resM aM b =
     a <- readMutable aM
     unsafeWriteMutable resM (pureFn eff a b)
 
-pureEffToMutable1 ::
+mutable1EffToMutable1 ::
     (CanBeMutable t) =>
-    (eff -> t -> t) ->
+    (forall s . OpMutable1Eff eff t s) -> 
     (t -> eff) ->
-    OpMutable1 t s
-pureEffToMutable1 pureEffFn defEff resM aM =
+    (forall s . OpMutable1 t s)
+mutable1EffToMutable1 op defEff resM aM =
     do
-    d <- readMutable resM
-    res <- readMutable resM
-    a <- readMutable aM
-    unsafeWriteMutable resM (pureEffFn (defEff d) a)
+    a <- unsafeReadMutable aM
+    op (defEff a) resM aM
 
-pureEffToMutable2 ::
+mutable2EffToMutable2 ::
     (CanBeMutable t) =>
-    (eff -> t -> t -> t) ->
+    (forall s . OpMutable2Eff eff t s) -> 
     (t -> eff) ->
-    OpMutable2 t s
-pureEffToMutable2 pureEffFn defEff resM aM bM =
+    (forall s . OpMutable2 t s)
+mutable2EffToMutable2 op defEff resM aM bM =
     do
-    d <- readMutable resM
-    res <- readMutable resM
-    a <- readMutable aM
-    b <- readMutable bM
-    unsafeWriteMutable resM (pureEffFn (defEff d) a b)
+    a <- unsafeReadMutable aM
+    op (defEff a) resM aM bM
 
-pureEffToMutableNonmut ::
+mutableNonmutEffToMutableNonmut ::
     (CanBeMutable t) =>
-    (eff -> t -> nonmut -> t) ->
+    (forall s . OpMutableNonmutEff eff t nonmut s) -> 
     (t -> eff) ->
-    OpMutableNonmut t nonmut s
-pureEffToMutableNonmut pureEffFn defEff resM aM b =
+    (forall s . OpMutableNonmut t nonmut s)
+mutableNonmutEffToMutableNonmut op defEff resM aM b =
     do
-    d <- readMutable resM
-    a <- readMutable aM
-    unsafeWriteMutable resM (pureEffFn (defEff d) a b)
+    a <- unsafeReadMutable aM
+    op (defEff a) resM aM b
 
-pureMixedEffToMutableNonmut ::
+mixedEffToMutableNonmut ::
     (CanBeMutable t) =>
-    (eff -> t -> nonmut -> t) ->
+    (forall s . OpMutableNonmutEff eff t nonmut s) -> 
     (t -> nonmut -> eff) ->
-    OpMutableNonmut t nonmut s
-pureMixedEffToMutableNonmut pureEffFn defEff resM aM b =
+    (forall s . OpMutableNonmut t nonmut s)
+mixedEffToMutableNonmut op defEff resM aM b =
     do
-    d <- readMutable resM
-    a <- readMutable aM
-    unsafeWriteMutable resM (pureEffFn (defEff d b) a b)
+    a <- unsafeReadMutable aM
+    op (defEff a b) resM aM b
+
+--pureEffToMutable1 ::
+--    (CanBeMutable t) =>
+--    (eff -> t -> t) ->
+--    (t -> eff) ->
+--    OpMutable1 t s
+--pureEffToMutable1 pureEffFn defEff resM aM =
+--    do
+--    a <- readMutable aM
+--    unsafeWriteMutable resM (pureEffFn (defEff a) a)
+--
+--pureEffToMutable2 ::
+--    (CanBeMutable t) =>
+--    (eff -> t -> t -> t) ->
+--    (t -> eff) ->
+--    OpMutable2 t s
+--pureEffToMutable2 pureEffFn defEff resM aM bM =
+--    do
+--    a <- readMutable aM
+--    b <- readMutable bM
+--    unsafeWriteMutable resM (pureEffFn (defEff a) a b)
+--
+--pureEffToMutableNonmut ::
+--    (CanBeMutable t) =>
+--    (eff -> t -> nonmut -> t) ->
+--    (t -> eff) ->
+--    OpMutableNonmut t nonmut s
+--pureEffToMutableNonmut pureEffFn defEff resM aM b =
+--    do
+--    a <- readMutable aM
+--    unsafeWriteMutable resM (pureEffFn (defEff a) a b)
+--
+--pureMixedEffToMutableNonmut ::
+--    (CanBeMutable t) =>
+--    (eff -> t -> nonmut -> t) ->
+--    (t -> nonmut -> eff) ->
+--    OpMutableNonmut t nonmut s
+--pureMixedEffToMutableNonmut pureEffFn defEff resM aM b =
+--    do
+--    a <- readMutable aM
+--    unsafeWriteMutable resM (pureEffFn (defEff a b) a b)
 
 --propWriteRead :: 
 --propWriteWriteRead ::
