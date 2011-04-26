@@ -23,6 +23,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
 
 import Numeric.AERN.Basics.Interval.Basics
+import Numeric.AERN.Basics.Interval.Mutable
 import Numeric.AERN.Basics.Interval.NumericOrder
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
@@ -159,6 +160,36 @@ instance
 instance 
     (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
     (RefOrd.RoundedLattice (Interval e))
+
+instance
+    (NumOrd.RoundedLatticeInPlace e) =>
+    (RefOrd.OuterRoundedLatticeInPlace (Interval e))
+    where
+    joinOutInPlaceEff effort 
+            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+        do
+        NumOrd.maxDnInPlaceEff effort resLM l1M l2M
+        NumOrd.minUpInPlaceEff effort resHM h1M h2M
+    meetOutInPlaceEff effort 
+            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+        do
+        NumOrd.minDnInPlaceEff effort resLM l1M l2M
+        NumOrd.maxUpInPlaceEff effort resHM h1M h2M
+
+instance
+    (NumOrd.RoundedLatticeInPlace e) =>
+    (RefOrd.InnerRoundedLatticeInPlace (Interval e))
+    where
+    joinInInPlaceEff effort 
+            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+        do
+        NumOrd.maxUpInPlaceEff effort resLM l1M l2M
+        NumOrd.minDnInPlaceEff effort resHM h1M h2M
+    meetInInPlaceEff effort 
+            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+        do
+        NumOrd.minUpInPlaceEff effort resLM l1M l2M
+        NumOrd.maxDnInPlaceEff effort resHM h1M h2M
 
 instance (NumOrd.ArbitraryOrderedTuple e) => RefOrd.ArbitraryOrderedTuple (Interval e) where
    type RefOrd.Area (Interval e) = NumOrd.Area e
