@@ -17,172 +17,172 @@ import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 
 -- | Inward rounded in-place addition
-addInInPlace :: (CanBeMutable t, RoundedAdd t) => OpMutable2 t s
-addInInPlace = pureEffToMutable2 addInEff addDefaultEffort
+addInInPlace :: (RoundedAddInPlace t) => OpMutable2 t s
+addInInPlace = mutable2EffToMutable2 addInInPlaceEff addDefaultEffort
 
 -- | Inward rounded addition assignment
-(>+<=) :: (CanBeMutable t, RoundedAdd t) => OpMutable1 t s
+(>+<=) :: (RoundedAddInPlace t) => OpMutable1 t s
 (>+<=) = mutable2ToMutable1 addInInPlace
 
 -- | Outward rounded in-place addition
-addOutInPlace :: (CanBeMutable t, RoundedAdd t) => OpMutable2 t s
-addOutInPlace = pureEffToMutable2 addOutEff addDefaultEffort 
+addOutInPlace :: (RoundedAddInPlace t) => OpMutable2 t s
+addOutInPlace = mutable2EffToMutable2 addOutInPlaceEff addDefaultEffort 
 
 -- | Outward rounded addition assignment
-(<+>=) :: (CanBeMutable t, RoundedAdd t) => OpMutable1 t s
+(<+>=) :: (RoundedAddInPlace t) => OpMutable1 t s
 (<+>=) = mutable2ToMutable1 addOutInPlace
 
 -- | Inward rounded in-place subtraction
-subtrInInPlace :: (CanBeMutable t, RoundedSubtr t) => OpMutable2 t s
-subtrInInPlace = pureEffToMutable2 subtrInEff addDefaultEffort
+subtrInInPlace :: (RoundedSubtrInPlace t) => OpMutable2 t s
+subtrInInPlace = mutable2EffToMutable2 subtrInInPlaceEff addDefaultEffort
 
 -- | Inward rounded subtraction assignment
-(>-<=) :: (CanBeMutable t, RoundedSubtr t) => OpMutable1 t s
+(>-<=) :: (RoundedSubtrInPlace t) => OpMutable1 t s
 (>-<=) = mutable2ToMutable1 subtrInInPlace
 
 -- | Outward rounded in-place subtraction
-subtrOutInPlace :: (CanBeMutable t, RoundedSubtr t) => OpMutable2 t s
-subtrOutInPlace = pureEffToMutable2 subtrOutEff addDefaultEffort
+subtrOutInPlace :: (RoundedSubtrInPlace t) => OpMutable2 t s
+subtrOutInPlace = mutable2EffToMutable2 subtrOutInPlaceEff addDefaultEffort
 
 -- | Outward rounded subtraction assignment
-(<->=) :: (CanBeMutable t, RoundedSubtr t) => OpMutable1 t s
+(<->=) :: (RoundedSubtrInPlace t) => OpMutable1 t s
 (<->=) = mutable2ToMutable1 subtrOutInPlace
 
 -- | Inward rounded in-place absolute value
-absInInPlace :: (CanBeMutable t, RoundedAbs t) => OpMutable1 t s
-absInInPlace = pureEffToMutable1 absInEff absDefaultEffort 
+absInInPlace :: (RoundedAbsInPlace t) => OpMutable1 t s
+absInInPlace = mutable1EffToMutable1 absInInPlaceEff absDefaultEffort 
 
 -- | Outward rounded in-place absolute value
-absOutInPlace :: (CanBeMutable t, RoundedAbs t) => OpMutable1 t s
-absOutInPlace = pureEffToMutable1 absOutEff absDefaultEffort 
+absOutInPlace :: (RoundedAbsInPlace t) => OpMutable1 t s
+absOutInPlace = mutable1EffToMutable1 absOutInPlaceEff absDefaultEffort 
 
 -- | Inward rounded in-place multiplication
-multInInPlace :: (CanBeMutable t, RoundedMultiply t) => OpMutable2 t s
-multInInPlace = pureEffToMutable2 multInEff multDefaultEffort
+multInInPlace :: (RoundedMultiplyInPlace t) => OpMutable2 t s
+multInInPlace = mutable2EffToMutable2 multInInPlaceEff multDefaultEffort
 
 -- | Inward rounded multiplication assignment
-(>*<=) :: (CanBeMutable t, RoundedMultiply t) => OpMutable1 t s
+(>*<=) :: (RoundedMultiplyInPlace t) => OpMutable1 t s
 (>*<=) = mutable2ToMutable1 multInInPlace
 
 -- | Outward rounded in-place multiplication
-multOutInPlace :: (CanBeMutable t, RoundedMultiply t) => OpMutable2 t s
-multOutInPlace = pureEffToMutable2 multOutEff multDefaultEffort
+multOutInPlace :: (RoundedMultiplyInPlace t) => OpMutable2 t s
+multOutInPlace = mutable2EffToMutable2 multOutInPlaceEff multDefaultEffort
 
 -- | Outward rounded multiplication assignment
-(<*>=) :: (CanBeMutable t, RoundedMultiply t) => OpMutable1 t s
+(<*>=) :: (RoundedMultiplyInPlace t) => OpMutable1 t s
 (<*>=) = mutable2ToMutable1 multOutInPlace
 
 -- | Inward rounded in-place power
-powerToNonnegIntInInPlace :: (CanBeMutable t, RoundedPowerToNonnegInt t) => 
+powerToNonnegIntInInPlace :: (RoundedPowerToNonnegIntInPlace t) => 
     OpMutableNonmut t Int s
 powerToNonnegIntInInPlace = 
-    pureEffToMutableNonmut powerToNonnegIntInEff powerToNonnegIntDefaultEffort
+    mutableNonmutEffToMutableNonmut powerToNonnegIntInInPlaceEff powerToNonnegIntDefaultEffort
 
 -- | Inward rounded in-place power assignment
-(>^<=) :: (CanBeMutable t, RoundedPowerToNonnegInt t) => OpNonmut t Int s
+(>^<=) :: (RoundedPowerToNonnegIntInPlace t) => OpNonmut t Int s
 (>^<=) = mutableNonmutToNonmut powerToNonnegIntInInPlace
 
 -- | Outward rounded in-place power
-powerToNonnegIntOutInPlace :: (CanBeMutable t, RoundedPowerToNonnegInt t) => 
+powerToNonnegIntOutInPlace :: (RoundedPowerToNonnegIntInPlace t) => 
     OpMutableNonmut t Int s
 powerToNonnegIntOutInPlace = 
-    pureEffToMutableNonmut powerToNonnegIntOutEff powerToNonnegIntDefaultEffort
+    mutableNonmutEffToMutableNonmut powerToNonnegIntOutInPlaceEff powerToNonnegIntDefaultEffort
 
 -- | Inward rounded in-place power assignment
-(<^>=) :: (CanBeMutable t, RoundedPowerToNonnegInt t) => OpNonmut t Int s
+(<^>=) :: (RoundedPowerToNonnegIntInPlace t) => OpNonmut t Int s
 (<^>=) = mutableNonmutToNonmut powerToNonnegIntOutInPlace
 
 -- | Inward rounded in-place division
-divInInPlace :: (CanBeMutable t, RoundedDivide t) => OpMutable2 t s
-divInInPlace = pureEffToMutable2 divInEff divDefaultEffort
+divInInPlace :: (RoundedDivideInPlace t) => OpMutable2 t s
+divInInPlace = mutable2EffToMutable2 divInInPlaceEff divDefaultEffort
 
 -- | Inward rounded division assignment
-(>/<=) :: (CanBeMutable t, RoundedDivide t) => OpMutable1 t s
+(>/<=) :: (RoundedDivideInPlace t) => OpMutable1 t s
 (>/<=) = mutable2ToMutable1 divInInPlace
 
 -- | Outward rounded in-place division
-divOutInPlace :: (CanBeMutable t, RoundedDivide t) => OpMutable2 t s
-divOutInPlace = pureEffToMutable2 divOutEff divDefaultEffort
+divOutInPlace :: (RoundedDivideInPlace t) => OpMutable2 t s
+divOutInPlace = mutable2EffToMutable2 divOutInPlaceEff divDefaultEffort
 
 -- | Outward rounded division assignment
-(</>=) :: (CanBeMutable t, RoundedDivide t) => OpMutable1 t s
+(</>=) :: (RoundedDivideInPlace t) => OpMutable1 t s
 (</>=) = mutable2ToMutable1 divOutInPlace
 
 -- | Inward rounded in-place mixed addition
-mixedAddInInPlace :: (CanBeMutable t, RoundedMixedAdd t tn) => 
+mixedAddInInPlace :: (RoundedMixedAddInPlace t tn) => 
     OpMutableNonmut t tn s
 mixedAddInInPlace =
-    pureMixedEffToMutableNonmut mixedAddInEff mixedAddDefaultEffort
+    mixedEffToMutableNonmut mixedAddInInPlaceEff mixedAddDefaultEffort
 
 -- | Inward rounded additive scalar action assignment
-(>+<|=) :: (CanBeMutable t, RoundedMixedAdd t tn) => OpNonmut t tn s
+(>+<|=) :: (RoundedMixedAddInPlace t tn) => OpNonmut t tn s
 (>+<|=) = mutableNonmutToNonmut mixedAddInInPlace
 
 -- | Outward rounded in-place mixed addition
-mixedAddOutInPlace :: (CanBeMutable t, RoundedMixedAdd t tn) =>
+mixedAddOutInPlace :: (RoundedMixedAddInPlace t tn) =>
     OpMutableNonmut t tn s
 mixedAddOutInPlace =
-    pureMixedEffToMutableNonmut mixedAddOutEff mixedAddDefaultEffort
+    mixedEffToMutableNonmut mixedAddOutInPlaceEff mixedAddDefaultEffort
 
 -- | Outward rounded additive scalar action assignment
-(<+>|=) :: (CanBeMutable t, RoundedMixedAdd t tn) => OpNonmut t tn s
+(<+>|=) :: (RoundedMixedAddInPlace t tn) => OpNonmut t tn s
 (<+>|=) = mutableNonmutToNonmut mixedAddOutInPlace
 
 -- | Inward rounded in-place mixed multiplication
-mixedMultInInPlace :: (CanBeMutable t, RoundedMixedMultiply t tn) => 
+mixedMultInInPlace :: (RoundedMixedMultiplyInPlace t tn) => 
     OpMutableNonmut t tn s
 mixedMultInInPlace =
-    pureMixedEffToMutableNonmut mixedMultInEff mixedMultDefaultEffort
+    mixedEffToMutableNonmut mixedMultInInPlaceEff mixedMultDefaultEffort
 
 -- | Inward rounded multiplicative scalar action assignment
-(>*<|=) :: (CanBeMutable t, RoundedMixedMultiply t tn) => OpNonmut t tn s
+(>*<|=) :: (RoundedMixedMultiplyInPlace t tn) => OpNonmut t tn s
 (>*<|=) = mutableNonmutToNonmut mixedMultInInPlace
 
 -- | Outward rounded in-place mixed multiplication
-mixedMultOutInPlace :: (CanBeMutable t, RoundedMixedMultiply t tn) => 
+mixedMultOutInPlace :: (RoundedMixedMultiplyInPlace t tn) => 
     OpMutableNonmut t tn s
 mixedMultOutInPlace =
-    pureMixedEffToMutableNonmut mixedMultOutEff mixedMultDefaultEffort
+    mixedEffToMutableNonmut mixedMultOutInPlaceEff mixedMultDefaultEffort
 
 -- | Outward rounded multiplicative scalar action assignment
-(<*>|=) :: (CanBeMutable t, RoundedMixedMultiply t tn) => OpNonmut t tn s
+(<*>|=) :: (RoundedMixedMultiplyInPlace t tn) => OpNonmut t tn s
 (<*>|=) = mutableNonmutToNonmut mixedMultOutInPlace
 
 -- | Inward rounded in-place mixed reciprocal
-mixedDivInInPlace :: (CanBeMutable t, RoundedMixedDivide t tn) => 
+mixedDivInInPlace :: (RoundedMixedDivideInPlace t tn) => 
     OpMutableNonmut t tn s
 mixedDivInInPlace =
-    pureMixedEffToMutableNonmut mixedDivInEff mixedDivDefaultEffort
+    mixedEffToMutableNonmut mixedDivInInPlaceEff mixedDivDefaultEffort
 
 -- | Inward rounded multiplicative scalar reciprocal action assignment
-(>/<|=) :: (CanBeMutable t, RoundedMixedDivide t tn) => OpNonmut t tn s
+(>/<|=) :: (RoundedMixedDivideInPlace t tn) => OpNonmut t tn s
 (>/<|=) = mutableNonmutToNonmut mixedDivOutInPlace
 
 -- | Outward rounded in-place mixed reciprocal
-mixedDivOutInPlace :: (CanBeMutable t, RoundedMixedDivide t tn) => 
+mixedDivOutInPlace :: (RoundedMixedDivideInPlace t tn) => 
     OpMutableNonmut t tn s
 mixedDivOutInPlace =
-    pureMixedEffToMutableNonmut mixedDivOutEff mixedDivDefaultEffort
+    mixedEffToMutableNonmut mixedDivOutInPlaceEff mixedDivDefaultEffort
 
 -- | Outward rounded multiplicative scalar reciprocal action assignment
-(</>|=) :: (CanBeMutable t, RoundedMixedDivide t tn) => OpNonmut t tn s
+(</>|=) :: (RoundedMixedDivideInPlace t tn) => OpNonmut t tn s
 (</>|=) = mutableNonmutToNonmut mixedDivOutInPlace
 
 -- | Inward rounded in-place exponential
-expInInPlace :: (CanBeMutable t, RoundedExponentiation t) => OpMutable1 t s
-expInInPlace = pureEffToMutable1 expInEff expDefaultEffort 
+expInInPlace :: (RoundedExponentiationInPlace t) => OpMutable1 t s
+expInInPlace = mutable1EffToMutable1 expInInPlaceEff expDefaultEffort 
 
 -- | Outward rounded in-place exponential
-expOutInPlace :: (CanBeMutable t, RoundedExponentiation t) => OpMutable1 t s
-expOutInPlace = pureEffToMutable1 expOutEff expDefaultEffort 
+expOutInPlace :: (RoundedExponentiationInPlace t) => OpMutable1 t s
+expOutInPlace = mutable1EffToMutable1 expOutInPlaceEff expDefaultEffort 
 
 -- | Inward rounded in-place square root
-sqrtInInPlace :: (CanBeMutable t, RoundedSquareRoot t) => OpMutable1 t s
-sqrtInInPlace = pureEffToMutable1 sqrtInEff sqrtDefaultEffort 
+sqrtInInPlace :: (RoundedSquareRootInPlace t) => OpMutable1 t s
+sqrtInInPlace = mutable1EffToMutable1 sqrtInInPlaceEff sqrtDefaultEffort 
 
 -- | Outward rounded in-place square root
-sqrtOutInPlace :: (CanBeMutable t, RoundedSquareRoot t) => OpMutable1 t s
-sqrtOutInPlace = pureEffToMutable1 sqrtOutEff sqrtDefaultEffort 
+sqrtOutInPlace :: (RoundedSquareRootInPlace t) => OpMutable1 t s
+sqrtOutInPlace = mutable1EffToMutable1 sqrtOutInPlaceEff sqrtDefaultEffort 
 
 
 
