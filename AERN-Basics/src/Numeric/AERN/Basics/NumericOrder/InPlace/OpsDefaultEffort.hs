@@ -17,32 +17,32 @@ import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.NumericOrder
 
 
-minDnInPlace :: (CanBeMutable t, RoundedLattice t) => OpMutable2 t s
-minDnInPlace = pureEffToMutable2 minDnEff minmaxDefaultEffort
+minDnInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
+minDnInPlace = mutable2EffToMutable2 minDnInPlaceEff minmaxDefaultEffort
 
-minUpInPlace :: (CanBeMutable t, RoundedLattice t) => OpMutable2 t s
-minUpInPlace = pureEffToMutable2 minUpEff minmaxDefaultEffort
+minUpInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
+minUpInPlace = mutable2EffToMutable2 minUpInPlaceEff minmaxDefaultEffort
 
-maxDnInPlace :: (CanBeMutable t, RoundedLattice t) => OpMutable2 t s
-maxDnInPlace = pureEffToMutable2 maxDnEff minmaxDefaultEffort
+maxDnInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
+maxDnInPlace = mutable2EffToMutable2 maxDnInPlaceEff minmaxDefaultEffort
 
-maxUpInPlace :: (CanBeMutable t, RoundedLattice t) => OpMutable2 t s
-maxUpInPlace = pureEffToMutable2 maxUpEff minmaxDefaultEffort
+maxUpInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
+maxUpInPlace = mutable2EffToMutable2 maxUpInPlaceEff minmaxDefaultEffort
 
 -- | Outward rounded in-place minimum
-minOutInPlace :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable2 t s
-minOutInPlace = pureEffToMutable2 minOuterEff minmaxOuterDefaultEffort
+minOutInPlace :: (OuterRoundedLatticeInPlace t) => OpMutable2 t s
+minOutInPlace = mutable2EffToMutable2 minOuterInPlaceEff minmaxOuterDefaultEffort
 
 -- | Outward rounded in-place maximum
-maxOutInPlace :: (CanBeMutable t, OuterRoundedLattice t) => OpMutable2 t s
-maxOutInPlace = pureEffToMutable2 maxOuterEff minmaxOuterDefaultEffort
+maxOutInPlace :: (OuterRoundedLatticeInPlace t) => OpMutable2 t s
+maxOutInPlace = mutable2EffToMutable2 maxOuterInPlaceEff minmaxOuterDefaultEffort
 
 -- | Inward rounded in-place minimum
-minInInPlace :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable2 t s
-minInInPlace = pureEffToMutable2 minInnerEff minmaxInnerDefaultEffort
+minInInPlace :: (InnerRoundedLatticeInPlace t) => OpMutable2 t s
+minInInPlace = mutable2EffToMutable2 minInnerInPlaceEff minmaxInnerDefaultEffort
 
 -- | Outward rounded in-place maximum
-maxInInPlace :: (CanBeMutable t, InnerRoundedLattice t) => OpMutable2 t s
-maxInInPlace = pureEffToMutable2 maxInnerEff minmaxInnerDefaultEffort
+maxInInPlace :: (InnerRoundedLatticeInPlace t) => OpMutable2 t s
+maxInInPlace = mutable2EffToMutable2 maxInnerInPlaceEff minmaxInnerDefaultEffort
 
 
