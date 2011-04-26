@@ -70,6 +70,7 @@ testsDI =
        RefOrd.testsPartialComparison  ("DI", sampleDI), 
        RefOrd.testsRoundedBasis ("DI", sampleDI),
        RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI),
+       RefOrd.testsOuterInnerRoundedLatticeInPlace ("DI", sampleDI),
        testsDistance ("DI", sampleDI),
        testsImprecision ("DI", sampleDI),
        ArithInOut.testsConvertNumOrd ("Integer", sampleI, "DI", sampleDI),
@@ -87,8 +88,7 @@ testsDI =
        ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Double", sampleD),
        ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Integer", sampleI),
        ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Rational", sampleR),
-       ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Double", sampleD)
-       ,
+       ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Double", sampleD),
        ArithInOut.testsInOutExp ("DI", sampleDI),
        ArithInOut.testsInOutSqrt ("DI", sampleDI) unPositiveDI
     ]
