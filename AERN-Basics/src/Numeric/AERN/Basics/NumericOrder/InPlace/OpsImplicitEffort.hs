@@ -18,21 +18,21 @@ import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.NumericOrder
 
 -- | Downward rounded in-place minimum
-minDnInPlace
+minDnInPlace ::
     (RoundedLatticeInPlace t, 
      ?minmaxEffort :: MinmaxEffortIndicator t) =>
     OpMutable2 t s
 minDnInPlace = minDnInPlaceEff ?minmaxEffort
 
 -- | Upward rounded in-place minimum
-minUpInPlace
+minUpInPlace ::
     (RoundedLatticeInPlace t, 
      ?minmaxEffort :: MinmaxEffortIndicator t) =>
     OpMutable2 t s
 minUpInPlace = minUpInPlaceEff ?minmaxEffort
 
 -- | Downward rounded in-place maximum
-maxDnInPlace
+maxDnInPlace ::
     (RoundedLatticeInPlace t, 
      ?minmaxEffort :: MinmaxEffortIndicator t) =>
     OpMutable2 t s
