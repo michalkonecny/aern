@@ -46,22 +46,22 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 class (OuterRoundedLatticeEffort t, CanBeMutable t) => 
     OuterRoundedLatticeInPlace t 
     where
-    maxOuterInPlaceEff :: OpMutable2Eff (MinmaxOuterEffortIndicator t) t s 
-    minOuterInPlaceEff :: OpMutable2Eff (MinmaxOuterEffortIndicator t) t s
+    maxOutInPlaceEff :: OpMutable2Eff (MinmaxOuterEffortIndicator t) t s 
+    minOutInPlaceEff :: OpMutable2Eff (MinmaxOuterEffortIndicator t) t s
 
-maxOuterInPlaceEffFromPure,
- minOuterInPlaceEffFromPure ::
+maxOutInPlaceEffFromPure,
+ minOutInPlaceEffFromPure ::
     (CanBeMutable t, OuterRoundedLattice t) => 
     OpMutable2Eff (MinmaxOuterEffortIndicator t) t s  
-maxOuterInPlaceEffFromPure = pureToMutable2Eff maxOuterEff
-minOuterInPlaceEffFromPure = pureToMutable2Eff minOuterEff
+maxOutInPlaceEffFromPure = pureToMutable2Eff maxOutEff
+minOutInPlaceEffFromPure = pureToMutable2Eff minOutEff
 
-maxOuterEffFromInPlace,
- minOuterEffFromInPlace ::
+maxOutEffFromInPlace,
+ minOutEffFromInPlace ::
  (CanBeMutable t, OuterRoundedLatticeInPlace t) =>
  (MinmaxOuterEffortIndicator t) -> t -> t -> t
-maxOuterEffFromInPlace = mutable2EffToPure $ maxOuterInPlaceEff 
-minOuterEffFromInPlace = mutable2EffToPure $ minOuterInPlaceEff 
+maxOutEffFromInPlace = mutable2EffToPure maxOutInPlaceEff 
+minOutEffFromInPlace = mutable2EffToPure minOutInPlaceEff 
 
 {-|
     A type with refinement-inner-rounding numerical-order-lattice operations.
@@ -69,22 +69,22 @@ minOuterEffFromInPlace = mutable2EffToPure $ minOuterInPlaceEff
 class (InnerRoundedLatticeEffort t, CanBeMutable t) => 
     InnerRoundedLatticeInPlace t 
     where
-    maxInnerInPlaceEff :: OpMutable2Eff (MinmaxInnerEffortIndicator t) t s 
-    minInnerInPlaceEff :: OpMutable2Eff (MinmaxInnerEffortIndicator t) t s
+    maxInInPlaceEff :: OpMutable2Eff (MinmaxInnerEffortIndicator t) t s 
+    minInInPlaceEff :: OpMutable2Eff (MinmaxInnerEffortIndicator t) t s
     
-maxInnerInPlaceEffFromPure,
- minInnerInPlaceEffFromPure ::
+maxInInPlaceEffFromPure,
+ minInInPlaceEffFromPure ::
     (CanBeMutable t, InnerRoundedLattice t) => 
     OpMutable2Eff (MinmaxInnerEffortIndicator t) t s  
-maxInnerInPlaceEffFromPure = pureToMutable2Eff maxInnerEff
-minInnerInPlaceEffFromPure = pureToMutable2Eff minInnerEff
+maxInInPlaceEffFromPure = pureToMutable2Eff maxInEff
+minInInPlaceEffFromPure = pureToMutable2Eff minInEff
 
-maxInnerEffFromInPlace,
- minInnerEffFromInPlace ::
+maxInEffFromInPlace,
+ minInEffFromInPlace ::
  (CanBeMutable t, InnerRoundedLatticeInPlace t) =>
  (MinmaxInnerEffortIndicator t) -> t -> t -> t
-maxInnerEffFromInPlace = mutable2EffToPure $ maxInnerInPlaceEff 
-minInnerEffFromInPlace = mutable2EffToPure $ minInnerInPlaceEff 
+maxInEffFromInPlace = mutable2EffToPure maxInInPlaceEff 
+minInEffFromInPlace = mutable2EffToPure minInInPlaceEff 
 
 class (OuterRoundedLatticeInPlace t, InnerRoundedLatticeInPlace t) => 
     RefinementRoundedLatticeInPlace t
@@ -99,10 +99,10 @@ propRefinementRoundedLatticeJoinInPlaceConsistentWithPure ::
 propRefinementRoundedLatticeJoinInPlaceConsistentWithPure sample (minmaxOutEffort, minmaxInEffort, effortComp)
         (UniformlyOrderedPair (e1,e2)) =
     inPlaceConsistentWithPure2 (pLeqEff effortComp) 
-        (maxOuterInPlaceEff minmaxOutEffort)  
-        (maxInnerInPlaceEff minmaxInEffort)
-        (maxOuterEff minmaxOutEffort) 
-        (maxInnerEff minmaxInEffort) 
+        (maxOutInPlaceEff minmaxOutEffort)  
+        (maxInInPlaceEff minmaxInEffort)
+        (maxOutEff minmaxOutEffort) 
+        (maxInEff minmaxInEffort) 
         e1 e2  
 
 propRefinementRoundedLatticeMeetInPlaceConsistentWithPure ::
@@ -115,10 +115,10 @@ propRefinementRoundedLatticeMeetInPlaceConsistentWithPure ::
 propRefinementRoundedLatticeMeetInPlaceConsistentWithPure sample (minmaxOutEffort, minmaxInEffort, effortComp)
         (UniformlyOrderedPair (e1,e2)) =
     inPlaceConsistentWithPure2 (pLeqEff effortComp) 
-        (minOuterInPlaceEff minmaxOutEffort)  
-        (minInnerInPlaceEff minmaxInEffort)
-        (minOuterEff minmaxOutEffort) 
-        (minInnerEff minmaxInEffort) 
+        (minOutInPlaceEff minmaxOutEffort)  
+        (minInInPlaceEff minmaxInEffort)
+        (minOutEff minmaxOutEffort) 
+        (minInEff minmaxInEffort) 
         e1 e2  
 
 testsRefinementRoundedLatticeInPlace :: 

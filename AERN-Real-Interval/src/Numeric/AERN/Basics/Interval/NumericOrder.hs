@@ -68,9 +68,9 @@ instance
     (NumOrd.RoundedLattice e) =>
     (NumOrd.OuterRoundedLattice (Interval e))
     where
-    minOuterEff effort (Interval l1 h1) (Interval l2 h2) =
+    minOutEff effort (Interval l1 h1) (Interval l2 h2) =
         Interval (NumOrd.minDnEff effort l1 l2) (NumOrd.minUpEff effort h1 h2)
-    maxOuterEff effort (Interval l1 h1) (Interval l2 h2) =
+    maxOutEff effort (Interval l1 h1) (Interval l2 h2) =
         Interval (NumOrd.maxDnEff effort l1 l2) (NumOrd.maxUpEff effort h1 h2)
 
 instance
@@ -83,9 +83,9 @@ instance
     (NumOrd.RoundedLattice e) =>
     (NumOrd.InnerRoundedLattice (Interval e))
     where
-    minInnerEff effort (Interval l1 h1) (Interval l2 h2) =
+    minInEff effort (Interval l1 h1) (Interval l2 h2) =
         Interval (NumOrd.minUpEff effort l1 l2) (NumOrd.minDnEff effort h1 h2)
-    maxInnerEff effort (Interval l1 h1) (Interval l2 h2) =
+    maxInEff effort (Interval l1 h1) (Interval l2 h2) =
         Interval (NumOrd.maxUpEff effort l1 l2) (NumOrd.maxDnEff effort h1 h2)
 
 instance 
@@ -96,12 +96,12 @@ instance
     (NumOrd.RoundedLatticeInPlace e) =>
     (NumOrd.OuterRoundedLatticeInPlace (Interval e))
     where
-    minOuterInPlaceEff effort 
+    minOutInPlaceEff effort 
             (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
         do
         NumOrd.minDnInPlaceEff effort resLM l1M l2M
         NumOrd.minUpInPlaceEff effort resHM h1M h2M
-    maxOuterInPlaceEff effort 
+    maxOutInPlaceEff effort 
             (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
         do
         NumOrd.maxDnInPlaceEff effort resLM l1M l2M
@@ -112,12 +112,12 @@ instance
     (NumOrd.RoundedLatticeInPlace e) =>
     (NumOrd.InnerRoundedLatticeInPlace (Interval e))
     where
-    minInnerInPlaceEff effort 
+    minInInPlaceEff effort 
             (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
         do
         NumOrd.minUpInPlaceEff effort resLM l1M l2M
         NumOrd.minDnInPlaceEff effort resHM h1M h2M
-    maxInnerInPlaceEff effort 
+    maxInInPlaceEff effort 
             (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
         do
         NumOrd.maxUpInPlaceEff effort resLM l1M l2M

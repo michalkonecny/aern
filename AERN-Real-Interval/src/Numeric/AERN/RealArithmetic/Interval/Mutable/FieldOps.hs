@@ -461,7 +461,7 @@ instance
                         let zeroI = zero 
                         let _ = [zeroI, Interval l h]
                         zeroM <- unsafeMakeMutable zeroI 
-                        NumOrd.maxInnerInPlaceEff effMinMax res res zeroM
+                        NumOrd.maxInInPlaceEff effMinMax res res zeroM
                     False -> return ()
     powerToNonnegIntOutInPlaceEff
             (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
@@ -499,7 +499,7 @@ instance
                         let zeroI = zero 
                         let _ = [zeroI, Interval l h]
                         zeroM <- unsafeMakeMutable zeroI 
-                        NumOrd.maxOuterInPlaceEff effMinMax res res zeroM
+                        NumOrd.maxOutInPlaceEff effMinMax res res zeroM
                     False -> return ()
 
 instance 
