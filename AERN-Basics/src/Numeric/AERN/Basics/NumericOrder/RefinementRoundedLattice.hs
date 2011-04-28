@@ -58,7 +58,7 @@ class (OuterRoundedLatticeEffort t) => OuterRoundedLattice t where
 
 class OuterRoundedLatticeEffort t where
     type MinmaxOuterEffortIndicator t
-    minmaxOutDefaultEffort :: t -> MinmaxOuterEffortIndicator t
+    minmaxOuterDefaultEffort :: t -> MinmaxOuterEffortIndicator t
 
 {-|
     A type with refinement-inner-rounding numerical-order-lattice operations.
@@ -69,7 +69,7 @@ class (InnerRoundedLatticeEffort t) => InnerRoundedLattice t where
 
 class InnerRoundedLatticeEffort t where
     type MinmaxInnerEffortIndicator t
-    minmaxInDefaultEffort :: t -> MinmaxInnerEffortIndicator t
+    minmaxInnerDefaultEffort :: t -> MinmaxInnerEffortIndicator t
 
 class (OuterRoundedLattice t, InnerRoundedLattice t) => RefinementRoundedLattice t
 
