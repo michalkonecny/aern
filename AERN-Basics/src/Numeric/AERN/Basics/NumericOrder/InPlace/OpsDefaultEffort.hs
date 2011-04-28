@@ -17,15 +17,19 @@ import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.NumericOrder
 
 
+-- | Downward rounded in-place minimum
 minDnInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
 minDnInPlace = mutable2EffToMutable2 minDnInPlaceEff minmaxDefaultEffort
 
+-- | Upward rounded in-place minimum
 minUpInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
 minUpInPlace = mutable2EffToMutable2 minUpInPlaceEff minmaxDefaultEffort
 
+-- | Downward rounded in-place maximum
 maxDnInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
 maxDnInPlace = mutable2EffToMutable2 maxDnInPlaceEff minmaxDefaultEffort
 
+-- | Upward rounded in-place maximum
 maxUpInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
 maxUpInPlace = mutable2EffToMutable2 maxUpInPlaceEff minmaxDefaultEffort
 
@@ -41,7 +45,7 @@ maxOutInPlace = mutable2EffToMutable2 maxOutInPlaceEff minmaxOuterDefaultEffort
 minInInPlace :: (InnerRoundedLatticeInPlace t) => OpMutable2 t s
 minInInPlace = mutable2EffToMutable2 minInInPlaceEff minmaxInnerDefaultEffort
 
--- | Outward rounded in-place maximum
+-- | Inward rounded in-place maximum
 maxInInPlace :: (InnerRoundedLatticeInPlace t) => OpMutable2 t s
 maxInInPlace = mutable2EffToMutable2 maxInInPlaceEff minmaxInnerDefaultEffort
 
