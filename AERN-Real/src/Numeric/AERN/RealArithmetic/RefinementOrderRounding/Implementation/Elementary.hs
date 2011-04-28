@@ -168,13 +168,14 @@ expOutThinArgInPlace
             do
             tempM <- makeMutable plusInfinity
             meetOutInPlace resM xM tempM
---            unsafeWriteMutable resM $ x </\> plusInfinity -- x almost oo
+            -- x </\> plusInfinity -- x almost oo
         (_, True, _) -> 
-            tempM <- makeMutable one
-            neg
+            do
+            tempM <- makeMutable $ neg one
             tempM </>= xM
-            
-            unsafeWriteMutable resM $ zero </\> (one </> (neg x)) -- x almost -oo
+            zeroM <- makeMutable zero
+            meetOutInPlace resM zeroM tempM
+            -- zero </\> (one </> (neg x)) -- x almost -oo
         (_, _, Just True) -> 
             unsafeWriteMutable resM one -- x = 0
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
