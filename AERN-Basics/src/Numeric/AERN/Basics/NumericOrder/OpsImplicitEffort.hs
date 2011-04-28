@@ -47,12 +47,12 @@ minOut, maxOut ::
     (OuterRoundedLattice t, 
      ?minmaxOuterEffort :: MinmaxOuterEffortIndicator t) =>
     t -> t -> t
-minOut = minOuterEff ?minmaxOuterEffort
-maxOut = maxOuterEff ?minmaxOuterEffort
+minOut = minOutEff ?minmaxOuterEffort
+maxOut = maxOutEff ?minmaxOuterEffort
 
 minIn, maxIn ::
     (InnerRoundedLattice t,
      ?minmaxInnerEffort :: MinmaxInnerEffortIndicator t) =>
     t -> t -> t
-minIn = minInnerEff ?minmaxInnerEffort
-maxIn = maxInnerEff ?minmaxInnerEffort
+minIn = minInEff ?minmaxInnerEffort
+maxIn = maxInEff ?minmaxInnerEffort
