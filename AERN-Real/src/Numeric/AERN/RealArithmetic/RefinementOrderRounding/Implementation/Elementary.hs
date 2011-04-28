@@ -17,21 +17,21 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Implementation.Elemen
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
+import Numeric.AERN.Basics.RefinementOrder.InPlace.OpsImplicitEffort
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.ExactOps
 
-
-import Numeric.AERN.Basics.Mutable
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort
 import Control.Monad.ST (runST)
 
 expOutThinArg ::
@@ -51,7 +51,8 @@ expOutThinArg ::
     (ArithUpDn.ConvertEffortIndicator t Int, 
      ArithInOut.ConvertEffortIndicator Double t) ->
     Int {-^ the highest degree to consider in the Taylor expansion -} ->
-    t {-^ @x@ assumed to be a thin approximation -} -> t {-^ @exp(x)@ -}
+    t {-^ @x@ assumed to be a thin approximation -} -> 
+    t {-^ @exp(x)@ -}
 expOutThinArg
         effortField
         effortMixedField
@@ -122,7 +123,8 @@ expOutThinArg
                     ArithInOut.convertOutEff effortFromDouble (0.367879440 :: Double)
 
 expOutThinArgInPlace ::
-    (HasZero t, HasOne t, HasInfinities t,
+    (CanBeMutable t, 
+     HasZero t, HasOne t, HasInfinities t,
      RefOrd.PartialComparison t,
      NumOrd.PartialComparison t,
      RefOrd.OuterRoundedLattice t,
@@ -141,39 +143,51 @@ expOutThinArgInPlace ::
     NumOrd.PartialCompareEffortIndicator t ->
     (ArithUpDn.ConvertEffortIndicator t Int, 
      ArithInOut.ConvertEffortIndicator Double t) ->
+    Mutable t s -> {-^ result parameter -}
     Int {-^ the highest degree to consider in the Taylor expansion -} ->
-    t {-^ @x@ assumed to be a thin approximation -} -> t {-^ @exp(x)@ -}
+    Mutable t s {-^ @x@ assumed to be a thin approximation -} -> 
+    t {-^ @exp(x)@ -}
 expOutThinArgInPlace
         effortField
         effortMixedField
         effortMeet
         effortRefinement effortCompare
         (effortToInt, effortFromDouble)
-        degr x =
-    let ?pCompareEffort = effortRefinement in
-    let ?joinmeetOutEffort = effortMeet in
-    let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField in
+        resM degr xM =
+    do
+    x <- unsafeReadMutable xM
+    let ?pCompareEffort = effortRefinement
+    let ?joinmeetOutEffort = effortMeet
+    let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField
+    let (xUp, xTooBig) = intBoolPair $ ArithUpDn.convertUpEff effortToInt x
+    let (xDn, xTooLow) = intBoolPair $ ArithUpDn.convertDnEff effortToInt x
     -- infinities not handled well by the Taylor formula,
     -- treat them as special cases, adding also 0 for efficiency:
     case (xTooBig, xTooLow, x |>=? zero) of
-        (True, _, _) -> x </\> plusInfinity -- x almost oo
-        (_, True, _) -> zero </\> (one </> (neg x)) -- x almost -oo
-        (_, _, Just True) -> one -- x = 0
+        (True, _, _) -> 
+            do
+            tempM <- makeMutable plusInfinity
+            meetOutInPlace resM xM tempM
+--            unsafeWriteMutable resM $ x </\> plusInfinity -- x almost oo
+        (_, True, _) -> 
+            tempM <- makeMutable one
+            neg
+            tempM </>= xM
+            
+            unsafeWriteMutable resM $ zero </\> (one </> (neg x)) -- x almost -oo
+        (_, _, Just True) -> 
+            unsafeWriteMutable resM one -- x = 0
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
-            expOutViaTaylorForXScaledNearZero
+            unsafeWriteMutable resM $ expOutViaTaylorForXScaledNearZero x xUp xDn
         _ -> -- not equal to infinity but not excluding infinity:
-            zero </\> plusInfinity
+            unsafeWriteMutable resM $ zero </\> plusInfinity
              -- this is always a valid outer approx
     where
-    (xUp, xTooBig) =
-        case ArithUpDn.convertUpEff effortToInt x of
-            Just xUp -> (xUp :: Int, False)
-            _ -> (error "internal error in expOutThinArg", True)
-    (xDn, xTooLow) =
-        case ArithUpDn.convertDnEff effortToInt x of
-            Just xDn -> (xDn :: Int, False)
-            _ -> (error "internal error in expOutThinArg", True)
-    expOutViaTaylorForXScaledNearZero =
+    intBoolPair mval = 
+        case mval of
+          Just val -> (val :: Int, False)
+          _ -> (error "internal error in expOutThinArg", True)
+    expOutViaTaylorForXScaledNearZero x xUp xDn =
         let ?joinmeetOutEffort = effortMeet in
         let ?addInOutEffort = ArithInOut.fldEffortAdd x effortField in
         let ?multInOutEffort = ArithInOut.fldEffortMult x effortField in
@@ -184,7 +198,7 @@ expOutThinArgInPlace
         let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv x xUp effortMixedField in
         runST $
           do
-        -- (expOutViaTaylor degr (x </>| n)) <^> n
+          -- (expOutViaTaylor degr (x </>| n)) <^> n
           tempM <- makeMutable zero
           expOutViaTaylorInPlace tempM degr (x </>| n)
           tempM <^>= n
@@ -210,8 +224,10 @@ expOutThinArgInPlace
                 resM <*>|= x
                 resM </>|= i
             | steps == 0 = 
-                unsafeWriteMutable resM errorBound
-                -- IS THIS SAFE? errorBound is only used once... so should be
+                do
+                unsafeWriteMutable resM ithDerivBound
+                resM <*>|= x
+                resM </>|= i                
                 where
                 errorBound = 
                     (x </>| i) <*> ithDerivBound
