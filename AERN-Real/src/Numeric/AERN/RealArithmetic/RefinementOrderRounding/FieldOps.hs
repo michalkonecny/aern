@@ -247,7 +247,7 @@ absOutUsingCompMax (effortComp, effortMinmax) a =
         Just GEE -> neg a
         _ -> zero `max` (a `max` (neg a))
     where
-    max = NumOrd.maxOuterEff effortMinmax
+    max = NumOrd.maxOutEff effortMinmax
 
 absInUsingCompMax ::
     (HasZero t, Neg t, 
@@ -264,7 +264,7 @@ absInUsingCompMax (effortComp, effortMinmax) a =
         Just GEE -> neg a
         _ -> zero `max` (a `max` (neg a))
     where
-    max = NumOrd.maxInnerEff effortMinmax
+    max = NumOrd.maxInEff effortMinmax
 
 propInOutAbsNegSymmetric ::
     (RefOrd.PartialComparison t, RoundedAbs t, HasZero t, Neg t,

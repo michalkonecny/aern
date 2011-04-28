@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
+    Module      :  Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
     Description :  convenience binary infix operators with default effort parameters  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -59,18 +59,18 @@ maxUp a = maxUpEff (minmaxDefaultEffort a) a
 
 -- | Outward rounded minimum
 minOut :: (OuterRoundedLattice t) => t -> t -> t
-minOut a = minOuterEff (minmaxOuterDefaultEffort a) a
+minOut a = minOutEff (minmaxOuterDefaultEffort a) a
 
 -- | Outward rounded maximum
 maxOut :: (OuterRoundedLattice t) => t -> t -> t
-maxOut a = maxOuterEff (minmaxOuterDefaultEffort a) a
+maxOut a = maxOutEff (minmaxOuterDefaultEffort a) a
 
 -- | Inward rounded minimum
 minIn :: (InnerRoundedLattice t) => t -> t -> t
-minIn a = minInnerEff (minmaxInnerDefaultEffort a) a
+minIn a = minInEff (minmaxInnerDefaultEffort a) a
 
 -- | Outward rounded maximum
 maxIn :: (InnerRoundedLattice t) => t -> t -> t
-maxIn a = maxInnerEff (minmaxInnerDefaultEffort a) a
+maxIn a = maxInEff (minmaxInnerDefaultEffort a) a
 
 

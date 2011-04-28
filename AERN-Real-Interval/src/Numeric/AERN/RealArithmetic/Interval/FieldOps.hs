@@ -269,7 +269,7 @@ instance
             _ -> -- may involve crossing zero, revert to the default:
                 case even n of
                     True -> 
-                        NumOrd.maxInnerEff effMinMax zero iPowerFromMult 
+                        NumOrd.maxInEff effMinMax zero iPowerFromMult 
                         -- take advantage of the fact that the result is non-negative 
                     False -> iPowerFromMult 
         where
@@ -293,7 +293,7 @@ instance
             _ -> -- may involve crossing zero, revert to the default:
                 case even n of
                     True -> 
-                        NumOrd.maxOuterEff effMinMax zero iPowerFromMult 
+                        NumOrd.maxOutEff effMinMax zero iPowerFromMult 
                         -- take advantage of the fact that the result is non-negative 
                     False -> iPowerFromMult 
         where
