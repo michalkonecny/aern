@@ -32,7 +32,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.ExactOps
 
-import Control.Monad.ST (runST)
+import Control.Monad.ST (ST, runST)
 
 expOutThinArg ::
     (HasZero t, HasOne t, HasInfinities t,
@@ -130,12 +130,11 @@ expOutThinArgInPlace ::
      RefOrd.OuterRoundedLattice t,
      ArithUpDn.Convertible t Int,
      ArithInOut.Convertible Double t,
-     ArithInOut.RoundedMixedField t Int,
      ArithInOut.RoundedField t,
      ArithInOut.RoundedFieldInPlace t,
-     ArithInOut.RoundedMixedFieldInPlace t Int,
-     ArithInOut.RoundedMixedFieldInPlace t t,
-     ArithInOut.RoundedPowerToNonnegIntInPlace t) =>
+     ArithInOut.RoundedMixedField t Int,
+     ArithInOut.RoundedMixedFieldInPlace t Int, -- this constraint should be redundant..
+     ArithInOut.RoundedPowerToNonnegIntInPlace t) => 
     ArithInOut.FieldOpsEffortIndicator t ->
     ArithInOut.MixedFieldOpsEffortIndicator t Int ->
     RefOrd.JoinMeetOutEffortIndicator t ->
@@ -143,10 +142,10 @@ expOutThinArgInPlace ::
     NumOrd.PartialCompareEffortIndicator t ->
     (ArithUpDn.ConvertEffortIndicator t Int, 
      ArithInOut.ConvertEffortIndicator Double t) ->
-    Mutable t s -> {-^ result parameter -}
+    Mutable t s -> {-^ out parameter -}
     Int {-^ the highest degree to consider in the Taylor expansion -} ->
-    Mutable t s {-^ @x@ assumed to be a thin approximation -} -> 
-    t {-^ @exp(x)@ -}
+    Mutable t s {-^ @xM@ assumed to be a thin approximation -} -> 
+    ST s ()
 expOutThinArgInPlace
         effortField
         effortMixedField
@@ -155,40 +154,35 @@ expOutThinArgInPlace
         (effortToInt, effortFromDouble)
         resM degr xM =
     do
-    x <- unsafeReadMutable xM
+    x <- unsafeReadMutable xM 
+    -- TODO as long as x is used below to construct values no writing to xM is allowed 
     let ?pCompareEffort = effortRefinement
     let ?joinmeetOutEffort = effortMeet
     let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField
-    let (xUp, xTooBig) = intBoolPair $ ArithUpDn.convertUpEff effortToInt x
-    let (xDn, xTooLow) = intBoolPair $ ArithUpDn.convertDnEff effortToInt x
+    let ?intPowerInOutEffort = ArithInOut.fldEffortPow x effortField
+    let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd x degr effortMixedField
+    let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv x degr effortMixedField
+    let (xUp, xTooBig) =
+          case ArithUpDn.convertUpEff effortToInt x of
+            Just xUp -> (xUp :: Int, False)
+            _ -> (error "internal error in expOutThinArg", True)
+    let (xDn, xTooLow) =
+          case ArithUpDn.convertDnEff effortToInt x of
+            Just xDn -> (xDn :: Int, False)
+            _ -> (error "internal error in expOutThinArg", True)
     -- infinities not handled well by the Taylor formula,
     -- treat them as special cases, adding also 0 for efficiency:
     case (xTooBig, xTooLow, x |>=? zero) of
-        (True, _, _) -> 
-            do
-            tempM <- makeMutable plusInfinity
-            meetOutInPlace resM xM tempM
-            -- x </\> plusInfinity -- x almost oo
-        (_, True, _) -> 
-            do
-            tempM <- makeMutable $ neg one
-            tempM </>= xM
-            zeroM <- makeMutable zero
-            meetOutInPlace resM zeroM tempM
-            -- zero </\> (one </> (neg x)) -- x almost -oo
-        (_, _, Just True) -> 
-            unsafeWriteMutable resM one -- x = 0
+        (True, _, _) -> unsafeWriteMutable resM (x </\> plusInfinity) -- x almost oo
+        (_, True, _) -> unsafeWriteMutable resM (zero </\> (one </> (neg x))) -- x almost -oo
+        (_, _, Just True) -> unsafeWriteMutable resM one -- x = 0
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
-            unsafeWriteMutable resM $ expOutViaTaylorForXScaledNearZero x xUp xDn
+            expOutViaTaylorForXScaledNearZero resM x xUp xDn xM
         _ -> -- not equal to infinity but not excluding infinity:
-            unsafeWriteMutable resM $ zero </\> plusInfinity
+            unsafeWriteMutable resM (zero </\> plusInfinity)
              -- this is always a valid outer approx
     where
-    intBoolPair mval = 
-        case mval of
-          Just val -> (val :: Int, False)
-          _ -> (error "internal error in expOutThinArg", True)
-    expOutViaTaylorForXScaledNearZero x xUp xDn =
+    expOutViaTaylorForXScaledNearZero resM x xUp xDn xM =
         let ?joinmeetOutEffort = effortMeet in
         let ?addInOutEffort = ArithInOut.fldEffortAdd x effortField in
         let ?multInOutEffort = ArithInOut.fldEffortMult x effortField in
@@ -197,41 +191,46 @@ expOutThinArgInPlace
         let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd x xUp effortMixedField in
         let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult x xUp effortMixedField in
         let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv x xUp effortMixedField in
-        runST $
-          do
-          -- (expOutViaTaylor degr (x </>| n)) <^> n
-          tempM <- makeMutable zero
-          expOutViaTaylorInPlace tempM degr (x </>| n)
-          tempM <^>= n
-          result <- unsafeReadMutable tempM
-          return result
+        do
+        tempM <- makeMutable zero -- TODO is it better to initialise with x </>| n ?
+        -- TODO is unsafeMakeMutable possible? How does a volitile constant work??
+        mixedDivOutInPlace tempM xM n
+        expOutViaTaylor tempM degr x tempM
+        powerToNonnegIntOutInPlace resM tempM n
+        -- writeMutable resM ((expOutViaTaylor degr (x </>| n)) <^> n)
         where
         n = -- x / n must fall inside [-1,1] 
             (abs xUp) `max` (abs xDn)
-    expOutViaTaylorInPlace resM degr x = -- assuming x inside [-1,1]
+    expOutViaTaylor resM degr x xM = -- assuming x inside [-1,1]
         do
-        -- oneI |<+> (te degr oneI)
-        teInPlace resM degr oneI
-        resM <+>|= oneI
+        tempM <- makeMutable zero 
+        -- TODO better to initialise with pure (te degr oneI)?
+        --      make unsafe?
+        te tempM degr oneI x xM
+        mixedAddOutInPlace resM tempM oneI
+        -- unsafeWriteMutable resM (oneI |<+> (te degr oneI))
         where
         oneI :: Int
         oneI = 1
-        teInPlace resM steps i
+        te resM steps i x xM
             | steps > 0 =
                 do
+                tempM <- makeMutable zero -- TODO make unsafe?
+                te tempM (steps - 1) (i + 1) x xM -- te (steps - 1) (i + 1)
+                tempM <+>|= oneI
+                tempM </>|= i
+                multOutInPlace resM xM tempM               
                 -- (x </>| i) <*> (oneI |<+> (te (steps - 1) (i + 1)))
-                teInPlace resM (steps - 1) (i + 1)
-                resM <+>|= oneI
-                resM <*>|= x
-                resM </>|= i
             | steps == 0 = 
                 do
-                unsafeWriteMutable resM ithDerivBound
-                resM <*>|= x
-                resM </>|= i                
+                tempM <- makeMutable ithDerivBound -- TODO make unsafe or initialise with zero?
+                tempM <*>= xM 
+                mixedDivOutInPlace resM tempM i 
+                -- TODO can the mutable errorBound above be made more efficient?
+                -- unsafeWriteMutable resM errorBound
                 where
-                errorBound = 
-                    (x </>| i) <*> ithDerivBound
+                errorBound = -- TODO why does commenting out errorBound prevent type-checking?
+                    (x </>| i) <*> ithDerivBound        
                 ithDerivBound =
                     case (pNonnegNonposEff effortCompare x) of
                         (Just True, _) -> -- x >= 0:
@@ -244,4 +243,3 @@ expOutThinArgInPlace
                     ArithInOut.convertOutEff effortFromDouble (2.718281829 :: Double)
                 recipEDn =
                     ArithInOut.convertOutEff effortFromDouble (0.367879440 :: Double)
-
