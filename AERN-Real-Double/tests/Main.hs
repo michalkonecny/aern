@@ -90,6 +90,7 @@ testsDI =
        ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Rational", sampleR),
        ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Double", sampleD),
        ArithInOut.testsInOutExp ("DI", sampleDI),
+       ArithInOut.testsInOutExpInPlace ("DI", sampleDI),
        ArithInOut.testsInOutSqrt ("DI", sampleDI) unPositiveDI
     ]
 
