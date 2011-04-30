@@ -39,19 +39,19 @@ Library
         criterion >= 0.5 && < 0.6,
         AERN-Basics == 2011.1
   Exposed-modules:
-    Numeric.AERN.RealArithmetic.ExactOps
-    Numeric.AERN.RealArithmetic.NumericOrderRounding
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsDefaultEffort
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsImplicitEffort
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.Implementation.Elementary
-    Numeric.AERN.RealArithmetic.Measures
-    Numeric.AERN.RealArithmetic.Laws
-    Numeric.AERN.RealArithmetic.Bench
+    Numeric.AERN.RealArithmetic.ExactOps, 
+    Numeric.AERN.RealArithmetic.NumericOrderRounding, 
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort,
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsDefaultEffort,
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding,
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation,
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort, 
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort,
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort, 
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsImplicitEffort, 
+    Numeric.AERN.RealArithmetic.Measures, 
+    Numeric.AERN.RealArithmetic.Laws, 
+    Numeric.AERN.RealArithmetic.Bench, 
     Numeric.AERN.Misc.IntegerArithmetic
     
   Other-modules:

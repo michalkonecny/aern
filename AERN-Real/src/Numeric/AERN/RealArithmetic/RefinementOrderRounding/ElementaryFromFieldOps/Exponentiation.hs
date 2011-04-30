@@ -1,8 +1,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.Implementation.Elementary
-    Description :  implementation of in/out rounded elementary operations
+    Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
+    Description :  implementation of in/out rounded exponentiation
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -10,10 +10,10 @@
     Stability   :  experimental
     Portability :  portable
 
-    Implementation of in/out rounded elementary operations.
+    Implementation of in/out rounded exponentiation.
 -}
 
-module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Implementation.Elementary where
+module Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation where
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
