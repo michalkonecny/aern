@@ -154,14 +154,23 @@ expOutThinArgInPlace
         (effortToInt, effortFromDouble)
         resM degr xM =
     do
-    x <- unsafeReadMutable xM 
-    -- TODO as long as x is used below to construct values no writing to xM is allowed 
+    -- clone xM to ensure no aliasing with resM:
+    xMNA <- cloneMutable xM
+    
+    -- we need x - a pure version of xM for branching conditions:
+    x <- unsafeReadMutable xMNA
+    -- unsafe is OK because we do not write into xMNA while x is in scope
+
+    -- set various effort indicators for the following block using implicit parameters: 
     let ?pCompareEffort = effortRefinement
     let ?joinmeetOutEffort = effortMeet
     let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField
+    let ?multInOutEffort = ArithInOut.fldEffortMult x effortField
     let ?intPowerInOutEffort = ArithInOut.fldEffortPow x effortField
     let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd x degr effortMixedField
     let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv x degr effortMixedField
+
+    -- compute integer bounds on x if possible: 
     let (xUp, xTooBig) =
           case ArithUpDn.convertUpEff effortToInt x of
             Just xUp -> (xUp :: Int, False)
@@ -170,6 +179,7 @@ expOutThinArgInPlace
           case ArithUpDn.convertDnEff effortToInt x of
             Just xDn -> (xDn :: Int, False)
             _ -> (error "internal error in expOutThinArg", True)
+
     -- infinities not handled well by the Taylor formula,
     -- treat them as special cases, adding also 0 for efficiency:
     case (xTooBig, xTooLow, x |>=? zero) of
@@ -177,60 +187,53 @@ expOutThinArgInPlace
         (_, True, _) -> unsafeWriteMutable resM (zero </\> (one </> (neg x))) -- x almost -oo
         (_, _, Just True) -> unsafeWriteMutable resM one -- x = 0
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
-            expOutViaTaylorForXScaledNearZero resM x xUp xDn xM
+            -- the main case where Taylor is used:
+            expOutViaTaylorForXScaledNearZero resM xUp xDn xMNA
         _ -> -- not equal to infinity but not excluding infinity:
             unsafeWriteMutable resM (zero </\> plusInfinity)
              -- this is always a valid outer approx
     where
-    expOutViaTaylorForXScaledNearZero resM x xUp xDn xM =
-        let ?joinmeetOutEffort = effortMeet in
-        let ?addInOutEffort = ArithInOut.fldEffortAdd x effortField in
-        let ?multInOutEffort = ArithInOut.fldEffortMult x effortField in
-        let ?intPowerInOutEffort = ArithInOut.fldEffortPow x effortField in
-        let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField in
-        let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd x xUp effortMixedField in
-        let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult x xUp effortMixedField in
-        let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv x xUp effortMixedField in
+    expOutViaTaylorForXScaledNearZero resM xUp xDn xM =
+        -- assuming no aliasing between xM and resM
+    
+        -- set various effort indicators for the following block using implicit parameters: 
         do
-        tempM <- makeMutable zero -- TODO is it better to initialise with x </>| n ?
-        -- TODO is unsafeMakeMutable possible? How does a volitile constant work??
-        mixedDivOutInPlace tempM xM n
-        expOutViaTaylor tempM degr x tempM
-        powerToNonnegIntOutInPlace resM tempM n
-        -- writeMutable resM ((expOutViaTaylor degr (x </>| n)) <^> n)
+        xM </>|= n -- x := x/n
+        expOutViaTaylor resM degr xM -- res := exp x
+        resM <^>= n -- res := res^n
         where
         n = -- x / n must fall inside [-1,1] 
             (abs xUp) `max` (abs xDn)
-    expOutViaTaylor resM degr x xM = -- assuming x inside [-1,1]
+    expOutViaTaylor resM degr xM = -- assuming x inside [-1,1]
+        -- assuming no aliasing between xM and resM
+    
         do
-        tempM <- makeMutable zero 
-        -- TODO better to initialise with pure (te degr oneI)?
-        --      make unsafe?
-        te tempM degr oneI x xM
-        mixedAddOutInPlace resM tempM oneI
-        -- unsafeWriteMutable resM (oneI |<+> (te degr oneI))
+        -- we need a pure version of xM for constructing the error bound:
+        x <- unsafeReadMutable xM
+        -- unsafe is OK because we do not write into xM and it does not alias with resM
+        
+        let ?addInOutEffort = ArithInOut.fldEffortAdd x effortField
+        let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult x oneI effortMixedField
+        te resM degr oneI x xM -- res := x + x^2/2 + ...
+        resM <+>|= oneI -- res := res + 1
         where
         oneI :: Int
         oneI = 1
         te resM steps i x xM
             | steps > 0 =
                 do
-                tempM <- makeMutable zero -- TODO make unsafe?
-                te tempM (steps - 1) (i + 1) x xM -- te (steps - 1) (i + 1)
-                tempM <+>|= oneI
-                tempM </>|= i
-                multOutInPlace resM xM tempM               
                 -- (x </>| i) <*> (oneI |<+> (te (steps - 1) (i + 1)))
+                te resM (steps - 1) (i + 1) x xM
+                resM <+>|= oneI
+                resM </>|= i
+                resM <*>= xM               
             | steps == 0 = 
                 do
-                tempM <- makeMutable ithDerivBound -- TODO make unsafe or initialise with zero?
-                tempM <*>= xM 
-                mixedDivOutInPlace resM tempM i 
-                -- TODO can the mutable errorBound above be made more efficient?
-                -- unsafeWriteMutable resM errorBound
+                -- (x </>| i) <*> ithDerivBound
+                unsafeWriteMutable resM ithDerivBound
+                resM </>|= i
+                resM <*>= xM
                 where
-                errorBound = -- TODO why does commenting out errorBound prevent type-checking?
-                    (x </>| i) <*> ithDerivBound        
                 ithDerivBound =
                     case (pNonnegNonposEff effortCompare x) of
                         (Just True, _) -> -- x >= 0:
