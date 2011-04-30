@@ -1,7 +1,7 @@
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
     Description :  convenience binary infix operators with default effort parameters  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
@@ -45,15 +45,19 @@ infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
 (>?) :: (PartialComparison t) => t -> t -> Maybe Bool
 (>?) a = pGreaterEff (pCompareDefaultEffort a) a
 
+-- | Downward rounded minimum
 minDn :: (RoundedLattice t) => t -> t -> t
 minDn a = minDnEff (minmaxDefaultEffort a) a
 
+-- | Upward rounded minimum
 minUp :: (RoundedLattice t) => t -> t -> t
 minUp a = minUpEff (minmaxDefaultEffort a) a
 
+-- | Downward rounded maximum
 maxDn :: (RoundedLattice t) => t -> t -> t
 maxDn a = maxDnEff (minmaxDefaultEffort a) a
 
+-- | Upward rounded maximum
 maxUp :: (RoundedLattice t) => t -> t -> t
 maxUp a = maxUpEff (minmaxDefaultEffort a) a
 

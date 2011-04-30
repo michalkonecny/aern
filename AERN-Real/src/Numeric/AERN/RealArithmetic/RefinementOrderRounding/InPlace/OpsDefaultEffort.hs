@@ -1,7 +1,7 @@
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort
     Description :  convenience in-place operators and functions with default effort  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
