@@ -74,40 +74,24 @@ instance
                 (MInterval forgetMeL resH)
                 effortTaylor 
                 (MInterval hM hM)
-            -- Interval (fst $ getEndpoints expL) (snd $ getEndpoints expH)
---        where
---        expL = 
---            expOutThinArg 
---                effortField effortMixedField 
---                effortMeet effortComp effortComp effortConv 
---                effortTaylor 
---                lI
---        expH =
---            expOutThinArg 
---                effortField effortMixedField
---                effortMeet effortComp effortComp effortConv 
---                effortTaylor 
---                hI
---        lI = Interval l l
---        hI = Interval h h
---    expInInPlaceEff 
---            ((effortField, effortMixedField),
---             (Int1To10 effortTaylor),
---             ((effortMeet, effortComp), effortConv)) 
---            (Interval l h) =
---                    Interval (snd $ getEndpoints expL) (fst $ getEndpoints expH)
---        where
---        expL = 
---            expOutThinArg 
---                effortField effortMixedField 
---                effortMeet effortComp effortComp effortConv 
---                effortTaylor 
---                lI
---        expH =
---            expOutThinArg 
---                effortField effortMixedField
---                effortMeet effortComp effortComp effortConv 
---                effortTaylor 
---                hI
---        lI = Interval l l
---        hI = Interval h h
+    expInInPlaceEff 
+        ((effortField, effortMixedField),
+         (Int1To10 effortTaylor),
+         ((effortMeet, effortComp), effortConv)) 
+        (MInterval resL resH)
+        (MInterval lM hM) =
+            do
+            (MInterval forgetMeL forgetMeH) <- makeMutable zero 
+            expOutThinArgInPlace 
+                effortField effortMixedField 
+                effortMeet effortComp effortComp effortConv 
+                (MInterval forgetMeL resL)
+                effortTaylor 
+                (MInterval lM lM)
+            expOutThinArgInPlace
+                effortField effortMixedField
+                effortMeet effortComp effortComp effortConv 
+                (MInterval resH forgetMeH)
+                effortTaylor 
+                (MInterval hM hM)
+            

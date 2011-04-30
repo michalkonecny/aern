@@ -85,44 +85,38 @@ instance
             ((effortField, effortMixedField),
              (Int1To10 effortTaylor),
              ((effortMeet, effortComp), effortConv)) 
-            (Interval l h) =
-                    Interval (fst $ getEndpoints expL) (snd $ getEndpoints expH)
+            (Interval l h) = Interval resL resH
         where
-        expL = 
+        Interval resL _ = 
             expOutThinArg 
                 effortField effortMixedField 
                 effortMeet effortComp effortComp effortConv 
                 effortTaylor 
-                lI
-        expH =
+                (Interval l l)
+        Interval _ resH =
             expOutThinArg 
                 effortField effortMixedField
                 effortMeet effortComp effortComp effortConv 
                 effortTaylor 
-                hI
-        lI = Interval l l
-        hI = Interval h h
+                (Interval h h)
     expInEff 
             ((effortField, effortMixedField),
              (Int1To10 effortTaylor),
              ((effortMeet, effortComp), effortConv)) 
-            (Interval l h) =
-                    Interval (snd $ getEndpoints expL) (fst $ getEndpoints expH)
+            (Interval l h) = Interval resL resH
         where
-        expL = 
+        Interval _ resL = 
             expOutThinArg 
                 effortField effortMixedField 
                 effortMeet effortComp effortComp effortConv 
                 effortTaylor 
-                lI
-        expH =
+                (Interval l l)
+        Interval resH _ =
             expOutThinArg 
                 effortField effortMixedField
                 effortMeet effortComp effortComp effortConv 
                 effortTaylor 
-                hI
-        lI = Interval l l
-        hI = Interval h h
+                (Interval h h)
 
 instance 
     (ArithUpDn.RoundedMixedFieldEffort e Int,
