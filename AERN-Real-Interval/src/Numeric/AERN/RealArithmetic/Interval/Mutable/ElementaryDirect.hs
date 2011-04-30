@@ -19,7 +19,7 @@ module Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryDirect() where
 
 import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
 
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Implementation.Elementary
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
 
 import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect.Sqrt
 
