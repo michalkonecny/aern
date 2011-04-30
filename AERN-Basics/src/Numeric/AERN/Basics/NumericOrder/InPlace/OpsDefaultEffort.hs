@@ -1,7 +1,7 @@
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.InPlace.OpsDefaultEffort
     Description :  convenience directed-rounded in-place lattice operations with default effort parameters  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
@@ -15,7 +15,6 @@ module Numeric.AERN.Basics.NumericOrder.InPlace.OpsDefaultEffort where
 
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.NumericOrder
-
 
 -- | Downward rounded in-place minimum
 minDnInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
