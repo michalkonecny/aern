@@ -2,7 +2,7 @@
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
     Description :  convenience binary infix operators with implicit effort parameters  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
@@ -18,41 +18,103 @@ import Numeric.AERN.Basics.NumericOrder
 
 infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
 
-(==?), (<==>?), (</=>?), (<?), (<=?), (>=?), (>?) :: 
+-- | Partial equality
+(==?) :: 
     (PartialComparison t, 
      ?pCompareEffort :: PartialCompareEffortIndicator t) => 
     t -> t -> Maybe Bool
-
--- | Partial equality
 (==?) = pEqualEff ?pCompareEffort
+
 -- | Partial `is comparable to`.
+(<==>?) :: 
+    (PartialComparison t, 
+     ?pCompareEffort :: PartialCompareEffortIndicator t) => 
+    t -> t -> Maybe Bool 
 (<==>?) = pComparableEff ?pCompareEffort
+
 -- | Partial `is not comparable to`.
+(</=>?) :: 
+    (PartialComparison t, 
+     ?pCompareEffort :: PartialCompareEffortIndicator t) => 
+    t -> t -> Maybe Bool 
 (</=>?) = pIncomparableEff ?pCompareEffort
 
+-- | Partial `strictly less than`
+(<?) :: 
+    (PartialComparison t, 
+     ?pCompareEffort :: PartialCompareEffortIndicator t) => 
+    t -> t -> Maybe Bool 
 (<?) = pLessEff ?pCompareEffort
+
+-- | Partial `less than or equal to`
+(<=?) :: 
+    (PartialComparison t, 
+     ?pCompareEffort :: PartialCompareEffortIndicator t) => 
+    t -> t -> Maybe Bool 
 (<=?) = pLeqEff ?pCompareEffort
+
+-- | Partial `greater than or equal to`
+(>=?) :: 
+    (PartialComparison t, 
+     ?pCompareEffort :: PartialCompareEffortIndicator t) => 
+    t -> t -> Maybe Bool 
 (>=?) = pGeqEff ?pCompareEffort
+
+-- | Partial `strictly greater than`
+(>?) :: 
+    (PartialComparison t, 
+     ?pCompareEffort :: PartialCompareEffortIndicator t) => 
+    t -> t -> Maybe Bool
 (>?) = pGreaterEff ?pCompareEffort
 
-minDn, minUp, maxDn, maxUp ::
+-- | Downward rounded minimum
+minDn :: 
     (RoundedLattice t, ?minmaxEffort :: MinmaxEffortIndicator t) =>
     t -> t -> t
 minDn = minDnEff ?minmaxEffort
+
+-- | Upward rounded minimum
+minUp ::
+    (RoundedLattice t, ?minmaxEffort :: MinmaxEffortIndicator t) =>
+    t -> t -> t
 minUp = minUpEff ?minmaxEffort
+
+-- | Downward rounded maximum
+maxDn ::
+    (RoundedLattice t, ?minmaxEffort :: MinmaxEffortIndicator t) =>
+    t -> t -> t
 maxDn = maxDnEff ?minmaxEffort
+
+-- | Upward rounded maximum
+maxUp ::
+    (RoundedLattice t, ?minmaxEffort :: MinmaxEffortIndicator t) =>
+    t -> t -> t
 maxUp = maxUpEff ?minmaxEffort
 
-minOut, maxOut :: 
+-- | Outward rounded minimum
+minOut :: 
     (OuterRoundedLattice t, 
      ?minmaxOuterEffort :: MinmaxOuterEffortIndicator t) =>
     t -> t -> t
 minOut = minOutEff ?minmaxOuterEffort
+
+-- | Outward rounded maximum
+maxOut :: 
+    (OuterRoundedLattice t, 
+     ?minmaxOuterEffort :: MinmaxOuterEffortIndicator t) =>
+    t -> t -> t
 maxOut = maxOutEff ?minmaxOuterEffort
 
-minIn, maxIn ::
+-- | Inward rounded minimum
+minIn ::
     (InnerRoundedLattice t,
      ?minmaxInnerEffort :: MinmaxInnerEffortIndicator t) =>
     t -> t -> t
 minIn = minInEff ?minmaxInnerEffort
+
+-- | Outward rounded maximum
+maxIn ::
+    (InnerRoundedLattice t,
+     ?minmaxInnerEffort :: MinmaxInnerEffortIndicator t) =>
+    t -> t -> t
 maxIn = maxInEff ?minmaxInnerEffort

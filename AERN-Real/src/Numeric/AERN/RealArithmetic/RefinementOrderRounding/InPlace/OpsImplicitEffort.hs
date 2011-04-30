@@ -2,7 +2,7 @@
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsImplicitEffort
     Description :  onvenience directed-rounded in-place operators and functions with implicit effort parameters  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

@@ -4,7 +4,7 @@
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.InPlace.RefinementRoundedLattice
     Description :  numeric-order lattices with refinement-rounded in-place operations  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
