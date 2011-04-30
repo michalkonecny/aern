@@ -44,7 +44,8 @@ Library
     Numeric.AERN.RealArithmetic.Interval.Mutable
     Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
     Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
-    
+    Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryDirect
+
   Other-modules:
     Numeric.AERN.Basics.Interval.Basics
     Numeric.AERN.Basics.Interval.Consistency
