@@ -5,7 +5,7 @@ Build-Type:     Simple
 License:        BSD3
 License-File:   LICENCE
 Author:         Michal Konecny (Aston University)
-Copyright:      (c) 2010 Michal Konecny
+Copyright:      (c) 2010 Michal Konecny, Jan Duracz
 Maintainer:     mikkonecny@gmail.com
 Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
@@ -41,8 +41,10 @@ Library
   Exposed-modules:
     Numeric.AERN.RealArithmetic.ExactOps, 
     Numeric.AERN.RealArithmetic.NumericOrderRounding, 
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort,
     Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsDefaultEffort,
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.OpsDefaultEffort,
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort,
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.OpsImplicitEffort,
     Numeric.AERN.RealArithmetic.RefinementOrderRounding,
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation,
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort, 

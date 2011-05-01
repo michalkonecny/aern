@@ -162,72 +162,84 @@ withFieldOpsEffortIndicator effortField expression =
     let ?divInOutEffort = fldEffortDiv effortField in
     expression
 
+-- | Inward rounded in-place mixed addition
 mixedAddInInPlace :: 
     (RoundedMixedAddInPlace t tn, 
      ?mixedAddInOutEffort :: MixedAddEffortIndicator t tn) => 
     OpMutableNonmut t tn s
 mixedAddInInPlace = mixedAddInInPlaceEff ?mixedAddInOutEffort
 
+-- | Inward rounded additive scalar action assignment
 (>+<|=) :: 
     (RoundedMixedAddInPlace t tn, 
      ?mixedAddInOutEffort :: MixedAddEffortIndicator t tn) => 
     OpNonmut t tn s
 (>+<|=) = mutableNonmutToNonmut mixedAddInInPlace
 
+-- | Outward rounded in-place mixed addition
 mixedAddOutInPlace :: 
     (RoundedMixedAddInPlace t tn, 
      ?mixedAddInOutEffort :: MixedAddEffortIndicator t tn) => 
     OpMutableNonmut t tn s
 mixedAddOutInPlace = mixedAddOutInPlaceEff ?mixedAddInOutEffort
 
+-- | Outward rounded additive scalar action assignment
 (<+>|=) :: 
     (RoundedMixedAddInPlace t tn, 
      ?mixedAddInOutEffort :: MixedAddEffortIndicator t tn) => 
     OpNonmut t tn s
 (<+>|=) = mutableNonmutToNonmut mixedAddOutInPlace
 
+-- | Inward rounded in-place mixed multiplication
 mixedMultInInPlace :: 
     (RoundedMixedMultiplyInPlace t tn, 
      ?mixedMultInOutEffort :: MixedMultEffortIndicator t tn) => 
     OpMutableNonmut t tn s
 mixedMultInInPlace = mixedMultInInPlaceEff ?mixedMultInOutEffort
 
+-- | Inward rounded multiplicative scalar action assignment
 (>*<|=) :: 
     (RoundedMixedMultiplyInPlace t tn, 
      ?mixedMultInOutEffort :: MixedMultEffortIndicator t tn) => 
     OpNonmut t tn s
 (>*<|=) = mutableNonmutToNonmut mixedMultInInPlace
 
+-- | Outward rounded in-place mixed multiplication
 mixedMultOutInPlace :: 
     (RoundedMixedMultiplyInPlace t tn, 
      ?mixedMultInOutEffort :: MixedMultEffortIndicator t tn) => 
     OpMutableNonmut t tn s
 mixedMultOutInPlace = mixedMultOutInPlaceEff ?mixedMultInOutEffort
 
+-- | Outward rounded multiplicative scalar action assignment
 (<*>|=) :: 
     (RoundedMixedMultiplyInPlace t tn, 
      ?mixedMultInOutEffort :: MixedMultEffortIndicator t tn) => 
     OpNonmut t tn s
 (<*>|=) = mutableNonmutToNonmut mixedMultOutInPlace
 
+-- | Inward rounded in-place mixed reciprocal action
 mixedDivInInPlace :: 
     (RoundedMixedDivideInPlace t tn, 
      ?mixedDivInOutEffort :: MixedDivEffortIndicator t tn) => 
     OpMutableNonmut t tn s
 mixedDivInInPlace = mixedDivInInPlaceEff ?mixedDivInOutEffort
 
+-- | Inward rounded multiplicative scalar reciprocal action assignment
 (>/<|=) :: 
     (RoundedMixedDivideInPlace t tn, 
      ?mixedDivInOutEffort :: MixedDivEffortIndicator t tn) => 
     OpNonmut t tn s
 (>/<|=) = mutableNonmutToNonmut mixedDivInInPlace
 
+-- | Outward rounded in-place mixed reciprocal action
 mixedDivOutInPlace :: 
     (RoundedMixedDivideInPlace t tn, 
      ?mixedDivInOutEffort :: MixedDivEffortIndicator t tn) => 
     OpMutableNonmut t tn s
 mixedDivOutInPlace = mixedDivOutInPlaceEff ?mixedDivInOutEffort
 
+-- | Outward rounded multiplicative scalar reciprocal action assignment
 (</>|=) :: 
     (RoundedMixedDivideInPlace t tn, 
      ?mixedDivInOutEffort :: MixedDivEffortIndicator t tn) => 
@@ -242,28 +254,27 @@ withMixedFieldOpsEffortIndicator effortMixedField expression =
     let ?mixedDivInOutEffort = mxfldEffortDiv effortMixedField in
     expression
 
-
-piIn, piOut ::
-    (RoundedSpecialConst t, ?specialConstInOutEffort :: SpecialConstEffortIndicator t) => 
-    t
-piIn = piInEff ?specialConstInOutEffort
-piOut = piOutEff ?specialConstInOutEffort
-
-eIn, eOut ::
-    (RoundedSpecialConst t, ?specialConstInOutEffort :: SpecialConstEffortIndicator t) => 
-    t
-eIn = eInEff ?specialConstInOutEffort
-eOut = eOutEff ?specialConstInOutEffort
-
-expIn, expOut ::
+-- | Inward rounded in-place exponential
+expInInPlace ::
     (RoundedExponentiation t, ?expInOutEffort :: ExpEffortIndicator t) => 
-    t -> t
-expIn = expInEff ?expInOutEffort
-expOut = expOutEff ?expInOutEffort
+    OpMutable1 t s
+expInInPlace = expInInPlaceEff ?expInOutEffort
 
-sqrtIn, sqrtOut ::
+-- | Outward rounded in-place exponential
+expOutInPlace ::
+    (RoundedExponentiation t, ?expInOutEffort :: ExpEffortIndicator t) => 
+    OpMutable1 t s
+expOutInPlace = expOutInPlaceEff ?expInOutEffort
+
+-- | Inward rounded in-place square root
+sqrtInInPlace ::
     (RoundedSquareRoot t, ?sqrtInOutEffort :: SqrtEffortIndicator t) => 
-    t -> t
-sqrtIn = sqrtInEff ?sqrtInOutEffort
-sqrtOut = sqrtOutEff ?sqrtInOutEffort
+    OpMutable1 t s
+sqrtInInPlace = sqrtInInPlaceEff ?sqrtInOutEffort
+
+-- | Outward rounded in-place square root
+sqrtOutInPlace ::
+    (RoundedSquareRoot t, ?sqrtInOutEffort :: SqrtEffortIndicator t) => 
+    OpMutable1 t s
+sqrtOutInPlace = sqrtOutInPlaceEff ?sqrtInOutEffort
 

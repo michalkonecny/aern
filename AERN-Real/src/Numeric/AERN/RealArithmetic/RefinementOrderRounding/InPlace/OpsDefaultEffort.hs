@@ -148,7 +148,7 @@ mixedMultOutInPlace =
 (<*>|=) :: (RoundedMixedMultiplyInPlace t tn) => OpNonmut t tn s
 (<*>|=) = mutableNonmutToNonmut mixedMultOutInPlace
 
--- | Inward rounded in-place mixed reciprocal
+-- | Inward rounded in-place mixed reciprocal action
 mixedDivInInPlace :: (RoundedMixedDivideInPlace t tn) => 
     OpMutableNonmut t tn s
 mixedDivInInPlace =
@@ -158,7 +158,7 @@ mixedDivInInPlace =
 (>/<|=) :: (RoundedMixedDivideInPlace t tn) => OpNonmut t tn s
 (>/<|=) = mutableNonmutToNonmut mixedDivOutInPlace
 
--- | Outward rounded in-place mixed reciprocal
+-- | Outward rounded in-place mixed reciprocal action
 mixedDivOutInPlace :: (RoundedMixedDivideInPlace t tn) => 
     OpMutableNonmut t tn s
 mixedDivOutInPlace =
