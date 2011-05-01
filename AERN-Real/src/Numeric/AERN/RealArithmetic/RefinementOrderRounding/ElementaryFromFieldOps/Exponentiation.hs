@@ -3,7 +3,7 @@
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
     Description :  implementation of in/out rounded exponentiation
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

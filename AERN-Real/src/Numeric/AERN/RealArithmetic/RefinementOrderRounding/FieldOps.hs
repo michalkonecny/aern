@@ -5,7 +5,7 @@
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
     Description :  rounded addition and multiplication  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

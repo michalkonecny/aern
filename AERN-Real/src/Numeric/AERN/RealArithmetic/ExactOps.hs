@@ -1,7 +1,7 @@
 {-|
     Module      :  Numeric.AERN.RealArithmetic.ExactOps
     Description :  access to exact zero and one  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

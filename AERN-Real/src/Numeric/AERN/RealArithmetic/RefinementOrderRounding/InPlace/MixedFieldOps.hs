@@ -5,7 +5,7 @@
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.MixedFieldOps
     Description :  rounded basic arithmetic operations mixing 2 types
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
