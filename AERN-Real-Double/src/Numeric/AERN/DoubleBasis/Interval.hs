@@ -1,7 +1,7 @@
 {-|
     Module      :  Numeric.AERN.DoubleBasis.Interval
     Description :  Interval Double type and operations  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
