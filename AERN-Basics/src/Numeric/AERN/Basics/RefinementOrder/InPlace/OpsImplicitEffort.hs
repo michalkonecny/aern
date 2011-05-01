@@ -2,7 +2,7 @@
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.InPlace.OpsImplicitEffort
     Description :  onvenience directed-rounded in-place lattice operations with implicit effort parameters 
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

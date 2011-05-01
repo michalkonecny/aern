@@ -1,7 +1,7 @@
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder
     Description :  classical and approximate domain bases and lattices (&#8849;⊑,&#8851;⊓,&#8852;⊔)  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

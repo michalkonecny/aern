@@ -3,7 +3,7 @@
 {-|
     Module      :  Numeric.AERN.Basics.NumericOrder.RefinementRoundedLattice
     Description :  lattices over numerical order but with refinement order rounding  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
