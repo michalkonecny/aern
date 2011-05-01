@@ -1,7 +1,7 @@
 {-|
     Module      :  Numeric.AERN.Basics.RefinementOrder.Extrema
     Description :  types that have top and bottom  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

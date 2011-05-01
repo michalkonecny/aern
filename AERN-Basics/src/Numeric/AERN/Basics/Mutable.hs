@@ -3,7 +3,7 @@
 {-|
     Module      :  Numeric.AERN.Basics.Mutable
     Description :  a type class for ST mutable structures 
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
