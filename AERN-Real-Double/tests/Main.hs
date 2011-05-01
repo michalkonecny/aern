@@ -2,7 +2,7 @@
 {-|
     Module      :  Main
     Description :  run all tests defined in the AERN-Real package  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

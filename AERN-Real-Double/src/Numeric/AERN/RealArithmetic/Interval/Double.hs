@@ -1,7 +1,7 @@
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.Double
     Description :  Interval Double utilities and tests  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
