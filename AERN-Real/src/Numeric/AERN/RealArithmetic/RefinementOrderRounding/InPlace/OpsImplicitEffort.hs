@@ -256,25 +256,24 @@ withMixedFieldOpsEffortIndicator effortMixedField expression =
 
 -- | Inward rounded in-place exponential
 expInInPlace ::
-    (RoundedExponentiation t, ?expInOutEffort :: ExpEffortIndicator t) => 
+    (RoundedExponentiationInPlace t, ?expInOutEffort :: ExpEffortIndicator t) => 
     OpMutable1 t s
 expInInPlace = expInInPlaceEff ?expInOutEffort
 
 -- | Outward rounded in-place exponential
 expOutInPlace ::
-    (RoundedExponentiation t, ?expInOutEffort :: ExpEffortIndicator t) => 
+    (RoundedExponentiationInPlace t, ?expInOutEffort :: ExpEffortIndicator t) => 
     OpMutable1 t s
 expOutInPlace = expOutInPlaceEff ?expInOutEffort
 
 -- | Inward rounded in-place square root
 sqrtInInPlace ::
-    (RoundedSquareRoot t, ?sqrtInOutEffort :: SqrtEffortIndicator t) => 
+    (RoundedSquareRootInPlace t, ?sqrtInOutEffort :: SqrtEffortIndicator t) => 
     OpMutable1 t s
 sqrtInInPlace = sqrtInInPlaceEff ?sqrtInOutEffort
 
 -- | Outward rounded in-place square root
 sqrtOutInPlace ::
-    (RoundedSquareRoot t, ?sqrtInOutEffort :: SqrtEffortIndicator t) => 
+    (RoundedSquareRootInPlace t, ?sqrtInOutEffort :: SqrtEffortIndicator t) => 
     OpMutable1 t s
 sqrtOutInPlace = sqrtOutInPlaceEff ?sqrtInOutEffort
-
