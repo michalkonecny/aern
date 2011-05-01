@@ -5,7 +5,7 @@
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps
     Description :  rounded basic arithmetic operations  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

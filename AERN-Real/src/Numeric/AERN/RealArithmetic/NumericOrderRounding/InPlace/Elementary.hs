@@ -3,7 +3,7 @@
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Elementary
     Description :  support for various common elementary functions
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

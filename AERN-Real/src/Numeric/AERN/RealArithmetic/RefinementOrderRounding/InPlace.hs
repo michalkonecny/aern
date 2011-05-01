@@ -1,7 +1,7 @@
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace
     Description :  common arithmetical operations rounded up/down  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
