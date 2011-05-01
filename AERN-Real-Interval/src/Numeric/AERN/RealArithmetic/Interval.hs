@@ -3,7 +3,7 @@
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval
     Description :  instances of arithmetic classes for Intervals  
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

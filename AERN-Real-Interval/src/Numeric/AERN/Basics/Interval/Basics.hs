@@ -4,7 +4,7 @@
 {-|
     Module      :  Numeric.AERN.Basics.Interval.Basics
     Description :  interval datatype and its basic instances 
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

@@ -4,7 +4,7 @@
 {-|
     Module      :  Numeric.AERN.Basics.Interval.RefinementOrder
     Description :  interval instances of refinement-ordered structures 
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
