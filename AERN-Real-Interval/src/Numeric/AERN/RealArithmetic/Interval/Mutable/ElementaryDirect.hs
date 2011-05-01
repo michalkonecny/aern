@@ -5,7 +5,7 @@
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryDirect
     Description :  elementary in-place operations using generic direct implementation
-    Copyright   :  (c) Michal Konecny
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com

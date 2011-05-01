@@ -5,7 +5,7 @@ Build-Type:     Simple
 License:        BSD3
 License-File:   LICENCE
 Author:         Michal Konecny (Aston University)
-Copyright:      (c) 2010 Michal Konecny
+Copyright:      (c) 2010 Michal Konecny, Jan Duracz
 Maintainer:     mikkonecny@gmail.com
 Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
