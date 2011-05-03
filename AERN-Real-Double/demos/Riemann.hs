@@ -2,6 +2,9 @@
 module Main where
 
 import Numeric.AERN.DoubleBasis.Interval
+import Numeric.AERN.DoubleBasis.MInterval
+
+import Control.Monad.ST (ST, runST)
 
 main =
   do
@@ -9,6 +12,10 @@ main =
     show (riemann 0.1 (\x -> x^2) (Interval 0 1))
   putStrLn "erf e x = 2/(sqrt pi) * riemann e (\\t -> exp (-t^2)) (0 </\\> x)"
   putStrLn $ "erf 0.001 1 = " ++ show (erf 0.001 1) 
+  putStrLn $ "riemannInPlace 0.1 (\\x -> x^2) (Interval 0 1) = " ++
+    show (riemannInPlace 0.1 (\x -> x^2) (Interval 0 1))
+  putStrLn "erfInPlace e x = 2/(sqrt pi) * riemannInPlace e (\\t -> exp (-t^2)) (0 </\\> x)"
+  putStrLn $ "erfInPlace 0.001 1 = " ++ show (erf 0.001 1) 
 
 -- compute the error function to within e accuracy
 erf :: DI -> DI -> DI
@@ -26,6 +33,42 @@ riemann' e f initWidth (d:ds) result
       riemann' e f initWidth ds (dArea + result)
   | otherwise = 
       riemann' e f initWidth (dl:dr:ds) result
+  where
+  reachedSufficientAccuracy =
+    case dError <? e * dWidth / initWidth of
+      Just True -> True
+      _ -> False
+  dError = dWidth * (width fd)
+  dArea = dWidth * fd
+  fd = f d
+  dWidth = width d
+  (dl, dr) = bisect d
+
+-- erf using riemannInPlace
+erfInPlace :: DI -> DI -> DI
+erfInPlace e x =
+  2/(sqrt pi) * riemannInPlace e (\t -> exp (-t^2)) (0 </\> x)
+
+-- riemann using in-place accumulator
+riemannInPlace :: DI -> (DI -> DI) -> DI -> DI 
+riemannInPlace e f d =
+  runST $
+    do
+    resM <- makeMutable (0 :: DI)
+    riemannInPlace' resM e f (width d) [d] 
+    result <- unsafeReadMutable resM
+    return result
+    
+riemannInPlace' resM _ _ _ [] =
+  return ()
+riemannInPlace' resM e f initWidth (d:ds)
+  | reachedSufficientAccuracy =
+      do
+      dAreaM <- unsafeMakeMutable dArea
+      resM <+>= dAreaM       
+      riemannInPlace' resM e f initWidth ds
+  | otherwise = 
+      riemannInPlace' resM e f initWidth (dl:dr:ds)
   where
   reachedSufficientAccuracy =
     case dError <? e * dWidth / initWidth of
