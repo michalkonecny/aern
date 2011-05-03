@@ -55,7 +55,7 @@ module Numeric.AERN.DoubleBasis.RealApprox
     -- *** Extrema
     -- |
     -- The values retured by 'least' and 'greatest' complete the 
-    -- numerical partial order on 'DI'.
+    -- numerical partial order on 'RealApprox'.
     least,greatest,
     
     -- *** Comparability tests
@@ -71,7 +71,7 @@ module Numeric.AERN.DoubleBasis.RealApprox
     -- *** Extrema
     -- |
     -- The values retured by 'bottom' and 'top' complete the 
-    -- refinement partial order on 'DI'.
+    -- refinement partial order on 'RealApprox'.
 
     -- **** ASCII versions
     bottom,top,
