@@ -15,6 +15,10 @@ main =
   putStrLn $ "riemannInPlace 0.1 (\\x -> x^2) (Interval 0 1) = " ++
     show (riemannInPlace 0.1 (\x -> x^2) (Interval 0 1))
   putStrLn "erfInPlace e x = 2/(sqrt pi) * riemannInPlace e (\\t -> exp (-t^2)) (0 </\\> x)"
+  putStrLn $ "erfInPlace 0.001 1 = " ++ show (erfInPlace 0.001 1) 
+  putStrLn $ "riemannInPlace 0.1 (\\x -> x^2) (Interval 0 1) = " ++
+    show (riemannInPlace 0.1 (\x -> x^2) (Interval 0 1))
+  putStrLn "erfInPlace e x = 2/(sqrt pi) * riemannInPlace e (\\t -> exp (-t^2)) (0 </\\> x)"
   putStrLn $ "erfInPlace 0.001 1 = " ++ show (erf 0.001 1) 
 
 -- compute the error function to within e accuracy
@@ -50,23 +54,23 @@ erfInPlace e x =
   2/(sqrt pi) * riemannInPlace e (\t -> exp (-t^2)) (0 </\> x)
 
 -- riemann using in-place accumulator
-riemannInPlace :: DI -> (DI -> DI) -> DI -> DI 
+riemannInPlace :: DI -> (DI -> DI) -> DI -> DI
 riemannInPlace e f d =
   runST $
     do
-    resM <- makeMutable (0 :: DI)
-    riemannInPlace' resM e f (width d) [d] 
+    resM <- makeMutable 0
+    riemannInPlace' resM e f (width d) [d]
     result <- unsafeReadMutable resM
     return result
-    
+
 riemannInPlace' resM _ _ _ [] =
-  return ()
+  return () 
 riemannInPlace' resM e f initWidth (d:ds)
   | reachedSufficientAccuracy =
-      do
+      do 
       dAreaM <- unsafeMakeMutable dArea
-      resM <+>= dAreaM       
-      riemannInPlace' resM e f initWidth ds
+      resM <+>= dAreaM
+      riemannInPlace' resM e f initWidth ds 
   | otherwise = 
       riemannInPlace' resM e f initWidth (dl:dr:ds)
   where

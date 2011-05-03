@@ -94,4 +94,59 @@ instance
                 (MInterval resH forgetMeH)
                 effortTaylor 
                 (MInterval hM hM)
+
+instance
+    (CanBeMutable e, Show e,
+     ArithUpDn.RoundedFieldInPlace e,
+     ArithUpDn.RoundedMixedFieldInPlace e Int,
+     ArithUpDn.RoundedMixedField e Int,
+     ArithUpDn.RoundedField e, 
+     ArithUpDn.Convertible e Double,
+     HasZero e, HasOne e, 
+     HasInfinities e,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLattice e,
+     NumOrd.RoundedLatticeInPlace e) => 
+    (ArithInOut.RoundedSquareRootInPlace (Interval e))
+    where
+    sqrtOutInPlaceEff 
+        ((effortField, effortMixedField),
+         (Int1To10 effortNewton),
+         ((effortMeet, effortComp), effortConv)) 
+        (MInterval resL resH)
+        (MInterval lM hM) =
+            do
+            (MInterval forgetMeL forgetMeH) <- makeMutable zero 
+            sqrtOutThinArgInPlace 
+                effortField effortMixedField 
+                effortMeet effortComp effortConv 
+                (MInterval resL forgetMeH)
+                effortNewton 
+                lM
+            sqrtOutThinArgInPlace
+                effortField effortMixedField
+                effortMeet effortComp effortConv 
+                (MInterval forgetMeL resH)
+                effortNewton 
+                hM
+    sqrtInInPlaceEff 
+        ((effortField, effortMixedField),
+         (Int1To10 effortNewton),
+         ((effortMeet, effortComp), effortConv)) 
+        (MInterval resL resH)
+        (MInterval lM hM) =
+            do
+            (MInterval forgetMeL forgetMeH) <- makeMutable zero 
+            sqrtOutThinArgInPlace 
+                effortField effortMixedField 
+                effortMeet effortComp effortConv 
+                (MInterval forgetMeL resL)
+                effortNewton 
+                lM
+            sqrtOutThinArgInPlace
+                effortField effortMixedField
+                effortMeet effortComp effortConv 
+                (MInterval resH forgetMeH)
+                effortNewton 
+                hM
             
