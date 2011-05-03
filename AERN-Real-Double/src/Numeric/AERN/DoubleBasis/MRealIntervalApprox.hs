@@ -1,6 +1,6 @@
 {-|
     Module      :  Numeric.AERN.DoubleBasis.MRealIntervalApprox
-    Description :  TODO  
+    Description :  Mutable Double intervals for approximating real intervals  
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
@@ -8,7 +8,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    TODO
+    Mutable versions of the abstract data type 'RealIntervalApprox'
 -}
 module Numeric.AERN.DoubleBasis.MRealIntervalApprox
 (
@@ -17,7 +17,7 @@ module Numeric.AERN.DoubleBasis.MRealIntervalApprox
     -- operations with default effort indicators.
 
     -- * Main type
-    MDI,
+    MRealIntervalApprox,
 
     -- * Outward rounded operations
 
@@ -180,11 +180,11 @@ import Control.Monad.ST (runST)
 -- Mutable intervals with Double endpoints. Created and handled using
 -- the methods of 'CanBeMutable' as in e.g.
 -- 
--- > identity :: DI -> DI 
+-- > identity :: RealIntervalApprox -> RealIntervalApprox 
 -- > identity x =
 -- >   runST $
 -- >     do
 -- >     xM <- makeMutable x
 -- >     result <- readMutable xM
 -- >     return result
-type MDI = Mutable DI
+type MDI = Mutable RealIntervalApprox
