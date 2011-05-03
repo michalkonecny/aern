@@ -91,7 +91,8 @@ testsDI =
        ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Double", sampleD),
        ArithInOut.testsInOutExp ("DI", sampleDI),
        ArithInOut.testsInOutExpInPlace ("DI", sampleDI),
-       ArithInOut.testsInOutSqrt ("DI", sampleDI) unPositiveDI
+       ArithInOut.testsInOutSqrt ("DI", sampleDI) unPositiveDI,
+       ArithInOut.testsInOutSqrtInPlace ("DI", sampleDI) unPositiveDI
     ]
 
 sampleI = 1 :: Integer
