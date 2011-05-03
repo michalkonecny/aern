@@ -57,10 +57,10 @@ Library
   Exposed-modules:
     Numeric.AERN.DoubleBasis.Interval
     Numeric.AERN.DoubleBasis.MInterval
---    Numeric.AERN.DoubleBasis.Real
---    Numeric.AERN.DoubleBasis.MReal
---    Numeric.AERN.DoubleBasis.RealApprox
---    Numeric.AERN.DoubleBasis.MRealApprox
+    Numeric.AERN.DoubleBasis.Real
+    Numeric.AERN.DoubleBasis.MReal
+    Numeric.AERN.DoubleBasis.RealApprox
+    Numeric.AERN.DoubleBasis.MRealApprox
     Numeric.AERN.RealArithmetic.Basis.Double
     Numeric.AERN.RealArithmetic.Interval.Double
 
