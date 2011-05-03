@@ -19,239 +19,239 @@ import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
 -- | Upward rounded in-place addition
 addUpInPlace :: 
-    (RoundedAddInPlace t, ?addInOutEffort :: AddEffortIndicator t) => 
+    (RoundedAddInPlace t, ?addUpDnEffort :: AddEffortIndicator t) => 
     OpMutable2 t s
-addUpInPlace = addUpInPlaceEff ?addInOutEffort
+addUpInPlace = addUpInPlaceEff ?addUpDnEffort
 
 -- | Upward rounded addition assignment
 (+^=) :: 
-    (RoundedAddInPlace t, ?addInOutEffort :: AddEffortIndicator t) => 
+    (RoundedAddInPlace t, ?addUpDnEffort :: AddEffortIndicator t) => 
     OpMutable1 t s
 (+^=) = mutable2ToMutable1 addUpInPlace
 
 -- | Downward rounded in-place addition
 addDnInPlace :: 
-    (RoundedAddInPlace t, ?addInOutEffort :: AddEffortIndicator t) => 
+    (RoundedAddInPlace t, ?addUpDnEffort :: AddEffortIndicator t) => 
     OpMutable2 t s
-addDnInPlace = addDnInPlaceEff ?addInOutEffort
+addDnInPlace = addDnInPlaceEff ?addUpDnEffort
 
 -- | Downward rounded addition assignment
 (+.=) :: 
-    (RoundedAddInPlace t, ?addInOutEffort :: AddEffortIndicator t) => 
+    (RoundedAddInPlace t, ?addUpDnEffort :: AddEffortIndicator t) => 
     OpMutable1 t s
 (+.=) = mutable2ToMutable1 addDnInPlace
 
 -- | Upward rounded in-place subtraction
 subtrUpInPlace :: 
-    (RoundedSubtrInPlace t, ?addInOutEffort :: AddEffortIndicator t) => 
+    (RoundedSubtrInPlace t, ?addUpDnEffort :: AddEffortIndicator t) => 
     OpMutable2 t s
-subtrUpInPlace = subtrUpInPlaceEff ?addInOutEffort
+subtrUpInPlace = subtrUpInPlaceEff ?addUpDnEffort
 
 -- | Upward rounded subtraction assignment
 (-^=) :: 
-    (RoundedSubtrInPlace t, ?addInOutEffort :: AddEffortIndicator t) => 
+    (RoundedSubtrInPlace t, ?addUpDnEffort :: AddEffortIndicator t) => 
     OpMutable1 t s
 (-^=) = mutable2ToMutable1 subtrUpInPlace
 
 -- | Downward rounded in-place subtraction
 subtrDnInPlace :: 
-    (RoundedSubtrInPlace t, ?addInOutEffort :: AddEffortIndicator t) => 
+    (RoundedSubtrInPlace t, ?addUpDnEffort :: AddEffortIndicator t) => 
     OpMutable2 t s
-subtrDnInPlace = subtrDnInPlaceEff ?addInOutEffort
+subtrDnInPlace = subtrDnInPlaceEff ?addUpDnEffort
 
 -- | Downward rounded subtraction assignment
 (-.=) :: 
-    (RoundedSubtrInPlace t, ?addInOutEffort :: AddEffortIndicator t) => 
+    (RoundedSubtrInPlace t, ?addUpDnEffort :: AddEffortIndicator t) => 
     OpMutable1 t s
 (-.=) = mutable2ToMutable1 subtrDnInPlace
 
 -- | Upward rounded in-place absolute value
 absUpInPlace ::
-    (RoundedAbsInPlace t, ?absInOutEffort :: AbsEffortIndicator t) => 
+    (RoundedAbsInPlace t, ?absUpDnEffort :: AbsEffortIndicator t) => 
     OpMutable1 t s
-absUpInPlace = absUpInPlaceEff ?absInOutEffort
+absUpInPlace = absUpInPlaceEff ?absUpDnEffort
 
 -- | Downward rounded in-place absolute value
 absDnInPlace ::
-    (RoundedAbsInPlace t, ?absInOutEffort :: AbsEffortIndicator t) => 
+    (RoundedAbsInPlace t, ?absUpDnEffort :: AbsEffortIndicator t) => 
     OpMutable1 t s
-absDnInPlace = absDnInPlaceEff ?absInOutEffort
+absDnInPlace = absDnInPlaceEff ?absUpDnEffort
 
 -- | Upward rounded in-place multiplication
 multUpInPlace :: 
-    (RoundedMultiplyInPlace t, ?multInOutEffort :: MultEffortIndicator t) => 
+    (RoundedMultiplyInPlace t, ?multUpDnEffort :: MultEffortIndicator t) => 
     OpMutable2 t s
-multUpInPlace = multUpInPlaceEff ?multInOutEffort
+multUpInPlace = multUpInPlaceEff ?multUpDnEffort
 
 -- | Upward rounded multiplication assignment
 (*^=) :: 
-    (RoundedMultiplyInPlace t, ?multInOutEffort :: MultEffortIndicator t) => 
+    (RoundedMultiplyInPlace t, ?multUpDnEffort :: MultEffortIndicator t) => 
     OpMutable1 t s
 (*^=) = mutable2ToMutable1 multUpInPlace
 
 -- | Downward rounded in-place multiplication
 multDnInPlace :: 
-    (RoundedMultiplyInPlace t, ?multInOutEffort :: MultEffortIndicator t) => 
+    (RoundedMultiplyInPlace t, ?multUpDnEffort :: MultEffortIndicator t) => 
     OpMutable2 t s
-multDnInPlace = multDnInPlaceEff ?multInOutEffort
+multDnInPlace = multDnInPlaceEff ?multUpDnEffort
 
 -- | Downward rounded multiplication assignment
 (*.=) :: 
-    (RoundedMultiplyInPlace t, ?multInOutEffort :: MultEffortIndicator t) => 
+    (RoundedMultiplyInPlace t, ?multUpDnEffort :: MultEffortIndicator t) => 
     OpMutable1 t s
 (*.=) = mutable2ToMutable1 multDnInPlace
 
 -- | Upward rounded in-place power
 powerToNonnegIntUpInPlace :: 
     (RoundedPowerToNonnegIntInPlace t, 
-     ?intPowerInOutEffort :: PowerToNonnegIntEffortIndicator t) => 
+     ?intPowerUpDnEffort :: PowerToNonnegIntEffortIndicator t) => 
     OpMutableNonmut t Int s
-powerToNonnegIntUpInPlace = powerToNonnegIntUpInPlaceEff ?intPowerInOutEffort
+powerToNonnegIntUpInPlace = powerToNonnegIntUpInPlaceEff ?intPowerUpDnEffort
 
 -- | Upward rounded in-place power assignment
 (^^=)  :: 
     (RoundedPowerToNonnegIntInPlace t, 
-     ?intPowerInOutEffort :: PowerToNonnegIntEffortIndicator t) => 
+     ?intPowerUpDnEffort :: PowerToNonnegIntEffortIndicator t) => 
     OpNonmut t Int s
 (^^=) = mutableNonmutToNonmut powerToNonnegIntUpInPlace
 
 -- | Downward rounded in-place power
 powerToNonnegIntDnInPlace :: 
     (RoundedPowerToNonnegIntInPlace t, 
-     ?intPowerInOutEffort :: PowerToNonnegIntEffortIndicator t) => 
+     ?intPowerUpDnEffort :: PowerToNonnegIntEffortIndicator t) => 
     OpMutableNonmut t Int s
-powerToNonnegIntDnInPlace = powerToNonnegIntDnInPlaceEff ?intPowerInOutEffort
+powerToNonnegIntDnInPlace = powerToNonnegIntDnInPlaceEff ?intPowerUpDnEffort
 
 -- | Upward rounded in-place power assignment
 (^.=)  :: 
     (RoundedPowerToNonnegIntInPlace t, 
-     ?intPowerInOutEffort :: PowerToNonnegIntEffortIndicator t) => 
+     ?intPowerUpDnEffort :: PowerToNonnegIntEffortIndicator t) => 
     OpNonmut t Int s
 (^.=) = mutableNonmutToNonmut powerToNonnegIntDnInPlace
 
 -- | Upward rounded in-place division
 divUpInPlace :: 
-    (RoundedDivideInPlace t, ?divInOutEffort :: DivEffortIndicator t) => 
+    (RoundedDivideInPlace t, ?divUpDnEffort :: DivEffortIndicator t) => 
     OpMutable2 t s
-divUpInPlace = divUpInPlaceEff ?divInOutEffort
+divUpInPlace = divUpInPlaceEff ?divUpDnEffort
 
 -- | Upward rounded division assignment
 (/^=) :: 
-    (RoundedDivideInPlace t, ?divInOutEffort :: DivEffortIndicator t) => 
+    (RoundedDivideInPlace t, ?divUpDnEffort :: DivEffortIndicator t) => 
     OpMutable1 t s
 (/^=) = mutable2ToMutable1 divUpInPlace
 
 -- | Downward rounded in-place division
 divDnInPlace :: 
-    (RoundedDivideInPlace t, ?divInOutEffort :: DivEffortIndicator t) => 
+    (RoundedDivideInPlace t, ?divUpDnEffort :: DivEffortIndicator t) => 
     OpMutable2 t s
-divDnInPlace = divDnInPlaceEff ?divInOutEffort
+divDnInPlace = divDnInPlaceEff ?divUpDnEffort
 
 -- | Downward rounded division assignment
 (/.=) :: 
-    (RoundedDivideInPlace t, ?divInOutEffort :: DivEffortIndicator t) => 
+    (RoundedDivideInPlace t, ?divUpDnEffort :: DivEffortIndicator t) => 
     OpMutable1 t s
 (/.=) = mutable2ToMutable1 divDnInPlace
 
 -- the following does not work, but is kept here as a template for
 -- cut and pasting the "let"s
 withFieldOpsEffortIndicator effortField expression =
-    let ?addInOutEffort = fldEffortAdd effortField in
-    let ?multInOutEffort = fldEffortMult effortField in
-    let ?intPowerInOutEffort = fldEffortPow effortField in
-    let ?divInOutEffort = fldEffortDiv effortField in
+    let ?addUpDnEffort = fldEffortAdd effortField in
+    let ?multUpDnEffort = fldEffortMult effortField in
+    let ?intPowerUpDnEffort = fldEffortPow effortField in
+    let ?divUpDnEffort = fldEffortDiv effortField in
     expression
 
 -- | Upward rounded in-place mixed addition
 mixedAddUpInPlace :: 
     (RoundedMixedAddInPlace t tn, 
-     ?mixedAddInOutEffort :: MixedAddEffortIndicator t tn) => 
+     ?mixedAddUpDnEffort :: MixedAddEffortIndicator t tn) => 
     OpMutableNonmut t tn s
-mixedAddUpInPlace = mixedAddUpInPlaceEff ?mixedAddInOutEffort
+mixedAddUpInPlace = mixedAddUpInPlaceEff ?mixedAddUpDnEffort
 
 -- | Upward rounded additive scalar action assignment
 (+^|=) :: 
     (RoundedMixedAddInPlace t tn, 
-     ?mixedAddInOutEffort :: MixedAddEffortIndicator t tn) => 
+     ?mixedAddUpDnEffort :: MixedAddEffortIndicator t tn) => 
     OpNonmut t tn s
 (+^|=) = mutableNonmutToNonmut mixedAddUpInPlace
 
 -- | Downward rounded in-place mixed addition
 mixedAddDnInPlace :: 
     (RoundedMixedAddInPlace t tn, 
-     ?mixedAddInOutEffort :: MixedAddEffortIndicator t tn) => 
+     ?mixedAddUpDnEffort :: MixedAddEffortIndicator t tn) => 
     OpMutableNonmut t tn s
-mixedAddDnInPlace = mixedAddDnInPlaceEff ?mixedAddInOutEffort
+mixedAddDnInPlace = mixedAddDnInPlaceEff ?mixedAddUpDnEffort
 
 -- | Downward rounded additive scalar action assignment
 (+.|=) :: 
     (RoundedMixedAddInPlace t tn, 
-     ?mixedAddInOutEffort :: MixedAddEffortIndicator t tn) => 
+     ?mixedAddUpDnEffort :: MixedAddEffortIndicator t tn) => 
     OpNonmut t tn s
 (+.|=) = mutableNonmutToNonmut mixedAddDnInPlace
 
 -- | Upward rounded in-place mixed multiplication
 mixedMultUpInPlace :: 
     (RoundedMixedMultiplyInPlace t tn, 
-     ?mixedMultInOutEffort :: MixedMultEffortIndicator t tn) => 
+     ?mixedMultUpDnEffort :: MixedMultEffortIndicator t tn) => 
     OpMutableNonmut t tn s
-mixedMultUpInPlace = mixedMultUpInPlaceEff ?mixedMultInOutEffort
+mixedMultUpInPlace = mixedMultUpInPlaceEff ?mixedMultUpDnEffort
 
 -- | Upward rounded multiplicative scalar action assignment
 (*^|=) :: 
     (RoundedMixedMultiplyInPlace t tn, 
-     ?mixedMultInOutEffort :: MixedMultEffortIndicator t tn) => 
+     ?mixedMultUpDnEffort :: MixedMultEffortIndicator t tn) => 
     OpNonmut t tn s
 (*^|=) = mutableNonmutToNonmut mixedMultUpInPlace
 
 -- | Downward rounded in-place mixed multiplication
 mixedMultDnInPlace :: 
     (RoundedMixedMultiplyInPlace t tn, 
-     ?mixedMultInOutEffort :: MixedMultEffortIndicator t tn) => 
+     ?mixedMultUpDnEffort :: MixedMultEffortIndicator t tn) => 
     OpMutableNonmut t tn s
-mixedMultDnInPlace = mixedMultDnInPlaceEff ?mixedMultInOutEffort
+mixedMultDnInPlace = mixedMultDnInPlaceEff ?mixedMultUpDnEffort
 
 -- | Downward rounded multiplicative scalar action assignment
 (*.|=) :: 
     (RoundedMixedMultiplyInPlace t tn, 
-     ?mixedMultInOutEffort :: MixedMultEffortIndicator t tn) => 
+     ?mixedMultUpDnEffort :: MixedMultEffortIndicator t tn) => 
     OpNonmut t tn s
 (*.|=) = mutableNonmutToNonmut mixedMultDnInPlace
 
 -- | Upward rounded in-place mixed reciprocal action
 mixedDivUpInPlace :: 
     (RoundedMixedDivideInPlace t tn, 
-     ?mixedDivInOutEffort :: MixedDivEffortIndicator t tn) => 
+     ?mixedDivUpDnEffort :: MixedDivEffortIndicator t tn) => 
     OpMutableNonmut t tn s
-mixedDivUpInPlace = mixedDivUpInPlaceEff ?mixedDivInOutEffort
+mixedDivUpInPlace = mixedDivUpInPlaceEff ?mixedDivUpDnEffort
 
 -- | Upward rounded multiplicative scalar reciprocal action assignment
 (/^|=) :: 
     (RoundedMixedDivideInPlace t tn, 
-     ?mixedDivInOutEffort :: MixedDivEffortIndicator t tn) => 
+     ?mixedDivUpDnEffort :: MixedDivEffortIndicator t tn) => 
     OpNonmut t tn s
 (/^|=) = mutableNonmutToNonmut mixedDivUpInPlace
 
 -- | Downward rounded in-place mixed reciprocal action
 mixedDivDnInPlace :: 
     (RoundedMixedDivideInPlace t tn, 
-     ?mixedDivInOutEffort :: MixedDivEffortIndicator t tn) => 
+     ?mixedDivUpDnEffort :: MixedDivEffortIndicator t tn) => 
     OpMutableNonmut t tn s
-mixedDivDnInPlace = mixedDivDnInPlaceEff ?mixedDivInOutEffort
+mixedDivDnInPlace = mixedDivDnInPlaceEff ?mixedDivUpDnEffort
 
 -- | Downward rounded multiplicative scalar reciprocal action assignment
 (/.|=) :: 
     (RoundedMixedDivideInPlace t tn, 
-     ?mixedDivInOutEffort :: MixedDivEffortIndicator t tn) => 
+     ?mixedDivUpDnEffort :: MixedDivEffortIndicator t tn) => 
     OpNonmut t tn s
 (/.|=) = mutableNonmutToNonmut mixedDivDnInPlace
 
 -- the following does not work, but is kept here as a template for
 -- cut and pasting the "let"s
 withMixedFieldOpsEffortIndicator effortMixedField expression =
-    let ?mixedAddInOutEffort = mxfldEffortAdd effortMixedField in
-    let ?mixedMultInOutEffort = mxfldEffortMult effortMixedField in
-    let ?mixedDivInOutEffort = mxfldEffortDiv effortMixedField in
+    let ?mixedAddUpDnEffort = mxfldEffortAdd effortMixedField in
+    let ?mixedMultUpDnEffort = mxfldEffortMult effortMixedField in
+    let ?mixedDivUpDnEffort = mxfldEffortDiv effortMixedField in
     expression
 
 -- | Upward rounded in-place exponential

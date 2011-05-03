@@ -84,7 +84,7 @@ sqrtOutThinArg
             (NumOrd.maxUpEff effortMinmax x one)
          -- a dummy fallback upper bound where lower bound is too close to 0
     where
-    (xRecipSqrtDownPrev, xRecipSqrtDown) = recipSqrtDown x
+    (xRecipSqrtDownPrev, xRecipSqrtDown) = recipSqrtDown
     xRecipSqrtDownInFastRegion =
         case ArithUpDn.convertDnEff effortToDouble t of
             Just lowerBound -> lowerBound > (0.381966012 :: Double) -- (3 - sqrt 5)/2
@@ -92,8 +92,8 @@ sqrtOutThinArg
         where
         t = (xRecipSqrtDownPrev *. xRecipSqrtDownPrev) *. x
     xRecipSqrtUp = 
-         -- only valid in "fast" region, ie where the error is smaller than the gap between the
-         -- last two iterates
+         -- only valid in "fast" region, ie where the error is smaller 
+         -- than the gap between the results of the last two iterations
         (xRecipSqrtLastUp +^ xRecipSqrtLastUp) +^ (neg xRecipSqrtDownPrev)
     xRecipSqrtLastUp = 
             (xRecipSqrtDownPrev /^| 2 )
@@ -110,15 +110,15 @@ sqrtOutThinArg
             Just True -> True
             _ -> False
     
-    p1 +^ p2 = ArithUpDn.addUpEff effortAdd p1 p2
-    p1 *^ p2 = ArithUpDn.multUpEff effortMult p1 p2
-    p1 *. p2 = ArithUpDn.multDnEff effortMult p1 p2
-    recipUp p = ArithUpDn.recipUpEff effortDiv p
-    recipDn p = ArithUpDn.recipDnEff effortDiv p
-    n |+^ p = ArithUpDn.mixedAddUpEff effortAddInt p (n :: Int)
-    n |+. p = ArithUpDn.mixedAddDnEff effortAddInt p  (n :: Int)
-    p /^| n = ArithUpDn.mixedDivUpEff effortDivInt p  (n :: Int)
-    p /.| n = ArithUpDn.mixedDivDnEff effortDivInt p  (n :: Int)
+    x1 +^ x2 = ArithUpDn.addUpEff effortAdd x1 x2
+    x1 *^ x2 = ArithUpDn.multUpEff effortMult x1 x2
+    x1 *. x2 = ArithUpDn.multDnEff effortMult x1 x2
+    recipUp x = ArithUpDn.recipUpEff effortDiv x
+    recipDn x = ArithUpDn.recipDnEff effortDiv x
+    n |+^ x = ArithUpDn.mixedAddUpEff effortAddInt x (n :: Int)
+    n |+. x = ArithUpDn.mixedAddDnEff effortAddInt x  (n :: Int)
+    x /^| n = ArithUpDn.mixedDivUpEff effortDivInt x  (n :: Int)
+    x /.| n = ArithUpDn.mixedDivDnEff effortDivInt x  (n :: Int)
     
     effortAdd = ArithUpDn.fldEffortAdd x effortField
     effortMult = ArithUpDn.fldEffortMult x effortField
@@ -126,19 +126,34 @@ sqrtOutThinArg
     effortAddInt = ArithUpDn.mxfldEffortAdd x (0::Int) effortMixedField
     effortDivInt = ArithUpDn.mxfldEffortDiv x (0::Int) effortMixedField
 
-    recipSqrtDown p 
-        | q0OK = 
-            iterRecipSqrt maxIters zero q0
-        | otherwise = (zero, zero)
+    recipSqrtDown
+        | q0OK = -- computed an approximation in the stable region:
+            iterRecipSqrt maxIters zero q0 -- then iterate!
+        | otherwise = (zero, zero) -- zero is an always correct lower approximation
         where
         (q0OK, q0) = 
-            (sureAbove0 pp1Up && sureAbove0 babylon2, 
+            (sureAbove0 xPlusOneUp && sureAbove0 babylon2, 
              recipDn babylon2)
             where
-            babylon2 = pp5d4Up +^ (neg pp1recipDn)
-            pp5d4Up = ((5::Int) |+^ p) /^| (4::Int)
-            pp1recipDn = recipDn pp1Up
-            pp1Up = (1::Int) |+^ p
+            -- babylon2 = (x+5)/4 - 1/(x+1) rounded upwards
+            --   ie two Babylonian iterations
+            --     \ t -> (t + x/t)/2 
+            --   starting with t_0 = x:
+            --   t_1 = (x + 1)/2
+            --   t_2 = ((x + 1)/2 + x/((x + 1)/2))/2 =
+            --         ((x + 1)/2 + 2x/(x + 1))/2 =
+            --         ((x + 1)^2 + 4x)/4(x+1) =
+            --         (x^2 + 6x + 1)/4(x+1) =
+            --         (x^2 + 6x + 5 - 4)/4(x+1) =
+            --         ((x + 5)(x + 1) - 4)/4(x+1) =
+            --         (x + 5) - 1/(x+1)
+            babylon2 = xPlus5Div4Up +^ (neg xPlusOneRecipDn)
+            xPlus5Div4Up = ((5::Int) |+^ x) /^| (4::Int)
+            xPlusOneRecipDn = recipDn xPlusOneUp
+            xPlusOneUp = (1::Int) |+^ x
+        -- iteratively improve q, a lower bound on sqrt(1/x)
+        --   using the formula q_{n+1} = (q_n / 2) * (3 - x * q_n * q_n)  
+        --   quoted eg in http://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Iterative_methods_for_reciprocal_square_roots
         iterRecipSqrt maxIters qNm2 qNm1
             | maxIters > 0 && sureAbove0 qNm1 =
 --                    unsafePrint ("AERN: sqrtOutThinArg: recipSqrtDown: iterRecipSqrt: maxIters = " ++ show maxIters) $
@@ -148,5 +163,5 @@ sqrtOutThinArg
             qN =
                 (qNm1 /.| (2::Int))
                 *.
-                ((3::Int) |+. (neg $ p *^ (qNm1 *^ qNm1))) 
+                ((3::Int) |+. (neg $ x *^ (qNm1 *^ qNm1))) 
     
