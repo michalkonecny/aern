@@ -1,6 +1,6 @@
 {-|
     Module      :  Numeric.AERN.DoubleBasis.MRealApprox
-    Description :  TODO  
+    Description :  Mutable Double intervals for approximating real numbers  
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
@@ -8,7 +8,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    TODO
+    Mutable version of the abstract data type 'RealApprox'.
 -}
 module Numeric.AERN.DoubleBasis.MRealApprox
 (
@@ -17,7 +17,7 @@ module Numeric.AERN.DoubleBasis.MRealApprox
     -- operations with default effort indicators.
 
     -- * Main type
-    MDI,
+    MRealApprox,
 
     -- * Outward rounded operations
 
@@ -79,54 +79,6 @@ module Numeric.AERN.DoubleBasis.MRealApprox
     
     -- ** Elementary functions
     absOutInPlace,expOutInPlace,sqrtOutInPlace,
-
-    -- * Inward rounded operations
-
-    -- ** Order operations
-    
-    -- *** Numerical order
-    -- | 
-    -- Inward rounded in-place interval extensions of the corresponding 
-    -- operations on Double.
-    minInInPlace,maxInInPlace,
-
-    -- *** Refinement order
-    -- | 
-    -- Inward rounded in-place lattice operations in the interval poset.
-
-    -- **** Operations with explicit out parameter    
-    meetInInPlace,joinInInPlace,
-
-    -- **** Assignment operations 
-
-    -- ***** ASCII versions
-    (>/\<=),(>\/<=),
-
-    -- ***** Unicode versions
-    (>⊓<=),(>⊔<=),
-
-    -- ** Field operations
-
-    -- *** Interval operations
-
-    -- **** Operations with explicit out parameter    
-    addInInPlace,subtrInInPlace,
-    multInInPlace,divInInPlace,
-
-    -- **** Assignment operations 
-    (>+<=),(>-<=),(>*<=),(>/<=),
-
-    -- *** Mixed type operations
-
-    -- **** Operations with explicit out parameter    
-    mixedAddInInPlace,mixedMultInInPlace,mixedDivInInPlace,
-    powerToNonnegIntInInPlace,
-
-    -- **** Assignment operations 
-    (>+<|=),(>*<|=),(>/<|=),(>^<=),
-    
-    -- ** Elementary functions
-    absInInPlace,expInInPlace,sqrtInInPlace,
     
     -- * Base class and associted type
     CanBeMutable(..)
@@ -139,15 +91,12 @@ import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.NumericOrder
 import Numeric.AERN.Basics.NumericOrder.InPlace.OpsDefaultEffort
-  (minOutInPlace,maxOutInPlace,
-   minInInPlace,maxInInPlace)
+  (minOutInPlace,maxOutInPlace)
 
 import Numeric.AERN.Basics.RefinementOrder
 import Numeric.AERN.Basics.RefinementOrder.InPlace.OpsDefaultEffort
   (meetOutInPlace,(</\>=),(<⊓>=),
-   joinOutInPlace,(<\/>=),(<⊔>=),
-   meetInInPlace,(>/\<=),(>⊓<=),
-   joinInInPlace,(>\/<=),(>⊔<=))
+   joinOutInPlace,(<\/>=),(<⊔>=))
 
 import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Mutable
@@ -162,29 +111,20 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEff
    mixedAddOutInPlace,(<+>|=),
    mixedMultOutInPlace,(<*>|=),
    mixedDivOutInPlace,(</>|=),
-   powerToNonnegIntOutInPlace,(<^>=),
-   addInInPlace,(>+<=),
-   subtrInInPlace,(>-<=),
-   multInInPlace,(>*<=),
-   divInInPlace,(>/<=),
-   absInInPlace,expInInPlace,sqrtInInPlace,
-   mixedAddInInPlace,(>+<|=),
-   mixedMultInInPlace,(>*<|=),
-   mixedDivInInPlace,(>/<|=),
-   powerToNonnegIntInInPlace,(>^<=))
+   powerToNonnegIntOutInPlace,(<^>=))
 
 import Numeric.AERN.DoubleBasis.Interval
 import Control.Monad.ST (runST)
 
 -- | 
--- Mutable intervals with Double endpoints. Created and handled using
+-- Mutable 'RealApprox'. Created and handled using
 -- the methods of 'CanBeMutable' as in e.g.
 -- 
--- > identity :: DI -> DI 
+-- > identity :: RealApprox -> RealApprox 
 -- > identity x =
 -- >   runST $
 -- >     do
 -- >     xM <- makeMutable x
 -- >     result <- readMutable xM
 -- >     return result
-type MDI = Mutable DI
+type MDI = Mutable RealApprox
