@@ -1,6 +1,6 @@
 {-|
     Module      :  Numeric.AERN.DoubleBasis.RealApprox
-    Description :  TODO  
+    Description :  Double intervals for approximating real numbers
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
