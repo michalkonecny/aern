@@ -32,7 +32,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.ExactOps
 
-import Control.Monad.ST (ST, runST)
+import Control.Monad.ST (ST)
 
 expOutThinArg ::
     (HasZero t, HasOne t, HasInfinities t,

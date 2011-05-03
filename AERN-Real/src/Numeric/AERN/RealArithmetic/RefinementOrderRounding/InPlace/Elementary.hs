@@ -128,25 +128,27 @@ propInOutSqrtInPlace ::
      EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
+    (tInArea -> t) ->
     (RefOrd.PartialCompareEffortIndicator t, 
      SqrtEffortIndicator t) -> 
-    (RefOrd.UniformlyOrderedSingleton t) -> 
+    tInArea -> 
     Bool
-propInOutSqrtInPlace sample initEffort (RefOrd.UniformlyOrderedSingleton e1) =
+propInOutSqrtInPlace sample fromArea initEffort e1InArea =
     equalRoundingUpDn "in-place sqrt"
         sqrtr1In sqrtr1Out sqrtr2In sqrtr2Out 
         RefOrd.pLeqEff initEffort
     where
+    e1Pos = fromArea e1InArea
     sqrtInEffViaInPlace = mutable1EffToPure sqrtInInPlaceEff
     sqrtOutEffViaInPlace = mutable1EffToPure sqrtOutInPlaceEff
-    sqrtr1In eff = sqrtInEff eff e1
-    sqrtr1Out eff = sqrtOutEff eff e1
-    sqrtr2In eff = sqrtInEffViaInPlace eff e1
-    sqrtr2Out eff = sqrtOutEffViaInPlace eff e1
+    sqrtr1In eff = sqrtInEff eff e1Pos
+    sqrtr1Out eff = sqrtOutEff eff e1Pos
+    sqrtr2In eff = sqrtInEffViaInPlace eff e1Pos
+    sqrtr2Out eff = sqrtOutEffViaInPlace eff e1Pos
 
-testsInOutSqrtInPlace (name, sample) =
+testsInOutSqrtInPlace (name, sample) fromArea =
     testGroup (name ++ " in-place sqrt") $
         [
-            testProperty "matches pure" (propInOutSqrtInPlace sample)
+            testProperty "matches pure" (propInOutSqrtInPlace sample fromArea)
         ]
         
