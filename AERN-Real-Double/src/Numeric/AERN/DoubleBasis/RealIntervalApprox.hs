@@ -34,10 +34,10 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     --   * the /refinement/ order, generalising the reverse-inclusion 
     --     relation on consistent intervals.  
     --
-    -- The consistent intervals in 'DI' form a /meet/-semilattice
+    -- The consistent intervals in 'RealIntevalApprox' form a /meet/-semilattice
     -- corresponding to the refiniement order under the operation /\\ 
     -- returning the subset-least interval containing the /union/ of 
-    -- its argument intervals. The operation is extended to all of 'DI'
+    -- its argument intervals. The operation is extended to all of 'RealIntevalApprox'
     -- by returning the highest interval below both of its argument 
     -- intervals.  
     -- 
@@ -49,16 +49,16 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     --
     -- The dual operation to /\\ is partial on consistent intervals, 
     -- since the /intersection/ of disjoint sets is empty. Therefore,
-    -- the /join/-semilattice structure on 'DI' comes in two flavours:
+    -- the /join/-semilattice structure on 'RealIntevalApprox' comes in two flavours:
     --
     --   * the partial consistent interval-valued join \\/\? which 
     --     returns 'Nothing' for disjoint and anticonsistent arguments
     --     and
     --
     --   * the total join \\/ which returns the lowest interval in
-    --     'DI' above both of its argument intervals. 
+    --     'RealIntevalApprox' above both of its argument intervals. 
     -- 
-    -- The structure ('DI', \/\\, \\\/, 'bottom', 'top') is a complete 
+    -- The structure ('RealIntevalApprox', \/\\, \\\/, 'bottom', 'top') is a complete 
     -- lattice.
     --
     -- Lower and upper approximations of the exact operations \\/\?
@@ -72,7 +72,7 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     -- *** Extrema
     -- |
     -- The values retured by 'least' and 'greatest' complete the 
-    -- numerical partial order on 'DI'.
+    -- numerical partial order on 'RealIntevalApprox'.
     least,greatest,
     
     -- *** Comparability tests
@@ -88,7 +88,7 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     -- *** Extrema
     -- |
     -- The values retured by 'bottom' and 'top' complete the 
-    -- refinement partial order on 'DI'.
+    -- refinement partial order on 'RealIntevalApprox'.
 
     -- **** ASCII versions
     bottom,top,
@@ -110,7 +110,7 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     -- * Outward rounded operations
     -- | 
     -- Interval extensions of common functions. The 'Num', 'Fractional' 
-    -- and 'Floating' instances for 'DI' use such versions as instance 
+    -- and 'Floating' instances for 'RealIntevalApprox' use such versions as instance 
     -- methods.
     
     -- ** Order operations
