@@ -2,6 +2,9 @@
 module Main where 
 
 import Numeric.AERN.DoubleBasis.Interval
+import Numeric.AERN.DoubleBasis.MInterval
+
+import Control.Monad.ST (ST, runST)
 
 main =
   do
@@ -18,7 +21,7 @@ main =
 zero :: DI -> (DI -> DI) -> DI -> Maybe DI
 zero e f d =
   zero' e f [d]
-
+zero' :: DI -> (DI -> DI) -> [DI] -> Maybe DI
 zero' _ _ [] = Nothing 
 zero' e f (d:ds)
   | imageContainsZero == Just False = 
@@ -39,6 +42,9 @@ zero' e f (d:ds)
   (dl,dr) = bisect d
   fd = f d
 
+zeroInPlace' :: MDI -> DI -> (MDI s -> MDI s -> ST s ()) -> [MDI s] -> ST s ()
+zeroInPlace' resM e 
+
 width i = 
   irI <-> ilI
   where
@@ -53,3 +59,6 @@ bisect i =
   l = Interval il midpoint
   midpoint = 0.5*(il + ir)
   Interval il ir = i
+
+  
+  
