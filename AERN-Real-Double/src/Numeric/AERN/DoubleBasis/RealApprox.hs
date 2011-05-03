@@ -147,7 +147,7 @@ import Numeric.AERN.Basics.RefinementOrder
 import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
   ((|==?),(|<==>?),(|</=>?),
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
-   (</\>),(<\/>?),(<⊓>),(<⊔>?)
+   (</\>),(<\/>?),(<⊓>),(<⊔>?))
 
 --import Numeric.AERN.RealArithmetic.Interval
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding
