@@ -205,7 +205,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
   (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
   piIn,eIn,absIn,expIn,sqrtIn)
  
-import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect()
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps()
 
 import Numeric.AERN.RealArithmetic.Basis.Double
 
