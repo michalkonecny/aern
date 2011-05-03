@@ -8,7 +8,11 @@
     Stability   :  experimental
     Portability :  portable
     
-    TODO
+    Intervals with Double endpoints as an
+    abstract data type for approximating real numbers.
+    Each interval represents a single real number.
+    Only operations that respect this view are available
+    via this module.
 -}
 module Numeric.AERN.DoubleBasis.RealApprox
 (
@@ -17,7 +21,7 @@ module Numeric.AERN.DoubleBasis.RealApprox
     -- with default effort indicators.
 
     -- * Main type
-    DI,
+    RealApprox,
     
     -- * Order relations
     -- | 
@@ -29,35 +33,19 @@ module Numeric.AERN.DoubleBasis.RealApprox
     --   * the /refinement/ order, generalising the reverse-inclusion 
     --     relation on consistent intervals.  
     --
-    -- The consistent intervals in 'DI' form a /meet/-semilattice
+    -- The intervals in 'RealApprox' form a /meet/-semilattice
     -- corresponding to the refiniement order under the operation /\\ 
     -- returning the subset-least interval containing the /union/ of 
-    -- its argument intervals. The operation is extended to all of 'DI'
-    -- by returning the highest interval below both of its argument 
-    -- intervals.  
+    -- its argument intervals.
     -- 
-    -- The structure ({ 'di' | 'di' is consistent \}, /\\, 
-    -- 'bottom') is a complete meet-semilattice.
+    -- A safe approximation of the exact operation /\\ 
+    -- is given by '</\>'.
+    --
+    -- The dual operation to /\\ is partial 
+    -- since the /intersection/ of disjoint sets is empty. 
     -- 
-    -- Lower and upper approximations of the exact operation /\\ 
-    -- are given by '</\>' and '>/\<' respectively.
-    --
-    -- The dual operation to /\\ is partial on consistent intervals, 
-    -- since the /intersection/ of disjoint sets is empty. Therefore,
-    -- the /join/-semilattice structure on 'DI' comes in two flavours:
-    --
-    --   * the partial consistent interval-valued join \\/\? which 
-    --     returns 'Nothing' for disjoint and anticonsistent arguments
-    --     and
-    --
-    --   * the total join \\/ which returns the lowest interval in
-    --     'DI' above both of its argument intervals. 
-    -- 
-    -- The structure ('DI', \/\\, \\\/, 'bottom', 'top') is a complete 
-    -- lattice.
-    --
-    -- Lower and upper approximations of the exact operations \\/\?
-    -- and \\\/ are given by '<\/>?', '<\/>' and '>/\<' respectively.
+    -- A safe approximation of the exact operation \\/\?
+    -- is given by '<\/>?'.
 
     -- ** Numerical order
     -- | 
@@ -105,7 +93,7 @@ module Numeric.AERN.DoubleBasis.RealApprox
     -- * Outward rounded operations
     -- | 
     -- Interval extensions of common functions. The 'Num', 'Fractional' 
-    -- and 'Floating' instances for 'DI' use such versions as instance 
+    -- and 'Floating' instances for 'RealApprox' use such versions as instance 
     -- methods.
     
     -- ** Order operations
@@ -121,10 +109,10 @@ module Numeric.AERN.DoubleBasis.RealApprox
     -- Outward rounded lattice operations in the interval poset.
     
     -- **** ASCII versions
-    (</\>),(<\/>),(<\/>?),
+    (</\>),(<\/>?),
 
     -- **** Unicode versions
-    (<⊓>),(<⊔>),(<⊔>?),
+    (<⊓>),(<⊔>?),
 
     -- ** Field operations
 
@@ -138,47 +126,12 @@ module Numeric.AERN.DoubleBasis.RealApprox
     piOut,eOut,
     
     -- ** Elementary functions
-    absOut,expOut,sqrtOut,
-
-    -- * Inward rounded operations 
-
-    -- ** Order operations
-
-    -- *** Numerical order
-    -- | 
-    -- Inward rounded interval extensions of the corresponding 
-    -- operations on Double.
-    minIn,maxIn,
-
-    -- *** Refinement order
-
-    -- **** ASCII versions
-    (>/\<),(>\/<),
-
-    -- **** Unicode versions
-    (>⊓<),(>⊔<),
-
-    -- ** Field operations
-    
-    -- *** Interval operations
-    (>+<),(>-<),(>*<),(>/<),
-    
-    -- *** Mixed type operations
-    (|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
-    
-    
-    -- * Low level facilities
-    
-    -- ** Access functions
-    getEndpoints,fromEndpoints,
-
-    -- ** Base type
-    Interval(..),
+    absOut,expOut,sqrtOut
 )
 where
 
 import Numeric.AERN.Basics.Interval
-  (Interval(..),getEndpoints,fromEndpoints)
+  (Interval(..))
 
 import Numeric.AERN.Basics.NumericOrder
   (least,greatest)
@@ -194,16 +147,13 @@ import Numeric.AERN.Basics.RefinementOrder
 import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
   ((|==?),(|<==>?),(|</=>?),
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
-   (</\>),(<\/>),(<\/>?),(<⊓>),(<⊔>),(<⊔>?),
-   (>/\<),(>\/<),(>⊓<),(>⊔<))
+   (</\>),(<\/>?),(<⊓>),(<⊔>?)
 
 --import Numeric.AERN.RealArithmetic.Interval
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
  ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),
-  piOut,eOut,absOut,expOut,sqrtOut,
-  (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
-  piIn,eIn,absIn,expIn,sqrtIn)
+  piOut,eOut,absOut,expOut,sqrtOut)
  
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps()
 
@@ -214,33 +164,27 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Test.QuickCheck
 
 -- | 
--- Intervals with Double endpoints. 
--- 
--- Note that ('l','r') = 'getEndpoints' ('di' :: 'DI') does not 
--- fix an ordering of 'l' and 'r'. 
--- 
---   * 'di' is called /consistent/ when 'l' '<=' 'r'
---
---   * 'di' is called /anticonsistent/ when 'r' '<=' 'l' 
---
--- A consistent interval 'di' may be identified with the set defined by
--- \{ 'x' | 'l' '<=' 'x' and 'x' '<=' 'r' \}.
-type DI = Interval Double
+-- Intervals with Double endpoints, presented as an abstract
+-- data type for approximating real numbers.  One interval
+-- represents a single real number contained in it.  Only
+-- operations supporting this view are provided by this module. 
+type RealApprox = Interval Double
 
-sampleDI :: DI
-sampleDI = Interval 0 0
+sampleRealApprox :: RealApprox
+sampleRealApprox = Interval 0 0
 
-newtype PositiveDI = PositiveDI { unPositiveDI :: DI }
+newtype PositiveRealApprox = 
+    PositiveRealApprox { unPositiveRealApprox :: RealApprox }
 
-instance Show PositiveDI where
-    show (PositiveDI i) = show i
+instance Show PositiveRealApprox where
+    show (PositiveRealApprox i) = show i
 
-instance Arbitrary PositiveDI
+instance Arbitrary PositiveRealApprox
     where
     arbitrary =
         do
         NumOrd.UniformlyOrderedPair (l,h) <- arbitrary
-        return $ PositiveDI (Interval (pos l) (pos h))
+        return $ PositiveRealApprox (Interval (pos l) (pos h))
         where
         pos e 
             | e > 0 =  e
