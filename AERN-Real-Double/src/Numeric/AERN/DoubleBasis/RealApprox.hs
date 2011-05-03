@@ -1,16 +1,16 @@
 {-|
-    Module      :  Numeric.AERN.Interval.Double
-    Description :  Interval Double type and operations  
-    Copyright   :  (c) Michal Konecny
+    Module      :  Numeric.AERN.DoubleBasis.RealApprox
+    Description :  TODO  
+    Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
     Maintainer  :  mikkonecny@gmail.com
     Stability   :  experimental
     Portability :  portable
     
-    Intervals with Double endpoints.
+    TODO
 -}
-module Numeric.AERN.Interval.Double 
+module Numeric.AERN.DoubleBasis.RealApprox
 (
     -- |
     -- A convenience module re-exporting various interval operations 
