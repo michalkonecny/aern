@@ -1,6 +1,6 @@
 {-|
-    Module      :  Numeric.AERN.DoubleBasis.Real
-    Description :  TODO  
+    Module      :  Numeric.AERN.DoubleBasis.RealIntervalApprox
+    Description :  Double intervals for approximating real intervals
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
@@ -8,16 +8,21 @@
     Stability   :  experimental
     Portability :  portable
     
-    TODO
+    Intervals with Double endpoints as an
+    abstract data type for approximating real number intervals.
+    Each interval is either an outer or inner approximation
+    of another interval. 
+    Only operations that respect this view are available
+    via this module.
 -}
-module Numeric.AERN.DoubleBasis.Real
+module Numeric.AERN.DoubleBasis.RealIntervalApprox
 (
     -- |
     -- A convenience module re-exporting various interval operations 
     -- with default effort indicators.
 
     -- * Main type
-    DI,
+    RealIntervalApprox,
     
     -- * Order relations
     -- | 
@@ -164,21 +169,12 @@ module Numeric.AERN.DoubleBasis.Real
     (>+<),(>-<),(>*<),(>/<),
     
     -- *** Mixed type operations
-    (|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
-    
-    
-    -- * Low level facilities
-    
-    -- ** Access functions
-    getEndpoints,fromEndpoints,
-
-    -- ** Base type
-    Interval(..),
+    (|>+<),(>+<|),(|>*<),(>*<|),(>/<|)
 )
 where
 
 import Numeric.AERN.Basics.Interval
-  (Interval(..),getEndpoints,fromEndpoints)
+  (Interval(..))
 
 import Numeric.AERN.Basics.NumericOrder
   (least,greatest)
@@ -214,9 +210,11 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Test.QuickCheck
 
 -- | 
--- Intervals with Double endpoints. 
+-- Intervals with Double endpoints, presented as an abstract
+-- data type for approximating real number intervals from outside
+-- or from inside. 
 -- 
--- Note that ('l','r') = 'getEndpoints' ('di' :: 'DI') does not 
+-- Note that ('l','r') = 'getEndpoints' ('di' :: 'RealIntervalApprox') does not 
 -- fix an ordering of 'l' and 'r'. 
 -- 
 --   * 'di' is called /consistent/ when 'l' '<=' 'r'
@@ -225,22 +223,24 @@ import Test.QuickCheck
 --
 -- A consistent interval 'di' may be identified with the set defined by
 -- \{ 'x' | 'l' '<=' 'x' and 'x' '<=' 'r' \}.
-type DI = Interval Double
+type RealIntervalApprox = Interval Double
 
-sampleDI :: DI
-sampleDI = Interval 0 0
+sampleRealIntervalApprox :: RealIntervalApprox
+sampleRealIntervalApprox = Interval 0 0
 
-newtype PositiveDI = PositiveDI { unPositiveDI :: DI }
+newtype PositiveRealIntervalApprox = 
+    PositiveRealIntervalApprox 
+    { unPositiveRealIntervalApprox :: RealIntervalApprox }
 
-instance Show PositiveDI where
-    show (PositiveDI i) = show i
+instance Show PositiveRealIntervalApprox where
+    show (PositiveRealIntervalApprox i) = show i
 
-instance Arbitrary PositiveDI
+instance Arbitrary PositiveRealIntervalApprox
     where
     arbitrary =
         do
         NumOrd.UniformlyOrderedPair (l,h) <- arbitrary
-        return $ PositiveDI (Interval (pos l) (pos h))
+        return $ PositiveRealIntervalApprox (Interval (pos l) (pos h))
         where
         pos e 
             | e > 0 =  e
