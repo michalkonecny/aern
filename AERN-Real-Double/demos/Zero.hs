@@ -42,9 +42,6 @@ zero' e f (d:ds)
   (dl,dr) = bisect d
   fd = f d
 
-zeroInPlace' :: MDI -> DI -> (MDI s -> MDI s -> ST s ()) -> [MDI s] -> ST s ()
-zeroInPlace' resM e 
-
 width i = 
   irI <-> ilI
   where
