@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
+    Module      :  Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
     Description :  elementary operations using generic direct implementation
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -15,11 +15,11 @@
     Elementary operations using generic direct implementation.
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.ElementaryDirect where
+module Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps where
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
 
-import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect.Sqrt
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut

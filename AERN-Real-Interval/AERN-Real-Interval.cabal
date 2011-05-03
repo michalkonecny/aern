@@ -43,8 +43,8 @@ Library
     Numeric.AERN.RealArithmetic.Interval
     Numeric.AERN.RealArithmetic.Interval.Mutable
     Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
-    Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
-    Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryDirect
+    Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
+    Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
 
   Other-modules:
     Numeric.AERN.Basics.Interval.Basics
@@ -62,5 +62,5 @@ Library
     Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps
     Numeric.AERN.RealArithmetic.Interval.SpecialConst
     Numeric.AERN.RealArithmetic.Interval.Floating
-    Numeric.AERN.RealArithmetic.Interval.ElementaryDirect.Sqrt
+    Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt
 

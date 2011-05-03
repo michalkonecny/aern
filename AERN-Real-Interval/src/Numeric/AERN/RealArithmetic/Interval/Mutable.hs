@@ -16,12 +16,12 @@ module Numeric.AERN.RealArithmetic.Interval.Mutable
     module Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps,
     module Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps,
     module Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps,
-    module Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryDirect
+    module Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
 )
 where
 
 import Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps
 import Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps
 import Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps
-import Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryDirect
+import Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
 

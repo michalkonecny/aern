@@ -15,7 +15,7 @@ import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
 import Numeric.AERN.RealArithmetic.Interval
 import Numeric.AERN.RealArithmetic.Interval.Mutable
-import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 import Numeric.AERN.Basics.Interval
 
 import Numeric.AERN.Basics.Consistency

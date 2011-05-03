@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.Interval.ElementaryDirect.Sqrt
+    Module      :  Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt
     Description :  an interval-specific implementation of sqrt
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -15,7 +15,7 @@
     An interval-specific implementation of sqrt.
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.ElementaryDirect.Sqrt where
+module Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt where
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort
