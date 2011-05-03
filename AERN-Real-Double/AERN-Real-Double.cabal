@@ -55,13 +55,13 @@ Library
         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
         AERN-Basics == 2011.1, AERN-Real-Interval == 2011.1, AERN-Real == 2011.1
   Exposed-modules:
-    Numeric.AERN.DoubleBasis.Interval
-    Numeric.AERN.DoubleBasis.MInterval
-    Numeric.AERN.DoubleBasis.Real
-    Numeric.AERN.DoubleBasis.MReal
-    Numeric.AERN.DoubleBasis.RealApprox
-    Numeric.AERN.DoubleBasis.MRealApprox
-    Numeric.AERN.RealArithmetic.Basis.Double
+    Numeric.AERN.DoubleBasis.Interval, 
+    Numeric.AERN.DoubleBasis.MInterval, 
+    Numeric.AERN.DoubleBasis.RealApprox, 
+    Numeric.AERN.DoubleBasis.MRealApprox, 
+    Numeric.AERN.DoubleBasis.RealIntervalApprox, 
+    Numeric.AERN.DoubleBasis.MRealIntervalApprox, 
+    Numeric.AERN.RealArithmetic.Basis.Double, 
     Numeric.AERN.RealArithmetic.Interval.Double
 
   Other-modules:
