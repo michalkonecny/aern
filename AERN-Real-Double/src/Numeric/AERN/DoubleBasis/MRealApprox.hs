@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.DoubleBasis.MReal
+    Module      :  Numeric.AERN.DoubleBasis.MRealApprox
     Description :  TODO  
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
@@ -10,7 +10,7 @@
     
     TODO
 -}
-module Numeric.AERN.DoubleBasis.MReal 
+module Numeric.AERN.DoubleBasis.MRealApprox
 (
     -- |
     -- A convenience module re-exporting various in-place interval 
