@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryDirect
+    Module      :  Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
     Description :  elementary in-place operations using generic direct implementation
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
@@ -12,16 +12,17 @@
     Stability   :  experimental
     Portability :  portable
 
-    Elementary in-place operations using generic direct implementation.
+    Elementary in-place operations using generic implementation directly from
+    field operations.
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryDirect() where
+module Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps() where
 
-import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
 
-import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect.Sqrt
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
