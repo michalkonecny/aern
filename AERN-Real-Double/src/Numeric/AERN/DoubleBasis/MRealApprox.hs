@@ -79,6 +79,15 @@ module Numeric.AERN.DoubleBasis.MRealApprox
     
     -- ** Elementary functions
     absOutInPlace,expOutInPlace,sqrtOutInPlace,
+
+    -- *** Elementary functions with iteration effort control
+    -- |
+    -- To be used eg as follows:
+    -- 
+    -- > expOutInPlaceIters 10 resM xM
+    --
+    -- which means that at most 10 iterations should be used while computing exp of x
+    expOutInPlaceIters,sqrtOutInPlaceIters,
     
     -- * Base class and associted type
     CanBeMutable(..)
@@ -88,8 +97,6 @@ where
 import Numeric.AERN.Basics.Mutable
   (CanBeMutable(..))
 
-import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.NumericOrder
 import Numeric.AERN.Basics.NumericOrder.InPlace.OpsDefaultEffort
   (minOutInPlace,maxOutInPlace)
 
@@ -98,20 +105,26 @@ import Numeric.AERN.Basics.RefinementOrder.InPlace.OpsDefaultEffort
   (meetOutInPlace,(</\>=),(<⊓>=),
    joinOutInPlace,(<\/>=),(<⊔>=))
 
-import Numeric.AERN.RealArithmetic.Basis.Double
-import Numeric.AERN.RealArithmetic.Interval.Mutable
+import Numeric.AERN.RealArithmetic.Basis.Double()
+import Numeric.AERN.RealArithmetic.Interval.Mutable()
+
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as NumOrd
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding
+
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort
   (addOutInPlace,(<+>=),
    subtrOutInPlace,(<->=),
    multOutInPlace,(<*>=),
    divOutInPlace,(</>=),
-   absOutInPlace,expOutInPlace,sqrtOutInPlace,
+   absOutInPlace,
+   expOutInPlace,
+   sqrtOutInPlace,
    mixedAddOutInPlace,(<+>|=),
    mixedMultOutInPlace,(<*>|=),
    mixedDivOutInPlace,(</>|=),
    powerToNonnegIntOutInPlace,(<^>=))
+
+import Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
+    (expOutInPlaceIters, sqrtOutInPlaceIters)
 
 import Numeric.AERN.DoubleBasis.RealApprox (RealApprox)
 import Control.Monad.ST (runST)

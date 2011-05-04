@@ -150,7 +150,7 @@ instance
                 effortTaylor 
                 (Interval h h)
 
-expOutIters ::
+expOutIters, expInIters ::
     (ArithInOut.RoundedMixedField (Interval e) Int,
      ArithInOut.RoundedField (Interval e), 
      ArithUpDn.Convertible (Interval e) Int,
@@ -162,18 +162,6 @@ expOutIters ::
     => 
     Int -> (Interval e) -> (Interval e)
 expOutIters n i = ArithInOut.expOutEff (expDefaultEffortWithIters i n) i
-
-expInIters ::
-    (ArithInOut.RoundedMixedField (Interval e) Int,
-     ArithInOut.RoundedField (Interval e), 
-     ArithUpDn.Convertible (Interval e) Int,
-     ArithInOut.Convertible Double (Interval e),
-     HasZero e, HasOne e, 
-     HasInfinities e,
-     NumOrd.PartialComparison e,
-     RefOrd.OuterRoundedLattice (Interval e)) 
-    => 
-    Int -> (Interval e) -> (Interval e)
 expInIters n i = ArithInOut.expInEff (expDefaultEffortWithIters i n) i
 
 instance 
