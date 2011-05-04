@@ -73,6 +73,15 @@ type OpMutable2 t s =
 type OpMutable2Eff ei t s = 
     ei -> (Mutable t s) -> (Mutable t s) -> (Mutable t s) -> ST s () 
 
+type OpMutableMaybeMutable1 t s = 
+    (Mutable (Maybe t) s) -> (Mutable t s) -> ST s () 
+
+type OpMutableMaybeMutable2 t s = 
+    (Mutable (Maybe t) s) -> (Mutable t s) -> (Mutable t s) -> ST s () 
+
+type OpMutableMaybeMutable2Eff ei t s = 
+    ei -> (Mutable (Maybe t) s) -> (Mutable t s) -> (Mutable t s) -> ST s () 
+
 type OpMutableNonmut t nonmut s = 
     (Mutable t s) -> (Mutable t s) -> nonmut -> ST s () 
 
