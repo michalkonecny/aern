@@ -173,7 +173,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEff
    mixedDivInInPlace,(>/<|=),
    powerToNonnegIntInInPlace,(>^<=))
 
-import Numeric.AERN.DoubleBasis.Interval
+import Numeric.AERN.DoubleBasis.RealIntervalApprox
 import Control.Monad.ST (runST)
 
 -- | 
@@ -187,4 +187,4 @@ import Control.Monad.ST (runST)
 -- >     xM <- makeMutable x
 -- >     result <- readMutable xM
 -- >     return result
-type MDI = Mutable RealIntervalApprox
+type MRealIntervalApprox = Mutable RealIntervalApprox
