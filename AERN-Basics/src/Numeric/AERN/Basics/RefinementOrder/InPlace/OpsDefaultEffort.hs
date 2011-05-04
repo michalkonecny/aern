@@ -55,17 +55,17 @@ joinInInPlace = mutable2EffToMutable2 joinInInPlaceEff joinmeetInDefaultEffort
 partialJoinOutInPlace :: (OuterRoundedBasisInPlace t) => OpMutableMaybeMutable2 t s
 partialJoinOutInPlace = mutable2EffToMutable2 partialJoinOutInPlaceEff partialJoinOutDefaultEffort
 
--- | Outward rounded join assignment
+-- | Partial outward rounded join assignment
 (<\/>?=) :: (OuterRoundedBasisInPlace t) => OpMutableMaybeMutable1 t s
-(<\/>>=) = mutable2ToMutable1 partialJoinOutInPlace
+(<\/>?=) = mutable2ToMutable1 partialJoinOutInPlace
 
 -- | Partial inward rounded in-place join
 partialJoinInInPlace :: (InnerRoundedLatticeInPlace t) => OpMutableMaybeMutable2 t s
 partialJoinInInPlace = mutable2EffToMutable2 partialJoinOutInPlaceEff partialJoinOutDefaultEffort
 
--- | Inward rounded join assignment
-(>\/<=) :: (InnerRoundedLatticeInPlace t) => OpMutableMaybeMutable1 t s
-(>\/<=) = mutable2ToMutable1 partialJoinInInPlace
+-- | Partial inward rounded join assignment
+(>\/<?=) :: (InnerRoundedLatticeInPlace t) => OpMutableMaybeMutable1 t s
+(>\/<?=) = mutable2ToMutable1 partialJoinInInPlace
 
 {-| Convenience Unicode notation for '<\/>=' -}
 (<⊔>=) :: (OuterRoundedLatticeInPlace t) => OpMutable1 t s
