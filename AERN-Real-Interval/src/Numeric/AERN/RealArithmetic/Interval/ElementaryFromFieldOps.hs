@@ -15,7 +15,10 @@
     Elementary operations using generic direct implementation.
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps where
+module Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps 
+(expDefaultEffortWithIters, expOutIters, expInIters,
+ sqrtDefaultEffortWithIters, sqrtOutIters, sqrtInIters)
+where
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
 
@@ -41,7 +44,8 @@ instance
      ArithUpDn.Convertible (Interval e) Int,
      ArithInOut.Convertible Double (Interval e),
      NumOrd.PartialComparison e,
-     RefOrd.OuterRoundedLatticeEffort (Interval e)) => 
+     RefOrd.OuterRoundedLatticeEffort (Interval e)) 
+    => 
     (ArithInOut.RoundedExponentiationEffort (Interval e))
     where
     type ArithInOut.ExpEffortIndicator (Interval e) = 
@@ -70,6 +74,33 @@ instance
         sampleI = 1 :: Int
         sampleD = 1 :: Double
 
+expDefaultEffortWithIters ::
+    (NumOrd.PartialComparison e,
+     RefOrd.OuterRoundedLatticeEffort (Interval e),
+     ArithInOut.RoundedFieldEffort (Interval e),
+     ArithInOut.RoundedMixedFieldEffort (Interval e) Int,
+     ArithUpDn.Convertible (Interval e) Int,
+     ArithInOut.Convertible Double (Interval e)) 
+    => 
+    (Interval e) -> 
+    Int -> 
+    ArithInOut.ExpEffortIndicator (Interval e)
+expDefaultEffortWithIters  i@(Interval l h) n =
+        ((ArithInOut.fieldOpsDefaultEffort i, 
+          ArithInOut.mixedFieldOpsDefaultEffort i sampleI)
+        ,
+         Int1To10 n
+        , 
+         ((RefOrd.joinmeetOutDefaultEffort i,
+           NumOrd.pCompareDefaultEffort l), 
+          (ArithUpDn.convertDefaultEffort i sampleI,
+           ArithInOut.convertDefaultEffort sampleD i))
+        )
+        where
+        sampleI = 1 :: Int
+        sampleD = 1 :: Double
+
+
 instance
     (ArithInOut.RoundedMixedField (Interval e) Int,
      ArithInOut.RoundedField (Interval e), 
@@ -78,7 +109,8 @@ instance
      HasZero e, HasOne e, 
      HasInfinities e,
      NumOrd.PartialComparison e,
-     RefOrd.OuterRoundedLattice (Interval e)) => 
+     RefOrd.OuterRoundedLattice (Interval e)) 
+    => 
     (ArithInOut.RoundedExponentiation (Interval e))
     where
     expOutEff 
@@ -118,12 +150,39 @@ instance
                 effortTaylor 
                 (Interval h h)
 
+expOutIters ::
+    (ArithInOut.RoundedMixedField (Interval e) Int,
+     ArithInOut.RoundedField (Interval e), 
+     ArithUpDn.Convertible (Interval e) Int,
+     ArithInOut.Convertible Double (Interval e),
+     HasZero e, HasOne e, 
+     HasInfinities e,
+     NumOrd.PartialComparison e,
+     RefOrd.OuterRoundedLattice (Interval e)) 
+    => 
+    Int -> (Interval e) -> (Interval e)
+expOutIters n i = ArithInOut.expOutEff (expDefaultEffortWithIters i n) i
+
+expInIters ::
+    (ArithInOut.RoundedMixedField (Interval e) Int,
+     ArithInOut.RoundedField (Interval e), 
+     ArithUpDn.Convertible (Interval e) Int,
+     ArithInOut.Convertible Double (Interval e),
+     HasZero e, HasOne e, 
+     HasInfinities e,
+     NumOrd.PartialComparison e,
+     RefOrd.OuterRoundedLattice (Interval e)) 
+    => 
+    Int -> (Interval e) -> (Interval e)
+expInIters n i = ArithInOut.expInEff (expDefaultEffortWithIters i n) i
+
 instance 
     (ArithUpDn.RoundedMixedFieldEffort e Int,
      ArithUpDn.RoundedFieldEffort e, 
      ArithUpDn.Convertible e Double,
      NumOrd.PartialComparison e,
-     NumOrd.RoundedLatticeEffort e) => 
+     NumOrd.RoundedLatticeEffort e) 
+    => 
     (ArithInOut.RoundedSquareRootEffort (Interval e))
     where
     type ArithInOut.SqrtEffortIndicator (Interval e) = 
@@ -149,6 +208,30 @@ instance
         sampleI = 1 :: Int
         sampleD = 1 :: Double
 
+sqrtDefaultEffortWithIters ::
+    (ArithUpDn.RoundedMixedFieldEffort e Int,
+     ArithUpDn.RoundedFieldEffort e, 
+     ArithUpDn.Convertible e Double,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLatticeEffort e) 
+    => 
+    (Interval e) -> 
+    Int -> 
+    ArithInOut.SqrtEffortIndicator (Interval e)
+sqrtDefaultEffortWithIters i@(Interval l h) n =
+        ((ArithUpDn.fieldOpsDefaultEffort l, 
+          ArithUpDn.mixedFieldOpsDefaultEffort l sampleI)
+        ,
+         Int1To10 n
+        , 
+         ((NumOrd.minmaxDefaultEffort l, NumOrd.pCompareDefaultEffort l), 
+          ArithUpDn.convertDefaultEffort l sampleD)
+        )
+        where
+        sampleI = 1 :: Int
+        sampleD = 1 :: Double
+
+
 instance 
     (ArithUpDn.RoundedMixedField e Int,
      ArithUpDn.RoundedField e, 
@@ -156,7 +239,8 @@ instance
      HasZero e, HasOne e, 
      NumOrd.PartialComparison e,
      NumOrd.RoundedLattice e,
-     Show e) => 
+     Show e) 
+    => 
     (ArithInOut.RoundedSquareRoot (Interval e))
     where
     sqrtOutEff
@@ -199,3 +283,17 @@ instance
                 effortComp
                 effortConv 
                 effortNewton 
+
+sqrtOutIters, sqrtInIters ::
+    (ArithUpDn.RoundedMixedField e Int,
+     ArithUpDn.RoundedField e, 
+     ArithUpDn.Convertible e Double,
+     HasZero e, HasOne e, 
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLattice e,
+     Show e)
+    =>
+    Int -> (Interval e) -> (Interval e) 
+sqrtOutIters n i = ArithInOut.sqrtOutEff (sqrtDefaultEffortWithIters i n) i
+sqrtInIters n i = ArithInOut.sqrtInEff (sqrtDefaultEffortWithIters i n) i
+                
