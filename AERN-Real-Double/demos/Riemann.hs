@@ -1,33 +1,36 @@
 
 module Main where
 
-import Numeric.AERN.DoubleBasis.Interval
-import Numeric.AERN.DoubleBasis.MInterval
+import Numeric.AERN.DoubleBasis.RealIntervalApprox
+import Numeric.AERN.DoubleBasis.MRealIntervalApprox
 
 import Control.Monad.ST (ST, runST)
+
+type R = RealIntervalApprox
+type RI = RealIntervalApprox
 
 main =
   do
   putStrLn $ "riemann 0.1 (\\x -> x^2) (Interval 0 1) = " ++
-    show (riemann 0.1 (\x -> x^2) (Interval 0 1))
+    show (riemann 0.1 (\x -> x^2) (0 </\> 1))
   putStrLn "erf e x = 2/(sqrt pi) * riemann e (\\t -> exp (-t^2)) (0 </\\> x)"
   putStrLn $ "erf 0.001 1 = " ++ show (erf 0.001 1) 
   putStrLn $ "riemannInPlace 0.1 (\\x -> x^2) (Interval 0 1) = " ++
-    show (riemannInPlace 0.1 (\x -> x^2) (Interval 0 1))
+    show (riemannInPlace 0.1 (\x -> x^2) (0 </\> 1))
   putStrLn "erfInPlace e x = 2/(sqrt pi) * riemannInPlace e (\\t -> exp (-t^2)) (0 </\\> x)"
   putStrLn $ "erfInPlace 0.001 1 = " ++ show (erfInPlace 0.001 1) 
   putStrLn $ "riemannInPlace 0.1 (\\x -> x^2) (Interval 0 1) = " ++
-    show (riemannInPlace 0.1 (\x -> x^2) (Interval 0 1))
+    show (riemannInPlace 0.1 (\x -> x^2) (0 </\> 1))
   putStrLn "erfInPlace e x = 2/(sqrt pi) * riemannInPlace e (\\t -> exp (-t^2)) (0 </\\> x)"
   putStrLn $ "erfInPlace 0.001 1 = " ++ show (erf 0.001 1) 
 
 -- compute the error function to within e accuracy
-erf :: DI -> DI -> DI
+erf :: R -> R -> R
 erf e x =
   2/(sqrt pi) * riemann e (\t -> exp (-t^2)) (0 </\> x)
 
 -- compute the integral of f over d to within e accuracy
-riemann :: DI -> (DI -> DI) -> DI -> DI
+riemann :: R -> (R -> R) -> RI -> R
 riemann e f d =
   riemann' e f (width d) [d] 0
 
@@ -46,15 +49,15 @@ riemann' e f initWidth (d:ds) result
   dArea = dWidth * fd
   fd = f d
   dWidth = width d
-  (dl, dr) = bisect d
+  (dl, dr) = bisect Nothing d
 
 -- erf using riemannInPlace
-erfInPlace :: DI -> DI -> DI
+erfInPlace :: R -> R -> R
 erfInPlace e x =
   2/(sqrt pi) * riemannInPlace e (\t -> exp (-t^2)) (0 </\> x)
 
 -- riemann using in-place accumulator
-riemannInPlace :: DI -> (DI -> DI) -> DI -> DI
+riemannInPlace :: R -> (R -> R) -> RI -> R
 riemannInPlace e f d =
   runST $
     do
@@ -82,19 +85,4 @@ riemannInPlace' resM e f initWidth (d:ds)
   dArea = dWidth * fd
   fd = f d
   dWidth = width d
-  (dl, dr) = bisect d
-
-width i = 
-  irI <-> ilI
-  where
-  irI = Interval ir ir  
-  ilI = Interval il il
-  Interval il ir = i  
-
-bisect i =
-  (l,r)
-  where
-  r = Interval midpoint ir
-  l = Interval il midpoint
-  midpoint = 0.5*(il + ir)
-  Interval il ir = i
+  (dl, dr) = bisect Nothing d

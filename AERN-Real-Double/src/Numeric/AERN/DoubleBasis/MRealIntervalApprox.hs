@@ -173,7 +173,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEff
    mixedDivInInPlace,(>/<|=),
    powerToNonnegIntInInPlace,(>^<=))
 
-import Numeric.AERN.DoubleBasis.RealIntervalApprox
+import Numeric.AERN.DoubleBasis.RealIntervalApprox (RealIntervalApprox)
 import Control.Monad.ST (runST)
 
 -- | 
