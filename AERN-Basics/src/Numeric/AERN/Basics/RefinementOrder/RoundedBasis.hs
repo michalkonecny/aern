@@ -39,11 +39,24 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 {-|
     A type with outward-rounding lattice operations.
 -}
-class OuterRoundedBasis t where
+class OuterRoundedBasisEffort t where
     type PartialJoinOutEffortIndicator t
-    partialJoinOutEff :: PartialJoinOutEffortIndicator t -> t -> t -> Maybe t
     partialJoinOutDefaultEffort :: t -> PartialJoinOutEffortIndicator t
 
+class (OuterRoundedBasisEffort t) => OuterRoundedBasis t where
+    partialJoinOutEff :: PartialJoinOutEffortIndicator t -> t -> t -> Maybe t
+
+{-|
+    A type with inward-rounding lattice operations.
+-}
+class InnerRoundedBasisEffort t where
+    type PartialJoinInEffortIndicator t
+    partialJoinInDefaultEffort :: t -> PartialJoinInEffortIndicator t
+
+class (InnerRoundedBasisEffort t) => InnerRoundedBasis t where
+    partialJoinInEff :: PartialJoinInEffortIndicator t -> t -> t -> Maybe t
+
+class (OuterRoundedBasis t, InnerRoundedBasis t) => RoundedBasis t 
 
 -- properties of OuterRoundedBasis
 propOuterRoundedBasisComparisonCompatible :: 
@@ -55,15 +68,6 @@ propOuterRoundedBasisComparisonCompatible _ (effortComp, effortJoin) =
     downRoundedPartialJoinOfOrderedPair (pLeqEff effortComp) 
         (partialJoinOutEff effortJoin)
 
-{-|
-    A type with outward-rounding lattice operations.
--}
-class InnerRoundedBasis t where
-    type PartialJoinInEffortIndicator t
-    partialJoinInEff :: PartialJoinInEffortIndicator t -> t -> t -> Maybe t
-    partialJoinInDefaultEffort :: t -> PartialJoinInEffortIndicator t
-
-
 -- properties of InnerRoundedBasis:
 propInnerRoundedBasisJoinAboveBoth :: 
     (PartialComparison t, InnerRoundedBasis t) => 
@@ -72,8 +76,6 @@ propInnerRoundedBasisJoinAboveBoth ::
     t -> t -> Bool
 propInnerRoundedBasisJoinAboveBoth _ (effortComp, effortJoin) = 
     partialJoinAboveOperands (pLeqEff effortComp) (partialJoinInEff effortJoin)
-
-class (OuterRoundedBasis t, InnerRoundedBasis t) => RoundedBasis t
 
 -- properties of RoundedBasis:
 propRoundedBasisJoinIdempotent :: 

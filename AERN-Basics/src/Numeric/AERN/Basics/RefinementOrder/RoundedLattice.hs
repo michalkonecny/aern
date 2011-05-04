@@ -46,9 +46,8 @@ class (OuterRoundedLatticeEffort t) => OuterRoundedLattice t where
     joinOutEff :: JoinMeetOutEffortIndicator t -> t -> t -> t
     meetOutEff :: JoinMeetOutEffortIndicator t -> t -> t -> t
 
-
 {-|
-    A type with outward-rounding lattice operations.
+    A type with inward-rounding lattice operations.
 -}
 class InnerRoundedLatticeEffort t where
     type JoinMeetInEffortIndicator t
@@ -57,7 +56,6 @@ class InnerRoundedLatticeEffort t where
 class (InnerRoundedLatticeEffort t) => InnerRoundedLattice t where
     joinInEff :: JoinMeetInEffortIndicator t -> t -> t -> t
     meetInEff :: JoinMeetInEffortIndicator t -> t -> t -> t
-
 
 class (InnerRoundedLattice t, OuterRoundedLattice t) => RoundedLattice t
 
