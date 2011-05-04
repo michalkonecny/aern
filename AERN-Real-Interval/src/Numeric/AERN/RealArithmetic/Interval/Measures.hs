@@ -40,18 +40,18 @@ instance (HasDistance e, ArithInOut.RoundedAdd (Distance e)) =>
     type Distance (Interval e) = Distance e
     type DistanceEffortIndicator (Interval e) = 
         (DistanceEffortIndicator e, ArithInOut.AddEffortIndicator (Distance e))
-    distanceDefaultEffort (Interval l h) = 
+    distanceDefaultEffort (Interval l r) = 
         (effortDist, effortAdd)
         where
         effortDist = distanceDefaultEffort l 
         effortAdd = ArithInOut.addDefaultEffort d 
-        d = distanceBetweenEff effortDist l h
-    distanceBetweenEff (effortDist, effortAdd) (Interval l1 h1) (Interval l2 h2) =
+        d = distanceBetweenEff effortDist l r
+    distanceBetweenEff (effortDist, effortAdd) (Interval l1 r1) (Interval l2 r2) =
         let ?addInOutEffort = effortAdd in
-        distL <+> distH
+        distL <+> distR
         where
         distL = distanceBetweenEff effortDist l1 l2
-        distH = distanceBetweenEff effortDist h1 h2
+        distR = distanceBetweenEff effortDist r1 r2
     
 instance 
     (HasDistance e, RefOrd.OuterRoundedLattice (Distance e), Neg (Distance e), 
@@ -63,13 +63,13 @@ instance
         (DistanceEffortIndicator e,
          RefOrd.JoinMeetOutEffortIndicator (Distance e), 
          ConsistencyEffortIndicator (Interval e))
-    imprecisionDefaultEffort i@(Interval l h) = 
+    imprecisionDefaultEffort i@(Interval l r) = 
         (effortDist, effortMeet, consistencyDefaultEffort i) 
         where
         effortDist = distanceDefaultEffort l
         effortMeet = RefOrd.joinmeetOutDefaultEffort d
-        d = distanceBetweenEff effortDist l h
-    imprecisionOfEff (effortDist, effortMeet, effortConsistency) i@(Interval l h) =
+        d = distanceBetweenEff effortDist l r
+    imprecisionOfEff (effortDist, effortMeet, effortConsistency) i@(Interval l r) =
         let 
         ?joinmeetOutEffort = effortMeet
         in
@@ -78,5 +78,5 @@ instance
             Just False -> neg dist
             Nothing -> dist <⊓> (neg dist)
         where 
-        dist = distanceBetweenEff effortDist l h
+        dist = distanceBetweenEff effortDist l r
     

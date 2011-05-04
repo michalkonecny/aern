@@ -39,16 +39,16 @@ import Control.DeepSeq
 data Interval e =
     Interval
     { 
-        lowEndpoint :: ! e,
-        highEndpoint :: ! e
+        leftEndpoint :: ! e,
+        rightEndpoint :: ! e
     }
     
 instance (ShowInternals e, NumOrd.PartialComparison e) => (ShowInternals (Interval e))
     where
     type ShowInternalsIndicator (Interval e) = ShowInternalsIndicator e
-    defaultShowIndicator (Interval l h) = defaultShowIndicator l
-    showInternals indicator (Interval l h) =
-        case (NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort l) l h) of
+    defaultShowIndicator (Interval l r) = defaultShowIndicator l
+    showInternals indicator (Interval l r) =
+        case (NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort l) l r) of
             Just EQ -> "<" ++ showL ++ ">"
             Just LT -> showConsistent
             Just LEE -> showConsistent
@@ -57,35 +57,37 @@ instance (ShowInternals e, NumOrd.PartialComparison e) => (ShowInternals (Interv
             _ -> showUnknown
         where
         showL = showInternals indicator l
-        showH = showInternals indicator h
-        showConsistent = "[." ++ showL ++ "," ++ showH ++ "^]"
-        showAnticonsistent = "[^" ++ showL ++ "," ++ showH ++ ".]"
-        showUnknown = "[?" ++ showL ++ "," ++ showH ++ "?]"
+        showR = showInternals indicator r
+        showConsistent = "[." ++ showL ++ "," ++ showR ++ "^]"
+        showAnticonsistent = "[^" ++ showL ++ "," ++ showR ++ ".]"
+        showUnknown = "[?" ++ showL ++ "," ++ showR ++ "?]"
 
 instance (ShowInternals e, NumOrd.PartialComparison e) => (Show (Interval e))
     where
     show i = showInternals (defaultShowIndicator i) i
 
 instance (NFData e) => NFData (Interval e) where
-    rnf (Interval l h) =
-        rnf l `seq` rnf h `seq` () 
---        l `seq` h `seq` () 
+    rnf (Interval l r) =
+        rnf l `seq` rnf r `seq` () 
+--        l `seq` r `seq` () 
 
 -- | Given an argument interval 'i' 'getEndpoints' returns the endpoint pair 
---   ('lowEndpoint' 'i','highEndpoint' 'i').
+--   ('leftEndpoint' 'i','rightEndpoint' 'i').
 getEndpoints :: Interval t -> (t,t)
-getEndpoints (Interval l h) = (l, h)
+getEndpoints (Interval l r) = (l, r)
 
 -- | Constructs an interval from an endpoint pair.
 fromEndpoints :: (t,t) -> Interval t
-fromEndpoints (l,h) = Interval l h  
+fromEndpoints (l,r) = Interval l r 
 
-mapBothEndpoints f (Interval l h) = Interval (f l) (f h)
-mapEachEndpoint fl fh (Interval l h) = Interval (fl l) (fh h)
-mapEndpointPair f (Interval l h) = 
-    Interval fl fh
+mapBothEndpoints f (Interval l r) = Interval (f l) (f r)
+
+mapEachEndpoint fl fh (Interval l r) = Interval (fl l) (fh r)
+
+mapEndpointPair f (Interval l r) = 
+    Interval fl fr
     where
-    (fl, fh) = f (l, h)
+    (fl, fr) = f (l, r)
 
 
 

@@ -35,7 +35,7 @@ import Control.Exception
 instance (ArithUpDn.Convertible t e, Show t) => Convertible t (Interval e) where
     type ConvertEffortIndicator t (Interval e) = 
         ArithUpDn.ConvertEffortIndicator t e
-    convertDefaultEffort i (Interval l h) = ArithUpDn.convertDefaultEffort i l 
+    convertDefaultEffort i (Interval l r) = ArithUpDn.convertDefaultEffort i l 
     convertInEff effort x =
         Interval xUp xDn
         where
@@ -63,7 +63,7 @@ instance (ArithUpDn.Convertible e t) =>
         ArithUpDn.Convertible (Interval e) t where
     type ArithUpDn.ConvertEffortIndicator (Interval e) t = 
         ArithUpDn.ConvertEffortIndicator e t
-    convertDefaultEffort (Interval l h) i = ArithUpDn.convertDefaultEffort l i 
-    convertUpEff effort (Interval l h) = ArithUpDn.convertUpEff effort h
-    convertDnEff effort (Interval l h) = ArithUpDn.convertDnEff effort l
+    convertDefaultEffort (Interval l r) i = ArithUpDn.convertDefaultEffort l i 
+    convertUpEff effort (Interval l r) = ArithUpDn.convertUpEff effort r
+    convertDnEff effort (Interval l r) = ArithUpDn.convertDnEff effort l
 

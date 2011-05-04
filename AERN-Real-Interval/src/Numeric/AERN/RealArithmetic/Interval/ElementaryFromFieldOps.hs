@@ -59,7 +59,7 @@ instance
           (ArithUpDn.ConvertEffortIndicator (Interval e) Int,
            ArithInOut.ConvertEffortIndicator Double (Interval e)))
         )
-    expDefaultEffort i@(Interval l h) = 
+    expDefaultEffort i@(Interval l r) = 
         ((ArithInOut.fieldOpsDefaultEffort i, 
           ArithInOut.mixedFieldOpsDefaultEffort i sampleI)
         ,
@@ -85,7 +85,7 @@ expDefaultEffortWithIters ::
     (Interval e) -> 
     Int -> 
     ArithInOut.ExpEffortIndicator (Interval e)
-expDefaultEffortWithIters  i@(Interval l h) n =
+expDefaultEffortWithIters  i@(Interval l r) n =
         ((ArithInOut.fieldOpsDefaultEffort i, 
           ArithInOut.mixedFieldOpsDefaultEffort i sampleI)
         ,
@@ -117,7 +117,7 @@ instance
             ((effortField, effortMixedField),
              (Int1To10 effortTaylor),
              ((effortMeet, effortComp), effortConv)) 
-            (Interval l h) = Interval resL resH
+            (Interval l r) = Interval resL resR
         where
         Interval resL _ = 
             expOutThinArg 
@@ -125,17 +125,17 @@ instance
                 effortMeet effortComp effortComp effortConv 
                 effortTaylor 
                 (Interval l l)
-        Interval _ resH =
+        Interval _ resR =
             expOutThinArg 
                 effortField effortMixedField
                 effortMeet effortComp effortComp effortConv 
                 effortTaylor 
-                (Interval h h)
+                (Interval r r)
     expInEff 
             ((effortField, effortMixedField),
              (Int1To10 effortTaylor),
              ((effortMeet, effortComp), effortConv)) 
-            (Interval l h) = Interval resL resH
+            (Interval l r) = Interval resL resR
         where
         Interval _ resL = 
             expOutThinArg 
@@ -143,12 +143,12 @@ instance
                 effortMeet effortComp effortComp effortConv 
                 effortTaylor 
                 (Interval l l)
-        Interval resH _ =
+        Interval resR _ =
             expOutThinArg 
                 effortField effortMixedField
                 effortMeet effortComp effortComp effortConv 
                 effortTaylor 
-                (Interval h h)
+                (Interval r r)
 
 expOutIters, expInIters ::
     (ArithInOut.RoundedMixedField (Interval e) Int,
@@ -183,7 +183,7 @@ instance
           ArithUpDn.ConvertEffortIndicator e Double)
         )
 
-    sqrtDefaultEffort i@(Interval l h) = 
+    sqrtDefaultEffort i@(Interval l r) = 
         ((ArithUpDn.fieldOpsDefaultEffort l, 
           ArithUpDn.mixedFieldOpsDefaultEffort l sampleI)
         ,
@@ -206,7 +206,7 @@ sqrtDefaultEffortWithIters ::
     (Interval e) -> 
     Int -> 
     ArithInOut.SqrtEffortIndicator (Interval e)
-sqrtDefaultEffortWithIters i@(Interval l h) n =
+sqrtDefaultEffortWithIters i@(Interval l r) n =
         ((ArithUpDn.fieldOpsDefaultEffort l, 
           ArithUpDn.mixedFieldOpsDefaultEffort l sampleI)
         ,
@@ -235,14 +235,14 @@ instance
             ((effortField, effortMixedField),
              (Int1To10 effortNewton),
              ((effortMinmax, effortComp), effortConv))
-            (Interval l h) =
-                case NumOrd.pEqualEff effortComp l h of
+            (Interval l r) =
+                case NumOrd.pEqualEff effortComp l r of
                     Just True -> sqrtL
-                    _ -> Interval sqrtLL sqrtHH
+                    _ -> Interval sqrtLL sqrtRR
                     
         where
         sqrtL@(Interval sqrtLL _) = sqrt l 
-        sqrtH@(Interval _ sqrtHH) = sqrt h
+        sqrtR@(Interval _ sqrtRR) = sqrt r
         sqrt = 
             sqrtOutThinArg 
                 effortField
@@ -255,14 +255,14 @@ instance
             ((effortField, effortMixedField),
              (Int1To10 effortNewton),
              ((effortMinmax, effortComp), effortConv))
-            (Interval l h) =
-                case NumOrd.pEqualEff effortComp l h of
-                    Just True -> Interval sqrtLH sqrtLL -- invert
-                    _ -> Interval sqrtLH sqrtHL
+            (Interval l r) =
+                case NumOrd.pEqualEff effortComp l r of
+                    Just True -> Interval sqrtLR sqrtLL -- invert
+                    _ -> Interval sqrtLR sqrtRL
                     
         where
-        (Interval sqrtLL sqrtLH) = sqrt l 
-        (Interval sqrtHL sqrtHH) = sqrt h
+        (Interval sqrtLL sqrtLR) = sqrt l 
+        (Interval sqrtRL sqrtRR) = sqrt r
         sqrt = 
             sqrtOutThinArg 
                 effortField

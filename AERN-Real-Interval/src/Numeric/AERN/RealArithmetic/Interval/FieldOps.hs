@@ -35,17 +35,17 @@ import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 instance (ArithUpDn.RoundedAddEffort e) => RoundedAddEffort (Interval e) where
     type AddEffortIndicator (Interval e) = ArithUpDn.AddEffortIndicator e
-    addDefaultEffort (Interval l h) = ArithUpDn.addDefaultEffort l
+    addDefaultEffort (Interval l r) = ArithUpDn.addDefaultEffort l
 
 instance (ArithUpDn.RoundedAdd e) => RoundedAdd (Interval e) where
-    addInEff effort (Interval l1 h1) (Interval l2 h2) =
+    addInEff effort (Interval l1 r1) (Interval l2 r2) =
         Interval 
             (ArithUpDn.addUpEff effort l1 l2)
-            (ArithUpDn.addDnEff effort h1 h2)
-    addOutEff effort (Interval l1 h1) (Interval l2 h2) =
+            (ArithUpDn.addDnEff effort r1 r2)
+    addOutEff effort (Interval l1 r1) (Interval l2 r2) =
         Interval 
             (ArithUpDn.addDnEff effort l1 l2)
-            (ArithUpDn.addUpEff effort h1 h2)
+            (ArithUpDn.addUpEff effort r1 r2)
 
 instance (ArithUpDn.RoundedAdd e, Neg e) => RoundedSubtr (Interval e)
 
@@ -56,7 +56,7 @@ instance
     where
     type AbsEffortIndicator (Interval e) = 
         (NumOrd.PartialCompareEffortIndicator e, NumOrd.MinmaxEffortIndicator e)
-    absDefaultEffort (Interval l h) = 
+    absDefaultEffort (Interval l r) = 
         (NumOrd.pCompareDefaultEffort l, NumOrd.minmaxDefaultEffort l) 
 
 instance 
@@ -80,7 +80,7 @@ instance
         (NumOrd.PartialCompareEffortIndicator e, 
          NumOrd.MinmaxEffortIndicator e,
          ArithUpDn.MultEffortIndicator e)
-    multDefaultEffort (Interval l h) = 
+    multDefaultEffort (Interval l r) = 
         (NumOrd.pCompareDefaultEffort l, 
          NumOrd.minmaxDefaultEffort l,
          ArithUpDn.multDefaultEffort l) 
@@ -120,12 +120,12 @@ instance
 multiplyIntervals
         pNonnegNonpos timesL timesR minL minR maxL maxR 
         combineL combineR 
-        (Interval l1 h1) (Interval l2 h2) =
+        (Interval l1 r1) (Interval l2 r2) =
     let _ = [minL, maxR, combineL, combineR] in
         case (pNonnegNonpos l1, -- sign of l1 
-              pNonnegNonpos h1, -- sign of h1
+              pNonnegNonpos r1, -- sign of r1
               pNonnegNonpos l2, -- sign of l2
-              pNonnegNonpos h2 -- sign of h2 
+              pNonnegNonpos r2 -- sign of r2 
              ) of
              
             -----------------------------------------------------------
@@ -133,61 +133,61 @@ multiplyIntervals
             -----------------------------------------------------------
             -- i1 negative, i2 positive
             ((_, Just True), (_, Just True), (Just True, _), (Just True, _)) -> 
-                (l1 `timesL` h2, h1 `timesR` l2)
+                (l1 `timesL` r2, r1 `timesR` l2)
             -- i1 negative, i2 negative
             ((_, Just True), (_, Just True), (_, Just True), (_, Just True)) -> 
-                (h1 `timesL` h2, l1 `timesR` l2)
+                (r1 `timesL` r2, l1 `timesR` l2)
             -- i1 negative, i2 consistent and containing zero
             ((_, Just True), (_, Just True), (_, Just True), (Just True, _)) -> 
-                (l1 `timesL` h2, l1 `timesR` l2)
+                (l1 `timesL` r2, l1 `timesR` l2)
             -- i1 negative, i2 anti-consistent and anti-containing zero
             ((_, Just True), (_, Just True), (Just True, _), (_, Just True)) -> 
-                (h1 `timesL` h2, h1 `timesR` l2)
+                (r1 `timesL` r2, r1 `timesR` l2)
             -- i1 negative, nothing known about i2:
             ((_, Just True), (_, Just True), _, _) -> 
-                ((h1 `timesL` h2) `combineL` (l1 `timesL` h2), 
-                 (h1 `timesR` l2) `combineR` (l1 `timesR` l2))
+                ((r1 `timesL` r2) `combineL` (l1 `timesL` r2), 
+                 (r1 `timesR` l2) `combineR` (l1 `timesR` l2))
 
             -- i1 positive, i2 positive
             ((Just True, _), (Just True, _), (Just True, _), (Just True, _)) -> 
-                (l1 `timesL` l2, h1 `timesR` h2)
+                (l1 `timesL` l2, r1 `timesR` r2)
             -- i1 positive, i2 negative
             ((Just True, _), (Just True, _), (_, Just True), (_, Just True)) -> 
-                (h1 `timesL` l2, l1 `timesR` h2)
+                (r1 `timesL` l2, l1 `timesR` r2)
             -- i1 positive, i2 consistent and containing zero
             ((Just True, _), (Just True, _), (_, Just True), (Just True, _)) -> 
-                (h1 `timesL` l2, h1 `timesR` h2)
+                (r1 `timesL` l2, r1 `timesR` r2)
             -- i1 positive, i2 anti-consistent and anti-containing zero
             ((Just True, _), (Just True, _), (Just True, _), (_, Just True)) -> 
-                (l1 `timesL` l2, l1 `timesR` h2)
+                (l1 `timesL` l2, l1 `timesR` r2)
 
             -- i1 positive, nothing known about i2:
             ((Just True, _), (Just True, _), _, _) -> 
-                ((h1 `timesL` l2) `combineL` (l1 `timesL` l2), 
-                 (h1 `timesR` h2) `combineR` (l1 `timesR` h2))
+                ((r1 `timesL` l2) `combineL` (l1 `timesL` l2), 
+                 (r1 `timesR` r2) `combineR` (l1 `timesR` r2))
             
  
             -- i1 consistent and containing zero, i2 positive
             ((_, Just True), (Just True, _), (Just True, _), (Just True, _)) -> 
-                (l1 `timesL` h2, h1 `timesR` h2)
+                (l1 `timesL` r2, r1 `timesR` r2)
             -- i1 anti-consistent and anti-containing zero, i2 positive
             ((Just True, _), (_, Just True), (Just True, _), (Just True, _)) -> 
-                (l1 `timesL` l2, h1 `timesR` l2)
+                (l1 `timesL` l2, r1 `timesR` l2)
             -- nothing known about i1, i2 positive
             (_, _, (Just True, _), (Just True, _)) -> 
-                ((l1 `timesL` h2) `combineL` (l1 `timesL` l2), 
-                 (h1 `timesR` h2) `combineR` (h1 `timesR` l2))
+                ((l1 `timesL` r2) `combineL` (l1 `timesL` l2), 
+                 (r1 `timesR` r2) `combineR` (r1 `timesR` l2))
 
             -- i1 consistent and containing zero, i2 negative
             ((_, Just True), (Just True, _), (_, Just True), (_, Just True)) -> 
-                (h1 `timesL` l2, l1 `timesR` l2)
+                (r1 `timesL` l2, l1 `timesR` l2)
             -- i1 anti-consistent and anti-containing zero, i2 negative
             ((Just True, _), (_, Just True), (_, Just True), (_, Just True)) -> 
-                (h1 `timesL` h2, l1 `timesR` h2)
+                (r1 `timesL` r2, l1 `timesR` r2)
             -- nothing known about i1, i2 negative
             (_, _, (_, Just True), (_, Just True)) -> 
-                ((h1 `timesL` h2) `combineL` (h1 `timesL` l2), 
-                 (l1 `timesR` h2) `combineR` (l1 `timesR` l2))
+                ((r1 `timesL` r2) `combineL` (r1 `timesL` l2), 
+                 (l1 `timesR` r2) `combineR` (l1 `timesR` l2))
 
             -----------------------------------------------------------
             -- cases where both i1 or i2 are around zero
@@ -195,42 +195,42 @@ multiplyIntervals
 
             -- i1 consistent and containing zero, i2 consistent and containing zero
             ((_, Just True), (Just True, _), (_, Just True), (Just True, _)) ->
-                ((l1 `timesL` h2) `minL` (h1 `timesL` l2), 
-                 (l1 `timesR` l2) `maxR` (h1 `timesR` h2))
+                ((l1 `timesL` r2) `minL` (r1 `timesL` l2), 
+                 (l1 `timesR` l2) `maxR` (r1 `timesR` r2))
             -- i1 consistent and containing zero, i2 anti-consistent and anti-containing zero
             ((_, Just True), (Just True, _), (Just True, _), (_, Just True)) ->
                 (zero, zero)
             -- i1 consistent and containing zero, i2 unknown
             ((_, Just True), (Just True, _), _, _) ->
-                (((l1 `timesL` h2) `combineL` (h1 `timesL` l2)) `combineL` zero,
-                 ((l1 `timesR` l2) `combineR` (h1 `timesR` h2)) `combineR` zero)
+                (((l1 `timesL` r2) `combineL` (r1 `timesL` l2)) `combineL` zero,
+                 ((l1 `timesR` l2) `combineR` (r1 `timesR` r2)) `combineR` zero)
                 
             -- i1 anti-consistent and anti-containing zero, i2 consistent and containing zero
             ((Just True, _), (_, Just True), (_, Just True), (Just True, _)) ->
                 (zero, zero)
             -- i1 anti-consistent and anti-containing zero, i2 anti-consistent and anti-containing zero
             ((Just True, _), (_, Just True), (Just True, _), (_, Just True)) ->
-                ((l1 `timesL` l2) `maxL` (h1 `timesL` h2),
-                 (l1 `timesR` h2) `minR` (h1 `timesR` l2)) 
+                ((l1 `timesL` l2) `maxL` (r1 `timesL` r2),
+                 (l1 `timesR` r2) `minR` (r1 `timesR` l2)) 
             -- i1 anti-consistent and anti-containing zero, i2 unknown
             ((Just True, _), (_, Just True), _, _) -> 
-                ((l1 `timesL` l2) `combineL` (h1 `timesL` h2) `combineL` zero,
-                 (l1 `timesR` h2) `combineR` (h1 `timesR` l2) `combineR` zero) 
+                ((l1 `timesL` l2) `combineL` (r1 `timesL` r2) `combineL` zero,
+                 (l1 `timesR` r2) `combineR` (r1 `timesR` l2) `combineR` zero) 
                 
             -- i1 unknown, i2 anti-consistent and anti-containing zero
             (_, _, (Just True, _), (_, Just True)) -> 
-                ((l1 `timesL` l2) `combineL` (h1 `timesL` h2) `combineL` zero,
-                 (l1 `timesR` h2) `combineR` (h1 `timesR` l2) `combineR` zero) 
+                ((l1 `timesL` l2) `combineL` (r1 `timesL` r2) `combineL` zero,
+                 (l1 `timesR` r2) `combineR` (r1 `timesR` l2) `combineR` zero) 
 
             -- i1 unknown, i2 consistent and containing zero
             (_, _, (_, Just True), (Just True, _)) -> 
-                ((l1 `timesL` h2) `combineL` (h1 `timesL` l2) `combineL` zero, 
-                 (l1 `timesR` l2) `combineR` (h1 `timesR` h2) `combineR` zero)
+                ((l1 `timesL` r2) `combineL` (r1 `timesL` l2) `combineL` zero, 
+                 (l1 `timesR` l2) `combineR` (r1 `timesR` r2) `combineR` zero)
 
             -- both i1 and i2 unknown sign
             _ ->
-                (foldl1 combineL [l1 `timesL` h2, h1 `timesL` l2, l1 `timesL` l2, h1 `timesL` h2], 
-                 foldl1 combineR [l1 `timesR` h2, h1 `timesR` l2, l1 `timesR` l2, h1 `timesR` h2])
+                (foldl1 combineL [l1 `timesL` r2, r1 `timesL` l2, l1 `timesL` l2, r1 `timesL` r2], 
+                 foldl1 combineR [l1 `timesR` r2, r1 `timesR` l2, l1 `timesR` l2, r1 `timesR` r2])
 
 instance
     (ArithUpDn.RoundedPowerNonnegToNonnegIntEffort e,
@@ -243,7 +243,7 @@ instance
         (ArithUpDn.PowerNonnegToNonnegIntEffortIndicator e,
          NumOrd.PartialCompareEffortIndicator e,
          PowerToNonnegIntEffortIndicatorFromMult (Interval e))
-    powerToNonnegIntDefaultEffort i@(Interval l h) =
+    powerToNonnegIntDefaultEffort i@(Interval l r) =
         (ArithUpDn.powerNonnegToNonnegIntDefaultEffort l,
          NumOrd.pCompareDefaultEffort l,
          powerToNonnegIntDefaultEffortFromMult i) 
@@ -258,8 +258,8 @@ instance
     where
     powerToNonnegIntInEff 
             (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
-            i@(Interval l h) n =
-        case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
+            i@(Interval l r) n =
+        case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp r) of
             ((Just True, _), (Just True, _)) -> -- both non-negative
                 Interval lPowerUp hPowerDn
             ((_, Just True), (_, Just True)) -> -- both non-positive
@@ -274,16 +274,16 @@ instance
                     False -> iPowerFromMult 
         where
         lPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt l n
-        hPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt h n
+        hPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt r n
         lNegPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt (neg l) n
-        hNegPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt (neg h) n
+        hNegPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt (neg r) n
         lNegNegPowerUp = neg lNegPowerDn
         hNegNegPowerDn = neg hNegPowerUp
         iPowerFromMult = powerToNonnegIntInEffFromMult effPowerFromMult i n 
     powerToNonnegIntOutEff 
             (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
-            i@(Interval l h) n =
-        case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
+            i@(Interval l r) n =
+        case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp r) of
             ((Just True, _), (Just True, _)) -> -- both non-negative
                 Interval lPowerDn hPowerUp
             ((_, Just True), (_, Just True)) -> -- both non-positive
@@ -298,9 +298,9 @@ instance
                     False -> iPowerFromMult 
         where
         lPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt l n
-        hPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt h n
+        hPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt r n
         lNegPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt (neg l) n
-        hNegPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt (neg h) n
+        hNegPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt (neg r) n
         lNegNegPowerDn = neg lNegPowerUp
         hNegNegPowerUp = neg hNegPowerDn
         iPowerFromMult = powerToNonnegIntOutEffFromMult effPowerFromMult i n 
@@ -316,7 +316,7 @@ instance
          NumOrd.MinmaxEffortIndicator e,
          (ArithUpDn.MultEffortIndicator e,
           ArithUpDn.DivEffortIndicator e))
-    divDefaultEffort (Interval l h) = 
+    divDefaultEffort (Interval l r) = 
         (NumOrd.pCompareDefaultEffort l, 
          NumOrd.minmaxDefaultEffort l,
          (ArithUpDn.multDefaultEffort l,
@@ -347,14 +347,14 @@ instance
                 i2
 
 
-recipInterval pPosNonnegNegNonpos divL divR fallback (Interval l h) =
-    case (pPosNonnegNegNonpos l, pPosNonnegNegNonpos h) of
+recipInterval pPosNonnegNegNonpos divL divR fallback (Interval l r) =
+    case (pPosNonnegNegNonpos l, pPosNonnegNegNonpos r) of
         -- positive:
         ((Just True, _, _, _), (Just True, _, _, _)) ->  
-             Interval (divL one h) (divR one l)
+             Interval (divL one r) (divR one l)
         -- negative:
         ((_, _, Just True, _), (_, _, Just True, _)) ->  
-             Interval (divL one h) (divR one l)
+             Interval (divL one r) (divR one l)
         -- consistent around zero:
         ((_, _, _, Just True), (_, Just True, _, _)) ->
              RefOrd.bottom
@@ -375,16 +375,16 @@ instance
         (ArithUpDn.RingOpsEffortIndicator e,
          NumOrd.PartialCompareEffortIndicator e,
          NumOrd.MinmaxEffortIndicator e)
-    ringOpsDefaultEffort (Interval l h) =
+    ringOpsDefaultEffort (Interval l r) =
         (ArithUpDn.ringOpsDefaultEffort l,
          NumOrd.pCompareDefaultEffort l,
          NumOrd.minmaxDefaultEffort l)
-    ringEffortAdd (Interval l h) (effortRing, effortComp, effortMinmax) =
+    ringEffortAdd (Interval l r) (effortRing, effortComp, effortMinmax) =
         ArithUpDn.ringEffortAdd l effortRing
-    ringEffortMult (Interval l h) (effortRing, effortComp, effortMinmax) =
+    ringEffortMult (Interval l r) (effortRing, effortComp, effortMinmax) =
         (effortComp, effortMinmax, 
          ArithUpDn.ringEffortMult l effortRing)
-    ringEffortPow i@(Interval l h) e@(effortRing, effortComp, effortMinmax) =
+    ringEffortPow i@(Interval l r) e@(effortRing, effortComp, effortMinmax) =
         (ArithUpDn.ringEffortPow l effortRing,
          effortComp,
          ringEffortMult i e) 
@@ -408,20 +408,20 @@ instance
         (ArithUpDn.FieldOpsEffortIndicator e,
          NumOrd.PartialCompareEffortIndicator e,
          NumOrd.MinmaxEffortIndicator e)
-    fieldOpsDefaultEffort (Interval l h) =
+    fieldOpsDefaultEffort (Interval l r) =
         (ArithUpDn.fieldOpsDefaultEffort l,
          NumOrd.pCompareDefaultEffort l,
          NumOrd.minmaxDefaultEffort l)
-    fldEffortAdd (Interval l h) (effortField, effortComp, effortMinmax) =
+    fldEffortAdd (Interval l r) (effortField, effortComp, effortMinmax) =
         ArithUpDn.fldEffortAdd l effortField
-    fldEffortMult (Interval l h) (effortField, effortComp, effortMinmax) =
+    fldEffortMult (Interval l r) (effortField, effortComp, effortMinmax) =
         (effortComp, effortMinmax, 
          ArithUpDn.fldEffortMult l effortField)
-    fldEffortPow i@(Interval l h) e@(effortField, effortComp, effortMinmax) =
+    fldEffortPow i@(Interval l r) e@(effortField, effortComp, effortMinmax) =
         (ArithUpDn.fldEffortPow l effortField,
          effortComp,
          fldEffortMult i e) 
-    fldEffortDiv (Interval l h) (effortField, effortComp, effortMinmax) =
+    fldEffortDiv (Interval l r) (effortField, effortComp, effortMinmax) =
         (effortComp, effortMinmax, 
          (ArithUpDn.fldEffortMult l effortField,
           ArithUpDn.fldEffortDiv l effortField))

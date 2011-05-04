@@ -24,33 +24,31 @@ import Numeric.AERN.RealArithmetic.ExactOps
 instance (CanBeMutable e) => CanBeMutable (Interval e) where
     data Mutable (Interval e) s = 
         MInterval { mIntervalLeft :: Mutable e s, mIntervalRight :: Mutable e s }
-    makeMutable (Interval l h) = 
+    makeMutable (Interval l r) = 
         do
         lM <- makeMutable l
-        hM <- makeMutable h
-        return $ MInterval lM hM
-    unsafeMakeMutable (Interval l h) = 
+        rM <- makeMutable r
+        return $ MInterval lM rM
+    unsafeMakeMutable (Interval l r) = 
         do
         lM <- unsafeMakeMutable l
-        hM <- unsafeMakeMutable h
-        return $ MInterval lM hM
-    writeMutable (MInterval lM hM) (Interval l h) =
+        rM <- unsafeMakeMutable r
+        return $ MInterval lM rM
+    writeMutable (MInterval lM rM) (Interval l r) =
         do
         writeMutable lM l
-        writeMutable hM h
-    unsafeWriteMutable (MInterval lM hM) (Interval l h) =
+        writeMutable rM r
+    unsafeWriteMutable (MInterval lM rM) (Interval l r) =
         do
         unsafeWriteMutable lM l
-        unsafeWriteMutable hM h
-    readMutable (MInterval lM hM) =
+        unsafeWriteMutable rM r
+    readMutable (MInterval lM rM) =
         do
         l <- readMutable lM 
-        h <- readMutable hM 
-        return $ Interval l h
-    unsafeReadMutable (MInterval lM hM) =
+        r <- readMutable rM 
+        return $ Interval l r
+    unsafeReadMutable (MInterval lM rM) =
         do
         l <- unsafeReadMutable lM 
-        h <- unsafeReadMutable hM 
-        return $ Interval l h
-
-        
+        r <- unsafeReadMutable rM 
+        return $ Interval l r
