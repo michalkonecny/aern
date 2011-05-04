@@ -87,6 +87,7 @@ Library
     Numeric.AERN.Basics.RefinementOrder.Extrema
     Numeric.AERN.Basics.RefinementOrder.RoundedBasis
     Numeric.AERN.Basics.RefinementOrder.RoundedLattice
+    Numeric.AERN.Basics.RefinementOrder.InPlace.RoundedBasis 
     Numeric.AERN.Basics.RefinementOrder.InPlace.RoundedLattice
 
 Executable toolAERN-bench-csv-to-gnuplot
