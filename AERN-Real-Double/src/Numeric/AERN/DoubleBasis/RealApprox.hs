@@ -126,7 +126,16 @@ module Numeric.AERN.DoubleBasis.RealApprox
     piOut,eOut,
     
     -- ** Elementary functions
-    absOut,expOut,sqrtOut
+    absOut,expOut,sqrtOut,
+    
+    -- *** Elementary functions with iteration effort control
+    -- |
+    -- To be used eg as follows:
+    -- 
+    -- > expOutIters 10 x
+    --
+    -- which means that at most 10 iterations should be used while computing exp
+    expOutIters,sqrtOutIters
 )
 where
 
@@ -149,15 +158,15 @@ import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
    (</\>),(<\/>?),(<⊓>),(<⊔>?))
 
---import Numeric.AERN.RealArithmetic.Interval
---import Numeric.AERN.RealArithmetic.RefinementOrderRounding
+import Numeric.AERN.RealArithmetic.Interval()
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
  ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),
   piOut,eOut,absOut,expOut,sqrtOut)
  
-import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps()
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
+    (expOutIters, sqrtOutIters)
 
-import Numeric.AERN.RealArithmetic.Basis.Double
+import Numeric.AERN.RealArithmetic.Basis.Double()
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
