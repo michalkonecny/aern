@@ -15,6 +15,7 @@
 module Numeric.AERN.Basics.Mutable where
 
 import Control.Monad.ST (ST, runST)
+import Data.STRef
 
 class CanBeMutable t where
     {-| 
@@ -61,6 +62,19 @@ class CanBeMutable t where
         a <- unsafeReadMutable aM
         makeMutable a 
 
+instance (CanBeMutable t) => CanBeMutable (Maybe t) where
+    data Mutable (Maybe t) s =
+        MMaybe { unMMaybe :: STRef s (Maybe t) }
+    makeMutable a = 
+        do
+        v <- newSTRef a
+        return $ MMaybe v
+    unsafeMakeMutable = makeMutable
+    writeMutable (MMaybe v) a = writeSTRef v a  
+    unsafeWriteMutable = writeMutable
+    readMutable (MMaybe v) = readSTRef v  
+    unsafeReadMutable = readMutable 
+
 type OpMutable1 t s = 
     (Mutable t s) -> (Mutable t s) -> ST s () 
 
@@ -73,13 +87,13 @@ type OpMutable2 t s =
 type OpMutable2Eff ei t s = 
     ei -> (Mutable t s) -> (Mutable t s) -> (Mutable t s) -> ST s () 
 
-type OpMutableMaybeMutable1 t s = 
+type OpPartialMutable1 t s = 
     (Mutable (Maybe t) s) -> (Mutable t s) -> ST s () 
 
-type OpMutableMaybeMutable2 t s = 
+type OpPartialMutable2 t s = 
     (Mutable (Maybe t) s) -> (Mutable t s) -> (Mutable t s) -> ST s () 
 
-type OpMutableMaybeMutable2Eff ei t s = 
+type OpPartialMutable2Eff ei t s = 
     ei -> (Mutable (Maybe t) s) -> (Mutable t s) -> (Mutable t s) -> ST s () 
 
 type OpMutableNonmut t nonmut s = 
@@ -97,6 +111,12 @@ mutable2ToMutable1 ::
 mutable2ToMutable1 mutOp aM bM =
     mutOp aM aM bM
 
+--partial2ToPartial1 ::
+--    (CanBeMutable t) =>
+--    OpPartialMutable2 t s -> OpPartialMutable1 t s
+--partial2ToPartial1 mutOp aM bM =
+--    -- TODO not clear what the result type should be when result of binary op is Nothing
+
 mutableNonmutToNonmut ::
     (CanBeMutable t) =>
     OpMutableNonmut t tn s -> OpNonmut t tn s
@@ -105,7 +125,7 @@ mutableNonmutToNonmut mutOp aM b =
 
 mutable1ToPure ::
     (CanBeMutable t) =>
-    (forall s. OpMutable1 t s) ->
+    (forall s . OpMutable1 t s) ->
     (t -> t)
 mutable1ToPure mutableFn a =
     runST $
@@ -116,7 +136,7 @@ mutable1ToPure mutableFn a =
 
 mutable1EffToPure ::
     (CanBeMutable t) =>
-    (forall s. OpMutable1Eff eff t s) ->
+    (forall s . OpMutable1Eff eff t s) ->
     (eff -> t -> t)
 mutable1EffToPure mutableFn eff a =
     runST $
@@ -127,7 +147,7 @@ mutable1EffToPure mutableFn eff a =
 
 mutable2ToPure ::
     (CanBeMutable t) =>
-    (forall s. OpMutable2 t s) ->
+    (forall s . OpMutable2 t s) ->
     (t -> t -> t)
 mutable2ToPure mutableFn a b =
     runST $
@@ -139,19 +159,47 @@ mutable2ToPure mutableFn a b =
 
 mutable2EffToPure ::
     (CanBeMutable t) =>
-    (forall s. OpMutable2Eff eff t s) ->
+    (forall s . OpMutable2Eff eff t s) ->
     (eff -> t -> t -> t)
 mutable2EffToPure mutableFn eff a b =
     runST $
         do
         aM <- makeMutable a
-        bM <- unsafeMakeMutable b
+        bM <- unsafeMakeMutable b 
+        -- TODO is this^ safe?
+        -- If so then all similar makes should be made unsafe as well!
         mutableFn eff aM aM bM
         unsafeReadMutable aM
 
+mutablePartial2ToPure :: 
+    (CanBeMutable t) =>
+    (forall s .  OpPartialMutable2 t s) ->
+    (t -> t -> Maybe t)
+mutablePartial2ToPure mutableFn a b =
+    runST $
+        do
+        resM <- makeMutable Nothing
+        aM <- makeMutable a
+        bM <- makeMutable b
+        mutableFn resM aM bM
+        unsafeReadMutable resM
+
+mutablePartial2EffToPure :: 
+    (CanBeMutable t) =>
+    (forall s .  OpPartialMutable2Eff eff t s) ->
+    (eff -> t -> t -> Maybe t)
+mutablePartial2EffToPure mutableFn eff a b =
+    runST $
+        do
+        resM <- makeMutable Nothing
+        aM <- makeMutable a
+        bM <- makeMutable b
+        mutableFn eff resM aM bM
+        unsafeReadMutable resM
+
 mutableNonmutEffToPure ::
     (CanBeMutable t) =>
-    (forall s. OpMutableNonmutEff eff t nonmut s) ->
+    (forall s . OpMutableNonmutEff eff t nonmut s) ->
     (eff -> t -> nonmut -> t)
 mutableNonmutEffToPure mutableFn eff a b =
     runST $
@@ -198,6 +246,16 @@ pureToMutable2Eff pureFn eff resM aM bM =
     b <- readMutable bM
     unsafeWriteMutable resM (pureFn eff a b)
 
+pureToPartial2Eff ::
+    (CanBeMutable t) =>
+    (eff -> t -> t -> Maybe t) ->
+    OpPartialMutable2Eff eff t s
+pureToPartial2Eff pureFn eff resM aM bM =
+    do
+    a <- readMutable aM
+    b <- readMutable bM
+    unsafeWriteMutable resM (pureFn eff a b)
+
 pureToMutableNonmutEff ::
     (CanBeMutable t) =>
     (eff -> t -> nonmut -> t) ->
@@ -223,6 +281,16 @@ mutable2EffToMutable2 ::
     (t -> eff) ->
     (forall s . OpMutable2 t s)
 mutable2EffToMutable2 op defEff resM aM bM =
+    do
+    a <- unsafeReadMutable aM
+    op (defEff a) resM aM bM
+
+partialMutable2EffToPartialMutable2 ::
+    (CanBeMutable t) =>
+    (forall s . OpPartialMutable2Eff eff t s) -> 
+    (t -> eff) ->
+    (forall s . OpPartialMutable2 t s)
+partialMutable2EffToPartialMutable2 op defEff resM aM bM =
     do
     a <- unsafeReadMutable aM
     op (defEff a) resM aM bM
