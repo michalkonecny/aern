@@ -16,7 +16,9 @@
     field operations.
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps() where
+module Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
+    (expOutInPlaceIters, expInInPlaceIters, sqrtOutInPlaceIters, sqrtInInPlaceIters) 
+where
 
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 
@@ -52,7 +54,8 @@ instance
      HasZero e, HasOne e, 
      HasInfinities e,
      NumOrd.PartialComparison e,
-     RefOrd.OuterRoundedLattice (Interval e)) => 
+     RefOrd.OuterRoundedLattice (Interval e)) 
+    => 
     (ArithInOut.RoundedExponentiationInPlace (Interval e))
     where
     expOutInPlaceEff 
@@ -96,6 +99,30 @@ instance
                 effortTaylor 
                 (MInterval hM hM)
 
+expOutInPlaceIters, expInInPlaceIters ::
+    (CanBeMutable e,
+     ArithInOut.RoundedFieldInPlace (Interval e),
+     ArithInOut.RoundedMixedFieldInPlace (Interval e) Int,
+     ArithInOut.RoundedPowerToNonnegIntInPlace (Interval e), 
+     ArithInOut.RoundedMixedField (Interval e) Int,
+     ArithInOut.RoundedField (Interval e), 
+     ArithUpDn.Convertible (Interval e) Int,
+     ArithInOut.Convertible Double (Interval e),
+     HasZero e, HasOne e, 
+     HasInfinities e,
+     NumOrd.PartialComparison e,
+     RefOrd.OuterRoundedLattice (Interval e))
+    =>
+    Int -> OpMutable1 (Interval e) s 
+expOutInPlaceIters n resM iM =
+    do
+    i <- unsafeReadMutable iM
+    ArithInOut.expOutInPlaceEff (expDefaultEffortWithIters i n) resM iM
+expInInPlaceIters n resM iM =
+    do
+    i <- unsafeReadMutable iM
+    ArithInOut.expInInPlaceEff (expDefaultEffortWithIters i n) resM iM
+
 instance
     (CanBeMutable e, Show e,
      ArithUpDn.RoundedFieldInPlace e,
@@ -107,7 +134,8 @@ instance
      HasInfinities e,
      NumOrd.PartialComparison e,
      NumOrd.RoundedLattice e,
-     NumOrd.RoundedLatticeInPlace e) => 
+     NumOrd.RoundedLatticeInPlace e) 
+    => 
     (ArithInOut.RoundedSquareRootInPlace (Interval e))
     where
     sqrtOutInPlaceEff 
@@ -150,4 +178,27 @@ instance
                 (MInterval resH forgetMeH)
                 effortNewton 
                 hM
+            
+sqrtOutInPlaceIters, sqrtInInPlaceIters ::
+    (CanBeMutable e, Show e,
+     ArithUpDn.RoundedFieldInPlace e,
+     ArithUpDn.RoundedMixedFieldInPlace e Int,
+     ArithUpDn.RoundedMixedField e Int,
+     ArithUpDn.RoundedField e, 
+     ArithUpDn.Convertible e Double,
+     HasZero e, HasOne e, 
+     HasInfinities e,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLattice e,
+     NumOrd.RoundedLatticeInPlace e) 
+    =>
+    Int -> OpMutable1 (Interval e) s 
+sqrtOutInPlaceIters n resM iM =
+    do
+    i <- unsafeReadMutable iM
+    ArithInOut.sqrtOutInPlaceEff (sqrtDefaultEffortWithIters i n) resM iM
+sqrtInInPlaceIters n resM iM =
+    do
+    i <- unsafeReadMutable iM
+    ArithInOut.sqrtInInPlaceEff (sqrtDefaultEffortWithIters i n) resM iM
             
