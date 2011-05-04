@@ -315,11 +315,10 @@ propInOutDivInPlace ::
     (RefOrd.UniformlyOrderedPair t) -> Bool
 propInOutDivInPlace sample initEffort@(effComp, _) (RefOrd.UniformlyOrderedPair (e1, e2)) 
     =
-    (Just False, Just False) ->
-        roundedInPlace2ConsistentWithPure "division"
-            divInInPlaceEff divOutInPlaceEff divInEff divOutEff
-            RefOrd.pLeqEff initEffort
-            e1 e2
+    roundedInPlace2ConsistentWithPure "division"
+        divInInPlaceEff divOutInPlaceEff divInEff divOutEff
+        RefOrd.pLeqEff initEffort
+        e1 e2
 
 testsInOutFieldOpsInPlace (name, sample) =
     testGroup (name ++ " in-place up/down rounded ops match pure ops") $
