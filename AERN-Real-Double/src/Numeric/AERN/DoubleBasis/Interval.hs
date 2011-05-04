@@ -143,6 +143,15 @@ module Numeric.AERN.DoubleBasis.Interval
     -- ** Elementary functions
     absOut,expOut,sqrtOut,
 
+    -- *** Elementary functions with iteration effort control
+    -- |
+    -- To be used eg as follows:
+    -- 
+    -- > expOutIters 10 x
+    --
+    -- which means that at most 10 iterations should be used while computing exp
+    expOutIters,sqrtOutIters,
+
     -- * Inward rounded operations 
 
     -- ** Order operations
@@ -169,6 +178,20 @@ module Numeric.AERN.DoubleBasis.Interval
     -- *** Mixed type operations
     (|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
     
+    -- ** Special constants 
+    piIn,eIn,
+    
+    -- ** Elementary functions
+    absIn,expIn,sqrtIn,
+
+    -- *** Elementary functions with iteration effort control
+    -- |
+    -- To be used eg as follows:
+    -- 
+    -- > expInIters 10 x
+    --
+    -- which means that at most 10 iterations should be used while computing exp
+    expInIters,sqrtInIters,
     
     -- * Low level facilities
     
@@ -200,17 +223,17 @@ import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
    (</\>),(<\/>),(<\/>?),(<⊓>),(<⊔>),(<⊔>?),
    (>/\<),(>\/<),(>⊓<),(>⊔<))
 
---import Numeric.AERN.RealArithmetic.Interval
---import Numeric.AERN.RealArithmetic.RefinementOrderRounding
+import Numeric.AERN.RealArithmetic.Interval()
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
  ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),
   piOut,eOut,absOut,expOut,sqrtOut,
   (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
   piIn,eIn,absIn,expIn,sqrtIn)
  
-import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps()
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
+    (expOutIters, expInIters, sqrtOutIters, sqrtInIters)
 
-import Numeric.AERN.RealArithmetic.Basis.Double
+import Numeric.AERN.RealArithmetic.Basis.Double()
 
 import Numeric.AERN.RealArithmetic.Interval.Double(width, bisect)
 
