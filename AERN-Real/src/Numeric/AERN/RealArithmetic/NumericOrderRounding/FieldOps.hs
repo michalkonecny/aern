@@ -629,16 +629,12 @@ propUpDnDivElim ::
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Bool
 propUpDnDivElim _ efforts2@(effComp, _) (NumOrd.UniformlyOrderedSingleton a) =
-    let ?pCompareEffort = effComp in
-    case a ==? zero of
-        Just False ->
-            roundedReflexiveCollapse 
-                one 
-                NumOrd.pLeqEff 
-                divUpEff divDnEff 
-                efforts2 
-                a
-        _ -> True
+    roundedReflexiveCollapse 
+        one 
+        NumOrd.pLeqEff 
+        divUpEff divDnEff 
+        efforts2 
+        a
         
 propUpDnDivRecipMult ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
@@ -659,13 +655,9 @@ propUpDnDivRecipMult ::
     (NumOrd.UniformlyOrderedPair t) -> 
     Bool
 propUpDnDivRecipMult _ initEffort@(effComp,_) (NumOrd.UniformlyOrderedPair (e1, e2)) =
-    let ?pCompareEffort = effComp in
-    case e2 ==? zero of
-        Just False ->
-            equalRoundingUpDn "a/b=a*(1/b)"
-                expr1Up expr1Dn expr2Up expr2Dn 
-                NumOrd.pLeqEff initEffort
-        _ -> True
+    equalRoundingUpDn "a/b=a*(1/b)"
+        expr1Up expr1Dn expr2Up expr2Dn 
+        NumOrd.pLeqEff initEffort
     where
     expr1Up (effMult, effDiv, effMinmax) =
         let (*^) = multUpEff effMult in
