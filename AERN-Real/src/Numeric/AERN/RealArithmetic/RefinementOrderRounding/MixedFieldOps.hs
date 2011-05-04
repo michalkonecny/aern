@@ -205,19 +205,11 @@ propMixedDivEqualsConvert ::
     tn -> Bool
 propMixedDivEqualsConvert sample sampleN initEffort@(effComp,(_,_,effConv)) 
         (RefOrd.UniformlyOrderedSingleton d) n
-    | awayFromZero =
-            equalRoundingUpDn "mixed division by conversion"
-                expr1In expr1Out expr2In expr2Out
-                RefOrd.pLeqEff initEffort
-    | otherwise = True
+    =
+    equalRoundingUpDn "mixed division by conversion"
+        expr1In expr1Out expr2In expr2Out
+        RefOrd.pLeqEff initEffort
     where
-    awayFromZero =
-        case (convertOutEff effConv n, convertInEff effConv n) of
-            (nOut, nIn) ->
-                let ?pCompareEffort = effComp in
-                case (nOut ⊑? zero, zero ⊑? nIn) of
-                    (Just False, Just False) -> True
-                    _ -> False && (null [d, nOut, nIn]) -- type of e2Up, e2Dn...
     expr1In (effMDiv,_,_) =
         let (>/<|) = mixedDivInEff effMDiv in d >/<| n
     expr1Out (effMDiv,_,_) =

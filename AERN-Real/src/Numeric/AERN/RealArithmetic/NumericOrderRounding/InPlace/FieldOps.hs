@@ -406,13 +406,9 @@ propUpDnDivInPlace ::
     (NumOrd.UniformlyOrderedPair t) ->
     Bool
 propUpDnDivInPlace sample initEffort@(effComp, _) (NumOrd.UniformlyOrderedPair (e1, e2)) =
-    let ?pCompareEffort = effComp in
-    case e2 ==? zero of
-        Just False ->
-            equalRoundingUpDn "in-place rounded division"
-                expr1Up expr1Dn expr2Up expr2Dn 
-                NumOrd.pLeqEff initEffort
-        _ -> True
+    equalRoundingUpDn "in-place rounded division"
+        expr1Up expr1Dn expr2Up expr2Dn 
+        NumOrd.pLeqEff initEffort
     where
     divUpEffViaInPlace = mutable2EffToPure divUpInPlaceEff
     divDnEffViaInPlace = mutable2EffToPure divDnInPlaceEff

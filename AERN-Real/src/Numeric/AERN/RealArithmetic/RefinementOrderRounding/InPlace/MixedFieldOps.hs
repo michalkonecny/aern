@@ -267,19 +267,11 @@ propMixedDivInPlaceEqualsConvert ::
 propMixedDivInPlaceEqualsConvert sample1 sample2
         initEffort@(effComp,(_,effConv,_)) 
         (RefOrd.UniformlyOrderedSingleton d) n
-    | awayFromZero =
-            equalRoundingUpDn "in-place mixed division"
-                expr1In expr1Out expr2In expr2Out 
-                RefOrd.pLeqEff initEffort
-    | otherwise = True
+    =
+    equalRoundingUpDn "in-place mixed division"
+        expr1In expr1Out expr2In expr2Out 
+        RefOrd.pLeqEff initEffort
     where
-    awayFromZero =
-        case (convertOutEff effConv n, convertInEff effConv n) of
-            (nOut, nIn) ->
-                let ?pCompareEffort = effComp in
-                case (nOut ⊑? zero, zero ⊑? nIn) of
-                    (Just False, Just False) -> True
-                    _ -> False && (null [d, nOut, nIn]) -- type of e2Up, e2Dn...
     expr1In (effMDiv,_,_) =
         let (>/<|=) dR = mixedDivInInPlaceEff effMDiv dR dR in
         runST $ 

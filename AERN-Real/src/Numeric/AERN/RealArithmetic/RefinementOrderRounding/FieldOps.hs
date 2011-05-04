@@ -599,16 +599,12 @@ propInOutDivElim ::
     (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
 propInOutDivElim _ efforts2@(effComp, _) (RefOrd.UniformlyOrderedSingleton a) =
-    let ?pCompareEffort = effComp in
-    case (a ⊑? zero, zero ⊑? a) of
-        (Just False, Just False) ->
-            roundedReflexiveCollapse 
-                one 
-                RefOrd.pLeqEff 
-                divInEff divOutEff 
-                efforts2 
-                a
-        _ -> True
+    roundedReflexiveCollapse 
+        one 
+        RefOrd.pLeqEff 
+        divInEff divOutEff 
+        efforts2 
+        a
 
 propInOutDivRecipMult ::
     (RefOrd.PartialComparison t,
@@ -627,15 +623,11 @@ propInOutDivRecipMult ::
     (RefOrd.UniformlyOrderedPair t) -> 
     Bool
 propInOutDivRecipMult _ initEffort@(effComp,_) (RefOrd.UniformlyOrderedPair (e1, e2)) =
-    let ?pCompareEffort = effComp in
-    case (e2 ⊑? zero, zero ⊑? e2) of
-        (Just False, Just False) ->
-            equalRoundingUpDnBin2Var2 "a/b=a*(1/b)"
-                expr1 expr2 RefOrd.pLeqEff
-                multInEff divInEff
-                multOutEff divOutEff
-                initEffort e1 e2
-        _ -> True
+    equalRoundingUpDnBin2Var2 "a/b=a*(1/b)"
+        expr1 expr2 RefOrd.pLeqEff
+        multInEff divInEff
+        multOutEff divOutEff
+        initEffort e1 e2
     where
     expr1 op1Eff op2Eff (effort1, effort2) e1 e2 = 
         e1 * (one / e2)
