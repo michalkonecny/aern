@@ -1,10 +1,12 @@
 
 module Main where
 
-import Numeric.AERN.DoubleBasis.Interval
-import Numeric.AERN.DoubleBasis.MInterval
+import Numeric.AERN.DoubleBasis.RealApprox
+import Numeric.AERN.DoubleBasis.MRealApprox
 
 import Control.Monad.ST (runST)
+
+type R = RealApprox
 
 main = do
   putStrLn $ "quadratic 1 1 1 = " ++ show (quadratic 1 1 1)
@@ -18,7 +20,7 @@ main = do
 -- Returns list such that the union of its members contains all
 -- real roots of each real polynomial u*x^2+v*x+w obtained by
 -- choosing coefficients u in a, v in b and w in c. 
-quadratic :: DI -> DI -> DI -> [DI]
+quadratic :: R -> R -> R -> [R]
 quadratic a b c 
   | certainlyZero discriminant =
     [doubleRoot]
@@ -37,7 +39,7 @@ quadratic a b c
 
 -- |
 -- In-place quadratic. 
-quadraticInPlace :: DI -> DI -> DI -> [DI]
+quadraticInPlace :: R -> R -> R -> [R]
 quadraticInPlace a b c
   | certainlyZero discriminant =
     [doubleRoot]

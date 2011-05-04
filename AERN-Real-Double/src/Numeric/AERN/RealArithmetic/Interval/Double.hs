@@ -15,6 +15,8 @@ module Numeric.AERN.RealArithmetic.Interval.Double
     DI,
     sampleDI,
     PositiveDI(..),
+    width,
+    bisect,
     module Numeric.AERN.Basics.Interval
 )
 where
@@ -24,8 +26,10 @@ import Numeric.AERN.Basics.Interval
 import Numeric.AERN.RealArithmetic.Interval
 
 import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
+import Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
 import Test.QuickCheck
 
@@ -50,3 +54,35 @@ instance Arbitrary PositiveDI
             | e > 0 =  e
             | e == 0 =  1
             | otherwise = (-e) 
+
+{-|
+    Calculate the width of an interval.
+    The result may not be thin since the width calculation uses outwards rounding.
+-}
+width :: DI -> DI
+width i = 
+  irI <-> ilI
+  where
+  irI = Interval ir ir  
+  ilI = Interval il il
+  Interval il ir = i  
+
+{-|
+    Split an interval into two subintervals that share only one point 
+    and whose union is the original interval.
+-}
+bisect ::
+    Maybe Double {-^ optional parameter, indicating where to split the interval -} -> 
+    DI {-^ the interval to split -} -> 
+    (DI, DI)
+bisect maybeMidpoint i =
+  (l,r)
+  where
+  r = Interval midpoint ir
+  l = Interval il midpoint
+  midpoint 
+    = case maybeMidpoint of
+        Nothing -> 0.5*(il + ir)
+        Just m -> m
+  Interval il ir = i
+            

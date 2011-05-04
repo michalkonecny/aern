@@ -1,27 +1,29 @@
 
 module Main where 
 
-import Numeric.AERN.DoubleBasis.Interval
-import Numeric.AERN.DoubleBasis.MInterval
+import Numeric.AERN.DoubleBasis.RealIntervalApprox
+import Numeric.AERN.DoubleBasis.MRealIntervalApprox
 
 import Control.Monad.ST (ST, runST)
 
+type RI = RealIntervalApprox
+
 main =
   do
-  putStrLn $ "zero   0.1 (\\x -> x^2-0.5) (Interval 1 2) = " ++ 
-    show (zero 0.1 (\x -> x^2-0.5) (Interval 1 2))  
-  putStrLn $ "zero   0.1 (\\x -> x^2-0.5) (Interval 0 1) = " ++ 
-    show (zero 0.1 (\x -> x^2-0.5) (Interval 0 1))
-  putStrLn $ "zero  0.01 (\\x -> x^2-0.5) (Interval 0 1) = " ++ 
-    show (zero 0.01 (\x -> x^2-0.5) (Interval 0 1))
-  putStrLn $ "zero 0.001 (\\x -> x^2-0.5) (Interval 0 1) = " ++ 
-    show (zero 0.001 (\x -> x^2-0.5) (Interval 0 1))
+  putStrLn $ "zero   0.1 (\\x -> x^2-0.5) (1 </\\> 2) = " ++ 
+    show (zero 0.1 (\x -> x^2-0.5) (1 </\> 2))  
+  putStrLn $ "zero   0.1 (\\x -> x^2-0.5) (0 </\\> 1) = " ++ 
+    show (zero 0.1 (\x -> x^2-0.5) (0 </\> 1))
+  putStrLn $ "zero  0.01 (\\x -> x^2-0.5) (0 </\\> 1) = " ++ 
+    show (zero 0.01 (\x -> x^2-0.5) (0 </\> 1))
+  putStrLn $ "zero 0.001 (\\x -> x^2-0.5) (0 </\\> 1) = " ++ 
+    show (zero 0.001 (\x -> x^2-0.5) (0 </\> 1))
 
 -- find leftmost zero of f in d to within e accuracy
-zero :: DI -> (DI -> DI) -> DI -> Maybe DI
+zero :: RI -> (RI -> RI) -> RI -> Maybe RI
 zero e f d =
   zero' e f [d]
-zero' :: DI -> (DI -> DI) -> [DI] -> Maybe DI
+zero' :: RI -> (RI -> RI) -> [RI] -> Maybe RI
 zero' _ _ [] = Nothing 
 zero' e f (d:ds)
   | imageContainsZero == Just False = 
@@ -39,23 +41,8 @@ zero' e f (d:ds)
     case width fd <? e of
       Just True -> True
       _ -> False
-  (dl,dr) = bisect d
+  (dl,dr) = bisect Nothing d
   fd = f d
-
-width i = 
-  irI <-> ilI
-  where
-  irI = Interval ir ir  
-  ilI = Interval il il
-  Interval il ir = i  
-
-bisect i =
-  (l,r)
-  where
-  r = Interval midpoint ir
-  l = Interval il midpoint
-  midpoint = 0.5*(il + ir)
-  Interval il ir = i
 
   
   

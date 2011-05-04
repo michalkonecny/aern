@@ -19,6 +19,9 @@ module Numeric.AERN.DoubleBasis.Interval
     -- * Main type
     DI,
     
+    -- ** associated operations
+    width, bisect,
+
     -- * Order relations
     -- | 
     -- There are two types of order relations to consider: 
@@ -208,6 +211,8 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps()
 
 import Numeric.AERN.RealArithmetic.Basis.Double
+
+import Numeric.AERN.RealArithmetic.Interval.Double(width, bisect)
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
