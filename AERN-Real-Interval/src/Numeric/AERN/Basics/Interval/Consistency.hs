@@ -46,28 +46,28 @@ instance (NumOrd.PartialComparison e) => HasConsistency (Interval e)
     where
     type ConsistencyEffortIndicator (Interval e) = 
         NumOrd.PartialCompareEffortIndicator e
-    consistencyDefaultEffort (Interval l h) =
+    consistencyDefaultEffort (Interval l r) =
         NumOrd.pCompareDefaultEffort l
-    isConsistentEff effort (Interval l h) =
-        NumOrd.pLeqEff effort l h
+    isConsistentEff effort (Interval l r) =
+        NumOrd.pLeqEff effort l r
 
 instance (NumOrd.PartialComparison e) => HasAntiConsistency (Interval e)
     where
-    isAntiConsistentEff effort (Interval l h) = 
-        NumOrd.pLeqEff effort h l
-    flipConsistency (Interval l h) = Interval h l
+    isAntiConsistentEff effort (Interval l r) = 
+        NumOrd.pLeqEff effort r l
+    flipConsistency (Interval l r) = Interval r l
 
 instance HasThinRepresentative (Interval e)
     where
-    getThinRepresentative (Interval l h) = Interval h h
+    getThinRepresentative (Interval l r) = Interval r r
 
 -- random generation of intervals with no guarantee of consistency: 
 instance (NumOrd.ArbitraryOrderedTuple e) => Arbitrary (Interval e)
     where
     arbitrary = 
         do
-        (NumOrd.UniformlyOrderedPair (l,h)) <- arbitrary 
-        return $ Interval l h
+        (NumOrd.UniformlyOrderedPair (l,r)) <- arbitrary 
+        return $ Interval l r
 
 {-| type for random generation of consistent intervals -}       
 data ConsistentInterval e = ConsistentInterval (Interval e) deriving (Show)
@@ -78,11 +78,11 @@ instance (NumOrd.ArbitraryOrderedTuple e) => (Arbitrary (ConsistentInterval e))
       case NumOrd.arbitraryPairRelatedBy LT of
           Just gen ->
               do
-              (l,h) <- gen
+              (l,r) <- gen
               shouldBeSingleton <- arbitraryBoolRatio 1 10
               case shouldBeSingleton of
                   True -> return $ ConsistentInterval (Interval l l) 
-                  False -> return $ ConsistentInterval (Interval l h)
+                  False -> return $ ConsistentInterval (Interval l r)
 
 
 {-| type for random generation of anti-consistent intervals -}        
@@ -94,11 +94,11 @@ instance (NumOrd.ArbitraryOrderedTuple e) => (Arbitrary (AntiConsistentInterval 
       case NumOrd.arbitraryPairRelatedBy LT of
           Just gen ->
               do
-              (l,h) <- gen 
+              (l,r) <- gen 
               shouldBeSingleton <- arbitraryBoolRatio 1 10
               case shouldBeSingleton of
                   True -> return $ AntiConsistentInterval (Interval l l) 
-                  False -> return $ AntiConsistentInterval (Interval h l)
+                  False -> return $ AntiConsistentInterval (Interval r l)
 
 {-| type for random generation of consistent and anti-consistent intervals 
     with the same probability -}        

@@ -31,7 +31,7 @@ instance (ArithUpDn.RoundedSpecialConstEffort e) =>
     where
     type ArithInOut.SpecialConstEffortIndicator (Interval e) = 
         ArithUpDn.SpecialConstEffortIndicator e
-    specialConstDefaultEffort (Interval l h) = 
+    specialConstDefaultEffort (Interval l r) = 
         ArithUpDn.specialConstDefaultEffort l
 
 instance (ArithUpDn.RoundedSpecialConst e) => 

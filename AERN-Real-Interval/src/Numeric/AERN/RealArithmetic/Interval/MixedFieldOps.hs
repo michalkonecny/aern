@@ -37,19 +37,19 @@ instance (ArithUpDn.RoundedMixedAddEffort e tn) =>
     RoundedMixedAddEffort (Interval e) tn 
     where
     type MixedAddEffortIndicator (Interval e) tn = ArithUpDn.MixedAddEffortIndicator e tn
-    mixedAddDefaultEffort (Interval l h) n = ArithUpDn.mixedAddDefaultEffort l n
+    mixedAddDefaultEffort (Interval l r) n = ArithUpDn.mixedAddDefaultEffort l n
 
 instance (ArithUpDn.RoundedMixedAdd e tn) => 
     RoundedMixedAdd (Interval e) tn 
     where
-    mixedAddInEff effort (Interval l2 h2) n =
+    mixedAddInEff effort (Interval l2 r2) n =
         Interval
             (ArithUpDn.mixedAddUpEff effort l2 n)
-            (ArithUpDn.mixedAddDnEff effort h2 n)
-    mixedAddOutEff effort (Interval l2 h2) n =
+            (ArithUpDn.mixedAddDnEff effort r2 n)
+    mixedAddOutEff effort (Interval l2 r2) n =
         Interval 
             (ArithUpDn.mixedAddDnEff effort l2 n)
-            (ArithUpDn.mixedAddUpEff effort h2 n)
+            (ArithUpDn.mixedAddUpEff effort r2 n)
 
 instance (ArithUpDn.RoundedMixedMultiplyEffort e tn,
           NumOrd.PartialComparison tn, NumOrd.PartialComparison e,
@@ -61,7 +61,7 @@ instance (ArithUpDn.RoundedMixedMultiplyEffort e tn,
           NumOrd.PartialCompareEffortIndicator e), 
          NumOrd.MinmaxEffortIndicator e,
          ArithUpDn.MixedMultEffortIndicator e tn)
-    mixedMultDefaultEffort (Interval l h) n = 
+    mixedMultDefaultEffort (Interval l r) n = 
         ((NumOrd.pCompareDefaultEffort n, 
           NumOrd.pCompareDefaultEffort l), 
          NumOrd.minmaxDefaultEffort l,
@@ -97,11 +97,11 @@ instance (ArithUpDn.RoundedMixedMultiply e tn,
 multiplySingletonWithInterval 
         sNonnegNonpos iNonnegNonpos timesL timesR 
         combineL combineR
-        s1 (Interval l2 h2) =
+        s1 (Interval l2 r2) =
     let _ = [combineL, combineR] in
         case (sNonnegNonpos s1, -- sign of s1 
               iNonnegNonpos l2, -- sign of l2
-              iNonnegNonpos h2 -- sign of h2 
+              iNonnegNonpos r2 -- sign of r2 
              ) of
              
             -- s1 is zero
@@ -110,26 +110,26 @@ multiplySingletonWithInterval
  
             -- s1 non negative
             ((Just True, _), _, _) -> 
-                (s1 `timesL` l2, s1 `timesR` h2)
+                (s1 `timesL` l2, s1 `timesR` r2)
             
             -- s1 non positive
             ((_, Just True), _, _) -> 
-                (s1 `timesL` h2, s1 `timesR` l2)
+                (s1 `timesL` r2, s1 `timesR` l2)
 
             -- nothing known about s1, i2 positive
             (_, (Just True, _), (Just True, _)) -> 
-                ((s1 `timesL` h2) `combineL` (s1 `timesL` l2), 
-                 (s1 `timesR` h2) `combineR` (s1 `timesR` l2))
+                ((s1 `timesL` r2) `combineL` (s1 `timesL` l2), 
+                 (s1 `timesR` r2) `combineR` (s1 `timesR` l2))
 
             -- nothing known about s1, i2 negative
             (_, (_, Just True), (_, Just True)) -> 
-                ((s1 `timesL` h2) `combineL` (s1 `timesL` l2), 
-                 (s1 `timesR` h2) `combineR` (s1 `timesR` l2))
+                ((s1 `timesL` r2) `combineL` (s1 `timesL` l2), 
+                 (s1 `timesR` r2) `combineR` (s1 `timesR` l2))
 
             -- both s1 and i2 are around zero
             _ ->
-                ((s1 `timesL` l2) `combineL` (s1 `timesL` h2) `combineL` zero,
-                 (s1 `timesR` l2) `combineR` (s1 `timesR` h2) `combineR` zero) 
+                ((s1 `timesL` l2) `combineL` (s1 `timesL` r2) `combineL` zero,
+                 (s1 `timesR` l2) `combineR` (s1 `timesR` r2) `combineR` zero) 
                 -- need to include zero to account for 
                 -- consistent vs anti-consistent cases giving constant 0
 
@@ -162,14 +162,14 @@ instance (RoundedMixedAddEffort (Interval e) tn,
          (NumOrd.PartialCompareEffortIndicator e, 
           NumOrd.MinmaxEffortIndicator e, 
           NumOrd.PartialCompareEffortIndicator tn))
-    mixedRingOpsDefaultEffort i@(Interval l h) n =
+    mixedRingOpsDefaultEffort i@(Interval l r) n =
         (ArithUpDn.mixedRingOpsDefaultEffort l n,
          (NumOrd.pCompareDefaultEffort l,
           NumOrd.minmaxDefaultEffort l,
           NumOrd.pCompareDefaultEffort n))
-    mxringEffortAdd (Interval l h) n (effortRing, _) = 
+    mxringEffortAdd (Interval l r) n (effortRing, _) = 
         ArithUpDn.mxringEffortAdd l n effortRing
-    mxringEffortMult (Interval l h) n (effortRing, (effortCompEpt, effortMinmax, effortCompS)) =
+    mxringEffortMult (Interval l r) n (effortRing, (effortCompEpt, effortMinmax, effortCompS)) =
         ((effortCompS, effortCompEpt), 
           effortMinmax, 
           ArithUpDn.mxringEffortMult l n effortRing) 
@@ -193,15 +193,15 @@ instance (RoundedMixedRingEffort (Interval e) tn,
           NumOrd.MinmaxEffortIndicator e, 
           NumOrd.PartialCompareEffortIndicator tn),
          MixedDivEffortIndicator (Interval e) tn)
-    mixedFieldOpsDefaultEffort i@(Interval l h) n =
+    mixedFieldOpsDefaultEffort i@(Interval l r) n =
         (ArithUpDn.mixedFieldOpsDefaultEffort l n,
          (NumOrd.pCompareDefaultEffort l,
           NumOrd.minmaxDefaultEffort l,
           NumOrd.pCompareDefaultEffort n),
          mixedDivDefaultEffort i n)
-    mxfldEffortAdd (Interval l h) n (effortFld, _, _) = 
+    mxfldEffortAdd (Interval l r) n (effortFld, _, _) = 
         ArithUpDn.mxfldEffortAdd l n effortFld
-    mxfldEffortMult (Interval l h) n (effortFld, (effortCompEpt, effortMinmax, effortCompS), _) =
+    mxfldEffortMult (Interval l r) n (effortFld, (effortCompEpt, effortMinmax, effortCompS), _) =
         ((effortCompS, effortCompEpt), 
           effortMinmax, 
           ArithUpDn.mxfldEffortMult l n effortFld) 

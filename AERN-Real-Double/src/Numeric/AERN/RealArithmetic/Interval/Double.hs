@@ -47,8 +47,8 @@ instance Arbitrary PositiveDI
     where
     arbitrary =
         do
-        NumOrd.UniformlyOrderedPair (l,h) <- arbitrary
-        return $ PositiveDI (Interval (pos l) (pos h))
+        NumOrd.UniformlyOrderedPair (l,r) <- arbitrary
+        return $ PositiveDI (Interval (pos l) (pos r))
         where
         pos e 
             | e > 0 =  e

@@ -30,9 +30,9 @@ instance  (HasOne e) => HasOne (Interval e) where
 instance (HasInfinities e) => HasInfinities (Interval e) where
     plusInfinity = Interval plusInfinity plusInfinity
     minusInfinity = Interval minusInfinity minusInfinity
-    excludesPlusInfinity (Interval l h) = excludesPlusInfinity h
-    excludesMinusInfinity (Interval l h) = excludesMinusInfinity l
+    excludesPlusInfinity (Interval l r) = excludesPlusInfinity r
+    excludesMinusInfinity (Interval l r) = excludesMinusInfinity l
 
 instance  (Neg e) => Neg (Interval e) where
-    neg (Interval l h) = Interval (neg h) (neg l)
+    neg (Interval l r) = Interval (neg r) (neg l)
 
