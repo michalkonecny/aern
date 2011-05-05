@@ -107,6 +107,7 @@ import Numeric.AERN.Basics.RefinementOrder.InPlace.OpsDefaultEffort
 
 import Numeric.AERN.RealArithmetic.Basis.Double()
 import Numeric.AERN.RealArithmetic.Interval.Mutable()
+import Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps()
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as NumOrd
 
