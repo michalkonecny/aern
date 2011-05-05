@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.DoubleBasis.MInterval
     Description :  Interval Double type and operations  
@@ -168,7 +169,12 @@ import qualified Numeric.AERN.Basics.RefinementOrder.InPlace.OpsDefaultEffort as
 
 import Numeric.AERN.RealArithmetic.Basis.Double()
 import Numeric.AERN.RealArithmetic.Interval.Mutable()
+
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as NumOrd
+
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
+  (RoundedMixedAddInPlace(..),RoundedMixedMultiplyInPlace(..),RoundedMixedDivideInPlace(..))
+
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort as RARORIPODE
   (addOutInPlace,(<+>=),
    subtrOutInPlace,(<->=),
@@ -301,7 +307,7 @@ addInInPlace = RARORIPODE.addInInPlace
 (>+<=) = (RARORIPODE.>+<=)
 
 -- | Outward rounded in-place addition
-addOutInPlace OpMutable2 DI s
+addOutInPlace :: OpMutable2 DI s
 addOutInPlace = RARORIPODE.addOutInPlace
 
 -- | Outward rounded addition assignment
@@ -381,57 +387,57 @@ divOutInPlace = RARORIPODE.divOutInPlace
 (</>=) = (RARORIPODE.</>=)
 
 -- | Inward rounded in-place mixed addition
-mixedAddInInPlace :: (RoundedMixedAddInPlace DI tn) => 
+mixedAddInInPlace :: (RAROR.RoundedMixedAddInPlace DI tn) => 
     OpMutableNonmut DI tn s
 mixedAddInInPlace = RARORIPODE.mixedAddInInPlace
 
 -- | Inward rounded additive scalar action assignment
-(>+<|=) :: (RoundedMixedAddInPlace DI tn) => OpNonmut DI tn s
+(>+<|=) :: (RAROR.RoundedMixedAddInPlace DI tn) => OpNonmut DI tn s
 (>+<|=) = (RARORIPODE.>+<|=)
 
 -- | Outward rounded in-place mixed addition
-mixedAddOutInPlace :: (RoundedMixedAddInPlace DI tn) =>
+mixedAddOutInPlace :: (RAROR.RoundedMixedAddInPlace DI tn) =>
     OpMutableNonmut DI tn s
 mixedAddOutInPlace = RARORIPODE.mixedAddOutInPlace
 
 -- | Outward rounded additive scalar action assignment
-(<+>|=) :: (RoundedMixedAddInPlace DI tn) => OpNonmut DI tn s
+(<+>|=) :: (RAROR.RoundedMixedAddInPlace DI tn) => OpNonmut DI tn s
 (<+>|=) = (RARORIPODE.<+>|=)
 
 -- | Inward rounded in-place mixed multiplication
-mixedMultInInPlace :: (RoundedMixedMultiplyInPlace DI tn) => 
+mixedMultInInPlace :: (RAROR.RoundedMixedMultiplyInPlace DI tn) => 
     OpMutableNonmut DI tn s
 mixedMultInInPlace = RARORIPODE.mixedMultInInPlace
 
 -- | Inward rounded multiplicative scalar action assignment
-(>*<|=) :: (RoundedMixedMultiplyInPlace DI tn) => OpNonmut DI tn s
+(>*<|=) :: (RAROR.RoundedMixedMultiplyInPlace DI tn) => OpNonmut DI tn s
 (>*<|=) = (RARORIPODE.>*<|=)
 
 -- | Outward rounded in-place mixed multiplication
-mixedMultOutInPlace :: (RoundedMixedMultiplyInPlace DI tn) => 
+mixedMultOutInPlace :: (RAROR.RoundedMixedMultiplyInPlace DI tn) => 
     OpMutableNonmut DI tn s
 mixedMultOutInPlace = RARORIPODE.mixedMultOutInPlace
 
 -- | Outward rounded multiplicative scalar action assignment
-(<*>|=) :: (RoundedMixedMultiplyInPlace DI tn) => OpNonmut DI tn s
+(<*>|=) :: (RAROR.RoundedMixedMultiplyInPlace DI tn) => OpNonmut DI tn s
 (<*>|=) = (RARORIPODE.<*>|=)
 
 -- | Inward rounded in-place mixed reciprocal action
-mixedDivInInPlace :: (RoundedMixedDivideInPlace DI tn) => 
+mixedDivInInPlace :: (RAROR.RoundedMixedDivideInPlace DI tn) => 
     OpMutableNonmut DI tn s
 mixedDivInInPlace = RARORIPODE.mixedDivInInPlace
 
 -- | Inward rounded multiplicative scalar reciprocal action assignment
-(>/<|=) :: (RoundedMixedDivideInPlace DI tn) => OpNonmut DI tn s
+(>/<|=) :: (RAROR.RoundedMixedDivideInPlace DI tn) => OpNonmut DI tn s
 (>/<|=) = (RARORIPODE.>/<|=)
 
 -- | Outward rounded in-place mixed reciprocal action
-mixedDivOutInPlace :: (RoundedMixedDivideInPlace DI tn) => 
+mixedDivOutInPlace :: (RAROR.RoundedMixedDivideInPlace DI tn) => 
     OpMutableNonmut DI tn s
 mixedDivOutInPlace = RARORIPODE.mixedDivOutInPlace
 
 -- | Outward rounded multiplicative scalar reciprocal action assignment
-(</>|=) :: (RoundedMixedDivideInPlace DI tn) => OpNonmut DI tn s
+(</>|=) :: (RAROR.RoundedMixedDivideInPlace DI tn) => OpNonmut DI tn s
 (</>|=) = (RARORIPODE.</>|=)
 
 -- | Inward rounded in-place exponential
