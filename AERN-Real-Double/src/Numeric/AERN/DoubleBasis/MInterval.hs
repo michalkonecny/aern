@@ -195,7 +195,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.Ops
    mixedDivInInPlace,(>/<|=),
    powerToNonnegIntInInPlace,(>^<=))
 
-import Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
+import qualified Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps as RAIMEFFO
     (expOutInPlaceIters, expInInPlaceIters, sqrtOutInPlaceIters, sqrtInInPlaceIters)
 
 import Numeric.AERN.DoubleBasis.Interval
@@ -455,3 +455,10 @@ sqrtInInPlace = RARORIPODE.sqrtInInPlace
 -- | Outward rounded in-place square root
 sqrtOutInPlace :: OpMutable1 DI s
 sqrtOutInPlace = RARORIPODE.sqrtOutInPlace 
+
+expOutInPlaceIters, sqrtOutInPlaceIters,
+ expOutInPlaceIters, sqrtOutInPlaceIters :: Int -> OpMutable1 DI s
+expOutInPlaceIters = RAIMEFFO.expOutInPlaceIters
+sqrtOutInPlaceIters = RAIMEFFO.sqrtOutInPlaceIters
+expInInPlaceIters = RAIMEFFO.expInInPlaceIters
+sqrtInInPlaceIters = RAIMEFFO.sqrtInInPlaceIters
