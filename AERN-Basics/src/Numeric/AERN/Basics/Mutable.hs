@@ -88,13 +88,13 @@ type OpMutable2Eff ei t s =
     ei -> (Mutable t s) -> (Mutable t s) -> (Mutable t s) -> ST s () 
 
 type OpPartialMutable1 t s = 
-    (Mutable (Maybe t) s) -> (Mutable t s) -> ST s () 
+    (Mutable t s) -> (Mutable t s) -> ST s Bool 
 
 type OpPartialMutable2 t s = 
-    (Mutable (Maybe t) s) -> (Mutable t s) -> (Mutable t s) -> ST s () 
+    (Mutable t s) -> (Mutable t s) -> (Mutable t s) -> ST s Bool 
 
 type OpPartialMutable2Eff ei t s = 
-    ei -> (Mutable (Maybe t) s) -> (Mutable t s) -> (Mutable t s) -> ST s () 
+    ei -> (Mutable t s) -> (Mutable t s) -> (Mutable t s) -> ST s Bool 
 
 type OpMutableNonmut t nonmut s = 
     (Mutable t s) -> (Mutable t s) -> nonmut -> ST s () 
@@ -178,24 +178,23 @@ mutablePartial2ToPure ::
 mutablePartial2ToPure mutableFn a b =
     runST $
         do
-        resM <- makeMutable Nothing
-        aM <- makeMutable a
-        bM <- makeMutable b
-        mutableFn resM aM bM
-        unsafeReadMutable resM
+        resM <- makeMutable a
+        aM <- unsafeMakeMutable a
+        bM <- unsafeMakeMutable b
+        defined <- mutableFn resM aM bM
+        case defined of
+            False -> return Nothing
+            True -> 
+                do
+                res <- unsafeReadMutable resM
+                return $ Just res
 
 mutablePartial2EffToPure :: 
     (CanBeMutable t) =>
     (forall s .  OpPartialMutable2Eff eff t s) ->
     (eff -> t -> t -> Maybe t)
-mutablePartial2EffToPure mutableFn eff a b =
-    runST $
-        do
-        resM <- makeMutable Nothing
-        aM <- makeMutable a
-        bM <- makeMutable b
-        mutableFn eff resM aM bM
-        unsafeReadMutable resM
+mutablePartial2EffToPure mutableFn eff =
+    mutablePartial2ToPure (mutableFn eff)
 
 mutableNonmutEffToPure ::
     (CanBeMutable t) =>
@@ -254,7 +253,12 @@ pureToPartial2Eff pureFn eff resM aM bM =
     do
     a <- readMutable aM
     b <- readMutable bM
-    unsafeWriteMutable resM (pureFn eff a b)
+    case pureFn eff a b of
+        Nothing -> return False
+        Just res ->
+            do
+            unsafeWriteMutable resM res
+            return True
 
 pureToMutableNonmutEff ::
     (CanBeMutable t) =>
