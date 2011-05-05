@@ -73,7 +73,7 @@ maxOut a = maxOutEff (minmaxOuterDefaultEffort a) a
 minIn :: (InnerRoundedLattice t) => t -> t -> t
 minIn a = minInEff (minmaxInnerDefaultEffort a) a
 
--- | Outward rounded maximum
+-- | Inward rounded maximum
 maxIn :: (InnerRoundedLattice t) => t -> t -> t
 maxIn a = maxInEff (minmaxInnerDefaultEffort a) a
 
