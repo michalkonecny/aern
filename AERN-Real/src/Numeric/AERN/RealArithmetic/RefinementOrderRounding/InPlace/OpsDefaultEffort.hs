@@ -16,6 +16,15 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEff
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 
+infixl 6 <+>=, >+<=, <->=, >-<=
+infixl 7 <*>=, >*<=
+infixl 8 <^>=, >^<=
+infixl 7 </>=, >/<=
+
+infixl 6 <+>|=, >+<|=
+infixl 7 <*>|=, >*<|=
+infixl 7 </>|=, >/<|=
+
 -- | Inward rounded in-place addition
 addInInPlace :: (RoundedAddInPlace t) => OpMutable2 t s
 addInInPlace = mutable2EffToMutable2 addInInPlaceEff addDefaultEffort
