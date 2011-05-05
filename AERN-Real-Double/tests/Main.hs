@@ -14,8 +14,9 @@ module Main where
 import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
 import Numeric.AERN.RealArithmetic.Interval
-import Numeric.AERN.RealArithmetic.Interval.Mutable
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
+import Numeric.AERN.RealArithmetic.Interval.Mutable
+import Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
 import Numeric.AERN.Basics.Interval
 
 import Numeric.AERN.Basics.Consistency
@@ -68,7 +69,7 @@ testsDI =
        NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("DI", sampleDI),
        NumOrd.testsRefinementRoundedLatticeInPlace ("DI", sampleDI),
        RefOrd.testsPartialComparison  ("DI", sampleDI), 
---       RefOrd.testsRoundedBasis ("DI", sampleDI),
+       RefOrd.testsRoundedBasis ("DI", sampleDI),
        RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI),
        RefOrd.testsOuterInnerRoundedLatticeInPlace ("DI", sampleDI),
        testsDistance ("DI", sampleDI),
