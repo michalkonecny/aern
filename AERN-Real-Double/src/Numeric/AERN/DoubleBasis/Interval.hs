@@ -205,7 +205,10 @@ module Numeric.AERN.DoubleBasis.Interval
 where
 
 import Numeric.AERN.Basics.Interval
-  (Interval(..),getEndpoints,fromEndpoints)
+  (Interval(..))
+
+import qualified Numeric.AERN.Basics.Interval as BI
+  (getEndpoints,fromEndpoints)
 
 import qualified Numeric.AERN.Basics.NumericOrder as BNO
   (least,greatest)
@@ -260,113 +263,288 @@ import Test.QuickCheck
 -- \{ 'x' | 'l' '<=' 'x' and 'x' '<=' 'r' \}.
 type DI = Interval Double
 
+-- | Given an argument interval 'i' 'getEndpoints' returns the endpoint pair 
+--   ('leftEndpoint' 'i','rightEndpoint' 'i').
+getEndpoints :: DI -> (Double, Double)
+getEndpoints = BI.getEndpoints
+
+-- | Constructs an interval from an endpoint pair.
+fromEndpoints :: (Double, Double) -> DI
+fromEndpoints = BI.fromEndpoints
+
 sampleDI :: DI
 sampleDI = Interval 0 0
 
-least,greatest :: DI
+least :: DI
 least = BNO.least
+
+greatest :: DI
 greatest = BNO.greatest
 
-(==?),(<==>?),(</=>?),
- (<?),(>?),(<=?),(>=?) :: DI -> DI -> Maybe Bool
+-- | Partial equality
+(==?) :: DI -> DI -> Maybe Bool
 (==?) = (BNOODE.==?) 
+
+-- | Partial `is comparable to`
+(<==>?) :: DI -> DI -> Maybe Bool
 (<==>?) = (BNOODE.<==>?)
+
+-- | Partial `is not comparable to`
+(</=>?) :: DI -> DI -> Maybe Bool
 (</=>?) = (BNOODE.</=>?)
+
+-- | Partial `strictly less than`
+(<?) :: DI -> DI -> Maybe Bool
 (<?) = (BNOODE.<?)
+
+-- | Partial `strictly greater than`
+(>?) :: DI -> DI -> Maybe Bool
 (>?) = (BNOODE.>?)
+
+-- | Partial `less than or equal to`
+(<=?) :: DI -> DI -> Maybe Bool
 (<=?) = (BNOODE.<=?)
+
+-- | Partial `greater than or equal to`
+(>=?) :: DI -> DI -> Maybe Bool
 (>=?) = (BNOODE.>=?)
  
-minOut,maxOut,minIn,maxIn :: DI -> DI -> DI
+-- | Outward rounded minimum
+minOut :: DI -> DI -> DI
 minOut = BNOODE.minOut
+
+-- | Outward rounded maximum
+maxOut :: DI -> DI -> DI
 maxOut = BNOODE.maxOut
+
+-- | Inward rounded minimum
+minIn :: DI -> DI -> DI
 minIn = BNOODE.minIn
+
+-- | Inward rounded maximum
+maxIn :: DI -> DI -> DI
 maxIn = BNOODE.maxIn
 
-bottom,top,(⊥),(⊤) :: DI
+bottom :: DI
 bottom = BRO.bottom
+
+top :: DI
 top = BRO.top
+
+-- | Convenience Unicode notation for 'bottom'
+(⊥) :: DI
 (⊥) = (BRO.⊥)
+
+-- | Convenience Unicode notation for 'top'
+(⊤) :: DI
 (⊤) = (BRO.⊤)
 
-(|==?),(|<==>?),(|</=>?),
- (|<?),(|>?),(|<=?),(|>=?),
- (⊏?),(⊑?),(⊒?),(⊐?) :: DI -> DI -> Maybe Bool 
+-- | Partial equality
+(|==?) :: DI -> DI -> Maybe Bool
 (|==?) = (BROODE.|==?)
+
+-- | Partial `is comparable to`
+(|<==>?) :: DI -> DI -> Maybe Bool
 (|<==>?) = (BROODE.|<==>?)
+
+-- | Partial `is not comparable to`
+(|</=>?) :: DI -> DI -> Maybe Bool
 (|</=>?) = (BROODE.|</=>?)
+
+-- | Partial `strictly below`
+(|<?) :: DI -> DI -> Maybe Bool
 (|<?) = (BROODE.|<?)
+
+-- | Partial `strictly above`
+(|>?) :: DI -> DI -> Maybe Bool
 (|>?) = (BROODE.|>?)
+
+-- | Partial `below or equal to`
+(|<=?) :: DI -> DI -> Maybe Bool
 (|<=?) = (BROODE.|<=?)
+
+-- | Partial `above or equal to`
+(|>=?) :: DI -> DI -> Maybe Bool
 (|>=?) = (BROODE.|>=?)
+
+{-| Convenience Unicode notation for '|<?' -}
+(⊏?) :: DI -> DI -> Maybe Bool
 (⊏?) = (BROODE.⊏?)
+
+{-| Convenience Unicode notation for '|<=?' -}
+(⊑?) :: DI -> DI -> Maybe Bool
 (⊑?) = (BROODE.⊑?)
+
+{-| Convenience Unicode notation for '|>=?' -}
+(⊒?) :: DI -> DI -> Maybe Bool
 (⊒?) = (BROODE.⊒?)
+
+{-| Convenience Unicode notation for '|>?' -}
+(⊐?) :: DI -> DI -> Maybe Bool 
 (⊐?) = (BROODE.⊐?)
 
-(</\>),(<\/>),(>/\<),(>\/<),
- (<⊓>),(<⊔>),(>⊓<),(>⊔<) :: DI -> DI -> DI
+-- | Outward rounded meet
+(</\>) :: DI -> DI -> DI
 (</\>) = (BROODE.</\>)
+
+-- | Outward rounded join
+(<\/>) :: DI -> DI -> DI
 (<\/>) = (BROODE.<\/>)
+
+-- | Inward rounded meet
+(>/\<) :: DI -> DI -> DI
 (>/\<) = (BROODE.>/\<)
+
+-- | Inward rounded join
+(>\/<) :: DI -> DI -> DI
 (>\/<) = (BROODE.>\/<)
+
+{-| Convenience Unicode notation for '</\>' -}
+(<⊓>) :: DI -> DI -> DI
 (<⊓>) = (BROODE.<⊓>)
+
+{-| Convenience Unicode notation for '<\/>' -}
+(<⊔>) :: DI -> DI -> DI
 (<⊔>) = (BROODE.<⊔>)
+
+{-| Convenience Unicode notation for '>/\<' -}
+(>⊓<) :: DI -> DI -> DI
 (>⊓<) = (BROODE.>⊓<)
+
+{-| Convenience Unicode notation for '>\/<' -}
+(>⊔<) :: DI -> DI -> DI
 (>⊔<) = (BROODE.>⊔<)
  
-(<\/>?),(<⊔>?) :: DI -> DI -> Maybe DI 
+-- | Partial outward rounded join
+(<\/>?) :: DI -> DI -> Maybe DI
 (<\/>?) = (BROODE.<\/>?)
+
+{-| Convenience Unicode notation for '<\/>?' -}
+(<⊔>?) :: DI -> DI -> Maybe DI 
 (<⊔>?) = (BROODE.<⊔>?)
 
-(<+>),(<->),(<*>),(</>),
- (>+<),(>-<),(>*<),(>/<) :: DI -> DI -> DI
+-- | Outward rounded addition
+(<+>) :: DI -> DI -> DI
 (<+>) = (RARORODE.<+>)
+
+-- | Outward rounded subtraction
+(<->) :: DI -> DI -> DI
 (<->) = (RARORODE.<->)
+
+-- | Outward rounded multiplication
+(<*>) :: DI -> DI -> DI
 (<*>) = (RARORODE.<*>)
+
+-- | Outward rounded division
+(</>) :: DI -> DI -> DI
 (</>) = (RARORODE.</>)
+
+-- | Inward rounded addition
+(>+<) :: DI -> DI -> DI
 (>+<) = (RARORODE.>+<)
+
+-- | Inward rounded subtraction
+(>-<) :: DI -> DI -> DI
 (>-<) = (RARORODE.>-<)
+
+-- | Inward rounded multiplication
+(>*<) :: DI -> DI -> DI
 (>*<) = (RARORODE.>*<)
+
+-- | Inward rounded division
+(>/<) :: DI -> DI -> DI
 (>/<) = (RARORODE.>/<)
 
-(|<+>),(|>+<) :: RAROR.RoundedMixedAdd DI tn => tn -> DI -> DI
+-- | Outward rounded additive scalar left action
+(|<+>) :: RAROR.RoundedMixedAdd DI tn => tn -> DI -> DI
 (|<+>) = (RARORODE.|<+>)
+
+-- | Inward rounded additive scalar left action
+(|>+<) :: RAROR.RoundedMixedAdd DI tn => tn -> DI -> DI
 (|>+<) = (RARORODE.|>+<)
-(<+>|),(>+<|) :: RAROR.RoundedMixedAdd DI tn => DI -> tn -> DI
+
+-- | Outward rounded additive scalar right action
+(<+>|) :: RAROR.RoundedMixedAdd DI tn => DI -> tn -> DI
 (<+>|) = (RARORODE.<+>|)
+
+-- | Inward rounded additive scalar right action
+(>+<|) :: RAROR.RoundedMixedAdd DI tn => DI -> tn -> DI
 (>+<|) = (RARORODE.>+<|)
-(|<*>),(|>*<) :: RAROR.RoundedMixedMultiply DI tn => tn -> DI -> DI
+
+-- | Outward rounded multiplicative scalar left action
+(|<*>) :: RAROR.RoundedMixedMultiply DI tn => tn -> DI -> DI
 (|<*>) = (RARORODE.|<*>)
+
+-- | Inward rounded multiplicative scalar left action
+(|>*<) :: RAROR.RoundedMixedMultiply DI tn => tn -> DI -> DI
 (|>*<) = (RARORODE.|>*<)
-(<*>|),(>*<|) :: RAROR.RoundedMixedMultiply DI tn => DI -> tn -> DI
+
+-- | Outward rounded multiplicative scalar right action
+(<*>|) :: RAROR.RoundedMixedMultiply DI tn => DI -> tn -> DI
 (<*>|) = (RARORODE.<*>|)
+
+-- | Inward rounded multiplicative scalar right action
+(>*<|) :: RAROR.RoundedMixedMultiply DI tn => DI -> tn -> DI
 (>*<|) = (RARORODE.>*<|)
-(</>|),(>/<|) :: RAROR.RoundedMixedDivide DI tn => DI -> tn -> DI  
+
+-- | Outward rounded multiplicative scalar reciprocal right action
+(</>|) :: RAROR.RoundedMixedDivide DI tn => DI -> tn -> DI
 (</>|) = (RARORODE.</>|)
+
+-- | Inward rounded multiplicative scalar reciprocal right action
+(>/<|) :: RAROR.RoundedMixedDivide DI tn => DI -> tn -> DI  
 (>/<|) = (RARORODE.>/<|)
 
-piOut,eOut,
- piIn,eIn :: DI
+-- | Outward rounded pi
+piOut :: DI
 piOut = RARORODE.piOut 
+
+-- | Outward rounded e
+eOut :: DI
 eOut = RARORODE.eOut 
+
+-- | Inward rounded pi
+piIn :: DI
 piIn = RARORODE.piIn 
+
+-- | Inward rounded e
+eIn :: DI
 eIn = RARORODE.eIn 
-  
-absOut,expOut,sqrtOut,
- absIn,expIn,sqrtIn :: DI -> DI
+
+-- | Outward rounded absolute value
+absOut :: DI -> DI
 absOut = RARORODE.absOut
+
+-- | Outward rounded exponential
+expOut :: DI -> DI
 expOut = RARORODE.expOut
+
+-- | Outward rounded square root
+sqrtOut :: DI -> DI
 sqrtOut = RARORODE.sqrtOut
+
+-- | Inward rounded absolute value
+absIn :: DI -> DI
 absIn = RARORODE.absIn
+
+-- | Inward rounded exponential
+expIn :: DI -> DI
 expIn = RARORODE.expIn
+
+-- | Inward rounded square root
+sqrtIn :: DI -> DI
 sqrtIn = RARORODE.sqrtIn
 
-expOutIters,sqrtOutIters,
- expInIters,sqrtInIters :: Int -> DI -> DI
+expOutIters :: Int -> DI -> DI
 expOutIters = RAIEFFO.expOutIters
+
+sqrtOutIters :: Int -> DI -> DI
 sqrtOutIters = RAIEFFO.sqrtOutIters
+
+expInIters :: Int -> DI -> DI
 expInIters = RAIEFFO.expInIters
+
+sqrtInIters :: Int -> DI -> DI
 sqrtInIters = RAIEFFO.sqrtInIters
 
 newtype PositiveDI = PositiveDI { unPositiveDI :: DI }

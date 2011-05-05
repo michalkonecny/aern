@@ -204,6 +204,9 @@ where
 import Numeric.AERN.Basics.Interval
   (Interval(..))
 
+import qualified Numeric.AERN.Basics.Interval as BI
+  (getEndpoints,fromEndpoints)
+
 import qualified Numeric.AERN.Basics.NumericOrder as BNO
   (least,greatest)
 
@@ -260,6 +263,15 @@ import Test.QuickCheck
 -- \{ 'x' | 'l' '<=' 'x' and 'x' '<=' 'r' \}.
 type RealIntervalApprox = Interval Double
 
+-- | Given an argument interval 'i' 'getEndpoints' returns the endpoint pair 
+--   ('leftEndpoint' 'i','rightEndpoint' 'i').
+getEndpoints :: RealIntervalApprox -> (Double, Double)
+getEndpoints = BI.getEndpoints
+
+-- | Constructs an interval from an endpoint pair.
+fromEndpoints :: (Double, Double) -> RealIntervalApprox
+fromEndpoints = BI.fromEndpoints
+
 sampleRealIntervalApprox :: RealIntervalApprox
 sampleRealIntervalApprox = Interval 0 0
 
@@ -280,110 +292,276 @@ bisect ::
     (RealIntervalApprox, RealIntervalApprox)
 bisect = RAID.bisect
 
-least,greatest :: RealIntervalApprox
+least :: RealIntervalApprox
 least = BNO.least
+
+greatest :: RealIntervalApprox
 greatest = BNO.greatest
 
-(==?),(<==>?),(</=>?),
- (<?),(>?),(<=?),(>=?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
+-- | Partial equality
+(==?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (==?) = (BNOODE.==?) 
+
+-- | Partial `is comparable to`
+(<==>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (<==>?) = (BNOODE.<==>?)
+
+-- | Partial `is not comparable to`
+(</=>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (</=>?) = (BNOODE.</=>?)
+
+-- | Partial `strictly less than`
+(<?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (<?) = (BNOODE.<?)
+
+-- | Partial `strictly greater than`
+(>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (>?) = (BNOODE.>?)
+
+-- | Partial `less than or equal to`
+(<=?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (<=?) = (BNOODE.<=?)
+
+-- | Partial `greater than or equal to`
+(>=?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (>=?) = (BNOODE.>=?)
  
-minOut,maxOut,minIn,maxIn :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
+-- | Outward rounded minimum
+minOut :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 minOut = BNOODE.minOut
+
+-- | Outward rounded maximum
+maxOut :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 maxOut = BNOODE.maxOut
+
+-- | Inward rounded minimum
+minIn :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 minIn = BNOODE.minIn
+
+-- | Inward rounded maximum
+maxIn :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 maxIn = BNOODE.maxIn
 
-bottom,top,(⊥),(⊤) :: RealIntervalApprox
+bottom :: RealIntervalApprox
 bottom = BRO.bottom
+
+top :: RealIntervalApprox
 top = BRO.top
+
+-- | Convenience Unicode notation for 'bottom'
+(⊥) :: RealIntervalApprox
 (⊥) = (BRO.⊥)
+
+-- | Convenience Unicode notation for 'top'
+(⊤) :: RealIntervalApprox
 (⊤) = (BRO.⊤)
 
-(|==?),(|<==>?),(|</=>?),
- (|<?),(|>?),(|<=?),(|>=?),
- (⊏?),(⊑?),(⊒?),(⊐?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool 
+-- | Partial equality
+(|==?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (|==?) = (BROODE.|==?)
+
+-- | Partial `is comparable to`
+(|<==>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (|<==>?) = (BROODE.|<==>?)
+
+-- | Partial `is not comparable to`
+(|</=>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (|</=>?) = (BROODE.|</=>?)
+
+-- | Partial `strictly below`
+(|<?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (|<?) = (BROODE.|<?)
+
+-- | Partial `strictly above`
+(|>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (|>?) = (BROODE.|>?)
+
+-- | Partial `below or equal to`
+(|<=?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (|<=?) = (BROODE.|<=?)
+
+-- | Partial `above or equal to`
+(|>=?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (|>=?) = (BROODE.|>=?)
+
+{-| Convenience Unicode notation for '|<?' -}
+(⊏?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (⊏?) = (BROODE.⊏?)
+
+{-| Convenience Unicode notation for '|<=?' -}
+(⊑?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (⊑?) = (BROODE.⊑?)
+
+{-| Convenience Unicode notation for '|>=?' -}
+(⊒?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (⊒?) = (BROODE.⊒?)
+
+{-| Convenience Unicode notation for '|>?' -}
+(⊐?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool 
 (⊐?) = (BROODE.⊐?)
 
-(</\>),(<\/>),(>/\<),(>\/<),
- (<⊓>),(<⊔>),(>⊓<),(>⊔<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
+-- | Outward rounded meet
+(</\>) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (</\>) = (BROODE.</\>)
+
+-- | Outward rounded join
+(<\/>) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (<\/>) = (BROODE.<\/>)
+
+-- | Inward rounded meet
+(>/\<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (>/\<) = (BROODE.>/\<)
+
+-- | Inward rounded join
+(>\/<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (>\/<) = (BROODE.>\/<)
+
+{-| Convenience Unicode notation for '</\>' -}
+(<⊓>) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (<⊓>) = (BROODE.<⊓>)
+
+{-| Convenience Unicode notation for '<\/>' -}
+(<⊔>) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (<⊔>) = (BROODE.<⊔>)
+
+{-| Convenience Unicode notation for '>/\<' -}
+(>⊓<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (>⊓<) = (BROODE.>⊓<)
+
+{-| Convenience Unicode notation for '>\/<' -}
+(>⊔<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (>⊔<) = (BROODE.>⊔<)
  
-(<\/>?),(<⊔>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe RealIntervalApprox 
+-- | Partial outward rounded join
+(<\/>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe RealIntervalApprox
 (<\/>?) = (BROODE.<\/>?)
+
+{-| Convenience Unicode notation for '<\/>?' -}
+(<⊔>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe RealIntervalApprox 
 (<⊔>?) = (BROODE.<⊔>?)
 
-(<+>),(<->),(<*>),(</>),
- (>+<),(>-<),(>*<),(>/<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
+-- | Outward rounded addition
+(<+>) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (<+>) = (RARORODE.<+>)
+
+-- | Outward rounded subtraction
+(<->) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (<->) = (RARORODE.<->)
+
+-- | Outward rounded multiplication
+(<*>) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (<*>) = (RARORODE.<*>)
+
+-- | Outward rounded division
+(</>) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (</>) = (RARORODE.</>)
+
+-- | Inward rounded addition
+(>+<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (>+<) = (RARORODE.>+<)
+
+-- | Inward rounded subtraction
+(>-<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (>-<) = (RARORODE.>-<)
+
+-- | Inward rounded multiplication
+(>*<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (>*<) = (RARORODE.>*<)
+
+-- | Inward rounded division
+(>/<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (>/<) = (RARORODE.>/<)
 
-(|<+>),(|>+<) :: RAROR.RoundedMixedAdd RealIntervalApprox tn => tn -> RealIntervalApprox -> RealIntervalApprox
+-- | Outward rounded additive scalar left action
+(|<+>) :: RAROR.RoundedMixedAdd RealIntervalApprox tn => tn -> RealIntervalApprox -> RealIntervalApprox
 (|<+>) = (RARORODE.|<+>)
+
+-- | Inward rounded additive scalar left action
+(|>+<) :: RAROR.RoundedMixedAdd RealIntervalApprox tn => tn -> RealIntervalApprox -> RealIntervalApprox
 (|>+<) = (RARORODE.|>+<)
-(<+>|),(>+<|) :: RAROR.RoundedMixedAdd RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox
+
+-- | Outward rounded additive scalar right action
+(<+>|) :: RAROR.RoundedMixedAdd RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox
 (<+>|) = (RARORODE.<+>|)
+
+-- | Inward rounded additive scalar right action
+(>+<|) :: RAROR.RoundedMixedAdd RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox
 (>+<|) = (RARORODE.>+<|)
-(|<*>),(|>*<) :: RAROR.RoundedMixedMultiply RealIntervalApprox tn => tn -> RealIntervalApprox -> RealIntervalApprox
+
+-- | Outward rounded multiplicative scalar left action
+(|<*>) :: RAROR.RoundedMixedMultiply RealIntervalApprox tn => tn -> RealIntervalApprox -> RealIntervalApprox
 (|<*>) = (RARORODE.|<*>)
+
+-- | Inward rounded multiplicative scalar left action
+(|>*<) :: RAROR.RoundedMixedMultiply RealIntervalApprox tn => tn -> RealIntervalApprox -> RealIntervalApprox
 (|>*<) = (RARORODE.|>*<)
-(<*>|),(>*<|) :: RAROR.RoundedMixedMultiply RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox
+
+-- | Outward rounded multiplicative scalar right action
+(<*>|) :: RAROR.RoundedMixedMultiply RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox
 (<*>|) = (RARORODE.<*>|)
+
+-- | Inward rounded multiplicative scalar right action
+(>*<|) :: RAROR.RoundedMixedMultiply RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox
 (>*<|) = (RARORODE.>*<|)
-(</>|),(>/<|) :: RAROR.RoundedMixedDivide RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox  
+
+-- | Outward rounded multiplicative scalar reciprocal right action
+(</>|) :: RAROR.RoundedMixedDivide RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox
 (</>|) = (RARORODE.</>|)
+
+-- | Inward rounded multiplicative scalar reciprocal right action
+(>/<|) :: RAROR.RoundedMixedDivide RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox  
 (>/<|) = (RARORODE.>/<|)
 
-piOut,eOut,
- piIn,eIn :: RealIntervalApprox
+-- | Outward rounded pi
+piOut :: RealIntervalApprox
 piOut = RARORODE.piOut 
+
+-- | Outward rounded e
+eOut :: RealIntervalApprox
 eOut = RARORODE.eOut 
+
+-- | Inward rounded pi
+piIn :: RealIntervalApprox
 piIn = RARORODE.piIn 
+
+-- | Inward rounded e
+eIn :: RealIntervalApprox
 eIn = RARORODE.eIn 
-  
-absOut,expOut,sqrtOut,
- absIn,expIn,sqrtIn :: RealIntervalApprox -> RealIntervalApprox
+
+-- | Outward rounded absolute value
+absOut :: RealIntervalApprox -> RealIntervalApprox
 absOut = RARORODE.absOut
+
+-- | Outward rounded exponential
+expOut :: RealIntervalApprox -> RealIntervalApprox
 expOut = RARORODE.expOut
+
+-- | Outward rounded square root
+sqrtOut :: RealIntervalApprox -> RealIntervalApprox
 sqrtOut = RARORODE.sqrtOut
+
+-- | Inward rounded absolute value
+absIn :: RealIntervalApprox -> RealIntervalApprox
 absIn = RARORODE.absIn
+
+-- | Inward rounded exponential
+expIn :: RealIntervalApprox -> RealIntervalApprox
 expIn = RARORODE.expIn
+
+-- | Inward rounded square root
+sqrtIn :: RealIntervalApprox -> RealIntervalApprox
 sqrtIn = RARORODE.sqrtIn
 
-expOutIters,sqrtOutIters,
- expInIters,sqrtInIters :: Int -> RealIntervalApprox -> RealIntervalApprox
+expOutIters :: Int -> RealIntervalApprox -> RealIntervalApprox
 expOutIters = RAIEFFO.expOutIters
+
+sqrtOutIters :: Int -> RealIntervalApprox -> RealIntervalApprox
 sqrtOutIters = RAIEFFO.sqrtOutIters
+
+expInIters :: Int -> RealIntervalApprox -> RealIntervalApprox
 expInIters = RAIEFFO.expInIters
+
+sqrtInIters :: Int -> RealIntervalApprox -> RealIntervalApprox
 sqrtInIters = RAIEFFO.sqrtInIters
 
 newtype PositiveRealIntervalApprox = 
