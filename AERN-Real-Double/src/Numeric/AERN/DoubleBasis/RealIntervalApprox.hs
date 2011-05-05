@@ -141,7 +141,7 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     (<+>),(<->),(<*>),(</>),
 
     -- *** Mixed type operations
-    (|<+>),(<+>|),(|<*>),(<*>|),(</>|),
+    (|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
 
     -- ** Special constants 
     piOut,eOut,
@@ -182,7 +182,7 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     (>+<),(>-<),(>*<),(>/<),
     
     -- *** Mixed type operations
-    (|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
+    (|>+<),(>+<|),(|>*<),(>*<|),(>/<|),(>^<),
 
     -- ** Special constants 
     piIn,eIn,
@@ -230,9 +230,9 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
   (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..))
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort as RARORODE
- ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),
+ ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
   piOut,eOut,absOut,expOut,sqrtOut,
-  (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
+  (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),(>^<),
   piIn,eIn,absIn,expIn,sqrtIn)
  
 import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
@@ -298,6 +298,8 @@ least = BNO.least
 greatest :: RealIntervalApprox
 greatest = BNO.greatest
 
+infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
+
 -- | Partial equality
 (==?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
 (==?) = (BNOODE.==?) 
@@ -355,6 +357,10 @@ top = BRO.top
 -- | Convenience Unicode notation for 'top'
 (⊤) :: RealIntervalApprox
 (⊤) = (BRO.⊤)
+
+infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>?, ⊏?, ⊑?, ⊒?, ⊐?
+infixr 3 </\>, >/\<, <⊓>, >⊓< 
+infixr 2 <\/>?, <\/>, >\/<, <⊔>?, <⊔>, >⊔< 
 
 -- | Partial equality
 (|==?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
@@ -440,6 +446,17 @@ top = BRO.top
 (<⊔>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe RealIntervalApprox 
 (<⊔>?) = (BROODE.<⊔>?)
 
+infixl 6 <+>, >+<, <->, >-<
+infixl 7 <*>, >*<
+infixl 8 <^>, >^<
+infixl 7 </>, >/<
+
+infixr 6 |<+>, |>+<
+infixl 6 <+>|, >+<|
+infixr 7 |<*>, |>*<
+infixl 7 <*>|, >*<|
+infixl 7 </>|, >/<|
+
 -- | Outward rounded addition
 (<+>) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 (<+>) = (RARORODE.<+>)
@@ -511,6 +528,14 @@ top = BRO.top
 -- | Inward rounded multiplicative scalar reciprocal right action
 (>/<|) :: RAROR.RoundedMixedDivide RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox  
 (>/<|) = (RARORODE.>/<|)
+
+-- | Outward rounded power
+(<^>) :: RealIntervalApprox -> Int -> RealIntervalApprox
+(<^>) = (RARORODE.<^>)
+
+-- | Inward rounded power
+(>^<) :: RealIntervalApprox -> Int -> RealIntervalApprox
+(>^<) = (RARORODE.>^<)
 
 -- | Outward rounded pi
 piOut :: RealIntervalApprox
