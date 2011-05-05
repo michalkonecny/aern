@@ -36,14 +36,14 @@ import Control.Monad.ST (ST)
 instance (ArithUpDn.RoundedAddInPlace e, CanBeMutable e) => 
     RoundedAddInPlace (Interval e) 
     where
-    addInInPlaceEff eff (MInterval resL resH) (MInterval aL aH) (MInterval bL bH) =
+    addInInPlaceEff eff (MInterval resL resR) (MInterval aL aR) (MInterval bL bR) =
         do
         ArithUpDn.addUpInPlaceEff eff resL aL bL
-        ArithUpDn.addDnInPlaceEff eff resH aH bH
-    addOutInPlaceEff eff (MInterval resL resH) (MInterval aL aH) (MInterval bL bH) =
+        ArithUpDn.addDnInPlaceEff eff resR aR bR
+    addOutInPlaceEff eff (MInterval resL resR) (MInterval aL aR) (MInterval bL bR) =
         do
         ArithUpDn.addDnInPlaceEff eff resL aL bL
-        ArithUpDn.addUpInPlaceEff eff resH aH bH
+        ArithUpDn.addUpInPlaceEff eff resR aR bR
     
 instance 
     (ArithUpDn.RoundedAddInPlace e,
@@ -105,17 +105,17 @@ multiplyIntervalsInPlace
         pNonnegNonpos timesLInPlace timesRInPlace 
         minLInPlace minRInPlace maxLInPlace maxRInPlace 
         combineLInPlace combineRInPlace
-        (MInterval lResM hResM) (MInterval l1M h1M) (MInterval l2M h2M) =
+        (MInterval lResM rResM) (MInterval l1M r1M) (MInterval l2M r2M) =
     do
     let _ = [minLInPlace, maxRInPlace, combineLInPlace, combineRInPlace]
     l1 <- readMutable l1M
-    h1 <- readMutable h1M
+    r1 <- readMutable r1M
     l2 <- readMutable l2M
-    h2 <- readMutable h2M
+    r2 <- readMutable r2M
     case (pNonnegNonpos l1, -- sign of l1 
-              pNonnegNonpos h1, -- sign of h1
+              pNonnegNonpos r1, -- sign of r1
               pNonnegNonpos l2, -- sign of l2
-              pNonnegNonpos h2 -- sign of h2 
+              pNonnegNonpos r2 -- sign of r2 
              ) of
              
             -----------------------------------------------------------
@@ -123,117 +123,117 @@ multiplyIntervalsInPlace
             -----------------------------------------------------------
             -- i1 negative, i2 positive
             ((_, Just True), (_, Just True), (Just True, _), (Just True, _)) ->
---                (l1 `timesL` h2, h1 `timesR` l2)
-                assignResEndpointsUsingTimesLR  l1M h2M  h1M l2M
+--                (l1 `timesL` r2, r1 `timesR` l2)
+                assignResEndpointsUsingTimesLR  l1M r2M  r1M l2M
             -- i1 negative, i2 negative
             ((_, Just True), (_, Just True), (_, Just True), (_, Just True)) -> 
---                (h1 `timesL` h2, l1 `timesR` l2)
-                assignResEndpointsUsingTimesLR  h1M h2M  l1M l2M
+--                (r1 `timesL` r2, l1 `timesR` l2)
+                assignResEndpointsUsingTimesLR  r1M r2M  l1M l2M
             -- i1 negative, i2 consistent and containing zero
             ((_, Just True), (_, Just True), (_, Just True), (Just True, _)) -> 
---                (l1 `timesL` h2, l1 `timesR` l2)
-                assignResEndpointsUsingTimesLR  l1M h2M  l1M l2M
+--                (l1 `timesL` r2, l1 `timesR` l2)
+                assignResEndpointsUsingTimesLR  l1M r2M  l1M l2M
             -- i1 negative, i2 anti-consistent and anti-containing zero
             ((_, Just True), (_, Just True), (Just True, _), (_, Just True)) -> 
---                (h1 `timesL` h2, h1 `timesR` l2)
-                assignResEndpointsUsingTimesLR  h1M h2M  h1M l2M
+--                (r1 `timesL` r2, r1 `timesR` l2)
+                assignResEndpointsUsingTimesLR  r1M r2M  r1M l2M
             -- i1 negative, nothing known about i2:
             ((_, Just True), (_, Just True), _, _) -> 
---                ((h1 `timesL` h2) `combineL` (l1 `timesL` h2), 
---                 (h1 `timesR` l2) `combineR` (l1 `timesR` l2))
+--                ((r1 `timesL` r2) `combineL` (l1 `timesL` r2), 
+--                 (r1 `timesR` l2) `combineR` (l1 `timesR` l2))
                 do
                 temp1 <- makeMutable zero 
                 temp2 <- makeMutable zero
                 temp3 <- makeMutable zero
-                timesLInPlace temp1 h1M h2M 
-                timesLInPlace temp2 l1M h2M 
+                timesLInPlace temp1 r1M r2M 
+                timesLInPlace temp2 l1M r2M 
                 combineLInPlace temp3 temp1 temp2
-                timesRInPlace temp1 h1M l2M 
+                timesRInPlace temp1 r1M l2M 
                 timesRInPlace temp2 l1M l2M 
-                combineRInPlace hResM temp1 temp2
+                combineRInPlace rResM temp1 temp2
                 assignMutable lResM temp3
 
             -- i1 positive, i2 positive
             ((Just True, _), (Just True, _), (Just True, _), (Just True, _)) -> 
---                (l1 `timesL` l2, h1 `timesR` h2)
+--                (l1 `timesL` l2, r1 `timesR` r2)
                 do
                 timesLInPlace lResM l1M l2M 
-                timesRInPlace hResM h1M h2M 
+                timesRInPlace rResM r1M r2M 
             -- i1 positive, i2 negative
             ((Just True, _), (Just True, _), (_, Just True), (_, Just True)) -> 
---                (h1 `timesL` l2, l1 `timesR` h2)
-                assignResEndpointsUsingTimesLR  h1M l2M  l1M h2M
+--                (r1 `timesL` l2, l1 `timesR` r2)
+                assignResEndpointsUsingTimesLR  r1M l2M  l1M r2M
             -- i1 positive, i2 consistent and containing zero
             ((Just True, _), (Just True, _), (_, Just True), (Just True, _)) -> 
---                (h1 `timesL` l2, h1 `timesR` h2)
-                assignResEndpointsUsingTimesLR  h1M l2M  h1M h2M
+--                (r1 `timesL` l2, r1 `timesR` r2)
+                assignResEndpointsUsingTimesLR  r1M l2M  r1M r2M
             -- i1 positive, i2 anti-consistent and anti-containing zero
             ((Just True, _), (Just True, _), (Just True, _), (_, Just True)) -> 
---                (l1 `timesL` l2, l1 `timesR` h2)
-                assignResEndpointsUsingTimesLR  l1M l2M  l1M h2M
+--                (l1 `timesL` l2, l1 `timesR` r2)
+                assignResEndpointsUsingTimesLR  l1M l2M  l1M r2M
             -- i1 positive, nothing known about i2:
             ((Just True, _), (Just True, _), _, _) -> 
---                ((h1 `timesL` l2) `combineL` (l1 `timesL` l2), 
---                 (h1 `timesR` h2) `combineR` (l1 `timesR` h2))
+--                ((r1 `timesL` l2) `combineL` (l1 `timesL` l2), 
+--                 (r1 `timesR` r2) `combineR` (l1 `timesR` r2))
                 do
                 temp1 <- makeMutable zero 
                 temp2 <- makeMutable zero
                 temp3 <- makeMutable zero
-                timesLInPlace temp1 h1M l2M 
+                timesLInPlace temp1 r1M l2M 
                 timesLInPlace temp2 l1M l2M 
                 combineLInPlace temp3 temp1 temp2
-                timesRInPlace temp1 h1M h2M 
-                timesRInPlace temp2 l1M h2M 
-                combineRInPlace hResM temp1 temp2
+                timesRInPlace temp1 r1M r2M 
+                timesRInPlace temp2 l1M r2M 
+                combineRInPlace rResM temp1 temp2
                 assignMutable lResM temp3
             
  
             -- i1 consistent and containing zero, i2 positive
             ((_, Just True), (Just True, _), (Just True, _), (Just True, _)) -> 
---                (l1 `timesL` h2, h1 `timesR` h2)
-                assignResEndpointsUsingTimesLR  l1M h2M  h1M h2M
+--                (l1 `timesL` r2, r1 `timesR` r2)
+                assignResEndpointsUsingTimesLR  l1M r2M  r1M r2M
             -- i1 anti-consistent and anti-containing zero, i2 positive
             ((Just True, _), (_, Just True), (Just True, _), (Just True, _)) -> 
---                (l1 `timesL` l2, h1 `timesR` l2)
-                assignResEndpointsUsingTimesLR  l1M l2M  h1M l2M
+--                (l1 `timesL` l2, r1 `timesR` l2)
+                assignResEndpointsUsingTimesLR  l1M l2M  r1M l2M
             -- nothing known about i1, i2 positive
             (_, _, (Just True, _), (Just True, _)) -> 
---                ((l1 `timesL` h2) `combineL` (l1 `timesL` l2), 
---                 (h1 `timesR` h2) `combineR` (h1 `timesR` l2))
+--                ((l1 `timesL` r2) `combineL` (l1 `timesL` l2), 
+--                 (r1 `timesR` r2) `combineR` (r1 `timesR` l2))
                 do
                 temp1 <- makeMutable zero 
                 temp2 <- makeMutable zero
                 temp3 <- makeMutable zero
-                timesLInPlace temp1 l1M h2M 
+                timesLInPlace temp1 l1M r2M 
                 timesLInPlace temp2 l1M l2M 
                 combineLInPlace temp3 temp1 temp2
-                timesRInPlace temp1 h1M h2M 
-                timesRInPlace temp2 h1M l2M 
-                combineRInPlace hResM temp1 temp2
+                timesRInPlace temp1 r1M r2M 
+                timesRInPlace temp2 r1M l2M 
+                combineRInPlace rResM temp1 temp2
                 assignMutable lResM temp3
 
             -- i1 consistent and containing zero, i2 negative
             ((_, Just True), (Just True, _), (_, Just True), (_, Just True)) -> 
---                (h1 `timesL` l2, l1 `timesR` l2)
-                assignResEndpointsUsingTimesLR  h1M l2M  l1M l2M
+--                (r1 `timesL` l2, l1 `timesR` l2)
+                assignResEndpointsUsingTimesLR  r1M l2M  l1M l2M
             -- i1 anti-consistent and anti-containing zero, i2 negative
             ((Just True, _), (_, Just True), (_, Just True), (_, Just True)) -> 
---                (h1 `timesL` h2, l1 `timesR` h2)
-                assignResEndpointsUsingTimesLR  h1M h2M  l1M h2M
+--                (r1 `timesL` r2, l1 `timesR` r2)
+                assignResEndpointsUsingTimesLR  r1M r2M  l1M r2M
             -- nothing known about i1, i2 negative
             (_, _, (_, Just True), (_, Just True)) -> 
---                ((h1 `timesL` h2) `combineL` (h1 `timesL` l2), 
---                 (l1 `timesR` h2) `combineR` (l1 `timesR` l2))
+--                ((r1 `timesL` r2) `combineL` (r1 `timesL` l2), 
+--                 (l1 `timesR` r2) `combineR` (l1 `timesR` l2))
                 do
                 temp1 <- makeMutable zero 
                 temp2 <- makeMutable zero
                 temp3 <- makeMutable zero
-                timesLInPlace temp1 h1M h2M 
-                timesLInPlace temp2 h1M l2M 
+                timesLInPlace temp1 r1M r2M 
+                timesLInPlace temp2 r1M l2M 
                 combineLInPlace temp3 temp1 temp2
-                timesRInPlace temp1 l1M h2M 
+                timesRInPlace temp1 l1M r2M 
                 timesRInPlace temp2 l1M l2M 
-                combineRInPlace hResM temp1 temp2
+                combineRInPlace rResM temp1 temp2
                 assignMutable lResM temp3
 
             -----------------------------------------------------------
@@ -242,18 +242,18 @@ multiplyIntervalsInPlace
 
             -- i1 consistent and containing zero, i2 consistent and containing zero
             ((_, Just True), (Just True, _), (_, Just True), (Just True, _)) ->
---                ((l1 `timesL` h2) `minL` (h1 `timesL` l2), 
---                 (l1 `timesR` l2) `maxR` (h1 `timesR` h2))
+--                ((l1 `timesL` r2) `minL` (r1 `timesL` l2), 
+--                 (l1 `timesR` l2) `maxR` (r1 `timesR` r2))
                 do
                 temp1 <- makeMutable zero 
                 temp2 <- makeMutable zero
                 temp3 <- makeMutable zero
-                timesLInPlace temp1 l1M h2M 
-                timesLInPlace temp2 h1M l2M 
+                timesLInPlace temp1 l1M r2M 
+                timesLInPlace temp2 r1M l2M 
                 minLInPlace temp3 temp1 temp2
                 timesRInPlace temp1 l1M l2M 
-                timesRInPlace temp2 h1M h2M 
-                maxRInPlace hResM temp1 temp2
+                timesRInPlace temp2 r1M r2M 
+                maxRInPlace rResM temp1 temp2
                 assignMutable lResM temp3
             -- i1 consistent and containing zero, i2 anti-consistent and anti-containing zero
             ((_, Just True), (Just True, _), (Just True, _), (_, Just True)) ->
@@ -262,27 +262,27 @@ multiplyIntervalsInPlace
                 let z = zero
                 let _ = [z,l1]
                 writeMutable lResM z
-                writeMutable hResM z
+                writeMutable rResM z
             -- i1 consistent and containing zero, i2 unknown
             ((_, Just True), (Just True, _), _, _) ->
---                (((l1 `timesL` h2) `combineL` (h1 `timesL` l2)) `combineL` zero,
---                 ((l1 `timesR` l2) `combineR` (h1 `timesR` h2)) `combineR` zero)
+--                (((l1 `timesL` r2) `combineL` (r1 `timesL` l2)) `combineL` zero,
+--                 ((l1 `timesR` l2) `combineR` (r1 `timesR` r2)) `combineR` zero)
                 do
                 temp1 <- makeMutable zero
                 temp2 <- makeMutable zero
                 temp3 <- makeMutable zero
-                timesLInPlace temp1 l1M h2M 
-                timesLInPlace temp2 h1M l2M 
+                timesLInPlace temp1 l1M r2M 
+                timesLInPlace temp2 r1M l2M 
                 combineLInPlace temp3 temp1 temp2
                 timesRInPlace temp1 l1M l2M 
-                timesRInPlace temp2 h1M h2M 
-                combineRInPlace hResM temp1 temp2
+                timesRInPlace temp2 r1M r2M 
+                combineRInPlace rResM temp1 temp2
                 assignMutable lResM temp3
                 let z = zero
                 let _ = [z,l1]
                 writeMutable temp1 z
                 combineLInPlace lResM lResM temp1
-                combineRInPlace hResM hResM temp1
+                combineRInPlace rResM rResM temp1
                 
             -- i1 anti-consistent and anti-containing zero, i2 consistent and containing zero
             ((Just True, _), (_, Just True), (_, Just True), (Just True, _)) ->
@@ -291,80 +291,80 @@ multiplyIntervalsInPlace
                 let z = zero
                 let _ = [z,l1]
                 writeMutable lResM z
-                writeMutable hResM z
+                writeMutable rResM z
             -- i1 anti-consistent and anti-containing zero, i2 anti-consistent and anti-containing zero
             ((Just True, _), (_, Just True), (Just True, _), (_, Just True)) ->
---                ((l1 `timesL` l2) `maxL` (h1 `timesL` h2),
---                 (l1 `timesR` h2) `minR` (h1 `timesR` l2)) 
+--                ((l1 `timesL` l2) `maxL` (r1 `timesL` r2),
+--                 (l1 `timesR` r2) `minR` (r1 `timesR` l2)) 
                 do
                 temp1 <- makeMutable zero 
                 temp2 <- makeMutable zero
                 temp3 <- makeMutable zero
                 timesLInPlace temp1 l1M l2M 
-                timesLInPlace temp2 h1M h2M 
+                timesLInPlace temp2 r1M r2M 
                 maxLInPlace temp3 temp1 temp2
-                timesRInPlace temp1 l1M h2M 
-                timesRInPlace temp2 h1M l2M 
-                minRInPlace hResM temp1 temp2
+                timesRInPlace temp1 l1M r2M 
+                timesRInPlace temp2 r1M l2M 
+                minRInPlace rResM temp1 temp2
                 assignMutable lResM temp3
             -- i1 anti-consistent and anti-containing zero, i2 unknown
             ((Just True, _), (_, Just True), _, _) -> 
---                ((l1 `timesL` l2) `combineL` (h1 `timesL` h2) `combineL` zero,
---                 (l1 `timesR` h2) `combineR` (h1 `timesR` l2) `combineR` zero) 
+--                ((l1 `timesL` l2) `combineL` (r1 `timesL` r2) `combineL` zero,
+--                 (l1 `timesR` r2) `combineR` (r1 `timesR` l2) `combineR` zero) 
                 do
                 temp1 <- makeMutable zero
                 temp2 <- makeMutable zero
                 temp3 <- makeMutable zero
                 timesLInPlace temp1 l1M l2M 
-                timesLInPlace temp2 h1M h2M 
+                timesLInPlace temp2 r1M r2M 
                 combineLInPlace temp3 temp1 temp2
-                timesRInPlace temp1 l1M h2M 
-                timesRInPlace temp2 h1M l2M 
-                combineRInPlace hResM temp1 temp2
+                timesRInPlace temp1 l1M r2M 
+                timesRInPlace temp2 r1M l2M 
+                combineRInPlace rResM temp1 temp2
                 assignMutable lResM temp3
                 let z = zero
                 let _ = [z,l1]
                 writeMutable temp1 z
                 combineLInPlace lResM lResM temp1
-                combineRInPlace hResM hResM temp1
+                combineRInPlace rResM rResM temp1
                 
             -- i1 unknown, i2 anti-consistent and anti-containing zero
             (_, _, (Just True, _), (_, Just True)) -> 
---                ((l1 `timesL` l2) `combineL` (h1 `timesL` h2) `combineL` zero,
---                 (l1 `timesR` h2) `combineR` (h1 `timesR` l2) `combineR` zero) 
+--                ((l1 `timesL` l2) `combineL` (r1 `timesL` r2) `combineL` zero,
+--                 (l1 `timesR` r2) `combineR` (r1 `timesR` l2) `combineR` zero) 
                 do
                 temp1 <- makeMutable zero
                 temp2 <- makeMutable zero
                 temp3 <- makeMutable zero
                 timesLInPlace temp1 l1M l2M 
-                timesLInPlace temp2 h1M h2M 
+                timesLInPlace temp2 r1M r2M 
                 combineLInPlace temp3 temp1 temp2
-                timesRInPlace temp1 l1M h2M 
-                timesRInPlace temp2 h1M l2M 
-                combineRInPlace hResM temp1 temp2
+                timesRInPlace temp1 l1M r2M 
+                timesRInPlace temp2 r1M l2M 
+                combineRInPlace rResM temp1 temp2
                 assignMutable lResM temp3
                 let z = zero
                 let _ = [z,l1]
                 writeMutable temp1 z
                 combineLInPlace lResM lResM temp1
-                combineRInPlace hResM hResM temp1
+                combineRInPlace rResM rResM temp1
 
             -- i1 unknown, i2 consistent and containing zero
             (_, _, (_, Just True), (Just True, _)) -> 
---                ((l1 `timesL` h2) `combineL` (h1 `timesL` l2) `combineL` zero, 
---                 (l1 `timesR` l2) `combineR` (h1 `timesR` h2) `combineR` zero)
+--                ((l1 `timesL` r2) `combineL` (r1 `timesL` l2) `combineL` zero, 
+--                 (l1 `timesR` l2) `combineR` (r1 `timesR` r2) `combineR` zero)
                 do
                 temp1 <- makeMutable zero
                 temp2 <- makeMutable zero
                 temp3 <- makeMutable zero
                 
-                timesLInPlace temp1 l1M h2M 
-                timesLInPlace temp2 h1M l2M 
+                timesLInPlace temp1 l1M r2M 
+                timesLInPlace temp2 r1M l2M 
                 combineLInPlace temp3 temp1 temp2
                 
                 timesRInPlace temp1 l1M l2M 
-                timesRInPlace temp2 h1M h2M 
-                combineRInPlace hResM temp1 temp2
+                timesRInPlace temp2 r1M r2M 
+                combineRInPlace rResM temp1 temp2
                 
                 assignMutable lResM temp3
                 
@@ -372,40 +372,40 @@ multiplyIntervalsInPlace
                 let _ = [z,l1]
                 writeMutable temp1 z
                 combineLInPlace lResM lResM temp1
-                combineRInPlace hResM hResM temp1
+                combineRInPlace rResM rResM temp1
 
             -- both i1 and i2 unknown sign
             _ ->
---                (foldl1 combineL [l1 `timesL` h2, h1 `timesL` l2, l1 `timesL` l2, h1 `timesL` h2], 
---                 foldl1 combineR [l1 `timesR` h2, h1 `timesR` l2, l1 `timesR` l2, h1 `timesR` h2])
+--                (foldl1 combineL [l1 `timesL` r2, r1 `timesL` l2, l1 `timesL` l2, r1 `timesL` r2], 
+--                 foldl1 combineR [l1 `timesR` r2, r1 `timesR` l2, l1 `timesR` l2, r1 `timesR` r2])
                 do
                 temp1 <- makeMutable zero
                 temp2 <- makeMutable zero
                 temp3 <- makeMutable zero
                 
-                timesLInPlace temp1 l1M h2M 
-                timesLInPlace temp2 h1M l2M
+                timesLInPlace temp1 l1M r2M 
+                timesLInPlace temp2 r1M l2M
                 combineLInPlace temp1 temp1 temp2
                 timesLInPlace temp2 l1M l2M
                 combineLInPlace temp1 temp1 temp2
-                timesLInPlace temp2 h1M h2M
+                timesLInPlace temp2 r1M r2M
                 combineLInPlace temp3 temp1 temp2
                 
-                timesRInPlace temp1 l1M h2M 
-                timesRInPlace temp2 h1M l2M 
+                timesRInPlace temp1 l1M r2M 
+                timesRInPlace temp2 r1M l2M 
                 combineRInPlace temp1 temp1 temp2
                 timesRInPlace temp2 l1M l2M 
                 combineRInPlace temp1 temp1 temp2
-                timesRInPlace temp2 h1M h2M 
-                combineRInPlace hResM temp1 temp2
+                timesRInPlace temp2 r1M r2M 
+                combineRInPlace rResM temp1 temp2
                 
                 assignMutable lResM temp3
     where
-    assignResEndpointsUsingTimesLR l1M l2M h1M h2M =
+    assignResEndpointsUsingTimesLR l1M l2M r1M r2M =
         do
         temp1 <- makeMutable zero
         timesLInPlace temp1 l1M l2M -- beware of aliasing between res and param
-        timesRInPlace hResM h1M h2M
+        timesRInPlace rResM r1M r2M
         assignMutable lResM temp1
 
 
@@ -427,17 +427,17 @@ instance
     where
     powerToNonnegIntInInPlaceEff
             (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
-            res@(MInterval resL resH) a@(MInterval aL aH) n =
+            res@(MInterval resL resR) a@(MInterval aL aR) n =
         do
         l <- readMutable aL 
-        h <- readMutable aH
-        case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
+        r <- readMutable aR
+        case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp r) of
             ((Just True, _), (Just True, _)) -> -- both non-negative
                 do
                 ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff 
                     effPowerEndpt resL aL n 
                 ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff 
-                    effPowerEndpt resH aH n
+                    effPowerEndpt resR aR n
             ((_, Just True), (_, Just True)) -> -- both non-positive
                 do
                 -- negate the parameters, use the result as a temp space (may alias!):
@@ -446,7 +446,7 @@ instance
                 ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff 
                     effPowerEndpt resL resL n 
                 ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff 
-                    effPowerEndpt resH resH n
+                    effPowerEndpt resR resR n
                 case even n of
                     True -> 
                         return () -- keep result positive
@@ -459,23 +459,23 @@ instance
                     True ->
                         do
                         let zeroI = zero 
-                        let _ = [zeroI, Interval l h]
+                        let _ = [zeroI, Interval l r]
                         zeroM <- unsafeMakeMutable zeroI 
                         NumOrd.maxInInPlaceEff effMinMax res res zeroM
                     False -> return ()
     powerToNonnegIntOutInPlaceEff
             (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
-            res@(MInterval resL resH) a@(MInterval aL aH) n =
+            res@(MInterval resL resR) a@(MInterval aL aR) n =
         do
         l <- readMutable aL 
-        h <- readMutable aH
-        case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp h) of
+        r <- readMutable aR
+        case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp r) of
             ((Just True, _), (Just True, _)) -> -- both non-negative
                 do
                 ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff 
                     effPowerEndpt resL aL n 
                 ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff 
-                    effPowerEndpt resH aH n
+                    effPowerEndpt resR aR n
             ((_, Just True), (_, Just True)) -> -- both non-positive
                 do
                 -- negate the parameters, use the result as a temp space (may alias!):
@@ -484,7 +484,7 @@ instance
                 ArithUpDn.powerNonnegToNonnegIntDnInPlaceEff 
                     effPowerEndpt resL resL n 
                 ArithUpDn.powerNonnegToNonnegIntUpInPlaceEff 
-                    effPowerEndpt resH resH n
+                    effPowerEndpt resR resR n
                 case even n of
                     True -> 
                         return () -- keep result positive
@@ -497,7 +497,7 @@ instance
                     True ->
                         do
                         let zeroI = zero 
-                        let _ = [zeroI, Interval l h]
+                        let _ = [zeroI, Interval l r]
                         zeroM <- unsafeMakeMutable zeroI 
                         NumOrd.maxOutInPlaceEff effMinMax res res zeroM
                     False -> return ()
@@ -513,7 +513,7 @@ instance
     where
     divOutInPlaceEff 
             (effortComp, effortMinmax, (effortMult, effortDiv)) 
-            res@(MInterval resL resH) a@(MInterval aL aH) b@(MInterval bL bH) =
+            res@(MInterval resL resR) a@(MInterval aL aR) b@(MInterval bL bR) =
         do
         temp <- makeMutable zero
         recipIntervalInPlace
@@ -531,7 +531,7 @@ instance
         divDn = ArithUpDn.divDnInPlaceEff effortDiv
     divInInPlaceEff 
             (effortComp, effortMinmax, (effortMult, effortDiv)) 
-            res@(MInterval resL resH) a@(MInterval aL aH) b@(MInterval bL bH) =
+            res@(MInterval resL resR) a@(MInterval aL aR) b@(MInterval bL bR) =
         do
         temp <- makeMutable zero
         recipIntervalInPlace
@@ -549,7 +549,7 @@ instance
         divDn = ArithUpDn.divDnInPlaceEff effortDiv
 
 recipIntervalInPlace pPosNonnegNegNonpos divL divR fallback 
-        res@(MInterval resL resH) a@(MInterval aL aH) =
+        res@(MInterval resL resR) a@(MInterval aL aR) =
     do
     let oneP = one
     let top = RefOrd.top 
@@ -557,19 +557,19 @@ recipIntervalInPlace pPosNonnegNegNonpos divL divR fallback
     let _ = [top, bottom, fallback] 
     oneM <- unsafeMakeMutable oneP  
     l <- readMutable aL
-    h <- readMutable aH
-    let _ = [l, h, oneP]
-    case (pPosNonnegNegNonpos l, pPosNonnegNegNonpos h) of
+    r <- readMutable aR
+    let _ = [l, r, oneP]
+    case (pPosNonnegNegNonpos l, pPosNonnegNegNonpos r) of
         -- positive:
         ((Just True, _, _, _), (Just True, _, _, _)) ->
             do
-            divL resL oneM aH
-            divR resH oneM aL
+            divL resL oneM aR
+            divR resR oneM aL
         -- negative:
         ((_, _, Just True, _), (_, _, Just True, _)) ->  
             do
-            divL resL oneM aH
-            divR resH oneM aL
+            divL resL oneM aR
+            divR resR oneM aL
         -- consistent around zero:
         ((_, _, _, Just True), (_, Just True, _, _)) ->
             writeMutable res bottom

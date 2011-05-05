@@ -37,14 +37,14 @@ import Control.Monad.ST (ST)
 instance (ArithUpDn.RoundedMixedAddInPlace t tn, CanBeMutable t) => 
     RoundedMixedAddInPlace (Interval t) tn
     where
-    mixedAddInInPlaceEff eff (MInterval resL resH) (MInterval aL aH) n =
+    mixedAddInInPlaceEff eff (MInterval resL resR) (MInterval aL aR) n =
         do
         ArithUpDn.mixedAddUpInPlaceEff eff resL aL n
-        ArithUpDn.mixedAddDnInPlaceEff eff resH aH n
-    mixedAddOutInPlaceEff eff (MInterval resL resH) (MInterval aL aH) n =
+        ArithUpDn.mixedAddDnInPlaceEff eff resR aR n
+    mixedAddOutInPlaceEff eff (MInterval resL resR) (MInterval aL aR) n =
         do
         ArithUpDn.mixedAddDnInPlaceEff eff resL aL n
-        ArithUpDn.mixedAddUpInPlaceEff eff resH aH n
+        ArithUpDn.mixedAddUpInPlaceEff eff resR aR n
 
 instance    
     (ArithUpDn.RoundedMixedMultiplyInPlace e tn,
@@ -93,15 +93,15 @@ multiplySingletonAndIntervalInPlace
         sNonnegNonpos iNonnegNonpos 
         timesLInPlace timesRInPlace
         combineLInPlace combineRInPlace
-        (MInterval lResM hResM) s1 (MInterval l2M h2M) =
+        (MInterval lResM rResM) s1 (MInterval l2M r2M) =
     do
     let _ = [combineLInPlace, combineRInPlace]
     l2 <- readMutable l2M
-    h2 <- readMutable h2M
-    let _ = [l2,h2]
+    r2 <- readMutable r2M
+    let _ = [l2,r2]
     case (sNonnegNonpos s1, -- sign of s1 
               iNonnegNonpos l2, -- sign of l2
-              iNonnegNonpos h2 -- sign of h2 
+              iNonnegNonpos r2 -- sign of r2 
              ) of
              
             -- s1 is zero
@@ -111,32 +111,32 @@ multiplySingletonAndIntervalInPlace
                 let z = zero
                 let _ = [z,l2]
                 writeMutable lResM z
-                writeMutable hResM z
+                writeMutable rResM z
  
             -- s1 non negative
             ((Just True, _), _, _) -> 
---                (s1 `timesL` l2, s1 `timesR` h2)
+--                (s1 `timesL` l2, s1 `timesR` r2)
                 do
-                assignResEndpointsUsingTimesLR l2M h2M
+                assignResEndpointsUsingTimesLR l2M r2M
             
             -- s1 non positive
             ((_, Just True), _, _) -> 
---                (s1 `timesL` h2, s1 `timesR` l2)
+--                (s1 `timesL` r2, s1 `timesR` l2)
                 do
-                assignResEndpointsUsingTimesLR h2M l2M
+                assignResEndpointsUsingTimesLR r2M l2M
 
             -- nothing known about s1, i2 positive
             (_, (Just True, _), (Just True, _)) -> 
---                ((s1 `timesL` h2) `combineL` (s1 `timesL` l2), 
---                 (s1 `timesR` h2) `combineR` (s1 `timesR` l2))
+--                ((s1 `timesL` r2) `combineL` (s1 `timesL` l2), 
+--                 (s1 `timesR` r2) `combineR` (s1 `timesR` l2))
                 do
                 assignResEndpointsUsingBothOptions
                 return ()
                 
             -- nothing known about s1, i2 negative
             (_, (_, Just True), (_, Just True)) -> 
---                ((s1 `timesL` h2) `combineL` (s1 `timesL` l2), 
---                 (s1 `timesR` h2) `combineR` (s1 `timesR` l2))
+--                ((s1 `timesL` r2) `combineL` (s1 `timesL` l2), 
+--                 (s1 `timesR` r2) `combineR` (s1 `timesR` l2))
                 do
                 assignResEndpointsUsingBothOptions
                 return ()
@@ -144,8 +144,8 @@ multiplySingletonAndIntervalInPlace
 
             -- both s1 and i2 are around zero
             _ ->
---                ((s1 `timesL` l2) `combineL` (s1 `timesL` h2) `combineL` zero,
---                 (s1 `timesR` l2) `combineR` (s1 `timesR` h2) `combineR` zero)
+--                ((s1 `timesL` l2) `combineL` (s1 `timesL` r2) `combineL` zero,
+--                 (s1 `timesR` l2) `combineR` (s1 `timesR` r2) `combineR` zero)
 --                -- need to include zero to account for 
 --                -- consistent vs anti-consistent cases giving constant 0
                 do
@@ -154,25 +154,25 @@ multiplySingletonAndIntervalInPlace
                 let _ = [z,l2]
                 writeMutable temp1 z
                 combineLInPlace lResM lResM temp1
-                combineRInPlace hResM hResM temp1
+                combineRInPlace rResM rResM temp1
     where
-    assignResEndpointsUsingTimesLR l2M h2M =
+    assignResEndpointsUsingTimesLR l2M r2M =
         do
         temp1 <- makeMutable zero
         timesLInPlace temp1 l2M s1 -- beware of aliasing between res and param
-        timesRInPlace hResM h2M s1
+        timesRInPlace rResM r2M s1
         assignMutable lResM temp1
     assignResEndpointsUsingBothOptions =
         do
         temp1 <- makeMutable zero
         temp2 <- makeMutable zero
         temp3 <- makeMutable zero
-        timesLInPlace temp1 h2M s1 
+        timesLInPlace temp1 r2M s1 
         timesLInPlace temp2 l2M s1 
         combineLInPlace temp3 temp1 temp2
-        timesRInPlace temp1 h2M s1 
+        timesRInPlace temp1 r2M s1 
         timesRInPlace temp2 l2M s1 
-        combineRInPlace hResM temp1 temp2
+        combineRInPlace rResM temp1 temp2
         assignMutable lResM temp3
         return temp1
     

@@ -41,10 +41,10 @@ instance
     where
     type RefOrd.PartialCompareEffortIndicator (Interval e) = 
         NumOrd.PartialCompareEffortIndicator e 
-    pCompareDefaultEffort (Interval l h) = 
+    pCompareDefaultEffort (Interval l r) = 
         NumOrd.pCompareDefaultEffort l
-    pCompareEff effort (Interval l1 h1) (Interval l2 h2) =
-            case (c l1 l2, c h1 h2) of
+    pCompareEff effort (Interval l1 r1) (Interval l2 r2) =
+            case (c l1 l2, c r1 r2) of
                 (Just EQ, Just EQ) -> Just EQ
                 (Just LT, Just GT) -> Just LT  
                 (Just LT, Just EQ) -> Just LT  
@@ -72,41 +72,41 @@ instance (NumOrd.RoundedLattice e) => RefOrd.OuterRoundedBasisEffort (Interval e
     where
     type RefOrd.PartialJoinOutEffortIndicator (Interval e) = 
         NumOrd.MinmaxEffortIndicator e 
-    partialJoinOutDefaultEffort (Interval l h) =
+    partialJoinOutDefaultEffort (Interval l r) =
         NumOrd.minmaxDefaultEffort l
     
 instance 
     (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
     RefOrd.OuterRoundedBasis (Interval e) 
     where
-    partialJoinOutEff effort (Interval l1 h1) (Interval l2 h2) = 
-            case l <=? h of
-                Just True -> Just $ Interval l h
+    partialJoinOutEff effort (Interval l1 r1) (Interval l2 r2) = 
+            case l <=? r of
+                Just True -> Just $ Interval l r
                 _ -> Nothing
             where
             (<=?) = NumOrd.pLeqEff (NumOrd.pCompareDefaultEffort l)
             l = NumOrd.maxDnEff effort l1 l2
-            h = NumOrd.minUpEff effort h1 h2
+            r = NumOrd.minUpEff effort r1 r2
 
 instance (NumOrd.RoundedLattice e) => RefOrd.InnerRoundedBasisEffort (Interval e)
     where
     type RefOrd.PartialJoinInEffortIndicator (Interval e) = 
         NumOrd.MinmaxEffortIndicator e 
-    partialJoinInDefaultEffort (Interval l h) =
+    partialJoinInDefaultEffort (Interval l r) =
         NumOrd.minmaxDefaultEffort l
 
 instance 
     (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
     RefOrd.InnerRoundedBasis (Interval e)
     where
-    partialJoinInEff effort (Interval l1 h1) (Interval l2 h2) = 
-            case l <=? h of
-                Just True -> Just $ Interval l h
+    partialJoinInEff effort (Interval l1 r1) (Interval l2 r2) = 
+            case l <=? r of
+                Just True -> Just $ Interval l r
                 _ -> Nothing
             where
             (<=?) = NumOrd.pLeqEff (NumOrd.pCompareDefaultEffort l)
             l = NumOrd.maxUpEff effort l1 l2
-            h = NumOrd.minDnEff effort h1 h2
+            r = NumOrd.minDnEff effort r1 r2
 
 instance 
     (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
@@ -121,23 +121,23 @@ instance
     where
     type RefOrd.JoinMeetOutEffortIndicator (Interval e) = 
         NumOrd.MinmaxEffortIndicator e
-    joinmeetOutDefaultEffort (Interval l h) =
+    joinmeetOutDefaultEffort (Interval l r) =
         NumOrd.minmaxDefaultEffort l 
 
 instance 
     (NumOrd.RoundedLattice e) => 
     (RefOrd.OuterRoundedLattice (Interval e)) 
     where
-    joinOutEff effort (Interval l1 h1) (Interval l2 h2) =
-            Interval l h
+    joinOutEff effort (Interval l1 r1) (Interval l2 r2) =
+            Interval l r
             where
             l = NumOrd.maxDnEff effort l1 l2
-            h = NumOrd.minUpEff effort h1 h2
-    meetOutEff effort (Interval l1 h1) (Interval l2 h2) =
-            Interval l h
+            r = NumOrd.minUpEff effort r1 r2
+    meetOutEff effort (Interval l1 r1) (Interval l2 r2) =
+            Interval l r
             where
             l = NumOrd.minDnEff effort l1 l2
-            h = NumOrd.maxUpEff effort h1 h2
+            r = NumOrd.maxUpEff effort r1 r2
 
 instance 
     (NumOrd.RoundedLatticeEffort e) => 
@@ -145,23 +145,23 @@ instance
     where
     type RefOrd.JoinMeetInEffortIndicator (Interval e) = 
         NumOrd.MinmaxEffortIndicator e
-    joinmeetInDefaultEffort (Interval l h) =
+    joinmeetInDefaultEffort (Interval l r) =
         NumOrd.minmaxDefaultEffort l 
 
 instance 
     (NumOrd.RoundedLattice e) => 
     (RefOrd.InnerRoundedLattice (Interval e)) 
     where
-    joinInEff effort (Interval l1 h1) (Interval l2 h2) =
-            Interval l h
+    joinInEff effort (Interval l1 r1) (Interval l2 r2) =
+            Interval l r
             where
             l = NumOrd.maxUpEff effort l1 l2
-            h = NumOrd.minDnEff effort h1 h2
-    meetInEff effort (Interval l1 h1) (Interval l2 h2) =
-            Interval l h
+            r = NumOrd.minDnEff effort r1 r2
+    meetInEff effort (Interval l1 r1) (Interval l2 r2) =
+            Interval l r
             where
             l = NumOrd.minUpEff effort l1 l2
-            h = NumOrd.maxDnEff effort h1 h2
+            r = NumOrd.maxDnEff effort r1 r2
 
 instance 
     (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
@@ -172,34 +172,34 @@ instance
     (RefOrd.OuterRoundedLatticeInPlace (Interval e))
     where
     joinOutInPlaceEff effort 
-            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
         NumOrd.maxDnInPlaceEff effort resLM l1M l2M
-        NumOrd.minUpInPlaceEff effort resHM h1M h2M
+        NumOrd.minUpInPlaceEff effort resRM r1M r2M
     meetOutInPlaceEff effort 
-            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
         NumOrd.minDnInPlaceEff effort resLM l1M l2M
-        NumOrd.maxUpInPlaceEff effort resHM h1M h2M
+        NumOrd.maxUpInPlaceEff effort resRM r1M r2M
 
 instance
     (NumOrd.RoundedLatticeInPlace e) =>
     (RefOrd.InnerRoundedLatticeInPlace (Interval e))
     where
     joinInInPlaceEff effort 
-            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
         NumOrd.maxUpInPlaceEff effort resLM l1M l2M
-        NumOrd.minDnInPlaceEff effort resHM h1M h2M
+        NumOrd.minDnInPlaceEff effort resRM r1M r2M
     meetInInPlaceEff effort 
-            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
         NumOrd.minUpInPlaceEff effort resLM l1M l2M
-        NumOrd.maxDnInPlaceEff effort resHM h1M h2M
+        NumOrd.maxDnInPlaceEff effort resRM r1M r2M
 
 instance (NumOrd.ArbitraryOrderedTuple e) => RefOrd.ArbitraryOrderedTuple (Interval e) where
    type RefOrd.Area (Interval e) = NumOrd.Area e
-   areaWhole (Interval l h) = NumOrd.areaWhole l
+   areaWhole (Interval l r) = NumOrd.areaWhole l
    arbitraryTupleInAreaRelatedBy area = 
        arbitraryIntervalTupleInAreaRefinementRelatedBy (Just area)
    arbitraryTupleRelatedBy = 
@@ -227,8 +227,8 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices thinIndices co
     endpointIndices = 
         concat $ map (\ix -> [(ix,-1), (ix,1)]) indices
     endpointsToIntervals [] = []
-    endpointsToIntervals (l : h : rest) =
-        (Interval l h) : (endpointsToIntervals rest)
+    endpointsToIntervals (l : r : rest) =
+        (Interval l r) : (endpointsToIntervals rest)
     endpointConstraintsVersions =
 --        unsafePrintReturn 
 --        ("arbitraryIntervalTupleRelatedBy:"

@@ -30,5 +30,5 @@ import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.Interval
 
 instance (HasLegalValues e) => HasLegalValues (Interval e) where
-    isLegal (Interval l h) = isLegal l && isLegal h 
+    isLegal (Interval l r) = isLegal l && isLegal r 
 
