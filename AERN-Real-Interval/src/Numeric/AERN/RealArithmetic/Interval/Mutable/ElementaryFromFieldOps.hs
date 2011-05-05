@@ -138,46 +138,51 @@ instance
     => 
     (ArithInOut.RoundedSquareRootInPlace (Interval e))
     where
-    sqrtOutInPlaceEff 
-        ((effortField, effortMixedField),
-         (Int1To10 effortNewton),
-         ((effortMeet, effortComp), effortConv)) 
-        (MInterval resL resR)
-        (MInterval lM rM) =
-            do
-            (MInterval forgetMeL forgetMeR) <- makeMutable zero 
-            sqrtOutThinArgInPlace 
-                effortField effortMixedField 
-                effortMeet effortComp effortConv 
-                (MInterval resL forgetMeR)
-                effortNewton 
-                lM
-            sqrtOutThinArgInPlace
-                effortField effortMixedField
-                effortMeet effortComp effortConv 
-                (MInterval forgetMeL resR)
-                effortNewton 
-                rM
+    sqrtOutInPlaceEff
+        = pureToMutable1Eff ArithInOut.sqrtOutEff
+
+-- the following is a proper in-place version - but it currently fails the test        
+        
+--        ((effortField, effortMixedField),
+--         (Int1To10 effortNewton),
+--         ((effortMeet, effortComp), effortConv)) 
+--        (MInterval resL resR)
+--        (MInterval lM rM) =
+--            do
+--            (MInterval forgetMeL forgetMeR) <- makeMutable zero 
+--            sqrtOutThinArgInPlace 
+--                effortField effortMixedField 
+--                effortMeet effortComp effortConv 
+--                (MInterval resL forgetMeR)
+--                effortNewton 
+--                lM
+--            sqrtOutThinArgInPlace
+--                effortField effortMixedField
+--                effortMeet effortComp effortConv 
+--                (MInterval forgetMeL resR)
+--                effortNewton 
+--                rM
     sqrtInInPlaceEff 
-        ((effortField, effortMixedField),
-         (Int1To10 effortNewton),
-         ((effortMeet, effortComp), effortConv)) 
-        (MInterval resL resR)
-        (MInterval lM rM) =
-            do
-            (MInterval forgetMeL forgetMeR) <- makeMutable zero 
-            sqrtOutThinArgInPlace 
-                effortField effortMixedField 
-                effortMeet effortComp effortConv 
-                (MInterval forgetMeL resL)
-                effortNewton 
-                lM
-            sqrtOutThinArgInPlace
-                effortField effortMixedField
-                effortMeet effortComp effortConv 
-                (MInterval resR forgetMeR)
-                effortNewton 
-                rM
+        = pureToMutable1Eff ArithInOut.sqrtInEff
+--        ((effortField, effortMixedField),
+--         (Int1To10 effortNewton),
+--         ((effortMeet, effortComp), effortConv)) 
+--        (MInterval resL resR)
+--        (MInterval lM rM) =
+--            do
+--            (MInterval forgetMeL forgetMeR) <- makeMutable zero 
+--            sqrtOutThinArgInPlace 
+--                effortField effortMixedField 
+--                effortMeet effortComp effortConv 
+--                (MInterval forgetMeL resL)
+--                effortNewton 
+--                lM
+--            sqrtOutThinArgInPlace
+--                effortField effortMixedField
+--                effortMeet effortComp effortConv 
+--                (MInterval resR forgetMeR)
+--                effortNewton 
+--                rM
             
 sqrtOutInPlaceIters, sqrtInInPlaceIters ::
     (CanBeMutable e, Show e,
