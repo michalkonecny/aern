@@ -68,14 +68,17 @@ instance (NumOrd.HasExtrema e) => (RefOrd.HasBottom (Interval e))
 
 instance (NumOrd.HasExtrema e) => (RefOrd.HasExtrema (Interval e))
 
-instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
-    (RefOrd.OuterRoundedBasis (Interval e)) 
+instance (NumOrd.RoundedLattice e) => RefOrd.OuterRoundedBasisEffort (Interval e)
     where
     type RefOrd.PartialJoinOutEffortIndicator (Interval e) = 
         NumOrd.MinmaxEffortIndicator e 
     partialJoinOutDefaultEffort (Interval l h) =
         NumOrd.minmaxDefaultEffort l
+    
+instance 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
+    RefOrd.OuterRoundedBasis (Interval e) 
+    where
     partialJoinOutEff effort (Interval l1 h1) (Interval l2 h2) = 
             case l <=? h of
                 Just True -> Just $ Interval l h
@@ -85,14 +88,17 @@ instance
             l = NumOrd.maxDnEff effort l1 l2
             h = NumOrd.minUpEff effort h1 h2
 
-instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
-    (RefOrd.InnerRoundedBasis (Interval e)) 
+instance (NumOrd.RoundedLattice e) => RefOrd.InnerRoundedBasisEffort (Interval e)
     where
     type RefOrd.PartialJoinInEffortIndicator (Interval e) = 
         NumOrd.MinmaxEffortIndicator e 
     partialJoinInDefaultEffort (Interval l h) =
         NumOrd.minmaxDefaultEffort l
+
+instance 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
+    RefOrd.InnerRoundedBasis (Interval e)
+    where
     partialJoinInEff effort (Interval l1 h1) (Interval l2 h2) = 
             case l <=? h of
                 Just True -> Just $ Interval l h
