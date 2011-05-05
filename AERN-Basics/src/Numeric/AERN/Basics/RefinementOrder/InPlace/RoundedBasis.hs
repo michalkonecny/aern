@@ -77,4 +77,41 @@ partialJoinInEffFromInPlace ::
  (PartialJoinInEffortIndicator t) -> t -> t -> Maybe t
 partialJoinInEffFromInPlace = mutablePartial2EffToPure partialJoinInInPlaceEff 
 
--- TODO add properties and tests for consistency with pure version
+propOuterInnerRoundedBasisJoinInPlaceConsistentWithPure ::
+    (PartialComparison t, 
+     OuterRoundedBasisInPlace t, InnerRoundedBasisInPlace t, 
+     RoundedBasis t, 
+     CanBeMutable t) =>
+    t -> 
+    (PartialJoinOutEffortIndicator t, PartialJoinInEffortIndicator t, 
+     PartialCompareEffortIndicator t) -> 
+     UniformlyOrderedPair t -> Bool
+propOuterInnerRoundedBasisJoinInPlaceConsistentWithPure 
+    _ (partialjoinOutEffort, partialjoinInEffort, effortComp)
+        (UniformlyOrderedPair (e1,e2)) =
+    inPlaceConsistentWithPurePartial2 (pLeqEff effortComp) 
+        (partialJoinOutInPlaceEff partialjoinOutEffort)  
+        (partialJoinInInPlaceEff partialjoinInEffort)
+        (partialJoinOutEff partialjoinOutEffort) 
+        (partialJoinInEff partialjoinInEffort) 
+        e1 e2  
+
+testsOuterInnerRoundedBasisInPlace :: 
+    (PartialComparison t,
+     OuterRoundedBasisInPlace t, InnerRoundedBasisInPlace t, 
+     RoundedBasis t, 
+     CanBeMutable t,
+     Arbitrary t, Show t, 
+     Arbitrary (PartialJoinOutEffortIndicator t), Show (PartialJoinOutEffortIndicator t), 
+     Arbitrary (PartialJoinInEffortIndicator t), Show (PartialJoinInEffortIndicator t), 
+     Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t), 
+     ArbitraryOrderedTuple t,
+     Eq t
+     ) => 
+    (String, t) -> Test
+testsOuterInnerRoundedBasisInPlace (name, sample) =
+    testGroup (name ++ " (join,meet) rounded in-place") $
+        [
+         testProperty "join in-place=pure"
+             (propOuterInnerRoundedBasisJoinInPlaceConsistentWithPure sample)
+        ]
