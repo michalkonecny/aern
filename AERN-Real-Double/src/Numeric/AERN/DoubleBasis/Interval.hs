@@ -136,7 +136,7 @@ module Numeric.AERN.DoubleBasis.Interval
     (<+>),(<->),(<*>),(</>),
 
     -- *** Mixed type operations
-    (|<+>),(<+>|),(|<*>),(<*>|),(</>|),
+    (|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
 
     -- ** Special constants 
     piOut,eOut,
@@ -177,7 +177,7 @@ module Numeric.AERN.DoubleBasis.Interval
     (>+<),(>-<),(>*<),(>/<),
     
     -- *** Mixed type operations
-    (|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
+    (|>+<),(>+<|),(|>*<),(>*<|),(>/<|),(>^<),
     
     -- ** Special constants 
     piIn,eIn,
@@ -233,9 +233,9 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
   (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..))
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort as RARORODE
- ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),
+ ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
   piOut,eOut,absOut,expOut,sqrtOut,
-  (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
+  (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),(>^<),
   piIn,eIn,absIn,expIn,sqrtIn)
  
 import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
@@ -280,6 +280,8 @@ least = BNO.least
 
 greatest :: DI
 greatest = BNO.greatest
+
+infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
 
 -- | Partial equality
 (==?) :: DI -> DI -> Maybe Bool
@@ -338,6 +340,10 @@ top = BRO.top
 -- | Convenience Unicode notation for 'top'
 (⊤) :: DI
 (⊤) = (BRO.⊤)
+
+infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>?, ⊏?, ⊑?, ⊒?, ⊐?
+infixr 3 </\>, >/\<, <⊓>, >⊓< 
+infixr 2 <\/>?, <\/>, >\/<, <⊔>?, <⊔>, >⊔< 
 
 -- | Partial equality
 (|==?) :: DI -> DI -> Maybe Bool
@@ -423,6 +429,17 @@ top = BRO.top
 (<⊔>?) :: DI -> DI -> Maybe DI 
 (<⊔>?) = (BROODE.<⊔>?)
 
+infixl 6 <+>, >+<, <->, >-<
+infixl 7 <*>, >*<
+infixl 8 <^>, >^<
+infixl 7 </>, >/<
+
+infixr 6 |<+>, |>+<
+infixl 6 <+>|, >+<|
+infixr 7 |<*>, |>*<
+infixl 7 <*>|, >*<|
+infixl 7 </>|, >/<|
+
 -- | Outward rounded addition
 (<+>) :: DI -> DI -> DI
 (<+>) = (RARORODE.<+>)
@@ -494,6 +511,14 @@ top = BRO.top
 -- | Inward rounded multiplicative scalar reciprocal right action
 (>/<|) :: RAROR.RoundedMixedDivide DI tn => DI -> tn -> DI  
 (>/<|) = (RARORODE.>/<|)
+
+-- | Outward rounded power
+(<^>) :: DI -> Int -> DI
+(<^>) = (RARORODE.<^>)
+
+-- | Inward rounded power
+(>^<) :: DI -> Int -> DI
+(>^<) = (RARORODE.>^<)
 
 -- | Outward rounded pi
 piOut :: DI

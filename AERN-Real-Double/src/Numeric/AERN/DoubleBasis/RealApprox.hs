@@ -121,7 +121,7 @@ module Numeric.AERN.DoubleBasis.RealApprox
     (<+>),(<->),(<*>),(</>),
 
     -- *** Mixed type operations
-    (|<+>),(<+>|),(|<*>),(<*>|),(</>|),
+    (|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
 
     -- ** Special constants 
     piOut,eOut,
@@ -165,7 +165,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
   (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..))
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort as RARORODE
- ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),
+ ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
   piOut,eOut,absOut,expOut,sqrtOut)
  
 import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
@@ -192,6 +192,8 @@ least = BNO.least
 
 greatest :: RealApprox
 greatest = BNO.greatest
+
+infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
 
 -- | Partial equality
 (==?) :: RealApprox -> RealApprox -> Maybe Bool
@@ -250,6 +252,10 @@ top = BRO.top
 -- | Convenience Unicode notation for 'top'
 (⊤) :: RealApprox
 (⊤) = (BRO.⊤)
+
+infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>?, ⊏?, ⊑?, ⊒?, ⊐?
+infixr 3 </\>, <⊓> 
+infixr 2 <\/>?, <⊔>?
 
 -- | Partial equality
 (|==?) :: RealApprox -> RealApprox -> Maybe Bool
@@ -311,6 +317,17 @@ top = BRO.top
 (<⊔>?) :: RealApprox -> RealApprox -> Maybe RealApprox 
 (<⊔>?) = (BROODE.<⊔>?)
 
+infixl 6 <+>, <->
+infixl 7 <*>
+infixl 8 <^>
+infixl 7 </>
+
+infixr 6 |<+>
+infixl 6 <+>|
+infixr 7 |<*>
+infixl 7 <*>|
+infixl 7 </>|
+
 -- | Outward rounded addition
 (<+>) :: RealApprox -> RealApprox -> RealApprox
 (<+>) = (RARORODE.<+>)
@@ -346,6 +363,10 @@ top = BRO.top
 -- | Outward rounded multiplicative scalar reciprocal right action
 (</>|) :: RAROR.RoundedMixedDivide RealApprox tn => RealApprox -> tn -> RealApprox
 (</>|) = (RARORODE.</>|)
+
+-- | Outward rounded power
+(<^>) :: RealApprox -> Int -> RealApprox
+(<^>) = (RARORODE.<^>)
 
 -- | Outward rounded pi
 piOut :: RealApprox
