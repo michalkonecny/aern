@@ -229,7 +229,7 @@ import qualified Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort as BROODE
 
 import Numeric.AERN.RealArithmetic.Interval()
 
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR 
   (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..))
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort as RARORODE
@@ -248,6 +248,23 @@ import Numeric.AERN.RealArithmetic.Interval.Double(width, bisect)
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Test.QuickCheck
+
+infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
+
+infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>?, ⊏?, ⊑?, ⊒?, ⊐?
+infixr 3 </\>, >/\<, <⊓>, >⊓< 
+infixr 2 <\/>?, <\/>, >\/<, <⊔>?, <⊔>, >⊔< 
+
+infixl 6 <+>, >+<, <->, >-<
+infixl 7 <*>, >*<
+infixl 8 <^>, >^<
+infixl 7 </>, >/<
+
+infixr 6 |<+>, |>+<
+infixl 6 <+>|, >+<|
+infixr 7 |<*>, |>*<
+infixl 7 <*>|, >*<|
+infixl 7 </>|, >/<|
 
 -- | 
 -- Intervals with Double endpoints. 
@@ -280,8 +297,6 @@ least = BNO.least
 
 greatest :: DI
 greatest = BNO.greatest
-
-infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
 
 -- | Partial equality
 (==?) :: DI -> DI -> Maybe Bool
@@ -340,10 +355,6 @@ top = BRO.top
 -- | Convenience Unicode notation for 'top'
 (⊤) :: DI
 (⊤) = (BRO.⊤)
-
-infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>?, ⊏?, ⊑?, ⊒?, ⊐?
-infixr 3 </\>, >/\<, <⊓>, >⊓< 
-infixr 2 <\/>?, <\/>, >\/<, <⊔>?, <⊔>, >⊔< 
 
 -- | Partial equality
 (|==?) :: DI -> DI -> Maybe Bool
@@ -428,17 +439,6 @@ infixr 2 <\/>?, <\/>, >\/<, <⊔>?, <⊔>, >⊔<
 {-| Convenience Unicode notation for '<\/>?' -}
 (<⊔>?) :: DI -> DI -> Maybe DI 
 (<⊔>?) = (BROODE.<⊔>?)
-
-infixl 6 <+>, >+<, <->, >-<
-infixl 7 <*>, >*<
-infixl 8 <^>, >^<
-infixl 7 </>, >/<
-
-infixr 6 |<+>, |>+<
-infixl 6 <+>|, >+<|
-infixr 7 |<*>, |>*<
-infixl 7 <*>|, >*<|
-infixl 7 </>|, >/<|
 
 -- | Outward rounded addition
 (<+>) :: DI -> DI -> DI
