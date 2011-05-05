@@ -187,83 +187,190 @@ type RealApprox = Interval Double
 sampleRealApprox :: RealApprox
 sampleRealApprox = Interval 0 0
 
-least,greatest :: RealApprox
+least :: RealApprox
 least = BNO.least
+
+greatest :: RealApprox
 greatest = BNO.greatest
 
-(==?),(<==>?),(</=>?),
- (<?),(>?),(<=?),(>=?) :: RealApprox -> RealApprox -> Maybe Bool
+-- | Partial equality
+(==?) :: RealApprox -> RealApprox -> Maybe Bool
 (==?) = (BNOODE.==?) 
+
+-- | Partial `is comparable to`
+(<==>?) :: RealApprox -> RealApprox -> Maybe Bool
 (<==>?) = (BNOODE.<==>?)
+
+-- | Partial `is not comparable to`
+(</=>?) :: RealApprox -> RealApprox -> Maybe Bool
 (</=>?) = (BNOODE.</=>?)
+
+-- | Partial `strictly less than`
+(<?) :: RealApprox -> RealApprox -> Maybe Bool
 (<?) = (BNOODE.<?)
+
+-- | Partial `strictly greater than`
+(>?) :: RealApprox -> RealApprox -> Maybe Bool
 (>?) = (BNOODE.>?)
+
+-- | Partial `less than or equal to`
+(<=?) :: RealApprox -> RealApprox -> Maybe Bool
 (<=?) = (BNOODE.<=?)
+
+-- | Partial `greater than or equal to`
+(>=?) :: RealApprox -> RealApprox -> Maybe Bool
 (>=?) = (BNOODE.>=?)
  
-minOut,maxOut,minIn,maxIn :: RealApprox -> RealApprox -> RealApprox
+-- | Outward rounded minimum
+minOut :: RealApprox -> RealApprox -> RealApprox
 minOut = BNOODE.minOut
+
+-- | Outward rounded maximum
+maxOut :: RealApprox -> RealApprox -> RealApprox
 maxOut = BNOODE.maxOut
+
+-- | Inward rounded minimum
+minIn :: RealApprox -> RealApprox -> RealApprox
 minIn = BNOODE.minIn
+
+-- | Inward rounded maximum
+maxIn :: RealApprox -> RealApprox -> RealApprox
 maxIn = BNOODE.maxIn
 
-bottom,top,(⊥),(⊤) :: RealApprox
+bottom :: RealApprox
 bottom = BRO.bottom
+
+top :: RealApprox
 top = BRO.top
+
+-- | Convenience Unicode notation for 'bottom'
+(⊥) :: RealApprox
 (⊥) = (BRO.⊥)
+
+-- | Convenience Unicode notation for 'top'
+(⊤) :: RealApprox
 (⊤) = (BRO.⊤)
 
-(|==?),(|<==>?),(|</=>?),
- (|<?),(|>?),(|<=?),(|>=?),
- (⊏?),(⊑?),(⊒?),(⊐?) :: RealApprox -> RealApprox -> Maybe Bool 
+-- | Partial equality
+(|==?) :: RealApprox -> RealApprox -> Maybe Bool
 (|==?) = (BROODE.|==?)
+
+-- | Partial `is comparable to`
+(|<==>?) :: RealApprox -> RealApprox -> Maybe Bool
 (|<==>?) = (BROODE.|<==>?)
+
+-- | Partial `is not comparable to`
+(|</=>?) :: RealApprox -> RealApprox -> Maybe Bool
 (|</=>?) = (BROODE.|</=>?)
+
+-- | Partial `strictly below`
+(|<?) :: RealApprox -> RealApprox -> Maybe Bool
 (|<?) = (BROODE.|<?)
+
+-- | Partial `strictly above`
+(|>?) :: RealApprox -> RealApprox -> Maybe Bool
 (|>?) = (BROODE.|>?)
+
+-- | Partial `below or equal to`
+(|<=?) :: RealApprox -> RealApprox -> Maybe Bool
 (|<=?) = (BROODE.|<=?)
+
+-- | Partial `above or equal to`
+(|>=?) :: RealApprox -> RealApprox -> Maybe Bool
 (|>=?) = (BROODE.|>=?)
+
+{-| Convenience Unicode notation for '|<?' -}
+(⊏?) :: RealApprox -> RealApprox -> Maybe Bool
 (⊏?) = (BROODE.⊏?)
+
+{-| Convenience Unicode notation for '|<=?' -}
+(⊑?) :: RealApprox -> RealApprox -> Maybe Bool
 (⊑?) = (BROODE.⊑?)
+
+{-| Convenience Unicode notation for '|>=?' -}
+(⊒?) :: RealApprox -> RealApprox -> Maybe Bool
 (⊒?) = (BROODE.⊒?)
+
+{-| Convenience Unicode notation for '|>?' -}
+(⊐?) :: RealApprox -> RealApprox -> Maybe Bool 
 (⊐?) = (BROODE.⊐?)
 
-(</\>),(<⊓>) :: RealApprox -> RealApprox -> RealApprox
+-- | Outward rounded meet
+(</\>) :: RealApprox -> RealApprox -> RealApprox
 (</\>) = (BROODE.</\>)
+
+{-| Convenience Unicode notation for '</\>' -}
+(<⊓>) :: RealApprox -> RealApprox -> RealApprox
 (<⊓>) = (BROODE.<⊓>)
 
-(<\/>?),(<⊔>?) :: RealApprox -> RealApprox -> Maybe RealApprox 
+-- | Partial outward rounded join
+(<\/>?) :: RealApprox -> RealApprox -> Maybe RealApprox
 (<\/>?) = (BROODE.<\/>?)
+
+{-| Convenience Unicode notation for '<\/>?' -}
+(<⊔>?) :: RealApprox -> RealApprox -> Maybe RealApprox 
 (<⊔>?) = (BROODE.<⊔>?)
 
-(<+>),(<->),(<*>),(</>) :: RealApprox -> RealApprox -> RealApprox
+-- | Outward rounded addition
+(<+>) :: RealApprox -> RealApprox -> RealApprox
 (<+>) = (RARORODE.<+>)
+
+-- | Outward rounded subtraction
+(<->) :: RealApprox -> RealApprox -> RealApprox
 (<->) = (RARORODE.<->)
+
+-- | Outward rounded multiplication
+(<*>) :: RealApprox -> RealApprox -> RealApprox
 (<*>) = (RARORODE.<*>)
+
+-- | Outward rounded division
+(</>) :: RealApprox -> RealApprox -> RealApprox
 (</>) = (RARORODE.</>)
 
+-- | Outward rounded additive scalar left action
 (|<+>) :: RAROR.RoundedMixedAdd RealApprox tn => tn -> RealApprox -> RealApprox
 (|<+>) = (RARORODE.|<+>)
+
+-- | Outward rounded additive scalar right action
 (<+>|) :: RAROR.RoundedMixedAdd RealApprox tn => RealApprox -> tn -> RealApprox
 (<+>|) = (RARORODE.<+>|)
+
+-- | Outward rounded multiplicative scalar left action
 (|<*>) :: RAROR.RoundedMixedMultiply RealApprox tn => tn -> RealApprox -> RealApprox
 (|<*>) = (RARORODE.|<*>)
+
+-- | Outward rounded multiplicative scalar right action
 (<*>|) :: RAROR.RoundedMixedMultiply RealApprox tn => RealApprox -> tn -> RealApprox
 (<*>|) = (RARORODE.<*>|)
-(</>|) :: RAROR.RoundedMixedDivide RealApprox tn => RealApprox -> tn -> RealApprox  
+
+-- | Outward rounded multiplicative scalar reciprocal right action
+(</>|) :: RAROR.RoundedMixedDivide RealApprox tn => RealApprox -> tn -> RealApprox
 (</>|) = (RARORODE.</>|)
 
-piOut,eOut :: RealApprox
+-- | Outward rounded pi
+piOut :: RealApprox
 piOut = RARORODE.piOut 
+
+-- | Outward rounded e
+eOut :: RealApprox
 eOut = RARORODE.eOut 
-  
-absOut,expOut,sqrtOut :: RealApprox -> RealApprox
+
+-- | Outward rounded absolute value
+absOut :: RealApprox -> RealApprox
 absOut = RARORODE.absOut
+
+-- | Outward rounded exponential
+expOut :: RealApprox -> RealApprox
 expOut = RARORODE.expOut
+
+-- | Outward rounded square root
+sqrtOut :: RealApprox -> RealApprox
 sqrtOut = RARORODE.sqrtOut
 
-expOutIters,sqrtOutIters :: Int -> RealApprox -> RealApprox
+expOutIters :: Int -> RealApprox -> RealApprox
 expOutIters = RAIEFFO.expOutIters
+
+sqrtOutIters :: Int -> RealApprox -> RealApprox
 sqrtOutIters = RAIEFFO.sqrtOutIters
 
 newtype PositiveRealApprox = 
