@@ -12,7 +12,7 @@
     
     Domain bases with outwards and inwards rounded in-place operations.
     
-    This module is hidden and reexported via its parent RefinementOrder. 
+    This module is hidden and reexported via its grand-parent RefinementOrder. 
 -}
 module Numeric.AERN.Basics.RefinementOrder.InPlace.RoundedBasis 
 where
