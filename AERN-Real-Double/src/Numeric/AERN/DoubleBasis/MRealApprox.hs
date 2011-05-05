@@ -47,15 +47,15 @@ module Numeric.AERN.DoubleBasis.MRealApprox
     -- Outward rounded in-place lattice operations in the interval poset.
 
     -- **** Operations with explicit out parameter    
-    meetOutInPlace,joinOutInPlace,
+    meetOutInPlace,partialJoinOutInPlace,
 
     -- **** Assignment operations 
 
     -- ***** ASCII versions
-    (</\>=),(<\/>=),
+    (</\>=),
 
     -- ***** Unicode versions
-    (<⊓>=),(<⊔>=),
+    (<⊓>=),
 
     -- ** Field operations
 
@@ -103,11 +103,10 @@ import Numeric.AERN.Basics.NumericOrder.InPlace.OpsDefaultEffort
 import Numeric.AERN.Basics.RefinementOrder
 import Numeric.AERN.Basics.RefinementOrder.InPlace.OpsDefaultEffort
   (meetOutInPlace,(</\>=),(<⊓>=),
-   joinOutInPlace,(<\/>=),(<⊔>=))
+   partialJoinOutInPlace)
 
 import Numeric.AERN.RealArithmetic.Basis.Double()
 import Numeric.AERN.RealArithmetic.Interval.Mutable()
-import Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps()
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as NumOrd
 

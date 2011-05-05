@@ -142,29 +142,29 @@ where
 import Numeric.AERN.Basics.Interval
   (Interval(..))
 
-import Numeric.AERN.Basics.NumericOrder
+import qualified Numeric.AERN.Basics.NumericOrder as BNO
   (least,greatest)
 
-import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
+import qualified Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort as BNOODE
   ((==?),(<==>?),(</=>?),
    (<?),(>?),(<=?),(>=?),
    minOut,maxOut,minIn,maxIn)
 
-import Numeric.AERN.Basics.RefinementOrder
+import qualified Numeric.AERN.Basics.RefinementOrder as BRO
   (bottom,top,(⊥),(⊤))
 
-import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+import qualified Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort as BROODE
   ((|==?),(|<==>?),(|</=>?),
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
    (</\>),(<\/>?),(<⊓>),(<⊔>?))
 
 import Numeric.AERN.RealArithmetic.Interval()
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort as RAROODE
  ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),
   piOut,eOut,absOut,expOut,sqrtOut)
  
-import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
-    (expOutIters, sqrtOutIters)
+import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
+  (expOutIters, sqrtOutIters)
 
 import Numeric.AERN.RealArithmetic.Basis.Double()
 
@@ -181,6 +181,85 @@ type RealApprox = Interval Double
 
 sampleRealApprox :: RealApprox
 sampleRealApprox = Interval 0 0
+
+least,greatest :: RealApprox
+least = BNO.least
+greatest = BNO.greatest
+
+(==?),(<==>?),(</=>?),
+ (<?),(>?),(<=?),(>=?) :: RealApprox -> RealApprox -> Maybe Bool
+(==?) = (BNOODE.==?) 
+(<==>?) = (BNOODE.<==>?)
+(</=>?) = (BNOODE.</=>?)
+(<?) = (BNOODE.<?)
+(>?) = (BNOODE.>?)
+(<=?) = (BNOODE.<=?)
+(>=?) = (BNOODE.>=?)
+ 
+minOut,maxOut,minIn,maxIn :: RealApprox -> RealApprox -> RealApprox
+minOut = BNOODE.minOut
+maxOut = BNOODE.maxOut
+minIn = BNOODE.minIn
+maxIn = BNOODE.maxIn
+
+bottom,top,(⊥),(⊤) :: RealApprox
+bottom = BRO.bottom
+top = BRO.top
+(⊥) = (BRO.⊥)
+(⊤) = (BRO.⊤)
+
+(|==?),(|<==>?),(|</=>?),
+ (|<?),(|>?),(|<=?),(|>=?),
+ (⊏?),(⊑?),(⊒?),(⊐?) :: RealApprox -> RealApprox -> Maybe Bool 
+(|==?) = (BROODE.|==?)
+(|<==>?) = (BROODE.|<==>?)
+(|</=>?) = (BROODE.|</=>?)
+(|<?) = (BROODE.|<?)
+(|>?) = (BROODE.|>?)
+(|<=?) = (BROODE.|<=?)
+(|>=?) = (BROODE.|>=?)
+(⊏?) = (BROODE.⊏?)
+(⊑?) = (BROODE.⊑?)
+(⊒?) = (BROODE.⊒?)
+(⊐?) = (BROODE.⊐?)
+
+(</\>),(<⊓>) :: RealApprox -> RealApprox -> RealApprox
+(</\>) = (BROODE.</\>)
+(<⊓>) = (BROODE.<⊓>)
+
+(<\/>?),(<⊔>?) :: RealApprox -> RealApprox -> Maybe RealApprox 
+(<\/>?) = (BROODE.<\/>?)
+(<⊔>?) = (BROODE.<⊔>?)
+
+(<+>),(<->),(<*>),(</>) :: RealApprox -> RealApprox -> RealApprox
+(<+>) = (RAROODE.<+>)
+(<->) = (RAROODE.<->)
+(<*>) = (RAROODE.<*>)
+(</>) = (RAROODE.</>)
+
+(|<+>) :: RoundedMixedAdd RealApprox tn => tn -> RealApprox -> RealApprox
+(|<+>) = (RAROODE.|<+>)
+(<+>|) :: RoundedMixedAdd RealApprox tn => RealApprox -> tn -> RealApprox
+(<+>|) = (RAROODE.<+>|)
+(|<*>) :: RoundedMixedMultiply RealApprox tn => tn -> RealApprox -> RealApprox
+(|<*>) = (RAROODE.|<*>)
+(<*>|) :: RoundedMixedMultiply RealApprox tn => RealApprox -> tn -> RealApprox
+(<*>|) = (RAROODE.<*>|)
+(</>|) :: RoundedMixedDivide RealApprox tn => RealApprox -> tn -> RealApprox  
+(</>|) = (RAROODE.</>|)
+
+piOut,eOut :: RealApprox
+piOut = RAROODE.piOut 
+eOut = RAROODE.eOut 
+  
+absOut,expOut,sqrtOut :: RealApprox -> RealApprox
+absOut = RAROODE.absOut
+expOut = RAROODE.expOut
+sqrtOut = RAROODE.sqrtOut
+
+expOutIters,sqrtOutIters :: Int -> RealApprox -> RealApprox
+expOutIters = RAIEFFO.expOutIters
+sqrtOutIters = RAIEFFO.sqrtOutIters
 
 newtype PositiveRealApprox = 
     PositiveRealApprox { unPositiveRealApprox :: RealApprox }
