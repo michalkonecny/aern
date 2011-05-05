@@ -264,7 +264,7 @@ sqrtOutThinArgInPlace
                         xRecipSqrtLastUpM *^|= (2 :: Int)
                         xRecipSqrtLastUpM -^= xRecipSqrtDownPrevM
                         
-                        -- assign upper bound resL := x *. xRecipSqrtUp:
+                        -- assign upper bound resR := x *^ xRecipSqrtUp:
                         ArithUpDn.multUpInPlaceEff effortMult resRM xM xRecipSqrtUpM
                     | sureAbove0 xRecipSqrtDown =
                         do

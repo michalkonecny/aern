@@ -29,6 +29,8 @@ import Numeric.AERN.Basics.Interval.NumericOrder
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
+import Numeric.AERN.Basics.Mutable
+
 import Numeric.AERN.Misc.List
 
 import Test.QuickCheck
@@ -68,51 +70,89 @@ instance (NumOrd.HasExtrema e) => (RefOrd.HasBottom (Interval e))
 
 instance (NumOrd.HasExtrema e) => (RefOrd.HasExtrema (Interval e))
 
-instance (NumOrd.RoundedLattice e) => RefOrd.OuterRoundedBasisEffort (Interval e)
+instance (NumOrd.RoundedLatticeEffort e, NumOrd.PartialComparison e) 
+    => RefOrd.OuterRoundedBasisEffort (Interval e)
     where
     type RefOrd.PartialJoinOutEffortIndicator (Interval e) = 
-        NumOrd.MinmaxEffortIndicator e 
+        (NumOrd.MinmaxEffortIndicator e, NumOrd.PartialCompareEffortIndicator e) 
     partialJoinOutDefaultEffort (Interval l r) =
-        NumOrd.minmaxDefaultEffort l
+        (NumOrd.minmaxDefaultEffort l, NumOrd.pCompareDefaultEffort l)
     
 instance 
     (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
     RefOrd.OuterRoundedBasis (Interval e) 
     where
-    partialJoinOutEff effort (Interval l1 r1) (Interval l2 r2) = 
+    partialJoinOutEff (effortMinmax, effortComp) (Interval l1 r1) (Interval l2 r2) = 
             case l <=? r of
                 Just True -> Just $ Interval l r
                 _ -> Nothing
             where
-            (<=?) = NumOrd.pLeqEff (NumOrd.pCompareDefaultEffort l)
-            l = NumOrd.maxDnEff effort l1 l2
-            r = NumOrd.minUpEff effort r1 r2
+            (<=?) = NumOrd.pLeqEff effortComp
+            l = NumOrd.maxDnEff effortMinmax l1 l2
+            r = NumOrd.minUpEff effortMinmax r1 r2
 
-instance (NumOrd.RoundedLattice e) => RefOrd.InnerRoundedBasisEffort (Interval e)
+instance (NumOrd.RoundedLatticeEffort e, NumOrd.PartialComparison e) 
+    => RefOrd.InnerRoundedBasisEffort (Interval e)
     where
     type RefOrd.PartialJoinInEffortIndicator (Interval e) = 
-        NumOrd.MinmaxEffortIndicator e 
+        (NumOrd.MinmaxEffortIndicator e, NumOrd.PartialCompareEffortIndicator e) 
     partialJoinInDefaultEffort (Interval l r) =
-        NumOrd.minmaxDefaultEffort l
+        (NumOrd.minmaxDefaultEffort l, NumOrd.pCompareDefaultEffort l)
 
 instance 
     (NumOrd.RoundedLattice e, NumOrd.PartialComparison e) => 
     RefOrd.InnerRoundedBasis (Interval e)
     where
-    partialJoinInEff effort (Interval l1 r1) (Interval l2 r2) = 
+    partialJoinInEff (effortMinmax, effortComp) (Interval l1 r1) (Interval l2 r2) = 
             case l <=? r of
                 Just True -> Just $ Interval l r
                 _ -> Nothing
             where
-            (<=?) = NumOrd.pLeqEff (NumOrd.pCompareDefaultEffort l)
-            l = NumOrd.maxUpEff effort l1 l2
-            r = NumOrd.minDnEff effort r1 r2
+            (<=?) = NumOrd.pLeqEff effortComp
+            l = NumOrd.maxUpEff effortMinmax l1 l2
+            r = NumOrd.minDnEff effortMinmax r1 r2
 
 instance 
-    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e 
---     NumOrd.Lattice (NumOrd.MinmaxEffortIndicator e)
-     ) => 
+    (NumOrd.RoundedLattice e, NumOrd.PartialComparison e)
+    => 
     (RefOrd.RoundedBasis (Interval e)) 
+
+instance
+    (NumOrd.RoundedLatticeInPlace e, NumOrd.PartialComparison e) =>
+    (RefOrd.OuterRoundedBasisInPlace (Interval e))
+    where
+    partialJoinOutInPlaceEff (effortMinmax, effortComp) 
+            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
+        do
+        NumOrd.maxDnInPlaceEff effortMinmax resLM l1M l2M
+        NumOrd.minUpInPlaceEff effortMinmax resRM r1M r2M
+        l <- unsafeReadMutable resLM
+        r <- unsafeReadMutable resRM
+        let (<=?) = NumOrd.pLeqEff effortComp
+        case l <=? r of
+            Just True -> return True
+            _ -> return False
+        
+instance
+    (NumOrd.RoundedLatticeInPlace e, NumOrd.PartialComparison e) =>
+    (RefOrd.InnerRoundedBasisInPlace (Interval e))
+    where
+    partialJoinInInPlaceEff (effortMinmax, effortComp) 
+            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
+        do
+        NumOrd.maxUpInPlaceEff effortMinmax resLM l1M l2M
+        NumOrd.minDnInPlaceEff effortMinmax resRM r1M r2M
+        l <- unsafeReadMutable resLM
+        r <- unsafeReadMutable resRM
+        let (<=?) = NumOrd.pLeqEff effortComp
+        case l <=? r of
+            Just True -> return True
+            _ -> return False
+
+instance 
+    (NumOrd.RoundedLatticeInPlace e, NumOrd.PartialComparison e) 
+    => 
+    (RefOrd.RoundedBasisInPlace (Interval e)) 
 
 
 instance 

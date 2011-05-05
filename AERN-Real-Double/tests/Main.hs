@@ -70,7 +70,7 @@ testsDI =
        NumOrd.testsRefinementRoundedLatticeInPlace ("DI", sampleDI),
        RefOrd.testsPartialComparison  ("DI", sampleDI), 
        RefOrd.testsRoundedBasis ("DI", sampleDI),
---       RefOrd.testsOuterInnerRoundedBasisInPlace ("DI", sampleDI),
+       RefOrd.testsOuterInnerRoundedBasisInPlace ("DI", sampleDI),
        RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI),
        RefOrd.testsOuterInnerRoundedLatticeInPlace ("DI", sampleDI),
        testsDistance ("DI", sampleDI),

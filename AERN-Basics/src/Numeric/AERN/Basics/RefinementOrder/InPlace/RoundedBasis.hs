@@ -110,8 +110,8 @@ testsOuterInnerRoundedBasisInPlace ::
      ) => 
     (String, t) -> Test
 testsOuterInnerRoundedBasisInPlace (name, sample) =
-    testGroup (name ++ " (join,meet) rounded in-place") $
+    testGroup (name ++ " partial join rounded in-place") $
         [
-         testProperty "join in-place=pure"
+         testProperty "partial join in-place=pure"
              (propOuterInnerRoundedBasisJoinInPlaceConsistentWithPure sample)
         ]
