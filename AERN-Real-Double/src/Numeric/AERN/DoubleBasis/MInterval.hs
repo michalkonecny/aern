@@ -457,7 +457,7 @@ sqrtOutInPlace :: OpMutable1 DI s
 sqrtOutInPlace = RARORIPODE.sqrtOutInPlace 
 
 expOutInPlaceIters, sqrtOutInPlaceIters,
- expOutInPlaceIters, sqrtOutInPlaceIters :: Int -> OpMutable1 DI s
+ expInInPlaceIters, sqrtInInPlaceIters :: Int -> OpMutable1 DI s
 expOutInPlaceIters = RAIMEFFO.expOutInPlaceIters
 sqrtOutInPlaceIters = RAIMEFFO.sqrtOutInPlaceIters
 expInInPlaceIters = RAIMEFFO.expInInPlaceIters

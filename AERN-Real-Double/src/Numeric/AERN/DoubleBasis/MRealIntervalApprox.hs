@@ -457,7 +457,7 @@ sqrtOutInPlace :: OpMutable1 RealIntervalApprox s
 sqrtOutInPlace = RARORIPODE.sqrtOutInPlace 
 
 expOutInPlaceIters, sqrtOutInPlaceIters,
- expOutInPlaceIters, sqrtOutInPlaceIters :: Int -> OpMutable1 RealIntervalApprox s
+ expInInPlaceIters, sqrtInInPlaceIters :: Int -> OpMutable1 RealIntervalApprox s
 expOutInPlaceIters = RAIMEFFO.expOutInPlaceIters
 sqrtOutInPlaceIters = RAIMEFFO.sqrtOutInPlaceIters
 expInInPlaceIters = RAIMEFFO.expInInPlaceIters
