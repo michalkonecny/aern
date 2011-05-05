@@ -196,7 +196,7 @@ sqrtOutThinArgInPlace
         effortMinmax
         effortCompare
         effortToDouble
-        resM@(MInterval resLM resHM)
+        resM@(MInterval resLM resRM)
         maxIters
         xM
     =
@@ -265,17 +265,17 @@ sqrtOutThinArgInPlace
                         xRecipSqrtLastUpM -^= xRecipSqrtDownPrevM
                         
                         -- assign upper bound resL := x *. xRecipSqrtUp:
-                        ArithUpDn.multUpInPlaceEff effortMult resHM xM xRecipSqrtUpM
+                        ArithUpDn.multUpInPlaceEff effortMult resRM xM xRecipSqrtUpM
                     | sureAbove0 xRecipSqrtDown =
                         do
-                        -- compute upper bound resH := 1 /^ xRecipSqrtDown:
+                        -- compute upper bound resR := 1 /^ xRecipSqrtDown:
                         --   introduces a fairly large error; 
                         --   used when iteration has not reached the fast region
-                        ArithUpDn.recipUpInPlaceEff effortDiv resHM xRecipSqrtDownM
+                        ArithUpDn.recipUpInPlaceEff effortDiv resRM xRecipSqrtDownM
                     | otherwise =
                         do
                         -- a dummy fallback upper bound where lower bound is too close to 0:
-                        unsafeWriteMutable resHM $
+                        unsafeWriteMutable resRM $
                             NumOrd.maxUpEff effortMinmax x one
                     where
                     xRecipSqrtDownInFastRegion =

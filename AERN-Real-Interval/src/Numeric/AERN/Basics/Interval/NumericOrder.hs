@@ -97,15 +97,15 @@ instance
     (NumOrd.OuterRoundedLatticeInPlace (Interval e))
     where
     minOutInPlaceEff effort 
-            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
         NumOrd.minDnInPlaceEff effort resLM l1M l2M
-        NumOrd.minUpInPlaceEff effort resHM h1M h2M
+        NumOrd.minUpInPlaceEff effort resRM r1M r2M
     maxOutInPlaceEff effort 
-            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
         NumOrd.maxDnInPlaceEff effort resLM l1M l2M
-        NumOrd.maxUpInPlaceEff effort resHM h1M h2M
+        NumOrd.maxUpInPlaceEff effort resRM r1M r2M
 
 
 instance
@@ -113,15 +113,15 @@ instance
     (NumOrd.InnerRoundedLatticeInPlace (Interval e))
     where
     minInInPlaceEff effort 
-            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
         NumOrd.minUpInPlaceEff effort resLM l1M l2M
-        NumOrd.minDnInPlaceEff effort resHM h1M h2M
+        NumOrd.minDnInPlaceEff effort resRM r1M r2M
     maxInInPlaceEff effort 
-            (MInterval resLM resHM) (MInterval l1M h1M) (MInterval l2M h2M) =
+            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
         NumOrd.maxUpInPlaceEff effort resLM l1M l2M
-        NumOrd.maxDnInPlaceEff effort resHM h1M h2M
+        NumOrd.maxDnInPlaceEff effort resRM r1M r2M
 
 instance 
     (NumOrd.RoundedLatticeInPlace e) => 

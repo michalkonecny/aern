@@ -62,30 +62,30 @@ instance
         ((effortField, effortMixedField),
          (Int1To10 effortTaylor),
          ((effortMeet, effortComp), effortConv)) 
-        (MInterval resL resH)
-        (MInterval lM hM) =
+        (MInterval resL resR)
+        (MInterval lM rM) =
             do
-            (MInterval forgetMeL forgetMeH) <- makeMutable zero 
+            (MInterval forgetMeL forgetMeR) <- makeMutable zero 
             expOutThinArgInPlace 
                 effortField effortMixedField 
                 effortMeet effortComp effortComp effortConv 
-                (MInterval resL forgetMeH)
+                (MInterval resL forgetMeR)
                 effortTaylor 
                 (MInterval lM lM)
             expOutThinArgInPlace
                 effortField effortMixedField
                 effortMeet effortComp effortComp effortConv 
-                (MInterval forgetMeL resH)
+                (MInterval forgetMeL resR)
                 effortTaylor 
-                (MInterval hM hM)
+                (MInterval rM rM)
     expInInPlaceEff 
         ((effortField, effortMixedField),
          (Int1To10 effortTaylor),
          ((effortMeet, effortComp), effortConv)) 
-        (MInterval resL resH)
-        (MInterval lM hM) =
+        (MInterval resL resR)
+        (MInterval lM rM) =
             do
-            (MInterval forgetMeL forgetMeH) <- makeMutable zero 
+            (MInterval forgetMeL forgetMeR) <- makeMutable zero 
             expOutThinArgInPlace 
                 effortField effortMixedField 
                 effortMeet effortComp effortComp effortConv 
@@ -95,9 +95,9 @@ instance
             expOutThinArgInPlace
                 effortField effortMixedField
                 effortMeet effortComp effortComp effortConv 
-                (MInterval resH forgetMeH)
+                (MInterval resR forgetMeR)
                 effortTaylor 
-                (MInterval hM hM)
+                (MInterval rM rM)
 
 expOutInPlaceIters, expInInPlaceIters ::
     (CanBeMutable e,
@@ -142,30 +142,30 @@ instance
         ((effortField, effortMixedField),
          (Int1To10 effortNewton),
          ((effortMeet, effortComp), effortConv)) 
-        (MInterval resL resH)
-        (MInterval lM hM) =
+        (MInterval resL resR)
+        (MInterval lM rM) =
             do
-            (MInterval forgetMeL forgetMeH) <- makeMutable zero 
+            (MInterval forgetMeL forgetMeR) <- makeMutable zero 
             sqrtOutThinArgInPlace 
                 effortField effortMixedField 
                 effortMeet effortComp effortConv 
-                (MInterval resL forgetMeH)
+                (MInterval resL forgetMeR)
                 effortNewton 
                 lM
             sqrtOutThinArgInPlace
                 effortField effortMixedField
                 effortMeet effortComp effortConv 
-                (MInterval forgetMeL resH)
+                (MInterval forgetMeL resR)
                 effortNewton 
-                hM
+                rM
     sqrtInInPlaceEff 
         ((effortField, effortMixedField),
          (Int1To10 effortNewton),
          ((effortMeet, effortComp), effortConv)) 
-        (MInterval resL resH)
-        (MInterval lM hM) =
+        (MInterval resL resR)
+        (MInterval lM rM) =
             do
-            (MInterval forgetMeL forgetMeH) <- makeMutable zero 
+            (MInterval forgetMeL forgetMeR) <- makeMutable zero 
             sqrtOutThinArgInPlace 
                 effortField effortMixedField 
                 effortMeet effortComp effortConv 
@@ -175,9 +175,9 @@ instance
             sqrtOutThinArgInPlace
                 effortField effortMixedField
                 effortMeet effortComp effortConv 
-                (MInterval resH forgetMeH)
+                (MInterval resR forgetMeR)
                 effortNewton 
-                hM
+                rM
             
 sqrtOutInPlaceIters, sqrtInInPlaceIters ::
     (CanBeMutable e, Show e,
