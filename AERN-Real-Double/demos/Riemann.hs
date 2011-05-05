@@ -42,7 +42,7 @@ riemann' e f initWidth (d:ds) result
       riemann' e f initWidth (dl:dr:ds) result
   where
   reachedSufficientAccuracy =
-    case dError <? (e * dWidth / initWidth) of
+    case dError <? e * dWidth / initWidth of
       Just True -> True
       _ -> False
   dError = dWidth * (width fd)
@@ -78,7 +78,7 @@ riemannInPlace' resM e f initWidth (d:ds)
       riemannInPlace' resM e f initWidth (dl:dr:ds)
   where
   reachedSufficientAccuracy =
-    case dError <? (e * dWidth / initWidth) of
+    case dError <? e * dWidth / initWidth of
       Just True -> True
       _ -> False
   dError = dWidth * (width fd)
