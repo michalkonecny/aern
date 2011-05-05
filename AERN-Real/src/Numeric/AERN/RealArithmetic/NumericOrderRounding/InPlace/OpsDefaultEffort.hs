@@ -156,7 +156,7 @@ mixedDivUpInPlace =
 
 -- | Upward rounded multiplicative scalar reciprocal action assignment
 (/^|=) :: (RoundedMixedDivideInPlace t tn) => OpNonmut t tn s
-(/^|=) = mutableNonmutToNonmut mixedDivDnInPlace
+(/^|=) = mutableNonmutToNonmut mixedDivUpInPlace
 
 -- | Downward rounded in-place mixed reciprocal action
 mixedDivDnInPlace :: (RoundedMixedDivideInPlace t tn) => 
