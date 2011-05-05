@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.DoubleBasis.RealIntervalApprox
     Description :  Double intervals for approximating real intervals
@@ -65,7 +66,7 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     -- lattice.
     --
     -- Lower and upper approximations of the exact operations \\/\?
-    -- and \\\/ are given by '<\/>?', '<\/>' and '>/\<' respectively.
+    -- and \\\/ are given by '<\/>?', '<\/>' and '>\/<' respectively.
 
     -- ** Numerical order
     -- | 
@@ -203,37 +204,41 @@ where
 import Numeric.AERN.Basics.Interval
   (Interval(..))
 
-import Numeric.AERN.Basics.NumericOrder
+import qualified Numeric.AERN.Basics.NumericOrder as BNO
   (least,greatest)
 
-import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
+import qualified Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort as BNOODE
   ((==?),(<==>?),(</=>?),
    (<?),(>?),(<=?),(>=?),
    minOut,maxOut,minIn,maxIn)
 
-import Numeric.AERN.Basics.RefinementOrder
+import qualified Numeric.AERN.Basics.RefinementOrder as BRO
   (bottom,top,(⊥),(⊤))
 
-import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+import qualified Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort as BROODE
   ((|==?),(|<==>?),(|</=>?),
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
    (</\>),(<\/>),(<\/>?),(<⊓>),(<⊔>),(<⊔>?),
    (>/\<),(>\/<),(>⊓<),(>⊔<))
 
 import Numeric.AERN.RealArithmetic.Interval()
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
+  (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..))
+
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort as RARORODE
  ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),
   piOut,eOut,absOut,expOut,sqrtOut,
   (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
   piIn,eIn,absIn,expIn,sqrtIn)
  
-import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
+import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
     (expOutIters, expInIters, sqrtOutIters, sqrtInIters)
-
-import Numeric.AERN.RealArithmetic.Interval.Double(width, bisect)
 
 import Numeric.AERN.RealArithmetic.Basis.Double()
 
+import qualified Numeric.AERN.RealArithmetic.Interval.Double as RAID
+ (width, bisect)
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
@@ -257,6 +262,129 @@ type RealIntervalApprox = Interval Double
 
 sampleRealIntervalApprox :: RealIntervalApprox
 sampleRealIntervalApprox = Interval 0 0
+
+{-|
+    Calculate the width of an interval.
+    The result may not be thin since the width calculation uses outwards rounding.
+-}
+width :: RealIntervalApprox -> RealIntervalApprox
+width = RAID.width
+
+{-|
+    Split an interval into two subintervals that share only one point 
+    and whose union is the original interval.
+-}
+bisect ::
+    Maybe Double {-^ optional parameter, indicating where to split the interval -} -> 
+    RealIntervalApprox {-^ the interval to split -} -> 
+    (RealIntervalApprox, RealIntervalApprox)
+bisect = RAID.bisect
+
+least,greatest :: RealIntervalApprox
+least = BNO.least
+greatest = BNO.greatest
+
+(==?),(<==>?),(</=>?),
+ (<?),(>?),(<=?),(>=?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
+(==?) = (BNOODE.==?) 
+(<==>?) = (BNOODE.<==>?)
+(</=>?) = (BNOODE.</=>?)
+(<?) = (BNOODE.<?)
+(>?) = (BNOODE.>?)
+(<=?) = (BNOODE.<=?)
+(>=?) = (BNOODE.>=?)
+ 
+minOut,maxOut,minIn,maxIn :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
+minOut = BNOODE.minOut
+maxOut = BNOODE.maxOut
+minIn = BNOODE.minIn
+maxIn = BNOODE.maxIn
+
+bottom,top,(⊥),(⊤) :: RealIntervalApprox
+bottom = BRO.bottom
+top = BRO.top
+(⊥) = (BRO.⊥)
+(⊤) = (BRO.⊤)
+
+(|==?),(|<==>?),(|</=>?),
+ (|<?),(|>?),(|<=?),(|>=?),
+ (⊏?),(⊑?),(⊒?),(⊐?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool 
+(|==?) = (BROODE.|==?)
+(|<==>?) = (BROODE.|<==>?)
+(|</=>?) = (BROODE.|</=>?)
+(|<?) = (BROODE.|<?)
+(|>?) = (BROODE.|>?)
+(|<=?) = (BROODE.|<=?)
+(|>=?) = (BROODE.|>=?)
+(⊏?) = (BROODE.⊏?)
+(⊑?) = (BROODE.⊑?)
+(⊒?) = (BROODE.⊒?)
+(⊐?) = (BROODE.⊐?)
+
+(</\>),(<\/>),(>/\<),(>\/<),
+ (<⊓>),(<⊔>),(>⊓<),(>⊔<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
+(</\>) = (BROODE.</\>)
+(<\/>) = (BROODE.<\/>)
+(>/\<) = (BROODE.>/\<)
+(>\/<) = (BROODE.>\/<)
+(<⊓>) = (BROODE.<⊓>)
+(<⊔>) = (BROODE.<⊔>)
+(>⊓<) = (BROODE.>⊓<)
+(>⊔<) = (BROODE.>⊔<)
+ 
+(<\/>?),(<⊔>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe RealIntervalApprox 
+(<\/>?) = (BROODE.<\/>?)
+(<⊔>?) = (BROODE.<⊔>?)
+
+(<+>),(<->),(<*>),(</>),
+ (>+<),(>-<),(>*<),(>/<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
+(<+>) = (RARORODE.<+>)
+(<->) = (RARORODE.<->)
+(<*>) = (RARORODE.<*>)
+(</>) = (RARORODE.</>)
+(>+<) = (RARORODE.>+<)
+(>-<) = (RARORODE.>-<)
+(>*<) = (RARORODE.>*<)
+(>/<) = (RARORODE.>/<)
+
+(|<+>),(|>+<) :: RAROR.RoundedMixedAdd RealIntervalApprox tn => tn -> RealIntervalApprox -> RealIntervalApprox
+(|<+>) = (RARORODE.|<+>)
+(|>+<) = (RARORODE.|>+<)
+(<+>|),(>+<|) :: RAROR.RoundedMixedAdd RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox
+(<+>|) = (RARORODE.<+>|)
+(>+<|) = (RARORODE.>+<|)
+(|<*>),(|>*<) :: RAROR.RoundedMixedMultiply RealIntervalApprox tn => tn -> RealIntervalApprox -> RealIntervalApprox
+(|<*>) = (RARORODE.|<*>)
+(|>*<) = (RARORODE.|>*<)
+(<*>|),(>*<|) :: RAROR.RoundedMixedMultiply RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox
+(<*>|) = (RARORODE.<*>|)
+(>*<|) = (RARORODE.>*<|)
+(</>|),(>/<|) :: RAROR.RoundedMixedDivide RealIntervalApprox tn => RealIntervalApprox -> tn -> RealIntervalApprox  
+(</>|) = (RARORODE.</>|)
+(>/<|) = (RARORODE.>/<|)
+
+piOut,eOut,
+ piIn,eIn :: RealIntervalApprox
+piOut = RARORODE.piOut 
+eOut = RARORODE.eOut 
+piIn = RARORODE.piIn 
+eIn = RARORODE.eIn 
+  
+absOut,expOut,sqrtOut,
+ absIn,expIn,sqrtIn :: RealIntervalApprox -> RealIntervalApprox
+absOut = RARORODE.absOut
+expOut = RARORODE.expOut
+sqrtOut = RARORODE.sqrtOut
+absIn = RARORODE.absIn
+expIn = RARORODE.expIn
+sqrtIn = RARORODE.sqrtIn
+
+expOutIters,sqrtOutIters,
+ expInIters,sqrtInIters :: Int -> RealIntervalApprox -> RealIntervalApprox
+expOutIters = RAIEFFO.expOutIters
+sqrtOutIters = RAIEFFO.sqrtOutIters
+expInIters = RAIEFFO.expInIters
+sqrtInIters = RAIEFFO.sqrtInIters
 
 newtype PositiveRealIntervalApprox = 
     PositiveRealIntervalApprox 
