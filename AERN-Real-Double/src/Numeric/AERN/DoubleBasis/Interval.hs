@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.DoubleBasis.Interval
     Description :  Interval Double type and operations  
@@ -60,7 +61,7 @@ module Numeric.AERN.DoubleBasis.Interval
     -- lattice.
     --
     -- Lower and upper approximations of the exact operations \\/\?
-    -- and \\\/ are given by '<\/>?', '<\/>' and '>/\<' respectively.
+    -- and \\\/ are given by '<\/>?', '<\/>' and '>\/<' respectively.
 
     -- ** Numerical order
     -- | 
@@ -206,31 +207,35 @@ where
 import Numeric.AERN.Basics.Interval
   (Interval(..),getEndpoints,fromEndpoints)
 
-import Numeric.AERN.Basics.NumericOrder
+import qualified Numeric.AERN.Basics.NumericOrder as BNO
   (least,greatest)
 
-import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
+import qualified Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort as BNOODE
   ((==?),(<==>?),(</=>?),
    (<?),(>?),(<=?),(>=?),
    minOut,maxOut,minIn,maxIn)
 
-import Numeric.AERN.Basics.RefinementOrder
+import qualified Numeric.AERN.Basics.RefinementOrder as BRO
   (bottom,top,(⊥),(⊤))
 
-import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+import qualified Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort as BROODE
   ((|==?),(|<==>?),(|</=>?),
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
    (</\>),(<\/>),(<\/>?),(<⊓>),(<⊔>),(<⊔>?),
    (>/\<),(>\/<),(>⊓<),(>⊔<))
 
 import Numeric.AERN.RealArithmetic.Interval()
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
+  (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..))
+
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort as RARORODE
  ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),
   piOut,eOut,absOut,expOut,sqrtOut,
   (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),
   piIn,eIn,absIn,expIn,sqrtIn)
  
-import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
+import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
     (expOutIters, expInIters, sqrtOutIters, sqrtInIters)
 
 import Numeric.AERN.RealArithmetic.Basis.Double()
@@ -257,6 +262,112 @@ type DI = Interval Double
 
 sampleDI :: DI
 sampleDI = Interval 0 0
+
+least,greatest :: DI
+least = BNO.least
+greatest = BNO.greatest
+
+(==?),(<==>?),(</=>?),
+ (<?),(>?),(<=?),(>=?) :: DI -> DI -> Maybe Bool
+(==?) = (BNOODE.==?) 
+(<==>?) = (BNOODE.<==>?)
+(</=>?) = (BNOODE.</=>?)
+(<?) = (BNOODE.<?)
+(>?) = (BNOODE.>?)
+(<=?) = (BNOODE.<=?)
+(>=?) = (BNOODE.>=?)
+ 
+minOut,maxOut,minIn,maxIn :: DI -> DI -> DI
+minOut = BNOODE.minOut
+maxOut = BNOODE.maxOut
+minIn = BNOODE.minIn
+maxIn = BNOODE.maxIn
+
+bottom,top,(⊥),(⊤) :: DI
+bottom = BRO.bottom
+top = BRO.top
+(⊥) = (BRO.⊥)
+(⊤) = (BRO.⊤)
+
+(|==?),(|<==>?),(|</=>?),
+ (|<?),(|>?),(|<=?),(|>=?),
+ (⊏?),(⊑?),(⊒?),(⊐?) :: DI -> DI -> Maybe Bool 
+(|==?) = (BROODE.|==?)
+(|<==>?) = (BROODE.|<==>?)
+(|</=>?) = (BROODE.|</=>?)
+(|<?) = (BROODE.|<?)
+(|>?) = (BROODE.|>?)
+(|<=?) = (BROODE.|<=?)
+(|>=?) = (BROODE.|>=?)
+(⊏?) = (BROODE.⊏?)
+(⊑?) = (BROODE.⊑?)
+(⊒?) = (BROODE.⊒?)
+(⊐?) = (BROODE.⊐?)
+
+(</\>),(<\/>),(>/\<),(>\/<),
+ (<⊓>),(<⊔>),(>⊓<),(>⊔<) :: DI -> DI -> DI
+(</\>) = (BROODE.</\>)
+(<\/>) = (BROODE.<\/>)
+(>/\<) = (BROODE.>/\<)
+(>\/<) = (BROODE.>\/<)
+(<⊓>) = (BROODE.<⊓>)
+(<⊔>) = (BROODE.<⊔>)
+(>⊓<) = (BROODE.>⊓<)
+(>⊔<) = (BROODE.>⊔<)
+ 
+(<\/>?),(<⊔>?) :: DI -> DI -> Maybe DI 
+(<\/>?) = (BROODE.<\/>?)
+(<⊔>?) = (BROODE.<⊔>?)
+
+(<+>),(<->),(<*>),(</>),
+ (>+<),(>-<),(>*<),(>/<) :: DI -> DI -> DI
+(<+>) = (RARORODE.<+>)
+(<->) = (RARORODE.<->)
+(<*>) = (RARORODE.<*>)
+(</>) = (RARORODE.</>)
+(>+<) = (RARORODE.>+<)
+(>-<) = (RARORODE.>-<)
+(>*<) = (RARORODE.>*<)
+(>/<) = (RARORODE.>/<)
+
+(|<+>),(|>+<) :: RAROR.RoundedMixedAdd DI tn => tn -> DI -> DI
+(|<+>) = (RARORODE.|<+>)
+(|>+<) = (RARORODE.|>+<)
+(<+>|),(>+<|) :: RAROR.RoundedMixedAdd DI tn => DI -> tn -> DI
+(<+>|) = (RARORODE.<+>|)
+(>+<|) = (RARORODE.>+<|)
+(|<*>),(|>*<) :: RAROR.RoundedMixedMultiply DI tn => tn -> DI -> DI
+(|<*>) = (RARORODE.|<*>)
+(|>*<) = (RARORODE.|>*<)
+(<*>|),(>*<|) :: RAROR.RoundedMixedMultiply DI tn => DI -> tn -> DI
+(<*>|) = (RARORODE.<*>|)
+(>*<|) = (RARORODE.>*<|)
+(</>|),(>/<|) :: RAROR.RoundedMixedDivide DI tn => DI -> tn -> DI  
+(</>|) = (RARORODE.</>|)
+(>/<|) = (RARORODE.>/<|)
+
+piOut,eOut,
+ piIn,eIn :: DI
+piOut = RARORODE.piOut 
+eOut = RARORODE.eOut 
+piIn = RARORODE.piIn 
+eIn = RARORODE.eIn 
+  
+absOut,expOut,sqrtOut,
+ absIn,expIn,sqrtIn :: DI -> DI
+absOut = RARORODE.absOut
+expOut = RARORODE.expOut
+sqrtOut = RARORODE.sqrtOut
+absIn = RARORODE.absIn
+expIn = RARORODE.expIn
+sqrtIn = RARORODE.sqrtIn
+
+expOutIters,sqrtOutIters,
+ expInIters,sqrtInIters :: Int -> DI -> DI
+expOutIters = RAIEFFO.expOutIters
+sqrtOutIters = RAIEFFO.sqrtOutIters
+expInIters = RAIEFFO.expInIters
+sqrtInIters = RAIEFFO.sqrtInIters
 
 newtype PositiveDI = PositiveDI { unPositiveDI :: DI }
 

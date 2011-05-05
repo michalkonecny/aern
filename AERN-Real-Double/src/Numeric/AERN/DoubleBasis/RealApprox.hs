@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.DoubleBasis.RealApprox
     Description :  Double intervals for approximating real numbers
@@ -159,7 +160,11 @@ import qualified Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort as BROODE
    (</\>),(<\/>?),(<⊓>),(<⊔>?))
 
 import Numeric.AERN.RealArithmetic.Interval()
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort as RAROODE
+
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
+  (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..))
+
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort as RARORODE
  ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),
   piOut,eOut,absOut,expOut,sqrtOut)
  
@@ -232,30 +237,30 @@ top = BRO.top
 (<⊔>?) = (BROODE.<⊔>?)
 
 (<+>),(<->),(<*>),(</>) :: RealApprox -> RealApprox -> RealApprox
-(<+>) = (RAROODE.<+>)
-(<->) = (RAROODE.<->)
-(<*>) = (RAROODE.<*>)
-(</>) = (RAROODE.</>)
+(<+>) = (RARORODE.<+>)
+(<->) = (RARORODE.<->)
+(<*>) = (RARORODE.<*>)
+(</>) = (RARORODE.</>)
 
-(|<+>) :: RoundedMixedAdd RealApprox tn => tn -> RealApprox -> RealApprox
-(|<+>) = (RAROODE.|<+>)
-(<+>|) :: RoundedMixedAdd RealApprox tn => RealApprox -> tn -> RealApprox
-(<+>|) = (RAROODE.<+>|)
-(|<*>) :: RoundedMixedMultiply RealApprox tn => tn -> RealApprox -> RealApprox
-(|<*>) = (RAROODE.|<*>)
-(<*>|) :: RoundedMixedMultiply RealApprox tn => RealApprox -> tn -> RealApprox
-(<*>|) = (RAROODE.<*>|)
-(</>|) :: RoundedMixedDivide RealApprox tn => RealApprox -> tn -> RealApprox  
-(</>|) = (RAROODE.</>|)
+(|<+>) :: RAROR.RoundedMixedAdd RealApprox tn => tn -> RealApprox -> RealApprox
+(|<+>) = (RARORODE.|<+>)
+(<+>|) :: RAROR.RoundedMixedAdd RealApprox tn => RealApprox -> tn -> RealApprox
+(<+>|) = (RARORODE.<+>|)
+(|<*>) :: RAROR.RoundedMixedMultiply RealApprox tn => tn -> RealApprox -> RealApprox
+(|<*>) = (RARORODE.|<*>)
+(<*>|) :: RAROR.RoundedMixedMultiply RealApprox tn => RealApprox -> tn -> RealApprox
+(<*>|) = (RARORODE.<*>|)
+(</>|) :: RAROR.RoundedMixedDivide RealApprox tn => RealApprox -> tn -> RealApprox  
+(</>|) = (RARORODE.</>|)
 
 piOut,eOut :: RealApprox
-piOut = RAROODE.piOut 
-eOut = RAROODE.eOut 
+piOut = RARORODE.piOut 
+eOut = RARORODE.eOut 
   
 absOut,expOut,sqrtOut :: RealApprox -> RealApprox
-absOut = RAROODE.absOut
-expOut = RAROODE.expOut
-sqrtOut = RAROODE.sqrtOut
+absOut = RARORODE.absOut
+expOut = RARORODE.expOut
+sqrtOut = RARORODE.sqrtOut
 
 expOutIters,sqrtOutIters :: Int -> RealApprox -> RealApprox
 expOutIters = RAIEFFO.expOutIters
