@@ -152,7 +152,7 @@ module Numeric.AERN.DoubleBasis.MInterval
 where
 
 import Numeric.AERN.Basics.Mutable
-  (CanBeMutable(..),OpMutable2)
+  (CanBeMutable(..),OpMutable2,OpMutable1,OpPartialMutable2,OpMutableNonmut,OpNonmut)
 
 import qualified Numeric.AERN.Basics.NumericOrder.InPlace.OpsDefaultEffort as BNOIPODE
   (minOutInPlace,maxOutInPlace,
@@ -195,6 +195,18 @@ import Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
 import Numeric.AERN.DoubleBasis.Interval
 import Control.Monad.ST (runST)
 
+infixr 3 </\>=, >/\<=, <⊓>=, >⊓<= 
+infixr 2 <\/>=, >\/<=, <⊔>=, >⊔<= 
+
+infixl 6 <+>=, >+<=, <->=, >-<=
+infixl 7 <*>=, >*<=
+infixl 8 <^>=, >^<=
+infixl 7 </>=, >/<=
+
+infixl 6 <+>|=, >+<|=
+infixl 7 <*>|=, >*<|=
+infixl 7 </>|=, >/<|=
+
 -- | 
 -- Mutable intervals with Double endpoints. Created and handled using
 -- the methods of 'CanBeMutable' as in e.g.
@@ -223,9 +235,6 @@ minInInPlace = BNOIPODE.minInInPlace
 -- | Inward rounded in-place maximum
 maxInInPlace :: OpMutable2 DI s
 maxInInPlace = BNOIPODE.maxInInPlace
-
-infixr 3 </\>=, >/\<=, <⊓>=, >⊓<= 
-infixr 2 <\/>=, >\/<=, <⊔>=, >⊔<= 
 
 -- | Outward rounded in-place meet
 meetOutInPlace :: OpMutable2 DI s
@@ -282,15 +291,6 @@ partialJoinInInPlace = BROIPODE.partialJoinInInPlace
 {-| Convenience Unicode notation for '>/\<=' -}
 (>⊓<=) :: OpMutable1 DI s
 (>⊓<=) = (>/\<=)
-
-infixl 6 <+>=, >+<=, <->=, >-<=
-infixl 7 <*>=, >*<=
-infixl 8 <^>=, >^<=
-infixl 7 </>=, >/<=
-
-infixl 6 <+>|=, >+<|=
-infixl 7 <*>|=, >*<|=
-infixl 7 </>|=, >/<|=
 
 -- | Inward rounded in-place addition
 addInInPlace :: OpMutable2 DI s
