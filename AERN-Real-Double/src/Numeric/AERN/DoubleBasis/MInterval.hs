@@ -217,11 +217,12 @@ infixl 7 </>|=, >/<|=
 -- Mutable intervals with Double endpoints. Created and handled using
 -- the methods of 'CanBeMutable' as in e.g.
 -- 
--- > identity :: DI -> DI 
--- > identity x =
+-- > square :: DI -> DI 
+-- > square x =
 -- >   runST $
 -- >     do
 -- >     xM <- makeMutable x
+-- >     xM <*>= xM
 -- >     result <- readMutable xM
 -- >     return result
 type MDI = Mutable DI

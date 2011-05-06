@@ -148,11 +148,12 @@ infixl 7 </>|=
 -- Mutable 'RealApprox'. Created and handled using
 -- the methods of 'CanBeMutable' as in e.g.
 -- 
--- > identity :: RealApprox -> RealApprox 
--- > identity x =
+-- > square :: RealApprox -> RealApprox 
+-- > square x =
 -- >   runST $
 -- >     do
 -- >     xM <- makeMutable x
+-- >     xM <*>= xM
 -- >     result <- readMutable xM
 -- >     return result
 type MRealApprox = Mutable RealApprox
