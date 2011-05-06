@@ -5,7 +5,7 @@ Build-Type:     Simple
 License:        BSD3
 License-File:   LICENCE
 Author:         Michal Konecny (Aston University)
-Copyright:      (c) 2010 Michal Konecny, Jan Duracz
+Copyright:      (c) 2011 Michal Konecny, Jan Duracz
 Maintainer:     mikkonecny@gmail.com
 Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
@@ -13,8 +13,8 @@ Category:       Data, Math
 Synopsis:       arbitrary precision real interval arithmetic
 Tested-with:    GHC ==6.12.3
 Description:
-    Type classes abstracting typical arithmetic operations for real number
-    over approximations for exact entities, including rounded
+    Type classes abstracting typical approximate real number arithmetic operations
+    including rounded
     field operations and common elementary operations.
     Two kinds of rounding are supported: rounding up/down in the numerical order
     or rounding in/out in a refinement order.
@@ -22,9 +22,10 @@ Description:
     A concrete implementation of refinement order rounded operations
     is given for intervals in the package AERN-Real-Interval.
     Concrete implementations of up/down rounded operations is
-    given in AERN-Real-Double and AERN-Real-MPFR for ordinary Double
-    and MPFR arbitrary-precision numbers.  These can serve as interval
-    endpoints.
+    given in AERN-Real-Double for ordinary Double
+    fixed-precision numbers.  These can serve as interval
+    endpoints.  In a future release also MPFR arbitrary-precision numbers
+    will be made available as interval endpoints.
 
 Extra-Source-Files:
     CHANGES
