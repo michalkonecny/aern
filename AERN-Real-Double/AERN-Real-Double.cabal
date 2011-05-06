@@ -5,7 +5,7 @@ Build-Type:     Simple
 License:        BSD3
 License-File:   LICENCE
 Author:         Michal Konecny (Aston University)
-Copyright:      (c) 2010 Michal Konecny, Jan Duracz
+Copyright:      (c) 2011 Michal Konecny, Jan Duracz
 Maintainer:     mikkonecny@gmail.com
 Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
@@ -21,21 +21,25 @@ Description:
     There is a choice of three such modules, each providing a different
     level of abstraction for the type of intervals with Double endpoints:
     .
-    * "Numeric.AERN.DoubleBasis.Real" gives Real - an abstract data type
+    * "Numeric.AERN.DoubleBasis.RealApprox" gives RealApprox - an abstract data type
       limited to operations that interpret each interval strictly as an
       approximation to a single real number.  As an instance of Fractional, 
       the numerical operations safely overapproximate
       the exact real operations by rounding the intervals outwards.
-    * "Numeric.AERN.DoubleBasis.RealApprox" gives RealApprox - an abstract
+    .
+    * "Numeric.AERN.DoubleBasis.RealIntervalApprox" gives RealIntervalApprox - an abstract
       data type limited to operations that interpret each interval strictly as an
-      approximation to a /set/ of real numbers.  All Real operations are
-      available also for RealApprox.  Additionally, one can create approximations that
+      approximation to a /set/ of real numbers.  All RealApprox operations are
+      available also for RealIntervalApprox.  Additionally, one can create approximations that
       certainly cover two given approximations and one can perform all
       operations rounding /inwards/ to allow safe semi-deciding of set inclusions.
+      As a consequence of inner rounding, anti-consistent intervals such as [1,0] may arise
+      and are treated using Kaucher arithmetic.
+    .
     * "Numeric.AERN.DoubleBasis.Interval" gives full access to the interval type,
       including the Double endpoints.
     .
-    The accompanying modules "Numeric.AERN.DoubleBasis.MReal", "Numeric.AERN.DoubleBasis.MRealApprox"
+    The accompanying modules "Numeric.AERN.DoubleBasis.MRealApprox", "Numeric.AERN.DoubleBasis.MRealIntervalApprox"
     and "Numeric.AERN.DoubleBasis.MInterval" add in-place versions of most of the pure operations
     provided by the respective above module.
     .

@@ -5,7 +5,7 @@ Build-Type:     Simple
 License:        BSD3
 License-File:   LICENCE
 Author:         Michal Konecny (Aston University)
-Copyright:      (c) 2010 Michal Konecny, Jan Duracz
+Copyright:      (c) 2011 Michal Konecny, Jan Duracz
 Maintainer:     mikkonecny@gmail.com
 Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
@@ -15,16 +15,16 @@ Tested-with:    GHC ==6.12.3
 Description:
     A concrete implementation for the refinement-order type classes from AERN-Real in the form
     of interval arithmetic.  The arithmetic supports also anti-consistent
-    intervals (ie @[l,h]@ with @l >= h@) and maintains monotonicity in the
+    intervals (ie @[l,r]@ with @l >= r@) and maintains monotonicity in the
     refinement order so that both inner and outer approximations of exact interval
     expressions can be safely computed.
     .
-    The package AERN-Real-MPFR facilitates (via package hmpfr) 
-    the use of the MPFR arbitrary granularity (ie precision) floating point numbers 
-    as endpoints.
-    .
     The package AERN-Real-Double makes it possible to use ordinary
     machine 'Double' values as endpoints, although limited to its fixed granularity (ie precision). 
+    .
+    A package AERN-Real-MPFR will be provided in future to facilitate (via package hmpfr) 
+    the use of the MPFR arbitrary granularity (ie precision) floating point numbers 
+    as endpoints.
 
 Extra-Source-Files:
     CHANGES
