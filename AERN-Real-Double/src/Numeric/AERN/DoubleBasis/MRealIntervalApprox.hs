@@ -214,7 +214,7 @@ infixl 7 <*>|=, >*<|=
 infixl 7 </>|=, >/<|=
 
 -- | 
--- Mutable intervals with Double endpoints. Created and handled using
+-- Mutable 'RealIntervalApprox'. Created and handled using
 -- the methods of 'CanBeMutable' as in e.g.
 -- 
 -- > square :: RealIntervalApprox -> RealIntervalApprox 
