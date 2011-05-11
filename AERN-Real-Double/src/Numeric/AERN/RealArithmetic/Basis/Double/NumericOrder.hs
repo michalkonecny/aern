@@ -24,11 +24,6 @@ import Control.Exception
 import Numeric.AERN.Basics.PartialOrdering
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
-import Test.QuickCheck
-import Numeric.AERN.Misc.QuickCheck
-import Test.Framework (testGroup, Test)
-import Test.Framework.Providers.QuickCheck2 (testProperty)
-
 import Numeric.AERN.Misc.List
 import Numeric.AERN.Misc.Debug
 

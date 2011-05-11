@@ -1,3 +1,5 @@
+2011.1.0.1: 11th May 2011
+    * minor update of dependencies and documentation to reflect inability to build with ghc 7.0.*
 2011.1: 6th May 2011
     * initial release of a completely rewritten version of AERN-Real
 
