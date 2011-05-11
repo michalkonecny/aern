@@ -142,7 +142,7 @@ expOutThinArgInPlace ::
     NumOrd.PartialCompareEffortIndicator t ->
     (ArithUpDn.ConvertEffortIndicator t Int, 
      ArithInOut.ConvertEffortIndicator Double t) ->
-    Mutable t s -> {-^ out parameter -}
+    Mutable t s {-^ out parameter -} ->
     Int {-^ the highest degree to consider in the Taylor expansion -} ->
     Mutable t s {-^ @xM@ assumed to be a thin approximation -} -> 
     ST s ()
