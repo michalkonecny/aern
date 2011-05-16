@@ -118,18 +118,6 @@ ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity);
  */
 
 void
-ADD_COEFF_CODE(addUpUsingPureOps)(Coeff zero, ComparisonOp compare,
-    Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2);
-
-void
-ADD_COEFF_CODE(addDnUsingPureOps)(Coeff zero, ComparisonOp compare,
-    Ops_Pure * ops, Poly *res, Poly * p1, Poly * p2);
-
-void
-ADD_COEFF_CODE(addEnclUsingPureOps)(ComparisonOp compare, Ops_Pure * ops,
-    Poly *res, Poly * p1, Poly * p2);
-
-void
 ADD_COEFF_CODE(addUpUsingMutableOps)(Coeff zero, ComparisonOp compare,
     Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
 
@@ -241,6 +229,18 @@ ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, O
  */
 void
 ADD_COEFF_CODE(reduceDegreeEnclUsingMutableOps)(Ops_Mutable * ops, Power maxDeg, Poly * p);
+
+void
+ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare,
+    Ops_Mutable * ops, Poly * res, Poly * src);
+
+void
+ADD_COEFF_CODE(copyUpThinUsingMutableOps)(ComparisonOp compare,
+    Coeff zero, Ops_Mutable * ops, Poly * res, Poly * src);
+
+void
+ADD_COEFF_CODE(copyDnThinUsingMutableOps)(ComparisonOp compare,
+    Coeff zero, Ops_Mutable * ops, Poly * res, Poly * src);
 
 //void
 //ADD_COEFF_CODE(reduceDegreeEnclUsingPureOps)(Ops_Pure * ops, Power maxDeg, Poly * p);

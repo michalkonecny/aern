@@ -24,59 +24,8 @@ import Control.Concurrent (threadDelay, yield)
 main :: IO ()
 main = 
     do
---    testPureDCPolys
 --    testMutableDCPolys
---    testPureGCPolys
     testMutableGCPolys
-
-testPureDCPolys :: IO ()
-testPureDCPolys =
-    do
-    putStrLn $ "p1.maxArity = " ++ show maxArity
-    putStrLn $ "p1.maxSize = " ++ show maxSize
-    putStrLn $ "p1.maxDegree = " ++ show maxDegree
-    putStrLn $ "p1.constTerm = " ++ show constTerm
-    putStrLn $ "p1 = " ++ showP p1
-    putStrLn $ "p2 = " ++ showP p2
-    putStrLn $ "p3 = " ++ showP p3
-    putStrLn $ "p1 +^ p1 = " ++ showP p11
-    putStrLn $ "p1 +^ p2 = " ++ showP p12
-    putStrLn $ "p2 +^ p2 = " ++ showP p22
-    putStrLn $ "p2 +^ p3 = " ++ showP p23
-    putStrLn $ "p1 +^ (p2 +^ p3) = " ++ showP p1b23
-    putStrLn $ "size 1 $ p1 +^ (p2 +^ p3) = " ++ showP p1b23s1
-    putStrLn $ "(p2 +^ p2) +^ p3 = " ++ showP pb223
-    putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223
-    putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223s1
-    putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223d0
-    putStrLn $ "boundUpThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdupthp1bb223d0
-    putStrLn $ "boundDnThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bddnthp1bb223d0
-    putStrLn $ "boundUp $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdupp1bb223d0
-    putStrLn $ "boundDn $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bddnp1bb223d0
-    where
-    showP = showInternals (showChebTerms, showCoeffInternals)
-    showChebTerms = True
-    showCoeffInternals = False
-    opsPtr = unsafePerformIO $ DCPoly.newOps DCPoly.Ops_Pure
-    p1 = DCPoly.constPoly 3 0 (Var 2) (Size 10) (Power 3)
-    p2 = DCPoly.projectionPoly (Var 0) (Var 2) (Size 10) (Power 3)
-    p3 = DCPoly.projectionPoly (Var 1) (Var 2) (Size 10) (Power 3)
-    p11 = DCPoly.polyAddUpPure (Size 2) (Power 3) opsPtr p1 p1
-    p12 = DCPoly.polyAddUpPure (Size 2) (Power 3) opsPtr p1 p2
-    p22 = DCPoly.polyAddUpPure (Size 2) (Power 3) opsPtr p2 p2
-    p23 = DCPoly.polyAddUpPure (Size 2) (Power 3) opsPtr p2 p3
-    p1b23 = DCPoly.polyAddUpPure (Size 2) (Power 3) opsPtr p1 p23
-    p1b23s1 = DCPoly.polyAddUpPure (Size 1) (Power 3) opsPtr p1 p23
-    pb223 = DCPoly.polyAddUpPure (Size 2) (Power 3) opsPtr p22 p3
-    p1bb223 = DCPoly.polyAddUpPure (Size 2) (Power 3) opsPtr p1 pb223
-    p1bb223s1 = DCPoly.polyAddUpPure (Size 1) (Power 3) opsPtr p1 pb223
-    p1bb223d0 = DCPoly.polyAddUpPure (Size 2) (Power 0) opsPtr p1 pb223
-    (maxArity, maxSize, maxDegree) = DCPoly.peekSizes p1
-    constTerm = DCPoly.peekConst p1
-    bdupthp1bb223d0 = DCPoly.polyBoundUpThin opsPtr p1bb223
-    bddnthp1bb223d0 = DCPoly.polyBoundDnThin opsPtr p1bb223
-    bdupp1bb223d0 = DCPoly.polyBoundUp opsPtr p1bb223
-    bddnp1bb223d0 = DCPoly.polyBoundDn opsPtr p1bb223
 
 testMutableDCPolys :: IO ()
 testMutableDCPolys =
@@ -140,54 +89,6 @@ testMutableDCPolys =
         scaleEncl 0.1 sexM
         return [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, suxM, sdxM, sexM]
     
-testPureGCPolys :: IO ()
-testPureGCPolys =
-    do
-    putStrLn $ "p1.maxArity = " ++ show maxArity
-    putStrLn $ "p1.maxSize = " ++ show maxSize
-    putStrLn $ "p1.maxDegree = " ++ show maxDegree
-    putStrLn $ "p1.constTerm = " ++ show constTerm
-    putStrLn $ "p1 = " ++ showP p1
-    putStrLn $ "p2 = " ++ showP p2
-    putStrLn $ "p3 = " ++ showP p3
-    putStrLn $ "p1 +^ p1 = " ++ showP p11
-    putStrLn $ "p1 +^ p2 = " ++ showP p12
-    putStrLn $ "p2 +^ p2 = " ++ showP p22
-    putStrLn $ "p2 +^ p3 = " ++ showP p23
-    putStrLn $ "p1 +^ (p2 +^ p3) = " ++ showP p1b23
-    putStrLn $ "size 1 $ p1 +^ (p2 +^ p3) = " ++ showP p1b23s1
-    putStrLn $ "(p2 +^ p2) +^ p3 = " ++ showP pb223
-    putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223
-    putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223s1
-    putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223d0
-    putStrLn $ "boundUpThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdupthp1bb223d0
-    putStrLn $ "boundDnThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bddnthp1bb223d0
-    putStrLn $ "boundUp $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdupp1bb223d0
-    putStrLn $ "boundDn $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bddnp1bb223d0
-    where
-    showP = showInternals (showChebTerms, showCoeffInternals)
-    showChebTerms = True
-    showCoeffInternals = False
-    opsPtr = GCPoly.newOpsPureArithUpDnDefaultEffort sampleD
-    p1 = GCPoly.constPoly (3::Double) 0 (Var 2) (Size 10) (Power 3)
-    p2 = GCPoly.projectionPoly sampleD (Var 0) (Var 2) (Size 10) (Power 3)
-    p3 = GCPoly.projectionPoly sampleD (Var 1) (Var 2) (Size 10) (Power 3)
-    p11 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p1 p1
-    p12 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p1 p2
-    p22 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p2 p2
-    p23 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p2 p3
-    p1b23 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p1 p23
-    p1b23s1 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 1) (Power 3) opsPtr p1 p23
-    pb223 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p22 p3
-    p1bb223 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p1 pb223
-    p1bb223s1 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 1) (Power 3) opsPtr p1 pb223
-    p1bb223d0 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 0) opsPtr p1 pb223
-    (maxArity, maxSize, maxDegree) = GCPoly.peekSizes p1
-    constTerm = GCPoly.peekConst p1
-    bdupthp1bb223d0 = GCPoly.polyBoundUpThin opsPtr p1bb223
-    bddnthp1bb223d0 = GCPoly.polyBoundDnThin opsPtr p1bb223
-    bdupp1bb223d0 = GCPoly.polyBoundUp opsPtr p1bb223
-    bddnp1bb223d0 = GCPoly.polyBoundDn opsPtr p1bb223
         
 testMutableGCPolys :: IO ()
 testMutableGCPolys =
@@ -303,4 +204,53 @@ testMutableGCPolys =
             suxM, sdxM, sexM, cpesrcM, cpetargM, cperesM, cpupsrcM, cpuptargM, cpupresM, 
             cpdnsrcM, cpdntargM, cpdnresM
            ]
+ 
+ --testPureGCPolys :: IO ()
+--testPureGCPolys =
+--    do
+--    putStrLn $ "p1.maxArity = " ++ show maxArity
+--    putStrLn $ "p1.maxSize = " ++ show maxSize
+--    putStrLn $ "p1.maxDegree = " ++ show maxDegree
+--    putStrLn $ "p1.constTerm = " ++ show constTerm
+--    putStrLn $ "p1 = " ++ showP p1
+--    putStrLn $ "p2 = " ++ showP p2
+--    putStrLn $ "p3 = " ++ showP p3
+--    putStrLn $ "p1 +^ p1 = " ++ showP p11
+--    putStrLn $ "p1 +^ p2 = " ++ showP p12
+--    putStrLn $ "p2 +^ p2 = " ++ showP p22
+--    putStrLn $ "p2 +^ p3 = " ++ showP p23
+--    putStrLn $ "p1 +^ (p2 +^ p3) = " ++ showP p1b23
+--    putStrLn $ "size 1 $ p1 +^ (p2 +^ p3) = " ++ showP p1b23s1
+--    putStrLn $ "(p2 +^ p2) +^ p3 = " ++ showP pb223
+--    putStrLn $ "p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223
+--    putStrLn $ "size 1 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223s1
+--    putStrLn $ "degree 0 $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ showP p1bb223d0
+--    putStrLn $ "boundUpThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdupthp1bb223d0
+--    putStrLn $ "boundDnThin $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bddnthp1bb223d0
+--    putStrLn $ "boundUp $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bdupp1bb223d0
+--    putStrLn $ "boundDn $ p1 +^ ((p2 +^ p2) +^ p3) = " ++ show bddnp1bb223d0
+--    where
+--    showP = showInternals (showChebTerms, showCoeffInternals)
+--    showChebTerms = True
+--    showCoeffInternals = False
+--    opsPtr = GCPoly.newOpsPureArithUpDnDefaultEffort sampleD
+--    p1 = GCPoly.constPoly (3::Double) 0 (Var 2) (Size 10) (Power 3)
+--    p2 = GCPoly.projectionPoly sampleD (Var 0) (Var 2) (Size 10) (Power 3)
+--    p3 = GCPoly.projectionPoly sampleD (Var 1) (Var 2) (Size 10) (Power 3)
+--    p11 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p1 p1
+--    p12 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p1 p2
+--    p22 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p2 p2
+--    p23 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p2 p3
+--    p1b23 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p1 p23
+--    p1b23s1 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 1) (Power 3) opsPtr p1 p23
+--    pb223 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p22 p3
+--    p1bb223 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 3) opsPtr p1 pb223
+--    p1bb223s1 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 1) (Power 3) opsPtr p1 pb223
+--    p1bb223d0 = GCPoly.polyAddUpPureUsingPureOps sampleD (Size 2) (Power 0) opsPtr p1 pb223
+--    (maxArity, maxSize, maxDegree) = GCPoly.peekSizes p1
+--    constTerm = GCPoly.peekConst p1
+--    bdupthp1bb223d0 = GCPoly.polyBoundUpThin opsPtr p1bb223
+--    bddnthp1bb223d0 = GCPoly.polyBoundDnThin opsPtr p1bb223
+--    bdupp1bb223d0 = GCPoly.polyBoundUp opsPtr p1bb223
+--    bddnp1bb223d0 = GCPoly.polyBoundDn opsPtr p1bb223
  
