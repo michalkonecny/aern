@@ -23,7 +23,7 @@ ADD_COEFF_CODE(printPoly)(Poly *p)
   for(int i = 0; i < psize; i++)
     {
       printf("    term ");
-      printf(" monomial degree = %p\n", MONOMIAL_DEGREE(terms[i].powers));
+      printf(" monomial degree = %d\n", MONOMIAL_DEGREE(terms[i].powers));
       FOREACH_VAR_ARITY(var, arity)
         {
           printf("[%d]", POWER_OF_VAR(terms[i].powers, var));

@@ -4,8 +4,7 @@
 
 /*
  * This file should differ from its GenericCoeff analogue
- * only in the following include line and by omitting
- * the ...UsingPureOps functions.
+ * only in the following include line.
  */
 #include "DoubleCoeff/poly.h"
 #include "EvalExport_stub.h"
