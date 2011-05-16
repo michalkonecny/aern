@@ -21,7 +21,8 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
 import Numeric.AERN.RealArithmetic.Basis.MPFR
 import Numeric.AERN.RealArithmetic.Interval.MPFR
-import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
+--import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.ShowInternals

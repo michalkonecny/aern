@@ -336,17 +336,17 @@ mkOpsMutableArithUpDn sample effort =
     mkOpsMutable
         sample
         (makeMutable)
-        (cloneMutable sample)
-        (assignMutable sample)
+        (cloneMutable)
+        (assignMutable)
         (writeMutable)
-        (ArithUpDn.absUpInPlaceEff sample absEffort)
-        (ArithUpDn.absDnInPlaceEff sample absEffort)
-        (ArithUpDn.addUpInPlaceEff sample addEffort)
-        (ArithUpDn.addDnInPlaceEff sample addEffort)
-        (ArithUpDn.subtrUpInPlaceEff sample addEffort)
-        (ArithUpDn.subtrDnInPlaceEff sample addEffort)
-        (ArithUpDn.multUpInPlaceEff sample multEffort)
-        (ArithUpDn.multDnInPlaceEff sample multEffort)
+        (ArithUpDn.absUpInPlaceEff absEffort)
+        (ArithUpDn.absDnInPlaceEff absEffort)
+        (ArithUpDn.addUpInPlaceEff addEffort)
+        (ArithUpDn.addDnInPlaceEff addEffort)
+        (ArithUpDn.subtrUpInPlaceEff addEffort)
+        (ArithUpDn.subtrDnInPlaceEff addEffort)
+        (ArithUpDn.multUpInPlaceEff multEffort)
+        (ArithUpDn.multDnInPlaceEff multEffort)
 
 newOpsMutableArithUpDn ::
     (ArithUpDn.RoundedRealInPlace t, CanBeMutable t, Storable t) => 

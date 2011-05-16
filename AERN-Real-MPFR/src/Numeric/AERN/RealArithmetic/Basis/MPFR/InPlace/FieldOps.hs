@@ -68,31 +68,28 @@ setPrec sample prec rM =
     let _ = [r, sample]
     unsafeWriteMutable rM $ M.set M.Up prec r
 
-opMutable1Unit op name symbol dir sample _prec 
+opMutable1Unit op name symbol dir _prec 
         rM@(MMPFR rMM) dM1@(MMPFR dMM1) =
     do
     op rMM dMM1 dir
     d1 <- unsafeReadMutable dM1
-    let _ = [d1,sample]
     detectNaNDir (name ++ ": " ++ symbol ++ " " ++ show d1) rM dir
 
-opMutable2Prec op name symbol dir sample _prec 
+opMutable2Prec op name symbol dir _prec 
         rM@(MMPFR rMM) dM1@(MMPFR dMM1) dM2@(MMPFR dMM2) =
     do
 --    setPrec sample prec rM
     op rMM dMM1 dMM2 dir
     d1 <- unsafeReadMutable dM1
     d2 <- unsafeReadMutable dM2
-    let _ = [d1,d2,sample]
     detectNaNDir (name ++ ": " ++ show d1 ++ " " ++ symbol ++ show d2 ) rM dir 
 
-opMutableNonmutPrec op name symbol dir sample _prec 
+opMutableNonmutPrec op name symbol dir _prec 
         rM@(MMPFR rMM) dM@(MMPFR dMM) n =
     do
 --    setPrec sample prec rM
     op rMM dMM n dir
     d <- unsafeReadMutable dM
-    let _ = [d,sample]
     detectNaNDir (name ++ ": " ++ show d ++ " " ++ symbol ++ show n ) rM dir 
 
 instance RoundedAddInPlace MPFR where
