@@ -40,7 +40,7 @@ instance CanBeMutable MPFR where
     unsafeReadMutable (MMPFR m) = MM.unsafeFreeze m 
     
 instance NegInPlace MPFR where
-    negInPlace _ (MMPFR r) (MMPFR a) = 
+    negInPlace (MMPFR r) (MMPFR a) = 
         do
         MM.neg r a M.Near
         return ()
