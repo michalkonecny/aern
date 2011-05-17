@@ -20,7 +20,7 @@ int
 ADD_COEFF_CODE(compareCoeffNsByCoeffDecreasing)(const CoeffN * cn1,
     const CoeffN * cn2)
 {
-  return CF_COMPARE(cn1 -> cfCompare, cn2 -> cf, cn1 -> cf);
+  return CFM_COMPARE(cn1 -> cfCompare, cn2 -> cf, cn1 -> cf);
 }
 
 int
@@ -138,7 +138,7 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
 
 
 void
-ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(ComparisonOp compare,
+ADD_COEFF_CODE(addTermsAndErrorBounds)(ComparisonOp compare,
     Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
 {
 
@@ -315,12 +315,12 @@ ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(ComparisonOp compare,
 }
 
 void
-ADD_COEFF_CODE(addUpUsingMutableOps)(Coeff zero, ComparisonOp compare,
+ADD_COEFF_CODE(addUp)(Coeff zero, ComparisonOp compare,
     Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
 {
-  //  printf("addUpUsingMutableOps: starting\n");
+  //  printf("addUp: starting\n");
 
-  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(compare, opsM, res, p1,
+  ADD_COEFF_CODE(addTermsAndErrorBounds)(compare, opsM, res, p1,
       p2);
   //  printf("performed main addition\n");
 
@@ -330,16 +330,16 @@ ADD_COEFF_CODE(addUpUsingMutableOps)(Coeff zero, ComparisonOp compare,
   CFM_ADD_UP(opsM, res -> constTerm, res -> constTerm, res -> errorBound);
 
   CFM_ASSIGN_VAL(opsM, res -> errorBound, zero);
-  //  printf("addUpUsingMutableOps: finished\n");
+  //  printf("addUp: finished\n");
 }
 
 void
-ADD_COEFF_CODE(addDnUsingMutableOps)(Coeff zero, ComparisonOp compare,
+ADD_COEFF_CODE(addDn)(Coeff zero, ComparisonOp compare,
     Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
 {
-  //  printf("addUpUsingMutableOps: starting\n");
+  //  printf("addUp: starting\n");
 
-  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(compare, opsM, res, p1,
+  ADD_COEFF_CODE(addTermsAndErrorBounds)(compare, opsM, res, p1,
       p2);
   //  printf("performed main addition\n");
 
@@ -349,14 +349,14 @@ ADD_COEFF_CODE(addDnUsingMutableOps)(Coeff zero, ComparisonOp compare,
   CFM_SUB_DN(opsM, res -> constTerm, res -> constTerm, res -> errorBound);
 
   CFM_ASSIGN_VAL(opsM, res -> errorBound, zero);
-  //  printf("addUpUsingMutableOps: finished\n");
+  //  printf("addUp: finished\n");
 }
 
 void
-ADD_COEFF_CODE(addEnclUsingMutableOps)(ComparisonOp compare,
+ADD_COEFF_CODE(addEncl)(ComparisonOp compare,
     Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
 {
-  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(compare, opsM, res, p1,
+  ADD_COEFF_CODE(addTermsAndErrorBounds)(compare, opsM, res, p1,
       p2);
 
   // compute the constant term coefficient rounding up and down:

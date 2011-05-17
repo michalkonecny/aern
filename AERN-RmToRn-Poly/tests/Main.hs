@@ -93,10 +93,6 @@ testMutableDCPolys =
 testMutableGCPolys :: IO ()
 testMutableGCPolys =
     do
-
-    arity <- GCPoly.peekArityIO p1
-    putStrLn $ "maxArity = " ++ show arity
-    threadDelay 100000
     putStrLn $ "p1 = " ++ showP p1
     putStrLn $ "p2 = " ++ showP p2
     putStrLn $ "p3 = " ++ showP p3
@@ -125,24 +121,23 @@ testMutableGCPolys =
 --    showChebTerms = True
     showChebTerms = False
     showCoeffInternals = False
-    opsPtr = GCPoly.newOpsPureArithUpDnDefaultEffort sampleD
     opsMutablePtr = GCPoly.newOpsMutableArithUpDnDefaultEffort sampleD
     [
       p1,p2,p3,p4,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,
       sux,sdx,sex,cpesrc,cpetarg,cperes,cpupsrc,cpuptarg,cpupres,cpdnsrc,cpdntarg,cpdnres
      ] = runST $
         do
-        let mkConst c =      GCPoly.constPolyMutable (c::Double) 0 (Var 3) (Size 10) (Power 3)
-        let mkConstConst c = GCPoly.constPolyMutable (c::Double) 0 (Var 3) (Size 1) (Power 3)
-        let mkVar n = GCPoly.projectionPolyMutable sampleD (Var n) (Var 3) (Size 10) (Power 3)
-        let addUp = GCPoly.polyAddUpMutableUsingMutableOps sampleD opsMutablePtr
-        let scaleUpThin c = GCPoly.polyScaleUpMutableUsingMutableOps 0 opsMutablePtr (c::Double) 
-        let scaleDnThin c = GCPoly.polyScaleDnMutableUsingMutableOps 0 opsMutablePtr (c::Double) 
-        let scaleEncl c = GCPoly.polyScaleEnclMutableUsingMutableOps opsMutablePtr (c::Double) 
---        let reduceDegree d = GCPoly.polyReduceDegreeEnclMutableUsingMutableOps opsMutablePtr (Power d) 
-        let copyEncl = GCPoly.polyCopyEnclMutableUsingMutableOpsGenCf opsMutablePtr
-        let copyUpThin = GCPoly.polyCopyUpThinMutableUsingMutableOpsGenCf 0 opsMutablePtr
-        let copyDnThin = GCPoly.polyCopyDnThinMutableUsingMutableOpsGenCf 0 opsMutablePtr
+        let mkConst c = GCPoly.constPoly (c::Double) 0 (Var 3) (Size 10) (Power 3)
+        let mkConstConst c = GCPoly.constPoly (c::Double) 0 (Var 3) (Size 1) (Power 3)
+        let mkVar n = GCPoly.projectionPoly sampleD (Var n) (Var 3) (Size 10) (Power 3)
+        let addUp = GCPoly.polyAddUpMutable sampleD opsMutablePtr
+        let scaleUpThin c = GCPoly.polyScaleUpMutable 0 opsMutablePtr (c::Double) 
+        let scaleDnThin c = GCPoly.polyScaleDnMutable 0 opsMutablePtr (c::Double) 
+        let scaleEncl c = GCPoly.polyScaleEnclMutable opsMutablePtr (c::Double) 
+--        let reduceDegree d = GCPoly.polyReduceDegreeEnclMutable opsMutablePtr (Power d) 
+        let copyEncl = GCPoly.polyCopyEncl opsMutablePtr
+        let copyUpThin = GCPoly.polyCopyUpThin 0 opsMutablePtr
+        let copyDnThin = GCPoly.polyCopyDnThin 0 opsMutablePtr
         
         p1M <- mkConst 0
         p2M <- mkVar 0 -- "x"
@@ -160,11 +155,11 @@ testMutableGCPolys =
         addUp p1b23M p1M p1b23M
         pb223M <- mkConst 0
         addUp pb223M p22M p3M
-        p23s1M <- GCPoly.constPolyMutable (0::Double) 0 (Var 2) (Size 1) (Power 3)
+        p23s1M <- GCPoly.constPoly (0::Double) 0 (Var 2) (Size 1) (Power 3)
         addUp p23s1M p2M p3M
-        pb223s1M <- GCPoly.constPolyMutable (0::Double) 0 (Var 2) (Size 1) (Power 3)
+        pb223s1M <- GCPoly.constPoly (0::Double) 0 (Var 2) (Size 1) (Power 3)
         addUp pb223s1M p22M p3M
-        pb223d0M <- GCPoly.constPolyMutable (0::Double) 0 (Var 2) (Size 2) (Power 0)
+        pb223d0M <- GCPoly.constPoly (0::Double) 0 (Var 2) (Size 2) (Power 0)
         addUp pb223d0M p22M p3M
         
         suxM <- mkVar 0
@@ -198,7 +193,7 @@ testMutableGCPolys =
         cpdnresM  <- mkConstConst 1
         copyDnThin cpdnresM cpdnsrcM
         
-        mapM (GCPoly.unsafeReadPolyMutable sampleD) 
+        mapM (unsafeReadMutable) 
           [
             p1M, p2M, p3M, p4M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, 
             suxM, sdxM, sexM, cpesrcM, cpetargM, cperesM, cpupsrcM, cpuptargM, cpupresM, 

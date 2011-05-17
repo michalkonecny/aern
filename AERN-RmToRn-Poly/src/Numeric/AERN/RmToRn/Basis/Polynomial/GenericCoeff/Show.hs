@@ -35,74 +35,115 @@ import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
 
 import Numeric.AERN.Misc.Debug
 
+import Numeric.AERN.Basics.Mutable
+import Control.Monad.ST (ST, runST)
+
 import Foreign.Storable
 
 instance 
         (ShowInternals cf, Storable cf,
-         ArithUpDn.RoundedReal cf) => 
-        (Show (PolyFP cf)) 
+         CanBeMutable cf, Show cf, 
+         ArithUpDn.RoundedRealInPlace cf) => 
+        (Show (PolyPure cf)) 
     where
     show = showUsingShowInternals
 
 instance
-        (ShowInternals cf, Storable cf, ArithUpDn.RoundedReal cf) => 
-        (ShowInternals (PolyFP cf))
+        (ShowInternals cf, Storable cf,
+         CanBeMutable cf, Show cf, 
+         ArithUpDn.RoundedRealInPlace cf) => 
+        (ShowInternals (PolyPure cf))
     where
-    type ShowInternalsIndicator (PolyFP cf) = 
+    type ShowInternalsIndicator (PolyPure cf) = 
         (Bool, ShowInternalsIndicator cf)
-    defaultShowIndicator p = (False, defaultShowIndicator $ peekConst p)
-    showInternals (showChebyshevTerms, coeffShowIndicator) polyFP =
-        showPolyFPWithVars polyFP coeffShowIndicator varNamesArity
-        ++
-        (case showChebyshevTerms of
-            True -> 
-                " [" ++ showPolyFPChebTermsWithVars polyFP coeffShowIndicator varNamesArity ++ "]"
-            False -> "")
+    defaultShowIndicator p =
+        runST $
+            do
+            pM <- unsafeMakeMutable p
+            constM <- peekConst pM
+            const <- unsafeReadMutable constM
+            return $ (False, defaultShowIndicator const)
+    showInternals (showChebyshevTerms, coeffShowIndicator) p =
+        runST $
+            do
+            pM <- unsafeMakeMutable p
+            (Var maxArity) <- peekArity pM
+            pText <- showPolyFPWithVars pM coeffShowIndicator (varNamesArity maxArity)
+            case showChebyshevTerms of
+                True ->
+                    do
+                    tText <- showPolyFPChebTermsWithVars pM coeffShowIndicator (varNamesArity maxArity)
+                    return $ pText ++ "[" ++ tText ++ "]"
+                False ->
+                    return pText
         where
-        varNamesArity = varNames (fromIntegral maxArity)
-        (Var maxArity) = peekArity polyFP
+        varNamesArity maxArity = varNames (fromIntegral maxArity)
         varNames arity = 
             take arity $ 
                 ["x", "y", "z"] 
                 ++ (map (\n -> "v" ++ show n ) [3..(arity - 1)])
         
 showPolyFPWithVars :: 
-    (ShowInternals cf, Storable cf, ArithUpDn.RoundedReal cf) => 
-    PolyFP cf -> (ShowInternalsIndicator cf) -> [HVar] -> String
-showPolyFPWithVars poly coeffShowIndicator varNames 
-    | errorBoundKnownToBeZero = polyText
-    | otherwise = polyText ++ errorText
+    (CanBeMutable cf, ShowInternals cf, Storable cf, ArithUpDn.RoundedReal cf) => 
+    PolyFP cf s -> 
+    (ShowInternalsIndicator cf) -> 
+    [HVar] -> 
+    ST s String
+showPolyFPWithVars pM coeffShowIndicator varNames =
+    do
+    errorM <- peekError pM
+    errorBound <- unsafeReadMutable errorM
+    let errorText = " ± " ++ (showInternals coeffShowIndicator errorBound) 
+    case errorBoundKnownToBeZero errorBound of
+        True -> return polyText
+        _ -> return $ polyText ++ errorText
     where
-    errorBoundKnownToBeZero =
+    errorBoundKnownToBeZero errorBound =
         case errorBound ==? zero of Just True -> True; _ -> False
-    errorText = " ± " ++ (showInternals coeffShowIndicator errorBound)
-    errorBound = peekError poly
-    polyText = 
-        showSymbolicPoly (showInternals coeffShowIndicator) defaultShowVar $
-                evalAtPtChebBasis 
-                    poly
-                    (map hpolyVar varNames) 
-                    hpolyOne
-                    (hpolyAdd (<+>))
-                    (hpolySubtr neg (<+>))
-                    (hpolyMult (<+>) (<*>))
-                    (\coeff -> hpolyConst $ Interval coeff coeff)
+    polyText 
+        = 
+        showSymbolicPoly (showInternals coeffShowIndicator) defaultShowVar pSymb
+    pSymb 
+        =
+        evalAtPtChebBasis 
+            pM
+            (map hpolyVar varNames) 
+            hpolyOne
+            (hpolyAdd (<+>))
+            (hpolySubtr neg (<+>))
+            (hpolyMult (<+>) (<*>))
+            (\coeff -> hpolyConst $ Interval coeff coeff)
         
 showPolyFPChebTermsWithVars :: 
-    (ShowInternals cf, Storable cf, ArithUpDn.RoundedReal cf) => 
-    PolyFP cf -> (ShowInternalsIndicator cf) -> [HVar] -> String
-showPolyFPChebTermsWithVars polyFP coeffShowIndicator varNames =
-    showSymbolicPoly (showInternals coeffShowIndicator) chebyShowVar $
-            evalAtPtPowerBasis
-            -- trick: treat the polynomial as if it was in power basis
-            --        thus obtaining the raw coefficients of the Chebyshev terms
-                polyFP 
-                (map hpolyVar varNames) 
-                hpolyOne
-                (hpolyAdd (<+>))
-                (hpolyMult (<+>) (<*>))
-                (\coeff -> hpolyConst $ Interval coeff coeff)
-
+    (CanBeMutable cf, ShowInternals cf, Storable cf, ArithUpDn.RoundedReal cf) => 
+    PolyFP cf s -> 
+    (ShowInternalsIndicator cf) -> 
+    [HVar] -> 
+    ST s String
+showPolyFPChebTermsWithVars pM coeffShowIndicator varNames =
+    do
+    errorM <- peekError pM
+    errorBound <- unsafeReadMutable errorM
+    let errorText = " ± " ++ (showInternals coeffShowIndicator errorBound) 
+    case errorBoundKnownToBeZero errorBound of
+        True -> return polyText
+        _ -> return $ polyText ++ errorText
+    where
+    errorBoundKnownToBeZero errorBound =
+        case errorBound ==? zero of Just True -> True; _ -> False
+    polyText 
+        = 
+        showSymbolicPoly (showInternals coeffShowIndicator) chebyShowVar pSymb
+    pSymb 
+        =
+        evalAtPtPowerBasis 
+            pM
+            (map hpolyVar varNames) 
+            hpolyOne
+            (hpolyAdd (<+>))
+            (hpolyMult (<+>) (<*>))
+            (\coeff -> hpolyConst $ Interval coeff coeff)
+        
 chebyShowVar var power = 
     "T_" ++ show power ++ "(" ++ var ++ ")"
 

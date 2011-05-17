@@ -19,7 +19,7 @@ typedef uint32_t Size;
 
 typedef void * ConversionOp; // pointer to Haskell type t1 -> t2
 
-#define CF_CONVERT(convOp,d) (eval_convert_hs(convOp, d))
+#define CFM_CONVERT(convOp,d) (eval_convert_hs(convOp, d))
 
 
 typedef void * UnaryOp; // pointer to Haskell type t -> t

@@ -40,8 +40,8 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
   Size maxSize = p -> maxSize;
   Size psize = p -> psize;
   Term * terms = p -> terms;
-  CF_FREE(p -> constTerm);
-  CF_FREE(p -> errorBound);
+  CFM_FREE(p -> constTerm);
+  CFM_FREE(p -> errorBound);
   free(p);
 
   Size i = 0;
@@ -49,7 +49,7 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
   while( i < psize )
     {
       free(terms[i].powers);
-      CF_FREE(terms[i].coeff);
+      CFM_FREE(terms[i].coeff);
       i++;
     }
 
@@ -69,20 +69,20 @@ void
 ADD_COEFF_CODE(mapCoeffsInPlace)(ConversionOp convert, Poly *p)
 {
   Coeff temp = p -> constTerm;
-  p -> constTerm = CF_CONVERT(convert, p -> constTerm);
-  CF_FREE(temp);
+  p -> constTerm = CFM_CONVERT(convert, p -> constTerm);
+  CFM_FREE(temp);
 
   temp = p -> errorBound;
-  p -> errorBound = CF_CONVERT(convert, p -> errorBound);
-  CF_FREE(temp);
+  p -> errorBound = CFM_CONVERT(convert, p -> errorBound);
+  CFM_FREE(temp);
 
   Size psize = p -> psize;
   Term * terms = p -> terms;
   for (Size i = 0; i < psize; ++i)
     {
       temp = terms[i].coeff;
-      terms[i].coeff = CF_CONVERT(convert, terms[i].coeff);
-      CF_FREE(temp);
+      terms[i].coeff = CFM_CONVERT(convert, terms[i].coeff);
+      CFM_FREE(temp);
     }
 }
 
