@@ -23,7 +23,7 @@ typedef struct TERM
    * the first element is the monomial degree, ie the sum of the powers for all variables
    * variables are numbered from 0, thus one can say powers[var] to get the power of var
    */
-  Coeff coeff;
+  CoeffMutable coeff;
 } Term;
 
 #define MONOMIAL_DEGREE(powers) (powers[0])
@@ -50,10 +50,10 @@ typedef struct POLY
   Size maxSize; // maximal number of non-constant terms (0 < maxSize < 2^10)
   Power maxDeg; // maximal degree of a term (ie sum of powers for all variables) (0 <= maxPow < 2^8)
   Size psize; // actual number of non-constant terms (0<=psize<=maxSize)
-  Coeff constTerm;
-  Coeff errorBound;
-    // if non-zero, this structure represents a function enclosure
-    // centred around the polynomial with radius errorBound in the max norm
+  CoeffMutable constTerm;
+  CoeffMutable errorBound;
+  // if non-zero, this structure represents a function enclosure
+  // centred around the polynomial with radius errorBound in the max norm
   Term * terms;
 } Poly;
 
@@ -83,8 +83,8 @@ ADD_COEFF_CODE(mapCoeffsInPlace)(ConversionOp convert, Poly *p);
  *   so that there is no coefficient aliasing
  */
 Poly *
-ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
-    Size maxSize, Power maxDeg);
+ADD_COEFF_CODE(newConstPoly)(CoeffMutable c, CoeffMutable errorBound,
+    Var maxArity, Size maxSize, Power maxDeg);
 
 /*
  * preconditions:
@@ -94,8 +94,8 @@ ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
  *   so that there is no coefficient aliasing
  */
 Poly *
-ADD_COEFF_CODE(newProjectionPoly)(Coeff zero, Coeff one, Coeff errorBound,
-    Var var, Var maxArity, Size maxSize, Power maxDeg);
+ADD_COEFF_CODE(newProjectionPoly)(CoeffMutable zero, CoeffMutable one,
+    CoeffMutable errorBound, Var var, Var maxArity, Size maxSize, Power maxDeg);
 
 ///*
 // * preconditions:
@@ -109,7 +109,6 @@ ADD_COEFF_CODE(newProjectionPoly)(Coeff zero, Coeff one, Coeff errorBound,
 Power
 ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity);
 
-
 /*
  * The following operations expect all polynomial parameters and result space to
  * have matching maxArities.
@@ -118,15 +117,15 @@ ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity);
  */
 
 void
-ADD_COEFF_CODE(addUpUsingMutableOps)(Coeff zero, ComparisonOp compare,
+ADD_COEFF_CODE(addUp)(Coeff zero, ComparisonOp compare,
     Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
 
 void
-ADD_COEFF_CODE(addDnUsingMutableOps)(Coeff zero, ComparisonOp compare,
+ADD_COEFF_CODE(addDn)(Coeff zero, ComparisonOp compare,
     Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
 
 void
-ADD_COEFF_CODE(addEnclUsingMutableOps)(ComparisonOp compare,
+ADD_COEFF_CODE(addEncl)(ComparisonOp compare,
     Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
 
 //void
@@ -154,93 +153,69 @@ ADD_COEFF_CODE(evalAtPtPowerBasis)(Poly * p, Value * values, Value one,
     BinaryOp add, BinaryOp mult, ConversionOp cf2val);
 
 /*
- * Upper bound for sum of absolute values of coefficients
- * DEALLOCATES : zero
- */
-
-Coeff
-ADD_COEFF_CODE(sumUpAbsCoeffs)(Coeff zero, Ops_Pure * ops, Poly * p);
-
-/*
  *  Upper bound for a polynomial ignoring errorBound
  *  WARNING : does not check for thinness
  */
-
-Coeff
-ADD_COEFF_CODE(boundUpThin)(Ops_Pure * ops, Poly * p);
+void
+ADD_COEFF_CODE(boundUpThin)(Ops_Mutable * ops, CoeffMutable res, Poly * p);
 
 /*
  *  Lower bound for a polynomial ignoring errorBound
  *  WARNING : does not check for thinness
  */
 
-Coeff
-ADD_COEFF_CODE(boundDnThin)(Ops_Pure * ops, Poly * p);
+void
+ADD_COEFF_CODE(boundDnThin)(Ops_Mutable * ops, CoeffMutable res, Poly * p);
 
 /*
  *  Upper bound for a polynomial (centred enclosure)
  *  WARNING : assumes errorBound >= 0
  */
 
-Coeff
-ADD_COEFF_CODE(boundUp)(Ops_Pure * ops, Poly * p);
+void
+ADD_COEFF_CODE(boundUp)(Ops_Mutable * ops, CoeffMutable res, Poly * p);
 
 /*
  *  Lower bound for a polynomial (centred enclosure)
  *  WARNING : assumes errorBound >= 0
  */
 
-Coeff
-ADD_COEFF_CODE(boundDn)(Ops_Pure * ops, Poly * p);
-
-/*
- * Scale p in place by c rounding upwards, collapsing errorTerm into constTerm.
- */
 void
-ADD_COEFF_CODE(scaleUpThinUsingPureOps)(Coeff zero, Ops_Pure * ops, Coeff c, Poly * p);
-
-/*
- * Scale p in place by c rounding downwards, collapsing errorTerm into constTerm.
- */
-void
-ADD_COEFF_CODE(scaleDnThinUsingPureOps)(Coeff zero, Ops_Pure * ops, Coeff c, Poly * p);
-
-/*
- * Scale p in place by c while increasing errorTerm to take rounding into account.
- */
-void
-ADD_COEFF_CODE(scaleEnclUsingPureOps)(Ops_Pure * ops, Coeff c, Poly * p);
+ADD_COEFF_CODE(boundDn)(Ops_Mutable * ops, CoeffMutable res, Poly * p);
 
 void
-ADD_COEFF_CODE(scaleUpThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, CoeffMutable c, Poly * p);
+ADD_COEFF_CODE(scaleUpThin)(Coeff zero, Ops_Mutable * ops,
+    CoeffMutable c, Poly * p);
 
 void
-ADD_COEFF_CODE(scaleDnThinUsingMutableOps)(Coeff zero, Ops_Mutable * ops, CoeffMutable c, Poly * p);
+ADD_COEFF_CODE(scaleDnThin)(Coeff zero, Ops_Mutable * ops,
+    CoeffMutable c, Poly * p);
 
 void
-ADD_COEFF_CODE(scaleEnclUsingMutableOps)(Ops_Mutable * ops, CoeffMutable c, Poly * p);
-
-tree234 *
-ADD_COEFF_CODE(markTermsWithDegreeBelowAndLargestCoeffs)(ComparisonOp compare, Ops_Pure * ops,
-    Term * * termsArray, Size termCount, Size maxSize, Power maxDegree);
+ADD_COEFF_CODE(scaleEncl)(Ops_Mutable * ops, CoeffMutable c,
+    Poly * p);
 
 /*
  * Reduce maxDegree of p in place, collapsing higher degree terms into errorTerm
  */
 void
-ADD_COEFF_CODE(reduceDegreeEnclUsingMutableOps)(Ops_Mutable * ops, Power maxDeg, Poly * p);
+ADD_COEFF_CODE(reduceDegreeEncl)(Ops_Mutable * ops,
+    Power maxDeg, Poly * p);
 
 void
-ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare,
+ADD_COEFF_CODE(copySameSizes)(Ops_Mutable * ops, Poly * res, Poly * src);
+
+void
+ADD_COEFF_CODE(copyEncl)(ComparisonOp compare,
     Ops_Mutable * ops, Poly * res, Poly * src);
 
 void
-ADD_COEFF_CODE(copyUpThinUsingMutableOps)(ComparisonOp compare,
-    Coeff zero, Ops_Mutable * ops, Poly * res, Poly * src);
+ADD_COEFF_CODE(copyUpThin)(ComparisonOp compare, Coeff zero,
+    Ops_Mutable * ops, Poly * res, Poly * src);
 
 void
-ADD_COEFF_CODE(copyDnThinUsingMutableOps)(ComparisonOp compare,
-    Coeff zero, Ops_Mutable * ops, Poly * res, Poly * src);
+ADD_COEFF_CODE(copyDnThin)(ComparisonOp compare, Coeff zero,
+    Ops_Mutable * ops, Poly * res, Poly * src);
 
 //void
 //ADD_COEFF_CODE(reduceDegreeEnclUsingPureOps)(Ops_Pure * ops, Power maxDeg, Poly * p);

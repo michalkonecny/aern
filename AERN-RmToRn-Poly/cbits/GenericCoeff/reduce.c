@@ -17,33 +17,59 @@ ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops_Mutable * ops, Var arity,
     Size curPsize);
 
 /*
- * a part of copyEnclUsingMutableOps that was split off into this function
+ * a part of copyEncl that was split off into this function
  * (the case where some of the terms with lowest absolute value coeffs are removed
  *  and their number is SMALL compared to the number of terms that will be kept)
  */
 void
-ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreCopiedTerms)(
+ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
     ComparisonOp compare, Ops_Mutable * ops, Var arity, Size curPsize,
     Size resPsize, Size resMaxSize, Term * srcTerms, Term * resTerms,
     CoeffMutable errorBound);
 
 /*
- * a part of copyEnclUsingMutableOps that was split off into this function
+ * a part of copyEncl that was split off into this function
  * (the case where some of the terms with lowest absolute value coeffs are removed
  *  and their number is LARGE compared to the number of terms that will be kept)
  */
 void
-ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreReducedTerms)(
+ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
     ComparisonOp compare, Ops_Mutable * ops, Var arity, Size curPsize,
     Size resPsize, int reductionsNeeded, Term * srcTerms, Term * resTerms,
     CoeffMutable errorBound);
+
+/*
+ * ASSUMES: maxArity, maxSize as well as maxDeg of src and res are the same
+ * INVARIANT : does not change maxDeg and maxSize of res
+ */
+void
+ADD_COEFF_CODE(copySameSizes)(Ops_Mutable * ops, Poly * res, Poly * src)
+{
+  //  printf("copySameSizes: entry\n");
+
+  Var srcArity = src -> maxArity;
+  Size srcPsize = src -> psize;
+  Term * srcTerms = src -> terms;
+
+  Size resPsize = res -> psize;
+  Term * resTerms = res -> terms;
+
+  CFM_ASSIGN(ops, res -> constTerm, src -> constTerm);
+
+  ADD_COEFF_CODE(copyTermsWithoutReduction)(ops, srcArity, res, resTerms,
+      resPsize, src, srcTerms, srcPsize);
+
+  res -> psize = srcPsize;
+
+  CFM_ASSIGN(ops, res -> errorBound, src -> errorBound);
+}
 
 /*
  * ASSUMES: maxArity of src and res are the same
  * INVARIANT : does not change maxDeg and maxSize of res
  */
 void
-ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare,
+ADD_COEFF_CODE(copyEncl)(ComparisonOp compare,
     Ops_Mutable * ops, Poly * res, Poly * src)
 {
   //  printf("copyEncl: entry\n");
@@ -108,13 +134,13 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare,
         {
           if (reductionsNeeded >= resMaxSize) // keep copied i.e. large terms in tree
             {
-              ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreCopiedTerms)(
+              ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
                   compare, ops, srcArity, curPsize, resPsize, resMaxSize,
                   srcTerms, resTerms, errorBound);
             }
           else // keep reduced i.e. small terms in tree
             {
-              ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreReducedTerms)(
+              ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
                   compare, ops, srcArity, curPsize, resPsize, reductionsNeeded,
                   srcTerms, resTerms, errorBound);
             }
@@ -128,10 +154,10 @@ ADD_COEFF_CODE(copyEnclUsingMutableOps)(ComparisonOp compare,
  * quick and dirty version using copyEncl.. to be revisited to save errorBound and constCoeff copying
  */
 void
-ADD_COEFF_CODE(copyUpThinUsingMutableOps)(ComparisonOp compare,
-    Coeff zero, Ops_Mutable * ops, Poly * res, Poly * src)
+ADD_COEFF_CODE(copyUpThin)(ComparisonOp compare, Coeff zero,
+    Ops_Mutable * ops, Poly * res, Poly * src)
 {
-  ADD_COEFF_CODE(copyEnclUsingMutableOps)(compare, ops, res, src); // copy src into res
+  ADD_COEFF_CODE(copyEncl)(compare, ops, res, src); // copy src into res
   CFM_ADD_UP(ops, res -> constTerm, res -> constTerm, res -> errorBound); // account for errorBound
   CFM_ASSIGN_VAL(ops, res -> errorBound, zero); // collapse errorBound
 }
@@ -140,10 +166,10 @@ ADD_COEFF_CODE(copyUpThinUsingMutableOps)(ComparisonOp compare,
  * quick and dirty version using copyEncl.. to be revisited to save errorBound and constCoeff copying
  */
 void
-ADD_COEFF_CODE(copyDnThinUsingMutableOps)(ComparisonOp compare,
-    Coeff zero, Ops_Mutable * ops, Poly * res, Poly * src)
+ADD_COEFF_CODE(copyDnThin)(ComparisonOp compare, Coeff zero,
+    Ops_Mutable * ops, Poly * res, Poly * src)
 {
-  ADD_COEFF_CODE(copyEnclUsingMutableOps)(compare, ops, res, src); // copy src into res
+  ADD_COEFF_CODE(copyEncl)(compare, ops, res, src); // copy src into res
   CFM_SUB_DN(ops, res -> constTerm, res -> constTerm, res -> errorBound); // account for errorBound
   CFM_ASSIGN_VAL(ops, res -> errorBound, zero); // collapse errorBound
 }
@@ -188,13 +214,13 @@ typedef struct
 int
 compareFor234(CoeffFor234 * dp1, CoeffFor234 * dp2)
 {
-  int cfcmp = CF_COMPARE(dp1 -> compare, dp1 -> coeff, dp2 -> coeff);
-  return (cfcmp) ? cfcmp : (dp1 -> index - dp2 -> index);
-  printf("compareFor234: compared\n");
+  int cfcmp = CFM_COMPARE(dp1 -> compare, dp1 -> coeff, dp2 -> coeff);
+  return (cfcmp) ? cfcmp : ((dp1 -> index) - (dp2 -> index));
+  //  printf("compareFor234: compared\n");
 }
 
 void
-ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreCopiedTerms)(
+ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
     ComparisonOp compare, Ops_Mutable * ops, Var arity, Size curPsize,
     Size resPsize, Size resMaxSize, Term * srcTerms, Term * resTerms,
     CoeffMutable errorBound)
@@ -292,7 +318,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreCopiedTerms)(
 }
 
 void
-ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreReducedTerms)(
+ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
     ComparisonOp compare, Ops_Mutable * ops, Var arity, Size curPsize,
     Size resPsize, int reductionsNeeded, Term * srcTerms, Term * resTerms,
     CoeffMutable errorBound)
@@ -391,7 +417,7 @@ ADD_COEFF_CODE(copyEnclUsingMutableOpsReduceSizeStoreReducedTerms)(
 }
 
 //void
-//ADD_COEFF_CODE(reduceDegreeEnclUsingMutableOps)(Ops_Mutable * ops,
+//ADD_COEFF_CODE(reduceDegreeEncl)(Ops_Mutable * ops,
 //    Power maxDeg, Poly * p)
 //{
 //  Term * terms = p -> terms;

@@ -13,44 +13,16 @@
 /* The following are provided for better code readability: */
 typedef void * Coeff; // pointer to undisclosed Haskell type t
 
+typedef void * CoeffMutable; // pointer to undisclosed Haskell type (Mutable t s)
+
 typedef void * ComparisonOp;
-   // Pointer to a Haskell value of type t -> t -> Int, which should be
+   // Pointer to a Haskell value of type (Mutable t s) ->(Mutable t s) -> Int, which should be
    // a numerical comparison operator suitable for use in
    // the standard C sort function.
 
-#define CF_COMPARE(op, d1, d2) (eval_compare_hs(op, d1, d1))
+#define CFM_COMPARE(op, d1, d2) (eval_compare_hs(op, d1, d1))
 
-typedef void * CoeffMutable; // pointer to undisclosed Haskell type (Mutable t s)
-
-/* References to operations provided by Haskell: */
-typedef struct OPS_PURE
-{
-  UnaryOp neg;
-  UnaryOp absUp;
-  UnaryOp absDn;
-  BinaryOp plusUp;
-  BinaryOp plusDn;
-  BinaryOp minusUp;
-  BinaryOp minusDn;
-  BinaryOp timesUp;
-  BinaryOp timesDn;
-} Ops_Pure;
-
-#define CF_ABS_UP(ops,d) (eval_unary_hs(ops -> absUp,d))
-#define CF_ABS_DN(ops,d) (eval_unary_hs(ops -> absDn,d))
-#define CF_ADD_UP(ops,d1,d2) (eval_binary_hs(ops -> plusUp,d1,d2))
-#define CF_ADD_DN(ops,d1,d2) (eval_binary_hs(ops -> plusDn,d1,d2))
-#define CF_SUB_UP(ops,d1,d2) (eval_binary_hs(ops -> minusUp,d1,d2))
-#define CF_SUB_DN(ops,d1,d2) (eval_binary_hs(ops -> minusDn,d1,d2))
-#define CF_MUL_UP(ops,d1,d2) (eval_binary_hs(ops -> timesUp,d1,d2))
-#define CF_MUL_DN(ops,d1,d2) (eval_binary_hs(ops -> timesDn,d1,d2))
-#define CF_NEG(ops,d) (eval_unary_hs(ops -> neg,d))
-
-
-#define CF_FREE(dp) (free_SP_hs(dp))
-#define CF_CLONE(dp) (clone_SP_hs(dp))
-
-/* References to operations provided by Haskell: */
+/* References to in-place operations provided by Haskell: */
 typedef struct OPS_MUTABLE
 {
   Coeff sample;
@@ -58,6 +30,7 @@ typedef struct OPS_MUTABLE
   CloneOpMutable clone;
   UnaryOpMutable assign;
   UnaryOpMutable assignFromPure;
+  UnaryOpMutable negMutable;
   UnaryOpMutable absUpMutable;
   UnaryOpMutable absDnMutable;
   BinaryOpMutable plusUpMutable;
@@ -75,6 +48,8 @@ typedef struct OPS_MUTABLE
     (eval_assignMutable_hs(ops -> sample, ops -> assign, rp, sp))
 #define CFM_ASSIGN_VAL(ops,rp,v) \
     (eval_assignMutableFromPure_hs(ops -> assignFromPure, rp, v))
+#define CFM_NEG(ops,rp,dp) \
+    (eval_unaryMutable_hs(ops -> sample, ops -> negMutable, rp, dp))
 #define CFM_ABS_UP(ops,rp,dp) \
     (eval_unaryMutable_hs(ops -> sample, ops -> absUpMutable, rp, dp))
 #define CFM_ABS_DN(ops,rp,dp) \
