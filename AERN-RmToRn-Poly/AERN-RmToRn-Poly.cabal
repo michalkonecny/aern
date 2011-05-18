@@ -42,6 +42,10 @@ Library
   Exposed-modules:
     Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff, 
     Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Domain, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.New, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Conversion, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Evaluation, 
     Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff, 
     Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show, 
     Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Domain, 

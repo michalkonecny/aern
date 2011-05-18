@@ -22,5 +22,6 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly
 import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Domain()
 import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.New()
 import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Conversion()
+import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Evaluation()
 import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show
 

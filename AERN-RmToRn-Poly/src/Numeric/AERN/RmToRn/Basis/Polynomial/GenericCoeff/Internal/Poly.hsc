@@ -376,21 +376,21 @@ foreign import ccall unsafe "newProjectionPolyGenCf"
 
 projectionPoly :: 
     (CanBeMutable cf, HasOne cf, HasZero cf) => 
-    cf -> Var -> Var -> Size -> Power -> ST s (PolyFP cf s)
-projectionPoly sample x maxArity maxSize maxDeg =
-    unsafeIOToST $ projectionPolyIO sample x maxArity maxSize maxDeg
+    Var -> Var -> Size -> Power -> ST s (PolyFP cf s)
+projectionPoly x maxArity maxSize maxDeg =
+    unsafeIOToST $ projectionPolyIO x maxArity maxSize maxDeg
 
 
 projectionPolyIO :: 
     (CanBeMutable cf, HasOne cf, HasZero cf) => 
-    cf -> Var -> Var -> Size -> Power -> IO (PolyFP cf s)
-projectionPolyIO sample x maxArity maxSize maxDeg =
+    Var -> Var -> Size -> Power -> IO (PolyFP cf s)
+projectionPolyIO x maxArity maxSize maxDeg =
     do
-    zeroM <- unsafeSTToIO $ makeMutable $ head [zero, sample]
+    zeroM <- unsafeSTToIO $ makeMutable zero
     zeroSP <- newStablePtr zeroM
-    oneM <- unsafeSTToIO $ makeMutable $ head [one, sample]
+    oneM <- unsafeSTToIO $ makeMutable one
     oneSP <- newStablePtr oneM
-    radM <- unsafeSTToIO $ makeMutable $ head [zero, sample]
+    radM <- unsafeSTToIO $ makeMutable zero
     radSP <- newStablePtr radM
     pP <- poly_newProjectionPoly zeroSP oneSP radSP (toCVar x) (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
