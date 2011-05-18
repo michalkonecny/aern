@@ -10,8 +10,6 @@ import Numeric.AERN.Basics.Mutable
 import qualified Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff as GCPoly
 import qualified Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff as DCPoly
 import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly (Var(..), Size(..), Power(..))
-import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show()
-import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show()
 
 import Control.Monad.ST (runST,unsafeIOToST)
 
@@ -129,7 +127,7 @@ testMutableGCPolys =
         do
         let mkConst c = GCPoly.constPoly (c::Double) 0 (Var 3) (Size 10) (Power 3)
         let mkConstConst c = GCPoly.constPoly (c::Double) 0 (Var 3) (Size 1) (Power 3)
-        let mkVar n = GCPoly.projectionPoly sampleD (Var n) (Var 3) (Size 10) (Power 3)
+        let mkVar n = GCPoly.projectionPoly (Var n) (Var 3) (Size 10) (Power 3)
         let addUp = GCPoly.polyAddUp sampleD opsPtr
         let scaleUpThin c = GCPoly.polyScaleUp 0 opsPtr (c::Double) 
         let scaleDnThin c = GCPoly.polyScaleDn 0 opsPtr (c::Double) 
