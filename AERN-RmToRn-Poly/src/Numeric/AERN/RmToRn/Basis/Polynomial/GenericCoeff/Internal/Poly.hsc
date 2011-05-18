@@ -48,12 +48,7 @@ import Foreign.StablePtr (StablePtr, newStablePtr, deRefStablePtr, freeStablePtr
 import Foreign.ForeignPtr (ForeignPtr, withForeignPtr, castForeignPtr)
 import qualified Foreign.Concurrent as Conc (newForeignPtr)
 
---import Data.Typeable(Typeable)
---import Data.Function(on)
-    
 #let alignment t = "%lu", (unsigned long)offsetof(struct {char x__; t (y__); }, y__)
-
-
 
 {-|
    A dummy pure polynomial with an untyped pointer.
@@ -314,8 +309,8 @@ newOpsMutableArithUpDnDefaultEffort sample =
 foreign import ccall safe "printPolyGenCf"
         poly_printPoly :: (Ptr (Poly cfm)) -> IO ()  
 
-printPoly :: (PolyFP cf s) -> IO ()
-printPoly (PolyFP fp) =
+printPolyInternals :: (PolyFP cf s) -> IO ()
+printPolyInternals (PolyFP fp) =
     withForeignPtr fp $ \ ptr ->
         poly_printPoly ptr
 
@@ -337,26 +332,6 @@ foreign import ccall safe "mapCoeffsInPlaceGenCf"
             (Ptr (Poly cfm1)) -> 
             IO ()  
 
---unsafeReadPoly ::
---    (CanBeMutable cf) =>
---    cf ->
---    (PolyFP cf s) ->
---    ST s (PolyFP cf)
---unsafeReadPoly sample (PolyFP fp) =
---    do
---    unsafeIOToST $ 
---        do
---        unsafeReadMutableSP <- newStablePtr unsafeReadMutableCoeff
---        withForeignPtr fp $ \p ->
---            poly_mapCoeffsInPlace unsafeReadMutableSP p 
---    return $ PolyFP $ castForeignPtr fp
---    where
---    unsafeReadMutableCoeff cfM = 
---        unsafePerformIO $ unsafeSTToIO $
---            do 
---            cf <- unsafeReadMutable cfM
---            return $ head [cf, sample]
---     
 ----------------------------------------------------------------
 
 foreign import ccall unsafe "newConstPolyGenCf"
@@ -372,14 +347,14 @@ constPoly ::
     Var -> Size -> Power -> 
     ST s (PolyFP cf s)
 constPoly cM radiusM maxArity maxSize maxDeg =
-    unsafeIOToST $ newConstPoly cM radiusM maxArity maxSize maxDeg
+    unsafeIOToST $ constPolyIO cM radiusM maxArity maxSize maxDeg
 
-newConstPoly :: 
+constPolyIO :: 
     (Show cf, CanBeMutable cf) => 
     cf -> cf -> 
     Var -> Size -> Power -> 
     IO (PolyFP cf s)
-newConstPoly c radius maxArity maxSize maxDeg =
+constPolyIO c radius maxArity maxSize maxDeg =
     do
     cM <- unsafeSTToIO $ makeMutable c
     cSP <- newStablePtr cM
@@ -403,13 +378,13 @@ projectionPoly ::
     (CanBeMutable cf, HasOne cf, HasZero cf) => 
     cf -> Var -> Var -> Size -> Power -> ST s (PolyFP cf s)
 projectionPoly sample x maxArity maxSize maxDeg =
-    unsafeIOToST $ newProjectionPoly sample x maxArity maxSize maxDeg
+    unsafeIOToST $ projectionPolyIO sample x maxArity maxSize maxDeg
 
 
-newProjectionPoly :: 
+projectionPolyIO :: 
     (CanBeMutable cf, HasOne cf, HasZero cf) => 
     cf -> Var -> Var -> Size -> Power -> IO (PolyFP cf s)
-newProjectionPoly sample x maxArity maxSize maxDeg =
+projectionPolyIO sample x maxArity maxSize maxDeg =
     do
     zeroM <- unsafeSTToIO $ makeMutable $ head [zero, sample]
     zeroSP <- newStablePtr zeroM
@@ -421,326 +396,6 @@ newProjectionPoly sample x maxArity maxSize maxDeg =
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ PolyFP fp
 
-
-----------------------------------------------------------------
-
-foreign import ccall safe "addUpGenCf"
-        poly_addUp :: 
-            (StablePtr cf) ->
-            (StablePtr (ComparisonOp (Mutable cf s))) ->
-            (Ptr (Ops_Mutable s cf)) ->
-            (Ptr (Poly (Mutable cf s))) -> 
-            (Ptr (Poly (Mutable cf s))) -> 
-            (Ptr (Poly (Mutable cf s))) -> 
-            IO ()
-
-polyAddUpMutable ::
-    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
-    cf -> 
-    (Ptr (Ops_Mutable s cf)) ->
-    PolyFP cf s ->
-    PolyFP cf s ->
-    PolyFP cf s ->
-    ST s ()
-polyAddUpMutable sample opsMutablePtr = 
-    polyBinaryOpMutable poly_addUp sample opsMutablePtr
-
-----------------------------------------------------------------
-
-foreign import ccall safe "scaleUpThinGenCf"
-        poly_scaleUpThin :: 
-            (StablePtr cf) ->
-            (Ptr (Ops_Mutable s cf)) ->
-            (StablePtr (Mutable cf s)) ->
-            (Ptr (Poly (Mutable cf s))) -> 
-            IO ()
-
-foreign import ccall safe "scaleDnThinGenCf"
-        poly_scaleDnThin :: 
-            (StablePtr cf) ->
-            (Ptr (Ops_Mutable s cf)) ->
-            (StablePtr (Mutable cf s)) ->
-            (Ptr (Poly (Mutable cf s))) -> 
-            IO ()
-
-foreign import ccall safe "scaleEnclGenCf"
-        poly_scaleEncl :: 
-            (Ptr (Ops_Mutable s cf)) ->
-            (StablePtr (Mutable cf s)) ->
-            (Ptr (Poly (Mutable cf s))) -> 
-            IO ()
-
-polyScaleUpMutable ::
-    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
-    cf -> 
-    (Ptr (Ops_Mutable s cf)) ->
-    cf ->
-    PolyFP cf s ->
-    ST s ()
-polyScaleUpMutable sample opsMutablePtr = 
-    polyScalingOpMutable poly_scaleUpThin sample opsMutablePtr
-
-polyScaleDnMutable ::
-    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
-    cf -> 
-    (Ptr (Ops_Mutable s cf)) ->
-    cf ->
-    PolyFP cf s ->
-    ST s ()
-polyScaleDnMutable sample opsMutablePtr = 
-    polyScalingOpMutable poly_scaleDnThin sample opsMutablePtr
-
-polyScaleEnclMutable ::
-    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
-    (Ptr (Ops_Mutable s cf)) ->
-    cf ->
-    PolyFP cf s ->
-    ST s ()
-polyScaleEnclMutable opsMutablePtr = 
-    polyScalingOpMutableNoZero poly_scaleEncl opsMutablePtr
-
-----------------------------------------------------------------
-
-polyScalingOpMutable scalingOp sample opsMutablePtr scalingFactor (PolyFP pFP) =
-    do
-    sfM <- unsafeMakeMutable scalingFactor 
-    unsafeIOToST $
-      do
-      zeroSP <- newStablePtr $ head [zero, sample]
-      factorSP <- newStablePtr sfM
-      _ <- withForeignPtr pFP $ \pP ->
-            scalingOp zeroSP opsMutablePtr factorSP pP
-      return ()
-
-----------------------------------------------------------------
-
-polyScalingOpMutableNoZero scalingOp opsMutablePtr scalingFactor (PolyFP pFP) =
-    do
-    sfM <- unsafeMakeMutable scalingFactor 
-    unsafeIOToST $
-      do
-      factorSP <- newStablePtr sfM
-      _ <- withForeignPtr pFP $ \pP ->
-            scalingOp opsMutablePtr factorSP pP
-      return ()
-
---------------------------------------------------------------
-
-polyBinaryOpMutable binaryOp sample opsMutablePtr 
-        (PolyFP resFP) (PolyFP p1FP) (PolyFP p2FP) =
-    unsafeIOToST $
-    do
-    zeroSP <- newStablePtr $ head [zero, sample]
-    compareSP <- newStablePtr compareMutable
-    _ <- withForeignPtr p1FP $ \p1P ->
-             withForeignPtr p2FP $ \p2P ->
-                 withForeignPtr resFP $ \resP ->
-                     binaryOp zeroSP compareSP opsMutablePtr resP p1P p2P
-    freeStablePtr compareSP
-    where
-    compareMutable v1M v2M =
-        unsafePerformIO $ unsafeSTToIO $
-        do
-        v1 <- unsafeReadMutable v1M
-        v2 <- unsafeReadMutable v2M
-        let _ = [v1,v2,sample] 
-        return $ NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 v2
-
-----------------------------------------------------------------
-
-foreign import ccall safe "evalAtPtChebBasisGenCf"
-        poly_evalAtPtChebBasis :: 
-            (Ptr (Poly cfm)) -> 
-            (Ptr (StablePtr val)) -> 
-            (StablePtr val) ->
-            (StablePtr (BinaryOp val)) -> 
-            (StablePtr (BinaryOp val)) -> 
-            (StablePtr (BinaryOp val)) ->
-            (StablePtr (ConvertOp cfm val)) ->
-            IO (StablePtr val)
-
-evalAtPtChebBasis :: 
-    (Storable cf, CanBeMutable cf) => 
-    (PolyFP cf s) ->
-    [val] {-^ values to substitute for variables @[0..(maxArity-1)]@ -} ->
-    val {-^ number @1@ -} ->
-    (BinaryOp val) {-^ addition -} -> 
-    (BinaryOp val) {-^ subtraction -} -> 
-    (BinaryOp val) {-^ multiplication -} -> 
-    (ConvertOp cf val) ->
-    val
-evalAtPtChebBasis (PolyFP polyFP) vals one add subtr mult cf2val =
-    unsafePerformIO $
-    do
-    valSPs <- mapM newStablePtr vals
-    valSPsPtr <- newArray valSPs
-    oneSP <- newStablePtr one
-    addSP <- newStablePtr add
-    subtrSP <- newStablePtr subtr
-    multSP <- newStablePtr mult
-    cfm2valSP <- newStablePtr cfm2val
-    resSP <- withForeignPtr polyFP $ \polyPtr ->
-        poly_evalAtPtChebBasis polyPtr valSPsPtr oneSP addSP subtrSP multSP cfm2valSP
-    freeStablePtr oneSP
-    _ <- mapM freeStablePtr [addSP, subtrSP, multSP]
-    free valSPsPtr
-    _ <- mapM freeStablePtr valSPs
-    res <- deRefStablePtr resSP 
-    freeStablePtr resSP
-    return res
-    where
-    cfm2val cfM =
-        unsafePerformIO $
-        do
-        cf <- unsafeSTToIO $ unsafeReadMutable cfM
-        return $ cf2val cf
-
-foreign import ccall safe "evalAtPtPowerBasisGenCf"
-        poly_evalAtPtPowerBasis :: 
-            (Ptr (Poly cfm)) -> 
-            (Ptr (StablePtr val)) -> 
-            (StablePtr val) ->
-            (StablePtr (BinaryOp val)) -> 
-            (StablePtr (BinaryOp val)) ->
-            (StablePtr (ConvertOp cfm val)) ->
-            IO (StablePtr val)  
-
-evalAtPtPowerBasis :: 
-    (Storable cf, CanBeMutable cf) => 
-    (PolyFP cf s) ->
-    [val] {-^ values to substitute for variables @[0..(maxArity-1)]@ -} ->
-    val {-^ number @1@ -} ->
-    (BinaryOp val) {-^ addition -} -> 
-    (BinaryOp val) {-^ multiplication -} -> 
-    (ConvertOp cf val) ->
-    val
-evalAtPtPowerBasis (PolyFP polyFP) vals one add mult cf2val =
-    unsafePerformIO $
-    do
-    valSPs <- mapM newStablePtr vals
-    valSPsPtr <- newArray valSPs
-    oneSP <- newStablePtr one
-    addSP <- newStablePtr add
-    multSP <- newStablePtr mult
-    cfm2valSP <- newStablePtr cfm2val
-    resSP <- withForeignPtr polyFP $ \polyPtr ->
-        poly_evalAtPtPowerBasis polyPtr valSPsPtr oneSP addSP multSP cfm2valSP
-    freeStablePtr oneSP
-    _ <- mapM freeStablePtr [addSP, multSP]
-    free valSPsPtr
-    _ <- mapM freeStablePtr valSPs
-    res <- deRefStablePtr resSP 
-    freeStablePtr resSP
-    return res
-    where
-    cfm2val cfM =
-        unsafePerformIO $
-        do
-        cf <- unsafeSTToIO $ unsafeReadMutable cfM
-        return $ cf2val cf
-    
-----------------------------------------------------------------
-
-foreign import ccall safe "boundUpThinGenCf"
-    poly_boundUpThin ::
-        (Ptr (Ops_Mutable s cf)) ->
-        (StablePtr cfm) -> 
-        (Ptr (Poly cfm)) -> 
-        IO ()
-
-polyBoundUpThin :: 
-    (HasZero cf, NumOrd.PartialComparison cf, CanBeMutable cf) =>
-    (Ptr (Ops_Mutable s cf)) ->
-    Mutable cf s ->
-    PolyFP cf s ->
-    ST s ()
-polyBoundUpThin opsPtr =
-    polyEval poly_boundUpThin opsPtr
-
-foreign import ccall safe "boundDnThinGenCf"
-    poly_boundDnThin ::
-        (Ptr (Ops_Mutable s cf)) ->
-        (StablePtr cfm) -> 
-        (Ptr (Poly cfm)) -> 
-        IO ()
-
-polyBoundDnThin :: 
-    (HasZero cf, NumOrd.PartialComparison cf, CanBeMutable cf) =>
-    (Ptr (Ops_Mutable s cf)) ->
-    Mutable cf s ->
-    PolyFP cf s ->
-    ST s ()
-polyBoundDnThin opsPtr =
-    polyEval poly_boundDnThin opsPtr
-
-foreign import ccall safe "boundUpGenCf"
-    poly_boundUp ::
-        (Ptr (Ops_Mutable s cf)) ->
-        (StablePtr cfm) -> 
-        (Ptr (Poly cfm)) -> 
-        IO ()
-
-polyBoundUp :: 
-    (HasZero cf, NumOrd.PartialComparison cf, CanBeMutable cf) =>
-    (Ptr (Ops_Mutable s cf)) ->
-    Mutable cf s ->
-    PolyFP cf s ->
-    ST s ()
-polyBoundUp opsPtr =
-    polyEval poly_boundUp opsPtr
-
-foreign import ccall safe "boundDnGenCf"
-    poly_boundDn ::
-        (Ptr (Ops_Mutable s cf)) ->
-        (StablePtr cfm) -> 
-        (Ptr (Poly cfm)) -> 
-        IO ()
-
-polyBoundDn :: 
-    (HasZero cf, NumOrd.PartialComparison cf, CanBeMutable cf) =>
-    (Ptr (Ops_Mutable s cf)) ->
-    Mutable cf s ->
-    PolyFP cf s ->
-    ST s ()
-polyBoundDn opsPtr =
-    polyEval poly_boundDn opsPtr
-
-polyEval unary ops resM (PolyFP pFP) =
-    unsafeIOToST $
-    do
-    resMST <- newStablePtr resM
-    withForeignPtr pFP $ \p ->
-        unary ops resMST p
-    freeStablePtr resMST
-
-----------------------------------------------------------------
-{-
-
-foreign import ccall safe "reduceDegreeEnclGenCf"
-        poly_reduceDegreeEncl :: 
-            (Ptr (Ops_Mutable s cf)) ->
-            CPower ->
-            (Ptr (Poly (Mutable cf s))) -> 
-            IO ()
-
-polyReduceDegreeEnclMutable ::
-    (CanBeMutable cf) =>
-    (Ptr (Ops_Mutable s cf)) ->
-    Power ->
-    PolyFP cf s ->
-    ST s ()
-polyReduceDegreeEnclMutable opsMutablePtr = 
-    polyReductionOpMutable poly_reduceDegreeEncl opsMutablePtr
-
-polyReductionOpMutable reductionOp opsMutablePtr maxDeg (PolyFP pFP) =
-    do
-    unsafeIOToST $
-      do
-      _ <- withForeignPtr pFP $ \pP ->
-            reductionOp opsMutablePtr (toCPower maxDeg) pP
-      return ()
-
--}
 ----------------------------------------------------------------
 
 foreign import ccall safe "copySameSizesGenCf"
@@ -884,4 +539,4 @@ polyCopyThinOpMutable copyOp sample opsMutablePtr (PolyFP resFP) (PolyFP srcFP) 
         v2 <- unsafeReadMutable v2M
         let _ = [v1,v2,sample] 
         return $ NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 v2
-        
+       

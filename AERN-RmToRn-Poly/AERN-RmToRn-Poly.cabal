@@ -52,6 +52,8 @@ Library
     Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport, 
     Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Symbolic,
     Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.FieldOps, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Evaluate, 
     Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly 
 
   c-sources:
