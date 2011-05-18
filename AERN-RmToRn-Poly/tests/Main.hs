@@ -51,15 +51,15 @@ testMutableDCPolys =
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True
     showCoeffInternals = False
-    opsMutablePtr = unsafePerformIO $ DCPoly.newOps DCPoly.Ops_Pure
+    opsPtr = unsafePerformIO $ DCPoly.newOps DCPoly.Ops_Pure
     [p1,p2,p3,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,sux,sdx,sex] = runST $
         do
         let mkConst c = DCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 10) (Power 3)
         let mkVar n = DCPoly.projectionPolyMutable (Var n) (Var 2) (Size 10) (Power 3)
-        let addUp = DCPoly.polyAddUpMutable opsMutablePtr
-        let scaleUpThin = DCPoly.polyScaleUpInPlace opsMutablePtr
-        let scaleDnThin = DCPoly.polyScaleDnInPlace opsMutablePtr
-        let scaleEncl = DCPoly.polyScaleEnclInPlace opsMutablePtr
+        let addUp = DCPoly.polyAddUpMutable opsPtr
+        let scaleUpThin = DCPoly.polyScaleUpInPlace opsPtr
+        let scaleDnThin = DCPoly.polyScaleDnInPlace opsPtr
+        let scaleEncl = DCPoly.polyScaleEnclInPlace opsPtr
         
         p1M <- mkConst 0
         p2M <- mkVar 0 -- "x"
@@ -121,7 +121,7 @@ testMutableGCPolys =
 --    showChebTerms = True
     showChebTerms = False
     showCoeffInternals = False
-    opsMutablePtr = GCPoly.newOpsMutableArithUpDnDefaultEffort sampleD
+    opsPtr = GCPoly.newOpsMutableArithUpDnDefaultEffort sampleD
     [
       p1,p2,p3,p4,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,
       sux,sdx,sex,cpesrc,cpetarg,cperes,cpupsrc,cpuptarg,cpupres,cpdnsrc,cpdntarg,cpdnres
@@ -130,14 +130,14 @@ testMutableGCPolys =
         let mkConst c = GCPoly.constPoly (c::Double) 0 (Var 3) (Size 10) (Power 3)
         let mkConstConst c = GCPoly.constPoly (c::Double) 0 (Var 3) (Size 1) (Power 3)
         let mkVar n = GCPoly.projectionPoly sampleD (Var n) (Var 3) (Size 10) (Power 3)
-        let addUp = GCPoly.polyAddUpMutable sampleD opsMutablePtr
-        let scaleUpThin c = GCPoly.polyScaleUpMutable 0 opsMutablePtr (c::Double) 
-        let scaleDnThin c = GCPoly.polyScaleDnMutable 0 opsMutablePtr (c::Double) 
-        let scaleEncl c = GCPoly.polyScaleEnclMutable opsMutablePtr (c::Double) 
---        let reduceDegree d = GCPoly.polyReduceDegreeEnclMutable opsMutablePtr (Power d) 
-        let copyEncl = GCPoly.polyCopyEncl opsMutablePtr
-        let copyUpThin = GCPoly.polyCopyUpThin 0 opsMutablePtr
-        let copyDnThin = GCPoly.polyCopyDnThin 0 opsMutablePtr
+        let addUp = GCPoly.polyAddUp sampleD opsPtr
+        let scaleUpThin c = GCPoly.polyScaleUp 0 opsPtr (c::Double) 
+        let scaleDnThin c = GCPoly.polyScaleDn 0 opsPtr (c::Double) 
+        let scaleEncl c = GCPoly.polyScaleEncl opsPtr (c::Double) 
+--        let reduceDegree d = GCPoly.polyReduceDegreeEnclMutable opsPtr (Power d) 
+        let copyEncl = GCPoly.polyCopyEncl opsPtr
+        let copyUpThin = GCPoly.polyCopyUpThin 0 opsPtr
+        let copyDnThin = GCPoly.polyCopyDnThin 0 opsPtr
         
         p1M <- mkConst 0
         p2M <- mkVar 0 -- "x"
@@ -200,7 +200,7 @@ testMutableGCPolys =
             cpdnsrcM, cpdntargM, cpdnresM
            ]
  
- --testPureGCPolys :: IO ()
+--testPureGCPolys :: IO ()
 --testPureGCPolys =
 --    do
 --    putStrLn $ "p1.maxArity = " ++ show maxArity
