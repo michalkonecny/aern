@@ -20,7 +20,7 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show
 )
 where
 
-import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly
+import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly
 import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Symbolic
 
 import Numeric.AERN.Basics.ShowInternals

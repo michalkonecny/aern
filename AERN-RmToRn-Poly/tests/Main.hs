@@ -7,9 +7,9 @@ import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Mutable
 
-import qualified Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly as GCPoly
-import qualified Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly as DCPoly
-import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly (Var(..), Size(..), Power(..))
+import qualified Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff as GCPoly
+import qualified Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff as DCPoly
+import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly (Var(..), Size(..), Power(..))
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show()
 import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show()
 

@@ -3,7 +3,7 @@
 {-# LANGUAGE EmptyDataDecls #-}
 #include <DoubleCoeff/poly.h>
 {-|
-    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly
+    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly
     Description :  Haskell interface to C polynomials with native Double coefficients
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -15,9 +15,9 @@
     Haskell interface to C polynomials with native Double coefficients.
 -}
 
-module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly
+module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly
 (
-    module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly,
+    module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly,
     module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
 )
 where
