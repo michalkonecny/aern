@@ -23,8 +23,8 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Domain()
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
 
-import qualified Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly as Poly
-import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly (PolyFP)
+import qualified Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly as Poly
+import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly (PolyFP)
 
 --import Numeric.AERN.RealArithmetic.NumericOrderRounding
 

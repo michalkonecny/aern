@@ -19,8 +19,8 @@
 module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Domain where
 
 import Numeric.AERN.RmToRn.Domain
-import qualified Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly as Poly
-import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly (PolyFP)
+import qualified Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly as Poly
+import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly (PolyFP)
 
 import Numeric.AERN.Basics.Interval (Interval(..))
 

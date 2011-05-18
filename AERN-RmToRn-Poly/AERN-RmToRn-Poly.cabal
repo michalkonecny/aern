@@ -5,7 +5,7 @@ Build-Type:     Custom
 License:        BSD3
 License-File:   LICENCE
 Author:         Michal Konecny (Aston University)
-Copyright:      (c) 2010 Michal Konecny
+Copyright:      (c) 2011 Michal Konecny
 Maintainer:     mikkonecny@gmail.com
 Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
@@ -40,19 +40,20 @@ Library
         AERN-Real-Double == 2011.2.0.0,
         AERN-RmToRn == 2011.2.0.0
   Exposed-modules:
-      Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly, 
-      Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show, 
-      Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff,
-      Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly, 
-      Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show,
-      Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Domain, 
-      Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.New,
-      Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Conversion,
-      Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Evaluation,
-      Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics,
-      Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport,
-      Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Symbolic 
-    
+    Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Show, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Domain, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.New, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Conversion, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Evaluation, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.Internal.EvalExport, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Symbolic,
+    Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly, 
+    Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly 
+
   c-sources:
     cbits/tree234.c
     cbits/GenericCoeff/poly.c

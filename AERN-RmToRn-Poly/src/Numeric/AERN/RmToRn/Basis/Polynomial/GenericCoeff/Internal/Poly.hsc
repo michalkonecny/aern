@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 #include <GenericCoeff/poly.h>
 {-|
-    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly
+    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly
     Description :  Haskell interface to C polynomials with Haskell coefficients
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -16,9 +16,9 @@
     Haskell interface to C polynomials with Haskell coefficients.
 -}
 
-module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly 
+module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly 
 (
-    module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Poly,
+    module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly,
     module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
 )
 where

@@ -20,8 +20,8 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Conversion where
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
-import qualified Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly as Poly
-import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Poly (PolyFP)
+import qualified Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly as Poly
+import Numeric.AERN.RmToRn.Basis.Polynomial.DoubleCoeff.Internal.Poly (PolyFP)
 
 --import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
