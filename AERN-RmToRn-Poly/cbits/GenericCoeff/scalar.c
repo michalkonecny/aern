@@ -9,7 +9,7 @@
 #include "GenericCoeff/poly.h"
 
 void
-ADD_COEFF_CODE(scaleTerms)(Ops_Mutable * ops, CoeffMutable c, Poly * p)
+ADD_COEFF_CODE(scaleTerms)(Ops * ops, CoeffMutable c, Poly * p)
 {
   Var pSize = p -> psize;
   if (pSize > 0) // any terms to scale?
@@ -34,7 +34,7 @@ ADD_COEFF_CODE(scaleTerms)(Ops_Mutable * ops, CoeffMutable c, Poly * p)
 }
 
 void
-ADD_COEFF_CODE(scaleUpThin)(Coeff zero, Ops_Mutable * ops, CoeffMutable c, Poly * p)
+ADD_COEFF_CODE(scaleUpThin)(Coeff zero, Ops * ops, CoeffMutable c, Poly * p)
 {
   ADD_COEFF_CODE(scaleTerms)(ops, c, p); // scale non-constant terms
   CoeffMutable constTerm = CFM_NEW(ops, CFM_SAMPLE(ops));
@@ -45,7 +45,7 @@ ADD_COEFF_CODE(scaleUpThin)(Coeff zero, Ops_Mutable * ops, CoeffMutable c, Poly 
 }
 
 void
-ADD_COEFF_CODE(scaleDnThin)(Coeff zero, Ops_Mutable * ops, CoeffMutable c, Poly * p)
+ADD_COEFF_CODE(scaleDnThin)(Coeff zero, Ops * ops, CoeffMutable c, Poly * p)
 {
   ADD_COEFF_CODE(scaleTerms)(ops, c, p); // scale non-constant terms
   CoeffMutable constTerm = CFM_NEW(ops, CFM_SAMPLE(ops));
@@ -56,7 +56,7 @@ ADD_COEFF_CODE(scaleDnThin)(Coeff zero, Ops_Mutable * ops, CoeffMutable c, Poly 
 }
 
 void
-ADD_COEFF_CODE(scaleEncl)(Ops_Mutable * ops, CoeffMutable c, Poly * p)
+ADD_COEFF_CODE(scaleEncl)(Ops * ops, CoeffMutable c, Poly * p)
 {
   ADD_COEFF_CODE(scaleTerms)(ops, c, p); // scale non-constant terms
   CoeffMutable oldConstTerm = CFM_NEW(ops, CFM_SAMPLE(ops));

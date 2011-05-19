@@ -24,69 +24,6 @@ main =
     do
 --    testMutableDCPolys
     testMutableGCPolys
-
-testMutableDCPolys :: IO ()
-testMutableDCPolys =
-    do
-    arity <- DCPoly.peekArityIO p1
-    putStrLn $ "maxArity = " ++ show arity
-    putStrLn $ "p1 = " ++ showP p1
-    putStrLn $ "p2 = " ++ showP p2
-    putStrLn $ "p3 = " ++ showP p3
-    putStrLn $ "p11 = " ++ showP p11
-    putStrLn $ "p12 = " ++ showP p12
-    putStrLn $ "p22 = " ++ showP p22
-    putStrLn $ "p1b23 = " ++ showP p1b23
-    putStrLn $ "pb223 = " ++ showP pb223
-    putStrLn $ "p23s1 = " ++ showP p23s1
-    putStrLn $ "pb223s1 = " ++ showP pb223s1
-    putStrLn $ "pb223d0 = " ++ showP pb223d0
-    putStrLn $ "pb223d0 = " ++ showP pb223d0
-    putStrLn $ "scaleUpThin 0.1 x = " ++ show sux
-    putStrLn $ "scaleDnThin 0.1 x = " ++ show sdx
-    putStrLn $ "scaleEncl 0.1 x = " ++ show sex
-    where
-    showP = showInternals (showChebTerms, showCoeffInternals)
-    showChebTerms = True
-    showCoeffInternals = False
-    opsPtr = unsafePerformIO $ DCPoly.newOps DCPoly.Ops_Pure
-    [p1,p2,p3,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,sux,sdx,sex] = runST $
-        do
-        let mkConst c = DCPoly.constPolyMutable (c::Double) 0 (Var 2) (Size 10) (Power 3)
-        let mkVar n = DCPoly.projectionPolyMutable (Var n) (Var 2) (Size 10) (Power 3)
-        let addUp = DCPoly.polyAddUpMutable opsPtr
-        let scaleUpThin = DCPoly.polyScaleUpInPlace opsPtr
-        let scaleDnThin = DCPoly.polyScaleDnInPlace opsPtr
-        let scaleEncl = DCPoly.polyScaleEnclInPlace opsPtr
-        
-        p1M <- mkConst 0
-        p2M <- mkVar 0 -- "x"
-        p3M <- mkVar 1 -- "y"
-        p11M <- mkConst 0 -- allocate space
-        addUp p11M p1M p1M -- p11M := p1M +^ p1M
-        p12M <- mkConst 0
-        addUp p12M p1M p2M
-        p22M <- mkConst 0
-        addUp p22M p2M p2M
-        p1b23M <- mkConst 0
-        addUp p1b23M p2M p3M
-        addUp p1b23M p1M p1b23M
-        pb223M <- mkConst 0
-        addUp pb223M p22M p3M
-        p23s1M <- DCPoly.constPolyMutable (0::Double) 0 (Var 2) (Size 1) (Power 3)
-        addUp p23s1M p2M p3M
-        pb223s1M <- DCPoly.constPolyMutable (0::Double) 0 (Var 2) (Size 1) (Power 3)
-        addUp pb223s1M p22M p3M
-        pb223d0M <- DCPoly.constPolyMutable (0::Double) 0 (Var 2) (Size 2) (Power 0)
-        addUp pb223d0M p22M p3M
-        suxM <- mkVar 0
-        scaleUpThin 0.1 suxM
-        sdxM <- mkVar 0
-        scaleDnThin 0.1 sdxM
-        sexM <- mkVar 0
-        scaleEncl 0.1 sexM
-        return [p1M, p2M, p3M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, suxM, sdxM, sexM]
-    
         
 testMutableGCPolys :: IO ()
 testMutableGCPolys =
@@ -119,7 +56,7 @@ testMutableGCPolys =
 --    showChebTerms = True
     showChebTerms = False
     showCoeffInternals = False
-    opsPtr = GCPoly.newOpsMutableArithUpDnDefaultEffort sampleD
+    opsPtr = GCPoly.newOpsArithUpDnDefaultEffort sampleD
     [
       p1,p2,p3,p4,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,
       sux,sdx,sex,cpesrc,cpetarg,cperes,cpupsrc,cpuptarg,cpupres,cpdnsrc,cpdntarg,cpdnres

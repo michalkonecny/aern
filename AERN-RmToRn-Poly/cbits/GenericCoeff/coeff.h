@@ -23,7 +23,7 @@ typedef void * ComparisonOp;
 #define CFM_COMPARE(op, d1, d2) (eval_compare_hs(op, d1, d1))
 
 /* References to in-place operations provided by Haskell: */
-typedef struct OPS_MUTABLE
+typedef struct OPS
 {
   Coeff sample;
   NewOpMutable new;
@@ -39,7 +39,7 @@ typedef struct OPS_MUTABLE
   BinaryOpMutable minusDnMutable;
   BinaryOpMutable timesUpMutable;
   BinaryOpMutable timesDnMutable;
-} Ops_Mutable;
+} Ops;
 
 #define CFM_SAMPLE(ops) (ops -> sample)
 #define CFM_NEW(ops,v) (eval_newMutable_hs(ops -> new, v))

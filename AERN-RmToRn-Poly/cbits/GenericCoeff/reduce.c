@@ -12,7 +12,7 @@
  * ASSUMES: deg <= maxDeg && size <= resMaxSize
  */
 void
-ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops_Mutable * ops, Var arity,
+ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops * ops, Var arity,
     Poly * res, Term * resTerms, Size resPsize, Poly * src, Term * srcTerms,
     Size curPsize);
 
@@ -23,7 +23,7 @@ ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops_Mutable * ops, Var arity,
  */
 void
 ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
-    ComparisonOp compare, Ops_Mutable * ops, Var arity, Size curPsize,
+    ComparisonOp compare, Ops * ops, Var arity, Size curPsize,
     Size resPsize, Size resMaxSize, Term * srcTerms, Term * resTerms,
     CoeffMutable errorBound);
 
@@ -34,7 +34,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
  */
 void
 ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
-    ComparisonOp compare, Ops_Mutable * ops, Var arity, Size curPsize,
+    ComparisonOp compare, Ops * ops, Var arity, Size curPsize,
     Size resPsize, int reductionsNeeded, Term * srcTerms, Term * resTerms,
     CoeffMutable errorBound);
 
@@ -43,7 +43,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
  * INVARIANT : does not change maxDeg and maxSize of res
  */
 void
-ADD_COEFF_CODE(copySameSizes)(Ops_Mutable * ops, Poly * res, Poly * src)
+ADD_COEFF_CODE(copySameSizes)(Ops * ops, Poly * res, Poly * src)
 {
   //  printf("copySameSizes: entry\n");
 
@@ -70,7 +70,7 @@ ADD_COEFF_CODE(copySameSizes)(Ops_Mutable * ops, Poly * res, Poly * src)
  */
 void
 ADD_COEFF_CODE(copyEncl)(ComparisonOp compare,
-    Ops_Mutable * ops, Poly * res, Poly * src)
+    Ops * ops, Poly * res, Poly * src)
 {
   //  printf("copyEncl: entry\n");
 
@@ -155,7 +155,7 @@ ADD_COEFF_CODE(copyEncl)(ComparisonOp compare,
  */
 void
 ADD_COEFF_CODE(copyUpThin)(ComparisonOp compare, Coeff zero,
-    Ops_Mutable * ops, Poly * res, Poly * src)
+    Ops * ops, Poly * res, Poly * src)
 {
   ADD_COEFF_CODE(copyEncl)(compare, ops, res, src); // copy src into res
   CFM_ADD_UP(ops, res -> constTerm, res -> constTerm, res -> errorBound); // account for errorBound
@@ -167,7 +167,7 @@ ADD_COEFF_CODE(copyUpThin)(ComparisonOp compare, Coeff zero,
  */
 void
 ADD_COEFF_CODE(copyDnThin)(ComparisonOp compare, Coeff zero,
-    Ops_Mutable * ops, Poly * res, Poly * src)
+    Ops * ops, Poly * res, Poly * src)
 {
   ADD_COEFF_CODE(copyEncl)(compare, ops, res, src); // copy src into res
   CFM_SUB_DN(ops, res -> constTerm, res -> constTerm, res -> errorBound); // account for errorBound
@@ -175,7 +175,7 @@ ADD_COEFF_CODE(copyDnThin)(ComparisonOp compare, Coeff zero,
 }
 
 void
-ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops_Mutable * ops, Var arity,
+ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops * ops, Var arity,
     Poly * res, Term * resTerms, Size resPsize, Poly * src, Term * srcTerms,
     Size curPsize)
 {
@@ -221,7 +221,7 @@ compareFor234(CoeffFor234 * dp1, CoeffFor234 * dp2)
 
 void
 ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
-    ComparisonOp compare, Ops_Mutable * ops, Var arity, Size curPsize,
+    ComparisonOp compare, Ops * ops, Var arity, Size curPsize,
     Size resPsize, Size resMaxSize, Term * srcTerms, Term * resTerms,
     CoeffMutable errorBound)
 {
@@ -319,7 +319,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
 
 void
 ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
-    ComparisonOp compare, Ops_Mutable * ops, Var arity, Size curPsize,
+    ComparisonOp compare, Ops * ops, Var arity, Size curPsize,
     Size resPsize, int reductionsNeeded, Term * srcTerms, Term * resTerms,
     CoeffMutable errorBound)
 {
@@ -417,7 +417,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
 }
 
 //void
-//ADD_COEFF_CODE(reduceDegreeEncl)(Ops_Mutable * ops,
+//ADD_COEFF_CODE(reduceDegreeEncl)(Ops * ops,
 //    Power maxDeg, Poly * p)
 //{
 //  Term * terms = p -> terms;

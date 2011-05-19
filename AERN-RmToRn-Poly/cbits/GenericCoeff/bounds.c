@@ -9,7 +9,7 @@
 #include "GenericCoeff/poly.h"
 
 void
-ADD_COEFF_CODE(sumUpAbsCoeffs)(Ops_Mutable * ops, CoeffMutable res, Poly * p)
+ADD_COEFF_CODE(sumUpAbsCoeffs)(Ops * ops, CoeffMutable res, Poly * p)
 {
   Term * terms = p -> terms;
   Size pSize = p -> psize;
@@ -28,14 +28,14 @@ ADD_COEFF_CODE(sumUpAbsCoeffs)(Ops_Mutable * ops, CoeffMutable res, Poly * p)
 }
 
 void
-ADD_COEFF_CODE(boundUpThin)(Ops_Mutable * ops, CoeffMutable res, Poly * p)
+ADD_COEFF_CODE(boundUpThin)(Ops * ops, CoeffMutable res, Poly * p)
 {
   CFM_ASSIGN(ops, res, p -> constTerm);
   ADD_COEFF_CODE(sumUpAbsCoeffs)(ops, res, p);
 }
 
 void
-ADD_COEFF_CODE(boundDnThin)(Ops_Mutable * ops, CoeffMutable res, Poly * p)
+ADD_COEFF_CODE(boundDnThin)(Ops * ops, CoeffMutable res, Poly * p)
 {
   CFM_ASSIGN(ops, res, p -> constTerm);
   CFM_NEG(ops, res, res); // res := - constTerm
@@ -44,7 +44,7 @@ ADD_COEFF_CODE(boundDnThin)(Ops_Mutable * ops, CoeffMutable res, Poly * p)
 }
 
 void
-ADD_COEFF_CODE(boundUp)(Ops_Mutable * ops, CoeffMutable res, Poly * p)
+ADD_COEFF_CODE(boundUp)(Ops * ops, CoeffMutable res, Poly * p)
 {
   CFM_ASSIGN(ops, res, p -> constTerm);
   CFM_ADD_UP(ops, res, res, p -> errorBound);
@@ -52,7 +52,7 @@ ADD_COEFF_CODE(boundUp)(Ops_Mutable * ops, CoeffMutable res, Poly * p)
 }
 
 void
-ADD_COEFF_CODE(boundDn)(Ops_Mutable * ops, CoeffMutable res, Poly * p)
+ADD_COEFF_CODE(boundDn)(Ops * ops, CoeffMutable res, Poly * p)
 {
   CFM_ASSIGN(ops, res, p -> constTerm);
   CFM_SUB_DN(ops, res, res, p -> errorBound);

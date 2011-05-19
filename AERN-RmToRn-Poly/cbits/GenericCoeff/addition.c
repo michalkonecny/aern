@@ -139,7 +139,7 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
 
 void
 ADD_COEFF_CODE(addTermsAndErrorBounds)(ComparisonOp compare,
-    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
+    Ops * opsM, Poly *res, Poly * p1, Poly * p2)
 {
 
   Var arity = res -> maxArity;
@@ -316,7 +316,7 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(ComparisonOp compare,
 
 void
 ADD_COEFF_CODE(addUp)(Coeff zero, ComparisonOp compare,
-    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
+    Ops * opsM, Poly *res, Poly * p1, Poly * p2)
 {
   //  printf("addUp: starting\n");
 
@@ -335,7 +335,7 @@ ADD_COEFF_CODE(addUp)(Coeff zero, ComparisonOp compare,
 
 void
 ADD_COEFF_CODE(addDn)(Coeff zero, ComparisonOp compare,
-    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
+    Ops * opsM, Poly *res, Poly * p1, Poly * p2)
 {
   //  printf("addUp: starting\n");
 
@@ -354,7 +354,7 @@ ADD_COEFF_CODE(addDn)(Coeff zero, ComparisonOp compare,
 
 void
 ADD_COEFF_CODE(addEncl)(ComparisonOp compare,
-    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
+    Ops * opsM, Poly *res, Poly * p1, Poly * p2)
 {
   ADD_COEFF_CODE(addTermsAndErrorBounds)(compare, opsM, res, p1,
       p2);
