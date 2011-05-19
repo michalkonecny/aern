@@ -52,18 +52,18 @@ import qualified Foreign.Concurrent as Conc (newForeignPtr)
 
 foreign import ccall safe "evalAtPtChebBasisGenCf"
         poly_evalAtPtChebBasis :: 
-            (Ptr (Poly cfm)) -> 
+            (Ptr (CPoly cf)) -> 
             (Ptr (StablePtr val)) -> 
             (StablePtr val) ->
             (StablePtr (BinaryOp val)) -> 
             (StablePtr (BinaryOp val)) -> 
             (StablePtr (BinaryOp val)) ->
-            (StablePtr (ConvertOp cfm val)) ->
+            (StablePtr (ConvertOp (Mutable cf s) val)) ->
             IO (StablePtr val)
 
 evalAtPtChebBasis :: 
     (Storable cf, CanBeMutable cf) => 
-    (PolyMutable cf s) ->
+    (Poly cf) ->
     [val] {-^ values to substitute for variables @[0..(maxArity-1)]@ -} ->
     val {-^ number @1@ -} ->
     (BinaryOp val) {-^ addition -} -> 
@@ -71,7 +71,7 @@ evalAtPtChebBasis ::
     (BinaryOp val) {-^ multiplication -} -> 
     (ConvertOp cf val) ->
     val
-evalAtPtChebBasis (PolyMutable polyFP) vals one add subtr mult cf2val =
+evalAtPtChebBasis (Poly _ polyFP) vals one add subtr mult cf2val =
     unsafePerformIO $
     do
     valSPs <- mapM newStablePtr vals
@@ -99,24 +99,24 @@ evalAtPtChebBasis (PolyMutable polyFP) vals one add subtr mult cf2val =
 
 foreign import ccall safe "evalAtPtPowerBasisGenCf"
         poly_evalAtPtPowerBasis :: 
-            (Ptr (Poly cfm)) -> 
+            (Ptr (CPoly cf)) -> 
             (Ptr (StablePtr val)) -> 
             (StablePtr val) ->
             (StablePtr (BinaryOp val)) -> 
             (StablePtr (BinaryOp val)) ->
-            (StablePtr (ConvertOp cfm val)) ->
+            (StablePtr (ConvertOp (Mutable cf s) val)) ->
             IO (StablePtr val)  
 
 evalAtPtPowerBasis :: 
     (Storable cf, CanBeMutable cf) => 
-    (PolyMutable cf s) ->
+    (Poly cf) ->
     [val] {-^ values to substitute for variables @[0..(maxArity-1)]@ -} ->
     val {-^ number @1@ -} ->
     (BinaryOp val) {-^ addition -} -> 
     (BinaryOp val) {-^ multiplication -} -> 
     (ConvertOp cf val) ->
     val
-evalAtPtPowerBasis (PolyMutable polyFP) vals one add mult cf2val =
+evalAtPtPowerBasis (Poly _ polyFP) vals one add mult cf2val =
     unsafePerformIO $
     do
     valSPs <- mapM newStablePtr vals
@@ -146,71 +146,68 @@ evalAtPtPowerBasis (PolyMutable polyFP) vals one add mult cf2val =
 foreign import ccall safe "boundUpThinGenCf"
     poly_boundUpThin ::
         OpsPtr cf ->
-        (StablePtr cfm) -> 
-        (Ptr (Poly cfm)) -> 
+        (StablePtr (Mutable cf s)) -> 
+        (Ptr (CPoly cf)) -> 
         IO ()
 
 polyBoundUpThin :: 
     (HasZero cf, NumOrd.PartialComparison cf, CanBeMutable cf) =>
-    OpsPtr cf ->
     Mutable cf s ->
-    PolyMutable cf s ->
+    PolyM cf s ->
     ST s ()
-polyBoundUpThin opsPtr =
-    polyEval poly_boundUpThin opsPtr
+polyBoundUpThin =
+    polyEval poly_boundUpThin
 
 foreign import ccall safe "boundDnThinGenCf"
     poly_boundDnThin ::
         OpsPtr cf ->
-        (StablePtr cfm) -> 
-        (Ptr (Poly cfm)) -> 
+        (StablePtr (Mutable cf s)) -> 
+        (Ptr (CPoly cf)) -> 
         IO ()
 
 polyBoundDnThin :: 
     (HasZero cf, NumOrd.PartialComparison cf, CanBeMutable cf) =>
-    OpsPtr cf ->
     Mutable cf s ->
-    PolyMutable cf s ->
+    PolyM cf s ->
     ST s ()
-polyBoundDnThin opsPtr =
-    polyEval poly_boundDnThin opsPtr
+polyBoundDnThin =
+    polyEval poly_boundDnThin
 
 foreign import ccall safe "boundUpGenCf"
     poly_boundUp ::
         OpsPtr cf ->
-        (StablePtr cfm) -> 
-        (Ptr (Poly cfm)) -> 
+        (StablePtr (Mutable cf s)) -> 
+        (Ptr (CPoly cf)) -> 
         IO ()
 
 polyBoundUp :: 
     (HasZero cf, NumOrd.PartialComparison cf, CanBeMutable cf) =>
-    OpsPtr cf ->
     Mutable cf s ->
-    PolyMutable cf s ->
+    PolyM cf s ->
     ST s ()
-polyBoundUp opsPtr =
-    polyEval poly_boundUp opsPtr
+polyBoundUp =
+    polyEval poly_boundUp
 
 foreign import ccall safe "boundDnGenCf"
     poly_boundDn ::
         OpsPtr cf ->
-        (StablePtr cfm) -> 
-        (Ptr (Poly cfm)) -> 
+        (StablePtr (Mutable cf s)) -> 
+        (Ptr (CPoly cf)) -> 
         IO ()
 
 polyBoundDn :: 
     (HasZero cf, NumOrd.PartialComparison cf, CanBeMutable cf) =>
-    OpsPtr cf ->
     Mutable cf s ->
-    PolyMutable cf s ->
+    PolyM cf s ->
     ST s ()
-polyBoundDn opsPtr =
-    polyEval poly_boundDn opsPtr
+polyBoundDn =
+    polyEval poly_boundDn
 
-polyEval unary ops resM (PolyMutable pFP) =
+polyEval evalOp resM (PolyM (Poly opsFP pFP)) =
     unsafeIOToST $
     do
     resMST <- newStablePtr resM
     withForeignPtr pFP $ \p ->
-        unary ops resMST p
+      withForeignPtr opsFP $ \opsP ->
+        evalOp opsP resMST p
     freeStablePtr resMST

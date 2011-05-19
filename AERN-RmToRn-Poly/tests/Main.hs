@@ -52,27 +52,28 @@ testMutableGCPolys =
 --    performGC
 --    threadDelay 1000000
     where
+    showP :: GCPoly.Poly Double -> String
     showP = showInternals (showChebTerms, showCoeffInternals)
 --    showChebTerms = True
     showChebTerms = False
     showCoeffInternals = False
-    opsPtr = GCPoly.newOpsArithUpDnDefaultEffort sampleD
+    opsFP = GCPoly.opsFPArithUpDnDefaultEffort sampleD
     [
       p1,p2,p3,p4,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,
       sux,sdx,sex,cpesrc,cpetarg,cperes,cpupsrc,cpuptarg,cpupres,cpdnsrc,cpdntarg,cpdnres
      ] = runST $
         do
-        let mkConst c = GCPoly.constPoly (c::Double) 0 (Var 3) (Size 10) (Power 3)
-        let mkConstConst c = GCPoly.constPoly (c::Double) 0 (Var 3) (Size 1) (Power 3)
-        let mkVar n = GCPoly.projectionPoly (Var n) (Var 3) (Size 10) (Power 3)
-        let addUp = GCPoly.polyAddUp sampleD opsPtr
-        let scaleUpThin c = GCPoly.polyScaleUp 0 opsPtr (c::Double) 
-        let scaleDnThin c = GCPoly.polyScaleDn 0 opsPtr (c::Double) 
-        let scaleEncl c = GCPoly.polyScaleEncl opsPtr (c::Double) 
---        let reduceDegree d = GCPoly.polyReduceDegreeEnclMutable opsPtr (Power d) 
-        let copyEncl = GCPoly.polyCopyEncl opsPtr
-        let copyUpThin = GCPoly.polyCopyUpThin 0 opsPtr
-        let copyDnThin = GCPoly.polyCopyDnThin 0 opsPtr
+        let mkConst c = GCPoly.constPolyM opsFP (Var 3) (Size 10) (Power 3) (c::Double) 0
+        let mkConstConst c = GCPoly.constPolyM opsFP (Var 3) (Size 1) (Power 3) (c::Double) 0
+        let mkVar n = GCPoly.projectionPolyM opsFP (Var 3) (Size 10) (Power 3) (Var n)
+        let addUp = GCPoly.polyAddUp sampleD
+        let scaleUpThin c = GCPoly.polyScaleUp 0 (c::Double) 
+        let scaleDnThin c = GCPoly.polyScaleDn 0 (c::Double) 
+        let scaleEncl c = GCPoly.polyScaleEncl (c::Double) 
+--        let reduceDegree d = GCPoly.polyReduceDegreeEnclMutable (Power d) 
+        let copyEncl = GCPoly.polyCopyEncl
+        let copyUpThin = GCPoly.polyCopyUpThin 0
+        let copyDnThin = GCPoly.polyCopyDnThin 0
         
         p1M <- mkConst 0
         p2M <- mkVar 0 -- "x"
@@ -90,11 +91,11 @@ testMutableGCPolys =
         addUp p1b23M p1M p1b23M
         pb223M <- mkConst 0
         addUp pb223M p22M p3M
-        p23s1M <- GCPoly.constPoly (0::Double) 0 (Var 2) (Size 1) (Power 3)
+        p23s1M <- GCPoly.constPolyM opsFP (Var 2) (Size 1) (Power 3) (0::Double) 0
         addUp p23s1M p2M p3M
-        pb223s1M <- GCPoly.constPoly (0::Double) 0 (Var 2) (Size 1) (Power 3)
+        pb223s1M <- GCPoly.constPolyM opsFP (Var 2) (Size 1) (Power 3) (0::Double) 0
         addUp pb223s1M p22M p3M
-        pb223d0M <- GCPoly.constPoly (0::Double) 0 (Var 2) (Size 2) (Power 0)
+        pb223d0M <- GCPoly.constPolyM opsFP (Var 2) (Size 2) (Power 0) (0::Double) 0
         addUp pb223d0M p22M p3M
         
         suxM <- mkVar 0

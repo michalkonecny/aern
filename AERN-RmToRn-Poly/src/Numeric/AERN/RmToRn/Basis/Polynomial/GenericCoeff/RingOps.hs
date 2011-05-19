@@ -24,8 +24,8 @@ where
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly as Poly
-import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly (PolyPure)
-import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Evaluate
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly (Poly)
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.RingOps
 
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (runST)
@@ -34,27 +34,26 @@ import Foreign.Storable
 instance
     (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
     =>
-    ArithUpDn.RoundedAddEffort (PolyPure cf) 
+    ArithUpDn.RoundedAddEffort (Poly cf) 
     where
-    type ArithUpDn.AddEffortIndicator (PolyPure cf) = 
-        ArithUpDn.RoundedRealEffortIndicator cf
-    addDefaultEffort p =
-        ArithUpDn.roundedRealDefaultEffort c
-        where
-        c =
-            runST $
-                do
-                pM <- unsafeMakeMutable p
-                cM <- Poly.peekConst pM
-                unsafeReadMutable cM 
+    type ArithUpDn.AddEffortIndicator (Poly cf) = () 
+    addDefaultEffort p = ()
 
 instance 
     (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
     =>
-    ArithUpDn.RoundedAddInPlace (PolyPure cf) 
+    ArithUpDn.RoundedAddInPlace (Poly cf)
     where
-    addUpInPlaceEff effort resM p1M p2M =
+    addUpInPlaceEff _ resM p1M p2M
+        =
         do
---        Poly.addUp opsPtr 
-        undefined
+        sampleM <- Poly.peekConstM p1M
+        sample <- unsafeReadMutable sampleM
+        polyAddUp sample resM p1M p2M 
+    addDnInPlaceEff _ resM p1M p2M 
+        =
+        do
+        sampleM <- Poly.peekConstM p1M
+        sample <- unsafeReadMutable sampleM
+        polyAddDn sample resM p1M p2M 
             

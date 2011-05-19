@@ -19,7 +19,7 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Domain()
 -- import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 import qualified Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly as Poly
-import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly (PolyPure)
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly (Poly)
 import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
 
 import Numeric.AERN.RealArithmetic.ExactOps
@@ -38,44 +38,36 @@ import qualified Data.List as List
 instance 
     (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
     => 
-    HasSizeLimits (PolyPure cf)
+    HasSizeLimits (Poly cf)
     where
-    type SizeLimits (PolyPure cf) = (Int, Int) -- maxSize, maxDegree
-    getSizeLimits p = 
-        (maxSize, maxDegree)
+    type SizeLimits (Poly cf) = 
+        (Poly.OpsFP cf, Int, Int) -- maxSize, maxDegree
+    getSizeLimits p@(Poly.Poly opsFP _) = 
+        (opsFP, maxSize, maxDegree)
         where
-        (_, Size maxSize32, Power maxDegree32) =
-            runST $ 
-                do
-                pM <- unsafeMakeMutable p
-                Poly.peekSizes pM
+        (_, Size maxSize32, Power maxDegree32) = Poly.peekSizes p
         maxSize = fromIntegral maxSize32
         maxDegree = fromIntegral maxDegree32
     defaultSizes p =
-        (2 + 3 * arity, 3)
+        (opsFP, 2 + 3 * arity, 3)
         where
-        Var arity32 =
-            runST $ 
-                do
-                pM <- unsafeMakeMutable p
-                Poly.peekArity pM
+        Var arity32 = Poly.peekArity p
         arity = fromIntegral arity32
+        opsFP = Poly.opsFPArithUpDnDefaultEffort (Poly.peekConst p)
         
 
 instance 
     (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
     => 
-    HasProjections (PolyPure cf)
+    HasProjections (Poly cf)
     where
-    newProjection _ (maxSize, maxDegree) domainBox var =
-        runST $
-            do
-            pM <- Poly.projectionPoly 
-                    (Poly.Var $ fromIntegral var)
-                    (Poly.Var $ fromIntegral arity)
-                    (Poly.Size $ fromIntegral maxSize)
-                    (Poly.Power $ fromIntegral maxDegree)
-            unsafeReadMutable pM
+    newProjection _ (opsFP, maxSize, maxDegree) domainBox var =
+        Poly.projectionPoly
+            opsFP 
+            (Poly.Var $ fromIntegral arity)
+            (Poly.Size $ fromIntegral maxSize)
+            (Poly.Power $ fromIntegral maxDegree)
+            (Poly.Var $ fromIntegral var)
         where
         arity 
             | domainBoxOK = length vars
@@ -90,18 +82,16 @@ instance
 instance 
     (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
     =>
-    HasConstFns (PolyPure cf)
+    HasConstFns (Poly cf)
     where
-    newConstFn _ (maxSize, maxDegree) domainBox value =
-        runST $
-            do
-            pM <- Poly.constPoly 
-                    value
-                    zero -- radius. ie errorBound
-                    (Poly.Var $ fromIntegral arity)
-                    (Poly.Size $ fromIntegral maxSize)
-                    (Poly.Power $ fromIntegral maxDegree)
-            unsafeReadMutable pM
+    newConstFn _ (opsFP, maxSize, maxDegree) domainBox value =
+        Poly.constPoly
+            opsFP 
+            (Poly.Var $ fromIntegral arity)
+            (Poly.Size $ fromIntegral maxSize)
+            (Poly.Power $ fromIntegral maxDegree)
+            value
+            zero -- radius. ie errorBound
         where
         arity 
             | domainBoxOK = length vars

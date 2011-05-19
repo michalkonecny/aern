@@ -46,9 +46,11 @@ typedef struct TERM
  */
 typedef struct POLY
 {
+  // components that should never change:
   Var maxArity; // nominal number of variables (0 < maxArity < 2^32)
   Size maxSize; // maximal number of non-constant terms (0 < maxSize < 2^10)
   Power maxDeg; // maximal degree of a term (ie sum of powers for all variables) (0 <= maxPow < 2^8)
+
   Size psize; // actual number of non-constant terms (0<=psize<=maxSize)
   CoeffMutable constTerm;
   CoeffMutable errorBound;

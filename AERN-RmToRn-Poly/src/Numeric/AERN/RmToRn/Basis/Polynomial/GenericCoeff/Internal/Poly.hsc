@@ -36,7 +36,7 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Data.Word
 
 import Numeric.AERN.Basics.Mutable
-import Control.Monad.ST (ST, unsafeIOToST, unsafeSTToIO)
+import Control.Monad.ST (ST, runST, unsafeIOToST, unsafeSTToIO)
 
 import System.IO.Unsafe
 
@@ -55,17 +55,28 @@ import qualified Foreign.Concurrent as Conc (newForeignPtr)
    All operations for this type will be defined by conversions from in-place
    operations on PolyMutable. 
 -}
-newtype PolyPure cf = PolyPure (ForeignPtr ()) 
+data Poly cf = 
+    Poly 
+        {
+            poly_ops :: OpsFP cf, -- coefficient operations to pass to some C functions 
+            poly_poly :: PolyFP cf -- a polynomial structure
+        } 
+        
+type OpsFP cf = ForeignPtr (DummyOps cf)
+data DummyOps cf -- avoiding the s parameter of ST
+
+type OpsPtr cf = Ptr (DummyOps cf) -- for foreign import declarations
+
+type PolyFP cf = ForeignPtr (CPoly cf)
+data CPoly cf -- transparent to Haskell - details available in C
 
 instance 
     (CanBeMutable cf, ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) => 
-    CanBeMutable (PolyPure cf) 
+    CanBeMutable (Poly cf) 
     where
-    newtype Mutable (PolyPure cf) s = PolyMutable (ForeignPtr (Poly (Mutable cf s)))
-    unsafeMakeMutable (PolyPure fp) =
-        return $ PolyMutable (castForeignPtr fp)
-    unsafeReadMutable (PolyMutable fp) =
-        return $ PolyPure (castForeignPtr fp)
+    newtype Mutable (Poly cf) s = PolyM (Poly cf) -- (Mutable cf s))
+    unsafeMakeMutable (Poly c p) = return $ PolyM (Poly c p)
+    unsafeReadMutable (PolyM (Poly c p)) = return (Poly c p)
     makeMutable p =
         do
         pM <- unsafeMakeMutable p
@@ -79,83 +90,112 @@ instance
         srcM <- unsafeMakeMutable src
         assignMutable resM srcM
     unsafeWriteMutable = writeMutable 
-    assignMutable resM@(PolyMutable resFP) srcM@(PolyMutable srcFP) =
+    assignMutable resM srcM =
         do
-        resSizes <- peekSizes resM
-        srcSizes <- peekSizes srcM
+        resSizes <- peekSizesM resM
+        srcSizes <- peekSizesM srcM
         case resSizes == srcSizes of
             False -> error "attempt to assign between incompatible polynomial variables"
             True -> return ()
-        cM <- peekConst srcM
-        let opsPtr = newOpsArithUpDnDefaultEffort (getDummySample cM)
-        polyCopySameSizes opsPtr resM srcM
-    cloneMutable pM =
+        polyCopySameSizes resM srcM
+    cloneMutable pM@(PolyM (Poly opsFP _)) =
         do
-        (arity, size, deg) <- peekSizes pM
-        resM <- constPoly zero zero arity size deg
+        (arity, size, deg) <- peekSizesM pM
+        resM <- constPolyM opsFP arity size deg zero zero
         assignMutable resM pM
         return resM
     
-data Poly cfm -- defined in poly.c, opaque to Haskell  
-
-type PolyMutable cf s = Mutable (PolyPure cf) s 
-    
+type PolyM cf s = Mutable (Poly cf) s
 
 {-# INLINE peekSizes #-}
-peekSizes :: (PolyMutable cf s) -> ST s (Var, Size, Power)
+peekSizes :: (Poly cf) -> (Var, Size, Power)
 peekSizes p =
+    unsafePerformIO $ peekSizesIO p
+
+{-# INLINE peekSizesM #-}
+peekSizesM :: (PolyM cf s) -> ST s (Var, Size, Power)
+peekSizesM (PolyM p) =
     unsafeIOToST $ peekSizesIO p
 
 {-# INLINE peekSizesIO #-}
-peekSizesIO :: (PolyMutable cf s) -> IO (Var, Size, Power)
-peekSizesIO (PolyMutable fp) =
-        withForeignPtr fp $ \ptr -> 
-            do
-            maxArityC <- #{peek Poly, maxArity} ptr
-            maxSizeC <- #{peek Poly, maxSize} ptr
-            maxDegreeC <- #{peek Poly, maxDeg} ptr
-            return (fromCVar maxArityC, fromCSize maxSizeC, fromCPower maxDegreeC)            
+peekSizesIO :: (Poly cf) -> IO (Var, Size, Power)
+peekSizesIO (Poly opsFP polyFP) =
+    withForeignPtr polyFP $ \ptr -> 
+        do
+        maxArityC <- #{peek Poly, maxArity} ptr
+        maxSizeC <- #{peek Poly, maxSize} ptr
+        maxDegreeC <- #{peek Poly, maxDeg} ptr
+        return (fromCVar maxArityC, fromCSize maxSizeC, fromCPower maxDegreeC)            
 
 {-# INLINE peekArity #-}
-peekArity :: (PolyMutable cf s) -> ST s Var
+peekArity :: (Poly cf) -> Var
 peekArity p =
+    unsafePerformIO $ peekArityIO p
+    
+{-# INLINE peekArityM #-}
+peekArityM :: (PolyM cf s) -> ST s Var
+peekArityM (PolyM p) =
     unsafeIOToST $ peekArityIO p
     
 {-# INLINE peekArityIO #-}
-peekArityIO :: (PolyMutable cf s) -> IO Var
-peekArityIO (PolyMutable fp) =
-    withForeignPtr fp $ \ptr -> 
+peekArityIO :: (Poly cf) -> IO Var
+peekArityIO (Poly _ polyFP) =
+    withForeignPtr polyFP $ \ptr -> 
         do
         maxArityC <- #{peek Poly, maxArity} ptr
         return (fromCVar maxArityC)
 
 {-# INLINE peekConst #-}
-peekConst :: (PolyMutable cf s) -> ST s (Mutable cf s)
+peekConst :: 
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    =>
+    (Poly cf) -> cf
 peekConst p =
-    unsafeIOToST $ peekConstIO p
+    runST $
+        do
+        pM <- unsafeMakeMutable p 
+        cM <- peekConstM pM
+        readMutable cM
+    
+{-# INLINE peekConstM #-}
+peekConstM :: (PolyM cf s) -> ST s (Mutable cf s)
+peekConstM pM =
+    unsafeIOToST $ peekConstIO pM
     
 {-# INLINE peekConstIO #-}
-peekConstIO :: (PolyMutable cf s) -> IO (Mutable cf s)
-peekConstIO (PolyMutable fp) =
-    withForeignPtr fp $ \ptr -> 
+peekConstIO :: (PolyM cf s) -> IO (Mutable cf s)
+peekConstIO (PolyM (Poly _ polyFP)) =
+    withForeignPtr polyFP $ \ptr -> 
         do
         constSP <- #{peek Poly, constTerm} ptr
-        const <- deRefStablePtr constSP
-        return const
+        cM <- deRefStablePtr constSP
+        return cM
 
 {-# INLINE peekError #-}
-peekError :: (PolyMutable cf s) -> ST s (Mutable cf s)
+peekError :: 
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    =>
+    (Poly cf) -> cf
 peekError p =
-    unsafeIOToST $ peekErrorIO p
+    runST $
+        do
+        pM <- unsafeMakeMutable p 
+        eM <- peekErrorM pM
+        readMutable eM
+
+{-# INLINE peekErrorM #-}
+peekErrorM :: (PolyM cf s) -> ST s (Mutable cf s)
+peekErrorM pM =
+    unsafeIOToST $ peekErrorIO pM
     
 {-# INLINE peekErrorIO #-}
-peekErrorIO :: (PolyMutable cf s) -> IO (Mutable cf s)
-peekErrorIO (PolyMutable fp) =
-    withForeignPtr fp $ \ptr -> 
+peekErrorIO :: (PolyM cf s) -> IO (Mutable cf s)
+peekErrorIO (PolyM (Poly _ polyFP)) =
+    withForeignPtr polyFP $ \ptr -> 
         do
         errorSP <- #{peek Poly, errorBound} ptr
-        error <- deRefStablePtr errorSP
-        return error
+        eM <- deRefStablePtr errorSP
+        return eM
 
 data Ops s cf =
     Ops
@@ -204,21 +244,17 @@ instance (Storable cf) => Storable (Ops s cf) where
         #{poke Ops, timesUpMutable} ptr timesUpMutable
         #{poke Ops, timesDnMutable} ptr timesDnMutable
 
-type (OpsPtr cf) = Ptr ()
-
-newOps ::
+newOpsFP ::
     (Storable cf) =>
     (Ops s cf) ->
-    IO (OpsPtr cf)
-newOps ops =
+    IO (OpsFP cf)
+newOpsFP ops =
     do
-    opsP <- malloc
-    poke opsP ops
-    return $ castPtr opsP
+    ptr <- malloc
+    poke ptr ops
+    fp <- Conc.newForeignPtr ptr (free ptr) 
+    return $ castForeignPtr fp
     
-freeOps :: OpsPtr cf -> IO ()
-freeOps = free
-
 mkOps ::
     cf ->
     (NewOpMutable s cf) ->
@@ -288,42 +324,45 @@ mkOpsArithUpDn sample effort =
         (ArithUpDn.multUpInPlaceEff multEffort)
         (ArithUpDn.multDnInPlaceEff multEffort)
 
-newOpsArithUpDn ::
+opsFPArithUpDn ::
     (ArithUpDn.RoundedRealInPlace cf, CanBeMutable cf, Storable cf) => 
     cf ->
     ArithUpDn.RoundedRealEffortIndicator cf -> 
-    OpsPtr cf
-newOpsArithUpDn sample effort =
+    OpsFP cf
+opsFPArithUpDn sample effort =
     unsafePerformIO $
         do
         ops <- mkOpsArithUpDn sample effort
-        newOps ops
+        newOpsFP ops
 
-newOpsArithUpDnDefaultEffort ::
+opsFPArithUpDnDefaultEffort ::
     (ArithUpDn.RoundedRealInPlace cf, CanBeMutable cf, Storable cf) => 
     cf ->
-    OpsPtr cf
-newOpsArithUpDnDefaultEffort sample =
-    newOpsArithUpDn sample (ArithUpDn.roundedRealDefaultEffort sample)
-
-
+    OpsFP cf
+opsFPArithUpDnDefaultEffort sample =
+    opsFPArithUpDn sample (ArithUpDn.roundedRealDefaultEffort sample)
 
 ----------------------------------------------------------------
 
 foreign import ccall safe "printPolyGenCf"
-        poly_printPoly :: (Ptr (Poly cfm)) -> IO ()  
+        poly_printPoly :: (Ptr (CPoly cfm)) -> IO ()  
 
-printPolyInternals :: (PolyMutable cf s) -> IO ()
-printPolyInternals (PolyMutable fp) =
-    withForeignPtr fp $ \ ptr ->
+printPolyInternalsM :: (PolyM cf s) -> IO ()
+printPolyInternalsM (PolyM (Poly _ polyFP)) =
+    withForeignPtr polyFP $ \ ptr ->
+        poly_printPoly ptr
+
+printPolyInternals :: (Poly cf) -> IO ()
+printPolyInternals (Poly _ polyFP) =
+    withForeignPtr polyFP $ \ ptr ->
         poly_printPoly ptr
 
 --------------------------------------------------------------
 
 foreign import ccall safe "freePolyGenCf"
-        poly_freePoly :: (Ptr (Poly cfm)) -> IO ()  
+        poly_freePoly :: (Ptr (CPoly cfm)) -> IO ()  
 
-concFinalizerFreePoly :: (Ptr (Poly cfm)) -> IO ()
+concFinalizerFreePoly :: (Ptr (CPoly cfm)) -> IO ()
 concFinalizerFreePoly p =
     do
 --    putStrLn "concFinalizerFreePoly"
@@ -333,32 +372,46 @@ concFinalizerFreePoly p =
 foreign import ccall safe "mapCoeffsInPlaceGenCf"
         poly_mapCoeffsInPlace ::
             (StablePtr (cfm1 -> cfm2)) -> 
-            (Ptr (Poly cfm1)) -> 
+            (Ptr (CPoly cfm1)) -> 
             IO ()  
 
 ----------------------------------------------------------------
 
 foreign import ccall unsafe "newConstPolyGenCf"
         poly_newConstPoly :: 
-            (StablePtr cfm) -> 
-            (StablePtr cfm) -> 
+            (StablePtr (Mutable cf s)) -> 
+            (StablePtr (Mutable cf s)) -> 
             CVar -> CSize -> CPower -> 
-            IO (Ptr (Poly cfm))  
+            IO (Ptr (CPoly cf))  
 
 constPoly :: 
     (Show cf, CanBeMutable cf) => 
+    OpsFP cf -> 
+    Var -> Size -> Power ->
     cf -> cf -> 
-    Var -> Size -> Power -> 
-    ST s (PolyMutable cf s)
-constPoly cM radiusM maxArity maxSize maxDeg =
-    unsafeIOToST $ constPolyIO cM radiusM maxArity maxSize maxDeg
+    Poly cf
+constPoly opsFP maxArity maxSize maxDeg c radius =
+    unsafePerformIO $ constPolyIO opsFP maxArity maxSize maxDeg c radius
+
+constPolyM :: 
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    =>
+    OpsFP cf -> 
+    Var -> Size -> Power ->
+    cf -> cf -> 
+    ST s (PolyM cf s)
+constPolyM opsFP maxArity maxSize maxDeg c radius =
+    do
+    p <- unsafeIOToST $ constPolyIO opsFP maxArity maxSize maxDeg c radius
+    unsafeMakeMutable p
 
 constPolyIO :: 
     (Show cf, CanBeMutable cf) => 
-    cf -> cf -> 
+    OpsFP cf -> 
     Var -> Size -> Power -> 
-    IO (PolyMutable cf s)
-constPolyIO c radius maxArity maxSize maxDeg =
+    cf -> cf -> 
+    IO (Poly cf)
+constPolyIO opsFP maxArity maxSize maxDeg c radius =
     do
     cM <- unsafeSTToIO $ makeMutable c
     cSP <- newStablePtr cM
@@ -368,30 +421,47 @@ constPolyIO c radius maxArity maxSize maxDeg =
     pP <- poly_newConstPoly cSP radiusSP (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
 --    putStrLn $ "newConstPoly for " ++ show c ++ " returned"
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
-    return $ PolyMutable fp
+    return $ Poly opsFP fp 
 
 ----------------------------------------------------------------
 
 foreign import ccall unsafe "newProjectionPolyGenCf"
         poly_newProjectionPoly :: 
-            (StablePtr cfm) -> (StablePtr cfm) -> (StablePtr cfm) ->
+            (StablePtr (Mutable cf s)) -> 
+            (StablePtr (Mutable cf s)) -> 
+            (StablePtr (Mutable cf s)) -> 
             CVar -> CVar -> CSize -> CPower -> 
-            IO (Ptr (Poly cfm))
+            IO (Ptr (CPoly cf))
 
 projectionPoly :: 
     (CanBeMutable cf, HasOne cf, HasZero cf) 
     => 
-    Var -> Var -> Size -> Power -> 
-    ST s (PolyMutable cf s)
-projectionPoly x maxArity maxSize maxDeg =
-    unsafeIOToST $ projectionPolyIO x maxArity maxSize maxDeg
+    OpsFP cf -> 
+    Var -> Size -> Power -> 
+    Var -> 
+    Poly cf
+projectionPoly opsFP maxArity maxSize maxDeg x =
+    unsafePerformIO $ projectionPolyIO opsFP maxArity maxSize maxDeg x
 
+projectionPolyM :: 
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    =>
+    OpsFP cf -> 
+    Var -> Size -> Power -> 
+    Var -> 
+    ST s (PolyM cf s)
+projectionPolyM opsFP maxArity maxSize maxDeg x =
+    do
+    p <- unsafeIOToST $ projectionPolyIO opsFP maxArity maxSize maxDeg x
+    unsafeMakeMutable p
 
 projectionPolyIO :: 
     (CanBeMutable cf, HasOne cf, HasZero cf) => 
-    Var -> Var -> Size -> Power -> 
-    IO (PolyMutable cf s)
-projectionPolyIO x maxArity maxSize maxDeg =
+    OpsFP cf -> 
+    Var -> Size -> Power -> 
+    Var -> 
+    IO (Poly cf)
+projectionPolyIO opsFP maxArity maxSize maxDeg x =
     do
     zeroM <- unsafeSTToIO $ makeMutable zero
     zeroSP <- newStablePtr zeroM
@@ -401,23 +471,23 @@ projectionPolyIO x maxArity maxSize maxDeg =
     radSP <- newStablePtr radM
     pP <- poly_newProjectionPoly zeroSP oneSP radSP (toCVar x) (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
-    return $ PolyMutable fp
+    return $ Poly opsFP fp
 
 ----------------------------------------------------------------
 
 foreign import ccall safe "copySameSizesGenCf"
         poly_copySameSizes :: 
             OpsPtr cf ->
-            (Ptr (Poly (Mutable cf s))) -> 
-            (Ptr (Poly (Mutable cf s))) -> 
+            (Ptr (CPoly cfm)) -> 
+            (Ptr (CPoly cfm)) -> 
             IO ()
 
 foreign import ccall safe "copyEnclGenCf"
         poly_copyEncl :: 
             (StablePtr (ComparisonOp (Mutable cf s))) ->
             OpsPtr cf ->
-            (Ptr (Poly (Mutable cf s))) -> 
-            (Ptr (Poly (Mutable cf s))) -> 
+            (Ptr (CPoly cfm)) -> 
+            (Ptr (CPoly cfm)) -> 
             IO ()
 
 foreign import ccall safe "copyUpThinGenCf"
@@ -425,8 +495,8 @@ foreign import ccall safe "copyUpThinGenCf"
             (StablePtr (ComparisonOp (Mutable cf s))) ->
             (StablePtr cf) ->
             OpsPtr cf ->
-            (Ptr (Poly (Mutable cf s))) -> 
-            (Ptr (Poly (Mutable cf s))) -> 
+            (Ptr (CPoly cfm)) -> 
+            (Ptr (CPoly cfm)) -> 
             IO ()
 
 foreign import ccall safe "copyDnThinGenCf"
@@ -434,45 +504,45 @@ foreign import ccall safe "copyDnThinGenCf"
             (StablePtr (ComparisonOp (Mutable cf s))) ->
             (StablePtr cf) ->
             OpsPtr cf ->
-            (Ptr (Poly (Mutable cf s))) -> 
-            (Ptr (Poly (Mutable cf s))) -> 
+            (Ptr (CPoly cfm)) -> 
+            (Ptr (CPoly cfm)) -> 
             IO ()
 
 ------------------------------------------------------------------
 
 polyCopySameSizes ::
     (Storable cf, CanBeMutable cf) =>
-    OpsPtr cf ->
-    PolyMutable cf s ->
-    PolyMutable cf s ->
+    PolyM cf s ->
+    PolyM cf s ->
     ST s ()
-polyCopySameSizes opsPtr (PolyMutable resFP) (PolyMutable srcFP) =
+polyCopySameSizes (PolyM (Poly opsFP resFP)) (PolyM (Poly _ srcFP)) =
     do
     unsafeIOToST $
         do
         withForeignPtr resFP $ \resP ->
-           withForeignPtr srcFP $ \srcP ->
-             poly_copySameSizes opsPtr resP srcP
+          withForeignPtr srcFP $ \srcP ->
+             withForeignPtr opsFP $ \opsP ->
+               poly_copySameSizes opsP resP srcP
 
 ------------------------------------------------------------------
 
 polyCopyEncl ::
     (Storable cf, CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
-    OpsPtr cf ->
-    PolyMutable cf s ->
-    PolyMutable cf s ->
+    PolyM cf s ->
+    PolyM cf s ->
     ST s ()
-polyCopyEncl opsPtr = 
-    polyCopyOpMutable poly_copyEncl zero opsPtr
+polyCopyEncl = 
+    polyCopyOpMutable poly_copyEncl zero
 
-polyCopyOpMutable copyOp sample opsPtr (PolyMutable resFP) (PolyMutable srcFP) =
+polyCopyOpMutable copyOp sample (PolyM (Poly opsFP resFP)) (PolyM (Poly _ srcFP)) =
     do
     unsafeIOToST $
       do
       compareSP <- newStablePtr compareMutable
       _ <- withForeignPtr resFP $ \resP ->
              withForeignPtr srcFP $ \srcP ->
-             copyOp compareSP opsPtr resP srcP
+               withForeignPtr opsFP $ \opsP ->
+                 copyOp compareSP opsP resP srcP
       freeStablePtr compareSP
       return ()
     where
@@ -489,24 +559,22 @@ polyCopyOpMutable copyOp sample opsPtr (PolyMutable resFP) (PolyMutable srcFP) =
 polyCopyUpThin ::
     (Storable cf, CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     cf ->
-    OpsPtr cf ->
-    PolyMutable cf s ->
-    PolyMutable cf s ->
+    PolyM cf s ->
+    PolyM cf s ->
     ST s ()
-polyCopyUpThin sample opsPtr = 
-    polyCopyThinOpMutable poly_copyUpThin zero opsPtr
+polyCopyUpThin sample = 
+    polyCopyThinOpMutable poly_copyUpThin zero
 
 polyCopyDnThin ::
     (Storable cf, CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     cf ->
-    OpsPtr cf ->
-    PolyMutable cf s ->
-    PolyMutable cf s ->
+    PolyM cf s ->
+    PolyM cf s ->
     ST s ()
-polyCopyDnThin sample opsPtr = 
-    polyCopyThinOpMutable poly_copyDnThin zero opsPtr
+polyCopyDnThin sample = 
+    polyCopyThinOpMutable poly_copyDnThin zero
 
-polyCopyThinOpMutable copyOp sample opsPtr (PolyMutable resFP) (PolyMutable srcFP) =
+polyCopyThinOpMutable copyOp sample (PolyM (Poly opsFP resFP)) (PolyM (Poly _ srcFP)) =
     do
     unsafeIOToST $
       do
@@ -514,7 +582,8 @@ polyCopyThinOpMutable copyOp sample opsPtr (PolyMutable resFP) (PolyMutable srcF
       compareSP <- newStablePtr compareMutable
       _ <- withForeignPtr resFP $ \resP ->
              withForeignPtr srcFP $ \srcP ->
-             copyOp compareSP zeroSP opsPtr resP srcP
+               withForeignPtr opsFP $ \opsP ->
+                 copyOp compareSP zeroSP opsP resP srcP
       freeStablePtr compareSP
       return ()
     where
