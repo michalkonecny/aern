@@ -12,7 +12,7 @@
     Stability   :  experimental
     Portability :  portable
 
-    Conversions between PolyPure and standard numeric types.
+    Conversions between Poly and standard numeric types.
 
     This is a private module reexported publicly via its parent.
 -}
@@ -24,7 +24,7 @@ where
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly as Poly
-import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly (PolyPure)
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly (Poly)
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Evaluate
 
 import Numeric.AERN.Basics.Mutable
@@ -34,32 +34,28 @@ import Foreign.Storable
 instance 
     (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
     =>
-    ArithUpDn.Convertible (PolyPure cf) cf 
+    ArithUpDn.Convertible (Poly cf) cf 
     where
-    type ArithUpDn.ConvertEffortIndicator (PolyPure cf) cf = 
-        ArithUpDn.RoundedRealEffortIndicator cf
+    type ArithUpDn.ConvertEffortIndicator (Poly cf) cf = 
+        () -- OpsFP cf
     convertDefaultEffort sampleP sampleCF =
-        ArithUpDn.roundedRealDefaultEffort sampleCF 
+        () -- Poly.opsFPArithUpDnDefaultEffort sampleCF
     convertUpEff effort p =
         runST $
             do
             pM <- unsafeMakeMutable p
-            sampleM <- Poly.peekConst pM
-            sample <- unsafeReadMutable sampleM 
-            let opsPtr = Poly.newOpsArithUpDn sample effort
+            sampleM <- Poly.peekConstM pM
             resM <- cloneMutable sampleM
-            polyBoundUpThin opsPtr resM pM
+            polyBoundUp resM pM
             res <- unsafeReadMutable resM
             return $ Just $ res
     convertDnEff effort p =
         runST $
             do
             pM <- unsafeMakeMutable p
-            sampleM <- Poly.peekConst pM
-            sample <- unsafeReadMutable sampleM 
-            let opsPtr = Poly.newOpsArithUpDn sample effort
+            sampleM <- Poly.peekConstM pM
             resM <- cloneMutable sampleM
-            polyBoundDnThin opsPtr resM pM
+            polyBoundDn resM pM
             res <- unsafeReadMutable resM
             return $ Just $ res
             

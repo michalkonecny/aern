@@ -19,6 +19,8 @@ import Numeric.AERN.RmToRn.Domain
 class HasSizeLimits f where
     type SizeLimits f
     getSizeLimits :: f -> SizeLimits f
+    defaultSizes :: f -> SizeLimits f
+    changeSizeLimits :: SizeLimits f -> f -> f
 
 class (HasDomainBox f, HasSizeLimits f) => HasProjections f where
     newProjection :: 

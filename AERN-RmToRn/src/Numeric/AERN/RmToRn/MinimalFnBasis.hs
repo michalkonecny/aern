@@ -22,10 +22,12 @@ import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
 
+import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.ShowInternals
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 --import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 class (HasDomainBox fb,
@@ -35,12 +37,18 @@ class (HasDomainBox fb,
         ShowInternals fb,
         HasProjections fb, -- variables (but their domain is fixed!)
         HasConstFns fb, -- constants
-        ArithUpDn.Convertible (Domain fb) fb, -- constants
         ArithUpDn.Convertible fb (Domain fb), -- bounds
-        ArithUpDn.RoundedAdd fb,
-        ArithUpDn.RoundedMultiply fb,
-        ArithUpDn.RoundedMixedAdd fb (Domain fb),
-        ArithUpDn.RoundedMixedMultiply fb (Domain fb)
+        CanBeMutable fb,
+        -- ring ops rounded up/down:
+        ArithUpDn.RoundedAddInPlace fb,
+        ArithUpDn.RoundedMultiplyInPlace fb,
+        ArithUpDn.RoundedMixedAddInPlace fb (Domain fb),
+        ArithUpDn.RoundedMixedMultiplyInPlace fb (Domain fb),
+        -- ring ops rounded *out* by some internal notion of enclosure:
+        ArithInOut.RoundedAddInPlace fb,
+        ArithInOut.RoundedMultiplyInPlace fb,
+        ArithInOut.RoundedMixedAddInPlace fb (Domain fb),
+        ArithInOut.RoundedMixedMultiplyInPlace fb (Domain fb)
       ) => 
     MinimalFnBasis fb
     where

@@ -24,7 +24,7 @@ import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
 
 import qualified Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly as Poly
-import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly (PolyPure)
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly (Poly)
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Evaluate
 
 import Numeric.AERN.RealArithmetic.ExactOps
@@ -34,32 +34,28 @@ import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (runST)
 import Foreign.Storable
 
-data PolyPureEvalOps cf t =
-    PolyPureEvalOps
+data PolyEvalOps cf t =
+    PolyEvalOps
     {
-        polyPureEvalFromCoeff :: cf -> t,
-        polyPureEvalTimes :: t -> t -> t,
-        polyPureEvalPlus :: t -> t -> t,
-        polyPureEvalMinus :: t -> t -> t
+        polyEvalFromCoeff :: cf -> t,
+        polyEvalTimes :: t -> t -> t,
+        polyEvalPlus :: t -> t -> t,
+        polyEvalMinus :: t -> t -> t
     }
 
 instance
     (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
     => 
-    CanEvaluateOtherType (PolyPure cf) 
+    CanEvaluateOtherType (Poly cf) 
     where
-    type EvalOps (PolyPure cf) = PolyPureEvalOps cf
+    type EvalOps (Poly cf) = PolyEvalOps cf
     evalOtherType evalOps varValuesBox p =
-        runST $
-            do
-            pM <- unsafeMakeMutable p
-            return $
-                evalAtPtChebBasis pM
-                    (map snd $ toAscList varValuesBox)
-                    (polyPureEvalFromCoeff evalOps one)
-                    (polyPureEvalPlus evalOps)
-                    (polyPureEvalMinus evalOps)
-                    (polyPureEvalTimes evalOps)
-                    (polyPureEvalFromCoeff evalOps)
+        evalAtPtChebBasis p
+            (map snd $ toAscList varValuesBox)
+            (polyEvalFromCoeff evalOps one)
+            (polyEvalPlus evalOps)
+            (polyEvalMinus evalOps)
+            (polyEvalTimes evalOps)
+            (polyEvalFromCoeff evalOps)
 
 

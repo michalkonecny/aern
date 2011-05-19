@@ -45,7 +45,7 @@ instance
         (ShowInternals cf, Storable cf,
          CanBeMutable cf, Show cf, 
          ArithUpDn.RoundedRealInPlace cf) => 
-        (Show (PolyPure cf)) 
+        (Show (Poly cf)) 
     where
     show = showUsingShowInternals
 
@@ -53,22 +53,17 @@ instance
         (ShowInternals cf, Storable cf,
          CanBeMutable cf, Show cf, 
          ArithUpDn.RoundedRealInPlace cf) => 
-        (ShowInternals (PolyPure cf))
+        (ShowInternals (Poly cf))
     where
-    type ShowInternalsIndicator (PolyPure cf) = 
+    type ShowInternalsIndicator (Poly cf) = 
         (Bool, ShowInternalsIndicator cf)
     defaultShowIndicator p =
-        runST $
-            do
-            pM <- unsafeMakeMutable p
-            constM <- peekConst pM
-            const <- unsafeReadMutable constM
-            return $ (False, defaultShowIndicator const)
+        (False, defaultShowIndicator $ peekConst p)
     showInternals (showChebyshevTerms, coeffShowIndicator) p =
         runST $
             do
             pM <- unsafeMakeMutable p
-            (Var maxArity) <- peekArity pM
+            (Var maxArity) <- peekArityM pM
             pText <- showPolyWithVars pM coeffShowIndicator (varNamesArity maxArity)
             case showChebyshevTerms of
                 True ->
@@ -86,13 +81,13 @@ instance
         
 showPolyWithVars :: 
     (CanBeMutable cf, ShowInternals cf, Storable cf, ArithUpDn.RoundedReal cf) => 
-    PolyMutable cf s -> 
+    PolyM cf s -> 
     (ShowInternalsIndicator cf) -> 
     [HVar] -> 
     ST s String
-showPolyWithVars pM coeffShowIndicator varNames =
+showPolyWithVars pM@(PolyM p) coeffShowIndicator varNames =
     do
-    errorM <- peekError pM
+    errorM <- peekErrorM pM
     errorBound <- unsafeReadMutable errorM
     let errorText = " ± " ++ (showInternals coeffShowIndicator errorBound) 
     case errorBoundKnownToBeZero errorBound of
@@ -107,7 +102,7 @@ showPolyWithVars pM coeffShowIndicator varNames =
     pSymb 
         =
         evalAtPtChebBasis 
-            pM
+            p
             (map hpolyVar varNames) 
             hpolyOne
             (hpolyAdd (<+>))
@@ -117,13 +112,13 @@ showPolyWithVars pM coeffShowIndicator varNames =
         
 showPolyChebTermsWithVars :: 
     (CanBeMutable cf, ShowInternals cf, Storable cf, ArithUpDn.RoundedReal cf) => 
-    PolyMutable cf s -> 
+    PolyM cf s -> 
     (ShowInternalsIndicator cf) -> 
     [HVar] -> 
     ST s String
-showPolyChebTermsWithVars pM coeffShowIndicator varNames =
+showPolyChebTermsWithVars pM@(PolyM p) coeffShowIndicator varNames =
     do
-    errorM <- peekError pM
+    errorM <- peekErrorM pM
     errorBound <- unsafeReadMutable errorM
     let errorText = " ± " ++ (showInternals coeffShowIndicator errorBound) 
     case errorBoundKnownToBeZero errorBound of
@@ -138,7 +133,7 @@ showPolyChebTermsWithVars pM coeffShowIndicator varNames =
     pSymb 
         =
         evalAtPtPowerBasis 
-            pM
+            p
             (map hpolyVar varNames) 
             hpolyOne
             (hpolyAdd (<+>))

@@ -50,9 +50,9 @@ foreign import ccall safe "addUpGenCf"
             (StablePtr cf) ->
             (StablePtr (ComparisonOp (Mutable cf s))) ->
             OpsPtr cf ->
-            (Ptr (Poly (Mutable cf s))) -> 
-            (Ptr (Poly (Mutable cf s))) -> 
-            (Ptr (Poly (Mutable cf s))) -> 
+            (Ptr (CPoly cf)) -> 
+            (Ptr (CPoly cf)) -> 
+            (Ptr (CPoly cf)) -> 
             IO ()
 
 foreign import ccall safe "addDnGenCf"
@@ -60,32 +60,30 @@ foreign import ccall safe "addDnGenCf"
             (StablePtr cf) ->
             (StablePtr (ComparisonOp (Mutable cf s))) ->
             OpsPtr cf ->
-            (Ptr (Poly (Mutable cf s))) -> 
-            (Ptr (Poly (Mutable cf s))) -> 
-            (Ptr (Poly (Mutable cf s))) -> 
+            (Ptr (CPoly cf)) -> 
+            (Ptr (CPoly cf)) -> 
+            (Ptr (CPoly cf)) -> 
             IO ()
 
 polyAddUp ::
     (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     cf -> 
-    OpsPtr cf ->
-    PolyMutable cf s ->
-    PolyMutable cf s ->
-    PolyMutable cf s ->
+    PolyM cf s ->
+    PolyM cf s ->
+    PolyM cf s ->
     ST s ()
-polyAddUp sample opsPtr = 
-    polyBinaryOp poly_addUp sample opsPtr
+polyAddUp sample = 
+    polyBinaryOp poly_addUp sample
 
 polyAddDn ::
     (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     cf -> 
-    OpsPtr cf ->
-    PolyMutable cf s ->
-    PolyMutable cf s ->
-    PolyMutable cf s ->
+    PolyM cf s ->
+    PolyM cf s ->
+    PolyM cf s ->
     ST s ()
-polyAddDn sample opsPtr = 
-    polyBinaryOp poly_addDn sample opsPtr
+polyAddDn sample = 
+    polyBinaryOp poly_addDn sample
 
 ----------------------------------------------------------------
 
@@ -94,7 +92,7 @@ foreign import ccall safe "scaleUpThinGenCf"
             (StablePtr cf) ->
             OpsPtr cf ->
             (StablePtr (Mutable cf s)) ->
-            (Ptr (Poly (Mutable cf s))) -> 
+            (Ptr (CPoly cf)) -> 
             IO ()
 
 foreign import ccall safe "scaleDnThinGenCf"
@@ -102,82 +100,82 @@ foreign import ccall safe "scaleDnThinGenCf"
             (StablePtr cf) ->
             OpsPtr cf ->
             (StablePtr (Mutable cf s)) ->
-            (Ptr (Poly (Mutable cf s))) -> 
+            (Ptr (CPoly cf)) -> 
             IO ()
 
 foreign import ccall safe "scaleEnclGenCf"
         poly_scaleEncl :: 
             OpsPtr cf ->
             (StablePtr (Mutable cf s)) ->
-            (Ptr (Poly (Mutable cf s))) -> 
+            (Ptr (CPoly cf)) -> 
             IO ()
 
 polyScaleUp ::
     (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     cf -> 
-    OpsPtr cf ->
     cf ->
-    PolyMutable cf s ->
+    PolyM cf s ->
     ST s ()
-polyScaleUp sample opsPtr = 
-    polyScalingOp poly_scaleUpThin sample opsPtr
+polyScaleUp sample = 
+    polyScalingOp poly_scaleUpThin sample
 
 polyScaleDn ::
     (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     cf -> 
-    OpsPtr cf ->
     cf ->
-    PolyMutable cf s ->
+    PolyM cf s ->
     ST s ()
-polyScaleDn sample opsPtr = 
-    polyScalingOp poly_scaleDnThin sample opsPtr
+polyScaleDn sample = 
+    polyScalingOp poly_scaleDnThin sample
 
 polyScaleEncl ::
     (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
-    OpsPtr cf ->
     cf ->
-    PolyMutable cf s ->
+    PolyM cf s ->
     ST s ()
-polyScaleEncl opsPtr = 
-    polyScalingOpNoZero poly_scaleEncl opsPtr
+polyScaleEncl = 
+    polyScalingOpNoZero poly_scaleEncl
 
 ----------------------------------------------------------------
 
-polyScalingOp scalingOp sample opsPtr scalingFactor (PolyMutable pFP) =
+polyScalingOp scalingOp sample scalingFactor (PolyM (Poly opsFP pFP)) =
     do
     sfM <- unsafeMakeMutable scalingFactor 
     unsafeIOToST $
       do
-      zeroSP <- newStablePtr $ head [zero, sample]
+      zeroSP <- newStablePtr zero -- head [zero, sample]
       factorSP <- newStablePtr sfM
       _ <- withForeignPtr pFP $ \pP ->
-            scalingOp zeroSP opsPtr factorSP pP
+             withForeignPtr opsFP $ \opsP ->
+               scalingOp zeroSP opsP factorSP pP
       return ()
 
 ----------------------------------------------------------------
 
-polyScalingOpNoZero scalingOp opsPtr scalingFactor (PolyMutable pFP) =
+polyScalingOpNoZero scalingOp scalingFactor (PolyM (Poly opsFP pFP)) =
     do
     sfM <- unsafeMakeMutable scalingFactor 
     unsafeIOToST $
       do
       factorSP <- newStablePtr sfM
       _ <- withForeignPtr pFP $ \pP ->
-            scalingOp opsPtr factorSP pP
+             withForeignPtr opsFP $ \opsP ->
+               scalingOp opsP factorSP pP
       return ()
 
 --------------------------------------------------------------
 
-polyBinaryOp binaryOp sample opsPtr 
-        (PolyMutable resFP) (PolyMutable p1FP) (PolyMutable p2FP) =
+polyBinaryOp binaryOp sample
+        (PolyM (Poly opsFP resFP)) (PolyM (Poly _ p1FP)) (PolyM (Poly _ p2FP)) =
     unsafeIOToST $
     do
-    zeroSP <- newStablePtr $ head [zero, sample]
+    zeroSP <- newStablePtr zero
     compareSP <- newStablePtr compareMutable
     _ <- withForeignPtr p1FP $ \p1P ->
-             withForeignPtr p2FP $ \p2P ->
-                 withForeignPtr resFP $ \resP ->
-                     binaryOp zeroSP compareSP opsPtr resP p1P p2P
+           withForeignPtr p2FP $ \p2P ->
+             withForeignPtr resFP $ \resP ->
+               withForeignPtr opsFP $ \opsP ->
+                 binaryOp zeroSP compareSP opsP resP p1P p2P
     freeStablePtr compareSP
     where
     compareMutable v1M v2M =
