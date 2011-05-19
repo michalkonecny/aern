@@ -46,7 +46,7 @@ instance
             pM <- unsafeMakeMutable p
             sampleM <- Poly.peekConst pM
             sample <- unsafeReadMutable sampleM 
-            let opsPtr = Poly.newOpsMutableArithUpDn sample effort
+            let opsPtr = Poly.newOpsArithUpDn sample effort
             resM <- cloneMutable sampleM
             polyBoundUpThin opsPtr resM pM
             res <- unsafeReadMutable resM
@@ -57,8 +57,9 @@ instance
             pM <- unsafeMakeMutable p
             sampleM <- Poly.peekConst pM
             sample <- unsafeReadMutable sampleM 
-            let opsPtr = Poly.newOpsMutableArithUpDn sample effort
+            let opsPtr = Poly.newOpsArithUpDn sample effort
             resM <- cloneMutable sampleM
             polyBoundDnThin opsPtr resM pM
             res <- unsafeReadMutable resM
             return $ Just $ res
+            

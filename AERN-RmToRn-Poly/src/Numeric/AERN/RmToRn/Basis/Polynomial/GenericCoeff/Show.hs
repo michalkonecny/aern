@@ -15,7 +15,7 @@
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show 
 (
-    showPolyFPWithVars
+    showPolyWithVars
 )
 where
 
@@ -69,11 +69,11 @@ instance
             do
             pM <- unsafeMakeMutable p
             (Var maxArity) <- peekArity pM
-            pText <- showPolyFPWithVars pM coeffShowIndicator (varNamesArity maxArity)
+            pText <- showPolyWithVars pM coeffShowIndicator (varNamesArity maxArity)
             case showChebyshevTerms of
                 True ->
                     do
-                    tText <- showPolyFPChebTermsWithVars pM coeffShowIndicator (varNamesArity maxArity)
+                    tText <- showPolyChebTermsWithVars pM coeffShowIndicator (varNamesArity maxArity)
                     return $ pText ++ "[" ++ tText ++ "]"
                 False ->
                     return pText
@@ -84,13 +84,13 @@ instance
                 ["x", "y", "z"] 
                 ++ (map (\n -> "v" ++ show n ) [3..(arity - 1)])
         
-showPolyFPWithVars :: 
+showPolyWithVars :: 
     (CanBeMutable cf, ShowInternals cf, Storable cf, ArithUpDn.RoundedReal cf) => 
-    PolyFP cf s -> 
+    PolyMutable cf s -> 
     (ShowInternalsIndicator cf) -> 
     [HVar] -> 
     ST s String
-showPolyFPWithVars pM coeffShowIndicator varNames =
+showPolyWithVars pM coeffShowIndicator varNames =
     do
     errorM <- peekError pM
     errorBound <- unsafeReadMutable errorM
@@ -115,13 +115,13 @@ showPolyFPWithVars pM coeffShowIndicator varNames =
             (hpolyMult (<+>) (<*>))
             (\coeff -> hpolyConst $ Interval coeff coeff)
         
-showPolyFPChebTermsWithVars :: 
+showPolyChebTermsWithVars :: 
     (CanBeMutable cf, ShowInternals cf, Storable cf, ArithUpDn.RoundedReal cf) => 
-    PolyFP cf s -> 
+    PolyMutable cf s -> 
     (ShowInternalsIndicator cf) -> 
     [HVar] -> 
     ST s String
-showPolyFPChebTermsWithVars pM coeffShowIndicator varNames =
+showPolyChebTermsWithVars pM coeffShowIndicator varNames =
     do
     errorM <- peekError pM
     errorBound <- unsafeReadMutable errorM

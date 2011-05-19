@@ -51,6 +51,16 @@ instance
                 Poly.peekSizes pM
         maxSize = fromIntegral maxSize32
         maxDegree = fromIntegral maxDegree32
+    defaultSizes p =
+        (2 + 3 * arity, 3)
+        where
+        Var arity32 =
+            runST $ 
+                do
+                pM <- unsafeMakeMutable p
+                Poly.peekArity pM
+        arity = fromIntegral arity32
+        
 
 instance 
     (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 

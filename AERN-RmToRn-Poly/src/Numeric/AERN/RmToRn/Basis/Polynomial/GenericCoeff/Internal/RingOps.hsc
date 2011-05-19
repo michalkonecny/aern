@@ -4,8 +4,8 @@
 {-# LANGUAGE TypeFamilies #-}
 #include <GenericCoeff/poly.h>
 {-|
-    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.FieldOps
-    Description :  field operations for C polynomials with Haskell coefficients
+    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.RingOps
+    Description :  +,* for C polynomials with Haskell coefficients
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -13,10 +13,10 @@
     Stability   :  experimental
     Portability :  portable
 
-    Field operations for C polynomials with Haskell coefficients.
+    Addition and multiplications for C polynomials with Haskell coefficients.
 -}
 
-module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.FieldOps
+module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.RingOps
 where
 
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly
@@ -49,7 +49,7 @@ foreign import ccall safe "addUpGenCf"
         poly_addUp :: 
             (StablePtr cf) ->
             (StablePtr (ComparisonOp (Mutable cf s))) ->
-            (Ptr (Ops_Mutable s cf)) ->
+            OpsPtr cf ->
             (Ptr (Poly (Mutable cf s))) -> 
             (Ptr (Poly (Mutable cf s))) -> 
             (Ptr (Poly (Mutable cf s))) -> 
@@ -59,7 +59,7 @@ foreign import ccall safe "addDnGenCf"
         poly_addDn :: 
             (StablePtr cf) ->
             (StablePtr (ComparisonOp (Mutable cf s))) ->
-            (Ptr (Ops_Mutable s cf)) ->
+            OpsPtr cf ->
             (Ptr (Poly (Mutable cf s))) -> 
             (Ptr (Poly (Mutable cf s))) -> 
             (Ptr (Poly (Mutable cf s))) -> 
@@ -68,10 +68,10 @@ foreign import ccall safe "addDnGenCf"
 polyAddUp ::
     (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     cf -> 
-    (Ptr (Ops_Mutable s cf)) ->
-    PolyFP cf s ->
-    PolyFP cf s ->
-    PolyFP cf s ->
+    OpsPtr cf ->
+    PolyMutable cf s ->
+    PolyMutable cf s ->
+    PolyMutable cf s ->
     ST s ()
 polyAddUp sample opsPtr = 
     polyBinaryOp poly_addUp sample opsPtr
@@ -79,10 +79,10 @@ polyAddUp sample opsPtr =
 polyAddDn ::
     (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     cf -> 
-    (Ptr (Ops_Mutable s cf)) ->
-    PolyFP cf s ->
-    PolyFP cf s ->
-    PolyFP cf s ->
+    OpsPtr cf ->
+    PolyMutable cf s ->
+    PolyMutable cf s ->
+    PolyMutable cf s ->
     ST s ()
 polyAddDn sample opsPtr = 
     polyBinaryOp poly_addDn sample opsPtr
@@ -92,7 +92,7 @@ polyAddDn sample opsPtr =
 foreign import ccall safe "scaleUpThinGenCf"
         poly_scaleUpThin :: 
             (StablePtr cf) ->
-            (Ptr (Ops_Mutable s cf)) ->
+            OpsPtr cf ->
             (StablePtr (Mutable cf s)) ->
             (Ptr (Poly (Mutable cf s))) -> 
             IO ()
@@ -100,14 +100,14 @@ foreign import ccall safe "scaleUpThinGenCf"
 foreign import ccall safe "scaleDnThinGenCf"
         poly_scaleDnThin :: 
             (StablePtr cf) ->
-            (Ptr (Ops_Mutable s cf)) ->
+            OpsPtr cf ->
             (StablePtr (Mutable cf s)) ->
             (Ptr (Poly (Mutable cf s))) -> 
             IO ()
 
 foreign import ccall safe "scaleEnclGenCf"
         poly_scaleEncl :: 
-            (Ptr (Ops_Mutable s cf)) ->
+            OpsPtr cf ->
             (StablePtr (Mutable cf s)) ->
             (Ptr (Poly (Mutable cf s))) -> 
             IO ()
@@ -115,9 +115,9 @@ foreign import ccall safe "scaleEnclGenCf"
 polyScaleUp ::
     (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     cf -> 
-    (Ptr (Ops_Mutable s cf)) ->
+    OpsPtr cf ->
     cf ->
-    PolyFP cf s ->
+    PolyMutable cf s ->
     ST s ()
 polyScaleUp sample opsPtr = 
     polyScalingOp poly_scaleUpThin sample opsPtr
@@ -125,25 +125,25 @@ polyScaleUp sample opsPtr =
 polyScaleDn ::
     (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
     cf -> 
-    (Ptr (Ops_Mutable s cf)) ->
+    OpsPtr cf ->
     cf ->
-    PolyFP cf s ->
+    PolyMutable cf s ->
     ST s ()
 polyScaleDn sample opsPtr = 
     polyScalingOp poly_scaleDnThin sample opsPtr
 
 polyScaleEncl ::
     (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
-    (Ptr (Ops_Mutable s cf)) ->
+    OpsPtr cf ->
     cf ->
-    PolyFP cf s ->
+    PolyMutable cf s ->
     ST s ()
 polyScaleEncl opsPtr = 
     polyScalingOpNoZero poly_scaleEncl opsPtr
 
 ----------------------------------------------------------------
 
-polyScalingOp scalingOp sample opsPtr scalingFactor (PolyFP pFP) =
+polyScalingOp scalingOp sample opsPtr scalingFactor (PolyMutable pFP) =
     do
     sfM <- unsafeMakeMutable scalingFactor 
     unsafeIOToST $
@@ -156,7 +156,7 @@ polyScalingOp scalingOp sample opsPtr scalingFactor (PolyFP pFP) =
 
 ----------------------------------------------------------------
 
-polyScalingOpNoZero scalingOp opsPtr scalingFactor (PolyFP pFP) =
+polyScalingOpNoZero scalingOp opsPtr scalingFactor (PolyMutable pFP) =
     do
     sfM <- unsafeMakeMutable scalingFactor 
     unsafeIOToST $
@@ -169,7 +169,7 @@ polyScalingOpNoZero scalingOp opsPtr scalingFactor (PolyFP pFP) =
 --------------------------------------------------------------
 
 polyBinaryOp binaryOp sample opsPtr 
-        (PolyFP resFP) (PolyFP p1FP) (PolyFP p2FP) =
+        (PolyMutable resFP) (PolyMutable p1FP) (PolyMutable p2FP) =
     unsafeIOToST $
     do
     zeroSP <- newStablePtr $ head [zero, sample]
