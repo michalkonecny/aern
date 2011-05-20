@@ -143,7 +143,7 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
 
 void
 ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(ComparisonOp compare,
-    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
+    Ops_Mutable * ops, Poly *res, Poly * p1, Poly * p2)
 {
 
   Var arity = res -> maxArity;
@@ -162,7 +162,7 @@ ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(ComparisonOp compare,
   CoeffMutable maxError = res -> errorBound;
 
   // combine the errorBounds from parameter polynomials:
-  CFM_ADD_UP(opsM, maxError, p1 -> errorBound, p2 -> errorBound);
+  CFM_ADD_UP(ops, maxError, p1 -> errorBound, p2 -> errorBound);
 
   if (p1Size + p2Size == 0) // no need to compute any terms
     {
@@ -216,17 +216,17 @@ ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(ComparisonOp compare,
               //                  "addTermsAndReturnMaxErrorMutable: coeff %d: adding terms1[%d] and terms2[%d]\n",
               //                  i, i1, i2);
               // compute sum of the two coefficients and its error bound:
-              CoeffMutable newCfUp = CFM_NEW(opsM, CFM_SAMPLE(opsM));
-              CFM_ADD_UP(opsM, newCfUp, terms1[i1].coeff, terms2[i2].coeff);
-              CoeffMutable newCfDn = CFM_NEW(opsM, CFM_SAMPLE(opsM));
-              CFM_ADD_DN(opsM, newCfDn, terms1[i1].coeff, terms2[i2].coeff);
+              CoeffMutable newCfUp = CFM_NEW(ops, CFM_SAMPLE(ops));
+              CFM_ADD_UP(ops, newCfUp, terms1[i1].coeff, terms2[i2].coeff);
+              CoeffMutable newCfDn = CFM_NEW(ops, CFM_SAMPLE(ops));
+              CFM_ADD_DN(ops, newCfDn, terms1[i1].coeff, terms2[i2].coeff);
               newCoeffs[i].cf = newCfUp;
 
               CoeffMutable newCfMaxError = newCfDn; // reuse the variable
-              CFM_SUB_UP(opsM, newCfMaxError, newCfUp, newCfDn);
+              CFM_SUB_UP(ops, newCfMaxError, newCfUp, newCfDn);
 
               // add the error bound to the accumulated error:
-              CFM_ADD_UP(opsM, maxError, maxError, newCfMaxError);
+              CFM_ADD_UP(ops, maxError, maxError, newCfMaxError);
 
               // free temp variable:
               CFM_FREE(newCfMaxError);
@@ -242,7 +242,7 @@ ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(ComparisonOp compare,
               //              printf(
               //                  "addTermsAndReturnMaxError: coeff %d: copying terms2[%d]\n",
               //                  i, i2);
-              CFM_CLONE(opsM, newCoeffs[i].cf, terms2[i2].coeff);
+              CFM_CLONE(ops, newCoeffs[i].cf, terms2[i2].coeff);
               newCoeffs[i].n1 = -1;
               newCoeffs[i].n2 = i2;
               degree = MONOMIAL_DEGREE(terms2[i2].powers);
@@ -253,7 +253,7 @@ ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(ComparisonOp compare,
               //              printf(
               //                  "addTermsAndReturnMaxError: coeff %d: copying terms1[%d]\n",
               //                  i, i1);
-              CFM_CLONE(opsM, newCoeffs[i].cf, terms1[i1].coeff);
+              CFM_CLONE(ops, newCoeffs[i].cf, terms1[i1].coeff);
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = -1;
               degree = MONOMIAL_DEGREE(terms1[i1].powers);
@@ -270,8 +270,8 @@ ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(ComparisonOp compare,
             {
               // ignore the term by not increasing i
               // instead, add the absolute value of its coefficient to maxError:
-              CFM_ABS_UP(opsM, newCoeffs[i].cf, newCoeffs[i].cf);
-              CFM_ADD_UP(opsM, maxError, maxError, newCoeffs[i].cf);
+              CFM_ABS_UP(ops, newCoeffs[i].cf, newCoeffs[i].cf);
+              CFM_ADD_UP(ops, maxError, maxError, newCoeffs[i].cf);
 
               // and tidy up:
               CFM_FREE(newCoeffs[i].cf);
@@ -291,8 +291,8 @@ ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(ComparisonOp compare,
           // the remaining coeffs' absolute values are added to the constant term:
           for (int j = maxSize; j < i; ++j)
             {
-              CFM_ABS_UP(opsM, newCoeffs[j].cf, newCoeffs[j].cf);
-              CFM_ADD_UP(opsM, maxError, maxError, newCoeffs[j].cf);
+              CFM_ABS_UP(ops, newCoeffs[j].cf, newCoeffs[j].cf);
+              CFM_ADD_UP(ops, maxError, maxError, newCoeffs[j].cf);
               CFM_FREE(newCoeffs[j].cf);
             }
 
@@ -320,59 +320,59 @@ ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(ComparisonOp compare,
 
 void
 ADD_COEFF_CODE(addUpUsingMutableOps)(Coeff zero, ComparisonOp compare,
-    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
+    Ops_Mutable * ops, Poly *res, Poly * p1, Poly * p2)
 {
   //  printf("addUpUsingMutableOps: starting\n");
 
-  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(compare, opsM, res, p1,
+  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(compare, ops, res, p1,
       p2);
   //  printf("performed main addition\n");
 
   // compute the constant term coefficient rounding up:
-  CFM_ADD_UP(opsM, res -> constTerm, p1 -> constTerm, p2 -> constTerm);
+  CFM_ADD_UP(ops, res -> constTerm, p1 -> constTerm, p2 -> constTerm);
   // also add the errorBound to the constant term coefficient:
-  CFM_ADD_UP(opsM, res -> constTerm, res -> constTerm, res -> errorBound);
+  CFM_ADD_UP(ops, res -> constTerm, res -> constTerm, res -> errorBound);
 
-  CFM_ASSIGN_VAL(opsM, res -> errorBound, zero);
+  CFM_ASSIGN_VAL(ops, res -> errorBound, zero);
   //  printf("addUpUsingMutableOps: finished\n");
 }
 
 void
 ADD_COEFF_CODE(addDnUsingMutableOps)(Coeff zero, ComparisonOp compare,
-    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
+    Ops_Mutable * ops, Poly *res, Poly * p1, Poly * p2)
 {
   //  printf("addUpUsingMutableOps: starting\n");
 
-  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(compare, opsM, res, p1,
+  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(compare, ops, res, p1,
       p2);
   //  printf("performed main addition\n");
 
   // compute the constant term coefficient rounding down:
-  CFM_ADD_DN(opsM, res -> constTerm, p1 -> constTerm, p2 -> constTerm);
+  CFM_ADD_DN(ops, res -> constTerm, p1 -> constTerm, p2 -> constTerm);
   // also subtract the errorBound from the constant term coefficient:
-  CFM_SUB_DN(opsM, res -> constTerm, res -> constTerm, res -> errorBound);
+  CFM_SUB_DN(ops, res -> constTerm, res -> constTerm, res -> errorBound);
 
-  CFM_ASSIGN_VAL(opsM, res -> errorBound, zero);
+  CFM_ASSIGN_VAL(ops, res -> errorBound, zero);
   //  printf("addUpUsingMutableOps: finished\n");
 }
 
 void
 ADD_COEFF_CODE(addEnclUsingMutableOps)(ComparisonOp compare,
-    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2)
+    Ops_Mutable * ops, Poly *res, Poly * p1, Poly * p2)
 {
-  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(compare, opsM, res, p1,
+  ADD_COEFF_CODE(addTermsAndErrorBoundsUsingMutableOps)(compare, ops, res, p1,
       p2);
 
   // compute the constant term coefficient rounding up and down:
-  CFM_ADD_UP(opsM, res -> constTerm, p1 -> constTerm, p2 -> constTerm);
+  CFM_ADD_UP(ops, res -> constTerm, p1 -> constTerm, p2 -> constTerm);
 
-  CoeffMutable temp = CFM_NEW(opsM, CFM_SAMPLE(opsM));
-  CFM_ADD_DN(opsM, temp, p1 -> constTerm, p2 -> constTerm);
+  CoeffMutable temp = CFM_NEW(ops, CFM_SAMPLE(ops));
+  CFM_ADD_DN(ops, temp, p1 -> constTerm, p2 -> constTerm);
 
   // get a bound on the rounding error:
-  CFM_SUB_UP(opsM, temp, res -> constTerm, temp);
+  CFM_SUB_UP(ops, temp, res -> constTerm, temp);
 
   // add this to the overall errorBound:
-  CFM_ADD_UP(opsM, res -> errorBound, res -> errorBound, temp);
+  CFM_ADD_UP(ops, res -> errorBound, res -> errorBound, temp);
   CFM_FREE(temp);
 }

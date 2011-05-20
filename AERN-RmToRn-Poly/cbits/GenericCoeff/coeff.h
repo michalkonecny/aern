@@ -20,16 +20,16 @@ typedef void * ComparisonOp;
    // a numerical comparison operator suitable for use in
    // the standard C sort function.
 
-#define CFM_COMPARE(op, d1, d2) (eval_compare_hs(op, d1, d1))
-
 /* References to in-place operations provided by Haskell: */
 typedef struct OPS
 {
-  Coeff sample;
+  Coeff zero;
+  Coeff one;
   NewOpMutable new;
   CloneOpMutable clone;
   UnaryOpMutable assign;
   UnaryOpMutable assignFromPure;
+  ComparisonOp compare;
   UnaryOpMutable negMutable;
   UnaryOpMutable absUpMutable;
   UnaryOpMutable absDnMutable;
@@ -41,31 +41,35 @@ typedef struct OPS
   BinaryOpMutable timesDnMutable;
 } Ops;
 
-#define CFM_SAMPLE(ops) (ops -> sample)
+#define CFM_ZERO(ops) (ops -> zero)
+#define CFM_ONE(ops) (ops -> one)
 #define CFM_NEW(ops,v) (eval_newMutable_hs(ops -> new, v))
-#define CFM_CLONE(ops,rp,sp) ((rp)=eval_cloneMutable_hs(ops -> sample, ops -> clone, sp))
+#define CFM_CLONE(ops,rp,sp) ((rp)=eval_cloneMutable_hs(ops -> zero, ops -> clone, sp))
 #define CFM_ASSIGN(ops,rp,sp) \
-    (eval_assignMutable_hs(ops -> sample, ops -> assign, rp, sp))
+    (eval_assignMutable_hs(ops -> zero, ops -> assign, rp, sp))
 #define CFM_ASSIGN_VAL(ops,rp,v) \
     (eval_assignMutableFromPure_hs(ops -> assignFromPure, rp, v))
+#define CFM_COMPARE(compare, d1, d2) (eval_compare_hs(compare, d1, d1))
+#define CFM_COMPARE_FN(ops) (ops -> compare)
+
 #define CFM_NEG(ops,rp,dp) \
-    (eval_unaryMutable_hs(ops -> sample, ops -> negMutable, rp, dp))
+    (eval_unaryMutable_hs(ops -> zero, ops -> negMutable, rp, dp))
 #define CFM_ABS_UP(ops,rp,dp) \
-    (eval_unaryMutable_hs(ops -> sample, ops -> absUpMutable, rp, dp))
+    (eval_unaryMutable_hs(ops -> zero, ops -> absUpMutable, rp, dp))
 #define CFM_ABS_DN(ops,rp,dp) \
-    (eval_unaryMutable_hs(ops -> sample, ops -> absDnMutable, rp, dp))
+    (eval_unaryMutable_hs(ops -> zero, ops -> absDnMutable, rp, dp))
 #define CFM_ADD_UP(ops,rp,dp1,dp2) \
-    (eval_binaryMutable_hs(ops -> sample, ops -> plusUpMutable, rp, dp1, dp2))
+    (eval_binaryMutable_hs(ops -> zero, ops -> plusUpMutable, rp, dp1, dp2))
 #define CFM_ADD_DN(ops,rp,dp1,dp2) \
-    (eval_binaryMutable_hs(ops -> sample, ops -> plusDnMutable, rp, dp1, dp2))
+    (eval_binaryMutable_hs(ops -> zero, ops -> plusDnMutable, rp, dp1, dp2))
 #define CFM_SUB_UP(ops,rp,dp1,dp2) \
-    (eval_binaryMutable_hs(ops -> sample, ops -> minusUpMutable, rp, dp1, dp2))
+    (eval_binaryMutable_hs(ops -> zero, ops -> minusUpMutable, rp, dp1, dp2))
 #define CFM_SUB_DN(ops,rp,dp1,dp2) \
-    (eval_binaryMutable_hs(ops -> sample, ops -> minusDnMutable, rp, dp1, dp2))
+    (eval_binaryMutable_hs(ops -> zero, ops -> minusDnMutable, rp, dp1, dp2))
 #define CFM_MUL_UP(ops,rp,dp1,dp2) \
-    (eval_binaryMutable_hs(ops -> sample, ops -> timesUpMutable, rp, dp1, dp2))
+    (eval_binaryMutable_hs(ops -> zero, ops -> timesUpMutable, rp, dp1, dp2))
 #define CFM_MUL_DN(ops,rp,dp1,dp2) \
-    (eval_binaryMutable_hs(ops -> sample, ops -> timesDnMutable, rp, dp1, dp2))
+    (eval_binaryMutable_hs(ops -> zero, ops -> timesDnMutable, rp, dp1, dp2))
 
 #define CFM_FREE(dp) (free_SP_hs(dp))
 

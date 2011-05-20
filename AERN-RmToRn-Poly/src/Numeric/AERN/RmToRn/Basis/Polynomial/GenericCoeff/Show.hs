@@ -19,6 +19,7 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show
 )
 where
 
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Coeff
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Evaluate
 import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Symbolic

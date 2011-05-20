@@ -12,9 +12,8 @@
  * ASSUMES: deg <= maxDeg && size <= resMaxSize
  */
 void
-ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops * ops, Var arity,
-    Poly * res, Term * resTerms, Size resPsize, Poly * src, Term * srcTerms,
-    Size curPsize);
+ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops * ops, Var arity, Poly * res,
+    Term * resTerms, Size resPsize, Poly * src, Term * srcTerms, Size curPsize);
 
 /*
  * a part of copyEncl that was split off into this function
@@ -22,10 +21,9 @@ ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops * ops, Var arity,
  *  and their number is SMALL compared to the number of terms that will be kept)
  */
 void
-ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
-    ComparisonOp compare, Ops * ops, Var arity, Size curPsize,
-    Size resPsize, Size resMaxSize, Term * srcTerms, Term * resTerms,
-    CoeffMutable errorBound);
+ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(Ops * ops, Var arity,
+    Size curPsize, Size resPsize, Size resMaxSize, Term * srcTerms,
+    Term * resTerms, CoeffMutable errorBound);
 
 /*
  * a part of copyEncl that was split off into this function
@@ -33,10 +31,9 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
  *  and their number is LARGE compared to the number of terms that will be kept)
  */
 void
-ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
-    ComparisonOp compare, Ops * ops, Var arity, Size curPsize,
-    Size resPsize, int reductionsNeeded, Term * srcTerms, Term * resTerms,
-    CoeffMutable errorBound);
+ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(Ops * ops, Var arity,
+    Size curPsize, Size resPsize, int reductionsNeeded, Term * srcTerms,
+    Term * resTerms, CoeffMutable errorBound);
 
 /*
  * ASSUMES: maxArity, maxSize as well as maxDeg of src and res are the same
@@ -69,8 +66,7 @@ ADD_COEFF_CODE(copySameSizes)(Ops * ops, Poly * res, Poly * src)
  * INVARIANT : does not change maxDeg and maxSize of res
  */
 void
-ADD_COEFF_CODE(copyEncl)(ComparisonOp compare,
-    Ops * ops, Poly * res, Poly * src)
+ADD_COEFF_CODE(copyEncl)(Ops * ops, Poly * res, Poly * src)
 {
   //  printf("copyEncl: entry\n");
 
@@ -100,10 +96,10 @@ ADD_COEFF_CODE(copyEncl)(ComparisonOp compare,
     }
   else // some reduction will be needed
     {
-      CoeffMutable errorBound = CFM_NEW(ops, CFM_SAMPLE(ops)); // error accumulator
+      CoeffMutable errorBound = CFM_NEW(ops, CFM_ZERO(ops)); // error accumulator
       CFM_ASSIGN(ops, errorBound, src -> errorBound);
 
-      CoeffMutable absError = CFM_NEW(ops, CFM_SAMPLE(ops)); // reduction error
+      CoeffMutable absError = CFM_NEW(ops, CFM_ZERO(ops)); // reduction error
       int curLastTermIndex = srcPsize - 1; // index of current last term in src
       //    printf("copyEncl: curLastTermIndex=%d\n", curLastTermIndex);
       while (curDeg > resMaxDeg) // degree reduce i.e. truncate last term?
@@ -134,15 +130,15 @@ ADD_COEFF_CODE(copyEncl)(ComparisonOp compare,
         {
           if (reductionsNeeded >= resMaxSize) // keep copied i.e. large terms in tree
             {
-              ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
-                  compare, ops, srcArity, curPsize, resPsize, resMaxSize,
-                  srcTerms, resTerms, errorBound);
+              ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(ops,
+                  srcArity, curPsize, resPsize, resMaxSize, srcTerms, resTerms,
+                  errorBound);
             }
           else // keep reduced i.e. small terms in tree
             {
-              ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
-                  compare, ops, srcArity, curPsize, resPsize, reductionsNeeded,
-                  srcTerms, resTerms, errorBound);
+              ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(ops,
+                  srcArity, curPsize, resPsize, reductionsNeeded, srcTerms,
+                  resTerms, errorBound);
             }
           res -> psize = resMaxSize;
         }
@@ -154,30 +150,27 @@ ADD_COEFF_CODE(copyEncl)(ComparisonOp compare,
  * quick and dirty version using copyEncl.. to be revisited to save errorBound and constCoeff copying
  */
 void
-ADD_COEFF_CODE(copyUpThin)(ComparisonOp compare, Coeff zero,
-    Ops * ops, Poly * res, Poly * src)
+ADD_COEFF_CODE(copyUpThin)(Ops * ops, Poly * res, Poly * src)
 {
-  ADD_COEFF_CODE(copyEncl)(compare, ops, res, src); // copy src into res
+  ADD_COEFF_CODE(copyEncl)(ops, res, src); // copy src into res
   CFM_ADD_UP(ops, res -> constTerm, res -> constTerm, res -> errorBound); // account for errorBound
-  CFM_ASSIGN_VAL(ops, res -> errorBound, zero); // collapse errorBound
+  CFM_ASSIGN_VAL(ops, res -> errorBound, CFM_ZERO(ops)); // collapse errorBound
 }
 
 /*
  * quick and dirty version using copyEncl.. to be revisited to save errorBound and constCoeff copying
  */
 void
-ADD_COEFF_CODE(copyDnThin)(ComparisonOp compare, Coeff zero,
-    Ops * ops, Poly * res, Poly * src)
+ADD_COEFF_CODE(copyDnThin)(Ops * ops, Poly * res, Poly * src)
 {
-  ADD_COEFF_CODE(copyEncl)(compare, ops, res, src); // copy src into res
+  ADD_COEFF_CODE(copyEncl)(ops, res, src); // copy src into res
   CFM_SUB_DN(ops, res -> constTerm, res -> constTerm, res -> errorBound); // account for errorBound
-  CFM_ASSIGN_VAL(ops, res -> errorBound, zero); // collapse errorBound
+  CFM_ASSIGN_VAL(ops, res -> errorBound, CFM_ZERO(ops)); // collapse errorBound
 }
 
 void
-ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops * ops, Var arity,
-    Poly * res, Term * resTerms, Size resPsize, Poly * src, Term * srcTerms,
-    Size curPsize)
+ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops * ops, Var arity, Poly * res,
+    Term * resTerms, Size resPsize, Poly * src, Term * srcTerms, Size curPsize)
 {
   //  printf("copyTerms: entry\n");
   int i = 0; // save allocating and initialising one int by using two whiles
@@ -185,7 +178,7 @@ ADD_COEFF_CODE(copyTermsWithoutReduction)(Ops * ops, Var arity,
     {
       if (resPsize <= i) // ith coefficient in res points to null?
         {
-          resTerms[i].coeff = CFM_NEW(ops, CFM_SAMPLE(ops)); // new it up
+          resTerms[i].coeff = CFM_NEW(ops, CFM_ZERO(ops)); // new it up
         }
       CFM_ASSIGN(ops, resTerms[i].coeff, srcTerms[i].coeff); // copy the coefficient
       //    printf("copyTerms: copied coeff\n");
@@ -220,10 +213,9 @@ compareFor234(CoeffFor234 * dp1, CoeffFor234 * dp2)
 }
 
 void
-ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
-    ComparisonOp compare, Ops * ops, Var arity, Size curPsize,
-    Size resPsize, Size resMaxSize, Term * srcTerms, Term * resTerms,
-    CoeffMutable errorBound)
+ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(Ops * ops, Var arity,
+    Size curPsize, Size resPsize, Size resMaxSize, Term * srcTerms,
+    Term * resTerms, CoeffMutable errorBound)
 {
   bool * reducedTerms = calloc(curPsize, sizeof(bool)); // set reduced terms to true, all initialised as false
   int termIndex = 0;
@@ -239,10 +231,10 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
   while (termIndex < fullTreeSize) // fill tree with fullTreeSize elements
     {
       CoeffFor234 * c = malloc(sizeof(CoeffFor234));
-      c -> coeff = CFM_NEW(ops, CFM_SAMPLE(ops));
+      c -> coeff = CFM_NEW(ops, CFM_ZERO(ops));
       CFM_ABS_UP(ops, c -> coeff, srcTerms[termIndex].coeff);
       c -> index = termIndex;
-      c -> compare = compare;
+      c -> compare = CFM_COMPARE_FN(ops);
       add234(tree, c);
       //          printf("copyEncl: added element\n");
       //          printf("copyEncl: %d elements in tree\n", count234(tree));
@@ -255,10 +247,10 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
   while (termIndex < curPsize) // push an element and pop the smallest
     {
       CoeffFor234 * c = malloc(sizeof(CoeffFor234)); // allocate an element
-      c -> coeff = CFM_NEW(ops, CFM_SAMPLE(ops));
+      c -> coeff = CFM_NEW(ops, CFM_ZERO(ops));
       CFM_ABS_UP(ops, c -> coeff, srcTerms[termIndex].coeff);
       c -> index = termIndex;
-      c -> compare = compare;
+      c -> compare = CFM_COMPARE_FN(ops);
       add234(tree, c); // add the element
       //          printf("copyEncl: added element\n");
       //          printf("copyEncl: %d elements in tree\n", count234(tree));
@@ -301,7 +293,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
         {
           if (resPsize <= resIndex) // coefficient to be written in res not allocated?
             {
-              resTerms[resIndex].coeff = CFM_NEW(ops, CFM_SAMPLE(ops)); // new it up
+              resTerms[resIndex].coeff = CFM_NEW(ops, CFM_ZERO(ops)); // new it up
             }
           CFM_ASSIGN(ops, resTerms[resIndex].coeff, srcTerms[srcIndex].coeff); // copy the coefficient
           //    printf("copyTerms: copied coeff\n");
@@ -318,10 +310,9 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(
 }
 
 void
-ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
-    ComparisonOp compare, Ops * ops, Var arity, Size curPsize,
-    Size resPsize, int reductionsNeeded, Term * srcTerms, Term * resTerms,
-    CoeffMutable errorBound)
+ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(Ops * ops, Var arity,
+    Size curPsize, Size resPsize, int reductionsNeeded, Term * srcTerms,
+    Term * resTerms, CoeffMutable errorBound)
 {
   bool * reducedTerms = calloc(curPsize, sizeof(bool)); // set reduced terms to true, all initialised as false
   int termIndex = 0;
@@ -337,10 +328,10 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
   while (termIndex < fullTreeSize) // fill tree with treeSize elements
     {
       CoeffFor234 * c = malloc(sizeof(CoeffFor234));
-      c -> coeff = CFM_NEW(ops, CFM_SAMPLE(ops));
+      c -> coeff = CFM_NEW(ops, CFM_ZERO(ops));
       CFM_ABS_UP(ops, c -> coeff, srcTerms[termIndex].coeff);
       c -> index = termIndex;
-      c -> compare = compare;
+      c -> compare = CFM_COMPARE_FN(ops);
       add234(tree, c);
       //          printf("copyEncl: added element\n");
       //          printf("copyEncl: %d elements in tree\n", count234(tree));
@@ -354,10 +345,10 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
   while (termIndex < curPsize) // push an element and pop the largest
     {
       CoeffFor234 * c = malloc(sizeof(CoeffFor234)); // allocate an element
-      c -> coeff = CFM_NEW(ops, CFM_SAMPLE(ops));
+      c -> coeff = CFM_NEW(ops, CFM_ZERO(ops));
       CFM_ABS_UP(ops, c -> coeff, srcTerms[termIndex].coeff);
       c -> index = termIndex;
-      c -> compare = compare;
+      c -> compare = CFM_COMPARE_FN(ops);
       add234(tree, c); // add the element
       //          printf("copyEncl: added element\n");
       //          printf("copyEncl: %d elements in tree\n", count234(tree));
@@ -400,7 +391,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
         {
           if (resPsize <= resIndex) // coefficient to be written in res not allocated?
             {
-              resTerms[resIndex].coeff = CFM_NEW(ops, CFM_SAMPLE(ops)); // new it up
+              resTerms[resIndex].coeff = CFM_NEW(ops, CFM_ZERO(ops)); // new it up
             }
           CFM_ASSIGN(ops, resTerms[resIndex].coeff, srcTerms[srcIndex].coeff); // copy the coefficient
           //    printf("copyTerms: copied coeff\n");
@@ -423,8 +414,8 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(
 //  Term * terms = p -> terms;
 //  Size oldSize = p -> psize;
 //  Size lastTermIndex = oldSize - 1; // track last term for swapping
-//  CoeffMutable maxError = CFM_NEW(ops, CFM_SAMPLE(ops));
-//  CoeffMutable errorBound = CFM_NEW(ops, CFM_SAMPLE(ops));
+//  CoeffMutable maxError = CFM_NEW(ops, CFM_ZERO(ops));
+//  CoeffMutable errorBound = CFM_NEW(ops, CFM_ZERO(ops));
 //  for (int i = 0; i <= lastTermIndex; i++)
 //    {
 //      if (MONOMIAL_DEGREE(terms[i].powers) > maxDeg && lastTermIndex > 0) // reduce term?

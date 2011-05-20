@@ -14,7 +14,7 @@ ADD_COEFF_CODE(sumUpAbsCoeffs)(Ops * ops, CoeffMutable res, Poly * p)
   Term * terms = p -> terms;
   Size pSize = p -> psize;
 
-  CoeffMutable temp = CFM_NEW(ops, ops -> sample);
+  CoeffMutable temp = CFM_NEW(ops, CFM_ZERO(ops));
 
   int i = 0;
   while (i < pSize)

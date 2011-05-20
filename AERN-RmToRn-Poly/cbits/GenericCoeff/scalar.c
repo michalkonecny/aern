@@ -15,9 +15,9 @@ ADD_COEFF_CODE(scaleTerms)(Ops * ops, CoeffMutable c, Poly * p)
   if (pSize > 0) // any terms to scale?
   {
     Term * terms = p -> terms;
-    CoeffMutable coeffScaledDn = CFM_NEW(ops, CFM_SAMPLE(ops));
-    CoeffMutable maxError = CFM_NEW(ops, CFM_SAMPLE(ops));
-    CoeffMutable errorBound = CFM_NEW(ops, CFM_SAMPLE(ops));
+    CoeffMutable coeffScaledDn = CFM_NEW(ops, CFM_ZERO(ops));
+    CoeffMutable maxError = CFM_NEW(ops, CFM_ZERO(ops));
+    CoeffMutable errorBound = CFM_NEW(ops, CFM_ZERO(ops));
     for (int i = 0; i < pSize; i++)
     {
       CFM_MUL_DN(ops, coeffScaledDn, c, terms[i].coeff);
@@ -34,35 +34,35 @@ ADD_COEFF_CODE(scaleTerms)(Ops * ops, CoeffMutable c, Poly * p)
 }
 
 void
-ADD_COEFF_CODE(scaleUpThin)(Coeff zero, Ops * ops, CoeffMutable c, Poly * p)
+ADD_COEFF_CODE(scaleUpThin)(Ops * ops, CoeffMutable c, Poly * p)
 {
   ADD_COEFF_CODE(scaleTerms)(ops, c, p); // scale non-constant terms
-  CoeffMutable constTerm = CFM_NEW(ops, CFM_SAMPLE(ops));
+  CoeffMutable constTerm = CFM_NEW(ops, CFM_ZERO(ops));
   CFM_MUL_UP(ops, constTerm, c, p -> constTerm); // scale constTerm up
   CFM_ADD_UP(ops, p -> constTerm, constTerm, p -> errorBound); // account for errorBound
   CFM_FREE(constTerm);
-  CFM_ASSIGN_VAL(ops, p -> errorBound, zero); // collapse errorBound
+  CFM_ASSIGN_VAL(ops, p -> errorBound, CFM_ZERO(ops)); // collapse errorBound
 }
 
 void
-ADD_COEFF_CODE(scaleDnThin)(Coeff zero, Ops * ops, CoeffMutable c, Poly * p)
+ADD_COEFF_CODE(scaleDnThin)(Ops * ops, CoeffMutable c, Poly * p)
 {
   ADD_COEFF_CODE(scaleTerms)(ops, c, p); // scale non-constant terms
-  CoeffMutable constTerm = CFM_NEW(ops, CFM_SAMPLE(ops));
+  CoeffMutable constTerm = CFM_NEW(ops, CFM_ZERO(ops));
   CFM_MUL_DN(ops, constTerm, c, p -> constTerm); // scale constTerm down
   CFM_SUB_DN(ops, p -> constTerm, constTerm, p -> errorBound); // account for errorBound
   CFM_FREE(constTerm);
-  CFM_ASSIGN_VAL(ops, p -> errorBound, zero); // collapse errorBound
+  CFM_ASSIGN_VAL(ops, p -> errorBound, CFM_ZERO(ops)); // collapse errorBound
 }
 
 void
 ADD_COEFF_CODE(scaleEncl)(Ops * ops, CoeffMutable c, Poly * p)
 {
   ADD_COEFF_CODE(scaleTerms)(ops, c, p); // scale non-constant terms
-  CoeffMutable oldConstTerm = CFM_NEW(ops, CFM_SAMPLE(ops));
-  CoeffMutable constTermScaledUp = CFM_NEW(ops, CFM_SAMPLE(ops));
-  CoeffMutable constTermScaledDn = CFM_NEW(ops, CFM_SAMPLE(ops));
-  CoeffMutable maxError = CFM_NEW(ops, CFM_SAMPLE(ops));
+  CoeffMutable oldConstTerm = CFM_NEW(ops, CFM_ZERO(ops));
+  CoeffMutable constTermScaledUp = CFM_NEW(ops, CFM_ZERO(ops));
+  CoeffMutable constTermScaledDn = CFM_NEW(ops, CFM_ZERO(ops));
+  CoeffMutable maxError = CFM_NEW(ops, CFM_ZERO(ops));
   CFM_ASSIGN(ops, oldConstTerm, p -> constTerm); // fetch constTerm value
   CFM_MUL_UP(ops, constTermScaledUp, c, oldConstTerm); // scale constTerm
   CFM_MUL_DN(ops, constTermScaledDn, c, oldConstTerm);

@@ -14,6 +14,7 @@
 module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff 
 (
     -- TODO: export only PolyPure and PolyFP as abstract data types
+    module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Coeff,
     module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly,
     module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.RingOps,
     module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Evaluate,
@@ -21,6 +22,7 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff
 )
 where
 
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Coeff
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.RingOps
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Evaluate

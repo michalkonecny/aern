@@ -69,7 +69,10 @@ foreign export ccall eval_convertFromDouble_hs ::
 -}
 {-# INLINE eval_compare_hs #-}
 eval_compare_hs :: 
-        (StablePtr (ComparisonOp val)) -> (StablePtr val) -> (StablePtr val) -> IO CInt 
+    (StablePtr (val -> val -> Maybe PartialOrdering)) -> 
+    (StablePtr val) -> 
+    (StablePtr val) -> 
+    IO CInt 
 eval_compare_hs compSP v1SP v2SP =
     do
     comp <- deRefStablePtr compSP
@@ -87,7 +90,10 @@ eval_compare_hs compSP v1SP v2SP =
        -- this is OK when this is used for ordering polynomial coefficients
 
 foreign export ccall eval_compare_hs :: 
-        (StablePtr (ComparisonOp val)) -> (StablePtr val) -> (StablePtr val) -> IO CInt 
+    (StablePtr (val -> val -> Maybe PartialOrdering)) -> 
+    (StablePtr val) -> 
+    (StablePtr val) -> 
+    IO CInt 
         
 {-|
    Allow C programs to use a Haskell unary operator that has been

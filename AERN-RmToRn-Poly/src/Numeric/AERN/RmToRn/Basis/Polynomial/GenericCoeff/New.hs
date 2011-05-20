@@ -20,7 +20,8 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Domain()
 import Numeric.AERN.RmToRn.New
 import qualified Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly as Poly
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly (Poly)
-import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Coeff 
+    (OpsFP,opsFPArithUpDnDefaultEffort)
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
@@ -41,19 +42,19 @@ instance
     HasSizeLimits (Poly cf)
     where
     type SizeLimits (Poly cf) = 
-        (Poly.OpsFP cf, Int, Int) -- maxSize, maxDegree
+        (OpsFP cf, Int, Int) -- maxSize, maxDegree
     getSizeLimits p@(Poly.Poly opsFP _) = 
         (opsFP, maxSize, maxDegree)
         where
-        (_, Size maxSize32, Power maxDegree32) = Poly.peekSizes p
+        (_, Poly.Size maxSize32, Poly.Power maxDegree32) = Poly.peekSizes p
         maxSize = fromIntegral maxSize32
         maxDegree = fromIntegral maxDegree32
     defaultSizes p =
         (opsFP, 2 + 3 * arity, 3)
         where
-        Var arity32 = Poly.peekArity p
+        Poly.Var arity32 = Poly.peekArity p
         arity = fromIntegral arity32
-        opsFP = Poly.opsFPArithUpDnDefaultEffort (Poly.peekConst p)
+        opsFP = opsFPArithUpDnDefaultEffort (Poly.peekConst p)
         
 
 instance 
