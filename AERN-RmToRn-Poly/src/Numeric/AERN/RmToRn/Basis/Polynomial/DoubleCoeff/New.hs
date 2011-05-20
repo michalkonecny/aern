@@ -40,7 +40,7 @@ instance HasSizeLimits PolyFP
 
 instance HasProjections PolyFP
     where
-    newProjection _ (maxSize, maxDegree) domainBox var =
+    newProjection (maxSize, maxDegree) domainBox var =
         Poly.projectionPoly 
             (Poly.Var $ fromIntegral var)
             (Poly.Var $ fromIntegral arity)
@@ -59,7 +59,7 @@ instance HasProjections PolyFP
 
 instance HasConstFns PolyFP
     where
-    newConstFn _ (maxSize, maxDegree) domainBox value =
+    newConstFn (maxSize, maxDegree) domainBox value =
         Poly.constPoly 
             value
             0 -- radius. ie errorBound

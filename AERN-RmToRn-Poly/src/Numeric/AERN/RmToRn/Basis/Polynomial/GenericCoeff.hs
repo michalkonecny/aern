@@ -29,5 +29,6 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Domain()
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.New()
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Conversion()
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Evaluation()
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.RingOps()
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show
 

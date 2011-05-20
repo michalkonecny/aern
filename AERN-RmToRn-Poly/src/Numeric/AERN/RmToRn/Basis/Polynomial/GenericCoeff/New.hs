@@ -61,7 +61,7 @@ instance
     => 
     HasProjections (Poly cf)
     where
-    newProjection _ (opsFP, maxSize, maxDegree) domainBox var =
+    newProjection (opsFP, maxSize, maxDegree) domainBox var =
         Poly.projectionPoly
             opsFP 
             (Poly.Var $ fromIntegral arity)
@@ -84,7 +84,7 @@ instance
     =>
     HasConstFns (Poly cf)
     where
-    newConstFn _ (opsFP, maxSize, maxDegree) domainBox value =
+    newConstFn (opsFP, maxSize, maxDegree) domainBox value =
         Poly.constPoly
             opsFP 
             (Poly.Var $ fromIntegral arity)

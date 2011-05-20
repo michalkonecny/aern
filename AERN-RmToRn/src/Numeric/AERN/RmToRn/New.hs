@@ -16,6 +16,9 @@ module Numeric.AERN.RmToRn.New where
 
 import Numeric.AERN.RmToRn.Domain
 
+import Numeric.AERN.Basics.Mutable
+import Control.Monad.ST (ST)
+
 class HasSizeLimits f where
     type SizeLimits f
     getSizeLimits :: f -> SizeLimits f
@@ -24,7 +27,6 @@ class HasSizeLimits f where
 
 class (HasDomainBox f, HasSizeLimits f) => HasProjections f where
     newProjection :: 
-        Maybe f {-^ dummy parameter that aids typechecking -} ->
         (SizeLimits f) {-^ limits of the new function -} -> 
         (DomainBox f) {-^ the domain @box@ of the function -} -> 
         (Var f) {-^ the variable @x@ being projected -} -> 
@@ -32,9 +34,9 @@ class (HasDomainBox f, HasSizeLimits f) => HasProjections f where
 
 class (HasDomainBox f, HasSizeLimits f) => HasConstFns f where
     newConstFn :: 
-        Maybe f {-^ dummy parameter that aids typechecking -} ->
         (SizeLimits f) {-^ limits of the new function -} -> 
         (DomainBox f) {-^ the domain @box@ of the function -} -> 
         (Domain f) {-^ the value @v@ of the constant function -} -> 
         f {-^ @ \box -> v @ -}
+
         
