@@ -66,14 +66,14 @@ testMutableGCPolys =
         let mkConst c = GCPoly.constPolyM opsFP (Var 3) (Size 10) (Power 3) (c::Double) 0
         let mkConstConst c = GCPoly.constPolyM opsFP (Var 3) (Size 1) (Power 3) (c::Double) 0
         let mkVar n = GCPoly.projectionPolyM opsFP (Var 3) (Size 10) (Power 3) (Var n)
-        let addUp = GCPoly.polyAddUp sampleD
-        let scaleUpThin c = GCPoly.polyScaleUp 0 (c::Double) 
-        let scaleDnThin c = GCPoly.polyScaleDn 0 (c::Double) 
+        let addUp = GCPoly.polyAddUp
+        let scaleUpThin c = GCPoly.polyScaleUp (c::Double) 
+        let scaleDnThin c = GCPoly.polyScaleDn (c::Double) 
         let scaleEncl c = GCPoly.polyScaleEncl (c::Double) 
 --        let reduceDegree d = GCPoly.polyReduceDegreeEnclMutable (Power d) 
         let copyEncl = GCPoly.polyCopyEncl
-        let copyUpThin = GCPoly.polyCopyUpThin 0
-        let copyDnThin = GCPoly.polyCopyDnThin 0
+        let copyUpThin = GCPoly.polyCopyUpThin
+        let copyDnThin = GCPoly.polyCopyDnThin
         
         p1M <- mkConst 0
         p2M <- mkVar 0 -- "x"

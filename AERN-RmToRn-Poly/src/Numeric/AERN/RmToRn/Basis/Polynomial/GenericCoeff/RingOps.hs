@@ -22,9 +22,11 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.RingOps
 where
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
 import qualified Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly as Poly
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly (Poly)
+-- import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Coeffs
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.RingOps
 
 import Numeric.AERN.Basics.Mutable
@@ -44,16 +46,23 @@ instance
     =>
     ArithUpDn.RoundedAddInPlace (Poly cf)
     where
-    addUpInPlaceEff _ resM p1M p2M
-        =
-        do
-        sampleM <- Poly.peekConstM p1M
-        sample <- unsafeReadMutable sampleM
-        polyAddUp sample resM p1M p2M 
-    addDnInPlaceEff _ resM p1M p2M 
-        =
-        do
-        sampleM <- Poly.peekConstM p1M
-        sample <- unsafeReadMutable sampleM
-        polyAddDn sample resM p1M p2M 
+    addUpInPlaceEff _ = polyAddUp 
+    addDnInPlaceEff _ = polyAddDn 
+
+instance
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
+    =>
+    ArithInOut.RoundedAddEffort (Poly cf) 
+    where
+    type ArithInOut.AddEffortIndicator (Poly cf) = () 
+    addDefaultEffort p = ()
+
+instance 
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
+    =>
+    ArithInOut.RoundedAddInPlace (Poly cf)
+    where
+    addOutInPlaceEff _ = polyAddEncl 
+    addInInPlaceEff =
+        error "attempting an inwards rounded addition for Poly cf, which is not supported" 
             

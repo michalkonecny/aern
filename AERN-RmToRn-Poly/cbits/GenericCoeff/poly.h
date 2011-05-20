@@ -119,16 +119,13 @@ ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity);
  */
 
 void
-ADD_COEFF_CODE(addUp)(Coeff zero, ComparisonOp compare,
-    Ops * opsM, Poly *res, Poly * p1, Poly * p2);
+ADD_COEFF_CODE(addUp)(Ops * ops, Poly *res, Poly * p1, Poly * p2);
 
 void
-ADD_COEFF_CODE(addDn)(Coeff zero, ComparisonOp compare,
-    Ops * opsM, Poly *res, Poly * p1, Poly * p2);
+ADD_COEFF_CODE(addDn)(Ops * ops, Poly *res, Poly * p1, Poly * p2);
 
 void
-ADD_COEFF_CODE(addEncl)(ComparisonOp compare,
-    Ops * opsM, Poly *res, Poly * p1, Poly * p2);
+ADD_COEFF_CODE(addEncl)(Ops * ops, Poly *res, Poly * p1, Poly * p2);
 
 //void
 //testAssign(Coeff sample, UnaryOpMutable assign, CoeffMutable to,
@@ -186,38 +183,31 @@ void
 ADD_COEFF_CODE(boundDn)(Ops * ops, CoeffMutable res, Poly * p);
 
 void
-ADD_COEFF_CODE(scaleUpThin)(Coeff zero, Ops * ops,
-    CoeffMutable c, Poly * p);
+ADD_COEFF_CODE(scaleUpThin)(Ops * ops, CoeffMutable c, Poly * p);
 
 void
-ADD_COEFF_CODE(scaleDnThin)(Coeff zero, Ops * ops,
-    CoeffMutable c, Poly * p);
+ADD_COEFF_CODE(scaleDnThin)(Ops * ops, CoeffMutable c, Poly * p);
 
 void
-ADD_COEFF_CODE(scaleEncl)(Ops * ops, CoeffMutable c,
-    Poly * p);
+ADD_COEFF_CODE(scaleEncl)(Ops * ops, CoeffMutable c, Poly * p);
 
 /*
  * Reduce maxDegree of p in place, collapsing higher degree terms into errorTerm
  */
 void
-ADD_COEFF_CODE(reduceDegreeEncl)(Ops * ops,
-    Power maxDeg, Poly * p);
+ADD_COEFF_CODE(reduceDegreeEncl)(Ops * ops, Power maxDeg, Poly * p);
 
 void
 ADD_COEFF_CODE(copySameSizes)(Ops * ops, Poly * res, Poly * src);
 
 void
-ADD_COEFF_CODE(copyEncl)(ComparisonOp compare,
-    Ops * ops, Poly * res, Poly * src);
+ADD_COEFF_CODE(copyEncl)(Ops * ops, Poly * res, Poly * src);
 
 void
-ADD_COEFF_CODE(copyUpThin)(ComparisonOp compare, Coeff zero,
-    Ops * ops, Poly * res, Poly * src);
+ADD_COEFF_CODE(copyUpThin)(Ops * ops, Poly * res, Poly * src);
 
 void
-ADD_COEFF_CODE(copyDnThin)(ComparisonOp compare, Coeff zero,
-    Ops * ops, Poly * res, Poly * src);
+ADD_COEFF_CODE(copyDnThin)(Ops * ops, Poly * res, Poly * src);
 
 //void
 //ADD_COEFF_CODE(reduceDegreeEnclUsingPureOps)(Ops_Pure * ops, Power maxDeg, Poly * p);

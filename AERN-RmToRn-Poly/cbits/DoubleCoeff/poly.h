@@ -112,15 +112,15 @@ ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity);
 
 void
 ADD_COEFF_CODE(addUpUsingMutableOps)(Coeff zero, ComparisonOp compare,
-    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
+    Ops_Mutable * ops, Poly *res, Poly * p1, Poly * p2);
 
 void
 ADD_COEFF_CODE(addDnUsingMutableOps)(Coeff zero, ComparisonOp compare,
-    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
+    Ops_Mutable * ops, Poly *res, Poly * p1, Poly * p2);
 
 void
 ADD_COEFF_CODE(addEnclUsingMutableOps)(ComparisonOp compare,
-    Ops_Mutable * opsM, Poly *res, Poly * p1, Poly * p2);
+    Ops_Mutable * ops, Poly *res, Poly * p1, Poly * p2);
 
 typedef void * Value; // A Haskell value passed via StablePtr
 
