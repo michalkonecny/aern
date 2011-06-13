@@ -36,7 +36,7 @@ import qualified Data.Number.MPFR.Mutable as MM
 
 instance RoundedAddEffort MPFR where
     type AddEffortIndicator MPFR = M.Precision 
-    addDefaultEffort _ = 100
+    addDefaultEffort = M.getPrec
 
 instance RoundedAdd MPFR where
     addUpEff prec d1 d2 = 
@@ -58,7 +58,7 @@ instance RoundedAbs MPFR where
 
 instance RoundedMultiplyEffort MPFR where
     type MultEffortIndicator MPFR = M.Precision 
-    multDefaultEffort _ = 100
+    multDefaultEffort = M.getPrec
 
 instance RoundedMultiply MPFR where
     multUpEff prec d1 d2 = 
@@ -81,7 +81,7 @@ instance RoundedMultiply MPFR where
 
 instance RoundedPowerNonnegToNonnegIntEffort MPFR where
     type PowerNonnegToNonnegIntEffortIndicator MPFR = M.Precision
-    powerNonnegToNonnegIntDefaultEffort _ = 100
+    powerNonnegToNonnegIntDefaultEffort = M.getPrec
 
 instance RoundedPowerNonnegToNonnegInt MPFR where
     powerNonnegToNonnegIntUpEff prec x n =
@@ -91,7 +91,7 @@ instance RoundedPowerNonnegToNonnegInt MPFR where
 
 instance RoundedPowerToNonnegIntEffort MPFR where
     type PowerToNonnegIntEffortIndicator MPFR = M.Precision 
-    powerToNonnegIntDefaultEffort _ = 100 
+    powerToNonnegIntDefaultEffort = M.getPrec 
 
 instance RoundedPowerToNonnegInt MPFR where
     powerToNonnegIntUpEff prec x n =
@@ -101,7 +101,7 @@ instance RoundedPowerToNonnegInt MPFR where
 
 instance RoundedDivideEffort MPFR where
     type DivEffortIndicator MPFR = M.Precision 
-    divDefaultEffort _ = 100
+    divDefaultEffort = M.getPrec
 
 instance RoundedDivide MPFR where
     divUpEff prec d1 d2 = 
@@ -114,7 +114,7 @@ instance RoundedDivide MPFR where
 instance RoundedRingEffort MPFR
     where
     type RingOpsEffortIndicator MPFR = M.Precision
-    ringOpsDefaultEffort _ = 100
+    ringOpsDefaultEffort = M.getPrec
     ringEffortAdd _ = id
     ringEffortMult _ = id
     ringEffortPow _ = id
@@ -124,7 +124,7 @@ instance RoundedRing MPFR
 instance RoundedFieldEffort MPFR
     where
     type FieldOpsEffortIndicator MPFR = M.Precision
-    fieldOpsDefaultEffort _ = 100
+    fieldOpsDefaultEffort = M.getPrec
     fldEffortAdd _ = id
     fldEffortMult _ = id
     fldEffortPow _ = id

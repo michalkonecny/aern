@@ -26,7 +26,7 @@ import Data.Number.MPFR.Instances.Up ()
 
 instance RoundedExponentiationEffort MPFR where
     type ExpEffortIndicator MPFR = M.Precision 
-    expDefaultEffort _ = 100
+    expDefaultEffort = M.getPrec
 
 instance RoundedExponentiation MPFR where
     expUpEff prec d1 = 
@@ -36,7 +36,7 @@ instance RoundedExponentiation MPFR where
 
 instance RoundedSquareRootEffort MPFR where
     type SqrtEffortIndicator MPFR = M.Precision 
-    sqrtDefaultEffort _ = 100
+    sqrtDefaultEffort = M.getPrec
 
 instance RoundedSquareRoot MPFR where
     sqrtUpEff prec d1 = 
