@@ -100,8 +100,8 @@ instance
     fromInteger n = 
         result
         where
-        result =
-            ArithInOut.convertOutEff (ArithInOut.convertDefaultEffort n result) n
+        result@(Interval l r) =
+            ArithInOut.convertOutEff (ArithUpDn.convertDefaultEffort n l) n
     signum a =
         error $ "signum not implemented for Interval"
 
@@ -120,8 +120,8 @@ instance
     fromRational r = 
         result
         where
-        result =
-            ArithInOut.convertOutEff (ArithInOut.convertDefaultEffort r result) r
+        result@(Interval l _) =
+            ArithInOut.convertOutEff (ArithUpDn.convertDefaultEffort r l) r
 
 instance
     (ArithUpDn.Convertible Integer e,
