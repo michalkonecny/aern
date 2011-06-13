@@ -39,7 +39,7 @@ import qualified Data.Number.MPFR.Mutable as MM
 instance HasDistance MPFR where
     type Distance MPFR = MI
     type DistanceEffortIndicator MPFR = ArithInOut.AddEffortIndicator MI
-    distanceDefaultEffort d = ArithInOut.addDefaultEffort sampleMI
+    distanceDefaultEffort d = ArithInOut.addDefaultEffort (Interval d d)
     distanceBetweenEff effort d1 d2 =
 --        | d1 == 1/0 && d2 == 1/0 = zero 
 --          -- distance between two infinities is zero (beware: distance not continuous at infinities!)  
