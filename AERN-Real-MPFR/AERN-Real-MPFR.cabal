@@ -35,6 +35,7 @@ Library
         hmpfr >= 0.3.2 && < 0.4,
         AERN-Basics == 2011.2.0.0, AERN-Real-Interval == 2011.2.0.0, AERN-Real == 2011.2.0.0
   Exposed-modules:
+    Numeric.AERN.MPFRBasis.Interval
     Numeric.AERN.RealArithmetic.Basis.MPFR
     Numeric.AERN.RealArithmetic.Interval.MPFR
 
@@ -68,6 +69,15 @@ Executable demoAERN-Real-MPFR-Minimal
   hs-source-dirs: src, demos
   ghc-options: -O2
   main-is: Minimal.hs
+  Build-Depends:
+        base >= 4 && < 5,
+        hmpfr >= 0.3.1 && < 0.4,
+        AERN-Basics == 2011.2.0.0, AERN-Real == 2011.2.0.0
+
+Executable demoAERN-Real-MPFR-Pendulum
+  hs-source-dirs: src, demos
+  ghc-options: -O2
+  main-is: Pendulum.hs
   Build-Depends:
         base >= 4 && < 5,
         hmpfr >= 0.3.1 && < 0.4,
