@@ -58,8 +58,8 @@ instance (ShowInternals e, NumOrd.PartialComparison e) => (ShowInternals (Interv
         where
         showL = showInternals indicator l
         showR = showInternals indicator r
-        showConsistent = "[." ++ showL ++ "," ++ showR ++ "^]"
-        showAnticonsistent = "[^" ++ showL ++ "," ++ showR ++ ".]"
+        showConsistent = "[_" ++ showL ++ "," ++ showR ++ "^]"
+        showAnticonsistent = "[^" ++ showL ++ "," ++ showR ++ "_]"
         showUnknown = "[?" ++ showL ++ "," ++ showR ++ "?]"
 
 instance (ShowInternals e, NumOrd.PartialComparison e) => (Show (Interval e))
