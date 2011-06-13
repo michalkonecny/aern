@@ -37,7 +37,8 @@ import qualified Data.Number.MPFR.Mutable as MM
 
 instance Convertible Integer MPFR where
     type ConvertEffortIndicator Integer MPFR = M.Precision
-    convertDefaultEffort _ _ = 100
+    convertDefaultEffort n _ = 
+        max 100 $ 1 + M.bitsInInteger n -- see hmpfr Num instance
     convertUpEff prec n = Just $ M.fromIntegerA M.Up prec n 
     convertDnEff prec n = Just $ M.fromIntegerA M.Down prec n
 
