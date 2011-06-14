@@ -183,7 +183,8 @@ module Numeric.AERN.MPFRBasis.Interval
 
     -- ** Base type
     Interval(..),
-    MPFR
+    MPFR,
+    Precision
 )
 where
 
@@ -224,6 +225,8 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultE
 import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis()
 
 import Numeric.AERN.RealArithmetic.Basis.MPFR(MPFR)
+
+import Data.Number.MPFR (Precision)
 
 import Numeric.AERN.RealArithmetic.Interval.MPFR(width, bisect)
 

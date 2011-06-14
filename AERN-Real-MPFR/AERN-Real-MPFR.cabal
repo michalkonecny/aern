@@ -74,10 +74,10 @@ Executable demoAERN-Real-MPFR-Minimal
         hmpfr >= 0.3.1 && < 0.4,
         AERN-Basics == 2011.2.0.0, AERN-Real == 2011.2.0.0
 
-Executable demoAERN-Real-MPFR-Pendulum
+Executable demoAERN-Real-MPFR-SpringMass
   hs-source-dirs: src, demos
   ghc-options: -O2
-  main-is: Pendulum.hs
+  main-is: SpringMass.hs
   Build-Depends:
         base >= 4 && < 5,
         hmpfr >= 0.3.1 && < 0.4,
