@@ -9,7 +9,7 @@
 
 typedef struct COEFFN
 {
-  Coeff cf;
+  CoeffMutable cf;
   ComparisonOp cfCompare;
   int n;
   int n1;
@@ -160,8 +160,7 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
   Size p1Size = p1 -> psize;
   Size p2Size = p2 -> psize;
 
-  // create an easy to refer to alias
-  // of the mutable variable for result's error bounds:
+  // variable mirroring the result's error bound:
   CoeffMutable maxError = res -> errorBound;
 
   // combine the errorBounds from parameter polynomials:
@@ -312,6 +311,9 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
 
       // set the new term size of the result:
       res -> psize = i;
+
+      // set the errorBound of result:
+      CFM_ASSIGN(ops, res -> errorBound, maxError);
 
       //      printf("addTermsAndReturnMaxError: about to construct %d resulting term(s)\n", i);
       ADD_COEFF_CODE(copyTerms)(newCoeffs, i, arity, terms, terms1, terms2);

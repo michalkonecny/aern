@@ -50,12 +50,15 @@ typedef struct POLY
   Var maxArity; // nominal number of variables (0 < maxArity < 2^32)
   Size maxSize; // maximal number of non-constant terms (0 < maxSize < 2^10)
   Power maxDeg; // maximal degree of a term (ie sum of powers for all variables) (0 <= maxPow < 2^8)
+  Var maxTermArity; // maximal number of variables in a term (0 <= maxPow < 14)
 
   Size psize; // actual number of non-constant terms (0<=psize<=maxSize)
   CoeffMutable constTerm;
-  CoeffMutable errorBound;
   // if non-zero, this structure represents a function enclosure
-  // centred around the polynomial with radius errorBound in the max norm
+  // centred around the polynomial with radius errorBound in the max norm:
+  CoeffMutable errorBound;
+  // terms are always ordered by powers lexicographically
+  // from the smallest (eg the linear terms if any) to the largest:
   Term * terms;
 } Poly;
 
@@ -85,8 +88,8 @@ ADD_COEFF_CODE(mapCoeffsInPlace)(ConversionOp convert, Poly *p);
  *   so that there is no coefficient aliasing
  */
 Poly *
-ADD_COEFF_CODE(newConstPoly)(CoeffMutable c, CoeffMutable errorBound,
-    Var maxArity, Size maxSize, Power maxDeg);
+ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
+    Size maxSize, Power maxDeg, Var maxTermArity);
 
 /*
  * preconditions:
@@ -97,7 +100,8 @@ ADD_COEFF_CODE(newConstPoly)(CoeffMutable c, CoeffMutable errorBound,
  */
 Poly *
 ADD_COEFF_CODE(newProjectionPoly)(CoeffMutable zero, CoeffMutable one,
-    CoeffMutable errorBound, Var var, Var maxArity, Size maxSize, Power maxDeg);
+    CoeffMutable errorBound, Var var, Var maxArity, Size maxSize, Power maxDeg,
+    Var maxTermArity);
 
 ///*
 // * preconditions:

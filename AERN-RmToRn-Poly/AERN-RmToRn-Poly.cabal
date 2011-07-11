@@ -66,10 +66,11 @@ Library
     cbits/tree234.c
     cbits/GenericCoeff/poly.c
     cbits/GenericCoeff/evaluation.c
-    cbits/GenericCoeff/addition.c
     cbits/GenericCoeff/bounds.c
-    cbits/GenericCoeff/scalar.c
     cbits/GenericCoeff/reduce.c
+    cbits/GenericCoeff/scalar.c
+    cbits/GenericCoeff/addition.c
+    cbits/GenericCoeff/multiplication.c
     cbits/DoubleCoeff/poly.c
     cbits/DoubleCoeff/evaluation.c
     cbits/DoubleCoeff/addition.c

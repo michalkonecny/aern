@@ -37,9 +37,9 @@ main =
     [x,y,c1,xc1] =
         runST $
             do
-            xM <- unsafeMakeMutable $ newProjection (opsFP,10,3) domainBox 0
-            yM <- unsafeMakeMutable $ newProjection (opsFP,10,3) domainBox 1
-            c1M <- unsafeMakeMutable $ newConstFn (opsFP,10,3) domainBox 1
+            xM <- unsafeMakeMutable $ newProjection (opsFP,10,3,3) domainBox 0
+            yM <- unsafeMakeMutable $ newProjection (opsFP,10,3,3) domainBox 1
+            c1M <- unsafeMakeMutable $ newConstFn (opsFP,10,3,3) domainBox 1
             xc1M <- cloneMutable xM
             xc1M +^= c1M
             mapM unsafeReadMutable [xM,yM,c1M,xc1M]

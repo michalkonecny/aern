@@ -36,8 +36,10 @@ testMutableGCPolys =
     putStrLn $ "p11 = " ++ showP p11
     putStrLn $ "p12 = " ++ showP p12
     putStrLn $ "p22 = " ++ showP p22
+    
     putStrLn $ "p1b23 = " ++ showP p1b23
     putStrLn $ "pb223 = " ++ showP pb223
+
     putStrLn $ "p23s1 = " ++ showP p23s1
     putStrLn $ "pb223s1 = " ++ showP pb223s1
     putStrLn $ "pb223d0 = " ++ showP pb223d0
@@ -59,18 +61,29 @@ testMutableGCPolys =
     showCoeffInternals = False
     opsFP = GCPoly.opsFPArithUpDnDefaultEffort sampleD
     [
-      p1,p2,p3,p4,p11,p12,p22,p1b23,pb223,p23s1,pb223s1,pb223d0,
-      sux,sdx,sex,cpesrc,cpetarg,cperes,cpupsrc,cpuptarg,cpupres,cpdnsrc,cpdntarg,cpdnres
+      p1,p2,p3,p4
+      ,
+      p11,p12,p22
+      ,
+      p1b23,pb223
+      ,
+      p23s1,pb223s1,pb223d0
+      ,
+      sux,sdx,sex
+      ,
+      cpesrc,cpetarg,cperes,cpupsrc,cpuptarg,cpupres,cpdnsrc,cpdntarg,cpdnres
      ] = runST $
         do
-        let mkConst c = GCPoly.constPolyM opsFP (Var 3) (Size 10) (Power 3) (c::Double) 0
-        let mkConstConst c = GCPoly.constPolyM opsFP (Var 3) (Size 1) (Power 3) (c::Double) 0
-        let mkVar n = GCPoly.projectionPolyM opsFP (Var 3) (Size 10) (Power 3) (Var n)
+        let mkConst c = GCPoly.constPolyM opsFP (Var 3) (Size 10) (Power 3) (Var 3) (c::Double) 0
+        let mkConstConst c = GCPoly.constPolyM opsFP (Var 3) (Size 1) (Power 3) (Var 3) (c::Double) 0
+        let mkVar n = GCPoly.projectionPolyM opsFP (Var 3) (Size 10) (Power 3) (Var 3) (Var n)
+
         let addUp = GCPoly.polyAddUp
+
         let scaleUpThin c = GCPoly.polyScaleUp (c::Double) 
         let scaleDnThin c = GCPoly.polyScaleDn (c::Double) 
         let scaleEncl c = GCPoly.polyScaleEncl (c::Double) 
---        let reduceDegree d = GCPoly.polyReduceDegreeEnclMutable (Power d) 
+
         let copyEncl = GCPoly.polyCopyEncl
         let copyUpThin = GCPoly.polyCopyUpThin
         let copyDnThin = GCPoly.polyCopyDnThin
@@ -86,16 +99,18 @@ testMutableGCPolys =
         addUp p12M p1M p2M
         p22M <- mkConst 0
         addUp p22M p2M p2M
+        
         p1b23M <- mkConst 0
         addUp p1b23M p2M p3M
         addUp p1b23M p1M p1b23M
         pb223M <- mkConst 0
         addUp pb223M p22M p3M
-        p23s1M <- GCPoly.constPolyM opsFP (Var 2) (Size 1) (Power 3) (0::Double) 0
+
+        p23s1M <- GCPoly.constPolyM opsFP (Var 3) (Size 1) (Power 3) (Var 3) (0::Double) 0
         addUp p23s1M p2M p3M
-        pb223s1M <- GCPoly.constPolyM opsFP (Var 2) (Size 1) (Power 3) (0::Double) 0
+        pb223s1M <- GCPoly.constPolyM opsFP (Var 3) (Size 1) (Power 3) (Var 3) (0::Double) 0
         addUp pb223s1M p22M p3M
-        pb223d0M <- GCPoly.constPolyM opsFP (Var 2) (Size 2) (Power 0) (0::Double) 0
+        pb223d0M <- GCPoly.constPolyM opsFP (Var 3) (Size 2) (Power 0) (Var 3) (0::Double) 0
         addUp pb223d0M p22M p3M
         
         suxM <- mkVar 0
@@ -131,9 +146,17 @@ testMutableGCPolys =
         
         mapM (unsafeReadMutable) 
           [
-            p1M, p2M, p3M, p4M, p11M, p12M, p22M, p1b23M, pb223M, p23s1M, pb223s1M, pb223d0M, 
-            suxM, sdxM, sexM, cpesrcM, cpetargM, cperesM, cpupsrcM, cpuptargM, cpupresM, 
-            cpdnsrcM, cpdntargM, cpdnresM
+            p1M, p2M, p3M, p4M
+            , 
+            p11M, p12M, p22M
+            , 
+            p1b23M, pb223M
+            , 
+            p23s1M, pb223s1M, pb223d0M
+            , 
+            suxM, sdxM, sexM
+            , 
+            cpesrcM, cpetargM, cperesM, cpupsrcM, cpuptargM, cpupresM, cpdnsrcM, cpdntargM, cpdnresM
            ]
  
 --testPureGCPolys :: IO ()
