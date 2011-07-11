@@ -95,32 +95,34 @@ instance
         polyCopySameSizes resM srcM
     cloneMutable pM@(PolyM (Poly opsFP _)) =
         do
-        (arity, size, deg) <- peekSizesM pM
-        resM <- constPolyM opsFP arity size deg zero zero
+        (arity, size, deg, tarity) <- peekSizesM pM
+        resM <- constPolyM opsFP arity size deg tarity zero zero
         assignMutable resM pM
         return resM
     
 type PolyM cf s = Mutable (Poly cf) s
 
 {-# INLINE peekSizes #-}
-peekSizes :: (Poly cf) -> (Var, Size, Power)
+peekSizes :: (Poly cf) -> (Var, Size, Power, Var)
 peekSizes p =
     unsafePerformIO $ peekSizesIO p
 
 {-# INLINE peekSizesM #-}
-peekSizesM :: (PolyM cf s) -> ST s (Var, Size, Power)
+peekSizesM :: (PolyM cf s) -> ST s (Var, Size, Power, Var)
 peekSizesM (PolyM p) =
     unsafeIOToST $ peekSizesIO p
 
 {-# INLINE peekSizesIO #-}
-peekSizesIO :: (Poly cf) -> IO (Var, Size, Power)
+peekSizesIO :: (Poly cf) -> IO (Var, Size, Power, Var)
 peekSizesIO (Poly opsFP polyFP) =
     withForeignPtr polyFP $ \ptr -> 
         do
         maxArityC <- #{peek Poly, maxArity} ptr
         maxSizeC <- #{peek Poly, maxSize} ptr
         maxDegreeC <- #{peek Poly, maxDeg} ptr
-        return (fromCVar maxArityC, fromCSize maxSizeC, fromCPower maxDegreeC)            
+        maxTermArityC <- #{peek Poly, maxTermArity} ptr
+        return (fromCVar maxArityC, fromCSize maxSizeC, 
+                fromCPower maxDegreeC, fromCVar maxTermArityC)            
 
 {-# INLINE peekArity #-}
 peekArity :: (Poly cf) -> Var
@@ -231,44 +233,45 @@ foreign import ccall unsafe "newConstPolyGenCf"
         poly_newConstPoly :: 
             (StablePtr (Mutable cf s)) -> 
             (StablePtr (Mutable cf s)) -> 
-            CVar -> CSize -> CPower -> 
+            CVar -> CSize -> CPower -> CVar -> 
             IO (Ptr (CPoly cf))  
 
 constPoly :: 
     (Show cf, CanBeMutable cf) => 
     OpsFP cf -> 
-    Var -> Size -> Power ->
+    Var -> Size -> Power -> Var ->
     cf -> cf -> 
     Poly cf
-constPoly opsFP maxArity maxSize maxDeg c radius =
-    unsafePerformIO $ constPolyIO opsFP maxArity maxSize maxDeg c radius
+constPoly opsFP maxArity maxSize maxDeg maxTermArity c radius =
+    unsafePerformIO $ constPolyIO opsFP maxArity maxSize maxDeg maxTermArity c radius
 
 constPolyM :: 
     (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
     =>
     OpsFP cf -> 
-    Var -> Size -> Power ->
+    Var -> Size -> Power -> Var ->
     cf -> cf -> 
     ST s (PolyM cf s)
-constPolyM opsFP maxArity maxSize maxDeg c radius =
+constPolyM opsFP maxArity maxSize maxDeg maxTermArity c radius =
     do
-    p <- unsafeIOToST $ constPolyIO opsFP maxArity maxSize maxDeg c radius
+    p <- unsafeIOToST $ constPolyIO opsFP maxArity maxSize maxDeg maxTermArity c radius
     unsafeMakeMutable p
 
 constPolyIO :: 
     (Show cf, CanBeMutable cf) => 
     OpsFP cf -> 
-    Var -> Size -> Power -> 
+    Var -> Size -> Power -> Var ->
     cf -> cf -> 
     IO (Poly cf)
-constPolyIO opsFP maxArity maxSize maxDeg c radius =
+constPolyIO opsFP maxArity maxSize maxDeg maxTermArity c radius =
     do
     cM <- unsafeSTToIO $ makeMutable c
     cSP <- newStablePtr cM
     radiusM <- unsafeSTToIO $ makeMutable radius
     radiusSP <- newStablePtr radiusM
 --    putStrLn $ "calling newConstPoly for " ++ show c
-    pP <- poly_newConstPoly cSP radiusSP (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
+    pP <- poly_newConstPoly cSP radiusSP 
+            (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg) (toCVar maxTermArity)
 --    putStrLn $ "newConstPoly for " ++ show c ++ " returned"
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ Poly opsFP fp 
@@ -280,38 +283,38 @@ foreign import ccall unsafe "newProjectionPolyGenCf"
             (StablePtr (Mutable cf s)) -> 
             (StablePtr (Mutable cf s)) -> 
             (StablePtr (Mutable cf s)) -> 
-            CVar -> CVar -> CSize -> CPower -> 
+            CVar -> CVar -> CSize -> CPower -> CVar -> 
             IO (Ptr (CPoly cf))
 
 projectionPoly :: 
     (CanBeMutable cf, HasOne cf, HasZero cf) 
     => 
     OpsFP cf -> 
-    Var -> Size -> Power -> 
+    Var -> Size -> Power -> Var ->
     Var -> 
     Poly cf
-projectionPoly opsFP maxArity maxSize maxDeg x =
-    unsafePerformIO $ projectionPolyIO opsFP maxArity maxSize maxDeg x
+projectionPoly opsFP maxArity maxSize maxDeg maxTermArity x =
+    unsafePerformIO $ projectionPolyIO opsFP maxArity maxSize maxDeg maxTermArity x
 
 projectionPolyM :: 
     (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
     =>
     OpsFP cf -> 
-    Var -> Size -> Power -> 
+    Var -> Size -> Power -> Var ->
     Var -> 
     ST s (PolyM cf s)
-projectionPolyM opsFP maxArity maxSize maxDeg x =
+projectionPolyM opsFP maxArity maxSize maxDeg maxTermArity x =
     do
-    p <- unsafeIOToST $ projectionPolyIO opsFP maxArity maxSize maxDeg x
+    p <- unsafeIOToST $ projectionPolyIO opsFP maxArity maxSize maxDeg maxTermArity x
     unsafeMakeMutable p
 
 projectionPolyIO :: 
     (CanBeMutable cf, HasOne cf, HasZero cf) => 
     OpsFP cf -> 
-    Var -> Size -> Power -> 
+    Var -> Size -> Power -> Var -> 
     Var -> 
     IO (Poly cf)
-projectionPolyIO opsFP maxArity maxSize maxDeg x =
+projectionPolyIO opsFP maxArity maxSize maxDeg maxTermArity x =
     do
     zeroM <- unsafeSTToIO $ makeMutable zero
     zeroSP <- newStablePtr zeroM
@@ -319,7 +322,8 @@ projectionPolyIO opsFP maxArity maxSize maxDeg x =
     oneSP <- newStablePtr oneM
     radM <- unsafeSTToIO $ makeMutable zero
     radSP <- newStablePtr radM
-    pP <- poly_newProjectionPoly zeroSP oneSP radSP (toCVar x) (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg)
+    pP <- poly_newProjectionPoly zeroSP oneSP radSP 
+            (toCVar x) (toCVar maxArity) (toCSize maxSize) (toCPower maxDeg) (toCVar maxTermArity)
     fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
     return $ Poly opsFP fp
 

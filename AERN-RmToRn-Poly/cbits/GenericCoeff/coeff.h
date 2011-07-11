@@ -46,7 +46,8 @@ typedef struct OPS
 #define CFM_NEW(ops,v) (eval_newMutable_hs(ops -> new, v))
 #define CFM_CLONE(ops,rp,sp) ((rp)=eval_cloneMutable_hs(ops -> zero, ops -> clone, sp))
 #define CFM_ASSIGN(ops,rp,sp) \
-    (eval_assignMutable_hs(ops -> zero, ops -> assign, rp, sp))
+    if((rp) != (sp)){eval_assignMutable_hs(ops -> zero, ops -> assign, rp, sp);}
+    //(eval_assignMutable_hs(ops -> zero, ops -> assign, rp, sp))
 #define CFM_ASSIGN_VAL(ops,rp,v) \
     (eval_assignMutableFromPure_hs(ops -> assignFromPure, rp, v))
 #define CFM_COMPARE(compare, d1, d2) (eval_compare_hs(compare, d1, d1))

@@ -42,15 +42,17 @@ instance
     HasSizeLimits (Poly cf)
     where
     type SizeLimits (Poly cf) = 
-        (OpsFP cf, Int, Int) -- maxSize, maxDegree
+        (OpsFP cf, Int, Int, Int) -- maxSize, maxDegree, maxTermArity
     getSizeLimits p@(Poly.Poly opsFP _) = 
-        (opsFP, maxSize, maxDegree)
+        (opsFP, maxSize, maxDegree, maxTermArity)
         where
-        (_, Poly.Size maxSize32, Poly.Power maxDegree32) = Poly.peekSizes p
+        (_, Poly.Size maxSize32, 
+         Poly.Power maxDegree32, Poly.Var maxTermArity32) = Poly.peekSizes p
         maxSize = fromIntegral maxSize32
         maxDegree = fromIntegral maxDegree32
+        maxTermArity = fromIntegral maxTermArity32
     defaultSizes p =
-        (opsFP, 2 + 3 * arity, 3)
+        (opsFP, 2 + 3 * arity, 3, min 10 arity)
         where
         Poly.Var arity32 = Poly.peekArity p
         arity = fromIntegral arity32
@@ -62,12 +64,13 @@ instance
     => 
     HasProjections (Poly cf)
     where
-    newProjection (opsFP, maxSize, maxDegree) domainBox var =
+    newProjection (opsFP, maxSize, maxDegree, maxTermArity) domainBox var =
         Poly.projectionPoly
             opsFP 
             (Poly.Var $ fromIntegral arity)
             (Poly.Size $ fromIntegral maxSize)
             (Poly.Power $ fromIntegral maxDegree)
+            (Poly.Var $ fromIntegral maxTermArity)
             (Poly.Var $ fromIntegral var)
         where
         arity 
@@ -85,12 +88,13 @@ instance
     =>
     HasConstFns (Poly cf)
     where
-    newConstFn (opsFP, maxSize, maxDegree) domainBox value =
+    newConstFn (opsFP, maxSize, maxDegree, maxTermArity) domainBox value =
         Poly.constPoly
             opsFP 
             (Poly.Var $ fromIntegral arity)
             (Poly.Size $ fromIntegral maxSize)
             (Poly.Power $ fromIntegral maxDegree)
+            (Poly.Var $ fromIntegral maxTermArity)
             value
             zero -- radius. ie errorBound
         where

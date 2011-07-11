@@ -17,10 +17,11 @@ ADD_COEFF_CODE(printPoly)(Poly *p)
 
   printf("  maxArity = %d\n", p -> maxArity);
   printf("  maxSize = %d\n", p -> maxSize);
+  printf("  maxTermArity = %d\n", p -> maxTermArity);
   printf("    constant term addr = %p\n", p -> constTerm);
   printf("  psize = %d\n", psize);
 
-  for(int i = 0; i < psize; i++)
+  for (int i = 0; i < psize; i++)
     {
       printf("    term ");
       printf(" monomial degree = %d\n", MONOMIAL_DEGREE(terms[i].powers));
@@ -35,7 +36,7 @@ ADD_COEFF_CODE(printPoly)(Poly *p)
 void
 ADD_COEFF_CODE(freePoly)(Poly *p)
 {
-//  printf("freePoly: starting\n");
+  //  printf("freePoly: starting\n");
   // free the Poly struct:
   Size maxSize = p -> maxSize;
   Size psize = p -> psize;
@@ -46,7 +47,7 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
 
   Size i = 0;
   // free the power arrays:
-  while( i < psize )
+  while (i < psize)
     {
       free(terms[i].powers);
       CFM_FREE(terms[i].coeff);
@@ -54,7 +55,7 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
     }
 
   // free the coeffs:
-  while( i < maxSize )
+  while (i < maxSize)
     {
       free(terms[i].powers);
       i++;
@@ -62,7 +63,7 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
 
   // free the terms array:
   free(terms);
-//  printf("freePoly: finished\n");
+  //  printf("freePoly: finished\n");
 }
 
 void
@@ -88,13 +89,14 @@ ADD_COEFF_CODE(mapCoeffsInPlace)(ConversionOp convert, Poly *p)
 
 Poly *
 ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
-    Size maxSize, Power maxDeg)
+    Size maxSize, Power maxDeg, Var maxTermArity)
 {
-//  printf("newConstPoly: starting\n");
+  //  printf("newConstPoly: starting\n");
   Poly * poly = (Poly *) malloc(sizeof(Poly));
   poly -> maxArity = maxArity;
   poly -> maxSize = maxSize;
   poly -> maxDeg = maxDeg;
+  poly -> maxTermArity = maxTermArity;
   poly -> errorBound = errorBound;
   poly -> psize = 0;
   poly -> constTerm = c;
@@ -115,13 +117,14 @@ ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
 // ASSUMES: 0 <= var < maxArity
 // ASSUMES: 0 < maxSize
 // ASSUMES: 0 < maxDeg
+// ASSUMES: 0 < maxTermArity <= 14
 
 Poly *
 ADD_COEFF_CODE(newProjectionPoly)(Coeff zero, Coeff one, Coeff errorBound,
-    Var var, Var maxArity, Size maxSize, Power maxDeg)
+    Var var, Var maxArity, Size maxSize, Power maxDeg, Var maxTermArity)
 {
   Poly * poly = ADD_COEFF_CODE(newConstPoly)(zero, errorBound, maxArity,
-      maxSize, maxDeg);
+      maxSize, maxDeg, maxTermArity);
 
   // add one term for the variable:
   poly -> psize = 1;

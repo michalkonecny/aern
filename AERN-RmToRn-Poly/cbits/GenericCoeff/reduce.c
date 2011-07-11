@@ -36,8 +36,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(Ops * ops, Var arity,
     Term * resTerms, CoeffMutable errorBound);
 
 /*
- * ASSUMES: maxArity, maxSize as well as maxDeg of src and res are the same
- * INVARIANT : does not change maxDeg and maxSize of res
+ * ASSUMES: maxArity, maxSize, maxDeg as well as maxTermArity of src and res are the same
  */
 void
 ADD_COEFF_CODE(copySameSizes)(Ops * ops, Poly * res, Poly * src)
@@ -63,7 +62,7 @@ ADD_COEFF_CODE(copySameSizes)(Ops * ops, Poly * res, Poly * src)
 
 /*
  * ASSUMES: maxArity of src and res are the same
- * INVARIANT : does not change maxDeg and maxSize of res
+ * INVARIANT : does not change maxDeg, maxSize and maxTermArity of res
  */
 void
 ADD_COEFF_CODE(copyEncl)(Ops * ops, Poly * res, Poly * src)
@@ -77,6 +76,7 @@ ADD_COEFF_CODE(copyEncl)(Ops * ops, Poly * res, Poly * src)
   Size resPsize = res -> psize;
   Size resMaxSize = res -> maxSize;
   Power resMaxDeg = res -> maxDeg;
+  Power resMaxTermArity = res -> maxTermArity;
   Term * resTerms = res -> terms;
 
   CFM_ASSIGN(ops, res -> constTerm, src -> constTerm);
@@ -118,6 +118,9 @@ ADD_COEFF_CODE(copyEncl)(Ops * ops, Poly * res, Poly * src)
       CFM_FREE(absError);
       Size curPsize = curLastTermIndex + 1; // truncate reduced terms
       //    printf("copyEncl: curDeg=%d resMaxDeg=%d curPsize=%d resMaxSize=%d\n", curDeg, resMaxDeg, curPsize, resMaxSize);
+
+      // count terms whose arity exceeds the limit:
+      //TODO
 
       int reductionsNeeded = curPsize - resMaxSize;
       //    printf("copyEncl: %d reductionsNeeded\n", reductionsNeeded);
