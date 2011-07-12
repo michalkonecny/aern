@@ -35,6 +35,7 @@ type CloneOpMutable s t = Mutable t s -> ST s (Mutable t s)
 type UnaryFromPureOpMutable s t = Mutable t s -> t -> ST s ()
 type UnaryOpMutable s t = Mutable t s -> Mutable t s -> ST s ()
 type BinaryOpMutable s t = Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
+type MixedIntOpMutable s t = Mutable t s -> Mutable t s -> Int -> ST s ()
 
 {- C <-> Haskell conversions -}
 

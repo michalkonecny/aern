@@ -29,5 +29,6 @@ typedef void * NewOpMutable; // pointer to undisclosed Haskell type t -> ST s (M
 typedef void * CloneOpMutable; // pointer to undisclosed Haskell type (Mutable t s) -> ST s (Mutable t s)
 typedef void * UnaryOpMutable; // pointer to Haskell type Mutable t s -> Mutable t s -> ST s ()
 typedef void * BinaryOpMutable; // pointer to Haskell type Mutable t s -> Mutable t s -> Mutable t s -> ST s ()
+typedef void * MixedIntOpMutable; // pointer to Haskell type Mutable t s -> Mutable t s -> Int -> ST s ()
 
 #endif /* HASKELL_FN_TYPES_H_ */

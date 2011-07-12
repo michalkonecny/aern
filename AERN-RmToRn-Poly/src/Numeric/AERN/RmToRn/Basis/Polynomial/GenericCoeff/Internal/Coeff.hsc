@@ -2,6 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 #include <GenericCoeff/poly.h>
 {-|
     Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Coeff
@@ -68,7 +69,11 @@ data Ops s cf =
         ops_minusUpMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s cf)),
         ops_minusDnMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s cf)),
         ops_timesUpMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s cf)),
-        ops_timesDnMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s cf))
+        ops_timesDnMutable :: {-# UNPACK #-} ! (StablePtr (BinaryOpMutable s cf)),
+        ops_timesByIntUpMutable :: {-# UNPACK #-} ! (StablePtr (MixedIntOpMutable s cf)),
+        ops_timesByIntDnMutable :: {-# UNPACK #-} ! (StablePtr (MixedIntOpMutable s cf)),
+        ops_divByIntUpMutable :: {-# UNPACK #-} ! (StablePtr (MixedIntOpMutable s cf)),
+        ops_divByIntDnMutable :: {-# UNPACK #-} ! (StablePtr (MixedIntOpMutable s cf))
     }
 
 instance (Storable cf) => Storable (Ops s cf) where
@@ -82,7 +87,10 @@ instance (Storable cf) => Storable (Ops s cf) where
               absUpMutable absDnMutable 
               plusUpMutable plusDnMutable 
               minusUpMutable minusDnMutable 
-              timesUpMutable timesDnMutable) = 
+              timesUpMutable timesDnMutable
+              timesByIntUpMutable timesByIntDnMutable
+              divByIntUpMutable divByIntDnMutable
+            ) = 
         do 
         #{poke Ops, zero} ptr zero
         #{poke Ops, one} ptr one
@@ -100,6 +108,8 @@ instance (Storable cf) => Storable (Ops s cf) where
         #{poke Ops, minusDnMutable} ptr minusDnMutable
         #{poke Ops, timesUpMutable} ptr timesUpMutable
         #{poke Ops, timesDnMutable} ptr timesDnMutable
+        #{poke Ops, timesByIntUpMutable} ptr timesByIntUpMutable
+        #{poke Ops, timesByIntDnMutable} ptr timesByIntDnMutable
 
 newOpsFP ::
     (Storable cf) =>
@@ -129,9 +139,17 @@ mkOps ::
     (BinaryOpMutable s cf) ->
     (BinaryOpMutable s cf) ->
     (BinaryOpMutable s cf) ->
+    (MixedIntOpMutable s cf) ->
+    (MixedIntOpMutable s cf) ->
+    (MixedIntOpMutable s cf) ->
+    (MixedIntOpMutable s cf) ->
     IO (Ops s cf)
 mkOps zero one new clone assign assignFromPure compare 
-        neg absUp absDn addUp addDn subtrUp subtrDn multUp multDn =
+        neg absUp absDn addUp addDn subtrUp subtrDn 
+        multUp multDn 
+        multByIntUp multByIntDn 
+        divByIntUp divByIntDn 
+    =
     do
     zeroSP <- newStablePtr zero
     oneSP <- newStablePtr one
@@ -149,6 +167,10 @@ mkOps zero one new clone assign assignFromPure compare
     addDnSP <- newStablePtr addDn
     multUpSP <- newStablePtr multUp   
     multDnSP <- newStablePtr multDn
+    multByIntUpSP <- newStablePtr multByIntUp   
+    multByIntDnSP <- newStablePtr multByIntDn
+    divByIntUpSP <- newStablePtr divByIntUp   
+    divByIntDnSP <- newStablePtr divByIntDn
     return $
       Ops
         zeroSP oneSP 
@@ -159,17 +181,24 @@ mkOps zero one new clone assign assignFromPure compare
         addUpSP addDnSP
         subtrUpSP subtrDnSP
         multUpSP multDnSP
+        multByIntUpSP multByIntDnSP
+        divByIntUpSP divByIntDnSP
 
 mkOpsArithUpDn ::
-    (ArithUpDn.RoundedRealInPlace cf, CanBeMutable cf) => 
+    (ArithUpDn.RoundedRealInPlace cf, 
+     CanBeMutable cf) 
+    => 
     cf ->
     ArithUpDn.RoundedRealEffortIndicator cf -> 
     IO (Ops s cf)
 mkOpsArithUpDn sample effort =
     let absEffort = ArithUpDn.rrEffortAbs sample effort in
     let fldEffort = ArithUpDn.rrEffortField sample effort in
+    let fldByIntEffort = ArithUpDn.rrEffortIntMixedField sample effort in
     let addEffort = ArithUpDn.fldEffortAdd sample fldEffort in
     let multEffort = ArithUpDn.fldEffortMult sample fldEffort in
+    let multByIntEffort = ArithUpDn.mxfldEffortMult sample (0::Int) fldByIntEffort in
+    let divByIntEffort = ArithUpDn.mxfldEffortDiv sample (0::Int) fldByIntEffort in
     mkOps
         z o
         (makeMutable)
@@ -186,6 +215,10 @@ mkOpsArithUpDn sample effort =
         (ArithUpDn.subtrDnInPlaceEff addEffort)
         (ArithUpDn.multUpInPlaceEff multEffort)
         (ArithUpDn.multDnInPlaceEff multEffort)
+        (ArithUpDn.mixedMultUpInPlaceEff multByIntEffort)
+        (ArithUpDn.mixedMultDnInPlaceEff multByIntEffort)
+        (ArithUpDn.mixedDivUpInPlaceEff divByIntEffort)
+        (ArithUpDn.mixedDivDnInPlaceEff divByIntEffort)
     where
     z = zero
     o = one
