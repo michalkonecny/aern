@@ -12,21 +12,30 @@ import System.IO
 main =
     do
     hSetBuffering stdout NoBuffering 
---    mapM_ print $ simulate initParams
-    mapM_ print $ paramSearch 0 [initParams]
+    mapM_ print $ simulate initParams
+--    mapM_ print $ paramSearch 0 [initParams]
 
 paramSearch prevBest nextParamsOptions@(params : rest)
     | prevBest > 36000 = []
     | otherwise =
-        (params, currentScore) : 
-            (case (rest, currentScore >= prevBest + 20) of
+        (params, currentScoreSeq, currentScore) : 
+            (case (rest, currentScore > prevBest + 1) of
                 ([], _) -> paramSearch currentScore $ increaseParams params
                 (_, True) -> paramSearch currentScore $ increaseParams params
                 _ -> paramSearch prevBest rest
             )
          where
+         currentScoreSeq =
+            drop100ifAny 0 $ zip [0..] steps
+         drop100ifAny n [] = []
+         drop100ifAny n list 
+            = 
+            (n `div` stepsInOne)
+            : (drop100ifAny (n + 100) $ drop 100 list)
          currentScore =
-            (length $ simulate params) `div` (2 ^ (paramStepSize params))
+            (length steps) `div` stepsInOne
+         steps = simulate params
+         stepsInOne = 2 ^ (paramStepSize params)
 
 data Params =
     Params
@@ -38,27 +47,29 @@ data Params =
     }
     deriving (Show)
 
-initParams = Params 1000 100 1000 3
+initParams = Params 100 18 100 3 -- gets to time 1 in < 30ms
+--initParams = Params 600 110 600 3 -- gets to time 36 in 16s
+--initParams = Params 600 110 600 5 -- gets to time 38 in 45s
+--initParams = Params 6000 800 6000 3 -- gets to time 413 in 16h
+--initParams = Params 6000 1200 6000 3
 
 increaseParams (Params p dg eps sz) =
     [
      Params p dgNew eps sz, 
-     Params p dg epsNew sz,
-     Params pNew dg eps sz, 
+     Params pNew dg epsNew sz, 
      Params pNew dgNew epsNew sz
     ]
     where
-    pNew = p + 1000
-    dgNew = dg + 100
-    epsNew = eps + 1000
+    pNew = p + 2000
+    dgNew = dg + 200
+    epsNew = eps + 2000
 
 simulate params =
-    zip [0..] $ -- number the steps
-        waitTillPrecBelow (2^^(-30)) $ -- stop when diverging
-            iterate (makeStep (paramDegree params) stepSize epsilon) 
-                (i2mi 20, i2mi 0) -- initial values
+    waitTillPrecBelow (2^^(-30)) $ -- stop when diverging
+        iterate (makeStep (paramDegree params) stepSize epsilon) 
+            (0, i2mi 20, i2mi 0) -- initial values
     where
-    waitTillPrecBelow eps (this@(yNmOne,_):rest)
+    waitTillPrecBelow eps (this@(_,yNmOne,_):rest)
         | precGood = this : (waitTillPrecBelow eps rest)
         | otherwise = [this]
         where
@@ -74,14 +85,14 @@ simulate params =
     i2mi n =
         convertOutEff (paramPrecision params) n
     
-makeStep dg h epsilon (y0, y0Der) =
-    (yh, yhDer)
+makeStep dg h epsilon (t, y0, y0Der) =
+    (t + h, yh, yhDer)
     where
     (yh, yhDer) =
         waitTillNoImprovement 1000 $
         map evalBoth $
         iterate (reduceBoth . picard (y0, y0Der)) $ 
-        ([y0 + (plusMinus h)], [y0Der]) 
+        ([y0 + (plusMinus h)], [y0Der + (plusMinus h)]) 
     reduceBoth (p1,p2) = (reducePoly h dg p1, reducePoly h dg p2)
     evalBoth (p1,p2) = (evalPoly h p1, evalPoly h p2) 
     waitTillNoImprovement maxIters (this@(yNmOne,_):rest@((yN,_):_)) 
@@ -104,15 +115,14 @@ picard ::
 --    MI {-^ starting time -} -> -- autonomous system, always 0 
     (MI, MI) {-^ initial values for y,y' -} -> 
     (Poly, Poly) {-^ approximates of y and y' -} -> 
-    (Poly, Poly) {-^ imporved approximates of y and y' -}
+    (Poly, Poly) {-^ improved approximates of y and y' -}
 picard (y0, y0Der) (yPrev, yPrevDer) =
     (yNext, yNextDer)
     where
-    yNextDer =
-        integratePoly y0Der $
-            (field yPrev)
     yNext =
         integratePoly y0 yNextDer
+    yNextDer =
+        integratePoly y0Der (field yPrev)
     field y = scalePoly (-100) y
     
 --stepOpt (Interval yPrevL yPrevR) (Interval yPrevDerL yPrevDerR) (Interval h _) =
