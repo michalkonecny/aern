@@ -140,6 +140,9 @@ ADD_COEFF_CODE(newProjectionPoly)(Coeff zero, Coeff one, Coeff errorBound,
   // initialise the "cache" of the monomial degree:
   MONOMIAL_DEGREE(powers) = 1;
 
+  // initialise the "cache" of the term arity:
+  TERM_ARITY(powers) = 1;
+
   // all zero:
   FOREACH_VAR_ARITY(v,maxArity)
     {
