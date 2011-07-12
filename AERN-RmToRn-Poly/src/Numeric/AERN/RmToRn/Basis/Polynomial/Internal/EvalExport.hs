@@ -291,4 +291,31 @@ foreign export ccall eval_binaryMutable_hs ::
     (StablePtr (Mutable t s)) -> 
     IO ()  
     
+{-|
+   Allow C programs to use a Haskell in-place binary mixed int operator that has been
+   sent to it as a StablePtr.  Its first patameter and the result are opaque to C.
+-}
+eval_mixedIntMutable_hs :: 
+    (StablePtr t) -> 
+    (StablePtr (MixedIntOpMutable s t)) -> 
+    (StablePtr (Mutable t s)) -> 
+    (StablePtr (Mutable t s)) -> 
+    CInt -> 
+    IO () 
+eval_mixedIntMutable_hs _ opSP resSP v1SP n2C =
+    do
+    op <- deRefStablePtr opSP
+    res <- deRefStablePtr resSP
+    v1 <- deRefStablePtr v1SP
+    let n2 =  fromIntegral n2C
+    unsafeSTToIO $ op res v1 n2
+
+foreign export ccall eval_mixedIntMutable_hs :: 
+    (StablePtr t) -> 
+    (StablePtr (MixedIntOpMutable s t)) -> 
+    (StablePtr (Mutable t s)) -> 
+    (StablePtr (Mutable t s)) -> 
+    CInt -> 
+    IO ()  
+    
         

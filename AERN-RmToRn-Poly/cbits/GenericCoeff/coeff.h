@@ -39,6 +39,10 @@ typedef struct OPS
   BinaryOpMutable minusDnMutable;
   BinaryOpMutable timesUpMutable;
   BinaryOpMutable timesDnMutable;
+  MixedIntOpMutable timesByIntUpMutable;
+  MixedIntOpMutable timesByIntDnMutable;
+  MixedIntOpMutable divByIntUpMutable;
+  MixedIntOpMutable divByIntDnMutable;
 } Ops;
 
 #define CFM_ZERO(ops) (ops -> zero)
@@ -71,6 +75,14 @@ typedef struct OPS
     (eval_binaryMutable_hs(ops -> zero, ops -> timesUpMutable, rp, dp1, dp2))
 #define CFM_MUL_DN(ops,rp,dp1,dp2) \
     (eval_binaryMutable_hs(ops -> zero, ops -> timesDnMutable, rp, dp1, dp2))
+#define CFM_MULI_UP(ops,rp,dp1,n2) \
+    (eval_binaryMixedMutable_hs(ops -> zero, ops -> timesByIntUpMutable, rp, dp1, n2))
+#define CFM_MULI_DN(ops,rp,dp1,n2) \
+    (eval_binaryMixedMutable_hs(ops -> zero, ops -> timesByIntDnMutable, rp, dp1, n2))
+#define CFM_DIVI_UP(ops,rp,dp1,n2) \
+    (eval_binaryMixedMutable_hs(ops -> zero, ops -> divByIntUpMutable, rp, dp1, n2))
+#define CFM_DIVI_DN(ops,rp,dp1,n2) \
+    (eval_binaryMixedMutable_hs(ops -> zero, ops -> divByIntDnMutable, rp, dp1, n2))
 
 #define CFM_FREE(dp) (free_SP_hs(dp))
 
