@@ -27,8 +27,9 @@ typedef struct TERM
 } Term;
 
 #define MONOMIAL_DEGREE(powers) (powers[0])
-#define POWER_OF_VAR(powers,var) (powers[var + 1])
-#define SIZEOF_POWERS(arity) (sizeof(Power) * (arity+1))
+#define TERM_ARITY(powers) (powers[1])
+#define POWER_OF_VAR(powers,var) (powers[var + 2])
+#define SIZEOF_POWERS(arity) (sizeof(Power) * (arity+2))
 
 /*
  * polynomial
