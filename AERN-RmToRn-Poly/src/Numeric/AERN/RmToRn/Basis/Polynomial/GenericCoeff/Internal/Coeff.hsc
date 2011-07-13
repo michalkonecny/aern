@@ -110,6 +110,8 @@ instance (Storable cf) => Storable (Ops s cf) where
         #{poke Ops, timesDnMutable} ptr timesDnMutable
         #{poke Ops, timesByIntUpMutable} ptr timesByIntUpMutable
         #{poke Ops, timesByIntDnMutable} ptr timesByIntDnMutable
+        #{poke Ops, divByIntUpMutable} ptr divByIntUpMutable
+        #{poke Ops, divByIntDnMutable} ptr divByIntDnMutable
 
 newOpsFP ::
     (Storable cf) =>
