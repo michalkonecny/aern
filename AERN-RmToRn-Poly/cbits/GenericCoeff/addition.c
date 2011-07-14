@@ -212,6 +212,7 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
             }
 
           Power degree;
+          Var termArity;
 
           // fill in newCoeffs[i] and degree:
           if (powerComparison == 0)
@@ -238,6 +239,7 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = i2;
               degree = MONOMIAL_DEGREE(terms1[i1].powers);
+              termArity = TERM_ARITY(terms1[i1].powers);
               i1++;
               i2++;
             }
@@ -250,6 +252,7 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
               newCoeffs[i].n1 = -1;
               newCoeffs[i].n2 = i2;
               degree = MONOMIAL_DEGREE(terms2[i2].powers);
+              termArity = TERM_ARITY(terms2[i2].powers);
               i2++;
             }
           else if (powerComparison < 0) // i1 is smaller
@@ -261,11 +264,12 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = -1;
               degree = MONOMIAL_DEGREE(terms1[i1].powers);
+              termArity = TERM_ARITY(terms1[i1].powers);
               i1++;
             }
 
-          // check the term's degree is not above the limit:
-          if (degree <= res -> maxDeg)
+          // check the term's degree and arity are not above the limits:
+          if (degree <= res -> maxDeg && termArity <= res -> maxTermArity)
             {
               // finalise the new term by increasing the term counter:
               i++;
@@ -289,11 +293,15 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
           //          printf("addTermsAndReturnMaxError: reducing number of coeffs from %d to %d.\n", i, maxSize);
           // need to reduce the size, sort them from largest to smallest by the absolute value of their coefficients:
           for(int j = 0; j < i; ++j)
-            {
+            { // supply absolute values to all coeffs for sorting:
               newCoeffs[j].abs_cf = CFM_NEW(ops, CFM_ZERO(ops));
               CFM_ABS_UP(ops, newCoeffs[j].abs_cf, newCoeffs[j].cf);
             }
           ADD_COEFF_CODE(sortCoeffNsByAbsCoeffDecreasing)(i, newCoeffs);
+          for(int j = 0; j < i; ++j)
+            { // the absolute values no longer needed - free them:
+              CFM_FREE(newCoeffs[j].abs_cf);
+            }
           // now sort the first maxSize coeffs by N, ie the power order:
           ADD_COEFF_CODE(sortCoeffNsByN)(maxSize, newCoeffs);
           // first maxSize coeffs to be used with their terms,

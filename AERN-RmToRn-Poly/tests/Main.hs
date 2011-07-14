@@ -45,9 +45,10 @@ testMutableGCPolys =
     putStrLn $ "p1b23 = " ++ showP p1b23
     putStrLn $ "pb223 = " ++ showP pb223
 
-    putStrLn $ "p23s1 = " ++ showP p23s1
-    putStrLn $ "pb223s1 = " ++ showP pb223s1
-    putStrLn $ "pb223d0 = " ++ showP pb223d0
+    putStrLn $ "p23 (maxSize = 1) = " ++ showP p23s1
+    putStrLn $ "pb223 (maxSize = 1) = " ++ showP pb223s1
+    putStrLn $ "pb223 (maxDegree = 0) = " ++ showP pb223d0
+    putStrLn $ "pb223 (maxTermArity = 0) = " ++ showP pb223d0
 
     putStrLn $ "scaleUpThin 0.1 x = " ++ showP sux
     putStrLn $ "scaleDnThin 0.1 x = " ++ showP sdx
@@ -95,7 +96,7 @@ testMutableGCPolys =
       ,
       p1b23,pb223
       ,
-      p23s1,pb223s1,pb223d0
+      p23s1,pb223s1,pb223d0,pb223a0
       ,
       sux,sdx,sex
       ,
@@ -146,12 +147,14 @@ testMutableGCPolys =
         pb223M <- mkConst 0
         addUp pb223M p22M p3M
 
-        p23s1M <- GCPoly.constPolyM opsFP (Var 3) (Size 1) (Power 3) (Var 3) (0::Double) 0
+        p23s1M <- mkConstSzPwTa 0 1 3 3
         addUp p23s1M p2M p3M
-        pb223s1M <- GCPoly.constPolyM opsFP (Var 3) (Size 1) (Power 3) (Var 3) (0::Double) 0
+        pb223s1M <- mkConstSzPwTa 0 1 3 3
         addUp pb223s1M p22M p3M
-        pb223d0M <- GCPoly.constPolyM opsFP (Var 3) (Size 2) (Power 0) (Var 3) (0::Double) 0
+        pb223d0M <- mkConstSzPwTa 0 10 0 3
         addUp pb223d0M p22M p3M
+        pb223a0M <- mkConstSzPwTa 0 10 3 0
+        addUp pb223a0M p22M p3M
         
         suxM <- mkVar 0
         scaleUpThin 0.1 suxM
@@ -242,7 +245,7 @@ testMutableGCPolys =
             , 
             p1b23M, pb223M
             , 
-            p23s1M, pb223s1M, pb223d0M
+            p23s1M, pb223s1M, pb223d0M, pb223a0M
             , 
             suxM, sdxM, sexM
             , 
