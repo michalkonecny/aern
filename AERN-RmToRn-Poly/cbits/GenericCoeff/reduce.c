@@ -6,6 +6,9 @@
 #include <GenericCoeff/coeff.h>
 #include <GenericCoeff/poly.h>
 
+#define DEBUG_REDUCE(x) x;
+//#define DEBUG_REDUCE(x)
+
 /*
  * auxiliary function that copies a block of terms as is
  *
@@ -77,7 +80,7 @@ ADD_COEFF_CODE(copySameSizes)(Ops * ops, Poly * res, Poly * src)
 void
 ADD_COEFF_CODE(copyEncl)(Ops * ops, Poly * res, Poly * src)
 {
-  //  printf("copyEncl: entry\n");
+  DEBUG_REDUCE(printf("copyEncl: entry\n"));
 
   Var srcArity = src -> maxArity;
   Size srcPsize = src -> psize;
@@ -187,6 +190,10 @@ ADD_COEFF_CODE(copyEncl)(Ops * ops, Poly * res, Poly * src)
 
   CFM_FREE(temp);
   free(reducedTerms);
+
+  DEBUG_REDUCE(printf("copyEncl: exit\n"));
+  DEBUG_REDUCE(printf("copyEncl: res = \n"));
+  DEBUG_REDUCE(ADD_COEFF_CODE(printPoly)(res));
 }
 
 /*
@@ -267,7 +274,7 @@ ADD_COEFF_CODE(copySomeTermsWithoutReduction)(Ops * ops, Var arity, Poly * res,
       iSrc++;
       //      printf("copyTerms: copied term\n");
     }
-  res -> psize = curPsize; // forget remaining terms in res
+  res -> psize = iRes; // forget remaining terms in res
   while (iRes < resPsize) // any terms left unassigned in res?
     {
       CFM_FREE(resTerms[iRes].coeff); // free their coefficients
