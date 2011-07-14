@@ -5,17 +5,22 @@
 #include "GenericCoeff/poly.h"
 #include "EvalExport_stub.h"
 
+#define DEBUG_EVAL(x) x;
+//#define DEBUG_EVAL(x)
+
 Value
 ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
     BinaryOp add, BinaryOp subtr, BinaryOp mult, ConversionOp cf2val)
 {
-  //  printf("evalAtPtChebBasis: starting\n");
+  DEBUG_EVAL(printf("evalAtPtChebBasis: starting\n"));
   Var maxArity = p -> maxArity;
   Var psize = p -> psize;
   Term * terms = p -> terms;
 
   // initialise the result variable using the constant term:
+  DEBUG_EVAL(printf("evalAtPtChebBasis: converting the constant term\n"));
   Value result = eval_convert_hs(cf2val, p -> constTerm);
+  DEBUG_EVAL(printf("evalAtPtChebBasis: converted the constant term\n"));
 
   // return if this is a constant polynomial:
   if (psize == 0)
@@ -37,13 +42,17 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
             }
         }
     }
+  DEBUG_EVAL(printf("evalAtPtChebBasis: computed power limits for all variables\n"));
 
   // compute Chebyshev powers for all values up to the variable's maximum power:
   Value ** varPowers = malloc(maxArity * sizeof(Value *));
   FOREACH_VAR_ARITY(var, maxArity)
     {
       Power varMaxN = maxPowers[var];
+      DEBUG_EVAL(printf("evalAtPtChebBasis: computing powers of var %d up to %d\n", var, varMaxN));
+
       Value x = values[var];
+
 
       // allocate space for powers of x using the maximum N:
       varPowers[var] = malloc((1 + varMaxN) * sizeof(Value));
@@ -59,7 +68,7 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
         }
 
       // compute powers 2 and onwards using the iterative formula T_n(x) = 2*x*T_{n-1}(x) - T_{n-2}(x)
-      for (Power n = 2; n < varMaxN; ++n)
+      for (Power n = 2; n <= varMaxN; ++n)
         {
           Value temp1 = eval_binary_hs(mult, x, varPowers[var][n - 1]);
           Value temp2 = eval_binary_hs(add, temp1, temp1);
@@ -69,6 +78,7 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
           free_SP_hs(temp2);
         }
     }
+  DEBUG_EVAL(printf("evalAtPtChebBasis: computed value powers for all variables\n"));
 
   // scan the polynomial terms, cumulatively computing the result:
   for (Size termNo = 0; termNo < psize; ++termNo)
@@ -94,6 +104,7 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
       free_SP_hs(temp);
       free_SP_hs(termValue);
     }
+  DEBUG_EVAL(printf("evalAtPtChebBasis: computed the polynomial's value\n"));
 
   // free pre-computed Chebyshev powers:
   FOREACH_VAR_ARITY(var, maxArity)
@@ -111,7 +122,7 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
   // free the array with maximum powers for each variable:
   free(maxPowers);
 
-  //  printf("evalAtPtChebBasis: returning\n");
+  DEBUG_EVAL(printf("evalAtPtChebBasis: finished, returning result\n"));
   return result;
 }
 
@@ -170,7 +181,7 @@ ADD_COEFF_CODE(evalAtPtPowerBasis)(Poly * p, Value * values, Value one,
         }
 
       // compute powers 2 and onwards from lower powers:
-      for (Power n = 2; n < varMaxN; ++n)
+      for (Power n = 2; n <= varMaxN; ++n)
         {
           /*
            * for even n: x^n = x^(n/2) * x^(n/2)
