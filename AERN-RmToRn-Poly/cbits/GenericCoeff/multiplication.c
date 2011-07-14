@@ -44,7 +44,7 @@ typedef struct COEFF_PWR
 } CoeffPowers;
 
 int
-ADD_COEFF_CODE(compareCoeffPowersByCoeffDecreasing)(const CoeffPowers ** cn1,
+ADD_COEFF_CODE(compareCoeffPowersByAbsCoeffDecreasing)(const CoeffPowers ** cn1,
     const CoeffPowers ** cn2)
 {
   DEBUG_MULT(printf("compareCoeffPowersByCoeffDecreasing: comparing cn1 = %p cn2 = %p\n", *cn1, *cn2));
@@ -59,10 +59,10 @@ ADD_COEFF_CODE(compareCoeffPowersByPowers)(const CoeffPowers * cn1,
 }
 
 void
-ADD_COEFF_CODE(sortCoeffPowersByCoeffDecreasing)(int size, CoeffPowers ** cns)
+ADD_COEFF_CODE(sortCoeffPowersByAbsCoeffDecreasing)(int size, CoeffPowers ** cns)
 {
   qsort(cns, size, sizeof(CoeffPowers *),
-      (__compar_fn_t ) &ADD_COEFF_CODE(compareCoeffPowersByCoeffDecreasing));
+      (__compar_fn_t ) &ADD_COEFF_CODE(compareCoeffPowersByAbsCoeffDecreasing));
 }
 
 void
@@ -362,7 +362,7 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
 
           DEBUG_MULT(printf("multiplyTermsAndConsts: sorting newTermsArray (size = %d) \n", newTermsArraySize));
           // sort newTerms by decreasing abs(cf):
-          ADD_COEFF_CODE(sortCoeffPowersByCoeffDecreasing)(newTermsArraySize,
+          ADD_COEFF_CODE(sortCoeffPowersByAbsCoeffDecreasing)(newTermsArraySize,
               newTermsArray);
           DEBUG_MULT(printf("multiplyTermsAndConsts: finished sorting\n"));
 
