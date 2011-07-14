@@ -5,8 +5,8 @@
 #include "GenericCoeff/poly.h"
 #include "EvalExport_stub.h"
 
-#define DEBUG_EVAL(x) x;
-//#define DEBUG_EVAL(x)
+//#define DEBUG_EVAL(x) x;
+#define DEBUG_EVAL(x)
 
 Value
 ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,

@@ -81,7 +81,8 @@ Library
 
 Executable testAERN-RmToRn-Poly
   hs-source-dirs: src, tests
-  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
+--  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
+  ghc-options:  -O2
   main-is: Main.hs
   Build-Depends:
         base >= 4 && < 5,
@@ -98,7 +99,8 @@ Executable testAERN-RmToRn-Poly
 
 Executable testAERN-RmToRn-Poly2
   hs-source-dirs: src, tests
-  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
+--  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
+  ghc-options:  -O2
   main-is: Main2.hs
   Build-Depends:
         base >= 4 && < 5,

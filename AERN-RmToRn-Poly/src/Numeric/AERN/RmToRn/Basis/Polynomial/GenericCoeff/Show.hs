@@ -38,7 +38,7 @@ import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
 import Numeric.AERN.Misc.Debug
 
 import Numeric.AERN.Basics.Mutable
-import Control.Monad.ST (ST, runST)
+import Control.Monad.ST (ST, runST, unsafeIOToST)
 
 import Foreign.Storable
 
@@ -81,7 +81,7 @@ instance
                 ++ (map (\n -> "v" ++ show n ) [3..(arity - 1)])
         
 showPolyWithVars :: 
-    (CanBeMutable cf, ShowInternals cf, Storable cf, ArithUpDn.RoundedReal cf) => 
+    (CanBeMutable cf, ShowInternals cf, Show cf, Storable cf, ArithUpDn.RoundedReal cf) => 
     PolyM cf s -> 
     (ShowInternalsIndicator cf) -> 
     [HVar] -> 
@@ -102,6 +102,7 @@ showPolyWithVars pM@(PolyM p) coeffShowIndicator varNames =
         showSymbolicPoly (showInternals coeffShowIndicator) defaultShowVar pSymb
     pSymb 
         =
+--        head $ (:) hpolyOne $ (\a -> [a]) $
         evalAtPtChebBasis 
             p
             (map hpolyVar varNames) 

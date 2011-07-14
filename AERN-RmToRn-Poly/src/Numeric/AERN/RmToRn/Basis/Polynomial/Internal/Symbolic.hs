@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Symbolic
     Description :  symbolic inefficient polynomials for formatting purposes
@@ -11,17 +12,22 @@
     Symbolic inefficient polynomials for formatting purposes.
 -}
 
+-- #define DEBUG_SYMBPOLY(x) x
+#define DEBUG_SYMBPOLY(x)
+
 module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Symbolic where
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
 
+import Numeric.AERN.Misc.Debug
+
 import qualified Data.Map as Map
 import Data.List
 
-newtype HPoly cf = HPoly (Map.Map HTerm cf) -- deriving (Show)
-newtype HTerm = HTerm (Map.Map HVar Int) deriving (Eq, Ord) -- Show)
+newtype HPoly cf = HPoly (Map.Map HTerm cf) deriving (Show)
+newtype HTerm = HTerm (Map.Map HVar Int) deriving (Eq, Ord, Show)
 type HVar = String
 
 showSymbolicPoly ::
@@ -65,10 +71,12 @@ hpolyConst ::
     (Show cf, HasZero cf, HasOne cf, NumOrd.PartialComparison cf) =>
      cf -> HPoly cf
 hpolyConst value =
---    unsafePrintReturn
---    (
---        "hpolyConst: value = " ++ show value ++ "; poly = " 
---    ) $ 
+DEBUG_SYMBPOLY(
+    unsafePrintReturn
+    (
+        "hpolyConst: value = " ++ show value ++ "; poly = " 
+    ) $
+)
     HPoly (Map.singleton (HTerm Map.empty) value)
 
 hpolyOne :: 
@@ -84,10 +92,12 @@ hpolyAdd ::
     (cf -> cf -> cf) ->
     (HPoly cf -> HPoly cf -> HPoly cf)
 hpolyAdd coeffAdd p1@(HPoly terms1) p2@(HPoly terms2) =
---    unsafePrintReturn
---    (
---        "hpolyAdd: " ++ show p1 ++ " + " ++ show p2 ++ " = "
---    ) $
+DEBUG_SYMBPOLY(
+    unsafePrintReturn
+    (
+        "hpolyAdd: " ++ show p1 ++ " + " ++ show p2 ++ " = "
+    ) $
+    )
     HPoly terms
     where
     terms = Map.unionWith coeffAdd terms1 terms2
@@ -98,10 +108,12 @@ hpolySubtr ::
     (cf -> cf -> cf) ->
     (HPoly cf -> HPoly cf -> HPoly cf)
 hpolySubtr coeffNeg coeffAdd p1@(HPoly terms1) p2@(HPoly terms2) =
---    unsafePrintReturn
---    (
---        "hpolySubtr: " ++ show p1 ++ " - " ++ show p2 ++ " = "
---    ) $
+DEBUG_SYMBPOLY(
+    unsafePrintReturn
+    (
+        "hpolySubtr: " ++ show p1 ++ " - " ++ show p2 ++ " = "
+    ) $
+)
     HPoly terms
     where
     terms = Map.unionWith coeffAdd terms1 (Map.map coeffNeg terms2)
@@ -112,10 +124,12 @@ hpolyMult ::
     (cf -> cf -> cf) ->
     (HPoly cf -> HPoly cf -> HPoly cf)
 hpolyMult coeffAdd coeffMult p1@(HPoly terms1) p2@(HPoly terms2) =
---    unsafePrintReturn
---    (
---        "hpolyMult: " ++ show p1 ++ " * " ++ show p2 ++ " = "
---    ) $
+DEBUG_SYMBPOLY(
+    unsafePrintReturn
+    (
+        "hpolyMult: " ++ show p1 ++ " * " ++ show p2 ++ " = "
+    ) $
+)
     foldl (hpolyAdd coeffAdd) (HPoly Map.empty) $
         [HPoly $ 
             Map.singleton 

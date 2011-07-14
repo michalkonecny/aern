@@ -63,7 +63,7 @@ foreign import ccall safe "evalAtPtChebBasisGenCf"
             IO (StablePtr val)
 
 evalAtPtChebBasis :: 
-    (Storable cf, CanBeMutable cf) => 
+    (Storable cf, CanBeMutable cf, Show cf) => 
     (Poly cf) ->
     [val] {-^ values to substitute for variables @[0..(maxArity-1)]@ -} ->
     val {-^ number @1@ -} ->
@@ -82,20 +82,26 @@ evalAtPtChebBasis (Poly _ polyFP) vals one add subtr mult cf2val =
     subtrSP <- newStablePtr subtr
     multSP <- newStablePtr mult
     cfm2valSP <- newStablePtr cfm2val
+--    putStrLn "evalAtPtChebBasis: about to call poly_evalAtPtChebBasis"
     resSP <- withForeignPtr polyFP $ \polyPtr ->
         poly_evalAtPtChebBasis polyPtr valSPsPtr oneSP addSP subtrSP multSP cfm2valSP
+--    putStrLn "evalAtPtChebBasis: poly_evalAtPtChebBasis returned"
     freeStablePtr oneSP
     _ <- mapM freeStablePtr [addSP, subtrSP, multSP]
     free valSPsPtr
     _ <- mapM freeStablePtr valSPs
     res <- deRefStablePtr resSP 
     freeStablePtr resSP
+    freeStablePtr cfm2valSP
+--    putStrLn "evalAtPtChebBasis: finishing"
     return res
     where
     cfm2val cfM =
         unsafePerformIO $
         do
+--        putStrLn "evalAtPtChebBasis: cfm2val: starting"
         cf <- unsafeSTToIO $ unsafeReadMutable cfM
+--        putStrLn $ "evalAtPtChebBasis: cfm2val: finishing (cf = " ++ show cf ++ ")"
         return $ cf2val cf
 
 foreign import ccall safe "evalAtPtPowerBasisGenCf"

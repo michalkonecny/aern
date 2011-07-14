@@ -92,6 +92,10 @@ Poly *
 ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
     Size maxSize, Power maxDeg, Var maxTermArity);
 
+/* build the polynomial c + a0x + a1x^2y for testing purposes */
+Poly *
+ADD_COEFF_CODE(newTestPoly)(Coeff c, Coeff a0, Coeff a1, Coeff errorBound);
+
 /*
  * preconditions:
  * 0 <= var && var < maxArity
@@ -107,30 +111,30 @@ ADD_COEFF_CODE(newProjectionPoly)(CoeffMutable zero, CoeffMutable one,
 ///*
 // * preconditions:
 // * res has to point to an allocated polynomial with initialised maxArity and maxSize;
-// * res has to have maxArity larger than p;
-// * res has to have maxSize not smaller than p;
+// * res has to have maxArity, maxSize and maxTermArity not smaller than p;
 // */
 //void
-//incrementArity(Poly * res, Poly *p, Var * old2new);
+//ADD_COEFF_CODE(increaseArity)(Poly * res, Poly *p, Var * old2new);
 
-Power
-ADD_COEFF_CODE(getPowersDegree)(Power powers[], Var arity);
 
 /*
- * The following operations expect all polynomial parameters and result space to
- * have matching maxArities.
- *
- * All Coeff parameters passed with a call are deallocated during the call.
+ * Reduce maxDegree of p in place, collapsing higher degree terms into errorTerm
  */
+void
+ADD_COEFF_CODE(reduceDegreeEncl)(Ops * ops, Power maxDeg, Poly * p);
 
 void
-ADD_COEFF_CODE(addUp)(Ops * ops, Poly *res, Poly * p1, Poly * p2);
+ADD_COEFF_CODE(copySameSizes)(Ops * ops, Poly * res, Poly * src);
 
 void
-ADD_COEFF_CODE(addDn)(Ops * ops, Poly *res, Poly * p1, Poly * p2);
+ADD_COEFF_CODE(copyEncl)(Ops * ops, Poly * res, Poly * src);
 
 void
-ADD_COEFF_CODE(addEncl)(Ops * ops, Poly *res, Poly * p1, Poly * p2);
+ADD_COEFF_CODE(copyUpThin)(Ops * ops, Poly * res, Poly * src);
+
+void
+ADD_COEFF_CODE(copyDnThin)(Ops * ops, Poly * res, Poly * src);
+
 
 //void
 //testAssign(Coeff sample, UnaryOpMutable assign, CoeffMutable to,
@@ -197,24 +201,30 @@ void
 ADD_COEFF_CODE(scaleEncl)(Ops * ops, CoeffMutable c, Poly * p);
 
 /*
- * Reduce maxDegree of p in place, collapsing higher degree terms into errorTerm
+ * The following operations expect all polynomial parameters and result space to
+ * have matching maxArities.
+ *
+ * All Coeff parameters passed with a call are deallocated during the call.
  */
-void
-ADD_COEFF_CODE(reduceDegreeEncl)(Ops * ops, Power maxDeg, Poly * p);
 
 void
-ADD_COEFF_CODE(copySameSizes)(Ops * ops, Poly * res, Poly * src);
+ADD_COEFF_CODE(addUp)(Ops * ops, Poly *res, Poly * p1, Poly * p2);
 
 void
-ADD_COEFF_CODE(copyEncl)(Ops * ops, Poly * res, Poly * src);
+ADD_COEFF_CODE(addDn)(Ops * ops, Poly *res, Poly * p1, Poly * p2);
 
 void
-ADD_COEFF_CODE(copyUpThin)(Ops * ops, Poly * res, Poly * src);
+ADD_COEFF_CODE(addEncl)(Ops * ops, Poly *res, Poly * p1, Poly * p2);
+
 
 void
-ADD_COEFF_CODE(copyDnThin)(Ops * ops, Poly * res, Poly * src);
+ADD_COEFF_CODE(multUp)(Ops * ops, Poly *res, Poly * p1, Poly * p2);
 
-//void
-//ADD_COEFF_CODE(reduceDegreeEnclUsingPureOps)(Ops_Pure * ops, Power maxDeg, Poly * p);
+void
+ADD_COEFF_CODE(multDn)(Ops * ops, Poly *res, Poly * p1, Poly * p2);
+
+void
+ADD_COEFF_CODE(multEncl)(Ops * ops, Poly *res, Poly * p1, Poly * p2);
+
 
 #endif /* POLY_H_ */
