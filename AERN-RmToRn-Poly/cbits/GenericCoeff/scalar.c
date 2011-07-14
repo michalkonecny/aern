@@ -12,25 +12,41 @@ void
 ADD_COEFF_CODE(scaleTerms)(Ops * ops, CoeffMutable c, Poly * p)
 {
   Var pSize = p -> psize;
-  if (pSize > 0) // any terms to scale?
-  {
-    Term * terms = p -> terms;
-    CoeffMutable coeffScaledDn = CFM_NEW(ops, CFM_ZERO(ops));
-    CoeffMutable maxError = CFM_NEW(ops, CFM_ZERO(ops));
-    CoeffMutable errorBound = CFM_NEW(ops, CFM_ZERO(ops));
-    for (int i = 0; i < pSize; i++)
+  // is c zero?
+  if (CFM_IS_EXACTZERO(ops, c))
     {
-      CFM_MUL_DN(ops, coeffScaledDn, c, terms[i].coeff);
-      CFM_MUL_UP(ops, terms[i].coeff, c, terms[i].coeff); // scale coefficient
-      // note that we choose the upward rounded scaled constant term, can cause upward drift
-      CFM_SUB_UP(ops, maxError, terms[i].coeff, coeffScaledDn); // bound rounding error
-      CFM_ADD_UP(ops, errorBound, errorBound, maxError); // accumulate rounding error
+      CFM_ASSIGN_VAL(ops, p -> constTerm, CFM_ZERO(ops));
+      CFM_ASSIGN_VAL(ops, p -> errorBound, CFM_ZERO(ops));
+      // remove all terms:
+      for (int i = 0; i < pSize; ++i)
+        {
+          CFM_FREE(p -> terms[i].coeff);
+        }
+      p -> psize = 0;
     }
-    CFM_FREE(coeffScaledDn);
-    CFM_FREE(maxError);
-    CFM_ASSIGN(ops, p -> errorBound, errorBound); // account for rounding errors
-    CFM_FREE(errorBound);
-  }
+  else
+    {
+      if (pSize > 0) // any terms to scale?
+
+        {
+          Term * terms = p -> terms;
+          CoeffMutable coeffScaledDn = CFM_NEW(ops, CFM_ZERO(ops));
+          CoeffMutable maxError = CFM_NEW(ops, CFM_ZERO(ops));
+          CoeffMutable errorBound = CFM_NEW(ops, CFM_ZERO(ops));
+          for (int i = 0; i < pSize; i++)
+            {
+              CFM_MUL_DN(ops, coeffScaledDn, c, terms[i].coeff);
+              CFM_MUL_UP(ops, terms[i].coeff, c, terms[i].coeff); // scale coefficient
+              // note that we choose the upward rounded scaled constant term, can cause upward drift
+              CFM_SUB_UP(ops, maxError, terms[i].coeff, coeffScaledDn); // bound rounding error
+              CFM_ADD_UP(ops, errorBound, errorBound, maxError); // accumulate rounding error
+            }
+          CFM_FREE(coeffScaledDn);
+          CFM_FREE(maxError);
+          CFM_ASSIGN(ops, p -> errorBound, errorBound); // account for rounding errors
+          CFM_FREE(errorBound);
+        }
+    }
 }
 
 void
