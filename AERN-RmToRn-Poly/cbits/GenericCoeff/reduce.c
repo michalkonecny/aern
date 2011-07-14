@@ -6,8 +6,8 @@
 #include <GenericCoeff/coeff.h>
 #include <GenericCoeff/poly.h>
 
-#define DEBUG_REDUCE(x) x;
-//#define DEBUG_REDUCE(x)
+//#define DEBUG_REDUCE(x) x;
+#define DEBUG_REDUCE(x)
 
 /*
  * auxiliary function that copies a block of terms as is
