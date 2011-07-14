@@ -20,6 +20,10 @@ typedef void * ComparisonOp;
    // a numerical comparison operator suitable for use in
    // the standard C sort function.
 
+typedef void * UnaryTestMutable;
+   // Pointer to a Haskell value of type (Mutable t s) -> Int, which
+   // encodes a unary predicate (0 ~ false, 1 ~ true)
+
 /* References to in-place operations provided by Haskell: */
 typedef struct OPS
 {
@@ -30,6 +34,7 @@ typedef struct OPS
   UnaryOpMutable assign;
   UnaryOpMutable assignFromPure;
   ComparisonOp compare;
+  UnaryTestMutable isExactZero;
   UnaryOpMutable negMutable;
   UnaryOpMutable absUpMutable;
   UnaryOpMutable absDnMutable;
@@ -56,6 +61,7 @@ typedef struct OPS
     (eval_assignMutableFromPure_hs(ops -> assignFromPure, rp, v))
 #define CFM_COMPARE(compare, d1, d2) (eval_compare_hs(compare, d1, d1))
 #define CFM_COMPARE_FN(ops) (ops -> compare)
+#define CFM_IS_EXACTZERO(ops, d1) (eval_unaryTest_hs(ops -> isExactZero, d1))
 
 #define CFM_NEG(ops,rp,dp) \
     (eval_unaryMutable_hs(ops -> zero, ops -> negMutable, rp, dp))

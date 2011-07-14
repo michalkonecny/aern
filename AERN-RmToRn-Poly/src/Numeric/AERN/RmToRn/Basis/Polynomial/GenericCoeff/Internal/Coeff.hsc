@@ -20,6 +20,8 @@
 module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Coeff
 where
 
+import Prelude hiding (EQ)
+
 import Numeric.AERN.Misc.Debug
 
 import Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Basics
@@ -61,6 +63,7 @@ data Ops s cf =
         ops_assign :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s cf)),
         ops_assignFromPure :: {-# UNPACK #-} ! (StablePtr (UnaryFromPureOpMutable s cf)),
         ops_compare :: {-# UNPACK #-} ! (StablePtr (ComparisonOpMutable s cf)),
+        ops_isExactZero :: {-# UNPACK #-} ! (StablePtr (UnaryTestMutable s cf)),
         ops_negMutable :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s cf)),
         ops_absUpMutable :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s cf)),
         ops_absDnMutable :: {-# UNPACK #-} ! (StablePtr (UnaryOpMutable s cf)),
@@ -82,7 +85,7 @@ instance (Storable cf) => Storable (Ops s cf) where
     peek = error "Ops.peek: Not needed and not applicable"
     poke ptr 
             (Ops
-              zero one new clone assign assignFromPure compare
+              zero one new clone assign assignFromPure compare isExactZero
               negMutable
               absUpMutable absDnMutable 
               plusUpMutable plusDnMutable 
@@ -99,6 +102,7 @@ instance (Storable cf) => Storable (Ops s cf) where
         #{poke Ops, assign} ptr assign
         #{poke Ops, assignFromPure} ptr assignFromPure
         #{poke Ops, compare} ptr compare
+        #{poke Ops, isExactZero} ptr isExactZero
         #{poke Ops, negMutable} ptr negMutable
         #{poke Ops, absUpMutable} ptr absUpMutable
         #{poke Ops, absDnMutable} ptr absDnMutable
@@ -132,6 +136,7 @@ mkOps ::
     (UnaryOpMutable s cf) ->
     (UnaryFromPureOpMutable s cf) ->
     (ComparisonOpMutable s cf) ->
+    (UnaryTestMutable s cf) ->
     (UnaryOpMutable s cf) ->
     (UnaryOpMutable s cf) ->
     (UnaryOpMutable s cf) ->
@@ -146,7 +151,7 @@ mkOps ::
     (MixedIntOpMutable s cf) ->
     (MixedIntOpMutable s cf) ->
     IO (Ops s cf)
-mkOps zero one new clone assign assignFromPure compare 
+mkOps zero one new clone assign assignFromPure compare isExactZero
         neg absUp absDn addUp addDn subtrUp subtrDn 
         multUp multDn 
         multByIntUp multByIntDn 
@@ -160,6 +165,7 @@ mkOps zero one new clone assign assignFromPure compare
     assignSP <- newStablePtr assign  
     assignFromPureSP <- newStablePtr assignFromPure  
     compareSP <- newStablePtr compare  
+    isExactZeroSP <- newStablePtr isExactZero  
     negSP <- newStablePtr neg  
     absUpSP <- newStablePtr absUp  
     absDnSP <- newStablePtr absDn
@@ -177,7 +183,7 @@ mkOps zero one new clone assign assignFromPure compare
       Ops
         zeroSP oneSP 
         newSP cloneSP assignSP assignFromPureSP
-        compareSP
+        compareSP isExactZeroSP
         negSP
         absUpSP absDnSP
         addUpSP addDnSP
@@ -208,6 +214,7 @@ mkOpsArithUpDn sample effort =
         (assignMutable)
         (writeMutable)
         (compareMutable)
+        (isExactZeroMutable)
         (negInPlace)
         (ArithUpDn.absUpInPlaceEff absEffort)
         (ArithUpDn.absDnInPlaceEff absEffort)
@@ -232,6 +239,12 @@ mkOpsArithUpDn sample effort =
         v2 <- unsafeReadMutable v2M
         let _ = [v1,v2,sample] 
         return $ NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 v2
+    isExactZeroMutable v1M =
+        unsafePerformIO $ unsafeSTToIO $
+        do
+        v1 <- unsafeReadMutable v1M
+        let _ = [v1,sample] 
+        return $ NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 zero == Just EQ
 
 opsFPArithUpDn ::
     (ArithUpDn.RoundedRealInPlace cf, CanBeMutable cf, Storable cf) => 
