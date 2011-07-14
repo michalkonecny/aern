@@ -223,7 +223,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(Ops * ops, Var arity,
   bool * reducedTerms = calloc(curPsize, sizeof(bool)); // set reduced terms to true, all initialised as false
   int termIndex = 0;
 
-  tree234 * tree = newtree234(&compareFor234); // ordered storage
+  tree234 * tree = newtree234((cmpfn234)&compareFor234); // ordered storage
   //        printf("copyEncl: %d elements in tree\n", count234(tree));
 
   //        printf("\nreductionsNeeded >= resMaxSize\n\n");
@@ -320,7 +320,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(Ops * ops, Var arity,
   bool * reducedTerms = calloc(curPsize, sizeof(bool)); // set reduced terms to true, all initialised as false
   int termIndex = 0;
 
-  tree234 * tree = newtree234(&compareFor234); // ordered storage
+  tree234 * tree = newtree234((cmpfn234) &compareFor234); // ordered storage
   //        printf("copyEncl: %d elements in tree\n", count234(tree));
 
   //        printf("\nreductionsNeeded < resMaxSize\n\n");

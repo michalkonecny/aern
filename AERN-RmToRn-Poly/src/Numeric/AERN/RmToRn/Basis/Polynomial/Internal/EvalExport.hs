@@ -145,7 +145,10 @@ foreign export ccall clone_SP_hs :: (StablePtr t) -> IO (StablePtr t)
    Allow C programs to free values produced by Haskell operations.
 -}
 free_SP_hs :: (StablePtr t) -> IO ()
-free_SP_hs = freeStablePtr
+free_SP_hs sp =
+    do
+--    putStrLn $ "free_SP_hs: " ++ (show $ castStablePtrToPtr sp) 
+    freeStablePtr sp
     -- note that this decrements the reference count of the pointer
 
 foreign export ccall free_SP_hs :: (StablePtr t) -> IO ()  
@@ -277,11 +280,17 @@ eval_binaryMutable_hs ::
     IO () 
 eval_binaryMutable_hs _ opSP resSP v1SP v2SP =
     do
+--    putStrLn "eval_binaryMutable_hs starting"
     op <- deRefStablePtr opSP
     res <- deRefStablePtr resSP
     v1 <- deRefStablePtr v1SP
     v2 <- deRefStablePtr v2SP
+--    putStrLn $ "eval_binaryMutable_hs prepared parameters " 
+--            ++ " res = " ++ show (castStablePtrToPtr resSP) 
+--            ++ " v1 = " ++ show (castStablePtrToPtr v1SP)
+--            ++ " v2 = " ++ show (castStablePtrToPtr v2SP)
     unsafeSTToIO $ op res v1 v2
+--    putStrLn "eval_binaryMutable_hs completed"
 
 foreign export ccall eval_binaryMutable_hs :: 
     (StablePtr t) -> 
@@ -304,11 +313,14 @@ eval_mixedIntMutable_hs ::
     IO () 
 eval_mixedIntMutable_hs _ opSP resSP v1SP n2C =
     do
+--    putStrLn "eval_mixedIntMutable_hs starting"
     op <- deRefStablePtr opSP
     res <- deRefStablePtr resSP
     v1 <- deRefStablePtr v1SP
     let n2 =  fromIntegral n2C
+--    putStrLn "eval_mixedIntMutable_hs prepared parameters"
     unsafeSTToIO $ op res v1 n2
+--    putStrLn "eval_mixedIntMutable_hs completed"
 
 foreign export ccall eval_mixedIntMutable_hs :: 
     (StablePtr t) -> 

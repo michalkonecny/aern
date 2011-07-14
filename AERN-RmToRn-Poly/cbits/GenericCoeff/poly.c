@@ -24,7 +24,8 @@ ADD_COEFF_CODE(printPoly)(Poly *p)
   for (int i = 0; i < psize; i++)
     {
       printf("    term ");
-      printf(" monomial degree = %d\n", MONOMIAL_DEGREE(terms[i].powers));
+      printf(" monomial degree = %d,", MONOMIAL_DEGREE(terms[i].powers));
+      printf(" arity = %d\n", TERM_ARITY(terms[i].powers));
       FOREACH_VAR_ARITY(var, arity)
         {
           printf("[%d]", POWER_OF_VAR(terms[i].powers, var));
@@ -109,6 +110,43 @@ ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
       // no need to initialise powers and
       // coefficients as these terms are inactive
     }
+
+  //  printf("newConstPoly: returning\n");
+  return poly;
+}
+
+Poly *
+ADD_COEFF_CODE(newTestPoly)(Coeff c, Coeff a0, Coeff a1, Coeff errorBound)
+{
+  //  printf("newConstPoly: starting\n");
+  Poly * poly = (Poly *) malloc(sizeof(Poly));
+  poly -> maxArity = 2;
+  poly -> maxSize = 2;
+  poly -> maxDeg = 3;
+  poly -> maxTermArity = 3;
+  poly -> errorBound = errorBound;
+  poly -> constTerm = c;
+  poly -> psize = 2;
+  poly -> terms = malloc(poly -> maxSize * sizeof(Term));
+
+  Power * powers0 = (Power *) malloc(SIZEOF_POWERS(poly -> maxArity));
+  MONOMIAL_DEGREE(powers0) = 1;
+  TERM_ARITY(powers0) = 1;
+  POWER_OF_VAR(powers0, 0) = 1;
+  POWER_OF_VAR(powers0, 1) = 0;
+  (poly -> terms)[0].powers = powers0;
+  (poly -> terms)[0].coeff = a0;
+
+  Power * powers1 = (Power *) malloc(SIZEOF_POWERS(poly -> maxArity));
+  MONOMIAL_DEGREE(powers1) = 3;
+  TERM_ARITY(powers1) = 2;
+  POWER_OF_VAR(powers1, 0) = 2;
+  POWER_OF_VAR(powers1, 1) = 1;
+  (poly -> terms)[1].powers = powers1;
+  (poly -> terms)[1].coeff = a1;
+
+  // no need to initialise powers and
+  // coefficients as these terms are inactive
 
   //  printf("newConstPoly: returning\n");
   return poly;

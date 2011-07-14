@@ -100,6 +100,60 @@ polyAddEncl =
     polyBinaryOp poly_addEncl
 
 ----------------------------------------------------------------
+-- Multiplication
+
+foreign import ccall safe "multiplyUpGenCf"
+        poly_multiplyUp :: 
+            OpsPtr cf ->
+            (Ptr (CPoly cf)) -> 
+            (Ptr (CPoly cf)) -> 
+            (Ptr (CPoly cf)) -> 
+            IO ()
+
+foreign import ccall safe "multiplyDnGenCf"
+        poly_multiplyDn :: 
+            OpsPtr cf ->
+            (Ptr (CPoly cf)) -> 
+            (Ptr (CPoly cf)) -> 
+            (Ptr (CPoly cf)) -> 
+            IO ()
+
+foreign import ccall safe "multiplyEnclGenCf"
+        poly_multiplyEncl :: 
+            OpsPtr cf ->
+            (Ptr (CPoly cf)) -> 
+            (Ptr (CPoly cf)) -> 
+            (Ptr (CPoly cf)) -> 
+            IO ()
+
+polyMultiplyUp ::
+    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
+    PolyM cf s ->
+    PolyM cf s ->
+    PolyM cf s ->
+    ST s ()
+polyMultiplyUp = 
+    polyBinaryOp poly_multiplyUp
+
+polyMultiplyDn ::
+    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
+    PolyM cf s ->
+    PolyM cf s ->
+    PolyM cf s ->
+    ST s ()
+polyMultiplyDn = 
+    polyBinaryOp poly_multiplyDn
+
+polyMultiplyEncl ::
+    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
+    PolyM cf s ->
+    PolyM cf s ->
+    PolyM cf s ->
+    ST s ()
+polyMultiplyEncl = 
+    polyBinaryOp poly_multiplyEncl
+
+----------------------------------------------------------------
 -- Scaling
 
 foreign import ccall safe "scaleUpThinGenCf"

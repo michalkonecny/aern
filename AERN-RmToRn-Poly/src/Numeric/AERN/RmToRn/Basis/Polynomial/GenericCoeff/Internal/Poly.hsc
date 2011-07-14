@@ -329,6 +329,56 @@ projectionPolyIO opsFP maxArity maxSize maxDeg maxTermArity x =
 
 ----------------------------------------------------------------
 
+foreign import ccall unsafe "newTestPolyGenCf"
+        poly_newTestPoly :: 
+            (StablePtr (Mutable cf s)) -> 
+            (StablePtr (Mutable cf s)) -> 
+            (StablePtr (Mutable cf s)) -> 
+            (StablePtr (Mutable cf s)) -> 
+            IO (Ptr (CPoly cf))  
+
+testPoly :: 
+    (Show cf, CanBeMutable cf) => 
+    OpsFP cf -> 
+    cf -> cf -> cf -> cf -> 
+    Poly cf
+testPoly opsFP c a0 a1 radius =
+    unsafePerformIO $ testPolyIO opsFP c a0 a1 radius
+
+testPolyM :: 
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    =>
+    OpsFP cf -> 
+    cf -> cf -> cf -> cf -> 
+    ST s (PolyM cf s)
+testPolyM opsFP c a0 a1 radius =
+    do
+    p <- unsafeIOToST $ testPolyIO opsFP c a0 a1 radius
+    unsafeMakeMutable p
+
+testPolyIO :: 
+    (Show cf, CanBeMutable cf) => 
+    OpsFP cf -> 
+    cf -> cf -> cf -> cf -> 
+    IO (Poly cf)
+testPolyIO opsFP c a0 a1 radius =
+    do
+    cM <- unsafeSTToIO $ makeMutable c
+    cSP <- newStablePtr cM
+    a0M <- unsafeSTToIO $ makeMutable a0
+    a0SP <- newStablePtr a0M
+    a1M <- unsafeSTToIO $ makeMutable a1
+    a1SP <- newStablePtr a1M
+    radiusM <- unsafeSTToIO $ makeMutable radius
+    radiusSP <- newStablePtr radiusM
+--    putStrLn $ "calling newTestPoly for " ++ show c
+    pP <- poly_newTestPoly cSP a0SP a1SP radiusSP 
+--    putStrLn $ "newTestPoly for " ++ show c ++ " returned"
+    fp <- Conc.newForeignPtr pP (concFinalizerFreePoly pP)
+    return $ Poly opsFP fp 
+
+----------------------------------------------------------------
+
 foreign import ccall safe "copySameSizesGenCf"
         poly_copySameSizes :: 
             OpsPtr cf ->

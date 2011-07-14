@@ -18,16 +18,21 @@ import System.IO.Unsafe
 import Foreign.StablePtr
 import System.Mem (performGC)
 import Control.Concurrent (threadDelay, yield)
+import System.IO
 
 main :: IO ()
 main = 
     do
+    hSetBuffering stdout LineBuffering
+--    hSetBuffering stdout NoBuffering
 --    testMutableDCPolys
     testMutableGCPolys
         
 testMutableGCPolys :: IO ()
 testMutableGCPolys =
     do
+    putStrLn $ "t = " ++ showP t
+
     putStrLn $ "p1 = " ++ showP p1
     putStrLn $ "p2 = " ++ showP p2
     putStrLn $ "p3 = " ++ showP p3
@@ -51,6 +56,17 @@ testMutableGCPolys =
     putStrLn $ "copyEncl (" ++ showP cpetarg ++ ") (" ++ showP cpesrc ++ ") = " ++ showP cperes
     putStrLn $ "copyUpThin (" ++ showP cpuptarg ++ ") (" ++ showP cpupsrc ++ ") = " ++ showP cpupres
     putStrLn $ "copyDnThin (" ++ showP cpdntarg ++ ") (" ++ showP cpdnsrc ++ ") = " ++ showP cpdnres
+    
+    putStrLn $ "mupxpy = " ++ showP mupxpy
+    putStrLn $ "mupxpxy = " ++ showP mupxpxy
+    putStrLn $ "mupxpxy (maxDegree = 1) = " ++ showP mupxpxyd1
+    putStrLn $ "mupxpxy (maxTermArity = 1) = " ++ showP mupxpxya1
+    putStrLn $ "mupxpxy (maxSize = 1) = " ++ showP mupxpxys1
+
+    putStrLn $ "mupx1pxy1 = " ++ showP mupx1pxy1
+    putStrLn $ "mupx1pxy1 (maxDegree = 2) = " ++ showP mupx1pxy1d2
+    putStrLn $ "mupx1pxy1 (maxSize = 2) = " ++ showP mupx1pxy1s2
+    
 --    performGC
 --    threadDelay 1000000
     where
@@ -61,6 +77,8 @@ testMutableGCPolys =
     showCoeffInternals = False
     opsFP = GCPoly.opsFPArithUpDnDefaultEffort sampleD
     [
+      t
+      ,
       p1,p2,p3,p4
       ,
       p11,p12,p22
@@ -72,13 +90,16 @@ testMutableGCPolys =
       sux,sdx,sex
       ,
       cpesrc,cpetarg,cperes,cpupsrc,cpuptarg,cpupres,cpdnsrc,cpdntarg,cpdnres
+      ,
+      mupxpy, mupxpxy, mupxpxyd1, mupxpxya1, mupxpxys1, mupx1pxy1, mupx1pxy1d2, mupx1pxy1s2
      ] = runST $
         do
         let mkConst c = GCPoly.constPolyM opsFP (Var 3) (Size 10) (Power 3) (Var 3) (c::Double) 0
-        let mkConstConst c = GCPoly.constPolyM opsFP (Var 3) (Size 1) (Power 3) (Var 3) (c::Double) 0
+        let mkConstSzPwTa c sz pw ta = GCPoly.constPolyM opsFP (Var 3) (Size sz) (Power pw) (Var ta) (c::Double) 0
         let mkVar n = GCPoly.projectionPolyM opsFP (Var 3) (Size 10) (Power 3) (Var 3) (Var n)
 
         let addUp = GCPoly.polyAddUp
+        let multiplyUp = GCPoly.polyMultiplyUp
 
         let scaleUpThin c = GCPoly.polyScaleUp (c::Double) 
         let scaleDnThin c = GCPoly.polyScaleDn (c::Double) 
@@ -87,6 +108,8 @@ testMutableGCPolys =
         let copyEncl = GCPoly.polyCopyEncl
         let copyUpThin = GCPoly.polyCopyUpThin
         let copyDnThin = GCPoly.polyCopyDnThin
+        
+        tM <- GCPoly.testPolyM opsFP 1 2 3 (0 :: Double)
         
         p1M <- mkConst 0
         p2M <- mkVar 0 -- "x"
@@ -124,28 +147,57 @@ testMutableGCPolys =
         addUp cpesrcM cpesrcM p2M
         addUp cpesrcM cpesrcM p3M
         addUp cpesrcM cpesrcM p4M
-        cpetargM <- mkConstConst 1
-        cperesM  <- mkConstConst 1
+        cpetargM <- mkConstSzPwTa 1 1 3 3
+        cperesM  <- mkConstSzPwTa 1 1 3 3
         copyEncl cperesM cpesrcM
 
         cpupsrcM  <- mkConst 1 
         addUp cpupsrcM cpupsrcM p2M
         addUp cpupsrcM cpupsrcM p3M
         addUp cpupsrcM cpupsrcM p4M
-        cpuptargM <- mkConstConst 1
-        cpupresM  <- mkConstConst 1
+        cpuptargM <- mkConstSzPwTa 1 1 3 3
+        cpupresM  <- mkConstSzPwTa 1 1 3 3
         copyUpThin cpupresM cpupsrcM
 
         cpdnsrcM  <- mkConst 1 
         addUp cpdnsrcM cpdnsrcM p2M
         addUp cpdnsrcM cpdnsrcM p3M
         addUp cpdnsrcM cpdnsrcM p4M
-        cpdntargM <- mkConstConst 1
-        cpdnresM  <- mkConstConst 1
+        cpdntargM <- mkConstSzPwTa 1 1 3 3
+        cpdnresM  <- mkConstSzPwTa 1 1 3 3
         copyDnThin cpdnresM cpdnsrcM
+        
+        c1M <- mkConst 1
+        xM <- mkVar 0 -- "x"
+        yM <- mkVar 1 -- "y"
+        temp1M <- mkConst 0
+        temp2M <- mkConst 0
+
+        mupxpyM <- mkConst 1
+        multiplyUp mupxpyM xM yM
+        mupxpxyM <- mkConst 1
+        multiplyUp mupxpxyM mupxpyM xM
+        mupxpxyd1M <- mkConstSzPwTa 1 10 1 3
+        multiplyUp mupxpxyd1M mupxpyM xM
+        mupxpxya1M <- mkConstSzPwTa 1 10 3 1
+        multiplyUp mupxpxya1M mupxpyM xM
+        mupxpxys1M <- mkConstSzPwTa 1 1 3 3
+        multiplyUp mupxpxys1M mupxpyM xM
+
+        mupx1pxy1M <- mkConst 1
+        addUp temp1M xM c1M
+        addUp temp2M mupxpyM c1M
+        multiplyUp mupx1pxy1M temp1M temp2M
+
+        mupx1pxy1d2M <- mkConstSzPwTa 1 10 2 3
+        multiplyUp mupx1pxy1d2M temp1M temp2M
+        mupx1pxy1s2M <- mkConstSzPwTa 1 2 3 3
+        multiplyUp mupx1pxy1s2M temp1M temp2M
         
         mapM (unsafeReadMutable) 
           [
+            tM
+            ,
             p1M, p2M, p3M, p4M
             , 
             p11M, p12M, p22M
@@ -157,6 +209,8 @@ testMutableGCPolys =
             suxM, sdxM, sexM
             , 
             cpesrcM, cpetargM, cperesM, cpupsrcM, cpuptargM, cpupresM, cpdnsrcM, cpdntargM, cpdnresM
+            ,
+            mupxpyM, mupxpxyM, mupxpxyd1M, mupxpxya1M, mupxpxys1M, mupx1pxy1M, mupx1pxy1d2M, mupx1pxy1s2M
            ]
  
 --testPureGCPolys :: IO ()
