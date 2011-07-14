@@ -53,6 +53,7 @@ testMutableGCPolys =
     putStrLn $ "scaleUpThin 0.1 x = " ++ showP sux
     putStrLn $ "scaleDnThin 0.1 x = " ++ showP sdx
     putStrLn $ "scaleEncl 0.1 x = " ++ showP sex
+    putStrLn $ "scaleEncl 0 x = " ++ showP sexz
   
     putStrLn $ "mupxpy = " ++ showP mupxpy
     putStrLn $ "mupxpxy = " ++ showP mupxpxy
@@ -100,7 +101,7 @@ testMutableGCPolys =
       ,
       p23s1,pb223s1,pb223d0,pb223a0
       ,
-      sux,sdx,sex
+      sux,sdx,sex,sexz
       ,
       mupxpy, mupxpxy, mupxpxyd1, mupxpxya1, mupxpxys1, mupx1pxy1, mupx1pxy1d2, mupx1pxy1s2
       ,
@@ -164,6 +165,8 @@ testMutableGCPolys =
         scaleDnThin 0.1 sdxM
         sexM <- mkVar 0
         scaleEncl 0.1 sexM
+        sexzM <- mkVar 0
+        scaleEncl 0 sexzM
         
         c1M <- mkConst 1
         xM <- mkVar 0 -- "x"
@@ -234,7 +237,7 @@ testMutableGCPolys =
             , 
             p23s1M, pb223s1M, pb223d0M, pb223a0M
             , 
-            suxM, sdxM, sexM
+            suxM, sdxM, sexM, sexzM
             , 
             mupxpyM, mupxpxyM, mupxpxyd1M, mupxpxya1M, mupxpxys1M, mupx1pxy1M, mupx1pxy1d2M, mupx1pxy1s2M
             ,

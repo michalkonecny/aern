@@ -6,8 +6,8 @@
 #include "GenericCoeff/poly.h"
 #include "EvalExport_stub.h"
 
-#define DEBUG_MULT(x) x;
-//#define DEBUG_MULT(x)
+//#define DEBUG_MULT(x) x;
+#define DEBUG_MULT(x)
 
 /*
  * overview copied from the to-do list:
