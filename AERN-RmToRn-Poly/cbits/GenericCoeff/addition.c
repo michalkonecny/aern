@@ -10,6 +10,7 @@
 typedef struct COEFFN
 {
   CoeffMutable cf;
+  CoeffMutable abs_cf;
   ComparisonOp cfCompare;
   int n;
   int n1;
@@ -17,10 +18,10 @@ typedef struct COEFFN
 } CoeffN;
 
 int
-ADD_COEFF_CODE(compareCoeffNsByCoeffDecreasing)(const CoeffN * cn1,
+ADD_COEFF_CODE(compareCoeffNsByAbsCoeffDecreasing)(const CoeffN * cn1,
     const CoeffN * cn2)
 {
-  return CFM_COMPARE(cn1 -> cfCompare, cn2 -> cf, cn1 -> cf);
+  return CFM_COMPARE(cn1 -> cfCompare, cn2 -> abs_cf, cn1 -> abs_cf);
 }
 
 int
@@ -30,10 +31,10 @@ ADD_COEFF_CODE(compareCoeffNsByN)(const CoeffN * cn1, const CoeffN * cn2)
 }
 
 void
-ADD_COEFF_CODE(sortCoeffNsByCoeffDecreasing)(int size, CoeffN * cns)
+ADD_COEFF_CODE(sortCoeffNsByAbsCoeffDecreasing)(int size, CoeffN * cns)
 {
   qsort(cns, size, sizeof(CoeffN),
-      (__compar_fn_t ) &ADD_COEFF_CODE(compareCoeffNsByCoeffDecreasing));
+      (__compar_fn_t ) &ADD_COEFF_CODE(compareCoeffNsByAbsCoeffDecreasing));
 }
 
 void
@@ -286,8 +287,13 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
       if (i > maxSize)
         {
           //          printf("addTermsAndReturnMaxError: reducing number of coeffs from %d to %d.\n", i, maxSize);
-          // need to reduce the size, sort them from largest to smallest:
-          ADD_COEFF_CODE(sortCoeffNsByCoeffDecreasing)(i, newCoeffs);
+          // need to reduce the size, sort them from largest to smallest by the absolute value of their coefficients:
+          for(int j = 0; j < i; ++j)
+            {
+              newCoeffs[j].abs_cf = CFM_NEW(ops, CFM_ZERO(ops));
+              CFM_ABS_UP(ops, newCoeffs[j].abs_cf, newCoeffs[j].cf);
+            }
+          ADD_COEFF_CODE(sortCoeffNsByAbsCoeffDecreasing)(i, newCoeffs);
           // now sort the first maxSize coeffs by N, ie the power order:
           ADD_COEFF_CODE(sortCoeffNsByN)(maxSize, newCoeffs);
           // first maxSize coeffs to be used with their terms,
