@@ -29,6 +29,7 @@ type BinaryOp t =  t -> t -> t
 type ConvertOp t1 t2 = t1 -> t2
 type ConvertFromDoubleOp t2 = ConvertOp Double t2
 type ComparisonOpMutable s t =  Mutable t s -> Mutable t s -> (Maybe PartialOrdering)
+type UnaryTestMutable s t =  Mutable t s -> Bool
 
 type NewOpMutable s t = t -> ST s (Mutable t s)
 type CloneOpMutable s t = Mutable t s -> ST s (Mutable t s)

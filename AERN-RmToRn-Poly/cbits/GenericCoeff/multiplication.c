@@ -6,30 +6,30 @@
 #include "GenericCoeff/poly.h"
 #include "EvalExport_stub.h"
 
-//#define DEBUG_MULT(x) x;
-#define DEBUG_MULT(x)
+#define DEBUG_MULT(x) x;
+//#define DEBUG_MULT(x)
 
 /*
  * overview copied from the to-do list:
  *
-    CoeffPower - like addition's CoeffN but holds an array of powers instead of N
-    create a counted B-tree of CoeffPowers indexed by the array of powers sorted lexicographically
-    compute all term products and add them to the B-tree
-      remember that T_i(x)*T_j(x) = T_{i+j}(x)/2 + T_{|i-j|}(x)/2
-        thus a product of two Chebyshev terms that share n variables
-          contributes to 2^n different Chebyshev terms in the result
-      when adding a term, first check whether there is a term with such power
-        if so, add the new coeff to the coeff of the existing term and update maxError
-      detect contributions to the constant term and collate them separately
-    if there are too many terms, index them sorted by coeff size in decreasing order
-    mark all CoeffPowers that are to be copied to the result
-    copy the constant term separately
-    iterate through the terms in the B-tree in the power order, following the constant term
-      if a term is marked, copy it to the result (reusing the power array)
-      otherwise adjust maxError and free the power array
-      in any case free each CoeffPower structure after processing
-    free the B-tree
-    set the constant/error term
+ CoeffPower - like addition's CoeffN but holds an array of powers instead of N
+ create a counted B-tree of CoeffPowers indexed by the array of powers sorted lexicographically
+ compute all term products and add them to the B-tree
+ remember that T_i(x)*T_j(x) = T_{i+j}(x)/2 + T_{|i-j|}(x)/2
+ thus a product of two Chebyshev terms that share n variables
+ contributes to 2^n different Chebyshev terms in the result
+ when adding a term, first check whether there is a term with such power
+ if so, add the new coeff to the coeff of the existing term and update maxError
+ detect contributions to the constant term and collate them separately
+ if there are too many terms, index them sorted by coeff size in decreasing order
+ mark all CoeffPowers that are to be copied to the result
+ copy the constant term separately
+ iterate through the terms in the B-tree in the power order, following the constant term
+ if a term is marked, copy it to the result (reusing the power array)
+ otherwise adjust maxError and free the power array
+ in any case free each CoeffPower structure after processing
+ free the B-tree
+ set the constant/error term
  */
 
 // auxiliary structure and associated functions for multiplication:
@@ -44,8 +44,8 @@ typedef struct COEFF_PWR
 } CoeffPowers;
 
 int
-ADD_COEFF_CODE(compareCoeffPowersByAbsCoeffDecreasing)(const CoeffPowers ** cn1,
-    const CoeffPowers ** cn2)
+ADD_COEFF_CODE(compareCoeffPowersByAbsCoeffDecreasing)(
+    const CoeffPowers ** cn1, const CoeffPowers ** cn2)
 {
   DEBUG_MULT(printf("compareCoeffPowersByCoeffDecreasing: comparing cn1 = %p cn2 = %p\n", *cn1, *cn2));
   return CFM_COMPARE((*cn1) -> cfCompare, (*cn2) -> abs_cf, (*cn1) -> abs_cf);
@@ -59,7 +59,8 @@ ADD_COEFF_CODE(compareCoeffPowersByPowers)(const CoeffPowers * cn1,
 }
 
 void
-ADD_COEFF_CODE(sortCoeffPowersByAbsCoeffDecreasing)(int size, CoeffPowers ** cns)
+ADD_COEFF_CODE(sortCoeffPowersByAbsCoeffDecreasing)(int size,
+    CoeffPowers ** cns)
 {
   qsort(cns, size, sizeof(CoeffPowers *),
       (__compar_fn_t ) &ADD_COEFF_CODE(compareCoeffPowersByAbsCoeffDecreasing));
@@ -130,8 +131,29 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
       // iterate through all pairs of terms from p1 and p2 and construct new CoeffPowers:
       for (Size i1 = 0; i1 <= p1Size; ++i1) // 0 is the constant term
         {
+          // locate the coefficient of this term:
+          CoeffMutable cf1 = i1 == 0 ? p1 -> constTerm : terms1[i1 - 1].coeff;
+
+          // skip the coefficient if it is exactly zero:
+          if (CFM_IS_EXACTZERO(ops, cf1))
+            {
+              DEBUG_MULT(printf("multiplyTermsAndConsts: skipping p1 term %d because its coeff is zero\n", i1));
+              continue;
+            }
+
           for (Size i2 = 0; i2 <= p2Size; ++i2) // 0 is the constant term
             {
+              // locate the coefficient of this term:
+              CoeffMutable cf2 = i2 == 0 ? p2 -> constTerm
+                  : terms2[i2 - 1].coeff;
+
+              // skip the coefficient if it is exactly zero:
+              if (CFM_IS_EXACTZERO(ops, cf2))
+                {
+                  DEBUG_MULT(printf("multiplyTermsAndConsts: skipping p2 term %d because its coeff is zero\n", i2));
+                  continue;
+                }
+
               DEBUG_MULT(printf("multiplyTermsAndConsts: looking at terms no %d and %d.\n", i1, i2));
               // construct CoeffPowers for all result terms,
               // part-initialising first CoeffPowers structure:
@@ -144,11 +166,6 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
                   SIZEOF_POWERS(arity));
 
               DEBUG_MULT(printf("multiplyTermsAndConsts: initialised first CoeffPowers (cf = %p).\n", tempCoeffPowers[0] -> cf));
-
-              CoeffMutable cf1 = i1 == 0 ? p1 -> constTerm
-                  : terms1[i1 - 1].coeff;
-              CoeffMutable cf2 = i2 == 0 ? p2 -> constTerm
-                  : terms2[i2 - 1].coeff;
 
               // compute all combinations of powers for the result of multiplying these two terms:
               FOREACH_VAR_ARITY(var, arity)
@@ -322,7 +339,6 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
                         }
                     }
                 }
-
             } // end of for loop iterating over terms of p2
         } // end of for loop iterating over terms of p1
 
@@ -331,8 +347,15 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
       // free temp CoeffPowers:
       free(tempCoeffPowers);
 
+      // work out whether the constant term is included in the tree:
+      int haveConstantTerm = 1;
+      if(CFM_IS_EXACTZERO(ops, p1 -> constTerm) || CFM_IS_EXACTZERO(ops, p2 -> constTerm))
+        {
+          haveConstantTerm = 0;
+        }
+
       // determine whether a further reduction is needed due to maxSize:
-      int newTermsSize = count234(newTerms) - 1; // do not count the constant term
+      int newTermsSize = count234(newTerms) - haveConstantTerm; // do not count the constant term if present
       DEBUG_MULT(printf("multiplyTermsAndConsts: created %d non-constant terms\n", newTermsSize));
 
       if (newTermsSize > maxSize)
@@ -344,7 +367,7 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
               sizeof(CoeffPowers *) * newTermsSize);
           DEBUG_MULT(printf("multiplyTermsAndConsts: created newTermsArray of size %d \n", newTermsSize));
 
-          int newTermsArraySize = -1;
+          int newTermsArraySize = - haveConstantTerm;
           // add all non-constant terms into newTermsArray in powers order and complete their abs_cf:
           for (CoeffPowers * t = NULL; (t = findrel234(newTerms, t, NULL,
               REL234_GT)) != NULL;)
@@ -362,8 +385,8 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
 
           DEBUG_MULT(printf("multiplyTermsAndConsts: sorting newTermsArray (size = %d) \n", newTermsArraySize));
           // sort newTerms by decreasing abs(cf):
-          ADD_COEFF_CODE(sortCoeffPowersByAbsCoeffDecreasing)(newTermsArraySize,
-              newTermsArray);
+          ADD_COEFF_CODE(sortCoeffPowersByAbsCoeffDecreasing)(
+              newTermsArraySize, newTermsArray);
           DEBUG_MULT(printf("multiplyTermsAndConsts: finished sorting\n"));
 
           // remove the terms with smallest coeffs:
@@ -398,7 +421,13 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
       Size oldResPsize = res -> psize;
       res -> psize = newTermsSize;
 
-      for (int i = -1; i < newTermsSize; ++i)
+      if(! haveConstantTerm)
+        {
+          DEBUG_MULT(printf("multiplyTermsAndConsts: setting result constant term to zero\n"));
+          res -> constTerm = CFM_NEW(ops, CFM_ZERO(ops));
+        }
+
+      for (int i = -haveConstantTerm; i < newTermsSize; ++i)
         {
           // take the least element off the tree:
           CoeffPowers * t = delpos234(newTerms, 0);
@@ -441,11 +470,7 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
 void
 ADD_COEFF_CODE(multiplyUp)(Ops * ops, Poly *res, Poly * p1, Poly * p2)
 {
-  DEBUG_MULT(printf("multiplyUp: starting\n"));
-  DEBUG_MULT(printf("multiplyUp: p1 = \n"));
-  DEBUG_MULT(ADD_COEFF_CODE(printPoly)(p1));
-  DEBUG_MULT(printf("multiplyUp: p2 = \n"));
-  DEBUG_MULT(ADD_COEFF_CODE(printPoly)(p2));
+  DEBUG_MULT(printf("multiplyUp: starting\n"));DEBUG_MULT(printf("multiplyUp: p1 = \n"));DEBUG_MULT(ADD_COEFF_CODE(printPoly)(p1));DEBUG_MULT(printf("multiplyUp: p2 = \n"));DEBUG_MULT(ADD_COEFF_CODE(printPoly)(p2));
 
   ADD_COEFF_CODE(multiplyTermsAndConsts)(ops, res, p1, p2);
   DEBUG_MULT(printf("performed main multiplication\n"));
@@ -455,9 +480,7 @@ ADD_COEFF_CODE(multiplyUp)(Ops * ops, Poly *res, Poly * p1, Poly * p2)
 
   // set the error bound to zero:
   CFM_ASSIGN_VAL(ops, res -> errorBound, CFM_ZERO(ops));
-  DEBUG_MULT(printf("multiplyUp: finished\n"));
-  DEBUG_MULT(printf("multiplyUp: result = \n"));
-  DEBUG_MULT(ADD_COEFF_CODE(printPoly)(res));
+  DEBUG_MULT(printf("multiplyUp: finished\n"));DEBUG_MULT(printf("multiplyUp: result = \n"));DEBUG_MULT(ADD_COEFF_CODE(printPoly)(res));
 
 }
 

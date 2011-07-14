@@ -96,6 +96,29 @@ foreign export ccall eval_compare_hs ::
     IO CInt 
         
 {-|
+   Allow C programs to use a Haskell predicate  that has been
+   sent to it as a StablePtr.  Its parameter is opaque to C.
+-}
+{-# INLINE eval_unaryTest_hs #-}
+eval_unaryTest_hs :: 
+    (StablePtr (val -> Bool)) -> 
+    (StablePtr val) -> 
+    IO CInt 
+eval_unaryTest_hs testSP v1SP =
+    do
+    test <- deRefStablePtr testSP
+    v1 <- deRefStablePtr v1SP
+    return $ bool2int $ test v1
+    where
+    bool2int True = 1
+    bool2int False = 0
+
+foreign export ccall eval_unaryTest_hs :: 
+    (StablePtr (val -> Bool)) -> 
+    (StablePtr val) -> 
+    IO CInt 
+        
+{-|
    Allow C programs to use a Haskell unary operator that has been
    sent to it as a StablePtr.  Its parameter and result are opaque to C.
 -}
