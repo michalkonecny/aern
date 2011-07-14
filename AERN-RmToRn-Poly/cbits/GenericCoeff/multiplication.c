@@ -9,6 +9,29 @@
 #define DEBUG_MULT(x) x;
 //#define DEBUG_MULT(x)
 
+/*
+ * overview copied from the to-do list:
+ *
+    CoeffPower - like addition's CoeffN but holds an array of powers instead of N
+    create a counted B-tree of CoeffPowers indexed by the array of powers sorted lexicographically
+    compute all term products and add them to the B-tree
+      remember that T_i(x)*T_j(x) = T_{i+j}(x)/2 + T_{|i-j|}(x)/2
+        thus a product of two Chebyshev terms that share n variables
+          contributes to 2^n different Chebyshev terms in the result
+      when adding a term, first check whether there is a term with such power
+        if so, add the new coeff to the coeff of the existing term and update maxError
+      detect contributions to the constant term and collate them separately
+    if there are too many terms, index them sorted by coeff size in decreasing order
+    mark all CoeffPowers that are to be copied to the result
+    copy the constant term separately
+    iterate through the terms in the B-tree in the power order, following the constant term
+      if a term is marked, copy it to the result (reusing the power array)
+      otherwise adjust maxError and free the power array
+      in any case free each CoeffPower structure after processing
+    free the B-tree
+    set the constant/error term
+ */
+
 // auxiliary structure and associated functions for multiplication:
 
 typedef struct COEFF_PWR
@@ -461,9 +484,12 @@ ADD_COEFF_CODE(multiplyEncl)(Ops * ops, Poly *res, Poly * p1, Poly * p2)
 
   CoeffMutable temp = CFM_NEW(ops, CFM_ZERO(ops));
 
-  // combine the errorBounds from parameter polynomials
+  // add to res -> errorBound the radius derived from the radii of p1 and p2:
+
+  // the derived radius is estimated
   // using the formula e = e1*e2 + e1*|p2| + e2*|p1|
-  CFM_MUL_UP(ops, res -> errorBound, p1 -> errorBound, p2 -> errorBound);
+  CFM_MUL_UP(ops, temp, p1 -> errorBound, p2 -> errorBound);
+  CFM_ADD_UP(ops, res -> errorBound, res -> errorBound, temp);
   // add e2*p1:
   ADD_COEFF_CODE(boundUpThin)(ops, temp, p1);
   CFM_MUL_UP(ops, temp, temp, p2 -> errorBound);
