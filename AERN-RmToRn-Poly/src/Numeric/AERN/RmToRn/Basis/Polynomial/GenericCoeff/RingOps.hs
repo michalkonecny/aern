@@ -66,3 +66,37 @@ instance
     addInInPlaceEff =
         error "attempting an inwards rounded addition for Poly cf, which is not supported" 
             
+instance
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
+    =>
+    ArithUpDn.RoundedMultiplyEffort (Poly cf) 
+    where
+    type ArithUpDn.MultEffortIndicator (Poly cf) = () 
+    multDefaultEffort p = ()
+
+instance 
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
+    =>
+    ArithUpDn.RoundedMultiplyInPlace (Poly cf)
+    where
+    multUpInPlaceEff _ = polyMultiplyUp 
+    multDnInPlaceEff _ = polyMultiplyDn
+
+instance
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
+    =>
+    ArithInOut.RoundedMultiplyEffort (Poly cf) 
+    where
+    type ArithInOut.MultEffortIndicator (Poly cf) = () 
+    multDefaultEffort p = ()
+
+instance 
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
+    =>
+    ArithInOut.RoundedMultiplyInPlace (Poly cf)
+    where
+    multOutInPlaceEff _ = polyMultiplyEncl 
+    multInInPlaceEff =
+        error "attempting an inwards rounded multiplication for Poly cf, which is not supported" 
+            
+            
