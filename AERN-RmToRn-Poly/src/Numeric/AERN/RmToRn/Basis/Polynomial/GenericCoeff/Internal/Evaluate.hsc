@@ -150,40 +150,26 @@ evalAtPtPowerBasis (Poly _ polyFP) vals one add mult cf2val =
 
 ----------------------------------------------------------------
 
-foreign import ccall safe "boundUpThinGenCf"
-    poly_boundUpThin ::
+foreign import ccall safe "boundUpUsingDerGenCf"
+    poly_boundUpUsingDer ::
         OpsPtr cf ->
-        (StablePtr (Mutable cf s)) -> 
+        (Ptr (StablePtr (Mutable cf s))) -> 
         (Ptr (CPoly cf)) -> 
         IO ()
 
-polyBoundUpThin :: 
+polyBoundUpUsingDer :: 
     (HasZero cf, NumOrd.PartialComparison cf, CanBeMutable cf) =>
     Mutable cf s ->
     PolyM cf s ->
     ST s ()
-polyBoundUpThin =
-    polyEval poly_boundUpThin
+polyBoundUpUsingDer =
+    polyEval poly_boundUpUsingDer
 
-foreign import ccall safe "boundDnThinGenCf"
-    poly_boundDnThin ::
-        OpsPtr cf ->
-        (StablePtr (Mutable cf s)) -> 
-        (Ptr (CPoly cf)) -> 
-        IO ()
-
-polyBoundDnThin :: 
-    (HasZero cf, NumOrd.PartialComparison cf, CanBeMutable cf) =>
-    Mutable cf s ->
-    PolyM cf s ->
-    ST s ()
-polyBoundDnThin =
-    polyEval poly_boundDnThin
 
 foreign import ccall safe "boundUpGenCf"
     poly_boundUp ::
         OpsPtr cf ->
-        (StablePtr (Mutable cf s)) -> 
+        (Ptr (StablePtr (Mutable cf s))) -> 
         (Ptr (CPoly cf)) -> 
         IO ()
 
@@ -198,7 +184,7 @@ polyBoundUp =
 foreign import ccall safe "boundDnGenCf"
     poly_boundDn ::
         OpsPtr cf ->
-        (StablePtr (Mutable cf s)) -> 
+        (Ptr (StablePtr (Mutable cf s))) -> 
         (Ptr (CPoly cf)) -> 
         IO ()
 
@@ -214,7 +200,9 @@ polyEval evalOp resM (PolyM (Poly opsFP pFP)) =
     unsafeIOToST $
     do
     resMST <- newStablePtr resM
+    resMSTPtr <- malloc
+    poke resMSTPtr resMST
     withForeignPtr pFP $ \p ->
       withForeignPtr opsFP $ \opsP ->
-        evalOp opsP resMST p
+        evalOp opsP resMSTPtr p
     freeStablePtr resMST

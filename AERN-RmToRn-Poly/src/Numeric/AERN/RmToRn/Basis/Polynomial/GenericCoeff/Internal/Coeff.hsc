@@ -194,6 +194,7 @@ mkOps zero one new clone assign assignFromPure compare isExactZero
 
 mkOpsArithUpDn ::
     (ArithUpDn.RoundedRealInPlace cf, 
+     Show cf,
      CanBeMutable cf) 
     => 
     cf ->
@@ -237,8 +238,10 @@ mkOpsArithUpDn sample effort =
         do
         v1 <- unsafeReadMutable v1M
         v2 <- unsafeReadMutable v2M
-        let _ = [v1,v2,sample] 
-        return $ NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 v2
+        let _ = [v1,v2,sample]
+        let result = NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 v2 
+--        unsafeIOToST $ putStrLn $ "compareMutable " ++ show v1 ++ " " ++ show v2 ++ " = " ++ show result 
+        return result
     isExactZeroMutable v1M =
         unsafePerformIO $ unsafeSTToIO $
         do
@@ -247,7 +250,7 @@ mkOpsArithUpDn sample effort =
         return $ NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 zero == Just EQ
 
 opsFPArithUpDn ::
-    (ArithUpDn.RoundedRealInPlace cf, CanBeMutable cf, Storable cf) => 
+    (ArithUpDn.RoundedRealInPlace cf, CanBeMutable cf, Storable cf, Show cf) => 
     cf ->
     ArithUpDn.RoundedRealEffortIndicator cf -> 
     OpsFP cf
@@ -258,7 +261,7 @@ opsFPArithUpDn sample effort =
         newOpsFP ops
 
 opsFPArithUpDnDefaultEffort ::
-    (ArithUpDn.RoundedRealInPlace cf, CanBeMutable cf, Storable cf) => 
+    (ArithUpDn.RoundedRealInPlace cf, CanBeMutable cf, Storable cf, Show cf) => 
     cf ->
     OpsFP cf
 opsFPArithUpDnDefaultEffort sample =

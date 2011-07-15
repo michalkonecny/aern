@@ -59,7 +59,7 @@ typedef struct OPS
     //(eval_assignMutable_hs(ops -> zero, ops -> assign, rp, sp))
 #define CFM_ASSIGN_VAL(ops,rp,v) \
     (eval_assignMutableFromPure_hs(ops -> assignFromPure, rp, v))
-#define CFM_COMPARE(compare, d1, d2) (eval_compare_hs(compare, d1, d1))
+#define CFM_COMPARE(compare, d1, d2) (eval_compare_hs(compare, d1, d2))
 #define CFM_COMPARE_FN(ops) (ops -> compare)
 #define CFM_IS_EXACTZERO(ops, d1) (eval_unaryTest_hs(ops -> isExactZero, d1))
 
