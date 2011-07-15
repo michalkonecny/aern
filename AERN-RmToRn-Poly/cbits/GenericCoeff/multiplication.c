@@ -514,11 +514,11 @@ ADD_COEFF_CODE(multiplyEncl)(Ops * ops, Poly *res, Poly * p1, Poly * p2)
   CFM_MUL_UP(ops, temp, p1 -> errorBound, p2 -> errorBound);
   CFM_ADD_UP(ops, res -> errorBound, res -> errorBound, temp);
   // add e2*p1:
-  ADD_COEFF_CODE(boundUpThin)(ops, temp, p1);
+  ADD_COEFF_CODE(boundUpThin)(ops, &temp, p1);
   CFM_MUL_UP(ops, temp, temp, p2 -> errorBound);
   CFM_ADD_UP(ops, res -> errorBound, res -> errorBound, temp);
   // add e2*p1:
-  ADD_COEFF_CODE(boundUpThin)(ops, temp, p2);
+  ADD_COEFF_CODE(boundUpThin)(ops, &temp, p2);
   CFM_MUL_UP(ops, temp, temp, p1 -> errorBound);
   CFM_ADD_UP(ops, res -> errorBound, res -> errorBound, temp);
   // value of temp no longer needed

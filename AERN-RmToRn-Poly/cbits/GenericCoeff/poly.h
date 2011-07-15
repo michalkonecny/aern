@@ -165,31 +165,35 @@ ADD_COEFF_CODE(evalAtPtPowerBasis)(Poly * p, Value * values, Value one,
  *  WARNING : does not check for thinness
  */
 void
-ADD_COEFF_CODE(boundUpThin)(Ops * ops, CoeffMutable res, Poly * p);
+ADD_COEFF_CODE(boundUpThin)(Ops * ops, CoeffMutable * res, Poly * p);
 
 /*
  *  Lower bound for a polynomial ignoring errorBound
  *  WARNING : does not check for thinness
  */
-
 void
-ADD_COEFF_CODE(boundDnThin)(Ops * ops, CoeffMutable res, Poly * p);
+ADD_COEFF_CODE(boundDnThin)(Ops * ops, CoeffMutable * res, Poly * p);
 
 /*
  *  Upper bound for a polynomial (centred enclosure)
  *  WARNING : assumes errorBound >= 0
  */
-
 void
-ADD_COEFF_CODE(boundUp)(Ops * ops, CoeffMutable res, Poly * p);
+ADD_COEFF_CODE(boundUp)(Ops * ops, CoeffMutable * res, Poly * p);
 
 /*
  *  Lower bound for a polynomial (centred enclosure)
  *  WARNING : assumes errorBound >= 0
  */
-
 void
-ADD_COEFF_CODE(boundDn)(Ops * ops, CoeffMutable res, Poly * p);
+ADD_COEFF_CODE(boundDn)(Ops * ops, CoeffMutable * res, Poly * p);
+
+/*
+ *  Upper bound for a polynomial (centred enclosure)
+ *  using partial derivatives to detect monotonicity.
+ */
+void
+ADD_COEFF_CODE(boundUpUsingDer)(Ops * ops, CoeffMutable * res, Poly *p);
 
 void
 ADD_COEFF_CODE(scaleUpThin)(Ops * ops, CoeffMutable c, Poly * p);

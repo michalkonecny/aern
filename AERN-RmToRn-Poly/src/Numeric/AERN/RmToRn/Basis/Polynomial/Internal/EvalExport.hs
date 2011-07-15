@@ -78,7 +78,9 @@ eval_compare_hs compSP v1SP v2SP =
     comp <- deRefStablePtr compSP
     v1 <- deRefStablePtr v1SP
     v2 <- deRefStablePtr v2SP
-    return $ pord2int $ comp v1 v2
+    let res = comp v1 v2
+--    putStrLn $ "eval_compare_hs: res = " ++ show res
+    return $ pord2int res 
     where
     pord2int (Just EQ) = 0
     pord2int (Just LT) = -1
