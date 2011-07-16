@@ -61,19 +61,10 @@ class CanBeMutable t where
         do
         a <- unsafeReadMutable aM
         makeMutable a 
-
-instance (CanBeMutable t) => CanBeMutable (Maybe t) where
-    data Mutable (Maybe t) s =
-        MMaybe { unMMaybe :: STRef s (Maybe t) }
-    makeMutable a = 
-        do
-        v <- newSTRef a
-        return $ MMaybe v
-    unsafeMakeMutable = makeMutable
-    writeMutable (MMaybe v) a = writeSTRef v a  
-    unsafeWriteMutable = writeMutable
-    readMutable (MMaybe v) = readSTRef v  
-    unsafeReadMutable = readMutable 
+    sameVariable :: Mutable t s -> Mutable t s -> Bool
+    variablesIndependent :: Mutable t s -> Mutable t s -> Bool
+    variablesIndependent v1 v2 = 
+        not $ sameVariable v1 v2 -- appropriate only for atomic variables
 
 type OpMutable1 t s = 
     (Mutable t s) -> (Mutable t s) -> ST s () 

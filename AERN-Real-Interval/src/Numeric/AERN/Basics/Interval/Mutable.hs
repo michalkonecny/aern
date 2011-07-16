@@ -52,3 +52,12 @@ instance (CanBeMutable e) => CanBeMutable (Interval e) where
         l <- unsafeReadMutable lM 
         r <- unsafeReadMutable rM 
         return $ Interval l r
+    sameVariable (MInterval l1 r1) (MInterval l2 r2) =
+        sameVariable l1 l2 && sameVariable r1 r2
+    variablesIndependent (MInterval l1 r1) (MInterval l2 r2) =
+        variablesIndependent l1 l2 
+        && variablesIndependent r1 r2
+        && variablesIndependent r1 l2
+        && variablesIndependent l1 r2
+        
+        
