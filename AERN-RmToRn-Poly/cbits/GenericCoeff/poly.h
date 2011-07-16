@@ -196,6 +196,15 @@ void
 ADD_COEFF_CODE(boundUpUsingDer)(Ops * ops, CoeffMutable * res, Poly *p);
 
 void
+ADD_COEFF_CODE(addConstUpThin)(Ops * ops, CoeffMutable c, Poly * p);
+
+void
+ADD_COEFF_CODE(addConstDnThin)(Ops * ops, CoeffMutable c, Poly * p);
+
+void
+ADD_COEFF_CODE(addConstEncl)(Ops * ops, CoeffMutable c, Poly * p);
+
+void
 ADD_COEFF_CODE(scaleUpThin)(Ops * ops, CoeffMutable c, Poly * p);
 
 void

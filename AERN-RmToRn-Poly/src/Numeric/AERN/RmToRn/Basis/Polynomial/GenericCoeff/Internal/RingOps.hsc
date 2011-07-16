@@ -154,7 +154,55 @@ polyMultiplyEncl =
     polyBinaryOp poly_multiplyEncl
 
 ----------------------------------------------------------------
--- Scaling
+-- Adding a constant
+
+foreign import ccall safe "addConstUpThinGenCf"
+        poly_addConstUpThin :: 
+            OpsPtr cf ->
+            (StablePtr (Mutable cf s)) ->
+            (Ptr (CPoly cf)) -> 
+            IO ()
+
+foreign import ccall safe "addConstDnThinGenCf"
+        poly_addConstDnThin :: 
+            OpsPtr cf ->
+            (StablePtr (Mutable cf s)) ->
+            (Ptr (CPoly cf)) -> 
+            IO ()
+
+foreign import ccall safe "addConstEnclGenCf"
+        poly_addConstEncl :: 
+            OpsPtr cf ->
+            (StablePtr (Mutable cf s)) ->
+            (Ptr (CPoly cf)) -> 
+            IO ()
+
+polyAddConstUp ::
+    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
+    cf ->
+    PolyM cf s ->
+    ST s ()
+polyAddConstUp = 
+    polyCoeffOp poly_addConstUpThin
+
+polyAddConstDn ::
+    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
+    cf ->
+    PolyM cf s ->
+    ST s ()
+polyAddConstDn = 
+    polyCoeffOp poly_addConstDnThin
+
+polyAddConstEncl ::
+    (CanBeMutable cf, HasZero cf, NumOrd.PartialComparison cf) =>
+    cf ->
+    PolyM cf s ->
+    ST s ()
+polyAddConstEncl = 
+    polyCoeffOp poly_addConstEncl
+    
+----------------------------------------------------------------
+-- Scaling by a contant
 
 foreign import ccall safe "scaleUpThinGenCf"
         poly_scaleUpThin :: 
@@ -200,3 +248,4 @@ polyScaleEncl ::
     ST s ()
 polyScaleEncl = 
     polyCoeffOp poly_scaleEncl
+    

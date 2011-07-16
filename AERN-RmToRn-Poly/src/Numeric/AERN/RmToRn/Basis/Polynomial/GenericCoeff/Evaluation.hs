@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Evaluation
     Description :  evaluation of a PolyFP in a custom interpretation
@@ -57,5 +58,31 @@ instance
             (polyEvalMinus evalOps)
             (polyEvalTimes evalOps)
             (polyEvalFromCoeff evalOps)
+
+-- bounds as conversion to coeff type:
+instance 
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
+    => 
+    ArithUpDn.Convertible (Poly cf) cf
+    where
+    type ArithUpDn.ConvertEffortIndicator (Poly cf) cf = ()
+    convertDefaultEffort _ _ = ()
+    convertUpEff _ p =
+        runST $
+            do
+            bM <- makeMutable zero
+            pM <- unsafeMakeMutable p
+            polyBoundUpUsingDer bM pM
+            b <- unsafeReadMutable bM
+            return $ Just b
+    convertDnEff _ p =
+        runST $
+            do
+            bM <- makeMutable zero
+            pM <- unsafeMakeMutable p
+            polyBoundDn bM pM
+            b <- unsafeReadMutable bM
+            return $ Just b
+     
 
 

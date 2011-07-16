@@ -26,8 +26,10 @@ main =
     putStrLn $ "y = " ++ showP y
     putStrLn $ "c1 = " ++ showP c1
     putStrLn $ "c2 = " ++ showP c2
-    putStrLn $ "x +^ c2 = " ++ showP xc2
-    putStrLn $ "(x +^ c2) *^ y^2 = " ++ showP xc2Ty2
+    putStrLn $ "x +^ 2 = " ++ showP xc2
+    putStrLn $ "(x +^ 2) *^ y^2 = " ++ showP xc2Ty2
+    putStrLn $ "((x +^ 2) *^ y^2)*3 = " ++ showP xc2Ty2T3
+    putStrLn $ "((x +^ 2) *^ y^2)*3 + 1 = " ++ showP xc2Ty2T3P1
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
     showChebTerms = True
@@ -36,7 +38,7 @@ main =
     unitInterval = Interval (-1) 1
     opsFP = GCPoly.opsFPArithUpDnDefaultEffort (0 :: Double)
     x :: P
-    [x,y,c1,c2,xc2,xc2Ty2] =
+    [x,y,c1,c2,xc2,xc2Ty2,xc2Ty2T3,xc2Ty2T3P1] =
         runST $
             do
             xM <- unsafeMakeMutable $ newProjection (opsFP,10,3,3) domainBox 0
@@ -48,6 +50,10 @@ main =
             xc2Ty2M <- cloneMutable xc2M
             xc2Ty2M *^= yM
             xc2Ty2M *^= yM
-            mapM unsafeReadMutable [xM,yM,c1M,c2M,xc2M, xc2Ty2M]
+            xc2Ty2T3M <- cloneMutable xc2Ty2M
+            xc2Ty2T3M *^|= (3::Double) 
+            xc2Ty2T3P1M <- cloneMutable xc2Ty2T3M
+            xc2Ty2T3P1M +^|= (1::Double) 
+            mapM unsafeReadMutable [xM,yM,c1M,c2M,xc2M, xc2Ty2M, xc2Ty2T3M, xc2Ty2T3P1M]
     
     
