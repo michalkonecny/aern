@@ -43,6 +43,7 @@ instance CanBeMutable Double where
     unsafeWriteMutable = writeMutable
     readMutable (MDouble v) = readSTRef v  
     unsafeReadMutable = readMutable 
+    sameVariable (MDouble v1) (MDouble v2) = v1 == v2
 
 instance RoundedLatticeInPlace Double
     where

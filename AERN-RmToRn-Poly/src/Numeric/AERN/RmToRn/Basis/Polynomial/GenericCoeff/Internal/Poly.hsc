@@ -99,7 +99,8 @@ instance
         resM <- constPolyM opsFP arity size deg tarity zero zero
         assignMutable resM pM
         return resM
-    
+    sameVariable p1M@(PolyM (Poly _ fp1)) p2M@(PolyM (Poly _ fp2)) =
+        fp1 == fp2
 type PolyM cf s = Mutable (Poly cf) s
 
 {-# INLINE peekSizes #-}

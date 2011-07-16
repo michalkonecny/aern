@@ -38,6 +38,7 @@ instance CanBeMutable MPFR where
     unsafeWriteMutable (MMPFR m) = MM.unsafeWriteMMPFR m
     readMutable (MMPFR m) = MM.freeze m 
     unsafeReadMutable (MMPFR m) = MM.unsafeFreeze m 
+    sameVariable (MMPFR v1) (MMPFR v2) = v1 == v2
     
 instance NegInPlace MPFR where
     negInPlace (MMPFR r) (MMPFR a) = 
