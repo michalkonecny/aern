@@ -9,6 +9,33 @@
 #include "GenericCoeff/poly.h"
 
 void
+ADD_COEFF_CODE(addConstUpThin)(Ops * ops, CoeffMutable c, Poly * p)
+{
+  CFM_ADD_UP(ops, p -> constTerm, p -> constTerm, c);
+}
+
+void
+ADD_COEFF_CODE(addConstDnThin)(Ops * ops, CoeffMutable c, Poly * p)
+{
+  CFM_ADD_DN(ops, p -> constTerm, p -> constTerm, c);
+}
+
+void
+ADD_COEFF_CODE(addConstEncl)(Ops * ops, CoeffMutable c, Poly * p)
+{
+  CoeffMutable temp = CFM_NEW(ops, CFM_ZERO(ops));
+
+  CFM_ADD_UP(ops, temp, p -> constTerm, c);
+  CFM_ADD_DN(ops, p -> constTerm, p -> constTerm, c);
+  // it does not matter which of the above two results is set to constTerm
+
+  CFM_SUB_UP(ops, temp, temp, p -> constTerm);
+  CFM_ADD_UP(ops, p -> errorBound, p -> errorBound, temp);
+
+  CFM_FREE(temp);
+}
+
+void
 ADD_COEFF_CODE(scaleTerms)(Ops * ops, CoeffMutable c, Poly * p)
 {
   Var pSize = p -> psize;
