@@ -21,6 +21,7 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.RingOps
 ()
 where
 
+import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
@@ -33,6 +34,20 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.RingOps
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (runST)
 import Foreign.Storable
+
+instance 
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
+    =>
+    NegInPlace (Poly cf)
+    where
+    negInPlace resM pM =
+        do
+--        resSizes <- peekSizesM resM
+--        pSizes <- peekSizesM pM
+--        case resSizes == pSizes of
+--            True ->
+        polyCopyEncl resM pM 
+        polyScaleEncl (neg one) pM
 
 {-- addition --}
 

@@ -42,6 +42,8 @@ Library
         Numeric.AERN.RmToRn.Domain, 
         Numeric.AERN.RmToRn.New, 
         Numeric.AERN.RmToRn.Evaluation, 
-        Numeric.AERN.RmToRn.MinimalFnBasis
+        Numeric.AERN.RmToRn.MinimalFnBasis 
+  other-modules:
+        Numeric.AERN.RmToRn.MinimalFnBasis.Basics,
+        Numeric.AERN.RmToRn.MinimalFnBasis.NumericOrder
 
-    
