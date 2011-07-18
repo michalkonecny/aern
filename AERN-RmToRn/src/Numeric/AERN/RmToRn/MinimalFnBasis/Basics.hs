@@ -72,7 +72,8 @@ class (HasDomainBox fb,
 -}
 newtype FnEndpoint fb = FnEndpoint fb
     deriving 
-        (HasConstFns, 
+        (Show,
+         HasConstFns, 
          HasProjections, 
          NegInPlace,
          ArithUpDn.RoundedAddInPlace, 

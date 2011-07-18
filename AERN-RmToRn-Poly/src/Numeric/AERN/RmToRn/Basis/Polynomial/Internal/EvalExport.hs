@@ -282,6 +282,9 @@ eval_unaryMutable_hs _ opSP resSP v1SP =
     op <- deRefStablePtr opSP
     res <- deRefStablePtr resSP
     v1 <- deRefStablePtr v1SP
+--    putStrLn $ "eval_unaryMutable_hs prepared parameters " 
+--            ++ " res = " ++ show (castStablePtrToPtr resSP) 
+--            ++ " v1 = " ++ show (castStablePtrToPtr v1SP)
     unsafeSTToIO $ op res v1
 
 foreign export ccall eval_unaryMutable_hs ::

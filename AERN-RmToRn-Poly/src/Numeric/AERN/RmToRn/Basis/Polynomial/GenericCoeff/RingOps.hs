@@ -31,23 +31,29 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly
 -- import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Coeffs
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.RingOps
 
+import Numeric.AERN.Basics.ShowInternals
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show
+
 import Numeric.AERN.Basics.Mutable
-import Control.Monad.ST (runST)
+import Control.Monad.ST (runST, unsafeIOToST)
 import Foreign.Storable
 
 instance 
-    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf, ShowInternals cf)
     =>
     NegInPlace (Poly cf)
     where
     negInPlace resM pM =
         do
---        resSizes <- peekSizesM resM
---        pSizes <- peekSizesM pM
---        case resSizes == pSizes of
---            True ->
-        polyCopyEncl resM pM 
-        polyScaleEncl (neg one) pM
+--        res <- readMutable resM
+--        p <- readMutable pM
+--        unsafeIOToST $ putStrLn $ "Poly negInPlace: starting (resM = " ++ showP res ++ ", pM = " ++ showP p ++ ")" 
+        case sameVariable resM pM of
+            True -> return ()
+            False -> polyCopyEncl resM pM 
+        polyScaleEncl (neg one) resM
+--        where
+--        showP p = showInternals (defaultShowIndicator p) p
 
 {-- addition --}
 

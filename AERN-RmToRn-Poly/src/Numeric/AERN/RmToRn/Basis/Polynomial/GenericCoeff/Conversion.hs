@@ -46,7 +46,7 @@ instance
         runST $
             do
             pM <- unsafeMakeMutable p
-            resM <- unsafeMakeMutable zero
+            resM <- makeMutable zero
             polyBoundUp resM pM
             res <- unsafeReadMutable resM
             return $ Just $ res
@@ -54,7 +54,7 @@ instance
         runST $
             do
             pM <- unsafeMakeMutable p
-            resM <- unsafeMakeMutable zero
+            resM <- makeMutable zero
             polyBoundDn resM pM
             res <- unsafeReadMutable resM
             return $ Just $ res
