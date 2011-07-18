@@ -55,13 +55,43 @@ class PartialComparison t where
     pGreaterEff :: (PartialCompareEffortIndicator t) -> t -> t -> Maybe Bool
     
     -- defaults for all convenience operations:
-    pEqualEff effort a b = fmap (== EQ) (pCompareEff effort a b)
-    pLessEff effort a b = fmap (== LT) (pCompareEff effort a b)
-    pGreaterEff effort a b = fmap (== GT) (pCompareEff effort a b)
+    pEqualEff effort a b =
+        case pCompareEff effort a b of
+            Just EQ -> Just True
+            Just LEE -> Nothing
+            Just GEE -> Nothing
+            Just _ -> Just False
+            _ -> Nothing
+    pLessEff effort a b = 
+        case pCompareEff effort a b of
+            Just LT -> Just True
+            Just LEE -> Nothing
+            Just _ -> Just False
+            _ -> Nothing
+    pGreaterEff effort a b = 
+        case pCompareEff effort a b of
+            Just GT -> Just True
+            Just GEE -> Nothing
+            Just _ -> Just False
+            _ -> Nothing
+    pLeqEff effort a b =
+        case pCompareEff effort a b of
+            Just EQ -> Just True
+            Just LT -> Just True
+            Just LEE -> Just True
+            Just GEE -> Nothing
+            Just _ -> Just False
+            _ -> Nothing
+    pGeqEff effort a b =
+        case pCompareEff effort a b of
+            Just EQ -> Just True
+            Just GT -> Just True
+            Just GEE -> Just True
+            Just LEE -> Nothing
+            Just _ -> Just False
+            _ -> Nothing
     pComparableEff effort a b = fmap (/= NC) (pCompareEff effort a b)
     pIncomparableEff effort a b = fmap (== NC) (pCompareEff effort a b)
-    pLeqEff effort a b = fmap (`elem` [EQ,LT,LEE]) (pCompareEff effort a b)
-    pGeqEff effort a b = fmap (`elem` [EQ,GT,GEE]) (pCompareEff effort a b)
 
 
 instance PartialComparison Int where
