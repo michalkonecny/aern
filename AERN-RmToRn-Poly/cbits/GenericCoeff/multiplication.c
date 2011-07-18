@@ -348,10 +348,11 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
       free(tempCoeffPowers);
 
       // work out whether the constant term is included in the tree:
-      int haveConstantTerm = 1;
-      if(CFM_IS_EXACTZERO(ops, p1 -> constTerm) || CFM_IS_EXACTZERO(ops, p2 -> constTerm))
+      CoeffPowers * firstCoeffPowers = (CoeffPowers *)index234(newTerms, 0);
+      bool haveConstantTerm = false;
+      if(MONOMIAL_DEGREE(firstCoeffPowers -> powers) == 0)
         {
-          haveConstantTerm = 0;
+          haveConstantTerm = true;
         }
 
       // determine whether a further reduction is needed due to maxSize:
@@ -367,7 +368,9 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
               sizeof(CoeffPowers *) * newTermsSize);
           DEBUG_MULT(printf("multiplyTermsAndConsts: created newTermsArray of size %d \n", newTermsSize));
 
-          int newTermsArraySize = - haveConstantTerm;
+
+          int newTermsArraySize = 0;
+          if(haveConstantTerm){ newTermsArraySize --; } // ignore constant term
           // add all non-constant terms into newTermsArray in powers order and complete their abs_cf:
           for (CoeffPowers * t = NULL; (t = findrel234(newTerms, t, NULL,
               REL234_GT)) != NULL;)
