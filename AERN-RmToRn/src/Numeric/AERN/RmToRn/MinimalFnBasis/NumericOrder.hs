@@ -31,7 +31,12 @@ import Numeric.AERN.RealArithmetic.Interval
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
-instance (MinimalFnBasis fb) => NumOrd.PartialComparison (FnEndpoint fb)
+import Numeric.AERN.Misc.Debug
+
+instance (MinimalFnBasis fb
+    , Show fb, Show (Domain fb)
+    ) 
+    => NumOrd.PartialComparison (FnEndpoint fb)
     where
     type NumOrd.PartialCompareEffortIndicator (FnEndpoint fb) =
         (ArithUpDn.AddEffortIndicator fb, 
@@ -42,6 +47,16 @@ instance (MinimalFnBasis fb) => NumOrd.PartialComparison (FnEndpoint fb)
          ArithUpDn.convertDefaultEffort f (getSampleDomValue f),
          NumOrd.pCompareDefaultEffort (getSampleDomValue f))
     pCompareEff (effAdd, effBnd, effCompDom) f1 f2 =
+--        unsafePrint
+--        (
+--            "FnEndpoint NumOrd.pCompareEff:"
+--            ++ "\n f1 = " ++ show f1
+--            ++ "\n f2 = " ++ show f2
+--            ++ "\n diffUp = " ++ show diffUp
+--            ++ "\n diffDn = " ++ show diffDn
+--            ++ "\n bUp = " ++ show bUp
+--            ++ "\n bDn = " ++ show bDn
+--        ) $
         NumOrd.pCompareEff effCompDom (Interval bDn bUp) zero
         where
         _ = [bUp, getSampleDomValue f1]
