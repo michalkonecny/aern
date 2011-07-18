@@ -51,7 +51,11 @@ instance RoundedLatticeInPlace Double
     maxDnInPlaceEff = maxDnInPlaceEffFromPure
     minUpInPlaceEff = minUpInPlaceEffFromPure
     minDnInPlaceEff = minDnInPlaceEffFromPure
+
 instance NegInPlace Double
+    where
+    negInPlace = pureToMutable1 neg
+     
 instance RoundedAddInPlace Double
     where
     addUpInPlaceEff = addUpInPlaceEffFromPure
