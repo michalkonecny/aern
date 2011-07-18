@@ -34,3 +34,15 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Evaluation()
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.RingOps()
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show
 
+import Numeric.AERN.RmToRn.MinimalFnBasis
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+import Numeric.AERN.Basics.ShowInternals
+import Foreign.Storable
+
+instance
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, ShowInternals cf, Show cf)
+    =>
+    MinimalFnBasis (Poly cf)
+    where
+    fixedDomain _ = (-1) </\> 1

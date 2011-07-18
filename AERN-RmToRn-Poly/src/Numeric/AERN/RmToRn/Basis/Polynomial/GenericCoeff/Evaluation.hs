@@ -59,30 +59,3 @@ instance
             (polyEvalTimes evalOps)
             (polyEvalFromCoeff evalOps)
 
--- bounds as conversion to coeff type:
-instance 
-    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
-    => 
-    ArithUpDn.Convertible (Poly cf) cf
-    where
-    type ArithUpDn.ConvertEffortIndicator (Poly cf) cf = ()
-    convertDefaultEffort _ _ = ()
-    convertUpEff _ p =
-        runST $
-            do
-            bM <- makeMutable zero
-            pM <- unsafeMakeMutable p
-            polyBoundUpUsingDer bM pM
-            b <- unsafeReadMutable bM
-            return $ Just b
-    convertDnEff _ p =
-        runST $
-            do
-            bM <- makeMutable zero
-            pM <- unsafeMakeMutable p
-            polyBoundDn bM pM
-            b <- unsafeReadMutable bM
-            return $ Just b
-     
-
-

@@ -21,6 +21,7 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Conversion
 ()
 where
 
+import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly as Poly
@@ -31,6 +32,7 @@ import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (runST)
 import Foreign.Storable
 
+-- bounds as conversion to coeff type:
 instance 
     (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
     =>
@@ -44,8 +46,7 @@ instance
         runST $
             do
             pM <- unsafeMakeMutable p
-            sampleM <- Poly.peekConstM pM
-            resM <- cloneMutable sampleM
+            resM <- unsafeMakeMutable zero
             polyBoundUp resM pM
             res <- unsafeReadMutable resM
             return $ Just $ res
@@ -53,8 +54,7 @@ instance
         runST $
             do
             pM <- unsafeMakeMutable p
-            sampleM <- Poly.peekConstM pM
-            resM <- cloneMutable sampleM
+            resM <- unsafeMakeMutable zero
             polyBoundDn resM pM
             res <- unsafeReadMutable resM
             return $ Just $ res

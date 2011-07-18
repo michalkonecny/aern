@@ -6,6 +6,8 @@ import Numeric.AERN.RealArithmetic.Basis.Double()
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
+import Numeric.AERN.RmToRn.MinimalFnBasis
+
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.ShowInternals
 
@@ -17,7 +19,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (runST)
 
-type P = GCPoly.Poly Double
+type P = FnEndpoint (GCPoly.Poly Double)
 
 main :: IO ()
 main =
