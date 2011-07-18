@@ -48,6 +48,7 @@ instance (ArithUpDn.RoundedAddInPlace e, CanBeMutable e) =>
 instance 
     (ArithUpDn.RoundedAddInPlace e,
      CanBeMutable e,
+     Neg e,
      NegInPlace e) => 
     RoundedSubtrInPlace (Interval e) 
 
@@ -419,7 +420,7 @@ instance
     (ArithUpDn.RoundedPowerNonnegToNonnegIntInPlace e,
      RoundedPowerToNonnegInt (Interval e),
      RoundedMultiplyInPlace (Interval e),
-     HasOne e,  HasZero e, NegInPlace e,
+     HasOne e,  HasZero e, Neg e, NegInPlace e,
      NumOrd.PartialComparison e, NumOrd.RoundedLatticeInPlace e,
      CanBeMutable e
      ) => 
@@ -583,7 +584,7 @@ recipIntervalInPlace pPosNonnegNegNonpos divL divR fallback
 instance 
     (ArithUpDn.RoundedFieldInPlace e,
      ArithUpDn.RoundedPowerNonnegToNonnegIntInPlace e,
-     HasZero e, NegInPlace e, HasOne e, 
+     HasZero e, Neg e, NegInPlace e, HasOne e, 
      NumOrd.HasExtrema e,
      NumOrd.PartialComparison e, 
      NumOrd.RoundedLatticeInPlace e) => 
