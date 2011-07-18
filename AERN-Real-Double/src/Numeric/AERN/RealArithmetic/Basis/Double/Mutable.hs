@@ -30,6 +30,8 @@ import Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps
 import Data.STRef
 import Data.Ratio
 
+import Control.Monad.ST (unsafeIOToST)
+
 
 instance CanBeMutable Double where
     data Mutable Double s = 
@@ -55,6 +57,15 @@ instance RoundedLatticeInPlace Double
 instance NegInPlace Double
     where
     negInPlace = pureToMutable1 neg
+--    negInPlace resM pM =
+--        do
+--        res <- readMutable resM
+--        p <- readMutable pM
+--        unsafeIOToST $ putStrLn $ "Double negInPlace starting: (resM = " ++ show res ++ ", pM = " ++ show p ++ ")"
+--        pureToMutable1 neg resM pM
+--        res <- readMutable resM
+--        p <- readMutable pM
+--        unsafeIOToST $ putStrLn $ "Double negInPlace finishing: (resM = " ++ show res ++ ", pM = " ++ show p ++ ")"
      
 instance RoundedAddInPlace Double
     where
