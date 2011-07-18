@@ -57,10 +57,9 @@ class HasInfinities t where
 class Neg t where
     neg :: t -> t
     
-class (Neg t, CanBeMutable t) => NegInPlace t where
+class (CanBeMutable t) => NegInPlace t where
     negInPlace :: OpMutable1 t s 
-    negInPlace =
-        pureToMutable1 neg
+
 --        
 --        -- default such as this one is very inefficient
 --        -- but facilitates an API that works even for
