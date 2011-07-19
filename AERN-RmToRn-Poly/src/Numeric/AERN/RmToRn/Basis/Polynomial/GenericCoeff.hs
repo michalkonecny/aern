@@ -38,13 +38,17 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show
 import Numeric.AERN.RmToRn.MinimalFnBasis
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Numeric.AERN.Basics.ShowInternals
 import Foreign.Storable
 
 import Test.QuickCheck
 
 instance
-    (ArithUpDn.RoundedRealInPlace cf, Storable cf, ShowInternals cf, Show cf, Arbitrary cf)
+    (ArithUpDn.RoundedRealInPlace cf, 
+     Storable cf, 
+     ShowInternals cf, Show cf, 
+     Arbitrary cf, NumOrd.ArbitraryOrderedTuple cf)
     =>
     MinimalFnBasis (Poly cf)
     where

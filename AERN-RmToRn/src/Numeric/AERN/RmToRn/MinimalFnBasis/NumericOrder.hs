@@ -105,7 +105,8 @@ arbitraryFn maxArity sizeLimits
     -- now multiplying variables in various powers:  
     powerTerms <- mapM (const $ arbitraryPowerTerm box varFns degree) [1..constrTerms]
     -- and combining them as a linear combination:
-    coeffs <- vector constrTerms
+    coeffsL <- vectorOf constrTerms ((\(Just a) -> a) $ NumOrd.arbitraryTuple 1)
+    let coeffs = map (\[a] -> a) coeffsL
     let _ = sampleDom : coeffs
     return $ 
         foldl1 (+^) $ zipWith (*^|) powerTerms coeffs

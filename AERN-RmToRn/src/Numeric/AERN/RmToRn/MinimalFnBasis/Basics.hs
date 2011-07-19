@@ -64,7 +64,8 @@ class (HasDomainBox fb,
        -- TODO
        -- random generation:
        Arbitrary (SizeLimits fb),
-       Arbitrary (Domain fb)
+       Arbitrary (Domain fb),
+       NumOrd.ArbitraryOrderedTuple (Domain fb)
       ) => 
     MinimalFnBasis fb
     where
