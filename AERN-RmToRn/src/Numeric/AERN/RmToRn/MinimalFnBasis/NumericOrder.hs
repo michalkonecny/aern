@@ -17,11 +17,14 @@
 module Numeric.AERN.RmToRn.MinimalFnBasis.NumericOrder where
 
 import Numeric.AERN.RmToRn.MinimalFnBasis.Basics
+import Numeric.AERN.RmToRn.MinimalFnBasis.RingOps
 
 import Numeric.AERN.RmToRn.Domain
+import Numeric.AERN.RmToRn.New
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsDefaultEffort
 
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
@@ -31,7 +34,12 @@ import Numeric.AERN.RealArithmetic.Interval
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
+import Test.QuickCheck
+import Numeric.AERN.Misc.QuickCheck
+
 import Numeric.AERN.Misc.Debug
+
+import Control.Monad (zipWithM)
 
 instance (MinimalFnBasis fb
     , Show fb, Show (Domain fb)
@@ -64,6 +72,60 @@ instance (MinimalFnBasis fb
         Just bDn = ArithUpDn.convertDnEff effBnd diffDn
         diffUp = ArithUpDn.subtrUpEff effAdd f1 f2 
         diffDn = ArithUpDn.subtrDnEff effAdd f1 f2 
+        
+
+instance 
+    (MinimalFnBasis fb) => Arbitrary (FnEndpoint fb)
+    where
+    arbitrary
+        =
+        sized $ \size ->
+        do
+        sizeLimits <- arbitrary
+        maxArity <- choose (1, 2 + (size `div` 2))
+        arbitraryFn maxArity sizeLimits
+
+arbitraryFn maxArity sizeLimits
+    =
+    sized $ \size ->
+    do
+    -- extract domain box and samples from sizeLimits:
+    let
+        box = fromAscList $ zip vars (repeat $ fixedDomain sampleFn)
+        (sampleVar,Interval sampleDom _) = head $ toAscList box
+        sampleFn = newProjection sizeLimits box sampleVar
+        vars = getNVariables sampleFn maxArity
+    -- choose polynomial generation parameters:
+    arity <- choose (1, maxArity)
+    degree <- choose (0,2 + (size `div` 3))
+    constrTerms <- choose (1,3 + 2* size)
+    -- start building the result polynomial, first creating variables:
+    varFns <- mapM (\v -> return $ newProjection sizeLimits box v) vars
+    let _ = sampleFn : varFns
+    -- now multiplying variables in various powers:  
+    powerTerms <- mapM (const $ arbitraryPowerTerm box varFns degree) [1..constrTerms]
+    -- and combining them as a linear combination:
+    coeffs <- vector constrTerms
+    let _ = sampleDom : coeffs
+    return $ 
+        foldl1 (+^) $ zipWith (*^|) powerTerms coeffs
+    where
+    arbitraryPowerTerm box varFns degree
+        | null varFns || degree == 0 
+            = return $ newConstFn sizeLimits box one
+        | otherwise = 
+            do
+            (n,varFn) <- elements $ zip [0..] varFns
+            dg <- choose (1,degree)
+            let remainingVarFns = take (n-1) varFns ++ drop (n+1) varFns
+            restFn <- arbitraryPowerTerm box remainingVarFns (degree - dg)
+            let varFnPwr = foldl1 (*.) $ replicate dg varFn 
+            return $ varFnPwr *^ restFn -- rounding direction irrelevant 
+        
+        
+instance (MinimalFnBasis fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoint fb)
+    where
+    
         
 --instance (MinimalFnBasis fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoint fb)
         

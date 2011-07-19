@@ -37,29 +37,34 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
+import Test.QuickCheck
+
 class (HasDomainBox fb,
        ArithUpDn.RoundedReal (Domain fb),
 --        CanEvaluate fb, -- value at a point
 --        CanSubstitute fb, -- substitution
-        CanEvaluateOtherType fb, -- another interpretation (eg string or interval)
-        ShowInternals fb,
-        HasProjections fb, -- variables (but their domain is fixed!)
-        HasConstFns fb, -- constants
-        ArithUpDn.Convertible fb (Domain fb), -- bounds
-        CanBeMutable fb,
-        NegInPlace fb,
-        -- ring ops rounded up/down:
-        ArithUpDn.RoundedAddInPlace fb,
-        ArithUpDn.RoundedMultiplyInPlace fb,
-        ArithUpDn.RoundedMixedAddInPlace fb (Domain fb),
-        ArithUpDn.RoundedMixedMultiplyInPlace fb (Domain fb),
-        -- ring ops rounded *out* by some internal notion of enclosure:
-        ArithInOut.RoundedAddInPlace fb,
-        ArithInOut.RoundedMultiplyInPlace fb,
-        ArithInOut.RoundedMixedAddInPlace fb (Domain fb),
-        ArithInOut.RoundedMixedMultiplyInPlace fb (Domain fb)
-        -- primitive function rounded up/down:
-        -- TODO
+       CanEvaluateOtherType fb, -- another interpretation (eg string or interval)
+       ShowInternals fb,
+       HasProjections fb, -- variables (but their domain is fixed!)
+       HasConstFns fb, -- constants
+       ArithUpDn.Convertible fb (Domain fb), -- bounds
+       CanBeMutable fb,
+       NegInPlace fb,
+       -- ring ops rounded up/down:
+       ArithUpDn.RoundedAddInPlace fb,
+       ArithUpDn.RoundedMultiplyInPlace fb,
+       ArithUpDn.RoundedMixedAddInPlace fb (Domain fb),
+       ArithUpDn.RoundedMixedMultiplyInPlace fb (Domain fb),
+       -- ring ops rounded *out* by some internal notion of enclosure:
+       ArithInOut.RoundedAddInPlace fb,
+       ArithInOut.RoundedMultiplyInPlace fb,
+       ArithInOut.RoundedMixedAddInPlace fb (Domain fb),
+       ArithInOut.RoundedMixedMultiplyInPlace fb (Domain fb),
+       -- primitive function rounded up/down:
+       -- TODO
+       -- random generation:
+       Arbitrary (SizeLimits fb),
+       Arbitrary (Domain fb)
       ) => 
     MinimalFnBasis fb
     where
@@ -128,7 +133,7 @@ instance HasDomainBox fb => HasDomainBox (FnEndpoint fb)
     type VarBox (FnEndpoint fb) = VarBox fb
     type Var (FnEndpoint fb) = Var fb
     getSampleDomValue (FnEndpoint f) = getSampleDomValue f
-    getSampleVariable (FnEndpoint f) = getSampleVariable f
+    getNVariables (FnEndpoint f) = getNVariables f
     getDomainBox (FnEndpoint f) = getDomainBox f
     defaultDomSplit (FnEndpoint f) i = defaultDomSplit f i
     
@@ -223,32 +228,3 @@ instance ArithInOut.RoundedMixedMultiplyInPlace fb t => ArithInOut.RoundedMixedM
     mixedMultOutInPlaceEff e (FnEndpointMutable resM) (FnEndpointMutable fM) n 
         = ArithInOut.mixedMultOutInPlaceEff e resM fM n 
 
--- further simple arithmetic operations than those included in MinimalFnBasis:
-
-instance (MinimalFnBasis fb) => ArithUpDn.RoundedSubtrInPlace (FnEndpoint fb)
-    -- default implementation is fine
-
-
--- pure ops:
-
-instance (MinimalFnBasis fb) => Neg (FnEndpoint fb)
-    where
-    neg = mutable1ToPure negInPlace
-    
-instance (MinimalFnBasis fb) => ArithUpDn.RoundedAdd (FnEndpoint fb)
-    where
-    addUpEff = mutable2EffToPure ArithUpDn.addUpInPlaceEff 
-    addDnEff = mutable2EffToPure ArithUpDn.addDnInPlaceEff 
-
-instance (MinimalFnBasis fb) => ArithUpDn.RoundedSubtr (FnEndpoint fb)
-    where
-    subtrUpEff = mutable2EffToPure ArithUpDn.subtrUpInPlaceEff 
-    subtrDnEff = mutable2EffToPure ArithUpDn.subtrDnInPlaceEff 
-
-instance (MinimalFnBasis fb) => ArithUpDn.RoundedMultiply (FnEndpoint fb)
-    where
-    multUpEff = mutable2EffToPure ArithUpDn.multUpInPlaceEff 
-    multDnEff = mutable2EffToPure ArithUpDn.multDnInPlaceEff 
-    
-    
-    

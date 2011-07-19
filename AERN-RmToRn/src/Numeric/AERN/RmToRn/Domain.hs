@@ -34,7 +34,8 @@ class (HasVarValue
     type Domain f
     type VarBox f :: * -> *
     getSampleDomValue :: f -> Domain f
-    getSampleVariable :: f -> Var f
+--    getFreshVariable :: f -> [Var f] -> Var f
+    getNVariables :: f -> Int -> [Var f]
     getDomainBox :: f -> DomainBox f
     defaultDomSplit ::
         f {-^ dummy parameter that aids typechecking -} -> 
@@ -42,6 +43,7 @@ class (HasVarValue
         (Interval (Domain f), Interval (Domain f))
 
 type DomainBox f = VarBox f (Interval (Domain f))
+    
 
 --type DomainPointBox f = VarBox f (Domain f)
 --

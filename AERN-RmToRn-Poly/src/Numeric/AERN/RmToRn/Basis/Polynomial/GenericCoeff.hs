@@ -18,7 +18,8 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff
     module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Poly,
     module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.RingOps,
     module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Evaluate,
-    module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show
+    module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show,
+    module Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.New
 )
 where
 
@@ -28,7 +29,7 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.RingOps
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Evaluate
 
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Domain()
-import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.New()
+import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.New(PolySizeLimits(..))
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Conversion()
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Evaluation()
 import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.RingOps()
@@ -40,8 +41,10 @@ import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
 import Numeric.AERN.Basics.ShowInternals
 import Foreign.Storable
 
+import Test.QuickCheck
+
 instance
-    (ArithUpDn.RoundedRealInPlace cf, Storable cf, ShowInternals cf, Show cf)
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, ShowInternals cf, Show cf, Arbitrary cf)
     =>
     MinimalFnBasis (Poly cf)
     where
