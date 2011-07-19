@@ -350,7 +350,7 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
       // work out whether the constant term is included in the tree:
       CoeffPowers * firstCoeffPowers = (CoeffPowers *)index234(newTerms, 0);
       bool haveConstantTerm = false;
-      if(MONOMIAL_DEGREE(firstCoeffPowers -> powers) == 0)
+      if(firstCoeffPowers && MONOMIAL_DEGREE(firstCoeffPowers -> powers) == 0)
         {
           haveConstantTerm = true;
         }
