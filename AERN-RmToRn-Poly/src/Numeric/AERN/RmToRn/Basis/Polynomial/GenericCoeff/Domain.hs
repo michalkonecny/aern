@@ -46,6 +46,8 @@ instance
     type Domain (Poly cf) = cf
     type VarBox (Poly cf) = Map.IntMap
        {- the set of variables is always 0..(n-1) -}
+    getSampleDomValue p = zero
+    getNVariables p n = [0..n-1]
     getDomainBox p =
         Map.fromAscList $ map (\n -> (n,domain)) [0..(n-1)]
         where

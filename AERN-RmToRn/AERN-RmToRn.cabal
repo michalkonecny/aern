@@ -45,5 +45,6 @@ Library
         Numeric.AERN.RmToRn.MinimalFnBasis 
   other-modules:
         Numeric.AERN.RmToRn.MinimalFnBasis.Basics,
+        Numeric.AERN.RmToRn.MinimalFnBasis.RingOps,
         Numeric.AERN.RmToRn.MinimalFnBasis.NumericOrder
 
