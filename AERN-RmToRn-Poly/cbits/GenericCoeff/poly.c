@@ -16,6 +16,7 @@ ADD_COEFF_CODE(printPoly)(Poly *p)
   Term * terms = p -> terms;
 
   printf("  maxArity = %d\n", p -> maxArity);
+  printf("  maxDeg = %d\n", p -> maxDeg);
   printf("  maxSize = %d\n", p -> maxSize);
   printf("  maxTermArity = %d\n", p -> maxTermArity);
   printf("    constant term addr = %p\n", p -> constTerm);
