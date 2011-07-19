@@ -43,8 +43,9 @@ main =
     putStrLn $ "x +^ 2 >? 3 = " ++ (show $ xc2 >? c3)
     putStrLn $ "x^2 >=? 0 = " ++ (show $ x2 >=? c0)
     putStrLn $ "lower bound of x^2 = " ++ (show $ lowerBound x2)
+    putStrLn "A randomly generated sample of 5 polynomials:"
     ps <- sample' arbitrary
-    mapM print (ps :: [P])
+    mapM (\(n,p) -> putStrLn ("p" ++ show n ++ " = " ++ show p)) (zip [1..5] (ps :: [P]))
     return ()
     where
     showP = showInternals (showChebTerms, showCoeffInternals)
