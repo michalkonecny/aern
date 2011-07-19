@@ -36,6 +36,7 @@ import Control.Monad.ST (ST)
 
 import Test.QuickCheck
 import Numeric.AERN.Misc.QuickCheck
+import qualified System.Random as R
 
 import Numeric.AERN.Misc.Debug
 
@@ -126,7 +127,54 @@ arbitraryFn maxArity sizeLimits
         
 instance (MinimalFnBasis fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoint fb)
     where
-    
+    type (NumOrd.Area (FnEndpoint fb)) = () 
+        -- TODO: make it possible to guide the generator to generate
+        --       functions whose range is within a given interval,
+        --       whose generating polynomial is of a certain degree range,
+        --       whose generating polynomial coeffs are in a certain area...
+    areaWhole _ = ()
+    arbitraryTupleInAreaRelatedBy _
+        =
+        NumOrd.forcedLinearArbitraryTupleRelatedBy arbitrary pickAndShiftGetSorted
+        where
+        pickAndShiftGetSorted seed n list 
+            | n < 1 = []
+            | otherwise 
+                =
+                pick n first (zip randomBools rest)
+                where
+                pick n (fnPrev, lowerPrev, upperPrev) ((copyPrev, current@(fn,lower,upper)):rest) 
+                    | n == 0 = []
+                    | copyPrev
+                        =
+                        fnPrevTrCp : (pick (n-1) (fnPrevTrCp, lowerPrev, upperPrevTrCp) ((False, current):rest))
+                    | otherwise
+                        =
+                        fnTr : (pick (n-1) (fnTr, lowerPrev, upperPrevTr) rest) 
+                    where
+                    fnPrevTrCp = fnPrev +.| distCp
+                    upperPrevTrCp = upperPrev +^ distCp
+                    distCp = one
+                    fnTr = fn +.| dist
+                    upperPrevTr = upperPrev +^ dist
+                    dist = (upperPrev -^ lower) +^ one 
+                    
+                fnBounds@(first:rest) = map addBounds list
+                addBounds fn = (fn, lower, upper)
+                    where
+                    Just upper = ArithUpDn.convertUpEff eff fn
+                    Just lower = ArithUpDn.convertDnEff eff fn
+                    eff = ArithUpDn.convertDefaultEffort fn z
+                    z = zero
+                    Interval sampleDom _ = snd $ head $ toAscList $ getDomainBox fn
+                    _ = [sampleDom, z, upper, lower]
+                randomBools = 
+                    map even $ 
+                        map fst $ 
+                            drop 13 $ iterate (R.next . snd) (0,g)
+                g = R.mkStdGen seed
+    arbitraryTupleRelatedBy =
+        NumOrd.arbitraryTupleInAreaRelatedBy ()
         
 --instance (MinimalFnBasis fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoint fb)
         
