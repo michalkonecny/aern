@@ -60,7 +60,7 @@ data Poly cf =
         {
             poly_ops :: OpsFP cf, -- coefficient operations to pass to some C functions 
             poly_poly :: PolyFP cf -- a polynomial structure
-        } 
+        }
         
 type PolyFP cf = ForeignPtr (CPoly cf)
 data CPoly cf -- transparent to Haskell - details available in C
@@ -69,9 +69,9 @@ instance
     (CanBeMutable cf, ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) => 
     CanBeMutable (Poly cf) 
     where
-    newtype Mutable (Poly cf) s = PolyM (Poly cf) -- (Mutable cf s))
-    unsafeMakeMutable (Poly c p) = return $ PolyM (Poly c p)
-    unsafeReadMutable (PolyM (Poly c p)) = return (Poly c p)
+    newtype Mutable (Poly cf) s = PolyM (Poly cf)
+    unsafeMakeMutable poly = return $ PolyM poly
+    unsafeReadMutable (PolyM poly) = return poly
     makeMutable p =
         do
         pM <- unsafeMakeMutable p

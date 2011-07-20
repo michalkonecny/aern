@@ -29,8 +29,10 @@ import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.RealArithmetic.ExactOps
 
-import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Interval
+
+import Numeric.AERN.Basics.Mutable
+import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.ShowInternals
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
@@ -39,7 +41,11 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Test.QuickCheck
 
-class (HasDomainBox fb,
+class (
+       CanBeMutable fb,
+       HasLegalValues fb,
+       -- function-specific capabilities:
+       HasDomainBox fb,
        ArithUpDn.RoundedReal (Domain fb),
 --        CanEvaluate fb, -- value at a point
 --        CanSubstitute fb, -- substitution
@@ -47,9 +53,13 @@ class (HasDomainBox fb,
        ShowInternals fb,
        HasProjections fb, -- variables (but their domain is fixed!)
        HasConstFns fb, -- constants
+       -- conversions: 
        ArithUpDn.Convertible fb (Domain fb), -- bounds
-       CanBeMutable fb,
+       -- exact ops:
        NegInPlace fb,
+       HasZero fb,
+       HasOne fb,
+       NumOrd.HasExtrema fb,
        -- ring ops rounded up/down:
        ArithUpDn.RoundedAddInPlace fb,
        ArithUpDn.RoundedMultiplyInPlace fb,
@@ -86,6 +96,12 @@ newtype FnEndpoint fb = FnEndpoint fb
          ArithInOut.RoundedAddInPlace,
          ArithUpDn.RoundedMultiplyInPlace, 
          ArithInOut.RoundedMultiplyInPlace,
+         HasZero,
+         HasOne,
+         NumOrd.HasGreatest,
+         NumOrd.HasLeast,
+         NumOrd.HasExtrema,
+         HasLegalValues,
          MinimalFnBasis)
 
 instance CanBeMutable fb => CanBeMutable (FnEndpoint fb)
