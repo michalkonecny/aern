@@ -49,7 +49,7 @@ typedef struct POLY
 {
   // components that should never change:
   Var maxArity; // nominal number of variables (0 < maxArity < 2^32)
-  Size maxSize; // maximal number of non-constant terms (0 < maxSize < 2^10)
+  Size maxSize; // maximal number of non-constant terms (0 <= maxSize < 2^10)
   Power maxDeg; // maximal degree of a term (ie sum of powers for all variables) (0 <= maxPow < 2^8)
   Var maxTermArity; // maximal number of variables in a term (0 <= maxPow < 14)
 

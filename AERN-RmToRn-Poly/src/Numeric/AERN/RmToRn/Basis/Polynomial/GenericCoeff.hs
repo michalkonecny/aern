@@ -39,17 +39,36 @@ import Numeric.AERN.RmToRn.MinimalFnBasis
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+
+import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.ShowInternals
+
 import Foreign.Storable
 
 import Test.QuickCheck
 
 instance
-    (ArithUpDn.RoundedRealInPlace cf, 
-     Storable cf, 
+    (ArithUpDn.RoundedRealInPlace cf,
+     NumOrd.HasExtrema cf, 
+     Storable cf,
      ShowInternals cf, Show cf, 
      Arbitrary cf, NumOrd.ArbitraryOrderedTuple cf)
     =>
     MinimalFnBasis (Poly cf)
     where
     fixedDomain _ = (-1) </\> 1
+
+instance
+    (ArithUpDn.RoundedRealInPlace cf,
+     NumOrd.HasExtrema cf, 
+     Storable cf,
+     ShowInternals cf, Show cf, 
+     Arbitrary cf, NumOrd.ArbitraryOrderedTuple cf)
+    =>
+    HasLegalValues (Poly cf)
+    where
+    isLegal p@(Poly opsFP _) 
+        = True
+        -- TODO: implement a C function that checks all coeffs via an exported Haskell fn 
+        
+    

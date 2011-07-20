@@ -102,14 +102,18 @@ ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
   poly -> errorBound = errorBound;
   poly -> psize = 0;
   poly -> constTerm = c;
-  poly -> terms = malloc(maxSize * sizeof(Term));
 
-  // allocate space for terms' powers:
-  for (Size i = 0; i < maxSize; i++)
+  if (maxSize > 0)
     {
-      (poly -> terms)[i].powers = (Power *) malloc(SIZEOF_POWERS(maxArity));
-      // no need to initialise powers and
-      // coefficients as these terms are inactive
+      poly -> terms = malloc(maxSize * sizeof(Term));
+
+      // allocate space for terms' powers:
+      for (Size i = 0; i < maxSize; i++)
+        {
+          (poly -> terms)[i].powers = (Power *) malloc(SIZEOF_POWERS(maxArity));
+          // no need to initialise powers and
+          // coefficients as these terms are inactive
+        }
     }
 
   //  printf("newConstPoly: returning\n");

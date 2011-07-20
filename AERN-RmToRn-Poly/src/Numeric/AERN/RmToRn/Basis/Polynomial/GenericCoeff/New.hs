@@ -30,6 +30,7 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Coeff
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Interval
 
@@ -127,6 +128,58 @@ instance
             True
             &&
             (List.sort vars `List.isPrefixOf` [0,1..])
+            
+instance
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    =>
+    HasZero (Poly cf)
+    where
+    zero = newConstFnZeroSize zero
+    
+instance
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    =>
+    HasOne (Poly cf)
+    where
+    one = newConstFnZeroSize one
+    
+instance
+    (ArithUpDn.RoundedRealInPlace cf, 
+     NumOrd.HasGreatest cf, 
+     Storable cf, Show cf) 
+    =>
+    NumOrd.HasGreatest (Poly cf)
+    where
+    greatest = newConstFnZeroSize NumOrd.greatest
+    
+instance
+    (ArithUpDn.RoundedRealInPlace cf, 
+     NumOrd.HasLeast cf, 
+     Storable cf, Show cf) 
+    =>
+    NumOrd.HasLeast (Poly cf)
+    where
+    least = newConstFnZeroSize NumOrd.least
+
+instance
+    (ArithUpDn.RoundedRealInPlace cf, 
+     NumOrd.HasExtrema cf, 
+     Storable cf, Show cf) 
+    =>
+    NumOrd.HasExtrema (Poly cf)
+    
+newConstFnZeroSize c = p
+    where
+    p =
+        Poly.constPoly
+            opsFP 
+            (Poly.Var 0)
+            (Poly.Size 0)
+            (Poly.Power 0)
+            (Poly.Var 0)
+            c
+            zero -- radius. ie errorBound
+    opsFP = polyLimsOps $ defaultSizes p
             
 instance
     (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
