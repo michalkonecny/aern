@@ -176,5 +176,3 @@ instance (MinimalFnBasis fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoint fb)
     arbitraryTupleRelatedBy =
         NumOrd.arbitraryTupleInAreaRelatedBy ()
         
---instance (MinimalFnBasis fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoint fb)
-        
