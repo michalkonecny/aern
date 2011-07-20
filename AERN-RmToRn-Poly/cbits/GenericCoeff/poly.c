@@ -65,7 +65,9 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
 
   // free the terms array:
   free(terms);
+
   //  printf("freePoly: finished\n");
+
 }
 
 void
@@ -114,6 +116,10 @@ ADD_COEFF_CODE(newConstPoly)(Coeff c, Coeff errorBound, Var maxArity,
           // no need to initialise powers and
           // coefficients as these terms are inactive
         }
+    }
+  else
+    {
+      poly -> terms = malloc(1); // dummy to avoid having to check for NULL in many places
     }
 
   //  printf("newConstPoly: returning\n");
