@@ -34,6 +34,8 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Interval
 
+import Numeric.AERN.Basics.Exception
+
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (runST)
 import Foreign.Storable
@@ -47,7 +49,7 @@ import qualified Data.List as List
 import Test.QuickCheck
 
 instance 
-    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    (ArithUpDn.RoundedRealInPlace cf, HasLegalValues cf, Storable cf, Show cf) 
     => 
     HasSizeLimits (Poly cf)
     where
@@ -78,10 +80,21 @@ data PolySizeLimits cf p =
         polyLimsMaxSize :: Int,
         polyLimsMaxDegree :: Int,
         polyLimsMaxTermArity :: Int
-    }        
+    }
+
+instance (HasDomainBox p) => Show (PolySizeLimits cf p)
+    where
+    show (PolySizeLimits p _ _ maxSize maxDeg maxTermArity) =
+        "{maxArity = " ++ show maxArity 
+        ++ ",maxSize=" ++ show maxSize 
+        ++ ",maxDeg=" ++ show maxDeg 
+        ++ ",maxTermArity=" 
+        ++ show maxTermArity ++ "}"
+        where
+        maxArity = length $ toAscList $ getDomainBox p
 
 instance 
-    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    (ArithUpDn.RoundedRealInPlace cf, HasLegalValues cf, Storable cf, Show cf) 
     => 
     HasProjections (Poly cf)
     where
@@ -105,7 +118,7 @@ instance
             (List.sort vars `List.isPrefixOf` [0,1..])
 
 instance 
-    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    (ArithUpDn.RoundedRealInPlace cf, HasLegalValues cf, Storable cf, Show cf) 
     =>
     HasConstFns (Poly cf)
     where
@@ -130,21 +143,22 @@ instance
             (List.sort vars `List.isPrefixOf` [0,1..])
             
 instance
-    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    (ArithUpDn.RoundedRealInPlace cf, HasLegalValues cf, Storable cf, Show cf) 
     =>
     HasZero (Poly cf)
     where
     zero = newConstFnZeroSize zero
     
 instance
-    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    (ArithUpDn.RoundedRealInPlace cf, HasLegalValues cf, Storable cf, Show cf) 
     =>
     HasOne (Poly cf)
     where
     one = newConstFnZeroSize one
     
 instance
-    (ArithUpDn.RoundedRealInPlace cf, 
+    (ArithUpDn.RoundedRealInPlace cf,
+     HasLegalValues cf,
      NumOrd.HasGreatest cf, 
      Storable cf, Show cf) 
     =>
@@ -154,6 +168,7 @@ instance
     
 instance
     (ArithUpDn.RoundedRealInPlace cf, 
+     HasLegalValues cf,
      NumOrd.HasLeast cf, 
      Storable cf, Show cf) 
     =>
@@ -162,7 +177,8 @@ instance
     least = newConstFnZeroSize NumOrd.least
 
 instance
-    (ArithUpDn.RoundedRealInPlace cf, 
+    (ArithUpDn.RoundedRealInPlace cf,
+     HasLegalValues cf, 
      NumOrd.HasExtrema cf, 
      Storable cf, Show cf) 
     =>
@@ -182,15 +198,15 @@ newConstFnZeroSize c = p
     opsFP = polyLimsOps $ defaultSizes p
             
 instance
-    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf) 
+    (ArithUpDn.RoundedRealInPlace cf, HasLegalValues cf, Storable cf, Show cf) 
     =>
     Arbitrary (PolySizeLimits cf (Poly cf))
     where
     arbitrary =
         sized $ \size ->
         do
-        let maxArity = 2 + (size `div` 3)
-        maxDegree <- choose (1,2 + (size `div` 3))
+        let maxArity = 2 + (size `div` 7)
+        maxDegree <- choose (1,2 + (size `div` 7))
         maxSize <- choose (3,10 + 3* size)
         maxTermArity <- choose (2, min 12 maxArity)
         let opsFP = polyLimsOps $ defaultSizes dummyP

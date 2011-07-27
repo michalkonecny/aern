@@ -108,9 +108,12 @@ eval_unaryTest_hs ::
     IO CInt 
 eval_unaryTest_hs testSP v1SP =
     do
+--    putStrLn $ "eval_unaryTest_hs: starting"  
     test <- deRefStablePtr testSP
     v1 <- deRefStablePtr v1SP
-    return $ bool2int $ test v1
+    let result = bool2int $ test v1
+--    putStrLn $ "eval_unaryTest_hs: finishing with result = " ++ show result  
+    return result
     where
     bool2int True = 1
     bool2int False = 0

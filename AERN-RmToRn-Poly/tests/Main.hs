@@ -24,15 +24,20 @@ import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 -- import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
 import Numeric.AERN.Basics.Interval
 
-import Numeric.AERN.Basics.Consistency
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+
+import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.Exception
+import Numeric.AERN.Basics.ShowInternals
 
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
 import Test.Framework (defaultMain)
+
+import System.IO
 
 type P = FnEndpoint (GCPoly.Poly Double)
 sampleP :: P
@@ -47,7 +52,13 @@ sampleP = FnEndpoint sampleFn
 
 main =
     do
-    defaultMain tests
+    hSetBuffering stdout LineBuffering
+    mapM print $ zip [1..2010] $ map isLegal (fixedSeq :: [P])
+--    mapM printNP $ zip [1..2000] (fixedSeq :: [P]) 
+--    defaultMain tests
+    where
+    printNP (n,p) =
+        putStrLn $ show n ++ ":" ++ (show $ getSizeLimits p) ++ ":" ++ show p 
 
 tests = testsGCPolyD ++ testsGCPolyDI
 

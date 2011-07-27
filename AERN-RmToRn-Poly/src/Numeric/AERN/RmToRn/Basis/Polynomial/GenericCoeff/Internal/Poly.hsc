@@ -43,6 +43,7 @@ import Control.Monad.ST (ST, runST, unsafeIOToST, unsafeSTToIO)
 import System.IO.Unsafe
 
 import Foreign.Ptr(Ptr,nullPtr,castPtr)
+import Foreign.C.Types (CInt)
 import Foreign.Storable
 import Foreign.Marshal.Alloc (malloc, free)
 import Foreign.Marshal.Array (newArray)
@@ -194,6 +195,40 @@ peekErrorIO (PolyM (Poly _ polyFP)) =
         errorSP <- #{peek Poly, errorBound} ptr
         eM <- deRefStablePtr errorSP
         return eM
+
+----------------------------------------------------------------
+
+foreign import ccall safe "checkPolyGenCf"
+        poly_checkPoly :: 
+            OpsPtr cfm ->
+            (Ptr (CPoly cfm)) -> 
+            IO CInt  
+
+{-|
+  Returns True iff the polynomial seems OK.
+-}
+checkPolyInternals ::
+    (ArithUpDn.RoundedRealInPlace cf, Storable cf, Show cf)
+    => 
+    (Poly cf) -> Bool
+checkPolyInternals p =
+    runST $
+        do
+        pM <- unsafeMakeMutable p
+        checkPolyInternalsM pM
+
+checkPolyInternalsM :: (PolyM cf s) -> ST s Bool
+checkPolyInternalsM p =
+    unsafeIOToST $ checkPolyInternalsIO p 
+
+checkPolyInternalsIO :: (PolyM cf s) -> IO Bool 
+checkPolyInternalsIO (PolyM (Poly opsFP polyFP)) =
+    do
+    result <- 
+        withForeignPtr polyFP $ \ polyP ->
+            withForeignPtr opsFP $ \ opsP ->
+                poly_checkPoly opsP polyP
+    return $ result == 0
 
 ----------------------------------------------------------------
 

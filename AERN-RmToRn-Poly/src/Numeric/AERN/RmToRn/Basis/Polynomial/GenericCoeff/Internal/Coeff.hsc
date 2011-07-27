@@ -34,6 +34,8 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import Data.Word
 
+import Numeric.AERN.Basics.Exception
+
 import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST, runST, unsafeIOToST, unsafeSTToIO)
 
@@ -56,6 +58,7 @@ type OpsPtr cf = Ptr (DummyOps cf) -- for foreign import declarations
 data Ops s cf =
     Ops
     {
+        ops_isLegal :: {-# UNPACK #-} ! (StablePtr (UnaryTestMutable s cf)),
         ops_zero :: {-# UNPACK #-} ! (StablePtr cf),
         ops_one :: {-# UNPACK #-} ! (StablePtr cf),
         ops_new :: {-# UNPACK #-} ! (StablePtr (NewOpMutable s cf)),
@@ -85,6 +88,7 @@ instance (Storable cf) => Storable (Ops s cf) where
     peek = error "Ops.peek: Not needed and not applicable"
     poke ptr 
             (Ops
+              isLegal
               zero one new clone assign assignFromPure compare isExactZero
               negMutable
               absUpMutable absDnMutable 
@@ -95,6 +99,7 @@ instance (Storable cf) => Storable (Ops s cf) where
               divByIntUpMutable divByIntDnMutable
             ) = 
         do 
+        #{poke Ops, isLegal} ptr isLegal
         #{poke Ops, zero} ptr zero
         #{poke Ops, one} ptr one
         #{poke Ops, new} ptr new
@@ -129,6 +134,7 @@ newOpsFP ops =
     return $ castForeignPtr fp
     
 mkOps ::
+    (UnaryTestMutable s cf) ->
     cf ->
     cf ->
     (NewOpMutable s cf) ->
@@ -151,13 +157,15 @@ mkOps ::
     (MixedIntOpMutable s cf) ->
     (MixedIntOpMutable s cf) ->
     IO (Ops s cf)
-mkOps zero one new clone assign assignFromPure compare isExactZero
+mkOps isLegal
+        zero one new clone assign assignFromPure compare isExactZero
         neg absUp absDn addUp addDn subtrUp subtrDn 
         multUp multDn 
         multByIntUp multByIntDn 
         divByIntUp divByIntDn 
     =
     do
+    isLegalSP <- newStablePtr isLegal  
     zeroSP <- newStablePtr zero
     oneSP <- newStablePtr one
     newSP <- newStablePtr new
@@ -181,6 +189,7 @@ mkOps zero one new clone assign assignFromPure compare isExactZero
     divByIntDnSP <- newStablePtr divByIntDn
     return $
       Ops
+        isLegalSP
         zeroSP oneSP 
         newSP cloneSP assignSP assignFromPureSP
         compareSP isExactZeroSP
@@ -193,7 +202,8 @@ mkOps zero one new clone assign assignFromPure compare isExactZero
         divByIntUpSP divByIntDnSP
 
 mkOpsArithUpDn ::
-    (ArithUpDn.RoundedRealInPlace cf, 
+    (ArithUpDn.RoundedRealInPlace cf,
+     HasLegalValues cf,
      Show cf,
      CanBeMutable cf) 
     => 
@@ -209,6 +219,7 @@ mkOpsArithUpDn sample effort =
     let multByIntEffort = ArithUpDn.mxfldEffortMult sample (0::Int) fldByIntEffort in
     let divByIntEffort = ArithUpDn.mxfldEffortDiv sample (0::Int) fldByIntEffort in
     mkOps
+        (isLegalMutable)
         z o
         (makeMutable)
         (cloneMutable)
@@ -242,15 +253,33 @@ mkOpsArithUpDn sample effort =
         let result = NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 v2 
 --        unsafeIOToST $ putStrLn $ "compareMutable " ++ show v1 ++ " " ++ show v2 ++ " = " ++ show result 
         return result
+    isLegalMutable v1M =
+        unsafePerformIO $ unsafeSTToIO $
+        do
+--        unsafeIOToST $ putStrLn "isLegalMutable: starting"
+        v1 <- unsafeReadMutable v1M
+--        unsafeIOToST $ putStrLn $ "isLegalMutable: v1 = " ++ show v1
+        let _ = [v1,sample] 
+        let result = isLegal v1
+--        unsafeIOToST $ putStrLn $ "isLegalMutable: finishing with result = " ++ show result
+        return result
     isExactZeroMutable v1M =
         unsafePerformIO $ unsafeSTToIO $
         do
+--        unsafeIOToST $ putStrLn "isExactZeroMutable: starting"
         v1 <- unsafeReadMutable v1M
+--        unsafeIOToST $ putStrLn $ "isExactZeroMutable: v1 = " ++ show v1
         let _ = [v1,sample] 
-        return $ NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 zero == Just EQ
+        let result = NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort sample) v1 zero == Just EQ
+--        unsafeIOToST $ putStrLn $ "isExactZeroMutable: finishing with result = " ++ show result
+        return result
 
 opsFPArithUpDn ::
-    (ArithUpDn.RoundedRealInPlace cf, CanBeMutable cf, Storable cf, Show cf) => 
+    (ArithUpDn.RoundedRealInPlace cf,
+     HasLegalValues cf,
+     Show cf, Storable cf,
+     CanBeMutable cf)
+    => 
     cf ->
     ArithUpDn.RoundedRealEffortIndicator cf -> 
     OpsFP cf
@@ -261,7 +290,11 @@ opsFPArithUpDn sample effort =
         newOpsFP ops
 
 opsFPArithUpDnDefaultEffort ::
-    (ArithUpDn.RoundedRealInPlace cf, CanBeMutable cf, Storable cf, Show cf) => 
+    (ArithUpDn.RoundedRealInPlace cf,
+     HasLegalValues cf,
+     Show cf, Storable cf,
+     CanBeMutable cf)
+    => 
     cf ->
     OpsFP cf
 opsFPArithUpDnDefaultEffort sample =

@@ -348,9 +348,9 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
       free(tempCoeffPowers);
 
       // work out whether the constant term is included in the tree:
-      CoeffPowers * firstCoeffPowers = (CoeffPowers *)index234(newTerms, 0);
+      CoeffPowers * firstCoeffPowers = (CoeffPowers *) index234(newTerms, 0);
       bool haveConstantTerm = false;
-      if(firstCoeffPowers && MONOMIAL_DEGREE(firstCoeffPowers -> powers) == 0)
+      if (firstCoeffPowers && MONOMIAL_DEGREE(firstCoeffPowers -> powers) == 0)
         {
           haveConstantTerm = true;
         }
@@ -368,9 +368,11 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
               sizeof(CoeffPowers *) * newTermsSize);
           DEBUG_MULT(printf("multiplyTermsAndConsts: created newTermsArray of size %d \n", newTermsSize));
 
-
           int newTermsArraySize = 0;
-          if(haveConstantTerm){ newTermsArraySize --; } // ignore constant term
+          if (haveConstantTerm)
+            {
+              newTermsArraySize--;
+            } // ignore constant term
           // add all non-constant terms into newTermsArray in powers order and complete their abs_cf:
           for (CoeffPowers * t = NULL; (t = findrel234(newTerms, t, NULL,
               REL234_GT)) != NULL;)
@@ -424,7 +426,7 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
       Size oldResPsize = res -> psize;
       res -> psize = newTermsSize;
 
-      if(! haveConstantTerm)
+      if (!haveConstantTerm)
         {
           DEBUG_MULT(printf("multiplyTermsAndConsts: setting result constant term to zero\n"));
           res -> constTerm = CFM_NEW(ops, CFM_ZERO(ops));
@@ -473,7 +475,19 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
 void
 ADD_COEFF_CODE(multiplyUp)(Ops * ops, Poly *res, Poly * p1, Poly * p2)
 {
-  DEBUG_MULT(printf("multiplyUp: starting\n"));DEBUG_MULT(printf("multiplyUp: p1 = \n"));DEBUG_MULT(ADD_COEFF_CODE(printPoly)(p1));DEBUG_MULT(printf("multiplyUp: p2 = \n"));DEBUG_MULT(ADD_COEFF_CODE(printPoly)(p2));
+  DEBUG_MULT(printf("multiplyUp: starting\n"));
+
+  DEBUG_MULT(printf("multiplyUp: p1 = \n"));
+
+  DEBUG_MULT(ADD_COEFF_CODE(printPoly)(p1));
+
+  DEBUG_MULT(printf("multiplyUp: p2 = \n"));
+
+  ADD_COEFF_CODE(checkPoly)(ops, p1);
+
+  DEBUG_MULT(ADD_COEFF_CODE(printPoly)(p2));
+
+  ADD_COEFF_CODE(checkPoly)(ops, p2);
 
   ADD_COEFF_CODE(multiplyTermsAndConsts)(ops, res, p1, p2);
   DEBUG_MULT(printf("performed main multiplication\n"));
@@ -483,8 +497,13 @@ ADD_COEFF_CODE(multiplyUp)(Ops * ops, Poly *res, Poly * p1, Poly * p2)
 
   // set the error bound to zero:
   CFM_ASSIGN_VAL(ops, res -> errorBound, CFM_ZERO(ops));
-  DEBUG_MULT(printf("multiplyUp: finished\n"));DEBUG_MULT(printf("multiplyUp: result = \n"));DEBUG_MULT(ADD_COEFF_CODE(printPoly)(res));
+  DEBUG_MULT(printf("multiplyUp: finished\n"));
 
+  DEBUG_MULT(printf("multiplyUp: result = \n"));
+
+  DEBUG_MULT(ADD_COEFF_CODE(printPoly)(res));
+
+  ADD_COEFF_CODE(checkPoly)(ops, res);
 }
 
 void

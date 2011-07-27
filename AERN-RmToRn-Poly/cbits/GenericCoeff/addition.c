@@ -5,6 +5,9 @@
 #include "GenericCoeff/poly.h"
 #include "EvalExport_stub.h"
 
+//#define DEBUG_ADD(x) x;
+#define DEBUG_ADD(x)
+
 // auxiliary structure and associated functions for addition:
 
 typedef struct COEFFN
@@ -48,6 +51,8 @@ void
 ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
     Term * terms1, Term * terms2)
 {
+  DEBUG_ADD(printf("addition: copyTerms: starting\n"));
+
   if (terms != terms1 && terms != terms2)// no aliasing with result
     {
       for (int j = 0; j < i; ++j)
@@ -143,12 +148,15 @@ ADD_COEFF_CODE(copyTerms)(CoeffN * newCoeffs, Size i, Var arity, Term * terms,
             }
         }
     }
+  DEBUG_ADD(printf("addition: copyTerms: finishing\n"));
 }
 
 void
 ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
     Poly * p2)
 {
+
+  DEBUG_ADD(printf("addTermsAndErrorBounds: starting\n"));
 
   Var arity = res -> maxArity;
   Var maxSize = res -> maxSize;
@@ -185,7 +193,7 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
       int i1 = 0;
       int i2 = 0;
 
-      //      printf("addTermsAndReturnMaxErrorMutable: about to compute coeffs\n");
+      DEBUG_ADD(printf("addTermsAndErrorBounds: about to compute coeffs\n"));
       // compute new coefficients in the order of increasing powers:
       while (i1 < p1Size || i2 < p2Size)
         {
@@ -217,9 +225,8 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
           // fill in newCoeffs[i] and degree:
           if (powerComparison == 0)
             {
-              //              printf(
-              //                  "addTermsAndReturnMaxErrorMutable: coeff %d: adding terms1[%d] and terms2[%d]\n",
-              //                  i, i1, i2);
+              DEBUG_ADD(printf("addTermsAndErrorBounds: coeff %d: adding terms1[%d] and terms2[%d]\n", i, i1, i2));
+
               // compute sum of the two coefficients and its error bound:
               CoeffMutable newCfUp = CFM_NEW(ops, CFM_ZERO(ops));
               CFM_ADD_UP(ops, newCfUp, terms1[i1].coeff, terms2[i2].coeff);
@@ -245,9 +252,8 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
             }
           else if (powerComparison > 0) // i2 is smaller
             {
-              //              printf(
-              //                  "addTermsAndReturnMaxError: coeff %d: copying terms2[%d]\n",
-              //                  i, i2);
+              DEBUG_ADD(printf("addTermsAndErrorBounds: coeff %d: copying terms2[%d]\n", i, i2));
+
               CFM_CLONE(ops, newCoeffs[i].cf, terms2[i2].coeff);
               newCoeffs[i].n1 = -1;
               newCoeffs[i].n2 = i2;
@@ -257,9 +263,8 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
             }
           else if (powerComparison < 0) // i1 is smaller
             {
-              //              printf(
-              //                  "addTermsAndReturnMaxError: coeff %d: copying terms1[%d]\n",
-              //                  i, i1);
+              DEBUG_ADD(printf("addTermsAndErrorBounds: coeff %d: copying terms1[%d]\n", i, i1));
+
               CFM_CLONE(ops, newCoeffs[i].cf, terms1[i1].coeff);
               newCoeffs[i].n1 = i1;
               newCoeffs[i].n2 = -1;
@@ -329,13 +334,14 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
       // set the errorBound of result:
       CFM_ASSIGN(ops, res -> errorBound, maxError);
 
-      //      printf("addTermsAndReturnMaxError: about to construct %d resulting term(s)\n", i);
+      DEBUG_ADD(printf("addTermsAndErrorBounds: about to construct %d resulting term(s)\n", i));
+
       ADD_COEFF_CODE(copyTerms)(newCoeffs, i, arity, terms, terms1, terms2);
 
       free(newCoeffs);
     }
 
-  //  printf("addTermsAndReturnMaxError: finished\n");
+  DEBUG_ADD(printf("addTermsAndErrorBounds: finishing\n"));
 }
 
 void

@@ -27,6 +27,7 @@ typedef void * UnaryTestMutable;
 /* References to in-place operations provided by Haskell: */
 typedef struct OPS
 {
+  UnaryTestMutable isLegal;
   Coeff zero;
   Coeff one;
   NewOpMutable new;
@@ -50,6 +51,7 @@ typedef struct OPS
   MixedIntOpMutable divByIntDnMutable;
 } Ops;
 
+#define CFM_IS_LEGAL(ops, d1) (eval_unaryTest_hs(ops -> isLegal, d1))
 #define CFM_ZERO(ops) (ops -> zero)
 #define CFM_ONE(ops) (ops -> one)
 #define CFM_NEW(ops,v) (eval_newMutable_hs(ops -> new, v))
