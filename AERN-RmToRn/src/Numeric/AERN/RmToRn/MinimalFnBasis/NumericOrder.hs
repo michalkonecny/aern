@@ -35,6 +35,7 @@ import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
 import Test.QuickCheck
+import Test.QuickCheck.Gen (unGen)
 import Numeric.AERN.Misc.QuickCheck
 import qualified System.Random as R
 
@@ -83,7 +84,7 @@ instance
         sized $ \size ->
         do
         sizeLimits <- arbitrary
-        maxArity <- choose (1, 2 + (size `div` 2))
+        maxArity <- choose (1, 2 + (size `div` 4))
         arbitraryFn maxArity sizeLimits
 
 arbitraryFn maxArity sizeLimits
@@ -98,7 +99,7 @@ arbitraryFn maxArity sizeLimits
         vars = getNVariables sampleFn maxArity
     -- choose polynomial generation parameters:
     arity <- choose (1, maxArity)
-    degree <- choose (0,2 + (size `div` 3))
+    degree <- choose (0,2 + (size `div` 7))
     constrTerms <- choose (1,3 + 2* size)
     -- start building the result polynomial, first creating variables:
     varFns <- mapM (\v -> return $ newProjection sizeLimits box v) vars
@@ -124,8 +125,34 @@ arbitraryFn maxArity sizeLimits
             let varFnPwr = foldl1 (*.) $ replicate dg varFn 
             return $ varFnPwr *^ restFn -- rounding direction irrelevant 
         
-        
-instance (MinimalFnBasis fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoint fb)
+{-|
+  Have a fairly long and hairy sequence of polynomials of increasing complexity
+  pre-generated and fixed and then pick its elements randomly.
+  This deals with the problem that the random generation takes a long time
+  when the polynomial is constructed by a fairly large sequence of
+  multiplications and additions.
+-}
+fixedSeq ::
+    (Arbitrary fb) => [fb]
+fixedSeq =
+    aux 0 0
+    where
+    aux prevQuantity size 
+        = newSeqPortion ++ (aux currQuantity (size + 1))
+        where
+        newSeqPortion 
+            =
+            take (currQuantity - prevQuantity) $ 
+                map (\g -> unGen arbitrary g size) randomGens
+        currQuantity = quantityOfSize size
+    randomGens 
+        = map snd $ drop 13 $ iterate (R.next . snd) (0,g)
+    g = R.mkStdGen 754657854089 -- no magic, just bashed at the keyboard at random
+            
+quantityOfSize size
+    = 10 + ((size*(size+100)) `div` 10)  
+            
+instance (MinimalFnBasis fb, Show fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoint fb)
     where
     type (NumOrd.Area (FnEndpoint fb)) = () 
         -- TODO: make it possible to guide the generator to generate
@@ -135,8 +162,16 @@ instance (MinimalFnBasis fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoint fb)
     areaWhole _ = ()
     arbitraryTupleInAreaRelatedBy _
         =
-        NumOrd.forcedLinearArbitraryTupleRelatedBy arbitrary pickAndShiftGetSorted
+        NumOrd.forcedLinearArbitraryTupleRelatedBy (arbitraryFromSequence fixedSeq) pickAndShiftGetSorted
         where
+        arbitraryFromSequence seq 
+            =
+            sized $ \size ->
+            do
+            ix <- choose (0, quantityOfSize size - 1)
+            return $ 
+--                unsafePrintReturn ("FnEndpoint: ArbitraryOrderedTuple: arbitraryFromSequence: size = " ++ show size ++ "ix = " ++ show ix ++ " p = ") $ 
+                    seq !! ix
         pickAndShiftGetSorted seed n list 
             | n < 1 = []
             | otherwise 

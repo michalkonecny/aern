@@ -49,6 +49,7 @@ import Test.QuickCheck
 
 instance
     (ArithUpDn.RoundedRealInPlace cf,
+     HasLegalValues cf, 
      NumOrd.HasExtrema cf, 
      Storable cf,
      ShowInternals cf, Show cf, 
@@ -60,6 +61,7 @@ instance
 
 instance
     (ArithUpDn.RoundedRealInPlace cf,
+     HasLegalValues cf, 
      NumOrd.HasExtrema cf, 
      Storable cf,
      ShowInternals cf, Show cf, 
@@ -67,8 +69,6 @@ instance
     =>
     HasLegalValues (Poly cf)
     where
-    isLegal p@(Poly opsFP _) 
-        = True
-        -- TODO: implement a C function that checks all coeffs via an exported Haskell fn 
+    isLegal = checkPolyInternals
         
     

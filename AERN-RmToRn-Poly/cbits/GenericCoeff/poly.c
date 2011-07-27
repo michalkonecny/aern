@@ -6,12 +6,15 @@
 #include "GenericCoeff/poly.h"
 #include "EvalExport_stub.h"
 
+//#define DEBUG_FREE(x) x;
+#define DEBUG_FREE(x)
+
 void
 ADD_COEFF_CODE(printPoly)(Poly *p)
 {
   printf("Polynomial C-level details:\n");
 
-  Size arity = p -> maxArity;
+  Var arity = p -> maxArity;
   Size psize = p -> psize;
   Term * terms = p -> terms;
 
@@ -35,10 +38,89 @@ ADD_COEFF_CODE(printPoly)(Poly *p)
     }
 }
 
+#define CHECK_NOT(cond,msg) \
+    if(cond) \
+      { \
+        printf msg; \
+        return 1; \
+      }
+
+int
+ADD_COEFF_CODE(checkPoly)(Ops * ops, Poly * p)
+{
+  Var arity = p -> maxArity;
+  CHECK_NOT(arity < 0, ("checkPoly: negative arity %d\n", arity));
+  CHECK_NOT(arity > 1000, ("checkPoly: too large arity %d\n", arity));
+
+  Power maxDeg = p -> maxDeg;
+  CHECK_NOT(maxDeg < 0, ("checkPoly: negative maxDeg %d\n", maxDeg));
+  CHECK_NOT(maxDeg > 1000, ("checkPoly: too large maxDeg %d\n", maxDeg));
+
+  Size maxSize = p -> maxSize;
+  CHECK_NOT(maxSize < 0, ("checkPoly: negative maxSize %d\n", maxSize));
+  CHECK_NOT(maxSize > 10000, ("checkPoly: too large maxSize %d\n", maxSize));
+
+  Var maxTermArity = p -> maxTermArity;
+  CHECK_NOT(maxTermArity < 0, ("checkPoly: negative maxTermArity %d\n", maxTermArity));
+  CHECK_NOT(maxTermArity > 14, ("checkPoly: too large maxTermArity %d\n", maxTermArity));
+//  CHECK_NOT(maxTermArity > arity, ("checkPoly: maxTermArity %d > arity %d\n", maxTermArity, arity));
+
+  Size psize = p -> psize;
+  CHECK_NOT(psize < 0, ("checkPoly: negative psize %d\n", psize));
+  CHECK_NOT(psize > maxSize, ("checkPoly: too large psize %d\n", psize));
+
+  CHECK_NOT(p -> terms == NULL, ("checkPoly: terms are NULL\n"));
+  Term * terms = p -> terms;
+
+  CFM_IS_LEGAL(ops, p -> constTerm);
+
+  for (int i = 0; i < psize; i++)
+    {
+      // compute term's power and term arity:
+      int dg = 0;
+      int ta = 0;
+      Power * powers = terms[i].powers;
+      FOREACH_VAR_ARITY(var,arity)
+        {
+          int pw = POWER_OF_VAR(powers, var);
+          dg += pw;
+          if(pw){ ta++; }
+        }
+
+      // check powers add up to monomial degree:
+      CHECK_NOT(dg != MONOMIAL_DEGREE(powers),
+         ("checkPoly: degree in powers for term %d is %d should be %d", i, MONOMIAL_DEGREE(powers), dg));
+
+      // check internal arity is correct:
+      CHECK_NOT(ta != TERM_ARITY(powers),
+          ("checkPoly: term arity in powers for term %d is %d should be %d", i, TERM_ARITY(powers), ta));
+
+      // check term degree <= maxDeg:
+      CHECK_NOT(dg > maxDeg,
+         ("checkPoly: term %d degree %d higher than the limit %d", i, dg, maxDeg));
+
+      // check term arity <= maxTermArity:
+      CHECK_NOT(ta > maxTermArity,
+         ("checkPoly: term %d arity %d higher than the limit %d", i, ta, maxTermArity));
+
+      // check coeff:
+      CFM_IS_LEGAL(ops, terms[i].coeff);
+    }
+
+  // check there is no aliasing among powers:
+  // TODO
+
+  // check there is no aliasing among coeffs:
+  // TODO
+
+  return 0;
+}
+
 void
 ADD_COEFF_CODE(freePoly)(Poly *p)
 {
-  //  printf("freePoly: starting\n");
+  DEBUG_FREE(printf("freePoly: starting\n"));
+
   // free the Poly struct:
   Size maxSize = p -> maxSize;
   Size psize = p -> psize;
@@ -66,7 +148,7 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
   // free the terms array:
   free(terms);
 
-  //  printf("freePoly: finished\n");
+  DEBUG_FREE(printf("freePoly: finishing\n"));
 
 }
 

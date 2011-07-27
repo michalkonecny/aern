@@ -64,6 +64,13 @@ typedef struct POLY
 } Poly;
 
 /**
+ * Thoroughly check all invariants of the polynomial structure,
+ * including checking the coefficients using the Haskell isLegal operation.
+ */
+int
+ADD_COEFF_CODE(checkPoly)(Ops* ops, Poly *p);
+
+/**
  * Print the internal representation of a polynomial to the console.
  * Mainly intended for debugging and checking aliasing.
  */

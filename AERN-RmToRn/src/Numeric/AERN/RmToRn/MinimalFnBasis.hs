@@ -16,9 +16,12 @@
 
 module Numeric.AERN.RmToRn.MinimalFnBasis 
     (
-        module Numeric.AERN.RmToRn.MinimalFnBasis.Basics
+        module Numeric.AERN.RmToRn.MinimalFnBasis.Basics,
+        module Numeric.AERN.RmToRn.MinimalFnBasis.NumericOrder,
+        module Numeric.AERN.RmToRn.MinimalFnBasis.RingOps
     )
 where
 
 import Numeric.AERN.RmToRn.MinimalFnBasis.Basics
-import Numeric.AERN.RmToRn.MinimalFnBasis.NumericOrder()
+import Numeric.AERN.RmToRn.MinimalFnBasis.NumericOrder --()
+import Numeric.AERN.RmToRn.MinimalFnBasis.RingOps --()
