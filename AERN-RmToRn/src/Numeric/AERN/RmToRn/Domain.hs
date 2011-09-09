@@ -18,16 +18,16 @@
 
 module Numeric.AERN.RmToRn.Domain where
 
-import Numeric.AERN.Basics.Interval
+--import Numeric.AERN.Basics.Interval
 
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
 
 
 class (HasVarValue 
-        (VarBox f (Interval (Domain f))) 
+        (DomainBox f) 
         (Var f) 
-        (Interval (Domain f))) 
+        (Domain f, Domain f))
         => HasDomainBox f 
     where
     type Var f
@@ -35,14 +35,14 @@ class (HasVarValue
     type VarBox f :: * -> *
     getSampleDomValue :: f -> Domain f
 --    getFreshVariable :: f -> [Var f] -> Var f
-    getNVariables :: f -> Int -> [Var f]
+--    getNVariables :: f -> Int -> [Var f]
     getDomainBox :: f -> DomainBox f
     defaultDomSplit ::
         f {-^ dummy parameter that aids typechecking -} -> 
-        (Interval (Domain f)) -> 
-        (Interval (Domain f), Interval (Domain f))
+        (Domain f, Domain f) -> 
+        ((Domain f, Domain f), (Domain f, Domain f))
 
-type DomainBox f = VarBox f (Interval (Domain f))
+type DomainBox f = VarBox f (Domain f, Domain f)
     
 
 --type DomainPointBox f = VarBox f (Domain f)

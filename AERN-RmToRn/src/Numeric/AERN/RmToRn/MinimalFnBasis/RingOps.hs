@@ -39,8 +39,10 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 -- in-place ops:
 
-instance (MinimalFnBasis fb) => ArithUpDn.RoundedSubtrInPlace (FnEndpoint fb)
-    -- default implementation is fine
+instance (MinimalFnBasis fb) => ArithInOut.RoundedSubtr (FnEndpoint fb)
+instance (MinimalFnBasis fb) => ArithInOut.RoundedSubtrInPlace (FnEndpoint fb)
+--     default implementation is fine
+
 
 -- TODO (need min and max first)
 
@@ -60,32 +62,32 @@ instance (MinimalFnBasis fb) => Neg (FnEndpoint fb)
     where
     neg = mutable1ToPure negInPlace
     
-instance (MinimalFnBasis fb) => ArithUpDn.RoundedAdd (FnEndpoint fb)
-    where
-    addUpEff = mutable2EffToPure ArithUpDn.addUpInPlaceEff 
-    addDnEff = mutable2EffToPure ArithUpDn.addDnInPlaceEff 
-
-instance (MinimalFnBasis fb) => ArithUpDn.RoundedSubtr (FnEndpoint fb)
-    where
-    subtrUpEff = mutable2EffToPure ArithUpDn.subtrUpInPlaceEff 
-    subtrDnEff = mutable2EffToPure ArithUpDn.subtrDnInPlaceEff 
-
-instance (MinimalFnBasis fb) => ArithUpDn.RoundedMultiply (FnEndpoint fb)
-    where
-    multUpEff = mutable2EffToPure ArithUpDn.multUpInPlaceEff 
-    multDnEff = mutable2EffToPure ArithUpDn.multDnInPlaceEff 
-    
-instance 
-    (ArithUpDn.RoundedMixedAddInPlace (FnEndpoint fb) t) 
-    => ArithUpDn.RoundedMixedAdd (FnEndpoint fb) t
-    where
-    mixedAddUpEff = mutableNonmutEffToPure ArithUpDn.mixedAddUpInPlaceEff 
-    mixedAddDnEff = mutableNonmutEffToPure ArithUpDn.mixedAddDnInPlaceEff 
-    
-instance 
-    (ArithUpDn.RoundedMixedMultiplyInPlace (FnEndpoint fb) t) 
-    => ArithUpDn.RoundedMixedMultiply (FnEndpoint fb) t
-    where
-    mixedMultUpEff = mutableNonmutEffToPure ArithUpDn.mixedMultUpInPlaceEff 
-    mixedMultDnEff = mutableNonmutEffToPure ArithUpDn.mixedMultDnInPlaceEff 
+--instance (MinimalFnBasis fb) => ArithUpDn.RoundedAdd (FnEndpoint fb)
+--    where
+--    addUpEff = mutable2EffToPure ArithUpDn.addUpInPlaceEff 
+--    addDnEff = mutable2EffToPure ArithUpDn.addDnInPlaceEff 
+--
+--instance (MinimalFnBasis fb) => ArithUpDn.RoundedSubtr (FnEndpoint fb)
+--    where
+--    subtrUpEff = mutable2EffToPure ArithUpDn.subtrUpInPlaceEff 
+--    subtrDnEff = mutable2EffToPure ArithUpDn.subtrDnInPlaceEff 
+--
+--instance (MinimalFnBasis fb) => ArithUpDn.RoundedMultiply (FnEndpoint fb)
+--    where
+--    multUpEff = mutable2EffToPure ArithUpDn.multUpInPlaceEff 
+--    multDnEff = mutable2EffToPure ArithUpDn.multDnInPlaceEff 
+--    
+--instance 
+--    (ArithUpDn.RoundedMixedAddInPlace (FnEndpoint fb) t) 
+--    => ArithUpDn.RoundedMixedAdd (FnEndpoint fb) t
+--    where
+--    mixedAddUpEff = mutableNonmutEffToPure ArithUpDn.mixedAddUpInPlaceEff 
+--    mixedAddDnEff = mutableNonmutEffToPure ArithUpDn.mixedAddDnInPlaceEff 
+--    
+--instance 
+--    (ArithUpDn.RoundedMixedMultiplyInPlace (FnEndpoint fb) t) 
+--    => ArithUpDn.RoundedMixedMultiply (FnEndpoint fb) t
+--    where
+--    mixedMultUpEff = mutableNonmutEffToPure ArithUpDn.mixedMultUpInPlaceEff 
+--    mixedMultDnEff = mutableNonmutEffToPure ArithUpDn.mixedMultDnInPlaceEff 
     
