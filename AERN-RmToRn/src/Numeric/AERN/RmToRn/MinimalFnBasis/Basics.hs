@@ -44,28 +44,38 @@ import Test.QuickCheck
 class (
        CanBeMutable fb,
        HasLegalValues fb,
+
        -- function-specific capabilities:
        HasDomainBox fb,
-       ArithUpDn.RoundedReal (Domain fb),
+       ArithInOut.RoundedReal (Domain fb),
 --        CanEvaluate fb, -- value at a point
 --        CanSubstitute fb, -- substitution
        CanEvaluateOtherType fb, -- another interpretation (eg string or interval)
        ShowInternals fb,
        HasProjections fb, -- variables (but their domain is fixed!)
        HasConstFns fb, -- constants
+
        -- conversions: 
        ArithUpDn.Convertible fb (Domain fb), -- bounds
+
        -- exact ops:
        NegInPlace fb,
        HasZero fb,
        HasOne fb,
        NumOrd.HasExtrema fb,
-       -- ring ops rounded up/down:
-       ArithUpDn.RoundedAddInPlace fb,
-       ArithUpDn.RoundedMultiplyInPlace fb,
-       ArithUpDn.RoundedMixedAddInPlace fb (Domain fb),
-       ArithUpDn.RoundedMixedMultiplyInPlace fb (Domain fb),
+
+--       -- ring ops rounded up/down:
+--       ArithUpDn.RoundedAddInPlace fb,
+--       ArithUpDn.RoundedMultiplyInPlace fb,
+--       ArithUpDn.RoundedMixedAddInPlace fb (Domain fb),
+--       ArithUpDn.RoundedMixedMultiplyInPlace fb (Domain fb),
+
        -- ring ops rounded *out* by some internal notion of enclosure:
+       ArithInOut.RoundedAdd fb,
+       ArithInOut.RoundedMultiply fb,
+       ArithInOut.RoundedMixedAdd fb (Domain fb),
+       ArithInOut.RoundedMixedMultiply fb (Domain fb),
+       
        ArithInOut.RoundedAddInPlace fb,
        ArithInOut.RoundedMultiplyInPlace fb,
        ArithInOut.RoundedMixedAddInPlace fb (Domain fb),
@@ -75,11 +85,12 @@ class (
        -- random generation:
        Arbitrary (SizeLimits fb),
        Arbitrary (Domain fb),
+       Arbitrary (Var fb), Ord (Var fb),
        NumOrd.ArbitraryOrderedTuple (Domain fb)
       ) => 
     MinimalFnBasis fb
     where
-    fixedDomain :: fb -> Interval (Domain fb)
+    fixedDomain :: fb -> (Domain fb, Domain fb)
     
 {-| 
     A type-level wrapper for function endpoints to make it easier (possible)
@@ -92,10 +103,12 @@ newtype FnEndpoint fb = FnEndpoint fb
          HasConstFns, 
          HasProjections, 
          NegInPlace,
-         ArithUpDn.RoundedAddInPlace, 
+--         ArithUpDn.RoundedAddInPlace, 
          ArithInOut.RoundedAddInPlace,
-         ArithUpDn.RoundedMultiplyInPlace, 
+         ArithInOut.RoundedAdd,
+--         ArithUpDn.RoundedMultiplyInPlace, 
          ArithInOut.RoundedMultiplyInPlace,
+         ArithInOut.RoundedMultiply,
          HasZero,
          HasOne,
          NumOrd.HasGreatest,
@@ -150,7 +163,7 @@ instance HasDomainBox fb => HasDomainBox (FnEndpoint fb)
     type VarBox (FnEndpoint fb) = VarBox fb
     type Var (FnEndpoint fb) = Var fb
     getSampleDomValue (FnEndpoint f) = getSampleDomValue f
-    getNVariables (FnEndpoint f) = getNVariables f
+--    getNVariables (FnEndpoint f) = getNVariables f
     getDomainBox (FnEndpoint f) = getDomainBox f
     defaultDomSplit (FnEndpoint f) i = defaultDomSplit f i
     
@@ -177,37 +190,37 @@ instance CanEvaluateOtherType fb => CanEvaluateOtherType (FnEndpoint fb)
     type EvalOps (FnEndpoint fb) = EvalOps fb    
     evalOtherType ops box (FnEndpoint f) = evalOtherType ops box f
 
-instance ArithUpDn.RoundedAddEffort fb => ArithUpDn.RoundedAddEffort (FnEndpoint fb)
-    where
-    type ArithUpDn.AddEffortIndicator (FnEndpoint fb) = ArithUpDn.AddEffortIndicator fb 
-    addDefaultEffort (FnEndpoint f) = ArithUpDn.addDefaultEffort f
+--instance ArithUpDn.RoundedAddEffort fb => ArithUpDn.RoundedAddEffort (FnEndpoint fb)
+--    where
+--    type ArithUpDn.AddEffortIndicator (FnEndpoint fb) = ArithUpDn.AddEffortIndicator fb 
+--    addDefaultEffort (FnEndpoint f) = ArithUpDn.addDefaultEffort f
 
 instance ArithInOut.RoundedAddEffort fb => ArithInOut.RoundedAddEffort (FnEndpoint fb)
     where
     type ArithInOut.AddEffortIndicator (FnEndpoint fb) = ArithInOut.AddEffortIndicator fb 
     addDefaultEffort (FnEndpoint f) = ArithInOut.addDefaultEffort f
 
-instance ArithUpDn.RoundedMultiplyEffort fb => ArithUpDn.RoundedMultiplyEffort (FnEndpoint fb)
-    where
-    type ArithUpDn.MultEffortIndicator (FnEndpoint fb) = ArithUpDn.MultEffortIndicator fb 
-    multDefaultEffort (FnEndpoint f) = ArithUpDn.multDefaultEffort f
+--instance ArithUpDn.RoundedMultiplyEffort fb => ArithUpDn.RoundedMultiplyEffort (FnEndpoint fb)
+--    where
+--    type ArithUpDn.MultEffortIndicator (FnEndpoint fb) = ArithUpDn.MultEffortIndicator fb 
+--    multDefaultEffort (FnEndpoint f) = ArithUpDn.multDefaultEffort f
 
 instance ArithInOut.RoundedMultiplyEffort fb => ArithInOut.RoundedMultiplyEffort (FnEndpoint fb)
     where
     type ArithInOut.MultEffortIndicator (FnEndpoint fb) = ArithInOut.MultEffortIndicator fb 
     multDefaultEffort (FnEndpoint f) = ArithInOut.multDefaultEffort f
 
-instance ArithUpDn.RoundedMixedAddEffort fb t => ArithUpDn.RoundedMixedAddEffort (FnEndpoint fb) t
-    where
-    type ArithUpDn.MixedAddEffortIndicator (FnEndpoint fb) t = ArithUpDn.MixedAddEffortIndicator fb t 
-    mixedAddDefaultEffort (FnEndpoint f) n = ArithUpDn.mixedAddDefaultEffort f n
+--instance ArithUpDn.RoundedMixedAddEffort fb t => ArithUpDn.RoundedMixedAddEffort (FnEndpoint fb) t
+--    where
+--    type ArithUpDn.MixedAddEffortIndicator (FnEndpoint fb) t = ArithUpDn.MixedAddEffortIndicator fb t 
+--    mixedAddDefaultEffort (FnEndpoint f) n = ArithUpDn.mixedAddDefaultEffort f n
 
-instance ArithUpDn.RoundedMixedAddInPlace fb t => ArithUpDn.RoundedMixedAddInPlace (FnEndpoint fb) t
-    where
-    mixedAddUpInPlaceEff e (FnEndpointMutable resM) (FnEndpointMutable fM) n 
-        = ArithUpDn.mixedAddUpInPlaceEff e resM fM n 
-    mixedAddDnInPlaceEff e (FnEndpointMutable resM) (FnEndpointMutable fM) n 
-        = ArithUpDn.mixedAddDnInPlaceEff e resM fM n 
+--instance ArithUpDn.RoundedMixedAddInPlace fb t => ArithUpDn.RoundedMixedAddInPlace (FnEndpoint fb) t
+--    where
+--    mixedAddUpInPlaceEff e (FnEndpointMutable resM) (FnEndpointMutable fM) n 
+--        = ArithUpDn.mixedAddUpInPlaceEff e resM fM n 
+--    mixedAddDnInPlaceEff e (FnEndpointMutable resM) (FnEndpointMutable fM) n 
+--        = ArithUpDn.mixedAddDnInPlaceEff e resM fM n 
 
 instance ArithInOut.RoundedMixedAddEffort fb t => ArithInOut.RoundedMixedAddEffort (FnEndpoint fb) t
     where
@@ -221,17 +234,24 @@ instance ArithInOut.RoundedMixedAddInPlace fb t => ArithInOut.RoundedMixedAddInP
     mixedAddOutInPlaceEff e (FnEndpointMutable resM) (FnEndpointMutable fM) n 
         = ArithInOut.mixedAddOutInPlaceEff e resM fM n 
 
-instance ArithUpDn.RoundedMixedMultiplyEffort fb t => ArithUpDn.RoundedMixedMultiplyEffort (FnEndpoint fb) t
+instance ArithInOut.RoundedMixedAdd fb t => ArithInOut.RoundedMixedAdd (FnEndpoint fb) t
     where
-    type ArithUpDn.MixedMultEffortIndicator (FnEndpoint fb) t = ArithUpDn.MixedMultEffortIndicator fb t 
-    mixedMultDefaultEffort (FnEndpoint f) n = ArithUpDn.mixedMultDefaultEffort f n
+    mixedAddInEff e (FnEndpoint fM) n 
+        = FnEndpoint $ ArithInOut.mixedAddInEff e fM n 
+    mixedAddOutEff e (FnEndpoint fM) n 
+        = FnEndpoint $ ArithInOut.mixedAddOutEff e fM n 
 
-instance ArithUpDn.RoundedMixedMultiplyInPlace fb t => ArithUpDn.RoundedMixedMultiplyInPlace (FnEndpoint fb) t
-    where
-    mixedMultUpInPlaceEff e (FnEndpointMutable resM) (FnEndpointMutable fM) n 
-        = ArithUpDn.mixedMultUpInPlaceEff e resM fM n 
-    mixedMultDnInPlaceEff e (FnEndpointMutable resM) (FnEndpointMutable fM) n 
-        = ArithUpDn.mixedMultDnInPlaceEff e resM fM n 
+--instance ArithUpDn.RoundedMixedMultiplyEffort fb t => ArithUpDn.RoundedMixedMultiplyEffort (FnEndpoint fb) t
+--    where
+--    type ArithUpDn.MixedMultEffortIndicator (FnEndpoint fb) t = ArithUpDn.MixedMultEffortIndicator fb t 
+--    mixedMultDefaultEffort (FnEndpoint f) n = ArithUpDn.mixedMultDefaultEffort f n
+--
+--instance ArithUpDn.RoundedMixedMultiplyInPlace fb t => ArithUpDn.RoundedMixedMultiplyInPlace (FnEndpoint fb) t
+--    where
+--    mixedMultUpInPlaceEff e (FnEndpointMutable resM) (FnEndpointMutable fM) n 
+--        = ArithUpDn.mixedMultUpInPlaceEff e resM fM n 
+--    mixedMultDnInPlaceEff e (FnEndpointMutable resM) (FnEndpointMutable fM) n 
+--        = ArithUpDn.mixedMultDnInPlaceEff e resM fM n 
 
 instance ArithInOut.RoundedMixedMultiplyEffort fb t => ArithInOut.RoundedMixedMultiplyEffort (FnEndpoint fb) t
     where
@@ -245,3 +265,9 @@ instance ArithInOut.RoundedMixedMultiplyInPlace fb t => ArithInOut.RoundedMixedM
     mixedMultOutInPlaceEff e (FnEndpointMutable resM) (FnEndpointMutable fM) n 
         = ArithInOut.mixedMultOutInPlaceEff e resM fM n 
 
+instance ArithInOut.RoundedMixedMultiply fb t => ArithInOut.RoundedMixedMultiply (FnEndpoint fb) t
+    where
+    mixedMultInEff e (FnEndpoint fM) n 
+        = FnEndpoint $ ArithInOut.mixedMultInEff e fM n 
+    mixedMultOutEff e (FnEndpoint fM) n 
+        = FnEndpoint $ ArithInOut.mixedMultOutEff e fM n 
