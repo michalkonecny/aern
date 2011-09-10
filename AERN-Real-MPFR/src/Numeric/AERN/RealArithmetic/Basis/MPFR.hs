@@ -15,7 +15,7 @@
 -}
 module Numeric.AERN.RealArithmetic.Basis.MPFR 
 (
-   M.MPFR, MM.MMPFR,
+   M.MPFR, MM.MMPFR, M.Precision,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.ShowInternals,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.Conversion,
