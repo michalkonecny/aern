@@ -23,3 +23,13 @@ import Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps
 import Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps
 import Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps
 
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+
+import Numeric.AERN.Basics.Interval
+import Numeric.AERN.RealArithmetic.Interval
+
+instance 
+    (ArithUpDn.RoundedRealInPlace e, NumOrd.HasExtrema e) => 
+    ArithInOut.RoundedRealInPlace (Interval e)
