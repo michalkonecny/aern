@@ -41,6 +41,7 @@ Library
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
+        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
 --        Numeric.AERN.RmToRn.IntPoly.RefinementOrder
 --        Numeric.AERN.RmToRn.IntPoly.RingOps
   other-modules:

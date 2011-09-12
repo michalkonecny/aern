@@ -23,20 +23,29 @@ type Poly = IntPoly String MI
 
 main =
     do
-    putStrLn $ "x = " ++ showPoly id show x
-    putStrLn $ "y = " ++ showPoly id show y
-    putStrLn $ "x + y = " ++ (showPoly id show $ xPy)
-    putStrLn $ "2(x + y) = " ++ (showPoly id show $ twoBxPy)
-    putStrLn $ "2(x + y) = " ++ (showPoly id show $ twoBxPy)
-    putStrLn $ "d (2(x + y))/dx = " ++ (showPoly id show $ diffPoly (100) "x" twoBxPy)
-    putStrLn $ "d (2(x + y))/dy = " ++ (showPoly id show $ diffPoly (100) "y" twoBxPy)
+    putStrLn $ "0 = " ++ showP c0
+    putStrLn $ "1 = " ++ showP c1
+    putStrLn $ "x = " ++ showP x
+    putStrLn $ "y = " ++ showP y
+    putStrLn $ "x + y = " ++ (showP $ xPy)
+    putStrLn $ "x + y + 1 + 1 = " ++ (showP $ xPyP1P1)
+    putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
+    putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
+    putStrLn $ "d (2(x + y + 2))/dx = " ++ (showP $ diffPoly (100) "x" twoBxPyP2)
+    putStrLn $ "d (2(x + y + 2))/dy = " ++ (showP $ diffPoly (100) "y" twoBxPyP2)
+    putStrLn $ "1 + int (2(x + y + 2)) dy = " ++ (showP $ integratePolyMainVar (100) 0 c1 twoBxPyP2)
+    where
+    showP p = showPoly id show p ++ " [" ++ show p ++ "]" 
 
-x,y :: Poly
+c1,c0,x,y :: Poly
 x = newProjection cfg dombox "x"
 y = newProjection cfg dombox "y"
+c0 = newConstFn cfg dombox 0
+c1 = newConstFn cfg dombox 1
 
 xPy = x <+> y
-twoBxPy = (2::Int) |<*> (x <+> y)
+xPyP1P1 = xPy <+> c1 <+> c1
+twoBxPyP2 = (2::Int) |<*> xPyP1P1
 
 cfg =
     IntPolyCfg
