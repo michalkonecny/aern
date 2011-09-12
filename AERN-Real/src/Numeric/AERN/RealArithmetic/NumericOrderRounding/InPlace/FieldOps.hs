@@ -441,6 +441,7 @@ testsUpDnFieldOpsInPlace (name, sample) =
 class 
         (RoundedSubtrInPlace t, 
          RoundedMultiplyInPlace t,
+         RoundedPowerNonnegToNonnegIntInPlace t,
          RoundedRingEffort t) => 
     RoundedRingInPlace t
     

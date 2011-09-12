@@ -34,6 +34,8 @@ import Numeric.AERN.RealArithmetic.NumericOrderRounding.SpecialConst
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
 
+import Numeric.AERN.Basics.NumericOrder
+
 import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
@@ -86,6 +88,7 @@ class
 class
     (RoundedReal t,
      NegInPlace t,
+     RoundedLatticeInPlace t,
      RoundedAbsInPlace t, 
      RoundedFieldInPlace t,
      RoundedMixedFieldInPlace t Int, 
