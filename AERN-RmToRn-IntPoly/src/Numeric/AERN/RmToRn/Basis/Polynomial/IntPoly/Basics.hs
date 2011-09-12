@@ -32,21 +32,36 @@ import qualified Data.Map as Map
 import Data.List (intercalate)
     
 {--- poor man's multi-variate polynomials  ---}
-data IntPoly var cf = 
+data IntPoly var cf =
+    IntPoly
+        {
+            intpoly_cfg :: IntPolyCfg var cf, 
+            intpoly_terms :: IntPolyTerms var cf
+        }
+
+instance (Show var, Show cf) => Show (IntPoly var cf)
+    where
+    show (IntPoly cfg terms)
+        = "IntPoly{" ++ show cfg ++ "; " ++ show terms ++ "}" 
+
+data IntPolyTerms var cf = 
         IntPolyG -- uni-variate
             {
-                intpoly_cfg :: (IntPolyCfg var cf), -- configuration
                 intpoly_mainvar :: var, -- name of the sole variable
                 intpoly_coeffs :: [cf] -- coefficients, constant term last
             }
     |   IntPolyV  -- multi-variate poly
             {
-                intpoly_cfg :: (IntPolyCfg var cf), -- configuration
                 intpoly_mainvar :: var, -- name of the sole variable
-                intpoly_vars :: [IntPoly var cf] -- coefficients of the main variable as polynomials in other variables
+                intpoly_vars :: [IntPolyTerms var cf] -- coefficients of the main variable as polynomials in other variables
             }
             
-    deriving Show
+instance (Show var, Show cf) => (Show (IntPolyTerms var cf))
+    where
+    show (IntPolyG x coeffs)
+        = "G{" ++ show x ++ "/" ++ show coeffs ++ "}"
+    show (IntPolyV x polys)
+        = "V{" ++ show x ++ "/" ++ show polys ++ "}"
     
 data IntPolyCfg var cf =
     IntPolyCfg
@@ -57,44 +72,59 @@ data IntPolyCfg var cf =
         ipolycfg_maxdeg :: Int, -- maximum degree of each term
         ipolycfg_maxsize :: Int -- maximum term size
     }
-    deriving Show
+
+instance (Show var, Show cf) => Show (IntPolyCfg var cf)
+    where
+    show (IntPolyCfg vars doms _ maxdeg maxsize) 
+        = "cfg{" ++ (show $ zip vars doms) ++ ";" ++ show maxdeg ++ "/" ++ show maxsize ++ "}"
     
 polyNormalise ::
     (ArithInOut.RoundedReal cf) => 
     IntPoly var cf -> IntPoly var cf
-polyNormalise (IntPolyG cfg x coeffs) 
-    = IntPolyG cfg x $ removeZeros coeffs
-    where
-    removeZeros [c] = [c]
-    removeZeros coeffs@(c : rest)
-        | isZero c = removeZeros rest
-        | otherwise = coeffs
-        where
-        isZero c = (c |==? zero) == Just True
-polyNormalise (IntPolyV cfg x polys) 
-    = IntPolyV cfg x $ removeZeros $ map polyNormalise polys
-    where
-    removeZeros [p] = [p]
-    removeZeros polys@(p : rest)
-        | isZeroPoly p = removeZeros rest
-        | otherwise = polys
+polyNormalise (IntPoly cfg poly)
+    = IntPoly cfg (termsNormalise cfg poly) 
 
-isZeroPoly ::
+termsNormalise cfg poly =
+    pn poly
+    where    
+    pn (IntPolyG x coeffs)
+        = IntPolyG x $ removeZeros coeffs
+        where
+        removeZeros [c] = [c]
+        removeZeros coeffs@(c : rest)
+            | isZero c = removeZeros rest
+            | otherwise = coeffs
+            where
+            isZero c = (c |==? zero) == Just True
+    pn (IntPolyV x polys) 
+        = IntPolyV x $ removeZeros $ map pn polys
+        where
+        removeZeros [p] = [p]
+        removeZeros polys@(p : rest)
+            | termsIsZero p = removeZeros rest
+            | otherwise = polys
+
+polyIsZero ::
     (ArithInOut.RoundedReal cf) => 
     IntPoly var cf -> Bool
-isZeroPoly (IntPolyG cfg x [c]) = (c |==? zero) == Just True
-isZeroPoly (IntPolyV cfg x [p]) = isZeroPoly p
-isZeroPoly _ = False
+polyIsZero (IntPoly _ poly)
+    = termsIsZero poly
+
+termsIsZero ::
+    (ArithInOut.RoundedReal cf) => 
+    IntPolyTerms var cf -> Bool
+termsIsZero (IntPolyG x [c]) = (c |==? zero) == Just True
+termsIsZero (IntPolyV x [p]) = termsIsZero p
+termsIsZero _ = False
 
 instance (Ord var, ArithInOut.RoundedReal cf) => (HasDomainBox (IntPoly var cf))
     where
     type (Domain (IntPoly var cf)) = cf
     type (Var (IntPoly var cf)) = var
     type (VarBox (IntPoly var cf)) = Map.Map var
-    getSampleDomValue (IntPolyG cfg _ _) = ipolycfg_sample_cf cfg
-    getSampleDomValue (IntPolyV cfg _ _) = ipolycfg_sample_cf cfg
+    getSampleDomValue (IntPoly cfg _) = ipolycfg_sample_cf cfg
 --    getNVariables _ = error "operation getNVariables not implemented for IntPoly"
-    getDomainBox (IntPolyG cfg _ _) = Map.fromList $ zip vars doms
+    getDomainBox (IntPoly cfg _) = Map.fromList $ zip vars doms
         where
         vars = ipolycfg_vars cfg
         doms = ipolycfg_doms cfg
@@ -107,8 +137,7 @@ instance (HasSizeLimits (IntPoly var cf))
     where
     type (SizeLimits (IntPoly var cf)) = IntPolyCfg var cf
     defaultSizes = getSizeLimits 
-    getSizeLimits (IntPolyG cfg _ _) = cfg
-    getSizeLimits (IntPolyV cfg _ _) = cfg
+    getSizeLimits (IntPoly cfg _) = cfg
     changeSizeLimits _ =
         error $ "changeSizeLimits not implemented for IntPoly"
 
@@ -116,10 +145,10 @@ instance
     (Ord var, ArithInOut.RoundedReal cf) => 
     (HasConstFns (IntPoly var cf))
     where
-    newConstFn cfg _ value = mkConstPoly $ ipolycfg_vars cfg
+    newConstFn cfg _ value = IntPoly cfg $ mkConstPoly $ ipolycfg_vars cfg
         where
-        mkConstPoly [var] = IntPolyG cfg var [value]
-        mkConstPoly (var:rest) = IntPolyV cfg var [mkConstPoly rest]
+        mkConstPoly [var] = IntPolyG var [value]
+        mkConstPoly (var:rest) = IntPolyV var [mkConstPoly rest]
 
 instance 
     (Ord var, Show var, 
@@ -127,19 +156,19 @@ instance
     (HasProjections (IntPoly var cf))
     where
     newProjection cfg dombox var =
-        mkProj vars
+        IntPoly cfg $ mkProj vars
         where
         vars = ipolycfg_vars cfg
         mkProj [] = 
             error $ 
                 "IntPoly: newProjection: variable " ++ show var 
                 ++ " not among specified variables " ++ show vars
-        mkProj [cvar] | cvar == var = IntPolyG cfg var [one, zero]
+        mkProj [cvar] | cvar == var = IntPolyG var [one, zero]
         mkProj (cvar : rest)
-            | cvar == var = IntPolyV cfg var [constR one, constR zero]
-            | otherwise = IntPolyV cfg var [mkProj rest]
+            | cvar == var = IntPolyV var [constR one, constR zero]
+            | otherwise = IntPolyV cvar [mkProj rest]
             where
-            constR = newConstFn cfgR dombox
+            constR c = intpoly_terms $ newConstFn cfgR dombox c
             cfgR = cfg { ipolycfg_vars = rest }
 -- examples from SpringMassV.hs:
 --        y0    = V "u" [V "y0" [G "y0Der" [one], G "y0Der" [zero]]]
@@ -150,9 +179,7 @@ instance
     where
     type ShowInternalsIndicator (IntPoly var cf) 
         = ShowInternalsIndicator cf
-    defaultShowIndicator (IntPolyG cfg var _) 
-        = defaultShowIndicator $ ipolycfg_sample_cf cfg
-    defaultShowIndicator (IntPolyV cfg var _) 
+    defaultShowIndicator (IntPoly cfg _) 
         = defaultShowIndicator $ ipolycfg_sample_cf cfg
     showInternals cfIndicator
         = showPoly (show) (showInternals cfIndicator)
@@ -161,10 +188,10 @@ showPoly ::
     (var -> String) -> 
     (cf -> String) -> 
     (IntPoly var cf -> String)
-showPoly showVar showCoeff poly =
+showPoly showVar showCoeff (IntPoly cfg poly) =
     sp "" poly
     where
-    sp otherVars (IntPolyG _ var coeffs) 
+    sp otherVars (IntPolyG var coeffs) 
         = intercalate " + " $ zipWith showTerm coeffs [degree,degree-1..0]
         where
         degree = length coeffs - 1
@@ -177,7 +204,7 @@ showPoly showVar showCoeff poly =
         showVarPower 0 = ""
         showVarPower 1 = showVar var
         showVarPower n = showVar var ++ "^" ++ show n
-    sp otherVars (IntPolyV _ var polys)
+    sp otherVars (IntPolyV var polys)
         = intercalate " + " $ zipWith showTerm polys [degree,degree-1..0]
         where
         degree = length polys - 1

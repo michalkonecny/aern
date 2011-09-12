@@ -233,12 +233,5 @@ picard z (y0, y0Der) (yPrev, yPrevDer) =
         integratePoly z y0Der (field yPrev)
     field y = (-100 :: Int) |<*> y
     
---stepOpt (Interval yPrevL yPrevR) (Interval yPrevDerL yPrevDerR) (Interval h _) =
---    (Interval yNextL yNextR, Interval yNextDerL yNextDerR)
---    where
---    yNextDerL
---        = yPrevDerL -. ((h *^ h +^ h) *^ yPrevR)
---    yNextDerR
---        = yPrevDerR -^ ((h *. h +. h) *. yPrevL)
     
     

@@ -15,8 +15,9 @@
 -}
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
---    (
---    )
+    (
+        diffPoly
+    )
 where
     
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
@@ -34,33 +35,33 @@ diffPoly ::
     var ->
     IntPoly var cf ->
     IntPoly var cf
-diffPoly eff var poly =
-    dp poly
+diffPoly eff var (IntPoly cfg poly) =
+    IntPoly cfg $ dp poly
     where
     effMult = ArithInOut.mxfldEffortMult sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
     sample = ipolycfg_sample_cf cfg
-    cfg = intpoly_cfg poly
-    dp (IntPolyG cfg x [c]) = IntPolyG cfg x [zero]
-    dp (IntPolyG cfg x coeffs) 
+    dp (IntPolyG x [c]) = IntPolyG x [zero]
+    dp (IntPolyG x coeffs) 
         =
-        IntPolyG cfg x $ coeffsMultiples
+        IntPolyG x $ coeffsMultiples
         where
         coeffsMultiples = 
             let (<*>|) = ArithInOut.mixedMultOutEff effMult in
             zipWith (<*>|) coeffs [degree,degree-1..1]
         degree = length coeffs - 1
-    dp (IntPolyV cfg x [p]) 
+    dp (IntPolyV x [p]) 
         | var == x = 
-            IntPolyV cfg x $ [newConstFn cfg undefined zero]
-    dp (IntPolyV cfg x polys)
+            IntPolyV x $ [intpoly_terms $ newConstFn cfg undefined zero]
+    dp (IntPolyV x polys)
         | var == x = 
-            IntPolyV cfg x $ polysMultiples
+            IntPolyV x $ polysMultiples
         where
         polysMultiples = 
             let (<*>|) = ArithInOut.mixedMultOutEff effMult in
-            zipWith (<*>|) polys [degree,degree-1..1]
+            map intpoly_terms $ zipWith (<*>|) intpolys [degree,degree-1..1]
+        intpolys = map (IntPoly cfg) polys
         degree = length polys - 1
-    dp (IntPolyV cfg x polys)
+    dp (IntPolyV x polys)
         =
-        polyNormalise $ 
-        IntPolyV cfg x $ map dp polys
+        termsNormalise cfg $ 
+        IntPolyV x $ map dp polys
