@@ -34,31 +34,30 @@ import Numeric.AERN.RealArithmetic.ExactOps
 
 import Control.Monad.ST (ST)
 
+--type ExpOutThinArgEffort t =
+
 expOutThinArg ::
-    (HasZero t, HasOne t, HasInfinities t,
-     RefOrd.PartialComparison t,
-     NumOrd.PartialComparison t,
-     RefOrd.OuterRoundedLattice t,
-     ArithUpDn.Convertible t Int,
-     ArithInOut.Convertible Double t,
-     ArithInOut.RoundedMixedField t Int,
-     ArithInOut.RoundedField t) =>
-    ArithInOut.FieldOpsEffortIndicator t ->
-    ArithInOut.MixedFieldOpsEffortIndicator t Int ->
-    RefOrd.JoinMeetOutEffortIndicator t ->
-    RefOrd.PartialCompareEffortIndicator t ->
-    NumOrd.PartialCompareEffortIndicator t ->
-    (ArithUpDn.ConvertEffortIndicator t Int, 
-     ArithInOut.ConvertEffortIndicator Double t) ->
+--    (HasZero t, HasOne t, HasInfinities t,
+--     RefOrd.PartialComparison t,
+--     NumOrd.PartialComparison t,
+--     RefOrd.OuterRoundedLattice t,
+--     ArithUpDn.Convertible t Int,
+--     ArithInOut.Convertible Double t,
+--     ArithInOut.RoundedMixedField t Int,
+--     ArithInOut.RoundedField t) =>
+--    ArithInOut.FieldOpsEffortIndicator t ->
+--    ArithInOut.MixedFieldOpsEffortIndicator t Int ->
+--    RefOrd.JoinMeetOutEffortIndicator t ->
+--    RefOrd.PartialCompareEffortIndicator t ->
+--    NumOrd.PartialCompareEffortIndicator t ->
+--    (ArithUpDn.ConvertEffortIndicator t Int, 
+--     ArithInOut.ConvertEffortIndicator Double t) ->
+    (ArithInOut.RoundedReal t) =>
+    ArithInOut.RoundedRealEffortIndicator t ->
     Int {-^ the highest degree to consider in the Taylor expansion -} ->
     t {-^ @x@ assumed to be a thin approximation -} -> 
     t {-^ @exp(x)@ -}
-expOutThinArg
-        effortField
-        effortMixedField
-        effortMeet
-        effortRefinement effortCompare
-        (effortToInt, effortFromDouble)
+expOutThinArg eff
         degr x =
     let ?pCompareEffort = effortRefinement in
     let ?joinmeetOutEffort = effortMeet in
@@ -75,6 +74,14 @@ expOutThinArg
             zero </\> plusInfinity
              -- this is always a valid outer approx
     where
+    effortField = ArithInOut.rrEffortField sample eff
+    effortMixedField = ArithInOut.rrEffortIntMixedField sample eff
+    effortMeet = ArithInOut.rrEffortJoinMeetOut sample eff
+    effortRefinement = ArithInOut.rrEffortRefComp sample eff
+    effortCompare = ArithInOut.rrEffortNumComp sample eff
+    effortToInt = ArithInOut.rrEffortToInt sample eff
+    effortFromDouble = ArithInOut.rrEffortFromDouble sample eff
+    sample = x
     (xUp, xTooBig) =
         case ArithUpDn.convertUpEff effortToInt x of
             Just xUp -> (xUp :: Int, False)

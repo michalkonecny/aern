@@ -47,7 +47,7 @@ instance
     rrEffortNumComp (Interval l r) eff = ArithUpDn.rrEffortComp l eff
     rrEffortMinmaxIn (Interval l r) eff = ArithUpDn.rrEffortMinmax l eff
     rrEffortMinmaxOut (Interval l r) eff = ArithUpDn.rrEffortMinmax l eff
-    rrEffortComp (Interval l r) eff = ArithUpDn.rrEffortComp l eff
+    rrEffortRefComp (Interval l r) eff = ArithUpDn.rrEffortComp l eff
     rrEffortJoinMeetOut (Interval l r) eff = ArithUpDn.rrEffortMinmax l eff
     rrEffortJoinMeetIn (Interval l r) eff = ArithUpDn.rrEffortMinmax l eff
     rrEffortToInt (Interval l r) eff = ArithUpDn.rrEffortToInt l eff

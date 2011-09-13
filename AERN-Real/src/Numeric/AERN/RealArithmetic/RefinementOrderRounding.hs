@@ -72,7 +72,7 @@ class
     rrEffortNumComp :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator t)
     rrEffortMinmaxIn :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.MinmaxInnerEffortIndicator t)
     rrEffortMinmaxOut :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.MinmaxOuterEffortIndicator t)
-    rrEffortComp :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator t)
+    rrEffortRefComp :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.PartialCompareEffortIndicator t)
     rrEffortJoinMeetOut :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.JoinMeetOutEffortIndicator t)
     rrEffortJoinMeetIn :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.JoinMeetInEffortIndicator t)
     rrEffortToInt :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Int)
