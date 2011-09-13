@@ -64,10 +64,14 @@ integratePolyMainVar eff z initPoly (IntPoly cfg poly) =
         result 
             = 
             IntPolyV x $ polysFractions ++ [intpoly_terms $ newConstFn cfgR undefined z] 
-        cfgR = cfg { ipolycfg_vars = tail $ ipolycfg_vars cfg }
+        cfgR = cfg 
+            { 
+                ipolycfg_vars = tail $ ipolycfg_vars cfg, 
+                ipolycfg_doms = tail $ ipolycfg_doms cfg 
+            }
         polysFractions = 
             map intpoly_terms $ zipWith (</>|) intpolys [degreePlusOne,degreePlusOne-1..]
             where
-            intpolys = map (IntPoly cfg) polys
+            intpolys = map (IntPoly cfgR) polys
             (</>|) = ArithInOut.mixedDivOutEff effDiv
         degreePlusOne = length polys

@@ -168,6 +168,6 @@ divPolyByOther eff (IntPoly cfg poly) c =
     where
     dP (IntPolyG x coeffs) =
         IntPolyG x $ map (\t -> t </>| c) coeffs
-    dp (IntPolyV x polys) = 
-        IntPolyV x $ map dp polys
+    dP (IntPolyV x polys) = 
+        IntPolyV x $ map dP polys
     

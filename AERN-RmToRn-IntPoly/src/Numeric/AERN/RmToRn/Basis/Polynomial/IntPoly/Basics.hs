@@ -73,10 +73,32 @@ data IntPolyCfg var cf =
         ipolycfg_maxsize :: Int -- maximum term size
     }
 
+cfgRemVar cfg = cfg
+        { 
+            ipolycfg_vars = tail $ ipolycfg_vars cfg, 
+            ipolycfg_doms = tail $ ipolycfg_doms cfg 
+        }
+
 instance (Show var, Show cf) => Show (IntPolyCfg var cf)
     where
     show (IntPolyCfg vars doms _ maxdeg maxsize) 
         = "cfg{" ++ (show $ zip vars doms) ++ ";" ++ show maxdeg ++ "/" ++ show maxsize ++ "}"
+
+checkPoly (IntPoly cfg terms)
+    =
+    IntPoly cfg $ checkTerms cfg terms
+    
+checkTerms cfg terms
+    =
+    aux vars terms
+    where
+    vars = ipolycfg_vars cfg
+    aux [cvar] p@(IntPolyG tvar coeffs) | cvar == tvar = p
+    aux (cvar : rest) (IntPolyV tvar polys)
+        | cvar == tvar =
+            (IntPolyV tvar $ map (aux rest) polys)
+    aux _ _ = 
+        error $ "checkTerms failed for cfg = " ++ show cfg ++ " and term = " ++ show terms 
     
 polyNormalise ::
     (ArithInOut.RoundedReal cf) => 

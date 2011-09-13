@@ -36,12 +36,12 @@ diffPoly ::
     IntPoly var cf ->
     IntPoly var cf
 diffPoly eff var (IntPoly cfg poly) =
-    IntPoly cfg $ dp poly
+    IntPoly cfg $ dp cfg poly
     where
     effMult = ArithInOut.mxfldEffortMult sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
     sample = ipolycfg_sample_cf cfg
-    dp (IntPolyG x [c]) = IntPolyG x [zero]
-    dp (IntPolyG x coeffs) 
+    dp cfg (IntPolyG x [c]) = IntPolyG x [zero]
+    dp cfg (IntPolyG x coeffs) 
         =
         IntPolyG x $ coeffsMultiples
         where
@@ -49,19 +49,25 @@ diffPoly eff var (IntPoly cfg poly) =
             let (<*>|) = ArithInOut.mixedMultOutEff effMult in
             zipWith (<*>|) coeffs [degree,degree-1..1]
         degree = length coeffs - 1
-    dp (IntPolyV x [p]) 
+    dp cfg (IntPolyV x [p]) 
         | var == x = 
-            IntPolyV x $ [intpoly_terms $ newConstFn cfg undefined zero]
-    dp (IntPolyV x polys)
+            IntPolyV x $ [intpoly_terms $ newConstFn cfgR undefined zero]
+        where
+        cfgR = cfgRemVar cfg 
+    dp cfg (IntPolyV x polys)
         | var == x = 
             IntPolyV x $ polysMultiples
         where
         polysMultiples = 
             let (<*>|) = ArithInOut.mixedMultOutEff effMult in
             map intpoly_terms $ zipWith (<*>|) intpolys [degree,degree-1..1]
-        intpolys = map (IntPoly cfg) polys
+        intpolys = map (IntPoly cfgR) polys
         degree = length polys - 1
-    dp (IntPolyV x polys)
+        cfgR = cfgRemVar cfg 
+    dp cfg (IntPolyV x polys)
         =
-        termsNormalise cfg $ 
-        IntPolyV x $ map dp polys
+        termsNormalise cfgR $ 
+        IntPolyV x $ map (dp cfgR) polys
+        where
+        cfgR = cfgRemVar cfg 
+        

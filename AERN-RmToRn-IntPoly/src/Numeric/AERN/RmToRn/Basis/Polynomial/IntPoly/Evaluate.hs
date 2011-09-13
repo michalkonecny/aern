@@ -31,13 +31,21 @@ import Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
 import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
+import Numeric.AERN.Misc.Debug
+
 evalPolyDirect ::
     (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
     cf {- zero coefficient -} ->
     [(cf, cf)] -> IntPoly var cf -> cf
-evalPolyDirect eff z values (IntPoly cfg terms)
+evalPolyDirect eff z values p@(IntPoly cfg terms)
     = 
+--    unsafePrint
+--    (
+--        "evalPolyDirect: "
+--        ++ "\n  values = " ++ show values
+--        ++ "\n  p = " ++ show p
+--    ) $
     let ?multInOutEffort = effMult in
     let ?addInOutEffort = effAdd in
     let ?joinmeetOutEffort = effJoin in
@@ -67,7 +75,8 @@ evalPolyDirect eff z values (IntPoly cfg terms)
             aux restPolys newAcc
             where
             newAcc = (ev restVars polyHighestPower) <+> (val <*> acc)
-
+    ev varVals terms =
+        error $ "evalPolyDirect: illegal case: varVals = " ++ show varVals ++ "; terms = " ++ show terms
 --        foldl (<+>) z $ zipWith (<*>) xPowers $ map (ev rest) polys
 --        where
 --        x = valL </\> valR
@@ -75,15 +84,16 @@ evalPolyDirect eff z values (IntPoly cfg terms)
 --        mkPowers xN acc [] = acc
 --        mkPowers xN acc (_:rest) = mkPowers (xN <*> x) (xN : acc) rest
     
-evalPolyMono eff z values p@(IntPoly cfg terms) = 
-    aux
+evalPolyMono ::
+    (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
+    (ArithInOut.RoundedRealEffortIndicator cf) ->
+    cf {- zero coefficient -} ->
+    [(cf, cf)] -> IntPoly var cf -> (cf, cf)
+evalPolyMono eff z values p@(IntPoly cfg terms)
+    | noMonotoneVar = (direct, direct)
+    | otherwise = (left, right)
     where
-    aux
-        | noMonotoneVar = evalPolyDirect eff z values p
-        | otherwise
-            = 
-            let ?joinmeetOutEffort = effJoin in
-            left </\> right
+    direct = evalPolyDirect eff z values p
     effComp = ArithInOut.rrEffortNumComp sample eff
     effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
     sample = ipolycfg_sample_cf cfg
@@ -104,7 +114,7 @@ evalPolyMono eff z values p@(IntPoly cfg terms) =
             | otherwise = ((valR, valR), (valL, valL)) -- non-increasing on the whole domain - can use swapped endpoints
         (varNonDecr, varNotMono) = 
             let ?pCompareEffort = effComp in
-            case (0 <=? deriv, deriv <=? 0) of
+            case (zero <=? deriv, deriv <=? zero) of
                 (Just True, _) -> (True, False) 
                 (_, Just True) -> (False, False)
                 _ -> (undefined, True)  
