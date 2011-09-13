@@ -4,9 +4,10 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
 import Numeric.AERN.RmToRn.New
 
 import Numeric.AERN.RealArithmetic.Basis.MPFR
-import Numeric.AERN.MPFRBasis.Interval
+import qualified Numeric.AERN.MPFRBasis.Interval as MI
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
 import Numeric.AERN.Basics.ShowInternals
 
@@ -17,12 +18,14 @@ import System.IO
 import qualified Data.Map as Map
 import qualified Data.List as List
 
-type Poly = IntPoly String MI
+type Poly = IntPoly String MI.MI
 
 shouldPrintIterations = False
 --shouldPrintIterations = True
-shouldPrintPrecision = False
---shouldPrintPrecision = True
+--shouldPrintPrecision = False
+shouldPrintPrecision = True
+
+field y = (-100 :: Int) |<*> y
 
 main =
     do
@@ -42,7 +45,7 @@ data Params =
         paramStepEpsilon :: Int, -- 2^{-n} stop iterating Picard when the width change falls below this
         paramPrecision :: Precision, -- floating point precision
         paramDegree :: Int, -- maximal polynomial degree
-        paramTermSize :: Int, -- maximal polynomial term size
+--        paramTermSize :: Int, -- maximal polynomial term size
         paramRangeTolerance :: Int 
             -- 2^{-r} how hard to try to estimate ranges of polynomials 
             --        by splitting - currently unused
@@ -53,7 +56,7 @@ data Params =
 --initParams = Params 1 50 50 50 10 -- (?) gets to time 6.5 in 0.62s (1 in 0.1s, 3.6 in 0.34s)
 --initParams = Params 0 100 100 80 10 -- (?) gets to time 99 in 17.5s (36 in 6.4s)
 --initParams = Params 0 200 200 160 10 -- (?) gets to time 312 in 123s 
-initParams = Params (-2) 200 200 190 100 10 -- (?) gets to time 564 in 198s (360 in 109s) drops at e-19
+initParams = Params (-2) 200 200 190 10 -- (?) gets to time 564 in 198s (360 in 109s) drops at e-19
 --initParams = Params (-3) 300 300 350 10 -- (?) gets to time 3176 in 37.25min
 --initParams = Params (-2) 300 300 300 10 -- (?) gets to time 1400 in 15min
 --initParams = Params (-3) 400 400 450 10 -- (?) gets to time 8744 in 2.5h (3600 in 1h2min) starts at e-82 drops at e-35 using 2.2GB RAM
@@ -98,28 +101,32 @@ paramSearch prevBest nextParamsOptions@(params : rest)
 simulate params =
     waitTillPrecBelow (2^^(-30)) $ -- stop when diverging
         iterate (makeStep params stepSize epsilon) 
-            ((i2mi 0, i2mi 20, i2mi 0),[]) -- initial values
+            ((tInit, (y0Init, y0Init), (y0DerInit, y0DerInit)),[]) -- initial values
     where
-    waitTillPrecBelow eps (this@((_,yNmOne,_),_):rest)
+    tInit = i2mi 0
+    y0Init = i2mi 20
+    y0DerInit = i2mi 0
+    waitTillPrecBelow eps (this@((_,yNmOnePair,_),_):rest)
         | precGood = this : (waitTillPrecBelow eps rest)
         | otherwise = [this]
         where
+        yNmOne = joinPair yNmOnePair
         precGood = 
-            case width yNmOne <? eps of
+            case MI.width yNmOne MI.<? eps of
                 Just True -> True
                 _ -> False
     epsilon =
-        (i2mi 1) </> (i2mi $ 2^(paramStepEpsilon params))
+        (i2mi 1) MI.</> (i2mi $ 2^(paramStepEpsilon params))
     stepSize
-        | stp >= 0 =(i2mi 1) </> (i2mi $ 2^stp)
+        | stp >= 0 =(i2mi 1) MI.</> (i2mi $ 2^stp)
         | otherwise = i2mi $ 2^(- stp)
         where
         stp = paramStepSize params
-    i2mi :: Integer -> MI
+    i2mi :: Integer -> MI.MI
     i2mi n =
         ArithInOut.convertOutEff (paramPrecision params) n
     
-printStep ((t,y,yDer), iters) =
+printStep ((t,yPair,yDerPair), iters) =
     do
     putStrLn $ replicate 120 '*'
     putStrLn $ "iterating interval Picard for t = " ++ show t ++ ":"
@@ -129,19 +136,24 @@ printStep ((t,y,yDer), iters) =
         False -> return ()
     putStrLn $ "after " ++ show (length iters) ++ " iterations stabilised on:" 
     putStrLn $ " t = " ++ show t ++ "; y(t) = " ++ showMI y ++ "; y'(t) = " ++ showMI yDer
-    putStrLn $ " width of y = " ++ showMI (width y)
+    putStrLn $ " width of y = " ++ showMI (MI.width y)
     where
-    printIter (n, (((y,yDer),(yPoly,yDerPoly)), ((yPrev,yDerPrev),_))) =
+    y = joinPair yPair
+    yDer = joinPair yDerPair
+    printIter (n, (((yPair,yDerPair),(yPoly,yDerPoly)), ((yPrevPair,yDerPrevPair),_))) =
         do
         putStrLn $ " >>>>>>>>>>>>>>>>> iteration " ++ show n ++ ":"
-        putStrLn $ "  y = " ++ showPoly yPoly ++ "; "
-        putStrLn $ "  y' = " ++ showPoly yDerPoly ++ "; "
+        putStrLn $ "  y = " ++ showP yPoly ++ "; "
+        putStrLn $ "  y' = " ++ showP yDerPoly ++ "; "
         putStrLn $ "  y(h) = " ++ show y ++ "; " ++ "y'(h) = " ++ show yDer ++ "; "
-        putStrLn $ "  width of y(h) = " ++ showMI (width y)
-        putStrLn $ "  Improvement: " ++ show (yPrev |<=? y)
+        putStrLn $ "  width of y(h) = " ++ showMI (MI.width y)
+        putStrLn $ "  Improvement: " ++ show (yPrev MI.|<=? y)
+        where
+        yPrev = joinPair yPrevPair
     showMI = showInternals (30,shouldPrintPrecision)
+    showP = showPoly id show
     
-makeStep params h epsilon ((t, y0, y0Der), prevStepIters) =
+makeStep params h epsilon ((t, y0Pair, y0DerPair), prevStepIters) =
 --    unsafePrint
 --    (
 --        "makeStep:"
@@ -152,21 +164,23 @@ makeStep params h epsilon ((t, y0, y0Der), prevStepIters) =
 --        ++ "\n yh = " ++ showMI yh
 --        ++ "\n yhDer = " ++ showMI yhDer
 --    )
-    ((t + h, yh, yhDer), newStepIters)
+    ((t + h, yhPair, yhDerPair), newStepIters)
     where
 --    showMI = showInternals (20, shouldPrintPrecision)
-    ((yh, yhDer), newStepIters) 
+    ((yhPair, yhDerPair), newStepIters) 
         = waitTillNoImprovementCheckInclusion False 1000 [] intPolySequence
     intPolySequence = map evalBoth polySequence
     polySequence
         =
-        iterate (picard zero (y0Poly, y0DerPoly)) $ 
+        iterate (picard params c0 (y0Poly, y0DerPoly)) $ 
         (yFirstEncl, yDerFirstEncl)
         
     yFirstEncl
-        = newConstFn cfg dombox $ y0 <+> hToMinusH
+        = newConstFn cfg dombox $ y0 MI.<+> hToMinusH
     yDerFirstEncl
-        = newConstFn ["u","y0","y0Der"] $ y0Der <+> hToMinusH
+        = newConstFn cfg dombox $ y0Der MI.<+> hToMinusH
+    y0 = joinPair y0Pair
+    y0Der = joinPair y0DerPair
     y0Poly = newProjection cfg dombox "y0"
     y0DerPoly = newProjection cfg dombox "y0Der"
     
@@ -177,27 +191,28 @@ makeStep params h epsilon ((t, y0, y0Der), prevStepIters) =
                 ipolycfg_doms = doms,
                 ipolycfg_sample_cf = h,
                 ipolycfg_maxdeg = paramDegree params,
-                ipolycfg_maxsize = paramTermSize params
+                ipolycfg_maxsize = 0 -- not used at the moment
             }
     dombox = Map.fromList $ zip vars doms
     vars = ["u","y0","y0Der"]
-    doms = [hTo0, y0, y0Der]
+    doms = [(0,h), y0Pair, y0DerPair]
 
     evalBoth (p1,p2) = ((evalOne p1, evalOne p2), (p1, p2))
         where
-        evalOne = evalPolySplit 1 0 rtol zero [h,y0,y0Der]
+        evalOne = refinePair .  evalPolyMono prec c0 [(h,h),y0Pair,y0DerPair]
 
-    hTo0 = zero </\> h -- domain of u
-    hToMinusH = (-h) </\> h
+    hToMinusH = (-h) MI.</\> h
 
     rtol = 
-        (i2mi 1) </> (i2mi $ 2^(paramRangeTolerance params))
-    i2mi :: Integer -> MI
+        (i2mi 1) MI.</> (i2mi $ 2^(paramRangeTolerance params))
+    i2mi :: Integer -> MI.MI
     i2mi n = ArithInOut.convertOutEff prec n
     prec = paramPrecision params
-    zero = i2mi 0
-    one = i2mi 1 
-    waitTillNoImprovementCheckInclusion wasInclusion maxIters prevIters (this@(thisInts@(yNmOne,_),_):rest@(((yN,_),_):_)) 
+    c0 = i2mi 0
+    c1 = i2mi 1 
+    waitTillNoImprovementCheckInclusion 
+            wasInclusion maxIters prevIters 
+            (this@(thisInts@(yNmOnePair,_),_):rest@(((yNPair,_),_):_)) 
         | maxIters < 0 = (thisInts, reverse currIters)
 --        | wasInclusion && (not isInclusion) =
 --            error "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX internal error: inclusion ceased"
@@ -205,33 +220,42 @@ makeStep params h epsilon ((t, y0, y0Der), prevStepIters) =
             waitTillNoImprovementCheckInclusion isInclusion (maxIters - 1) currIters rest
         | otherwise = (thisInts, reverse currIters)
         where
+        yNmOne = joinPair yNmOnePair
+        yN = joinPair yNPair
         currIters = this : prevIters
         isInclusion =
-            case yNmOne |<=? yN of
+            case yNmOne MI.|<=? yN of
                 Just r -> r
                 _ -> False 
         improvementAboveEpsilon =
-            case yNmOneWidth - yNWidth >? epsilon of
+            case yNmOneWidth - yNWidth MI.>? epsilon of
                 Just True -> True
                 _ -> False 
-        yNmOneWidth = width yNmOne
-        yNWidth = width yN         
+        yNmOneWidth = MI.width yNmOne
+        yNWidth = MI.width yN         
     
-    
+
+
 picard ::
+    Params ->
 --    MI {-^ starting time -} -> -- autonomous system, always 0 
-    MI {-^ zero with correct precision -} ->
+    MI.MI {-^ zero with correct precision -} ->
     (Poly, Poly) {-^ initial values for y,y' -} -> 
     (Poly, Poly) {-^ approximates of y and y' -} -> 
     (Poly, Poly) {-^ improved approximates of y and y' -}
-picard z (y0, y0Der) (yPrev, yPrevDer) =
+picard params z (y0, y0Der) (yPrev, yPrevDer) =
     (yNext, yNextDer)
     where
     yNext =
-        integratePoly z y0 yNextDer
+        integratePolyMainVar prec z y0 yNextDer
     yNextDer =
-        integratePoly z y0Der (field yPrev)
-    field y = (-100 :: Int) |<*> y
-    
-    
-    
+        integratePolyMainVar prec z y0Der (field yPrev)
+    prec = paramPrecision params
+
+
+joinPair (l,r) = l MI.</\> r
+
+refinePair (l,r) = (MI.Interval lL lL, MI.Interval rR rR)
+    where
+    MI.Interval lL _ = l
+    MI.Interval _ rR = r
