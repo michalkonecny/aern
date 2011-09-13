@@ -15,8 +15,9 @@
 -}
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
---    (
---    )
+    (
+        integratePolyMainVar
+    )
 where
     
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
@@ -25,7 +26,7 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps
 import Numeric.AERN.RmToRn.New
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
---import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
 integratePolyMainVar ::
@@ -35,7 +36,8 @@ integratePolyMainVar ::
     IntPoly var cf {- initial value at point 0 -} ->
     IntPoly var cf {- polynomial to integrate in its main variable -} ->
     IntPoly var cf
-integratePolyMainVar eff z initPoly (IntPoly cfg poly) = 
+integratePolyMainVar eff z initPoly (IntPoly cfg poly) =
+--    let ?addInOutEffort = effAdd in
     initPoly <+> (IntPoly cfg $ ip poly) 
     where
     (<+>) = ArithInOut.addOutEff effAdd
