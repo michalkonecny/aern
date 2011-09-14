@@ -339,7 +339,8 @@ testsInOutFieldOpsInPlace (name, sample) =
 
 class 
         (RoundedSubtrInPlace t, 
-         RoundedMultiplyInPlace t, 
+         RoundedMultiplyInPlace t,
+         RoundedPowerToNonnegIntInPlace t, 
          RoundedRingEffort t) => 
     RoundedRingInPlace t
 

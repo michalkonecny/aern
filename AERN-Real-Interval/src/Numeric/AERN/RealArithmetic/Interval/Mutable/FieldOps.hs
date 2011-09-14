@@ -413,6 +413,7 @@ multiplyIntervalsInPlace
 instance 
     (RoundedSubtrInPlace (Interval e), 
      RoundedMultiplyInPlace (Interval e),
+     RoundedPowerToNonnegIntInPlace (Interval e),
      RoundedRingEffort (Interval e)) => 
     RoundedRingInPlace (Interval e)
 
@@ -583,10 +584,12 @@ recipIntervalInPlace pPosNonnegNegNonpos divL divR fallback
 
 instance 
     (ArithUpDn.RoundedFieldInPlace e,
-     ArithUpDn.RoundedPowerNonnegToNonnegIntInPlace e,
+     ArithUpDn.RoundedMultiply e,
+     ArithUpDn.RoundedPowerNonnegToNonnegInt e,
      HasZero e, Neg e, NegInPlace e, HasOne e, 
      NumOrd.HasExtrema e,
      NumOrd.PartialComparison e, 
+     NumOrd.RoundedLattice e, 
      NumOrd.RoundedLatticeInPlace e) => 
     RoundedFieldInPlace (Interval e)
     

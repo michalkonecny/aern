@@ -53,9 +53,9 @@ data Params =
     deriving (Show)
 
 --initParams = Params 1 50 50 50 10 -- gets to time 6.5 in 0.62s (1 in 0.1s, 3.6 in 0.34s)
---initParams = Params 0 100 100 80 10 -- gets to time 99 in 17.5s (36 in 6.4s)
+initParams = Params 0 100 100 80 10 -- gets to time 99 in 17.5s (36 in 6.4s)
 --initParams = Params 0 200 200 160 10 -- gets to time 312 in 123s 
-initParams = Params (-2) 200 200 190 10 -- gets to time 564 in 198s (360 in 109s) drops at e-19
+--initParams = Params (-2) 200 200 190 10 -- gets to time 564 in 198s (360 in 109s) drops at e-19
 --initParams = Params (-3) 300 300 350 10 -- gets to time 3176 in 37.25min
 --initParams = Params (-2) 300 300 300 10 -- gets to time 1400 in 15min
 --initParams = Params (-3) 400 400 450 10 -- gets to time 8744 in 2.5h (3600 in 1h2min) starts at e-82 drops at e-35 using 2.2GB RAM
@@ -706,7 +706,7 @@ addPolyConst (G x coeffs) const =
     G x $ aux coeffs
     where
     aux [c] = [c <+> const]
-    aux (t : ts) = t : (aux ts)  
+    aux (t : ts) = t : (aux ts)
 addPolyConst (V x polys) const =
     V x $ aux polys
     where

@@ -39,22 +39,22 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 
 instance
-    (ArithUpDn.RoundedReal e, NumOrd.HasExtrema e)
+    (ArithUpDn.RoundedReal e)
     => 
     (ArithInOut.RoundedExponentiationEffort (Interval e))
     where
     type ArithInOut.ExpEffortIndicator (Interval e) = 
-        (ArithUpDn.RoundedReal e, Int1To10)
+        (ArithUpDn.RoundedRealEffortIndicator e, Int1To10)
     expDefaultEffort i@(Interval l r) =
         (ArithUpDn.roundedRealDefaultEffort l, Int1To10 10)
 
 expDefaultEffortWithIters ::
-    (ArithUpDn.RoundedReal e, NumOrd.HasExtrema e)
+    (ArithUpDn.RoundedReal e)
     => 
     (Interval e) -> 
     Int -> 
     ArithInOut.ExpEffortIndicator (Interval e)
-expDefaultEffortWithIters  i n =
+expDefaultEffortWithIters  i@(Interval l r) n =
         (ArithUpDn.roundedRealDefaultEffort l, Int1To10 n)
 
 

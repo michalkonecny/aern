@@ -96,9 +96,9 @@ three, ten, hundred, thousand :: MI
 
     
 expEffort n =
-    (a, Int1To10 n, c)
+    (a, Int1To10 n)
     where
-    (a, _, c) = expEffortDefault
+    (a, _) = expEffortDefault
 
 expEffortDefault = 
    ArithInOut.expDefaultEffort three

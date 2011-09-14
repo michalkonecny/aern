@@ -43,76 +43,56 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Mutable
 
 instance
-    (CanBeMutable e,
-     ArithInOut.RoundedFieldInPlace (Interval e),
-     ArithInOut.RoundedMixedFieldInPlace (Interval e) Int,
-     ArithInOut.RoundedPowerToNonnegIntInPlace (Interval e), 
-     ArithInOut.RoundedMixedField (Interval e) Int,
-     ArithInOut.RoundedField (Interval e), 
-     ArithUpDn.Convertible (Interval e) Int,
-     ArithInOut.Convertible Double (Interval e),
-     HasZero e, HasOne e, 
-     HasInfinities e,
-     NumOrd.PartialComparison e,
-     RefOrd.OuterRoundedLattice (Interval e)) 
+    (CanBeMutable e, ArithUpDn.RoundedReal e, ArithInOut.RoundedRealInPlace (Interval e)) 
     => 
     (ArithInOut.RoundedExponentiationInPlace (Interval e))
     where
     expOutInPlaceEff 
-        ((effortField, effortMixedField),
-         (Int1To10 effortTaylor),
-         ((effortMeet, effortComp), effortConv)) 
+        (eff, Int1To10 effortTaylor)
+--        ((effortField, effortMixedField),
+--         (Int1To10 effortTaylor),
+--         ((effortMeet, effortComp), effortConv)) 
         (MInterval resL resR)
         (MInterval lM rM) =
             do
             (MInterval forgetMeL forgetMeR) <- makeMutable zero 
-            expOutThinArgInPlace 
-                effortField effortMixedField 
-                effortMeet effortComp effortComp effortConv 
+            expOutThinArgInPlace eff
+--                effortField effortMixedField 
+--                effortMeet effortComp effortComp effortConv 
                 (MInterval resL forgetMeR)
                 effortTaylor 
                 (MInterval lM lM)
-            expOutThinArgInPlace
-                effortField effortMixedField
-                effortMeet effortComp effortComp effortConv 
+            expOutThinArgInPlace eff
+--                effortField effortMixedField
+--                effortMeet effortComp effortComp effortConv 
                 (MInterval forgetMeL resR)
                 effortTaylor 
                 (MInterval rM rM)
     expInInPlaceEff 
-        ((effortField, effortMixedField),
-         (Int1To10 effortTaylor),
-         ((effortMeet, effortComp), effortConv)) 
+        (eff, Int1To10 effortTaylor)
+--        ((effortField, effortMixedField),
+--         (Int1To10 effortTaylor),
+--         ((effortMeet, effortComp), effortConv)) 
         (MInterval resL resR)
         (MInterval lM rM) =
             do
             (MInterval forgetMeL forgetMeR) <- makeMutable zero 
-            expOutThinArgInPlace 
-                effortField effortMixedField 
-                effortMeet effortComp effortComp effortConv 
+            expOutThinArgInPlace eff 
+--                effortField effortMixedField 
+--                effortMeet effortComp effortComp effortConv 
                 (MInterval forgetMeL resL)
                 effortTaylor 
                 (MInterval lM lM)
-            expOutThinArgInPlace
-                effortField effortMixedField
-                effortMeet effortComp effortComp effortConv 
+            expOutThinArgInPlace eff
+--                effortField effortMixedField
+--                effortMeet effortComp effortComp effortConv 
                 (MInterval resR forgetMeR)
                 effortTaylor 
                 (MInterval rM rM)
 
 expOutInPlaceIters, expInInPlaceIters ::
-    (CanBeMutable e,
-     ArithInOut.RoundedFieldInPlace (Interval e),
-     ArithInOut.RoundedMixedFieldInPlace (Interval e) Int,
-     ArithInOut.RoundedPowerToNonnegIntInPlace (Interval e), 
-     ArithInOut.RoundedMixedField (Interval e) Int,
-     ArithInOut.RoundedField (Interval e), 
-     ArithUpDn.Convertible (Interval e) Int,
-     ArithInOut.Convertible Double (Interval e),
-     HasZero e, HasOne e, 
-     HasInfinities e,
-     NumOrd.PartialComparison e,
-     RefOrd.OuterRoundedLattice (Interval e))
-    =>
+    (CanBeMutable e, ArithUpDn.RoundedReal e, ArithInOut.RoundedRealInPlace (Interval e)) 
+    => 
     Int -> OpMutable1 (Interval e) s 
 expOutInPlaceIters n resM iM =
     do
