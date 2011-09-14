@@ -130,35 +130,38 @@ expOutThinArg eff
                     ArithInOut.convertOutEff effortFromDouble (0.367879440 :: Double)
 
 expOutThinArgInPlace ::
-    (CanBeMutable t, 
-     HasZero t, HasOne t, HasInfinities t,
-     RefOrd.PartialComparison t,
-     NumOrd.PartialComparison t,
-     RefOrd.OuterRoundedLattice t,
-     ArithUpDn.Convertible t Int,
-     ArithInOut.Convertible Double t,
-     ArithInOut.RoundedField t,
-     ArithInOut.RoundedFieldInPlace t,
-     ArithInOut.RoundedMixedField t Int,
-     ArithInOut.RoundedMixedFieldInPlace t Int, -- this constraint should be redundant..
-     ArithInOut.RoundedPowerToNonnegIntInPlace t) => 
-    ArithInOut.FieldOpsEffortIndicator t ->
-    ArithInOut.MixedFieldOpsEffortIndicator t Int ->
-    RefOrd.JoinMeetOutEffortIndicator t ->
-    RefOrd.PartialCompareEffortIndicator t ->
-    NumOrd.PartialCompareEffortIndicator t ->
-    (ArithUpDn.ConvertEffortIndicator t Int, 
-     ArithInOut.ConvertEffortIndicator Double t) ->
+    (ArithInOut.RoundedRealInPlace t) =>
+    ArithInOut.RoundedRealEffortIndicator t ->
+--    (CanBeMutable t, 
+--     HasZero t, HasOne t, HasInfinities t,
+--     RefOrd.PartialComparison t,
+--     NumOrd.PartialComparison t,
+--     RefOrd.OuterRoundedLattice t,
+--     ArithUpDn.Convertible t Int,
+--     ArithInOut.Convertible Double t,
+--     ArithInOut.RoundedField t,
+--     ArithInOut.RoundedFieldInPlace t,
+--     ArithInOut.RoundedMixedField t Int,
+--     ArithInOut.RoundedMixedFieldInPlace t Int, -- this constraint should be redundant..
+--     ArithInOut.RoundedPowerToNonnegIntInPlace t) => 
+--    ArithInOut.FieldOpsEffortIndicator t ->
+--    ArithInOut.MixedFieldOpsEffortIndicator t Int ->
+--    RefOrd.JoinMeetOutEffortIndicator t ->
+--    RefOrd.PartialCompareEffortIndicator t ->
+--    NumOrd.PartialCompareEffortIndicator t ->
+--    (ArithUpDn.ConvertEffortIndicator t Int, 
+--     ArithInOut.ConvertEffortIndicator Double t) ->
     Mutable t s {-^ out parameter -} ->
     Int {-^ the highest degree to consider in the Taylor expansion -} ->
     Mutable t s {-^ @xM@ assumed to be a thin approximation -} -> 
     ST s ()
 expOutThinArgInPlace
-        effortField
-        effortMixedField
-        effortMeet
-        effortRefinement effortCompare
-        (effortToInt, effortFromDouble)
+        eff
+--        effortField
+--        effortMixedField
+--        effortMeet
+--        effortRefinement effortCompare
+--        (effortToInt, effortFromDouble)
         resM degr xM =
     do
     -- clone xM to ensure no aliasing with resM:
@@ -169,6 +172,14 @@ expOutThinArgInPlace
     -- unsafe is OK because we do not write into xMNA while x is in scope
 
     -- set various effort indicators for the following block using implicit parameters: 
+    let sample = x
+    let effortField = ArithInOut.rrEffortField sample eff
+    let effortMixedField = ArithInOut.rrEffortIntMixedField sample eff
+    let effortMeet = ArithInOut.rrEffortJoinMeetOut sample eff
+    let effortRefinement = ArithInOut.rrEffortRefComp sample eff
+    let effortCompare = ArithInOut.rrEffortNumComp sample eff
+    let effortToInt = ArithInOut.rrEffortToInt sample eff
+    let effortFromDouble = ArithInOut.rrEffortFromDouble sample eff
     let ?pCompareEffort = effortRefinement
     let ?joinmeetOutEffort = effortMeet
     let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField
@@ -195,23 +206,23 @@ expOutThinArgInPlace
         (_, _, Just True) -> unsafeWriteMutable resM one -- x = 0
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
             -- the main case where Taylor is used:
-            expOutViaTaylorForXScaledNearZero resM xUp xDn xMNA
+            expOutViaTaylorForXScaledNearZero effortField effortMixedField effortCompare effortFromDouble resM xUp xDn xMNA
         _ -> -- not equal to infinity but not excluding infinity:
             unsafeWriteMutable resM (zero </\> plusInfinity)
              -- this is always a valid outer approx
     where
-    expOutViaTaylorForXScaledNearZero resM xUp xDn xM =
+    expOutViaTaylorForXScaledNearZero effortField effortMixedField effortCompare effortFromDouble resM xUp xDn xM =
         -- assuming no aliasing between xM and resM
     
         -- set various effort indicators for the following block using implicit parameters: 
         do
         xM </>|= n -- x := x/n
-        expOutViaTaylor resM degr xM -- res := exp x
+        expOutViaTaylor effortField effortMixedField effortCompare effortFromDouble resM degr xM -- res := exp x
         resM <^>= n -- res := res^n
         where
         n = -- x / n must fall inside [-1,1] 
             (abs xUp) `max` (abs xDn)
-    expOutViaTaylor resM degr xM = -- assuming x inside [-1,1]
+    expOutViaTaylor effortField effortMixedField effortCompare effortFromDouble resM degr xM = -- assuming x inside [-1,1]
         -- assuming no aliasing between xM and resM
     
         do
