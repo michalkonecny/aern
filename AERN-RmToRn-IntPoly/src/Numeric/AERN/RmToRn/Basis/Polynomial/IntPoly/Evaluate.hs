@@ -112,11 +112,13 @@ evalPolyMono eff z values p@(IntPoly cfg terms)
             | varNotMono = (val, val) -- not monotone, we have to be safe
             | varNonDecr = ((valL, valL), (valR, valR)) -- non-decreasing on the whole domain - can use endpoints
             | otherwise = ((valR, valR), (valL, valL)) -- non-increasing on the whole domain - can use swapped endpoints
-        (varNonDecr, varNotMono) = 
+        (varNonDecr, varNotMono) =
+            let _ = [deriv, valL] in -- unify types of these vars so that the following effort can apply to them all  
             let ?pCompareEffort = effComp in
-            case (zero <=? deriv, deriv <=? zero) of
-                (Just True, _) -> (True, False) 
-                (_, Just True) -> (False, False)
+            case (valL ==? valR, zero <=? deriv, deriv <=? zero) of
+                (Just True, _, _) -> (undefined, True) -- when a variable has a thin domain, do not bother separating endpoints 
+                (_, Just True, _) -> (True, False) 
+                (_, _, Just True) -> (False, False)
                 _ -> (undefined, True)  
         deriv = evalPolyDirect eff z values $ diffPoly eff var p -- range of (d p)/(d var)    
     
