@@ -33,7 +33,9 @@ main =
     putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
     putStrLn $ "d (2(x + y + 2))/dx = " ++ (showP $ diffPoly (100) "x" twoBxPyP2)
     putStrLn $ "d (2(x + y + 2))/dy = " ++ (showP $ diffPoly (100) "y" twoBxPyP2)
-    putStrLn $ "1 + int (2(x + y + 2)) dy = " ++ (showP integTwoBxPyP2)
+    putStrLn $ "d (x^2 + 2xy + 4x + 1)/dx = " ++ (showP $ diffPoly (100) "x" integTwoBxPyP2)
+    putStrLn $ "d (x^2 + 2xy + 4x + 1)/dy = " ++ (showP $ diffPoly (100) "y" integTwoBxPyP2)
+    putStrLn $ "1 + int (2(x + y + 2)) dx = " ++ (showP integTwoBxPyP2)
     putStrLn $ "(x + y + 2)drct[x=-1,y=-1] = " ++ (show $ evalPolyDirect 100 0 [(-1,-1),(-1,-1)] xPyP1P1)
     putStrLn $ "(x + y + 2)drct[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyDirect 100 0 [(-1,0),(-1,0)] xPyP1P1)
     putStrLn $ "(x^2 + 2xy + 4x + 1)drct[x=-1,y=-1] = " ++ (show $ evalPolyDirect 100 0 [(-1,-1),(-1,-1)] integTwoBxPyP2)
@@ -42,6 +44,7 @@ main =
     putStrLn $ "(x + y + 2)mono[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyMono 100 0 [(-1,0),(-1,0)] xPyP1P1)
     putStrLn $ "(x^2 + 2xy + 4x + 1)mono[x=-1,y=-1] = " ++ (show $ evalPolyMono 100 0 [(-1,-1),(-1,-1)] integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)mono[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyMono 100 0 [(-1,0),(-1,0)] integTwoBxPyP2)
+--    putStrLn $ "exp(x + y + 2) = " ++ (showP $ expBxPyP2)
     where
     showP p = showPoly id show p ++ " [" ++ show p ++ "]" 
 
@@ -55,6 +58,7 @@ xPy = x <+> y
 xPyP1P1 = xPy <+> c1 <+> c1
 twoBxPyP2 = (2::Int) |<*> xPyP1P1
 integTwoBxPyP2 = integratePolyMainVar (100) 0 c1 twoBxPyP2
+--expBxPyP2 = exp xPyP1P1
 
 cfg =
     IntPolyCfg

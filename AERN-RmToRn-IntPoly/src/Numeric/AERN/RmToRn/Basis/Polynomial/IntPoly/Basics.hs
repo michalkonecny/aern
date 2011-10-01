@@ -28,6 +28,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.Basics.ShowInternals
 
 import qualified Data.Map as Map
+import qualified Data.IntMap as IntMap
     
 import Data.List (intercalate)
     
@@ -44,24 +45,30 @@ instance (Show var, Show cf) => Show (IntPoly var cf)
     show (IntPoly cfg terms)
         = "IntPoly{" ++ show cfg ++ "; " ++ show terms ++ "}" 
 
+{- TODO: 
+  change to a sparse representation and introduce variable-less polynomials:
+-} 
+
 data IntPolyTerms var cf = 
-        IntPolyG -- uni-variate
+        IntPolyC -- constant
             {
-                intpoly_mainvar :: var, -- name of the sole variable
-                intpoly_coeffs :: [cf] -- coefficients, constant term last
+                intpoly_value :: cf -- no variables, only one constant term
             }
-    |   IntPolyV  -- multi-variate poly
+    |   IntPolyV  -- a proper polynomial
             {
-                intpoly_mainvar :: var, -- name of the sole variable
-                intpoly_vars :: [IntPolyTerms var cf] -- coefficients of the main variable as polynomials in other variables
+                intpoly_mainvar :: var, -- name of the main variable
+                intpoly_powercoeffs :: IntMap.IntMap (IntPolyTerms var cf) 
+                  -- coefficients of powers of the main variable as polynomials in other variables
+                  -- often converted to a descending association list to evaluate using the Horner scheme
             }
+
             
 instance (Show var, Show cf) => (Show (IntPolyTerms var cf))
     where
-    show (IntPolyG x coeffs)
-        = "G{" ++ show x ++ "/" ++ show coeffs ++ "}"
+    show (IntPolyC val)
+        = "C{" ++ show val ++ "}"
     show (IntPolyV x polys)
-        = "V{" ++ show x ++ "/" ++ show polys ++ "}"
+        = "V{" ++ show x ++ "/" ++ show (IntMap.toAscList polys) ++ "}"
     
 data IntPolyCfg var cf =
     IntPolyCfg
@@ -93,10 +100,10 @@ checkTerms cfg terms
     aux vars terms
     where
     vars = ipolycfg_vars cfg
-    aux [cvar] p@(IntPolyG tvar coeffs) | cvar == tvar = p
+    aux [] p@(IntPolyC _) = p
     aux (cvar : rest) (IntPolyV tvar polys)
         | cvar == tvar =
-            (IntPolyV tvar $ map (aux rest) polys)
+            (IntPolyV tvar $ IntMap.map (aux rest) polys)
     aux _ _ = 
         error $ "checkTerms failed for cfg = " ++ show cfg ++ " and term = " ++ show terms 
     
@@ -109,35 +116,25 @@ polyNormalise (IntPoly cfg poly)
 termsNormalise cfg poly =
     pn poly
     where    
-    pn (IntPolyG x coeffs)
-        = IntPolyG x $ removeZeros coeffs
-        where
-        removeZeros [c] = [c]
-        removeZeros coeffs@(c : rest)
-            | isZero c = removeZeros rest
-            | otherwise = coeffs
-            where
-            isZero c = (c |==? zero) == Just True
+    pn p@(IntPolyC val) = p
     pn (IntPolyV x polys) 
-        = IntPolyV x $ removeZeros $ map pn polys
-        where
-        removeZeros [p] = [p]
-        removeZeros polys@(p : rest)
-            | termsIsZero p = removeZeros rest
-            | otherwise = polys
+        = IntPolyV x $ IntMap.filter (not . termsIsZero) $ IntMap.map pn polys
 
 polyIsZero ::
     (ArithInOut.RoundedReal cf) => 
     IntPoly var cf -> Bool
-polyIsZero (IntPoly _ poly)
-    = termsIsZero poly
+polyIsZero (IntPoly _ terms)
+    = termsIsZero terms
 
 termsIsZero ::
     (ArithInOut.RoundedReal cf) => 
     IntPolyTerms var cf -> Bool
-termsIsZero (IntPolyG x [c]) = (c |==? zero) == Just True
-termsIsZero (IntPolyV x [p]) = termsIsZero p
-termsIsZero _ = False
+termsIsZero (IntPolyC val) = (val |==? zero) == Just True
+termsIsZero (IntPolyV x polys) = 
+    case IntMap.toAscList polys of
+        [] -> True
+        [(0,p)] -> termsIsZero p
+        _ -> False
 
 instance (Ord var, ArithInOut.RoundedReal cf) => (HasDomainBox (IntPoly var cf))
     where
@@ -169,8 +166,8 @@ instance
     where
     newConstFn cfg _ value = IntPoly cfg $ mkConstPoly $ ipolycfg_vars cfg
         where
-        mkConstPoly [var] = IntPolyG var [value]
-        mkConstPoly (var:rest) = IntPolyV var [mkConstPoly rest]
+        mkConstPoly [] = IntPolyC value
+        mkConstPoly (var:rest) = IntPolyV var $ IntMap.singleton 0 (mkConstPoly rest)
 
 instance 
     (Ord var, Show var, 
@@ -185,10 +182,9 @@ instance
             error $ 
                 "IntPoly: newProjection: variable " ++ show var 
                 ++ " not among specified variables " ++ show vars
-        mkProj [cvar] | cvar == var = IntPolyG var [one, zero]
         mkProj (cvar : rest)
-            | cvar == var = IntPolyV var [constR one, constR zero]
-            | otherwise = IntPolyV cvar [mkProj rest]
+            | cvar == var = IntPolyV var $ IntMap.fromAscList $ [(1, constR one)]
+            | otherwise = IntPolyV cvar $ IntMap.singleton 0 (mkProj rest)
             where
             constR c = intpoly_terms $ newConstFn cfgR dombox c
             cfgR = cfg { ipolycfg_vars = rest }
@@ -213,24 +209,12 @@ showPoly ::
 showPoly showVar showCoeff (IntPoly cfg poly) =
     sp "" poly
     where
-    sp otherVars (IntPolyG var coeffs) 
-        = intercalate " + " $ zipWith showTerm coeffs [degree,degree-1..0]
-        where
-        degree = length coeffs - 1
-        showTerm coeff 0 
-            = 
-            case otherVars of
-                "" -> showCoeff coeff
-                _ -> showCoeff coeff ++ "*" ++ otherVars
-        showTerm coeff n = showCoeff coeff ++ "*" ++ otherVars ++ (showVarPower n)
-        showVarPower 0 = ""
-        showVarPower 1 = showVar var
-        showVarPower n = showVar var ++ "^" ++ show n
+    sp otherVars (IntPolyC value) 
+        = otherVars ++ (showCoeff value)
     sp otherVars (IntPolyV var polys)
-        = intercalate " + " $ zipWith showTerm polys [degree,degree-1..0]
+        = intercalate " + " $ map showTerm $ IntMap.toAscList $ polys
         where
-        degree = length polys - 1
-        showTerm p n = sp (otherVars ++ showVarPower n) p
+        showTerm (n,p) = sp (otherVars ++ showVarPower n) p
         showVarPower 0 = ""
         showVarPower 1 = showVar var
         showVarPower n = showVar var ++ "^" ++ show n
