@@ -29,6 +29,8 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
+import qualified Data.IntMap as IntMap
+
 integratePolyMainVar ::
     (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
@@ -44,14 +46,7 @@ integratePolyMainVar eff z initPoly (IntPoly cfg poly) =
     effDiv = ArithInOut.mxfldEffortDiv sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     sample = ipolycfg_sample_cf cfg
-    ip (IntPolyG x coeffs) = (IntPolyG x $ coeffsFractions ++ [z])
-        where
-        coeffsFractions = 
-            zipWith (</>|) coeffs [degreePlusOne,degreePlusOne-1..]
-            where
-            (</>|) = ArithInOut.mixedDivOutEff effDiv
-        degreePlusOne = length coeffs
-    ip p@(IntPolyV x polys@(polyHighest:_)) =
+    ip p@(IntPolyV x polys) =
 --    unsafePrint
 --    (
 --        "integratePoly:"
@@ -61,17 +56,13 @@ integratePolyMainVar eff z initPoly (IntPoly cfg poly) =
 --    )
         result
         where
-        result 
-            = 
-            IntPolyV x $ polysFractions ++ [intpoly_terms $ newConstFn cfgR undefined z] 
-        cfgR = cfg 
-            { 
-                ipolycfg_vars = tail $ ipolycfg_vars cfg, 
-                ipolycfg_doms = tail $ ipolycfg_doms cfg 
-            }
-        polysFractions = 
-            map intpoly_terms $ zipWith (</>|) intpolys [degreePlusOne,degreePlusOne-1..]
+        result = IntPolyV x $ polysFractions 
+        cfgR = cfgRemVar cfg
+        polysFractions =
+            IntMap.fromDistinctAscList $
+            map integrateTerm
+            $ IntMap.toAscList polys
             where
-            intpolys = map (IntPoly cfgR) polys
+            integrateTerm (n,p) =
+                (n+1, intpoly_terms $ (IntPoly cfgR p) </>| (n+1))
             (</>|) = ArithInOut.mixedDivOutEff effDiv
-        degreePlusOne = length polys

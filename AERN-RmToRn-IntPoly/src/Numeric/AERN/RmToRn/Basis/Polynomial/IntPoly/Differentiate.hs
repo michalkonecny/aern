@@ -29,6 +29,8 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
+import qualified Data.IntMap as IntMap
+
 diffPoly ::
     (Ord var, ArithInOut.RoundedReal cf) => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
@@ -40,34 +42,22 @@ diffPoly eff var (IntPoly cfg poly) =
     where
     effMult = ArithInOut.mxfldEffortMult sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
     sample = ipolycfg_sample_cf cfg
-    dp cfg (IntPolyG x [c]) = IntPolyG x [zero]
-    dp cfg (IntPolyG x coeffs) 
-        =
-        IntPolyG x $ coeffsMultiples
-        where
-        coeffsMultiples = 
-            let (<*>|) = ArithInOut.mixedMultOutEff effMult in
-            zipWith (<*>|) coeffs [degree,degree-1..1]
-        degree = length coeffs - 1
-    dp cfg (IntPolyV x [p]) 
-        | var == x = 
-            IntPolyV x $ [intpoly_terms $ newConstFn cfgR undefined zero]
-        where
-        cfgR = cfgRemVar cfg 
+    dp cfg (IntPolyC val) = IntPolyC zero
     dp cfg (IntPolyV x polys)
-        | var == x = 
-            IntPolyV x $ polysMultiples
+        | var == x = IntPolyV x $ polysMultiples
         where
         polysMultiples = 
+            IntMap.fromDistinctAscList $
+            map diffTerm $
+            IntMap.toAscList $ IntMap.delete 0 polys
+        diffTerm (n,p) =
             let (<*>|) = ArithInOut.mixedMultOutEff effMult in
-            map intpoly_terms $ zipWith (<*>|) intpolys [degree,degree-1..1]
-        intpolys = map (IntPoly cfgR) polys
-        degree = length polys - 1
+            (n - 1, intpoly_terms $ (IntPoly cfgR p) <*>| n)
         cfgR = cfgRemVar cfg 
     dp cfg (IntPolyV x polys)
         =
         termsNormalise cfgR $ 
-        IntPolyV x $ map (dp cfgR) polys
+        IntPolyV x $ IntMap.map (dp cfgR) polys
         where
         cfgR = cfgRemVar cfg 
         

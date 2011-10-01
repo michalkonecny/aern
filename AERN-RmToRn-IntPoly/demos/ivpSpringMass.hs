@@ -53,9 +53,9 @@ data Params =
     deriving (Show)
 
 ---- the following are taken from SpringMassV.hs, the timings in comments may not be right any more:
---initParams = Params 1 50 50 50 10 -- (?) gets to time 6.5 in 0.62s (1 in 0.1s, 3.6 in 0.34s)
---initParams = Params 0 100 100 80 10 -- (?) gets to time 99 in 17.5s (36 in 6.4s)
---initParams = Params 0 200 200 160 10 -- (?) gets to time 312 in 123s 
+--initParams = Params 1 50 50 50 10 -- gets to time 6.5 in 0.27s (1 in 0.04s, 3.6 in 0.15s)
+--initParams = Params 0 100 100 80 10 -- gets to time 99 in 7s (36 in 2.3s)
+--initParams = Params 0 200 200 160 10 -- gets to time 312 in 49s 
 initParams = Params (-2) 200 200 190 10 -- (?) gets to time 564 in 198s (360 in 109s) drops at e-19
 --initParams = Params (-3) 300 300 350 10 -- (?) gets to time 3176 in 37.25min
 --initParams = Params (-2) 300 300 300 10 -- (?) gets to time 1400 in 15min
@@ -63,7 +63,7 @@ initParams = Params (-2) 200 200 190 10 -- (?) gets to time 564 in 198s (360 in 
 --initParams = Params (-3) 600 600 800 10 -- (?) gets to time 19768 in 11h55min starts at e-142 drops at e-35 using 3.5GB RAM
 --initParams = Params (-4) 600 600 800 10 -- (?) gets to time 7712 in 6.5h (3600 in 3h) drops at e-70
 --initParams = Params (-3) 700 700 850 10 -- (?) gets to time 25448 in 20h using 4.25GB RAM
---initParams = Params (-3) 900 900 950 10 -- (?) gets to time 36688 in 51.5h using 6GB RAM (36000 in 50.5h)
+--initParams = Params (-3) 900 900 950 10 -- (?) gets to time 41352 in 16h20min using 5GB RAM (36000 in 14h15min)
 
 increaseParams (Params stp eps p dg rtol) =
     [

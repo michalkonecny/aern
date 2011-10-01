@@ -33,6 +33,8 @@ import Numeric.AERN.RealArithmetic.ExactOps
 
 import Numeric.AERN.Misc.Debug
 
+import qualified Data.IntMap as IntMap
+
 evalPolyDirect ::
     (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
@@ -47,43 +49,38 @@ evalPolyDirect eff z values p@(IntPoly cfg terms)
 --        ++ "\n  p = " ++ show p
 --    ) $
     let ?multInOutEffort = effMult in
+    let ?intPowerInOutEffort = effPwr in
     let ?addInOutEffort = effAdd in
     let ?joinmeetOutEffort = effJoin in
     ev values terms
     where
     effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+    effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
     sample = ipolycfg_sample_cf cfg
-    ev [(valL, valR)] (IntPolyG _ coeffs@(coeffHighestPower : rest)) 
-        =
-        aux rest coeffHighestPower
+    ev [] (IntPolyC value) = value
+    ev ((valL, valR) : restVars) (IntPolyV _ polys)
+        | IntMap.null polys = z
+        | lowestExponent == 0 = 
+            resultMaybeWithoutConstantTerm
+        | otherwise = 
+            (val <^> lowestExponent) <*> resultMaybeWithoutConstantTerm 
         where
-        val = valL </\> valR
-        aux [] acc = acc
-        aux (coeffHighestPower : rest) acc =
-            aux rest newAcc
+        (lowestExponent, resultMaybeWithoutConstantTerm) 
+            = IntMap.foldWithKey addTerm (highestExponent, z) polys 
+        (highestExponent, _) = IntMap.findMax polys 
+        addTerm exponent poly (prevExponent, prevVal) = (exponent, newVal)
             where
-            newAcc = coeffHighestPower <+> (val <*> acc)
-    ev ((valL, valR) : restVars) (IntPolyV _ polys@(polyHighestPower : restPolys))
-        =
-        aux restPolys (ev restVars polyHighestPower)
-        where
+            newVal = -- Horner scheme:
+                (ev restVars poly) 
+                <+> 
+                (prevVal <*> (val <^>(prevExponent - exponent)))
         val = valL </\> valR
-        aux [] acc = acc
-        aux (polyHighestPower : restPolys) acc =
-            aux restPolys newAcc
-            where
-            newAcc = (ev restVars polyHighestPower) <+> (val <*> acc)
     ev varVals terms =
         error $ "evalPolyDirect: illegal case: varVals = " ++ show varVals ++ "; terms = " ++ show terms
---        foldl (<+>) z $ zipWith (<*>) xPowers $ map (ev rest) polys
---        where
---        x = valL </\> valR
---        xPowers = mkPowers (z <+> one) [] polys
---        mkPowers xN acc [] = acc
---        mkPowers xN acc (_:rest) = mkPowers (xN <*> x) (xN : acc) rest
-    
+
+-- TODO: make the following function generic for any function representation with nominal derivatives    
 evalPolyMono ::
     (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
@@ -91,7 +88,16 @@ evalPolyMono ::
     [(cf, cf)] -> IntPoly var cf -> (cf, cf)
 evalPolyMono eff z values p@(IntPoly cfg terms)
     | noMonotoneVar = (direct, direct)
-    | otherwise = (left, right)
+    | otherwise =
+--        unsafePrint
+--        (
+--            "evalPolyMono: "
+--            ++ "\n p = " ++ show p
+--            ++ "\n values = " ++ show values
+--            ++ "\n valuesL = " ++ show valuesL
+--            ++ "\n valuesR = " ++ show valuesR
+--        ) $ 
+        (left, right)
     where
     direct = evalPolyDirect eff z values p
     effComp = ArithInOut.rrEffortNumComp sample eff
@@ -105,7 +111,12 @@ evalPolyMono eff z values p@(IntPoly cfg terms)
     detectMono noMonotoneVarPrev valuesLPrev valuesRPrev [] 
         = (noMonotoneVarPrev, valuesLPrev, valuesRPrev)
     detectMono noMonotoneVarPrev valuesLPrev valuesRPrev ((var, val@(valL, valR)) : rest)
-        = detectMono noMonotoneVarNew (valLNew : valuesLPrev) (valRNew : valuesRPrev) rest
+        =
+--        unsafePrint 
+--        (
+--            "evalPolyMono: detectMono: deriv = " ++ show deriv
+--        ) $ 
+        detectMono noMonotoneVarNew (valLNew : valuesLPrev) (valRNew : valuesRPrev) rest
         where
         noMonotoneVarNew = noMonotoneVarPrev && varNotMono
         (valLNew, valRNew)
