@@ -209,10 +209,10 @@ showPoly ::
 showPoly showVar showCoeff (IntPoly cfg poly) =
     sp "" poly
     where
-    sp otherVars (IntPolyC value) 
-        = otherVars ++ (showCoeff value)
+    sp vars (IntPolyC value) 
+        = (showCoeff value) ++ vars
     sp otherVars (IntPolyV var polys)
-        = intercalate " + " $ map showTerm $ IntMap.toAscList $ polys
+        = intercalate " + " $ map showTerm $ reverse $ IntMap.toAscList $ polys
         where
         showTerm (n,p) = sp (otherVars ++ showVarPower n) p
         showVarPower 0 = ""

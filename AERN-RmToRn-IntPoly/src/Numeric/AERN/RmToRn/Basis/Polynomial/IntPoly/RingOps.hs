@@ -43,6 +43,10 @@ instance
     where
     addInEff eff p1 p2 = error "inner rounded operations not available for IntPoly"
     addOutEff eff p1 p2 = addPolys eff p1 p2
+
+instance
+    (ArithInOut.RoundedAdd cf, Neg cf, Show var, Show cf) =>
+    ArithInOut.RoundedSubtr (IntPoly var cf) 
     
 addPolys :: 
     (ArithInOut.RoundedAdd cf, Show var, Show cf) =>
@@ -51,14 +55,54 @@ addPolys ::
 addPolys eff (IntPoly cfg1 poly1) (IntPoly cfg2 poly2)
     =
     let ?addInOutEffort = eff in
-    (IntPoly cfg1 $ addP poly1 poly2)
+    (IntPoly cfg1 $ addTerms poly1 poly2)
+
+--    where
+addTerms poly1@(IntPolyC val1) poly2@(IntPolyC val2) = IntPolyC $ val1 <+> val2 
+addTerms poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
+    = IntPolyV xName2 $ IntMap.unionWith addTerms polys1 polys2 
+addTerms p1 p2 =
+    error $ "addPolys: cannot add p1=" ++ show p1 ++ " and p2=" ++ show p2
+
+instance
+    (ArithInOut.RoundedReal cf) => 
+    ArithInOut.RoundedMultiplyEffort (IntPoly var cf) 
     where
-    addP poly1@(IntPolyC val1) poly2@(IntPolyC val2) = IntPolyC $ val1 <+> val2 
-    addP poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
-        = IntPolyV xName2 $ IntMap.unionWith addP polys1 polys2 
-    addP p1 p2 =
-        error $ "addPolys: cannot add p1=" ++ show p1 ++ " and p2=" ++ show p2
+    type ArithInOut.MultEffortIndicator (IntPoly var cf) = 
+        (ArithInOut.MultEffortIndicator cf, ArithInOut.AddEffortIndicator cf) 
+    multDefaultEffort (IntPoly cfg _) = 
+        (ArithInOut.multDefaultEffort sample_cf, ArithInOut.addDefaultEffort sample_cf) 
+        where
+        sample_cf = (ipolycfg_sample_cf cfg)
     
+instance
+    (ArithInOut.RoundedReal cf, Show var, Show cf) =>
+    ArithInOut.RoundedMultiply (IntPoly var cf) 
+    where
+    multInEff eff p1 p2 = error "inner rounded operations not available for IntPoly"
+    multOutEff eff p1 p2 = multPolys eff p1 p2
+    
+multPolys ::
+    (ArithInOut.RoundedReal cf, Show var, Show cf) =>
+    (ArithInOut.MultEffortIndicator cf, ArithInOut.AddEffortIndicator cf) -> 
+    IntPoly var cf -> IntPoly var cf -> IntPoly var cf
+multPolys eff@(effMult, effAdd) (IntPoly cfg1 poly1) (IntPoly cfg2 poly2)
+    =
+    let ?addInOutEffort = effAdd in
+    let ?multInOutEffort = effMult in
+    (IntPoly cfg1 $ termsNormalise cfg1 $ multTerms poly1 poly2)
+
+multTerms poly1@(IntPolyC val1) poly2@(IntPolyC val2) = IntPolyC $ val1 <*> val2 
+multTerms poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
+    =
+    IntPolyV xName2 multPolys
+    where
+    multPolys 
+        = IntMap.fromListWith addTerms $
+            [(n1 + n2, multTerms p1 p2) | 
+                (n1, p1) <- IntMap.toAscList polys1, 
+                (n2, p2) <- IntMap.toAscList polys2 ] 
+        
 instance
     (ArithInOut.RoundedMixedAddEffort cf other) => 
     ArithInOut.RoundedMixedAddEffort (IntPoly var cf) other 
@@ -123,6 +167,22 @@ scalePoly eff (IntPoly cfg poly) c =
         IntPolyC $ val <*>| c
     sP (IntPolyV x polys) = 
         IntPolyV x $ IntMap.map sP polys
+
+instance
+    (Neg cf) => Neg (IntPoly var cf)
+    where
+    neg  = negPoly
+
+negPoly ::
+    (Neg cf) =>
+    IntPoly var cf -> IntPoly var cf
+negPoly (IntPoly cfg poly) = 
+    IntPoly cfg $ negP poly 
+    where
+    negP (IntPolyC val) =
+        IntPolyC $ neg val
+    negP (IntPolyV x polys) = 
+        IntPolyV x $ IntMap.map negP polys
 
 instance
     (ArithInOut.RoundedMixedDivideEffort cf other,  Ord var, ArithInOut.RoundedReal cf) => 

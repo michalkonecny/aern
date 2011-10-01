@@ -35,6 +35,14 @@ import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
 
+{-
+TODO
+
+ define evalPolyDirect and evalPolyMono that instead of cf values
+ take IntPoly values for each variable and return a IntPoly result; 
+ allow Nothing value to mean that this variable remains unchanged
+-}
+
 evalPolyDirect ::
     (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->

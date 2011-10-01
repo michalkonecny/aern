@@ -29,6 +29,7 @@ main =
     putStrLn $ "y = " ++ showP y
     putStrLn $ "x + y = " ++ (showP $ xPy)
     putStrLn $ "x + y + 1 + 1 = " ++ (showP $ xPyP1P1)
+    putStrLn $ "(x + y)*(x - y) = " ++ (showP $ xPyBTxMyB)
     putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
     putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
     putStrLn $ "d (2(x + y + 2))/dx = " ++ (showP $ diffPoly (100) "x" twoBxPyP2)
@@ -55,7 +56,9 @@ c0 = newConstFn cfg dombox 0
 c1 = newConstFn cfg dombox 1
 
 xPy = x <+> y
+xMy = x <-> y
 xPyP1P1 = xPy <+> c1 <+> c1
+xPyBTxMyB = xPy <*> xMy
 twoBxPyP2 = (2::Int) |<*> xPyP1P1
 integTwoBxPyP2 = integratePolyMainVar (100) 0 c1 twoBxPyP2
 --expBxPyP2 = exp xPyP1P1
