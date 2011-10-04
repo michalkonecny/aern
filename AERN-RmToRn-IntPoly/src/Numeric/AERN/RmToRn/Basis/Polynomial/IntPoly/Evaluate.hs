@@ -35,20 +35,83 @@ import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
 
-{-
-TODO
+data PolyEvalOps var cf val =
+    PolyEvalOps
+    {
+        polyEvalZero :: val,
+        polyEvalAdd :: (val -> val -> val),
+        polyEvalMult :: (val -> val -> val),
+        polyEvalPow :: (val -> Int -> val), {-^ non-negative integer power -}
+        polyEvalCoeff :: (cf -> val), {-^ coeff conversion -}
+        polyEvalMaybePoly :: (IntPolyTerms var cf -> Maybe val), {-^ optional direct poly conversion -}
+        polyEvalJoin :: (val -> val -> val),
+        polyEvalLeq :: (val -> val -> Maybe Bool)
+    }
 
- define evalPolyDirect and evalPolyMono that instead of cf values
- take IntPoly values for each variable and return a IntPoly result; 
- allow Nothing value to mean that this variable remains unchanged
--}
+coeffPolyEvalOps z =
+    PolyEvalOps z (<+>) (<*>) (<^>) id (const Nothing) (</\>) (<=?)
 
-evalPolyDirect ::
+evalPolyAtPoint ::
     (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
     cf {- zero coefficient -} ->
-    [(cf, cf)] -> IntPoly var cf -> cf
-evalPolyDirect eff z values p@(IntPoly cfg terms)
+    [cf] {- values for each variable respectively -} -> 
+    IntPoly var cf -> cf
+evalPolyAtPoint eff z values p@(IntPoly cfg _)
+    = 
+    let ?multInOutEffort = effMult in
+    let ?intPowerInOutEffort = effPwr in
+    let ?addInOutEffort = effAdd in
+    let ?joinmeetOutEffort = effJoin in
+    let ?pCompareEffort = effComp in
+    evalPolyDirect (coeffPolyEvalOps z) values p
+    where
+    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+    effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
+    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+    effComp = ArithInOut.rrEffortNumComp sample eff
+    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
+    sample = ipolycfg_sample_cf cfg
+
+evalPolyOnInterval ::
+    (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
+    (ArithInOut.RoundedRealEffortIndicator cf) ->
+    cf {- zero coefficient -} ->
+    [(cf, cf)] {- values for each variable respectively -} -> 
+    IntPoly var cf -> (cf, cf)
+evalPolyOnInterval eff z valuesLR p@(IntPoly cfg _)
+    = 
+    let ?multInOutEffort = effMult in
+    let ?intPowerInOutEffort = effPwr in
+    let ?addInOutEffort = effAdd in
+    let ?joinmeetOutEffort = effJoin in
+    let ?pCompareEffort = effComp in
+    evalPolyMono eff (coeffPolyEvalOps z) valuesALR p
+    where
+    valuesALR = 
+        let ?pCompareEffort = effComp in
+        zip values $ map checkEqual valuesLR
+        where
+        values = 
+            let ?joinmeetOutEffort = effJoin in
+            map (uncurry (</\>)) valuesLR
+        checkEqual (l,r) 
+            | (l ==? r) == Just True = Nothing
+            | otherwise = Just (l,r)
+    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+    effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
+    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+    effComp = ArithInOut.rrEffortNumComp sample eff
+    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
+    sample = ipolycfg_sample_cf cfg
+
+
+evalPolyDirect ::
+    (Ord var, Show var, Show cf, Show val) => 
+    (PolyEvalOps var cf val) ->
+    [val] ->
+    IntPoly var cf -> val
+evalPolyDirect opsV values p@(IntPoly cfg terms)
     = 
 --    unsafePrint
 --    (
@@ -56,45 +119,46 @@ evalPolyDirect eff z values p@(IntPoly cfg terms)
 --        ++ "\n  values = " ++ show values
 --        ++ "\n  p = " ++ show p
 --    ) $
-    let ?multInOutEffort = effMult in
-    let ?intPowerInOutEffort = effPwr in
-    let ?addInOutEffort = effAdd in
-    let ?joinmeetOutEffort = effJoin in
     ev values terms
     where
-    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
-    effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
-    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
-    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
-    sample = ipolycfg_sample_cf cfg
-    ev [] (IntPolyC value) = value
-    ev ((valL, valR) : restVars) (IntPolyV _ polys)
-        | IntMap.null polys = z
+    zV = polyEvalZero opsV
+    addV = polyEvalAdd opsV 
+    multV = polyEvalMult opsV
+    powV = polyEvalPow opsV
+    cfV = polyEvalCoeff opsV
+    polyV = polyEvalMaybePoly opsV
+    ev [] (IntPolyC cf) = cfV cf
+    ev (varValue : restVars) (IntPolyV _ polys)
+        | IntMap.null polys = zV
         | lowestExponent == 0 = 
             resultMaybeWithoutConstantTerm
         | otherwise = 
-            (val <^> lowestExponent) <*> resultMaybeWithoutConstantTerm 
+            (varValue `powV` lowestExponent) `multV` resultMaybeWithoutConstantTerm 
         where
         (lowestExponent, resultMaybeWithoutConstantTerm) 
-            = IntMap.foldWithKey addTerm (highestExponent, z) polys 
+            = IntMap.foldWithKey addTerm (highestExponent, zV) polys 
         (highestExponent, _) = IntMap.findMax polys 
         addTerm exponent poly (prevExponent, prevVal) = (exponent, newVal)
             where
             newVal = -- Horner scheme:
-                (ev restVars poly) 
-                <+> 
-                (prevVal <*> (val <^>(prevExponent - exponent)))
-        val = valL </\> valR
+                polyValue 
+                `addV`
+                (prevVal `multV` (varValue `powV` (prevExponent - exponent)))
+            polyValue =
+                case polyV poly of
+                    Just value -> value
+                    Nothing -> ev restVars poly  
     ev varVals terms =
         error $ "evalPolyDirect: illegal case: varVals = " ++ show varVals ++ "; terms = " ++ show terms
 
 -- TODO: make the following function generic for any function representation with nominal derivatives    
 evalPolyMono ::
-    (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
+    (Ord var, Show var, Show cf, ArithInOut.RoundedReal cf, Show val) => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
-    cf {- zero coefficient -} ->
-    [(cf, cf)] -> IntPoly var cf -> (cf, cf)
-evalPolyMono eff z values p@(IntPoly cfg terms)
+    (PolyEvalOps var cf val) ->
+    [(val, Maybe (val, val))] {-^  overall value, and optional lower and upper value for each variable -} -> 
+    IntPoly var cf -> (val, val)
+evalPolyMono eff opsV valuesALR p@(IntPoly cfg _)
     | noMonotoneVar = (direct, direct)
     | otherwise =
 --        unsafePrint
@@ -107,18 +171,24 @@ evalPolyMono eff z values p@(IntPoly cfg terms)
 --        ) $ 
         (left, right)
     where
-    direct = evalPolyDirect eff z values p
-    effComp = ArithInOut.rrEffortNumComp sample eff
-    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
-    sample = ipolycfg_sample_cf cfg
-    left = evalPolyDirect eff z valuesL p
-    right = evalPolyDirect eff z valuesR p
-    (noMonotoneVar, valuesL, valuesR)
-        = detectMono True [] [] $ reverse $ zip vars values -- undo reverse due to the accummulators
+    direct = evalPolyDirect opsV values p
+    zV = polyEvalZero opsV
+    addV = polyEvalAdd opsV 
+    multV = polyEvalMult opsV
+    powV = polyEvalPow opsV
+    cfV = polyEvalCoeff opsV
+    polyV = polyEvalMaybePoly opsV
+    joinV = polyEvalJoin opsV
+    leqV = polyEvalLeq opsV
+    values = map fst valuesALR
+    left = evalPolyDirect opsV valuesL p
+    right = evalPolyDirect opsV valuesR p
+    (noMonotoneVar, valuesL, valuesR) =
+        detectMono True [] [] $ reverse $ zip vars $ valuesALR -- undo reverse due to the accummulators
     vars = ipolycfg_vars cfg
-    detectMono noMonotoneVarPrev valuesLPrev valuesRPrev [] 
+    detectMono noMonotoneVarPrev valuesLPrev valuesRPrev []
         = (noMonotoneVarPrev, valuesLPrev, valuesRPrev)
-    detectMono noMonotoneVarPrev valuesLPrev valuesRPrev ((var, val@(valL, valR)) : rest)
+    detectMono noMonotoneVarPrev valuesLPrev valuesRPrev ((var, (val, maybeValLR)) : rest)
         =
 --        unsafePrint 
 --        (
@@ -129,17 +199,74 @@ evalPolyMono eff z values p@(IntPoly cfg terms)
         noMonotoneVarNew = noMonotoneVarPrev && varNotMono
         (valLNew, valRNew)
             | varNotMono = (val, val) -- not monotone, we have to be safe
-            | varNonDecr = ((valL, valL), (valR, valR)) -- non-decreasing on the whole domain - can use endpoints
-            | otherwise = ((valR, valR), (valL, valL)) -- non-increasing on the whole domain - can use swapped endpoints
+            | varNonDecr = (valL, valR) -- non-decreasing on the whole domain - can use endpoints
+            | otherwise = (valR, valL) -- non-increasing on the whole domain - can use swapped endpoints
         (varNonDecr, varNotMono) =
-            let _ = [deriv, valL] in -- unify types of these vars so that the following effort can apply to them all  
-            let ?pCompareEffort = effComp in
-            case (valL ==? valR, zero <=? deriv, deriv <=? zero) of
-                (Just True, _, _) -> (undefined, True) -- when a variable has a thin domain, do not bother separating endpoints 
+            case (maybeValLR, zV `leqV` deriv, deriv `leqV` zV) of
+                (Nothing, _, _) -> (undefined, True) -- when a variable has a thin domain, do not bother separating endpoints 
                 (_, Just True, _) -> (True, False) 
                 (_, _, Just True) -> (False, False)
-                _ -> (undefined, True)  
-        deriv = evalPolyDirect eff z values $ diffPoly eff var p -- range of (d p)/(d var)    
+                _ -> (undefined, True)
+        Just (valL, valR) = maybeValLR
+        deriv = evalPolyDirect opsV values $ diffPoly eff var p -- range of (d p)/(d var)    
     
     
-        
+--evalPolyMono ::
+--    (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
+--    (ArithInOut.RoundedRealEffortIndicator cf) ->
+--    cf {- zero coefficient -} ->
+--    [(cf, cf)] -> IntPoly var cf -> (cf, cf)
+--evalPolyMono eff z valuesLR p@(IntPoly cfg terms)
+--    | noMonotoneVar = (direct, direct)
+--    | otherwise =
+----        unsafePrint
+----        (
+----            "evalPolyMono: "
+----            ++ "\n p = " ++ show p
+----            ++ "\n values = " ++ show values
+----            ++ "\n valuesL = " ++ show valuesL
+----            ++ "\n valuesR = " ++ show valuesR
+----        ) $ 
+--        (left, right)
+--    where
+--    direct = evalPolyAtPoint eff z values p
+--    values = 
+--        let ?joinmeetOutEffort = effJoin in
+--        map (uncurry (</\>)) valuesLR
+--    effComp = ArithInOut.rrEffortNumComp sample eff
+--    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
+--    sample = ipolycfg_sample_cf cfg
+--    left = evalPolyAtPoint eff z valuesL p
+--    right = evalPolyAtPoint eff z valuesR p
+--    (noMonotoneVar, valuesL, valuesR) =
+--        let ?joinmeetOutEffort = effJoin in
+--        detectMono True [] [] $ reverse $ zip vars valuesLR -- undo reverse due to the accummulators
+--    vars = ipolycfg_vars cfg
+--    detectMono noMonotoneVarPrev valuesLPrev valuesRPrev [] 
+--        = (noMonotoneVarPrev, valuesLPrev, valuesRPrev)
+--    detectMono noMonotoneVarPrev valuesLPrev valuesRPrev ((var, (valL, valR)) : rest)
+--        =
+----        unsafePrint 
+----        (
+----            "evalPolyMono: detectMono: deriv = " ++ show deriv
+----        ) $ 
+--        detectMono noMonotoneVarNew (valLNew : valuesLPrev) (valRNew : valuesRPrev) rest
+--        where
+--        noMonotoneVarNew = noMonotoneVarPrev && varNotMono
+--        (valLNew, valRNew)
+--            | varNotMono = (val, val) -- not monotone, we have to be safe
+--            | varNonDecr = (valL, valR) -- non-decreasing on the whole domain - can use endpoints
+--            | otherwise = (valR, valL) -- non-increasing on the whole domain - can use swapped endpoints
+--        val = valL </\> valR
+--        (varNonDecr, varNotMono) =
+--            let _ = [deriv, valL] in -- unify types of these vars so that the following effort can apply to them all  
+--            let ?pCompareEffort = effComp in
+--            case (valL ==? valR, zero <=? deriv, deriv <=? zero) of
+--                (Just True, _, _) -> (undefined, True) -- when a variable has a thin domain, do not bother separating endpoints 
+--                (_, Just True, _) -> (True, False) 
+--                (_, _, Just True) -> (False, False)
+--                _ -> (undefined, True)  
+--        deriv = evalPolyAtPoint eff z values $ diffPoly eff var p -- range of (d p)/(d var)    
+--    
+--    
+--                
