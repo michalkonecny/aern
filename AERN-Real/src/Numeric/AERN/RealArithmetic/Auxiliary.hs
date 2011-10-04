@@ -24,12 +24,12 @@ import Control.Monad.ST
 
 
 powerFromMult :: 
-    (HasOne t) =>
+    t {-^ unit of @*@ -} -> 
     (t -> t -> t) {-^ associative binary operation @*@ -} ->
     t {-^ @x@ -} ->
     Int {-^ @n@ positive -} ->
     t {-^ product @x * x * ... * x@ of @n@ copies of @x@ -}
-powerFromMult mult x n
+powerFromMult one mult x n
     | n < 0 = throw $ AERNException "powerFromMult does not support negative exponents"
     | otherwise = p n
     where

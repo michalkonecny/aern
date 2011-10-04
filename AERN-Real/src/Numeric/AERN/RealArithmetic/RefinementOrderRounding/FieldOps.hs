@@ -468,14 +468,14 @@ powerToNonnegIntInEffFromMult ::
     PowerToNonnegIntEffortIndicatorFromMult t -> 
     t -> Int -> t
 powerToNonnegIntInEffFromMult effMult e n =
-    powerFromMult (multInEff effMult) e n
+    powerFromMult one (multInEff effMult) e n
 
 powerToNonnegIntOutEffFromMult ::
     (RoundedMultiply t, HasOne t) => 
     PowerToNonnegIntEffortIndicatorFromMult t -> 
     t -> Int -> t
 powerToNonnegIntOutEffFromMult effMult e n =
-    powerFromMult (multOutEff effMult) e n
+    powerFromMult one (multOutEff effMult) e n
 
 propInOutPowerMonotone ::
     (RefOrd.PartialComparison t, RoundedPowerToNonnegInt t,
