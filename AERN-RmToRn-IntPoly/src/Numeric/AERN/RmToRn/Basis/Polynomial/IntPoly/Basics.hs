@@ -30,9 +30,9 @@ import Numeric.AERN.Basics.ShowInternals
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
     
-import Data.List (intercalate)
+import Data.List (intercalate, sortBy)
     
-{--- poor man's multi-variate polynomials  ---}
+{--- multi-variate polynomials, variable-asymmetric representation  ---}
 data IntPoly var cf =
     IntPoly
         {
@@ -45,10 +45,6 @@ instance (Show var, Show cf) => Show (IntPoly var cf)
     show (IntPoly cfg terms)
         = "IntPoly{" ++ show cfg ++ "; " ++ show terms ++ "}" 
 
-{- TODO: 
-  change to a sparse representation and introduce variable-less polynomials:
--} 
-
 data IntPolyTerms var cf = 
         IntPolyC -- constant
             {
@@ -56,13 +52,59 @@ data IntPolyTerms var cf =
             }
     |   IntPolyV  -- a proper polynomial
             {
-                intpoly_mainvar :: var, -- name of the main variable
-                intpoly_powercoeffs :: IntMap.IntMap (IntPolyTerms var cf) 
+                intpoly_mainVar :: var, -- name of the main variable
+                intpoly_pwrCoeffs :: IntPolyPowers var cf 
                   -- coefficients of powers of the main variable as polynomials in other variables
                   -- often converted to a descending association list to evaluate using the Horner scheme
             }
 
-            
+type IntPolyPowers var cf = IntMap.IntMap (IntPolyTerms var cf) 
+
+powersMapCoeffs :: (cf -> cf) -> IntPolyPowers var cf -> IntPolyPowers var cf
+powersMapCoeffs f pwrCoeffs = IntMap.map (termsMapCoeffs f) pwrCoeffs
+
+termsMapCoeffs :: (cf -> cf) -> IntPolyTerms var cf -> IntPolyTerms var cf
+termsMapCoeffs f (IntPolyC val) = IntPolyC $ f val
+termsMapCoeffs f (IntPolyV var polys) = IntPolyV var $ powersMapCoeffs f polys
+
+
+polySwapFirstTwoVars :: IntPoly var cf -> IntPoly var cf
+polySwapFirstTwoVars (IntPoly cfg terms) =
+    IntPoly cfgSwapped $ swappedTerms
+    where
+    swappedTerms = termsSwapFirstTwoVars vars terms
+    vars = ipolycfg_vars cfg
+    doms = ipolycfg_doms cfg
+    cfgSwapped =
+        cfg { ipolycfg_vars = swapFirstTwo vars, ipolycfg_doms = swapFirstTwo doms }
+    swapFirstTwo :: [a] -> [a]
+    swapFirstTwo (e1 : e2 : rest) = e2 : e1 : rest
+
+termsSwapFirstTwoVars :: [var] -> IntPolyTerms var cf -> IntPolyTerms var cf
+termsSwapFirstTwoVars (var1 : var2 : _) (IntPolyV _ polys) = 
+    IntPolyV var2 $ newPolys
+    where
+    newPolys =
+        IntMap.fromAscList $
+            map mkTerms $ groupByFst sortedSwappedPowerAssocs
+        where
+        mkTerms (n1, assocs) = (n1, IntPolyV var1 $ IntMap.fromAscList assocs) 
+    sortedSwappedPowerAssocs = sortBy compareFst swappedPowerAssocs
+    swappedPowerAssocs = [(n2, (n1, coeff)) | (n1, list1) <- powerAssocs, (n2, coeff) <- list1]
+    powerAssocs = 
+        map (\(n1, IntPolyV _ polys2) -> (n1, IntMap.toAscList polys2)) $ 
+            IntMap.toAscList polys
+    compareFst (a,_) (b,_) = compare a b
+
+groupByFst :: (Eq a) => [(a,b)] -> [(a,[b])]
+groupByFst [] = []
+groupByFst ((key, val) : assocs) = aux key [val] assocs
+    where
+    aux prevKey prevVals [] = [(prevKey, reverse prevVals)]
+    aux prevKey prevVals ((key, val) : rest)
+        | key == prevKey = aux prevKey (val : prevVals) rest
+        | otherwise = (prevKey, reverse prevVals) : (aux key [val] rest)
+
 instance (Show var, Show cf) => (Show (IntPolyTerms var cf))
     where
     show (IntPolyC val)
@@ -70,6 +112,7 @@ instance (Show var, Show cf) => (Show (IntPolyTerms var cf))
     show (IntPolyV x polys)
         = "V{" ++ show x ++ "/" ++ show (IntMap.toAscList polys) ++ "}"
     
+ 
 data IntPolyCfg var cf =
     IntPolyCfg
     {
@@ -90,6 +133,8 @@ instance (Show var, Show cf) => Show (IntPolyCfg var cf)
     where
     show (IntPolyCfg vars doms _ maxdeg maxsize) 
         = "cfg{" ++ (show $ zip vars doms) ++ ";" ++ show maxdeg ++ "/" ++ show maxsize ++ "}"
+
+{-- Internal checks and normalisation --}
 
 checkPoly (IntPoly cfg terms)
     =
@@ -120,6 +165,8 @@ termsNormalise cfg poly =
     pn (IntPolyV x polys) 
         = IntPolyV x $ IntMap.filter (not . termsIsZero) $ IntMap.map pn polys
 
+{-- Order-related ops --}
+
 polyIsZero ::
     (ArithInOut.RoundedReal cf) => 
     IntPoly var cf -> Bool
@@ -135,6 +182,20 @@ termsIsZero (IntPolyV x polys) =
         [] -> True
         [(0,p)] -> termsIsZero p
         _ -> False
+
+-- TODO add instances for order-related type classes
+
+joinTerms (IntPolyC c1) (IntPolyC c2) = IntPolyC $ c1 </\> c2
+joinTerms (IntPolyV var terms1) (IntPolyV _ terms2) =
+    IntPolyV var $ IntMap.union commonCoeffs allCoeffsWithZero
+    where
+    commonCoeffs =
+        IntMap.intersectionWith joinTerms terms1 terms2
+    allCoeffsWithZero = 
+        powersMapCoeffs (</\> zero) $ IntMap.union terms1 terms2
+        
+
+{-- Basic function-approximation specific ops --}
 
 instance (Ord var, ArithInOut.RoundedReal cf) => (HasDomainBox (IntPoly var cf))
     where
@@ -164,10 +225,12 @@ instance
     (Ord var, ArithInOut.RoundedReal cf) => 
     (HasConstFns (IntPoly var cf))
     where
-    newConstFn cfg _ value = IntPoly cfg $ mkConstPoly $ ipolycfg_vars cfg
-        where
-        mkConstPoly [] = IntPolyC value
-        mkConstPoly (var:rest) = IntPolyV var $ IntMap.singleton 0 (mkConstPoly rest)
+    newConstFn cfg _ value = IntPoly cfg $ mkConstTerms value $ ipolycfg_vars cfg
+
+mkConstTerms value vars = aux vars
+    where
+    aux [] = IntPolyC value
+    aux (var:rest) = IntPolyV var $ IntMap.singleton 0 (aux rest)
 
 instance 
     (Ord var, Show var, 
@@ -175,19 +238,21 @@ instance
     (HasProjections (IntPoly var cf))
     where
     newProjection cfg dombox var =
-        IntPoly cfg $ mkProj vars
+        IntPoly cfg $ mkProjTerms var vars
         where
         vars = ipolycfg_vars cfg
-        mkProj [] = 
-            error $ 
-                "IntPoly: newProjection: variable " ++ show var 
-                ++ " not among specified variables " ++ show vars
-        mkProj (cvar : rest)
-            | cvar == var = IntPolyV var $ IntMap.fromAscList $ [(1, constR one)]
-            | otherwise = IntPolyV cvar $ IntMap.singleton 0 (mkProj rest)
-            where
-            constR c = intpoly_terms $ newConstFn cfgR dombox c
-            cfgR = cfg { ipolycfg_vars = rest }
+        
+mkProjTerms var vars = aux vars
+    where
+    aux [] = 
+        error $ 
+            "IntPoly: newProjection: variable " ++ show var 
+            ++ " not among specified variables " ++ show vars
+    aux (cvar : rest)
+        | cvar == var = IntPolyV var $ IntMap.fromAscList $ [(1, mkConstTerms one rest)]
+        | otherwise = IntPolyV cvar $ IntMap.singleton 0 (aux rest)
+            
+            
 -- examples from SpringMassV.hs:
 --        y0    = V "u" [V "y0" [G "y0Der" [one], G "y0Der" [zero]]]
 --        y0Der = V "u" [V "y0" [G "y0Der" [one,zero]]]
