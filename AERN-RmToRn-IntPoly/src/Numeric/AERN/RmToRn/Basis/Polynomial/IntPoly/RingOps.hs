@@ -27,6 +27,7 @@ import Numeric.AERN.RmToRn.New
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Auxiliary
 
 import qualified Data.IntMap as IntMap
 
@@ -103,6 +104,9 @@ multTerms poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
                 (n1, p1) <- IntMap.toAscList polys1, 
                 (n2, p2) <- IntMap.toAscList polys2 ] 
         
+powTerms vars = powerFromMult (mkConstTerms one vars) multTerms
+
+        
 instance
     (ArithInOut.RoundedMixedAddEffort cf other) => 
     ArithInOut.RoundedMixedAddEffort (IntPoly var cf) other 
@@ -177,12 +181,12 @@ negPoly ::
     (Neg cf) =>
     IntPoly var cf -> IntPoly var cf
 negPoly (IntPoly cfg poly) = 
-    IntPoly cfg $ negP poly 
-    where
-    negP (IntPolyC val) =
-        IntPolyC $ neg val
-    negP (IntPolyV x polys) = 
-        IntPolyV x $ IntMap.map negP polys
+    IntPoly cfg $ negTerms poly 
+
+negTerms (IntPolyC val) =
+    IntPolyC $ neg val
+negTerms (IntPolyV x polys) = 
+    IntPolyV x $ IntMap.map negTerms polys
 
 instance
     (ArithInOut.RoundedMixedDivideEffort cf other,  Ord var, ArithInOut.RoundedReal cf) => 

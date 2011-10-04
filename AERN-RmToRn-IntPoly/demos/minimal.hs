@@ -46,6 +46,11 @@ main =
     putStrLn $ "(x + y + 2)mono[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyOnInterval 100 0 [(-1,0),(-1,0)] xPyP1P1)
     putStrLn $ "(x^2 + 2xy + 4x + 1)mono[x=-1,y=-1] = " ++ (show $ evalPolyOnInterval 100 0 [(-1,-1),(-1,-1)] integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)mono[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyOnInterval 100 0 [(-1,0),(-1,0)] integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[y,y]] = " ++ (showP $ substPolyMainVar 100 0 (y,y) integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[y,0]] = " ++ (showP $ substPolyMainVar 100 0 (y,c0) integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[x,0]] = " ++ (showP $ substPolyMainVar 100 0 (x,c0) integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[x^2-1,0]] = " ++ (showP $ substPolyMainVar 100 0 (x <*> x <-> c1,c0) integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[swap order of x,y] = " ++ (showP $ polySwapFirstTwoVars integTwoBxPyP2)
 --    putStrLn $ "exp(x + y + 2) = " ++ (showP $ expBxPyP2)
     where
     mOneToZ = (-1) </\> 0

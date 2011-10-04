@@ -106,6 +106,47 @@ evalPolyOnInterval eff z valuesLR p@(IntPoly cfg _)
     sample = ipolycfg_sample_cf cfg
 
 
+substPolyMainVar ::
+    (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
+    (ArithInOut.RoundedRealEffortIndicator cf) ->
+    cf {- zero coefficient -} ->
+    (IntPoly var cf, IntPoly var cf) {- polynomial interval to substitute the main var with -} -> 
+    IntPoly var cf -> IntPoly var cf
+substPolyMainVar eff z (IntPoly _ termsL, IntPoly _ termsR) p@(IntPoly cfg terms) =
+    IntPoly cfg $ uncurry joinTerms $ 
+        evalPolyMono eff substPolyEvalOps [(joinTerms termsL termsR, Just (termsL, termsR))] p
+    where
+    substPolyEvalOps =
+        let ?multInOutEffort = effMult in
+        let ?addInOutEffort = effAdd in
+        let ?joinmeetOutEffort = effJoin in
+        let ?pCompareEffort = effComp in
+        PolyEvalOps 
+            (cf2Terms z) addTerms multTerms (powTerms vars) 
+            cf2Terms terms2terms joinTerms leqTerms
+    cf2Terms cf = mkConstTerms cf vars
+    terms2terms (IntPolyV v ts) | v == mainVar = Nothing
+    terms2terms terms = Just $ IntPolyV mainVar $ IntMap.singleton 0 terms
+    vars@(mainVar : _) = ipolycfg_vars cfg
+    doms = ipolycfg_doms cfg
+    leqTerms terms1 terms2 =
+        zero <=? diffRange 
+        where
+        diffRange = uncurry (</\>) $ evalPolyOnInterval eff z domsR (IntPoly cfgR diff)
+        diff = addTerms terms2 $ negTerms terms1
+        (cfgR, domsR) =
+            case terms1 of
+                IntPolyV v _ | v == mainVar -> (cfg, doms)
+                _ -> (cfgR, domsR)
+            where
+            cfgR = cfgRemVar cfg
+            domR = ipolycfg_doms cfgR
+    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+    effComp = ArithInOut.rrEffortNumComp sample eff
+    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
+    sample = ipolycfg_sample_cf cfg
+
 evalPolyDirect ::
     (Ord var, Show var, Show cf, Show val) => 
     (PolyEvalOps var cf val) ->
