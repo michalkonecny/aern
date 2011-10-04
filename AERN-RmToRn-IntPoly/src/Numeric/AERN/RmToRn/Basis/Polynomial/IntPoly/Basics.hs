@@ -67,6 +67,26 @@ termsMapCoeffs :: (cf -> cf) -> IntPolyTerms var cf -> IntPolyTerms var cf
 termsMapCoeffs f (IntPolyC val) = IntPolyC $ f val
 termsMapCoeffs f (IntPolyV var polys) = IntPolyV var $ powersMapCoeffs f polys
 
+polyAddMainVar :: var -> (cf, cf) -> IntPoly var cf -> IntPoly var cf
+polyAddMainVar var dom p@(IntPoly cfg terms) =
+    IntPoly cfgNew termsNew
+    where
+    termsNew = IntPolyV var $ IntMap.singleton 0 terms
+    cfgNew = cfg 
+        { 
+            ipolycfg_vars = var : ipolycfg_vars cfg, 
+            ipolycfg_doms = dom : ipolycfg_doms cfg 
+        }
+
+polyRenameMainVar :: var -> IntPoly var cf -> IntPoly var cf
+polyRenameMainVar newVarName p@(IntPoly cfg (IntPolyV _ coeffs)) =
+    IntPoly cfgNew termsNew
+    where
+    termsNew = IntPolyV newVarName coeffs
+    cfgNew = cfg 
+        { 
+            ipolycfg_vars = newVarName : (tail $ ipolycfg_vars cfg) 
+        }
 
 polySwapFirstTwoVars :: IntPoly var cf -> IntPoly var cf
 polySwapFirstTwoVars (IntPoly cfg terms) =
@@ -90,11 +110,12 @@ termsSwapFirstTwoVars (var1 : var2 : _) (IntPolyV _ polys) =
         where
         mkTerms (n1, assocs) = (n1, IntPolyV var1 $ IntMap.fromAscList assocs) 
     sortedSwappedPowerAssocs = sortBy compareFst swappedPowerAssocs
+        where
+        compareFst (a,_) (b,_) = compare a b
     swappedPowerAssocs = [(n2, (n1, coeff)) | (n1, list1) <- powerAssocs, (n2, coeff) <- list1]
     powerAssocs = 
         map (\(n1, IntPolyV _ polys2) -> (n1, IntMap.toAscList polys2)) $ 
             IntMap.toAscList polys
-    compareFst (a,_) (b,_) = compare a b
 
 groupByFst :: (Eq a) => [(a,b)] -> [(a,[b])]
 groupByFst [] = []

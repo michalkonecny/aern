@@ -51,6 +51,8 @@ main =
     putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[x,0]] = " ++ (showP $ substPolyMainVar 100 0 (x,c0) integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[x^2-1,0]] = " ++ (showP $ substPolyMainVar 100 0 (x <*> x <-> c1,c0) integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[swap order of x,y] = " ++ (showP $ polySwapFirstTwoVars integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[x->z] = " ++ (showP $ polyRenameMainVar "z" integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[add z] = " ++ (showP $ polyAddMainVar "z" (0,2) integTwoBxPyP2)
 --    putStrLn $ "exp(x + y + 2) = " ++ (showP $ expBxPyP2)
     where
     mOneToZ = (-1) </\> 0
