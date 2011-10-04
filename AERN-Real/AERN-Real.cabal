@@ -59,10 +59,10 @@ Library
     Numeric.AERN.RealArithmetic.Measures, 
     Numeric.AERN.RealArithmetic.Laws, 
     Numeric.AERN.RealArithmetic.Bench, 
-    Numeric.AERN.Misc.IntegerArithmetic
+    Numeric.AERN.Misc.IntegerArithmetic,
+    Numeric.AERN.RealArithmetic.Auxiliary
     
   Other-modules:
-    Numeric.AERN.RealArithmetic.Auxiliary
     Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
     Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
     Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps
