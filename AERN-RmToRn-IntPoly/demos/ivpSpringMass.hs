@@ -199,7 +199,7 @@ makeStep params h epsilon ((t, y0Pair, y0DerPair), prevStepIters) =
 
     evalBoth (p1,p2) = ((evalOne p1, evalOne p2), (p1, p2))
         where
-        evalOne = refinePair .  evalPolyMono prec c0 [(h,h),y0Pair,y0DerPair]
+        evalOne = refinePair .  evalPolyOnInterval prec c0 [(h,h),y0Pair,y0DerPair]
 
     hToMinusH = (-h) MI.</\> h
 
