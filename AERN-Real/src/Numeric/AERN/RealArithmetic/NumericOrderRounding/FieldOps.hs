@@ -436,14 +436,14 @@ powerNonnegToNonnegIntUpEffFromMult ::
     PowerNonnegToNonnegIntEffortIndicatorFromMult t -> 
     t -> Int -> t
 powerNonnegToNonnegIntUpEffFromMult effMult e n =
-    powerFromMult (multUpEff effMult) e n
+    powerFromMult one (multUpEff effMult) e n
 
 powerNonnegToNonnegIntDnEffFromMult ::
     (RoundedMultiply t, HasOne t) => 
     PowerNonnegToNonnegIntEffortIndicatorFromMult t -> 
     t -> Int -> t
 powerNonnegToNonnegIntDnEffFromMult effMult e n =
-    powerFromMult (multDnEff effMult) e n
+    powerFromMult one (multDnEff effMult) e n
 
 -- now not assuming the argument is non-negative:
 class RoundedPowerToNonnegIntEffort t where
@@ -517,12 +517,12 @@ powerToNonnegIntDir mult1 mult2 combine effComp x n
             (_, Just True) -> resNonpos
             _ -> resNonneg `combine` resNonpos
     where
-    resNonneg = powerFromMult mult1 x n
+    resNonneg = powerFromMult one mult1 x n
     resNonpos 
         | even n = 
-            powerFromMult mult1 (neg x) n
+            powerFromMult one mult1 (neg x) n
         | otherwise = 
-            neg $ powerFromMult mult2 (neg x) n 
+            neg $ powerFromMult one mult2 (neg x) n 
             -- switching rounding direction
 
 propUpDnPowerSumExponents ::
