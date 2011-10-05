@@ -105,17 +105,48 @@ evalPolyOnInterval eff z valuesLR p@(IntPoly cfg _)
     effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
     sample = ipolycfg_sample_cf cfg
 
+substPolyMainVarElim ::
+    (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
+    (ArithInOut.RoundedRealEffortIndicator cf) ->
+    cf {- zero coefficient -} ->
+    (Maybe cf, {- value to substitute the main var with -}
+     Maybe (cf, cf)) {- or an interval -} ->
+    IntPoly var cf -> IntPoly var cf
+substPolyMainVarElim eff z (msubstVal, msubstValLR) p@(IntPoly cfg _)
+    = 
+    case substPolyMainVar eff z (msubstPoly, msubstPolyLR) p of
+        IntPoly cfg (IntPolyV _ coeffs) ->
+            IntPoly cfgR terms
+            where
+            cfgR = cfgRemVar cfg
+            terms = case IntMap.toList coeffs of [(0, terms)] -> terms
+    where
+    msubstPoly = fmap mkPoly msubstVal
+    msubstPolyLR =
+        case msubstValLR of
+            Nothing -> Nothing
+            Just (l,r) -> Just (mkPoly l, mkPoly r)
+    mkPoly = newConstFn cfg undefined
 
 substPolyMainVar ::
     (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
     cf {- zero coefficient -} ->
-    (IntPoly var cf, IntPoly var cf) {- polynomial interval to substitute the main var with -} -> 
+    (Maybe (IntPoly var cf), {- polynomial to substitute the main var with -}
+     Maybe (IntPoly var cf, IntPoly var cf)) {- or a polynomial interval -} ->
     IntPoly var cf -> IntPoly var cf
-substPolyMainVar eff z (IntPoly _ termsL, IntPoly _ termsR) p@(IntPoly cfg terms) =
+substPolyMainVar eff z (msubstPoly, msubstPolyLR) p@(IntPoly cfg terms) =
     IntPoly cfg $ uncurry joinTerms $ 
-        evalPolyMono eff substPolyEvalOps [(joinTerms termsL termsR, Just (termsL, termsR))] p
+        evalPolyMono eff substPolyEvalOps [(substTerms, msubstTermsLR)] p
     where
+    substTerms =
+        case (msubstPoly, msubstPolyLR) of
+            (Nothing, Just (l,r)) -> joinTerms (intpoly_terms l) (intpoly_terms r)
+            (Just p, _) -> intpoly_terms p
+    msubstTermsLR =
+        case msubstPolyLR of
+            Nothing -> Nothing
+            Just (l,r) -> Just (intpoly_terms l, intpoly_terms r)
     substPolyEvalOps =
         let ?multInOutEffort = effMult in
         let ?addInOutEffort = effAdd in
