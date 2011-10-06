@@ -55,7 +55,10 @@ bounceCondSomewhereOnTimeInterval evalPolyAt (domL, domR) (yPoly, yDerPoly)
         = bounceCond (joinPair $ evalPolyAt d yPoly, joinPair $ evalPolyAt d yDerPoly)
     
 bounceAction (y, yDer) = 
-    (y, (-0.5 :: Rational) |<*> yDer)
+    (c0, (-0.5 :: Rational) |<*> yDer)
+    where
+    c0 = newConstFn cfg undefined 0
+    cfg = getSizeLimits y 
 
 data Params =
     Params
@@ -71,13 +74,17 @@ data Params =
             --        by splitting - currently unused
     }
     deriving (Show)
-
-initParams = Params 0 10 100 100 -- 21 bounces in <1s
---initParams = Params 0 10 200 200 -- 42 bounces in <3s
---initParams = Params 0 10 1000 1000 -- cannot reliably analyse the event the first bounce - need to reduce loc epsilon 
---initParams = Params 0 10 600 1000 -- 125 bounces in <24s
---initParams = Params 0 10 1600 2000 -- 329 bounces in <3min
+-- Zeno point is at 3*(sqrt 2) = 4.242640...
+initParams = Params 0 10   90   100 --  21 bounces, then until 4.242703 in 0.9s
+--initParams = Params 0 10  100  100 --  23 bounces, then until 4.242656 in 1s
+--initParams = Params 0 10  200  200 --  46 bounces, then until 4.242675 in 4s
+--initParams = Params 0 10  300  300 --  68 bounces, then until 4.242658 in 9s
+--initParams = Params 0 10  400 400 --  91 bounces, then until 4.242675 in 16s
+--initParams = Params 0 10  600 1000 -- 135 bounces, then until 4.242649 in <35s
+--initParams = Params 0 10 1600 2000 -- 329 bounces, then until 4.242658 in 4min
 --initParams = Params 0 10 4000 6000 -- 819 bounces in around 30min 
+
+--initParams = Params 0 10 1000 1000 -- cannot reliably analyse the event the first bounce - need to reduce loc epsilon 
 
 main =
     do
@@ -261,26 +268,32 @@ simulateEvents params t eventCount (yBounceLPair, yDerBounceLPair) bounceLoc@(bo
                 filter canBeLast $ zip [0..] hopefullyFiniteEventEnclosuresAtHE
         canBeLast (n, (_,maybeBouncedAfter)) = maybeBouncedAfter /= Just True
     
-    (hopefullyFiniteEventEnclosuresAtHE, maybeInfinite) = detectEnd maxEvents [] eventEnclosuresAtHE
+    (hopefullyFiniteEventEnclosuresAtHE, maybeInfinite) = detectEnd maxEvents Nothing [] eventEnclosuresAtHE
         where
         maxEvents = paramMaxEvents params
         -- detect last event or whether it suffices to consider 
         -- only a finite number of infinitely many potential events:
-        detectEnd 0 prevEvents _ = 
+        detectEnd 0 _ prevEvents _ = 
             error $ 
                 "forced to consider more than maxEvents ( = " ++ show maxEvents ++ ") events"
                 ++ "\n event enclosures:" 
                 ++ (unlines $ map printEventEncl $ zip [0..] $ reverse prevEvents)
-        detectEnd n prevEvents (event1@(_,Just False):_) 
+        detectEnd n _ prevEvents (event1@(_,Just False):_) 
             = (reverse $ event1 : prevEvents, False) -- definitely last event
-        detectEnd n prevEvents (event1@((y1, yDer1),_):((y2, yDer2),_):_)
-            | ((y1 MI.|<=? y2) == Just True) && -- y1 approximates y2 (ie y2 is included in y1)
-              ((yDer1 MI.|<=? yDer2) == Just True) 
+        detectEnd n (Just (yPrev, yDerPrev)) prevEvents (event1@((y1, yDer1),_):_)
+            | ((yPrev MI.|<=? y1) == Just True) && -- yPrev approximates y1 (ie y1 is included in yPrev)
+              ((yDerPrev MI.|<=? yDer1) == Just True) 
                 =  (reverse $ ((y1, yDer1),Nothing) : prevEvents, True) 
                 -- erase knowledge of next event 
                 -- to ensure this enclosure is counted as a potential last event enclosure
-        detectEnd n prevEvents (event:rest) = detectEnd (n - 1) (event : prevEvents) rest
-        detectEnd n prevEvents empty = (reverse prevEvents, False)
+        detectEnd n maybePrevEncls prevEvents (event@((y1,yDer1),_) : rest) = 
+            detectEnd (n - 1) prevAndCurrentEncls (event : prevEvents) rest
+            where
+            prevAndCurrentEncls =
+                case maybePrevEncls of
+                    Nothing -> Just (y1, yDer1)
+                    Just (y, yDer) -> Just (y MI.</\> y1, yDer MI.</\> yDer1) 
+        detectEnd n _ prevEvents empty = (reverse prevEvents, False)
 
     eventEnclosuresAtHE = map evalAtHE eventEnclosures
 
@@ -309,7 +322,7 @@ simulateEvents params t eventCount (yBounceLPair, yDerBounceLPair) bounceLoc@(bo
         vars = ["u","y0","yDer0"]
         doms = [(0,he), yBounceLPair, yDerBounceLPair]
 
-    getNextEvent event@((yPoly, yDerPoly), maybeBouncedAfter) =
+    getNextEvent event@((yPoly, yDerPoly), _maybeBouncedAfter) =
         ((yPolyNext, yDerPolyNext), maybeBouncedAfterNext)
         where
         maybeBouncedAfterNext =
