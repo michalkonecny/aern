@@ -75,12 +75,13 @@ data Params =
     }
     deriving (Show)
 -- Zeno point is at 3*(sqrt 2) = 4.242640...
-initParams = Params 0 10   90   100 --  21 bounces, then until 4.242703 in 0.9s
+--initParams = Params 0 10   90   100 --  21 bounces, then until 4.242703 in 0.9s
 --initParams = Params 0 10  100  100 --  23 bounces, then until 4.242656 in 1s
 --initParams = Params 0 10  200  200 --  46 bounces, then until 4.242675 in 4s
 --initParams = Params 0 10  300  300 --  68 bounces, then until 4.242658 in 9s
 --initParams = Params 0 10  400 400 --  91 bounces, then until 4.242675 in 16s
 --initParams = Params 0 10  600 1000 -- 135 bounces, then until 4.242649 in <35s
+initParams = Params 0 10  100 1000 -- 135 bounces, then until 4.242649 in <35s
 --initParams = Params 0 10 1600 2000 -- 329 bounces, then until 4.242658 in 4min
 --initParams = Params 0 10 4000 6000 -- 819 bounces in around 30min 
 
