@@ -55,10 +55,16 @@ main =
     putStrLn $ "(x^2 + 2xy + 4x + 1)[swap order of x,y] = " ++ (showP $ polySwapFirstTwoVars integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[x->z] = " ++ (showP $ polyRenameMainVar "z" integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[add z] = " ++ (showP $ polyAddMainVar "z" (0,2) integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[degree 1] = " ++ (showP $ reducePolyDegree 100 $ changeSizeLimits cfgDeg1 integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[size 2] = " ++ (showP $ reducePolyTermCount 100 $ changeSizeLimits cfgSize2 integTwoBxPyP2)
+    putStrLn $ "sin x [n = 1] = " ++ (showP $ sinePoly 100 1 x)
+    putStrLn $ "sin x [n = 2] = " ++ (showP $ sinePoly 100 2 x)
+    putStrLn $ "sin x [n = 3] = " ++ (showP $ sinePoly 100 3 x)
 --    putStrLn $ "exp(x + y + 2) = " ++ (showP $ expBxPyP2)
     where
     mOneToZ = (-1) </\> 0
-    showP p = showPoly id show p ++ " [" ++ show p ++ "]" 
+
+showP p = showPoly id show p ++ " [" ++ show p ++ "]" 
 
 c1,c0,x,y :: Poly
 x = newProjection cfg dombox "x"
@@ -80,9 +86,19 @@ cfg =
             ipolycfg_vars = vars,
             ipolycfg_doms = doms,
             ipolycfg_sample_cf = 0 :: MI,
-            ipolycfg_maxdeg = 2,
-            ipolycfg_maxsize = 10
+            ipolycfg_maxdeg = 4,
+            ipolycfg_maxsize = 30
         }
+
+cfgDeg1 = cfg
+    {
+        ipolycfg_maxdeg = 1
+    }
+
+cfgSize2 = cfg
+    {
+        ipolycfg_maxsize = 2
+    }
 
 dombox = Map.fromList $ zip vars doms
 

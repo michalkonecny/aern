@@ -39,6 +39,7 @@ Library
   exposed-modules:       
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
+        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Reduce
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluate
@@ -70,6 +71,24 @@ Executable ivpSpringMass
 --  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
   ghc-options:  -O2
   main-is: ivpSpringMass.hs
+  Build-Depends:
+        base >= 4 && < 5,
+        containers >= 0.3 && < 0.4,
+        QuickCheck >= 2.1 && < 3,
+        test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
+        criterion >= 0.5 && < 0.6,
+        random >= 1.0 && < 2.0,
+        AERN-Basics == 2011.2.0.0, 
+        AERN-Real == 2011.2.0.0, 
+        AERN-Real-Interval == 2011.2.0.0, 
+        AERN-Real-MPFR == 2011.2.0.0, 
+        AERN-RmToRn == 2011.2.0.0 
+
+Executable ivpPendulum
+  hs-source-dirs: src, demos
+--  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
+  ghc-options:  -O2
+  main-is: ivpPendulum.hs
   Build-Depends:
         base >= 4 && < 5,
         containers >= 0.3 && < 0.4,

@@ -184,7 +184,10 @@ termsNormalise cfg poly =
     where    
     pn p@(IntPolyC val) = p
     pn (IntPolyV x polys) 
-        = IntPolyV x $ IntMap.filter (not . termsIsZero) $ IntMap.map pn polys
+        = IntPolyV x $ IntMap.filterWithKey nonZeroOrConst $ IntMap.map pn polys
+        where
+        nonZeroOrConst degree subTerms =
+            degree == 0 || (not $ termsIsZero subTerms)  
 
 {-- Order-related ops --}
 
@@ -239,8 +242,8 @@ instance (HasSizeLimits (IntPoly var cf))
     type (SizeLimits (IntPoly var cf)) = IntPolyCfg var cf
     defaultSizes = getSizeLimits 
     getSizeLimits (IntPoly cfg _) = cfg
-    changeSizeLimits _ =
-        error $ "changeSizeLimits not implemented for IntPoly"
+    changeSizeLimits cfg (IntPoly _ terms) = IntPoly cfg terms
+--        error $ "changeSizeLimits not implemented for IntPoly"
 
 instance 
     (Ord var, ArithInOut.RoundedReal cf) => 
@@ -270,7 +273,7 @@ mkProjTerms var vars = aux vars
             "IntPoly: newProjection: variable " ++ show var 
             ++ " not among specified variables " ++ show vars
     aux (cvar : rest)
-        | cvar == var = IntPolyV var $ IntMap.fromAscList $ [(1, mkConstTerms one rest)]
+        | cvar == var = IntPolyV var $ IntMap.fromAscList $ [(1, mkConstTerms one rest),(0, mkConstTerms zero rest)]
         | otherwise = IntPolyV cvar $ IntMap.singleton 0 (aux rest)
             
             

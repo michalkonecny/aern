@@ -27,6 +27,10 @@ shouldPrintPrecision = True
 
 field y = (-100 :: Int) |<*> y
 
+resultTolerance :: MI.MI
+--resultTolerance = (2^^(-30))
+resultTolerance = (10^^(-4))
+
 main =
     do
     hSetBuffering stdout NoBuffering
@@ -41,7 +45,7 @@ main =
 data Params =
     Params
     {
-        paramStepSize :: Int, -- 2^{-s} step size
+        paramStepSize :: MI.MI, -- step size
         paramStepEpsilon :: Int, -- 2^{-n} stop iterating Picard when the width change falls below this
         paramPrecision :: Precision, -- floating point precision
         paramDegree :: Int, -- maximal polynomial degree
@@ -52,18 +56,58 @@ data Params =
     }
     deriving (Show)
 
----- the following are taken from SpringMassV.hs, the timings in comments may not be right any more:
---initParams = Params 1 50 50 50 10 -- gets to time 6.5 in 0.27s (1 in 0.04s, 3.6 in 0.15s)
-initParams = Params 0 100 100 80 10 -- gets to time 99 in 7s (36 in 2.3s)
---initParams = Params 0 200 200 160 10 -- gets to time 312 in 49s 
---initParams = Params (-2) 200 200 190 10 -- (?) gets to time 808 in 111s (360 in 49.5s)
---initParams = Params (-3) 300 300 350 10 -- (?) gets to time 3176 in 37.25min
---initParams = Params (-2) 300 300 300 10 -- (?) gets to time 1400 in 15min
---initParams = Params (-3) 400 400 450 10 -- (?) gets to time 8744 in 2.5h (3600 in 1h2min) starts at e-82 drops at e-35 using 2.2GB RAM
---initParams = Params (-3) 600 600 800 10 -- (?) gets to time 19768 in 11h55min starts at e-142 drops at e-35 using 3.5GB RAM
---initParams = Params (-4) 600 600 800 10 -- (?) gets to time 7712 in 6.5h (3600 in 3h) drops at e-70
---initParams = Params (-3) 700 700 850 10 -- (?) gets to time 25448 in 20h using 4.25GB RAM
---initParams = Params (-3) 900 900 950 10 -- (?) gets to time 41352 in 16h20min using 5GB RAM (36000 in 14h15min)
+-- timings and stretch using tolerance 2^(-30):
+--initParams = Params 0.5 50 50 50 10 -- gets to time 6.5 in 0.27s (1 in 0.04s, 3.6 in 0.15s)
+--initParams = Params 1 100 100 80 10 -- gets to time 99 in 7s (36 in 2.3s)
+--initParams = Params 1 200 200 160 10 -- gets to time 312 in 49s 
+--initParams = Params 4 200 200 190 10 -- gets to time 808 in 111s (360 in 49.5s)
+--initParams = Params 8 300 300 350 10 -- (?) gets to time 3176
+--initParams = Params 8 400 400 450 10 -- (?) gets to time 8744
+--initParams = Params 8 600 600 800 10 -- (?) gets to time 19768
+--initParams = Params 16 600 600 800 10 -- (?) gets to time 7712
+--initParams = Params 8 700 700 850 10 -- (?) gets to time 25448
+--initParams = Params 8 900 900 950 10 -- (?) gets to time 41352
+
+-- timings and stretch using tolerance 10^(-4):
+--initParams = Params 2 80 80 0 10 -- gets to time 136 in (dev: 6.8s)
+--initParams = Params 2 100 100 0 10 -- gets to time 234 in (dev: 14.7s)
+--initParams = Params 2 120 120 0 10 -- gets to time 334 in (dev: 25s)
+--initParams = Params 2 160 160 0 10 -- gets to time 532 in (dev: 52s)
+
+--initParams = Params 4 150 150 0 10 -- gets to time 152 in (dev: 14s)
+--initParams = Params 4 200 200 0 10 -- gets to time 944 in (dev: 116s)
+--initParams = Params 4 250 250 0 10 -- gets to time 1344 in (dev: 214s = 3min 34s)
+--initParams = Params 4 300 300 0 10 -- gets to time 1748 in (dev: 360s = 6min)
+
+--initParams = Params 8 150 150 0 10 -- gets to time 360 in (dev: 38s)
+--initParams = Params 8 180 180 0 10 -- gets to time 2032 in (dev: 257s = 4min 17s) -- improvement by incrfe 
+--initParams = Params 8 200 200 0 10 -- gets to time 3152 in (dev: 498s = 8min 18s)
+--initParams = Params 8 210 210 0 10 -- gets to time 3712 in (mik: 437s = 7min17s; 3600 in 423s = 7min 3s at e-5)
+--initParams = Params 8 220 220 0 10 -- gets to time 4272 in (mik: 538s = 8min58s; 3600 in 453s = 7min 33s at e-8)
+--initParams = Params 8 250 250 0 10 -- gets to time 5944 in (mik: 813s = 13min33s; 3600 in 492s = 8min 12s at e-17)
+--initParams = Params 8 270 270 0 10 -- gets to time 7064 in (mik: 1094s = 18min13s; 3600 in 558s = 9min 18s at e-23)
+--initParams = Params 8 790 790 0 10 -- gets to time 36136 in (mik: 22157s = 6h 9min; t=36000 in 22073s = 6h 8min at e-5)
+initParams = Params 8 800 800 0 10 -- gets to time 36696 in (mik: 30201s = 8h 23min; t=36000 in 29628s = 8h 13min at e-8)
+--initParams = Params 8 850 850 0 10 -- gets to time 39488 in (mik: 34619s = 9h 37min; t=36000 in 31561s = 8h 46min at e-23)
+
+--initParams = Params 10 200 200 0 10 -- gets to time 650 in (dev: 100s)
+--initParams = Params 10 220 220 0 10 -- gets to time 1090 in (dev: 200s)
+--initParams = Params 10 250 250 0 10 -- gets to time 1750 in (dev: 362s)
+--initParams = Params 10 300 300 0 10 -- gets to time 2850 in (dev: 791s)
+--initParams = Params 10 600 600 0 10 -- gets to time 9480 in (mik: 82min)
+--initParams = Params 10 700 700 0 10 -- gets to time 11690 in (mik: 126min)
+--initParams = Params 10 800 800 0 10 -- gets to time ? in (mik: ?min)
+--initParams = Params 10 1500 1500 0 10 -- gets to time ? in (mik: ?min)
+
+--initParams = Params 12 600 600 0 10 -- gets to time 10008 in ? (dev: 154min 13s)
+--initParams = Params 12 700 700 0 10 -- gets to time 12504 in ? (dev: 204min 9s)
+--initParams = Params 12 800 800 0 10 -- gets to time 15000 in ? (dev: 338min 10s)
+
+--initParams = Params 16 280 280 0 10 -- gets to time 672
+--initParams = Params 16 600 600 0 10 -- gets to time (approx 20000)
+--initParams = Params 16 700 700 0 10 -- gets to time (approx 25000)
+--initParams = Params 16 800 800 0 10 -- gets to time (approx 32000)
+--initParams = Params 16 850 850 0 10 -- gets to time 36784 in (mik:  51696s = 14.36h)  
 
 increaseParams (Params stp eps p dg rtol) =
     [
@@ -76,30 +120,30 @@ increaseParams (Params stp eps p dg rtol) =
     dgNew = dg + 200
     epsNew = eps + 2000
 
-paramSearch prevBest nextParamsOptions@(params : rest)
-    | prevBest > 36000 = []
-    | otherwise =
-        (params, currentScoreSeq, currentScore) : 
-            (case (rest, currentScore > prevBest + 1) of
-                ([], _) -> paramSearch currentScore $ increaseParams params
-                (_, True) -> paramSearch currentScore $ increaseParams params
-                _ -> paramSearch prevBest rest
-            )
-         where
-         currentScoreSeq =
-            drop100ifAny 0 $ zip [0..] steps
-         drop100ifAny n [] = []
-         drop100ifAny n list 
-            = 
-            (n `div` stepsInOne) 
-            : (drop100ifAny (n + 100) $ drop 100 list)
-         currentScore =
-            (length steps) `div` stepsInOne
-         steps = simulate params
-         stepsInOne = 2 ^ (paramStepSize params)
+--paramSearch prevBest nextParamsOptions@(params : rest)
+--    | prevBest > 36000 = []
+--    | otherwise =
+--        (params, currentScoreSeq, currentScore) : 
+--            (case (rest, currentScore > prevBest + 1) of
+--                ([], _) -> paramSearch currentScore $ increaseParams params
+--                (_, True) -> paramSearch currentScore $ increaseParams params
+--                _ -> paramSearch prevBest rest
+--            )
+--         where
+--         currentScoreSeq =
+--            drop100ifAny 0 $ zip [0..] steps
+--         drop100ifAny n [] = []
+--         drop100ifAny n list 
+--            = 
+--            (n `div` stepsInOne) 
+--            : (drop100ifAny (n + 100) $ drop 100 list)
+--         currentScore =
+--            (length steps) `div` stepsInOne
+--         steps = simulate params
+--         stepsInOne = 2 ^ (paramStepSize params)
 
 simulate params =
-    waitTillPrecBelow (2^^(-30)) $ -- stop when diverging
+    waitTillPrecBelow resultTolerance $ -- stop when diverging
         iterate (makeStep params stepSize epsilon) 
             ((tInit, (y0Init, y0Init), (y0DerInit, y0DerInit)),[]) -- initial values
     where
@@ -117,11 +161,11 @@ simulate params =
                 _ -> False
     epsilon =
         (i2mi 1) MI.</> (i2mi $ 2^(paramStepEpsilon params))
-    stepSize
-        | stp >= 0 =(i2mi 1) MI.</> (i2mi $ 2^stp)
-        | otherwise = i2mi $ 2^(- stp)
-        where
-        stp = paramStepSize params
+    stepSize = (i2mi 1) MI.<*> paramStepSize params
+--        | stp >= 0 =(i2mi 1) MI.</> (i2mi $ 2^stp)
+--        | otherwise = i2mi $ 2^(- stp)
+--        where
+--        stp = paramStepSize params
     i2mi :: Integer -> MI.MI
     i2mi n =
         ArithInOut.convertOutEff (paramPrecision params) n
