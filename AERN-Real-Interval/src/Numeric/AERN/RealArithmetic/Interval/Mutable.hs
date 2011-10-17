@@ -1,3 +1,5 @@
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.Mutable
     Description :  instances of mutable arithmetic classes for MIntervals  
@@ -25,11 +27,19 @@ import Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+
+import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Measures
+
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.RealArithmetic.Interval
 
-instance 
-    (ArithUpDn.RoundedRealInPlace e, NumOrd.HasExtrema e) => 
+instance
+    (ArithUpDn.RoundedRealInPlace e, NumOrd.HasExtrema e,
+     ArithInOut.RoundedAdd (Distance e), 
+     Neg (Distance e),
+     RefOrd.OuterRoundedLattice (Distance e)) => 
     ArithInOut.RoundedRealInPlace (Interval e)
