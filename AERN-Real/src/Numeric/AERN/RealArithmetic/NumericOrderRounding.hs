@@ -34,9 +34,11 @@ import Numeric.AERN.RealArithmetic.NumericOrderRounding.SpecialConst
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
 
+import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Measures
+
 import Numeric.AERN.Basics.NumericOrder
 
-import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 
 {-|
@@ -51,6 +53,7 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 class 
     (HasZero t, HasOne t, HasInfinities t, Neg t,
      NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
+     HasDistance t,
      Convertible Int t, Convertible t Int,  
      Convertible Integer t, Convertible t Integer,  
      Convertible Double t, Convertible t Double,  
@@ -67,6 +70,7 @@ class
     roundedRealDefaultEffort :: t -> RoundedRealEffortIndicator t
     rrEffortComp :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator t)
     rrEffortMinmax :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.MinmaxEffortIndicator t)
+    rrEffortDistance :: t -> (RoundedRealEffortIndicator t) -> (DistanceEffortIndicator t)
     rrEffortToInt :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator t Int)
     rrEffortFromInt :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Int t)
     rrEffortToInteger :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator t Integer)

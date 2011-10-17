@@ -36,6 +36,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace
 
 import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
@@ -55,11 +56,12 @@ class
     (HasZero t, HasOne t, HasInfinities t, Neg t,
      NumOrd.PartialComparison t, NumOrd.RefinementRoundedLattice t,
      RefOrd.PartialComparison t, RefOrd.RoundedLattice t, 
+     HasImprecision t, HasDistance t,
      Convertible Int t, ArithUpDn.Convertible t Int,
      Convertible Integer t, ArithUpDn.Convertible t Integer,  
      Convertible Double t, ArithUpDn.Convertible t Double,  
      Convertible Rational t, ArithUpDn.Convertible t Rational,  
-     RoundedAbs t, 
+     RoundedAbs t,
      RoundedField t,
      RoundedMixedField t Int, 
      RoundedMixedField t Integer, 
@@ -75,6 +77,8 @@ class
     rrEffortRefComp :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.PartialCompareEffortIndicator t)
     rrEffortJoinMeetOut :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.JoinMeetOutEffortIndicator t)
     rrEffortJoinMeetIn :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.JoinMeetInEffortIndicator t)
+    rrEffortImprecision :: t -> (RoundedRealEffortIndicator t) -> (ImprecisionEffortIndicator t)
+    rrEffortDistance :: t -> (RoundedRealEffortIndicator t) -> (DistanceEffortIndicator t)
     rrEffortToInt :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Int)
     rrEffortFromInt :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Int t)
     rrEffortToInteger :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Integer)

@@ -74,6 +74,7 @@ instance RoundedReal M.MPFR where
     roundedRealDefaultEffort _ = 100
     rrEffortComp _ _ = ()
     rrEffortMinmax _ _ = ()
+    rrEffortDistance _ p = p
     rrEffortToInt _ _ = ()
     rrEffortFromInt _ p = p
     rrEffortToInteger _ _ = ()
