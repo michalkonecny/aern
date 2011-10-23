@@ -21,8 +21,8 @@ import qualified Data.List as List
 
 type Poly = IntPoly String MI.MI
 
-shouldPrintPrecision = False
---shouldPrintPrecision = True
+--shouldPrintPrecision = False
+shouldPrintPrecision = True
 
 gravity :: Rational
 gravity = 10
@@ -81,8 +81,8 @@ data Params =
 --initParams = Params 0 10  300  300 --  68 bounces, then until 4.242658 in 9s
 --initParams = Params 0 10  400 400 --  91 bounces, then until 4.242675 in 16s
 --initParams = Params 0 10  600 1000 -- 135 bounces, then until 4.242649 in <35s
-initParams = Params 0 10  100 1000 -- 135 bounces, then until 4.242649 in <35s
---initParams = Params 0 10 1600 2000 -- 329 bounces, then until 4.242658 in 4min
+--initParams = Params 0 10  100 1000 -- 23 bounces, then until 4.242649 in <35s
+initParams = Params 0 10 1600 2000 -- 329 bounces, then until 4.242658 in 4min
 --initParams = Params 0 10 4000 6000 -- 819 bounces in around 30min 
 
 --initParams = Params 0 10 1000 1000 -- cannot reliably analyse the event the first bounce - need to reduce loc epsilon 
@@ -92,9 +92,8 @@ main =
     hSetBuffering stdout NoBuffering
     print initParams 
     putStrLn $ "initial state: " ++ show (head steps)
-    mapM_ printStep $ tail steps 
+    mapM_ (printStep initParams) $ tail steps 
     print initParams 
---    mapM_ print $ paramSearch 0 [initParams]
     where
     steps = simulate initParams
 
@@ -132,7 +131,7 @@ main =
 --         stepsInOne = 2 ^ (paramStepSize params)
 
 simulate params =
-    waitTillPrecBelow (2^^(-30)) $ -- stop when diverging
+    waitTillPrecBelow (10^^(-4)) $ -- stop when diverging
         iterate (makeStep params stepSize locEpsilon) 
             ((tInit, 0, (y0Init, y0Init), (yDer0Init, yDer0Init)),[]) -- initial values
     where
@@ -159,10 +158,11 @@ simulate params =
     i2mi n =
         ArithInOut.convertOutEff (paramPrecision params) n
     
-printStep ((t,prevEvents,yPair,yDerPair), eventEnclsAtHE) =
+printStep params ((t,prevEvents,yPair,yDerPair), eventEnclsAtHE) =
     do
     putStrLn $ replicate 120 '*'
     putStrLn $ "solving for t = " ++ show t ++ "(events so far = " ++ show prevEvents ++ ")" ++ ":"
+    putStrLn $ " beyond Zeno: " ++ (show $ t MI.>? zenoPt)
     putStrLn $ " enclosures assuming exactly n events:"
     mapM_ putStrLn $ map printEventEncl $ zip [0..] eventEnclsAtHE
     putStrLn $ " result: "
@@ -173,6 +173,11 @@ printStep ((t,prevEvents,yPair,yDerPair), eventEnclsAtHE) =
     y = joinPair yPair
     yDer = joinPair yDerPair
     showMI = showInternals (30,shouldPrintPrecision)
+    zenoPt = (i2mi 3) <*> (MI.sqrtOut (i2mi 2))
+    prec = paramPrecision params
+    i2mi :: Rational -> MI.MI
+    i2mi n =
+        ArithInOut.convertOutEff prec n
 
 printEventEncl (n, ((yEv,yDerEv), maybeBouncedAfter)) =
     "\n  event count " ++ show n ++ ":"
@@ -214,7 +219,7 @@ makeStep params h locEpsilon ((t, eventCount, y0Pair@(y0L, y0R), yDer0Pair@(yDer
         (yBounceLPair, yDerBounceLPair) = -- values at the start of event analysis time segment
             (evalStepPolyAt (bounceLocL, bounceLocL) yPolyNoEvent, 
              evalStepPolyAt (bounceLocL, bounceLocL) yDerPolyNoEvent)
-    evalStepPolyAt dom = refinePair . evalPolyOnInterval prec c0 [dom, y0Pair, yDer0Pair]
+    evalStepPolyAt dom = refinePair . evalPolyOnInterval (effMI prec) c0 [dom, y0Pair, yDer0Pair]
     
 --    showMI = showInternals (20, shouldPrintPrecision)
     -- solve the ODE assuming there are no events:
@@ -247,7 +252,7 @@ simulateEvents params t eventCount (yBounceLPair, yDerBounceLPair) bounceLoc@(bo
     where
     he = bounceLocR <-> bounceLocL -- event analysis segment size
     evalBounceStepPolyAt dom -- evaluate polynomials with u=0 representing t=bounceLocL
-        = refinePair . evalPolyOnInterval prec c0 [dom, yBounceLPair, yDerBounceLPair]
+        = refinePair . evalPolyOnInterval (effMI prec) c0 [dom, yBounceLPair, yDerBounceLPair]
 
     -- enclosures of the solution at the end of event analysis time segment:
     yAtHEPair = refinePair (yAtHE, yAtHE)
@@ -390,7 +395,7 @@ locateFirstBounce params locEpsilon dom (y0Poly, yDer0Poly)
                             -> (Just (bL, bR), isCertain)
         domM = leftBound $ (domR <+> domL) </>| (2 :: Int)
 
-        evalPolyAt dom = evalPolyOnInterval prec c0 [dom,y0Pair,yDer0Pair]
+        evalPolyAt dom = evalPolyOnInterval (effMI prec) c0 [dom,y0Pair,yDer0Pair]
         [_,y0Pair, yDer0Pair] = ipolycfg_doms $ getSizeLimits $ y0Poly
 
     c0 = i2mi 0
@@ -409,9 +414,9 @@ solveUncValODE params z (y0, yDer0) =
     (yNext, yDerNext)
     where
     yNext =
-        integratePolyMainVar prec z y0 yDerNext
+        integratePolyMainVar (effMI prec) z y0 yDerNext
     yDerNext =
-        integratePolyMainVar prec z yDer0 $
+        integratePolyMainVar (effMI prec) z yDer0 $
             newConstFn cfg domainbox $
                 ArithInOut.convertOutEff prec (- gravity)
     prec = paramPrecision params
@@ -456,9 +461,9 @@ solveUncTimeValODE params z h (y0Poly, yDer0Poly) =
         2. Integrate as usual to get a quadratic in u.
     -}
     yNextUT0 =
-        integratePolyMainVar prec z y0PolyUT0 yDerNextUT0
+        integratePolyMainVar (effMI prec) z y0PolyUT0 yDerNextUT0
     yDerNextUT0 =
-        integratePolyMainVar prec z yDer0PolyUT0 $
+        integratePolyMainVar (effMI prec) z yDer0PolyUT0 $
             newConstFn cfgUT0 domainboxUT0 $
                 ArithInOut.convertOutEff prec (- gravity)
         where
@@ -470,7 +475,7 @@ solveUncTimeValODE params z h (y0Poly, yDer0Poly) =
     -}
     [yNextShiftedUT0, yDerNextShiftedUT0] = map shiftU [yNextUT0, yDerNextUT0]
         where
-        shiftU = substPolyMainVar prec z (Just uMt0, Nothing) 
+        shiftU = substPolyMainVar (effMI prec) z (Just uMt0, Nothing) 
         uMt0 = u <-> t0
         u = newProjection cfgUT0 domainboxUT0 "u"
         t0 = newProjection cfgUT0 domainboxUT0 "t0"
@@ -484,7 +489,7 @@ solveUncTimeValODE params z h (y0Poly, yDer0Poly) =
     -}
     [yNextNormalisedT0U, yDerNextNormalisedT0U] = map normaliseT0 [yNextT0ShiftedU, yDerNextT0ShiftedU]
         where
-        normaliseT0 = substPolyMainVar prec z (Just uTt0, Nothing) 
+        normaliseT0 = substPolyMainVar (effMI prec) z (Just uTt0, Nothing) 
         uTt0 = u <*> t0
         u = newProjection cfgT0U domainboxT0U "u"
         t0 = newProjection cfgT0U domainboxT0U "t0"
@@ -495,10 +500,12 @@ solveUncTimeValODE params z h (y0Poly, yDer0Poly) =
     -}
     [yNext, yDerNext] = map elimT0 [yNextNormalisedT0U, yDerNextNormalisedT0U]
         where
-        elimT0 = substPolyMainVarElim prec z (Nothing, Just (z,c1))
+        elimT0 = substPolyMainVarElim (effMI prec) z (Nothing, Just (z,c1))
         c1 = i2mi 1
         i2mi :: Integer -> MI.MI
         i2mi n = ArithInOut.convertOutEff prec n
+
+effMI prec = (prec, (prec, ()))
 
 joinPair (l,r) = l MI.</\> r
 
