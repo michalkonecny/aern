@@ -25,8 +25,13 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
-import Numeric.AERN.RealArithmetic.ExactOps
 
+import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Measures
+
+import Numeric.AERN.Basics.Interval
+
+import qualified Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort as NumOrdDefEffort
 import Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
 import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
 import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
@@ -74,7 +79,8 @@ reduceTermsDegree eff cfg terms
         totalDegree = sum varDegrees
 
 reduceTermsCount ::
-    (ArithInOut.RoundedReal cf, Show var, Show cf) =>
+    (ArithInOut.RoundedReal cf, Show var, Show cf, 
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf)) =>
     (ArithInOut.RoundedRealEffortIndicator cf) ->
     (IntPolyCfg var cf) ->
     (IntPolyTerms var cf) ->
@@ -82,33 +88,52 @@ reduceTermsCount ::
 reduceTermsCount eff cfg terms
     | size <= maxSize = terms
     | otherwise = 
+--        unsafePrint
+--        (
+--            "reduceTermsCount:"
+--            ++ "\n varDomsPowers = " ++ (show $ map (take 3) varDomsPowers)
+--            ++ "\n allTermRangesListSortedDescending = " ++ show allTermRangesListSortedDescending  
+--        ) $
         reduceMarkedTerms eff cfg termsMarkedTooSmall
     {- overview:
         * count terms, return without change if not over maxSize 
-        * collect absolute values of all coeffs, sort it and determine a cut-off treshold
-        * mark also all terms whose absolute value is below the treshold (but never mark the constant term!) 
+        * collect the widths of the ranges of all terms
+        * sort the list and determine a cut-off treshold
+        * (TODO) mark all terms whose range's width is below the treshold (but never mark the constant term!) 
         * remove the marked terms and compensate for them by widening the remaining coeffs
     -}
     where
-    effAbs = ArithInOut.rrEffortAbs sample eff
-    effComp = ArithInOut.rrEffortNumComp sample eff
+    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
+    effImprecision = ArithInOut.rrEffortImprecision sample eff
     sample = ipolycfg_sample_cf cfg
 
+    varDoms = ipolycfg_doms cfg
+    varDomsPowers = 
+        let ?joinmeetOutEffort = effJoin in
+        let ?multInOutEffort = effMult in 
+        map powersOf varDoms
+        where
+        powersOf (aL,aR) = iterate (<*> (aL </\> aR)) one
     maxSize = ipolycfg_maxsize cfg
-    size = length allCoeffsList
-    allCoeffsList = (collectCoeffs $ ArithInOut.absOutEff effAbs) terms
-    tresholdSmallestAllowed = allCoeffsListSortedDescending !! (maxSize-1)
-    allCoeffsListSortedDescending = List.sortBy compareCf allCoeffsList
+    size = length allTermRangesList
+    allTermRangesList = 
+        let ?multInOutEffort = effMult in 
+        (collectCoeffs evalTermRangeWidth) terms
+    evalTermRangeWidth varDegrees coeff =
+        imprecisionOfEff effImprecision $ foldl (<*>) coeff $ zipWith (!!) varDomsPowers varDegrees
+    tresholdSmallestAllowed = allTermRangesListSortedDescending !! (maxSize-1)
+    allTermRangesListSortedDescending = List.sortBy compareCf allTermRangesList
         where
         compareCf a b = 
-            case NumOrd.pCompareEff effComp a b of
+            case NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort a) a b of
                 Just PartialOrdering.LT -> GT 
                 Just PartialOrdering.GT -> LT 
                 Just PartialOrdering.LEE -> GT 
                 Just PartialOrdering.GEE -> LT 
                 _ -> EQ 
     termsMarkedTooSmall =
-        let ?pCompareEffort = effComp in
+        let ?multInOutEffort = effMult in
         mapTermsCoeffsWithDegrees markTooSmall terms
         where
         markTooSmall degrees cf = 
@@ -116,11 +141,15 @@ reduceTermsCount eff cfg terms
             where
             notConst = or $ map (/= 0) degrees
             tooSmall =
-                (ArithInOut.absOutEff effAbs cf <? tresholdSmallestAllowed) == Just True
+                (evalTermRangeWidth (reverse degrees) cf NumOrdDefEffort.<? tresholdSmallestAllowed) == Just True
 
-collectCoeffs fn (IntPolyC cf) = [fn cf] 
-collectCoeffs fn (IntPolyV x polys) = 
-    IntMap.fold (++) [] $ IntMap.map (collectCoeffs fn) polys
+collectCoeffs fn terms = aux [] terms
+    where
+    aux prevDegrees (IntPolyC cf) = [fn (reverse prevDegrees) cf] 
+    aux prevDegrees (IntPolyV x polys) = 
+        IntMap.fold (++) [] $ IntMap.mapWithKey applyAux polys
+        where
+        applyAux degree = aux (degree : prevDegrees)
 
 --countTermsCoeffsSatisfying cond (IntPolyC cf) 
 --    | cond cf = 1
@@ -217,20 +246,4 @@ reduceMarkedTerms eff cfg terms =
             to the following subpoly or return it if there is 
             no following subpoly.
         -}
-        
-        
-        
---        -- probably useless:
---        (maybeReducedTerms, maybeOverflow)
---        where
---        maybeReducedTerms 
---            | null newTerms = Nothing
---            | otherwise = Just $ IntMap.fromAscList newTerms
---        (_,_, newTerms) = IntMap.fold applyAux (overflowScaling, Nothing, []) polys
---        applyAux (degree, subTerms) (maybePrevDegree, prevNewTerms)
---            =
---            (Just degree, newNewTerms)
---            where
---            aux 
---            newNewTerms = case 
     

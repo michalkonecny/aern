@@ -87,7 +87,7 @@ data Params =
 --initParams = Params 8 250 250 0 10 -- gets to time 5944 in (mik: 813s = 13min33s; 3600 in 492s = 8min 12s at e-17)
 --initParams = Params 8 270 270 0 10 -- gets to time 7064 in (mik: 1094s = 18min13s; 3600 in 558s = 9min 18s at e-23)
 --initParams = Params 8 790 790 0 10 -- gets to time 36136 in (mik: 22157s = 6h 9min; t=36000 in 22073s = 6h 8min at e-5)
-initParams = Params 8 800 800 0 10 -- gets to time 36696 in (mik: 30201s = 8h 23min; t=36000 in 29628s = 8h 13min at e-8)
+initParams = Params 8 800 800 0 10 -- gets to time 36696 in (mik: 26311s = 7h 19min; t=36000 in 25812s = 7h 10min at e-8)
 --initParams = Params 8 850 850 0 10 -- gets to time 39488 in (mik: 34619s = 9h 37min; t=36000 in 31561s = 8h 46min at e-23)
 
 --initParams = Params 10 200 200 0 10 -- gets to time 650 in (dev: 100s)
@@ -243,7 +243,7 @@ makeStep params h epsilon ((t, y0Pair, y0DerPair), prevStepIters) =
 
     evalBoth (p1,p2) = ((evalOne p1, evalOne p2), (p1, p2))
         where
-        evalOne = refinePair .  evalPolyOnInterval prec c0 [(h,h),y0Pair,y0DerPair]
+        evalOne = refinePair .  evalPolyOnInterval (effMI prec) c0 [(h,h),y0Pair,y0DerPair]
 
     hToMinusH = (-h) MI.</\> h
 
@@ -279,7 +279,6 @@ makeStep params h epsilon ((t, y0Pair, y0DerPair), prevStepIters) =
         yNWidth = MI.width yN         
     
 
-
 picard ::
     Params ->
 --    MI {-^ starting time -} -> -- autonomous system, always 0 
@@ -291,11 +290,12 @@ picard params z (y0, y0Der) (yPrev, yPrevDer) =
     (yNext, yNextDer)
     where
     yNext =
-        integratePolyMainVar prec z y0 yNextDer
+        integratePolyMainVar (effMI prec) z y0 yNextDer
     yNextDer =
-        integratePolyMainVar prec z y0Der (field yPrev)
+        integratePolyMainVar (effMI prec) z y0Der (field yPrev)
     prec = paramPrecision params
 
+effMI prec = (prec, (prec, ()))
 
 joinPair (l,r) = l MI.</\> r
 
