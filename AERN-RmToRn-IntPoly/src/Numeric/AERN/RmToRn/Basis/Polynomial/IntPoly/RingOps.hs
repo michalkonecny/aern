@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -27,10 +28,14 @@ import Numeric.AERN.RmToRn.New
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+
+import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Measures
+import Numeric.AERN.RealArithmetic.Auxiliary
+
+import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
-import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Auxiliary
 
 import Numeric.AERN.Misc.Debug
 
@@ -82,14 +87,18 @@ instance
         sample_cf = (ipolycfg_sample_cf cfg)
     
 instance
-    (ArithInOut.RoundedReal cf, Show var, Show cf) =>
+    (ArithInOut.RoundedReal cf, 
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf),
+     Show var, Show cf) =>
     ArithInOut.RoundedMultiply (IntPoly var cf) 
     where
     multInEff eff p1 p2 = error "inner rounded operations not available for IntPoly"
     multOutEff eff p1 p2 = multPolys eff p1 p2
     
 multPolys ::
-    (ArithInOut.RoundedReal cf, Show var, Show cf) =>
+    (ArithInOut.RoundedReal cf, 
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf),
+     Show var, Show cf) =>
     (ArithInOut.RoundedRealEffortIndicator cf) -> 
     IntPoly var cf -> IntPoly var cf -> IntPoly var cf
 multPolys eff (IntPoly cfg1 poly1) (IntPoly cfg2 poly2)
@@ -236,7 +245,9 @@ divPolyByOther eff (IntPoly cfg poly) c =
 -- and move to AERN-Real
 
 sinePoly ::
-    (ArithInOut.RoundedReal cf, Show var, Ord var, Show cf) =>
+    (ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf),  Show (Imprecision cf),
+     Show var, Ord var, Show cf) =>
     (ArithInOut.RoundedRealEffortIndicator cf) -> 
     Int {-^ how many terms of the Taylor expansion to consider -} -> 
     IntPoly var cf -> 

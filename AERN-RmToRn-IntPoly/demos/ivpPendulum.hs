@@ -29,21 +29,106 @@ initAngle = 1
 initAngularSpeed :: Rational
 initAngularSpeed = 0
 
+{-
+    approximations to exact solution computed so far:
+
+    angle(0.5) = -0.0239512848529275...
+    angle(1)   = -0.998949814623850...
+    angle(1.5) =  0.0717940933102...
+    angle(2)   =  0.995800677124...
+    angle(2.5) = -0.1194579036...
+    angle(3)   = -0.990556855...
+    angle(3.5) =  0.166824...
+    angle(4)   =  0.9832...
+
+-}
+
 resultTolerance :: MI.MI
 --resultTolerance = (2^^(-30))
 resultTolerance = (10^^(-4))
 
 maxConsecutiveFailuresToImproveEnclosure :: Int
-maxConsecutiveFailuresToImproveEnclosure = 10
+maxConsecutiveFailuresToImproveEnclosure = 2
 
 maxInclusionFailures :: Int
 maxInclusionFailures = 20
 
 {- experiments using tolerance 2^(-4):
     
-    bin/ivpPendulum 0.125 50 100 16 140 6  -- gets to time 0.5 in (dev: 59s)
+    -- experiments with different step sizes:
     
-    bin/ivpPendulum 0.125 50 100 20 240 7  -- gets to time 1.25 in (dev: 13min 54s)
+    bin/ivpPendulum simulate 3 40 100 10 100 5  -- gets to time 0.25 in (mik: 2s)
+    
+    bin/ivpPendulum simulate 4 40 100 10 100 5  -- gets to time 1.1875 in (mik: 14s)
+    
+    bin/ivpPendulum simulate 5 40 100 10 100 5  -- gets to time 1.9375 in (mik: 37s)
+    
+    bin/ivpPendulum simulate 6 40 100 10 100 5  -- gets to time 1.8125 in (mik: 58s)
+    
+
+    bin/ivpPendulum simulate 3 40 100 16 140 6  -- gets to time 0.375 in (mik: 20s)
+    
+    bin/ivpPendulum simulate 4 40 100 16 140 6 -- get to time 1.375 in (mik: 100s)
+
+    bin/ivpPendulum simulate 5 40 100 16 140 6 -- get to time 1.9375 in (mik: 229s = 3min49s)
+
+    bin/ivpPendulum simulate 6 40 100 16 140 6 -- get to time 2.203125 in (mik: 7min)
+    
+
+    bin/ivpPendulum simulate 4 40 100 18 300 8  -- gets to time 3.25 in (mik: 13min24s)
+   
+    bin/ivpPendulum simulate 5 40 100 18 300 8  -- gets to time 4.28125 in (mik: 29min10s)
+   
+    bin/ivpPendulum simulate 6 40 100 18 300 8  -- gets to time 3.90625 in (mik: 50min47s)
+
+
+    bin/ivpPendulum simulate 3 40 400 60 600 7 -- get to time 1 in (mik: 22min)
+
+    bin/ivpPendulum simulate 4 40 400 60 600 7 -- get to time 3.125 in (mik: 83min)
+
+    -- step size 5:
+    
+    bin/ivpPendulum simulate 5 40 100 10 100 5  -- gets to time 1.9375 in (mik: 34s)
+    
+      bin/ivpPendulum simulate 5 40 100 10 100 6  -- gets to time 2.0625 in (mik: 41s)
+    
+      bin/ivpPendulum simulate 5 40 100 12 100 5  -- gets to time 1.96875 in (mik: 76s)
+    
+      bin/ivpPendulum simulate 5 40 100 10 120 5  -- gets to time 1.9375 in (mik: 35s)
+    
+      bin/ivpPendulum simulate 5 50 100 10 100 5  -- gets to time 1.9375 in (mik: 39s)
+    
+    bin/ivpPendulum simulate 5 40 100 10 100 6  -- gets to time 2.0625 in (mik: 41s)
+    
+      bin/ivpPendulum simulate 5 40 100 10 100 7  -- gets to time 2.0625 in (mik: 46s)
+    
+      bin/ivpPendulum simulate 5 40 100 12 100 6  -- gets to time 2.625 in (mik: 120s)
+    
+      bin/ivpPendulum simulate 5 40 100 10 120 6  -- gets to time 2.0625 in (mik: 41s)
+    
+    bin/ivpPendulum simulate 5 40 100 12 100 6  -- gets to time 2.625 in (mik: 120s)
+
+    bin/ivpPendulum simulate 5 50 100 14 160 7  -- gets to time 3.28125 in (mik: 305s = 6min5s)
+   
+    bin/ivpPendulum simulate 5 40 100 18 300 8  -- gets to time 4.28125 in (mik: 29min10s)
+   
+   
+   
+    -- step size 3 (turned out to be a bad choice...):
+    
+    bin/ivpPendulum simulate 3 50 100 20 240 7  -- gets to time 0.75 in (dev: 3min 2s)
+    
+    bin/ivpPendulum simulate 3 40 400 60 600 10 -- get to time 1 in (mik: 48min)
+    
+    bin/ivpPendulum simulate 3 100 1000 100 1000 7 -- get to time 1.75 in (mik: 3h28min)
+
+    bin/ivpPendulum simulate 3 50 600 100 1000 10 -- get to time 1.75 in (dev: 7h8min)
+
+    bin/ivpPendulum simulate 3 100 1000 100 1000 13 -- get to time 1.75 in (mik: 5h7min)
+
+
+    bin/ivpPendulum simulate 4 40 400 100 1000 8 -- get to time ? in (mik: ?min)
+
 -}
 
 shouldPrintIterations = False
@@ -55,36 +140,101 @@ main =
     do
     hSetBuffering stdout NoBuffering
     args <- getArgs
-    let initParams = parseArgs args
+    let (mode : paramsS) = args
+    let initParams = parseParams paramsS
     print initParams
-    let steps = simulate initParams
-    putStrLn $ "initial state: " ++ show (fst $ head steps)
-    mapM_ printStep $ tail steps 
-    print initParams 
+    case mode of
+        "simulate" ->
+            do
+            let steps = simulate initParams
+            putStrLn $ "initial state: " ++ show (fst $ head steps)
+            mapM_ printStep $ tail steps
+            print initParams 
+        "search" ->
+            do
+            mapM_ printParamSearchStep $ paramSearch 0 initParams
 
 data Params =
     Params
     {
-        paramStepSize :: MI.MI, -- step size
+        paramStepSize :: Int, -- 2^{-n} step size
         paramStepEpsilon :: Int, -- 2^{-n} stop iterating Picard when the width change falls below this
         paramPrecision :: Precision, -- floating point precision
         paramDegree :: Int, -- maximal polynomial degree
         paramTermSize :: Int, -- maximal polynomial term size
         paramSineTerms :: Int -- how many terms of the Taylor expansion should be computed
     }
-    deriving (Show)
+--    deriving (Show)
+    
+instance Show Params where
+    show (Params stp eps p dg sz sinet) =
+        "Params{" ++ (List.intercalate " " $ map show [stp,eps,fromIntegral p,dg,sz,sinet]) ++ "}" 
 
-parseArgs [stepSizeS, stepEpsS, precS, maxDegS, maxSizeS, sineTermsS]
+parseParams [stepSizeS, stepEpsS, precS, maxDegS, maxSizeS, sineTermsS]
     =
     Params
     {
-        paramStepSize = fromRational $ toRational $ (read stepSizeS :: Double),
+        paramStepSize = read stepSizeS,
         paramStepEpsilon = read stepEpsS,
         paramPrecision = fromInteger $ read precS,
         paramDegree = read maxDegS,
         paramTermSize = read maxSizeS,
         paramSineTerms = read sineTermsS
     }
+   
+    
+increaseIndividualParams (Params stp eps p dg sz sinet) =
+    [
+     Params stp eps p dgNew sz sinet, 
+     Params stp eps p dg szNew sinet, 
+     Params stp eps p dg sz sinetNew,
+     Params stp epsNew p dg sz sinet,
+     Params stp eps pNew dg sz sinet
+    ]
+    where
+    epsNew = eps + 10 
+    pNew = p + 50
+    dgNew = dg + 2
+    szNew = sz + 20
+    sinetNew = sinet + 1
+
+increaseAllParams (Params stp eps p dg sz sinet) =
+    Params stp epsNew pNew dgNew szNew sinetNew
+    where
+    epsNew = eps + 10 
+    pNew = p + 50
+    dgNew = dg + 5
+    szNew = sz + 20
+    sinetNew = sinet + 1
+
+paramSearch prevScore prevParams
+    | nextScore > 360 * stepsInOne = [(scoresParams, nextScore, nextParams)]
+    | otherwise = 
+        (scoresParams, nextScore, nextParams) : (paramSearch nextScore nextParams)
+    where
+    (nextScore, nextParams) 
+        = (bestScore, bestParams)
+--        | otherwise = (getScore $ simulate incAllParams, incAllParams)
+    incAllParams = increaseAllParams prevParams
+    (bestScore, bestParams) = 
+        head $ List.sortBy (\a b -> compare (fst b) (fst a)) scoresParams
+    scoresParams = zip scores paramsList
+    scores = map getScore results
+    results = map simulate paramsList
+    paramsList = increaseIndividualParams prevParams 
+    getScore steps = (length steps) -- `div` stepsInOne
+    stepsInOne = 2 ^ (paramStepSize prevParams)
+    
+printParamSearchStep (scoresParams, chosenScore, chosenParams) 
+    =
+    do
+    putStrLn "*** Trying various ways to get the simulation further:"
+    mapM_ printAttempt scoresParams
+    putStrLn $ "proceeding with score " ++ show chosenScore ++ " with choosen params = " ++ show chosenParams
+    where
+    printAttempt (score, params) =
+        do
+        putStrLn $ "got score " ++ show score ++ " using params = " ++ show params
     
 simulate params =
     waitTillPrecBelow resultTolerance $ -- stop when diverging
@@ -106,11 +256,12 @@ simulate params =
                 _ -> False
     epsilon =
         (i2mi 1) MI.</> (i2mi $ 2^(paramStepEpsilon params))
-    stepSize = (i2mi 1) MI.<*> paramStepSize params
---        | stp >= 0 =(i2mi 1) MI.</> (i2mi $ 2^stp)
---        | otherwise = i2mi $ 2^(- stp)
---        where
---        stp = paramStepSize params
+    stepSize 
+--        = (i2mi 1) MI.<*> paramStepSize params
+        | stp >= 0 =(i2mi 1) MI.</> (i2mi $ 2^stp)
+        | otherwise = i2mi $ 2^(- stp)
+        where
+        stp = paramStepSize params
     i2mi :: Rational -> MI.MI
     i2mi n =
         ArithInOut.convertOutEff (paramPrecision params) n
@@ -190,7 +341,7 @@ makeStep params h epsilon (Just (t, y0Pair, yDer0Pair), prevStepIters) =
 
     evalBoth (n,(p1,p2)) = (n, (evalOne p1, evalOne p2), (p1, p2))
         where
-        evalOne = refinePair .  evalPolyOnInterval prec c0 [(h,h),y0Pair,yDer0Pair]
+        evalOne = refinePair .  evalPolyOnInterval (effMI prec) c0 [(h,h),y0Pair,yDer0Pair]
 
     hToMinusH = (-h) MI.</\> h
 
@@ -205,12 +356,16 @@ makeStep params h epsilon (Just (t, y0Pair, yDer0Pair), prevStepIters) =
             (this@(n,thisInts@(yNPair,_),_):rest) 
         | maxNonInclusionIters < 0 = (Nothing, reverse currItersInfo)
         | isInclusion = 
-            unsafePrint("picard " ++ show n ++ " INCLUSION: width = " ++ show yNWidth) $
+--            unsafePrint
+--                ("picard " ++ show n ++ " INCLUSION: width = " ++ show yNWidth
+--                    ++ "\n encl = " ++ show yN
+--                ) $
             waitTillNoImprovement 1000 currItersInfo thisInts yNWidth 0 rest
---        | noWidthImprovement = 
---            (Nothing, reverse currItersInfo)
         | otherwise =
-            unsafePrint("picard " ++ show n ++ ": width = " ++ show yNWidth) $
+--            unsafePrint
+--                ("picard " ++ show n ++ " NO INCLUSION: width = " ++ show yNWidth
+--                    ++ "\n encl = " ++ show yN
+--                ) $
             waitTillInclusionThenNoImprovement
                 (maxNonInclusionIters - 1) 
                 (yN : prevYs) (yNWidth : prevYWidths) currItersInfo
@@ -233,18 +388,23 @@ makeStep params h epsilon (Just (t, y0Pair, yDer0Pair), prevStepIters) =
             maxIters prevItersInfo bestPrevInts@(bestYPair,bestYDerPair) bestYWidth prevConsecutiveFailures
             (this@(n,thisInts@(yNPair,yDerNPair),_):rest) 
         | maxIters < 0 = 
-            unsafePrint("picard " ++ show n ++ ": width = " ++ show yNIWidth) $
+--            unsafePrint("picard " ++ show n ++ " TOO MANY ITERATIONS: width = " ++ show yNIWidth) $
             (Just bestPrevInts, reverse currItersInfo)
         | continue = 
-            unsafePrint("picard " ++ show n ++ ": width = " ++ show yNIWidth) $
+--            unsafePrint
+--                ("picard " ++ show n ++ ": width = " ++ show yNIWidth 
+--                    ++ "; raw width = " ++ show yNWidth
+--                    ++ "\n raw encl = " ++ show yN
+--                ) $
             waitTillNoImprovement 
                 (maxIters - 1) currItersInfo newBestInts newBestWidth newConsecutiveFailures 
                 rest
         | otherwise = 
-            unsafePrint("picard " ++ show n ++ " GIVING UP, BEST SO FAR: width = " ++ show bestYWidth) $
+--            unsafePrint("picard " ++ show n ++ " GIVING UP, BEST SO FAR: width = " ++ show bestYWidth) $
             (Just bestPrevInts, reverse currItersInfo)
         where
         yN = joinPair yNPair
+        yNWidth = MI.width yN
         yDerN = joinPair yDerNPair
         yNI = yN MI.<\/> (joinPair bestYPair)
         yDerNI = yDerN MI.<\/> (joinPair bestYDerPair)
@@ -269,7 +429,7 @@ picard ::
     (Int, (Poly, Poly)) {-^ approximates of y and y' -} -> 
     (Int, (Poly, Poly)) {-^ improved approximates of y and y' -}
 picard params z (y0, yDer0) (n,(yPrev, yDerPrev)) =
---    unsafePrint ("picard " ++ show n) $
+--    unsafePrint ("picard " ++ show n ++ ":\n  yNext = " ++ showPoly show show yNext ++ "\n  yDerNext = " ++ showPoly show show yDerNext) $
 --    unsafePrint
 --    (
 --        "picard:"
@@ -283,13 +443,14 @@ picard params z (y0, yDer0) (n,(yPrev, yDerPrev)) =
     (n+1,(yNext, yDerNext))
     where
     yNext =
-        integratePolyMainVar prec z y0 yDerNext
+        integratePolyMainVar (effMI prec) z y0 yDerNext
     yDerNext =
-        integratePolyMainVar prec z yDer0 yDerDerNext
-    yDerDerNext = field prec sineTerms yPrev
+        integratePolyMainVar (effMI prec) z yDer0 yDerDerNext
+    yDerDerNext = field (effMI prec) sineTerms yPrev
     prec = paramPrecision params
     sineTerms = paramSineTerms params
 
+effMI prec = (prec, (prec, ()))
 
 joinPair (l,r) = l MI.</\> r
 
