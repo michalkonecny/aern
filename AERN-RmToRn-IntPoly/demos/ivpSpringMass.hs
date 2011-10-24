@@ -14,6 +14,7 @@ import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Misc.Debug
 
 import System.IO
+import System.Environment
 
 import qualified Data.Map as Map
 import qualified Data.List as List
@@ -31,93 +32,107 @@ resultTolerance :: MI.MI
 --resultTolerance = (2^^(-30))
 resultTolerance = (10^^(-4))
 
+simulationTime :: MI.MI
+simulationTime = 36
+
 main =
     do
     hSetBuffering stdout NoBuffering
-    print initParams 
+    paramsS <- getArgs
+    let initParams = parseParams paramsS
+    let steps = simulate initParams
     putStrLn $ "initial state: " ++ show (fst $ head steps)
     mapM_ printStep $ tail steps 
     print initParams 
 --    mapM_ print $ paramSearch 0 [initParams]
-    where
-    steps = simulate initParams
+    
 
 data Params =
     Params
     {
-        paramStepSize :: MI.MI, -- step size
+        paramStepSize :: Int, -- step size
         paramStepEpsilon :: Int, -- 2^{-n} stop iterating Picard when the width change falls below this
-        paramPrecision :: Precision, -- floating point precision
-        paramDegree :: Int, -- maximal polynomial degree
+        paramPrecision :: Precision -- floating point precision
+--        paramDegree :: Int, -- maximal polynomial degree
 --        paramTermSize :: Int, -- maximal polynomial term size
-        paramRangeTolerance :: Int 
+--        paramRangeTolerance :: Int 
             -- 2^{-r} how hard to try to estimate ranges of polynomials 
             --        by splitting - currently unused
     }
     deriving (Show)
 
+parseParams [stepSizeS, stepEpsS, precS]
+    =
+    Params
+    {
+        paramStepSize = read stepSizeS,
+        paramStepEpsilon = read stepEpsS,
+        paramPrecision = fromInteger $ read precS
+    }
+
 -- timings and stretch using tolerance 2^(-30):
---initParams = Params 0.5 50 50 50 10 -- gets to time 6.5 in 0.27s (1 in 0.04s, 3.6 in 0.15s)
---initParams = Params 1 100 100 80 10 -- gets to time 99 in 7s (36 in 2.3s)
---initParams = Params 1 200 200 160 10 -- gets to time 312 in 49s 
---initParams = Params 4 200 200 190 10 -- gets to time 808 in 111s (360 in 49.5s)
---initParams = Params 8 300 300 350 10 -- (?) gets to time 3176
---initParams = Params 8 400 400 450 10 -- (?) gets to time 8744
---initParams = Params 8 600 600 800 10 -- (?) gets to time 19768
---initParams = Params 16 600 600 800 10 -- (?) gets to time 7712
---initParams = Params 8 700 700 850 10 -- (?) gets to time 25448
---initParams = Params 8 900 900 950 10 -- (?) gets to time 41352
+--bin/ivpSpringMass 1 50 50  -- gets to time 6.5 in 0.27s (1 in 0.04s, 3.6 in 0.15s)
+--bin/ivpSpringMass 0 100 100 -- gets to time 99 in 7s (36 in 2.3s)
+--bin/ivpSpringMass 0 200 200 -- gets to time 312 in 49s 
+--bin/ivpSpringMass -2 200 200 -- gets to time 808 in 111s (360 in 49.5s)
+--bin/ivpSpringMass -3 300 300 -- (?) gets to time 3176
+--bin/ivpSpringMass -3 400 400 -- (?) gets to time 8744
+--bin/ivpSpringMass -3 600 600 -- (?) gets to time 19768
+--bin/ivpSpringMass -4 600 600 -- (?) gets to time 7712
+--bin/ivpSpringMass -3 700 700 -- (?) gets to time 25448
+--bin/ivpSpringMass -3 900 900 -- (?) gets to time 41352
 
 -- timings and stretch using tolerance 10^(-4):
---initParams = Params 2 80 80 0 10 -- gets to time 136 in (dev: 6.8s)
---initParams = Params 2 100 100 0 10 -- gets to time 234 in (dev: 14.7s)
---initParams = Params 2 120 120 0 10 -- gets to time 334 in (dev: 25s)
---initParams = Params 2 160 160 0 10 -- gets to time 532 in (dev: 52s)
+--bin/ivpSpringMass (-1) 80 80 -- gets to time 136 in (dev: 6.8s)
+--bin/ivpSpringMass (-1) 100 100 -- gets to time 234 in (dev: 14.7s)
+--bin/ivpSpringMass (-1) 120 120 -- gets to time 334 in (dev: 25s)
+--bin/ivpSpringMass (-1) 160 160 -- gets to time 532 in (dev: 52s)
 
---initParams = Params 4 150 150 0 10 -- gets to time 152 in (dev: 14s)
---initParams = Params 4 200 200 0 10 -- gets to time 944 in (dev: 116s)
---initParams = Params 4 250 250 0 10 -- gets to time 1344 in (dev: 214s = 3min 34s)
---initParams = Params 4 300 300 0 10 -- gets to time 1748 in (dev: 360s = 6min)
+--bin/ivpSpringMass -2 150 150 -- gets to time 152 in (dev: 14s)
+--bin/ivpSpringMass -2 200 200 -- gets to time 944 in (dev: 116s)
+--bin/ivpSpringMass -2 250 250 -- gets to time 1344 in (dev: 214s = 3min 34s)
+--bin/ivpSpringMass -2 300 300 -- gets to time 1748 in (dev: 360s = 6min)
 
---initParams = Params 8 150 150 0 10 -- gets to time 360 in (dev: 38s)
---initParams = Params 8 180 180 0 10 -- gets to time 2032 in (dev: 257s = 4min 17s) -- improvement by incrfe 
---initParams = Params 8 200 200 0 10 -- gets to time 3152 in (dev: 498s = 8min 18s)
---initParams = Params 8 210 210 0 10 -- gets to time 3712 in (mik: 437s = 7min17s; 3600 in 423s = 7min 3s at e-5)
---initParams = Params 8 220 220 0 10 -- gets to time 4272 in (mik: 538s = 8min58s; 3600 in 453s = 7min 33s at e-8)
---initParams = Params 8 250 250 0 10 -- gets to time 5944 in (mik: 813s = 13min33s; 3600 in 492s = 8min 12s at e-17)
---initParams = Params 8 270 270 0 10 -- gets to time 7064 in (mik: 1094s = 18min13s; 3600 in 558s = 9min 18s at e-23)
---initParams = Params 8 790 790 0 10 -- gets to time 36136 in (mik: 22157s = 6h 9min; t=36000 in 22073s = 6h 8min at e-5)
-initParams = Params 8 800 800 0 10 -- gets to time 36696 in (mik: 26311s = 7h 19min; t=36000 in 25812s = 7h 10min at e-8)
---initParams = Params 8 850 850 0 10 -- gets to time 39488 in (mik: 34619s = 9h 37min; t=36000 in 31561s = 8h 46min at e-23)
+--bin/ivpSpringMass -3 150 150 -- gets to time 360 in (mik: 42s, e-4)
+--bin/ivpSpringMass -3 180 180 -- gets to time 2032 in (dev: 257s = 4min 17s) -- improvement by incrfe 
+--bin/ivpSpringMass -3 200 200 -- gets to time 3152 in (dev: 498s = 8min 18s)
+--bin/ivpSpringMass -3 210 210 -- gets to time 3712 in (mik: 437s = 7min17s; 3600 in 423s = 7min 3s at e-5)
+--bin/ivpSpringMass -3 215 215 -- gets to time ? in (mik: 437s = 7min17s; 3600 in 423s = 7min 3s at e-5)
+--bin/ivpSpringMass -3 220 220 -- gets to time 4272 in (mik: 538s = 8min58s; 3600 in 453s = 7min 33s at e--3)
+--bin/ivpSpringMass -3 250 250 -- gets to time 5944 in (mik: 813s = 13min33s; 3600 in 492s = 8min 12s at e-17)
+--bin/ivpSpringMass -3 270 270 -- gets to time 7064 in (mik: 1094s = 18min13s; 3600 in 558s = 9min 18s at e-23)
+--bin/ivpSpringMass -3 790 790 -- gets to time 36136 in (mik: 22157s = 6h 9min; t=36000 in 22073s = 6h 8min at e-5)
+--bin/ivpSpringMass -3 800 800 -- gets to time 36696 in (mik: 26311s = 7h 19min; t=36000 in 25812s = 7h 10min at e-8)
+--bin/ivpSpringMass -3 850 850 -- gets to time 39488 in (mik: 34619s = 9h 37min; t=36000 in 31561s = 8h 46min at e-23)
 
---initParams = Params 10 200 200 0 10 -- gets to time 650 in (dev: 100s)
---initParams = Params 10 220 220 0 10 -- gets to time 1090 in (dev: 200s)
---initParams = Params 10 250 250 0 10 -- gets to time 1750 in (dev: 362s)
---initParams = Params 10 300 300 0 10 -- gets to time 2850 in (dev: 791s)
---initParams = Params 10 600 600 0 10 -- gets to time 9480 in (mik: 82min)
---initParams = Params 10 700 700 0 10 -- gets to time 11690 in (mik: 126min)
---initParams = Params 10 800 800 0 10 -- gets to time ? in (mik: ?min)
---initParams = Params 10 1500 1500 0 10 -- gets to time ? in (mik: ?min)
+--bin/ivpSpringMass -4 280 280 -- gets to time 672
+--bin/ivpSpringMass -4 600 600 -- gets to time (approx 20000)
+--bin/ivpSpringMass -4 700 700 -- gets to time (approx 25000)
+--bin/ivpSpringMass -4 800 800 -- gets to time (approx 32000)
+--bin/ivpSpringMass -4 850 850 -- gets to time 36784 in (mik:  51696s = 14.36h)  
 
---initParams = Params 12 600 600 0 10 -- gets to time 10008 in ? (dev: 154min 13s)
---initParams = Params 12 700 700 0 10 -- gets to time 12504 in ? (dev: 204min 9s)
---initParams = Params 12 800 800 0 10 -- gets to time 15000 in ? (dev: 338min 10s)
+-- non dyadic step sizes: (did not work as well)
+----Params 10 200 200 -- gets to time 650 in (dev: 100s)
+----Params 10 220 220 -- gets to time 1090 in (dev: 200s)
+----Params 10 250 250 -- gets to time 1750 in (dev: 362s)
+----Params 10 300 300 -- gets to time 2850 in (dev: 791s)
+----Params 10 600 600 -- gets to time 9480 in (mik: 82min)
+----Params 10 700 700 -- gets to time 11690 in (mik: 126min)
+----Params 10 800 800 -- gets to time ? in (mik: ?min)
+----Params 10 1500 1500 -- gets to time ? in (mik: ?min)
+--
+----Params 12 600 600 -- gets to time 10008 in ? (dev: 154min 13s)
+----Params 12 700 700 -- gets to time 12504 in ? (dev: 204min 9s)
+----Params 12 800 800 -- gets to time 15000 in ? (dev: 338min 10s)
 
---initParams = Params 16 280 280 0 10 -- gets to time 672
---initParams = Params 16 600 600 0 10 -- gets to time (approx 20000)
---initParams = Params 16 700 700 0 10 -- gets to time (approx 25000)
---initParams = Params 16 800 800 0 10 -- gets to time (approx 32000)
---initParams = Params 16 850 850 0 10 -- gets to time 36784 in (mik:  51696s = 14.36h)  
-
-increaseParams (Params stp eps p dg rtol) =
+increaseParams (Params stp eps p) =
     [
-     Params stp eps p dgNew rtol, 
-     Params stp epsNew pNew dg rtol, 
-     Params stp epsNew pNew dgNew rtol
+     Params stp epsNew pNew, 
+     Params stp epsNew pNew
     ]
     where
     pNew = p + 2000
-    dgNew = dg + 200
+--    dgNew = dg + 200
     epsNew = eps + 2000
 
 --paramSearch prevBest nextParamsOptions@(params : rest)
@@ -143,13 +158,17 @@ increaseParams (Params stp eps p dg rtol) =
 --         stepsInOne = 2 ^ (paramStepSize params)
 
 simulate params =
-    waitTillPrecBelow resultTolerance $ -- stop when diverging
+--    waitTillPrecBelow resultTolerance $ -- stop when diverging
+    waitTillTime simulationTime $ -- stop when target time reached
         iterate (makeStep params stepSize epsilon) 
             ((tInit, (y0Init, y0Init), (y0DerInit, y0DerInit)),[]) -- initial values
     where
     tInit = i2mi 0
     y0Init = i2mi 20
     y0DerInit = i2mi 0
+    waitTillTime maxT (this@((t,yNmOnePair,_),_):rest)
+        | (t MI.>=? maxT) == Just True = [this]
+        | otherwise =  this : (waitTillTime maxT rest)
     waitTillPrecBelow eps (this@((_,yNmOnePair,_),_):rest)
         | precGood = this : (waitTillPrecBelow eps rest)
         | otherwise = [this]
@@ -161,11 +180,12 @@ simulate params =
                 _ -> False
     epsilon =
         (i2mi 1) MI.</> (i2mi $ 2^(paramStepEpsilon params))
-    stepSize = (i2mi 1) MI.<*> paramStepSize params
---        | stp >= 0 =(i2mi 1) MI.</> (i2mi $ 2^stp)
---        | otherwise = i2mi $ 2^(- stp)
---        where
---        stp = paramStepSize params
+    stepSize 
+--        = (i2mi 1) MI.<*> paramStepSize params
+        | stp >= 0 =(i2mi 1) MI.</> (i2mi $ 2^stp)
+        | otherwise = i2mi $ 2^(- stp)
+        where
+        stp = paramStepSize params
     i2mi :: Integer -> MI.MI
     i2mi n =
         ArithInOut.convertOutEff (paramPrecision params) n
@@ -234,7 +254,7 @@ makeStep params h epsilon ((t, y0Pair, y0DerPair), prevStepIters) =
                 ipolycfg_vars = vars,
                 ipolycfg_doms = doms,
                 ipolycfg_sample_cf = h,
-                ipolycfg_maxdeg = paramDegree params,
+                ipolycfg_maxdeg = 0, -- not used at the moment 
                 ipolycfg_maxsize = 0 -- not used at the moment
             }
     dombox = Map.fromList $ zip vars doms
@@ -247,8 +267,8 @@ makeStep params h epsilon ((t, y0Pair, y0DerPair), prevStepIters) =
 
     hToMinusH = (-h) MI.</\> h
 
-    rtol = 
-        (i2mi 1) MI.</> (i2mi $ 2^(paramRangeTolerance params))
+--    rtol =  
+--        (i2mi 1) MI.</> (i2mi $ 2^(paramRangeTolerance params))
     i2mi :: Integer -> MI.MI
     i2mi n = ArithInOut.convertOutEff prec n
     prec = paramPrecision params
