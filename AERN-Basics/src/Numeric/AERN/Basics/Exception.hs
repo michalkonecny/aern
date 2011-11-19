@@ -95,12 +95,13 @@ raisesDomViolationException contextDescription a =
         _ -> False
 
 class HasLegalValues t where
-  isLegal :: t -> Bool
+  maybeGetProblem :: t -> Maybe String
   
-detectIllegalValues :: (HasLegalValues t, Show t) => String -> t -> t
-detectIllegalValues contextDescription value 
-    | isLegal value = value
-    | otherwise = 
-        throw $ AERNIllegalValue $ 
-            contextDescription ++ ": " ++ show value
+detectIllegalValues :: (HasLegalValues t) => String -> t -> t
+detectIllegalValues contextDescription value =
+    case maybeGetProblem value of
+        Nothing -> value
+        Just problemDescription ->   
+            throw $ AERNIllegalValue $ 
+                contextDescription ++ ": " ++ problemDescription
  

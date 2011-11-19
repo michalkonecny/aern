@@ -39,7 +39,13 @@ import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Exception
 
 instance (HasLegalValues e) => HasLegalValues (Interval e) where
-    isLegal (Interval l r) = isLegal l && isLegal r 
+    maybeGetProblem (Interval l r) = 
+        case (maybeGetProblem l, maybeGetProblem r) of
+            (Nothing, Nothing) -> Nothing
+            (Just problemDescription, _) -> 
+                Just $ "in the left endpoint of an interval: " ++ problemDescription
+            (_, Just problemDescription) ->  
+                Just $ "in the right endpoint of an interval: " ++ problemDescription
 
 instance
     (ArithUpDn.RoundedReal e, NumOrd.HasExtrema e, 

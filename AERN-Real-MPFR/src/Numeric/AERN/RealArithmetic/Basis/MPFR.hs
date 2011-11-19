@@ -91,11 +91,11 @@ instance RoundedReal M.MPFR where
     rrEffortRationalMixedField _ p = p
     
 instance HasLegalValues M.MPFR where
-    isLegal d 
-        | d == 0/0 = False
+    maybeGetProblem d 
+        | d == 0/0 = Just "A NaN MPFR"
 --        | d == 1/0 = False
 --        | d == -1/0 = False
-        | otherwise = True
+        | otherwise = Nothing
 
     
   

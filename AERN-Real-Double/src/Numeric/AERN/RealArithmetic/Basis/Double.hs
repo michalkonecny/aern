@@ -30,10 +30,11 @@ import Numeric.AERN.RealArithmetic.NumericOrderRounding
 import Numeric.AERN.Basics.Exception
 
 instance HasLegalValues Double where
-    isLegal d 
-        | isNaN d = False
---        | isInfinite d = False
-        | otherwise = True
+    maybeGetProblem d 
+        | d == 0/0 = Just "A NaN Double"
+--        | d == 1/0 = False
+--        | d == -1/0 = False
+        | otherwise = Nothing
 
 instance RoundedReal Double where
     type RoundedRealEffortIndicator Double = ()
