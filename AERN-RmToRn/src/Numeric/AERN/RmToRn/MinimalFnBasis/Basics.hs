@@ -42,7 +42,7 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 import Test.QuickCheck
 
 class (
-       CanBeMutable fb,
+--       CanBeMutable fb,
        HasLegalValues fb,
 
        -- function-specific capabilities:
@@ -52,7 +52,7 @@ class (
 --        CanSubstitute fb, -- substitution
        CanEvaluateOtherType fb, -- another interpretation (eg string or interval)
        ShowInternals fb,
-       HasProjections fb, -- variables (but their domain is fixed!)
+       HasProjections fb, -- variables
        HasConstFns fb, -- constants
 
        -- conversions: 
@@ -64,24 +64,29 @@ class (
        HasOne fb,
        NumOrd.HasExtrema fb,
 
---       -- ring ops rounded up/down:
---       ArithUpDn.RoundedAddInPlace fb,
---       ArithUpDn.RoundedMultiplyInPlace fb,
---       ArithUpDn.RoundedMixedAddInPlace fb (Domain fb),
---       ArithUpDn.RoundedMixedMultiplyInPlace fb (Domain fb),
-
-       -- ring ops rounded *out* by some internal notion of enclosure:
+       -- ring ops rounded in/out by some internal notion of enclosure:
        ArithInOut.RoundedAdd fb,
        ArithInOut.RoundedMultiply fb,
        ArithInOut.RoundedMixedAdd fb (Domain fb),
        ArithInOut.RoundedMixedMultiply fb (Domain fb),
+       ArithInOut.RoundedMixedAdd fb Int,
+       ArithInOut.RoundedMixedMultiply fb Int,
+       ArithInOut.RoundedMixedAdd fb Integer,
+       ArithInOut.RoundedMixedMultiply fb Integer,
+       ArithInOut.RoundedMixedAdd fb Rational,
+       ArithInOut.RoundedMixedMultiply fb Rational,
+       ArithInOut.RoundedMixedAdd fb Double,
+       ArithInOut.RoundedMixedMultiply fb Double,
        
-       ArithInOut.RoundedAddInPlace fb,
-       ArithInOut.RoundedMultiplyInPlace fb,
-       ArithInOut.RoundedMixedAddInPlace fb (Domain fb),
-       ArithInOut.RoundedMixedMultiplyInPlace fb (Domain fb),
+       -- in-place versions:
+--       ArithInOut.RoundedAddInPlace fb,
+--       ArithInOut.RoundedMultiplyInPlace fb,
+--       ArithInOut.RoundedMixedAddInPlace fb (Domain fb),
+--       ArithInOut.RoundedMixedMultiplyInPlace fb (Domain fb),
+       
        -- primitive function rounded up/down:
        -- TODO
+       
        -- random generation:
        Arbitrary (SizeLimits fb),
        Arbitrary (Domain fb),
@@ -90,7 +95,8 @@ class (
       ) => 
     MinimalFnBasis fb
     where
-    fixedDomain :: fb -> (Domain fb, Domain fb)
+    fitDomainBoxToSizeLimits :: fb -> (SizeLimits fb) -> DomainBox fb -> DomainBox fb
+--    fixedDomain :: fb -> (Domain fb, Domain fb)
     
 {-| 
     A type-level wrapper for function endpoints to make it easier (possible)

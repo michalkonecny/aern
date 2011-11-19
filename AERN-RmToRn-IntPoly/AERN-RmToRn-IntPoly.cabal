@@ -1,4 +1,4 @@
-Name:           AERN-RmToRn-IPoly
+Name:           AERN-RmToRn-IntPoly
 Version:        2011.2.0.0
 Cabal-Version:  >= 1.2
 Build-Type:     Simple

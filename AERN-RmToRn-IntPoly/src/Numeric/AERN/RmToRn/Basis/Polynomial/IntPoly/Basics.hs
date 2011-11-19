@@ -26,6 +26,7 @@ import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import Numeric.AERN.Basics.ShowInternals
+import Numeric.AERN.Basics.Exception
 
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
@@ -157,22 +158,6 @@ instance (Show var, Show cf) => Show (IntPolyCfg var cf)
 
 {-- Internal checks and normalisation --}
 
-checkPoly (IntPoly cfg terms)
-    =
-    IntPoly cfg $ checkTerms cfg terms
-    
-checkTerms cfg terms
-    =
-    aux vars terms
-    where
-    vars = ipolycfg_vars cfg
-    aux [] p@(IntPolyC _) = p
-    aux (cvar : rest) (IntPolyV tvar polys)
-        | cvar == tvar =
-            (IntPolyV tvar $ IntMap.map (aux rest) polys)
-    aux _ _ = 
-        error $ "checkTerms failed for cfg = " ++ show cfg ++ " and term = " ++ show terms 
-    
 polyNormalise ::
     (ArithInOut.RoundedReal cf) => 
     IntPoly var cf -> IntPoly var cf
@@ -183,7 +168,7 @@ termsNormalise cfg poly =
     pn poly
     where    
     pn p@(IntPolyC val) = p
-    pn (IntPolyV x polys) 
+    pn (IntPolyV x polys)
         = IntPolyV x $ IntMap.filterWithKey nonZeroOrConst $ IntMap.map pn polys
         where
         nonZeroOrConst degree subTerms =
@@ -308,3 +293,31 @@ showPoly showVar showCoeff (IntPoly cfg poly) =
         showVarPower 1 = showVar var
         showVarPower n = showVar var ++ "^" ++ show n
     
+instance (HasLegalValues cf, Show cf, Show var, Ord var) => HasLegalValues (IntPoly var cf)
+    where
+    maybeGetProblem (IntPoly cfg terms) = 
+        maybeGetProblemForTerms cfg terms
+    
+maybeGetProblemForTerms cfg terms
+    =
+    aux vars terms
+    where
+    vars = ipolycfg_vars cfg
+    intro = "cfg = " ++ show cfg ++ "; terms = " ++ show terms ++ ": "
+    aux [] p@(IntPolyC value) = 
+        fmap ((intro ++ "problem with coefficient: ") ++) $ maybeGetProblem value
+    aux (cvar : rest) (IntPolyV tvar polys)
+        | cvar == tvar =
+            findFirstJust $ map (aux rest) $ IntMap.elems polys
+        | otherwise = 
+            Just $
+                intro ++ 
+                "variable name mismatch: declared = " ++ show cvar ++ " actual = " ++ show tvar  
+    aux [] _ =
+        Just $ intro ++ "more variables than declared"  
+    aux _ _ =
+        Just $ intro ++ "less variables than declared"  
+    findFirstJust (j@(Just _) : rest) = j
+    findFirstJust (Nothing:rest) = findFirstJust rest    
+    findFirstJust [] = Nothing
+            
