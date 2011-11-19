@@ -75,7 +75,7 @@ instance (MinimalFnBasis fb
         _ = [bUp, getSampleDomValue f1]
         Just bUp = ArithUpDn.convertUpEff effBnd diff
         Just bDn = ArithUpDn.convertDnEff effBnd diff
-        diff = ArithInOut.subtrOutEff effAdd f1 f2 
+        diff = ArithInOut.subtrOutEff effAdd f1 f2
         
 
 instance 
@@ -89,15 +89,18 @@ instance
         maxArity <- choose (1, 2 + (size `div` 4))
         arbitraryFn maxArity sizeLimits
 
+
 arbitraryFn maxArity sizeLimits
     =
     sized $ \size ->
     do
     varsRaw <- vectorOf (3*maxArity) (resize (size + 2) arbitrary) -- reduce chance of variables repeating
     let vars = take maxArity $ nub $ sort $ varsRaw
+    domains <- vectorOf (length vars) (resize (size + 2) arbitrary)
+    
     -- extract domain box and samples from sizeLimits:
     let
-        box = fromAscList $ zip vars (repeat $ fixedDomain sampleFn)
+        box = fitDomainBoxToSizeLimits sampleFn sizeLimits $ fromAscList $ zip vars $ domains
         (sampleVar,(sampleDom, _)) = head $ toAscList box
         sampleFn = newProjection sizeLimits box sampleVar
     -- choose polynomial generation parameters:

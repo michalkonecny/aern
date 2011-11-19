@@ -31,3 +31,28 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluate
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
 --import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder --()
+
+
+import Numeric.AERN.RmToRn.MinimalFnBasis
+
+--import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+
+import Numeric.AERN.RealArithmetic.ExactOps
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+
+import Numeric.AERN.Basics.Exception
+
+import qualified Data.Map as Map
+
+--instance 
+--    (ArithInOut.RoundedReal cf, HasLegalValues cf, 
+--     Show cf, Ord var, Show var) 
+--    => MinimalFnBasis (IntPoly var cf)
+--    where
+--    fitDomainBoxToSizeLimits _ cfg _ = 
+--        Map.fromAscList $ zip vars doms
+--        where
+--        vars = ipolycfg_vars cfg
+--        doms = ipolycfg_doms cfg
+    

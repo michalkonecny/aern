@@ -40,7 +40,7 @@ import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
 -- in-place ops:
 
 instance (MinimalFnBasis fb) => ArithInOut.RoundedSubtr (FnEndpoint fb)
-instance (MinimalFnBasis fb) => ArithInOut.RoundedSubtrInPlace (FnEndpoint fb)
+--instance (MinimalFnBasis fb) => ArithInOut.RoundedSubtrInPlace (FnEndpoint fb)
 --     default implementation is fine
 
 
