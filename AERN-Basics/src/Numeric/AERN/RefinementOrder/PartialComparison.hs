@@ -119,7 +119,7 @@ propExtremaInPartialComparison ::
     t -> (PartialCompareEffortIndicator t) -> 
     (UniformlyOrderedSingleton t) -> Bool
 propExtremaInPartialComparison _ effort (UniformlyOrderedSingleton e) = 
-    partialOrderExtrema (pLeqEff effort) bottom top e
+    partialOrderExtrema (pLeqEff effort) (bottom e) (top e) e
 
 testsPartialComparison :: 
     (PartialComparison t,

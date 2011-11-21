@@ -48,10 +48,10 @@ nanM :: MPFR
 nanM = 0/0
 
 instance NumOrd.HasLeast MPFR where
-    least = - 1/0
+    least _ = - 1/0
 
 instance NumOrd.HasGreatest MPFR where
-    greatest = 1/0
+    greatest _ = 1/0
 
 instance NumOrd.HasExtrema MPFR where
 

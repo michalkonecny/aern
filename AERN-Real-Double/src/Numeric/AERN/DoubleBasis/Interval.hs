@@ -293,10 +293,10 @@ sampleDI :: DI
 sampleDI = Interval 0 0
 
 least :: DI
-least = BNO.least
+least = BNO.least sampleDI
 
 greatest :: DI
-greatest = BNO.greatest
+greatest = BNO.greatest sampleDI
 
 -- | Partial equality
 (==?) :: DI -> DI -> Maybe Bool
@@ -343,18 +343,18 @@ maxIn :: DI -> DI -> DI
 maxIn = BNOODE.maxIn
 
 bottom :: DI
-bottom = BRO.bottom
+bottom = BRO.bottom sampleDI
 
 top :: DI
-top = BRO.top
+top = BRO.top sampleDI
 
 -- | Convenience Unicode notation for 'bottom'
 (⊥) :: DI
-(⊥) = (BRO.⊥)
+(⊥) = (BRO.⊥) sampleDI
 
 -- | Convenience Unicode notation for 'top'
 (⊤) :: DI
-(⊤) = (BRO.⊤)
+(⊤) = (BRO.⊤) sampleDI
 
 -- | Partial equality
 (|==?) :: DI -> DI -> Maybe Bool

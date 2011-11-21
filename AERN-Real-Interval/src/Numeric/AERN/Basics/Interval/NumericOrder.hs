@@ -129,11 +129,13 @@ instance
 
 instance (NumOrd.HasLeast e) => (NumOrd.HasLeast (Interval e))
     where
-    least = Interval NumOrd.least NumOrd.least
+    least (Interval sampleE _) = 
+        Interval (NumOrd.least sampleE) (NumOrd.least sampleE)
     
 instance (NumOrd.HasGreatest e) => (NumOrd.HasGreatest (Interval e))
     where
-    greatest = Interval NumOrd.greatest NumOrd.greatest
+    greatest (Interval sampleE _) = 
+        Interval (NumOrd.greatest sampleE) (NumOrd.greatest sampleE)
     
 instance (NumOrd.HasExtrema e) => (NumOrd.HasExtrema (Interval e))
 

@@ -23,11 +23,11 @@ class (HasLeast t, HasGreatest t) => HasExtrema t
     A type with a least element.
 -}
 class HasLeast t where
-    least :: t
+    least :: t -> t
 
 {-|
     A type with a greatest element.
 -}
 class HasGreatest t where
-    greatest :: t
+    greatest :: t -> t
     

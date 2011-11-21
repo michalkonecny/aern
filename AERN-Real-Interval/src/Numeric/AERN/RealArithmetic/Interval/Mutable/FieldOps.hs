@@ -518,9 +518,8 @@ instance
             temp b
         multOutInPlaceEff (effortComp, effortMinmax, effortMult) res a temp
         where
-        bottom = RefOrd.bottom
+        bottom = RefOrd.bottom sampleI
         sampleI@(Interval sampleE _) = getDummySample res
-        _ = [bottom, sampleI]
         divUp = ArithUpDn.divUpInPlaceEff effortDiv
         divDn = ArithUpDn.divDnInPlaceEff effortDiv
     divInInPlaceEff 
@@ -536,9 +535,8 @@ instance
             temp b
         multInInPlaceEff (effortComp, effortMinmax, effortMult) res a temp
         where
-        top = RefOrd.top
+        top = RefOrd.top sampleI
         sampleI@(Interval sampleE _) = getDummySample res
-        _ = [top, sampleI]
         divUp = ArithUpDn.divUpInPlaceEff effortDiv
         divDn = ArithUpDn.divDnInPlaceEff effortDiv
 
@@ -548,9 +546,8 @@ recipIntervalInPlace pPosNonnegNegNonpos divL divR fallback
     l <- readMutable aL
     r <- readMutable aR
     let oneP = one l
-    let top = RefOrd.top 
-    let bottom = RefOrd.bottom
-    let _ = [top, bottom, fallback]
+    let top = RefOrd.top fallback 
+    let bottom = RefOrd.bottom fallback
     oneM <- unsafeMakeMutable oneP  
     case (pPosNonnegNegNonpos l, pPosNonnegNegNonpos r) of
         -- positive:
