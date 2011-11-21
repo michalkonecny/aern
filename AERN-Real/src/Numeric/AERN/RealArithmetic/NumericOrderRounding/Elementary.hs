@@ -61,13 +61,13 @@ propExpOfNegRecip ::
      (ExpEffortIndicator t, MultEffortIndicator t)) -> 
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propExpOfNegRecip _ initEffort (NumOrd.UniformlyOrderedSingleton e1) =
+propExpOfNegRecip sample initEffort (NumOrd.UniformlyOrderedSingleton e1) =
     equalRoundingUpDn "e^a * e^(-a) = 1"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
     where
-    expr1Up (effExp, effMult) = one
-    expr1Dn (effExp, effMult) = one
+    expr1Up (effExp, effMult) = one sample
+    expr1Dn (effExp, effMult) = one sample
     expr2Up (effExp, effMult) =
         let (*^) = multUpEff effMult in
         let expE1 = expUpEff effExp e1 in
@@ -169,7 +169,7 @@ propSqrtSquare ::
      (SqrtEffortIndicator t, MultEffortIndicator t, NumOrd.PartialCompareEffortIndicator t)) -> 
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propSqrtSquare _ initEffort (NumOrd.UniformlyOrderedSingleton e1) =
+propSqrtSquare sample initEffort (NumOrd.UniformlyOrderedSingleton e1) =
     case evalCatchDomViolationExceptions "checking sqrt(x)^2 = x"
             (equalRoundingUpDn "sqrt(x)^2 = x"
                 expr1Up expr1Dn expr2Up expr2Dn 
@@ -184,11 +184,11 @@ propSqrtSquare _ initEffort (NumOrd.UniformlyOrderedSingleton e1) =
         sqrtE1 = sqrtUpEff effSqrt e1
     expr1Dn (effSqrt, effMult, effCompare)
         | sqrtE1DefinitelyPositive = sqrtE1 *. sqrtE1
-        | otherwise = zero
+        | otherwise = zero sample
         where
         sqrtE1DefinitelyPositive =
             let ?pCompareEffort = effCompare in
-            case sqrtE1 >=? zero of (Just r) -> r; _ -> False
+            case sqrtE1 >=? zero sample of (Just r) -> r; _ -> False
         (*.) = multDnEff effMult
         sqrtE1 = sqrtDnEff effSqrt e1
     expr2Up _ = e1

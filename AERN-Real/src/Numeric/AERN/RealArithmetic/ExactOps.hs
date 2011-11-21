@@ -25,7 +25,7 @@ import Numeric.AERN.Basics.Mutable
 import Data.Ratio
 
 class HasZero t where
-    zero :: t
+    zero :: t -> t
     
 pNonnegNonposEff effort a =
     (nonneg, nonpos)
@@ -34,7 +34,7 @@ pNonnegNonposEff effort a =
         pPosNonnegNegNonposEff effort a
     
 pPosNonnegNegNonposEff effort a =
-    case NumOrd.pCompareEff effort a zero of
+    case NumOrd.pCompareEff effort a (zero a) of
        Just EQ -> (Just False, Just True, Just False, Just True) 
        Just LT -> (Just False, Just False, Just True, Just True) 
        Just GT -> (Just True, Just True, Just False, Just False)
@@ -43,11 +43,11 @@ pPosNonnegNegNonposEff effort a =
        _ -> (Nothing, Nothing, Nothing, Nothing)
     
 class HasOne t where
-    one :: t
+    one :: t -> t
     
 class HasInfinities t where
-    plusInfinity :: t
-    minusInfinity :: t
+    plusInfinity :: t -> t
+    minusInfinity :: t -> t
     excludesPlusInfinity :: t -> Bool
     excludesMinusInfinity :: t -> Bool
     excludesInfinity :: t -> Bool
@@ -77,30 +77,36 @@ propNegFlip _ e =
 
 -- instances for some common types:
 
-instance HasZero Int where zero = 0
-instance HasOne Int where one = 1
+instance HasZero Int where zero _ = 0
+instance HasOne Int where one _ = 1
 instance Neg Int where neg = negate
 
-instance HasZero Integer where zero = 0
-instance HasOne Integer where one = 1
+instance HasZero Integer where zero _ = 0
+instance HasOne Integer where one _ = 1
 instance Neg Integer where neg = negate
 
 instance (HasZero t, HasOne t, Integral t) => 
     HasZero (Ratio t) 
-    where zero = zero % one
+    where 
+    zero sample = (zero sampleN) % (one sampleN)
+        where
+        sampleN = numerator sample
 instance (HasOne t, Integral t) => 
     HasOne (Ratio t) 
-    where one = one % one
+    where 
+    one sample = (one sampleN) % (one sampleN)
+        where
+        sampleN = numerator sample
 instance (Integral t) => Neg (Ratio t) where neg = negate
 
-instance HasZero Double where zero = 0
-instance HasOne Double where one = 1
+instance HasZero Double where zero _ = 0
+instance HasOne Double where one _ = 1
 instance Neg Double where neg = negate
 
 instance HasInfinities Double where
-    plusInfinity = 1/0
-    minusInfinity = -1/0
-    excludesPlusInfinity a = (a /= plusInfinity)
-    excludesMinusInfinity a = (a /= minusInfinity)
+    plusInfinity _ = 1/0
+    minusInfinity _ = -1/0
+    excludesPlusInfinity a = (a /= (plusInfinity a))
+    excludesMinusInfinity a = (a /= (minusInfinity a))
     
 

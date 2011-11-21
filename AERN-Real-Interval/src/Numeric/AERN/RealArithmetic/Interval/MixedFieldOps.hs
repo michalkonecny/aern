@@ -106,7 +106,7 @@ multiplySingletonWithInterval
              
             -- s1 is zero
             ((Just True, Just True), _, _) -> 
-                (zero, zero)
+                (z, z)
  
             -- s1 non negative
             ((Just True, _), _, _) -> 
@@ -128,11 +128,13 @@ multiplySingletonWithInterval
 
             -- both s1 and i2 are around zero
             _ ->
-                ((s1 `timesL` l2) `combineL` (s1 `timesL` r2) `combineL` zero,
-                 (s1 `timesR` l2) `combineR` (s1 `timesR` r2) `combineR` zero) 
+                ((s1 `timesL` l2) `combineL` (s1 `timesL` r2) `combineL` z,
+                 (s1 `timesR` l2) `combineR` (s1 `timesR` r2) `combineR` z) 
                 -- need to include zero to account for 
                 -- consistent vs anti-consistent cases giving constant 0
-
+        where
+        z = zero l2
+        
 instance (RoundedDivideEffort (Interval e),
           Convertible tn (Interval e)) => 
     RoundedMixedDivideEffort (Interval e) tn 

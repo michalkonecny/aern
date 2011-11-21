@@ -46,32 +46,31 @@ shouldShowInternals = (30,False)
 inftyMinusInftyOut :: MI
 inftyMinusInftyOut =
     let ?addDefaultEffort = 100 in
-    plusInfinity <-> plusInfinity
+    plusInfinity sampleMI <-> plusInfinity sampleMI
 
 zeroOverZeroOut :: MI
 zeroOverZeroOut =
     let ?divDefaultEffort = 100 in
-    zero </> zero
+    zero sampleMI </> zero sampleMI
 
 zeroOverZeroIn :: MI
 zeroOverZeroIn =
     let ?divDefaultEffort = 100 in
-    zero >/< zero
+    zero sampleMI >/< zero sampleMI
 
 oneOverZeroOut :: MI
 oneOverZeroOut =
     let ?divDefaultEffort = 100 in
-    one </> zero
+    one sampleMI </> zero sampleMI
 
 oneOverZeroIn :: MI
 oneOverZeroIn =
     let ?divDefaultEffort = 100 in
-    one >/< zero
-
+    one sampleMI >/< zero sampleMI
 
 exp1efforts :: [MI]
 exp1efforts =
-    map (\n -> ArithInOut.expOutEff (expEffort n) one) [1..20]
+    map (\n -> ArithInOut.expOutEff (expEffort n) (one sampleMI)) [1..20]
     
 exp3efforts :: [MI]
 exp3efforts =

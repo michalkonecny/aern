@@ -114,7 +114,7 @@ reduceTermsCount eff cfg terms
         let ?multInOutEffort = effMult in 
         map powersOf varDoms
         where
-        powersOf (aL,aR) = iterate (<*> (aL </\> aR)) one
+        powersOf (aL,aR) = iterate (<*> (aL </\> aR)) $ one aL
     maxSize = ipolycfg_maxsize cfg
     size = length allTermRangesList
     allTermRangesList = 

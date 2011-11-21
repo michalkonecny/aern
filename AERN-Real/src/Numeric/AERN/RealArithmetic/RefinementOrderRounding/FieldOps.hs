@@ -82,8 +82,8 @@ propInOutAddZero ::
      AddEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propInOutAddZero _ effort (RefOrd.UniformlyOrderedSingleton e) =
-    roundedUnit zero RefOrd.pLeqEff addInEff addOutEff effort e
+propInOutAddZero sample effort (RefOrd.UniformlyOrderedSingleton e) =
+    roundedUnit (zero sample) RefOrd.pLeqEff addInEff addOutEff effort e
 
 propInOutAddCommutative ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -166,8 +166,8 @@ propInOutSubtrElim ::
      AddEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propInOutSubtrElim _ effort (RefOrd.UniformlyOrderedSingleton e) =
-    roundedReflexiveCollapse zero RefOrd.pLeqEff subtrInEff subtrOutEff effort e
+propInOutSubtrElim sample effort (RefOrd.UniformlyOrderedSingleton e) =
+    roundedReflexiveCollapse (zero sample) RefOrd.pLeqEff subtrInEff subtrOutEff effort e
 
 propInOutSubtrNegAdd ::
     (RefOrd.PartialComparison t, RoundedSubtr t, Neg t,
@@ -239,13 +239,13 @@ absOutUsingCompMax ::
      NumOrd.MinmaxOuterEffortIndicator t) ->
     t -> t 
 absOutUsingCompMax (effortComp, effortMinmax) a =
-    case NumOrd.pCompareEff effortComp zero a of
+    case NumOrd.pCompareEff effortComp (zero a) a of
         Just EQ -> a
         Just LT -> a
         Just LEE -> a
         Just GT -> neg a
         Just GEE -> neg a
-        _ -> zero `max` (a `max` (neg a))
+        _ -> (zero a) `max` (a `max` (neg a))
     where
     max = NumOrd.maxOutEff effortMinmax
 
@@ -256,13 +256,13 @@ absInUsingCompMax ::
      NumOrd.MinmaxInnerEffortIndicator t) ->
     t -> t 
 absInUsingCompMax (effortComp, effortMinmax) a =
-    case NumOrd.pCompareEff effortComp zero a of
+    case NumOrd.pCompareEff effortComp (zero a) a of
         Just EQ -> a
         Just LT -> a
         Just LEE -> a
         Just GT -> neg a
         Just GEE -> neg a
-        _ -> zero `max` (a `max` (neg a))
+        _ -> (zero a) `max` (a `max` (neg a))
     where
     max = NumOrd.maxInEff effortMinmax
 
@@ -364,8 +364,8 @@ propInOutMultOne ::
      MultEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propInOutMultOne _ effort (RefOrd.UniformlyOrderedSingleton e) =
-    roundedUnit one RefOrd.pLeqEff multInEff multOutEff effort e
+propInOutMultOne sample effort (RefOrd.UniformlyOrderedSingleton e) =
+    roundedUnit (one sample) RefOrd.pLeqEff multInEff multOutEff effort e
 
 propInOutMultCommutative ::
     (RefOrd.PartialComparison t, RoundedMultiply t, HasZero t,
@@ -468,14 +468,14 @@ powerToNonnegIntInEffFromMult ::
     PowerToNonnegIntEffortIndicatorFromMult t -> 
     t -> Int -> t
 powerToNonnegIntInEffFromMult effMult e n =
-    powerFromMult one (multInEff effMult) e n
+    powerFromMult (one e) (multInEff effMult) e n
 
 powerToNonnegIntOutEffFromMult ::
     (RoundedMultiply t, HasOne t) => 
     PowerToNonnegIntEffortIndicatorFromMult t -> 
     t -> Int -> t
 powerToNonnegIntOutEffFromMult effMult e n =
-    powerFromMult one (multOutEff effMult) e n
+    powerFromMult (one e) (multOutEff effMult) e n
 
 propInOutPowerMonotone ::
     (RefOrd.PartialComparison t, RoundedPowerToNonnegInt t,
@@ -564,8 +564,8 @@ class (HasOne t, RoundedDivideEffort t) => RoundedDivide t where
     divOutEff :: DivEffortIndicator t -> t -> t -> t
     recipInEff :: DivEffortIndicator t -> t -> t
     recipOutEff :: DivEffortIndicator t -> t -> t
-    recipInEff eff = divInEff eff one
-    recipOutEff eff = divOutEff eff one
+    recipInEff eff a = divInEff eff (one a) a
+    recipOutEff eff a = divOutEff eff (one a) a
 
 
 propInOutDivMonotone ::
@@ -598,9 +598,9 @@ propInOutDivElim ::
      DivEffortIndicator t) -> 
     (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propInOutDivElim _ efforts2@(effComp, _) (RefOrd.UniformlyOrderedSingleton a) =
+propInOutDivElim sample efforts2@(effComp, _) (RefOrd.UniformlyOrderedSingleton a) =
     roundedReflexiveCollapse 
-        one 
+        (one sample)
         RefOrd.pLeqEff 
         divInEff divOutEff 
         efforts2 
@@ -630,7 +630,7 @@ propInOutDivRecipMult _ initEffort@(effComp,_) (RefOrd.UniformlyOrderedPair (e1,
         initEffort e1 e2
     where
     expr1 op1Eff op2Eff (effort1, effort2) e1 e2 = 
-        e1 * (one / e2)
+        e1 * ((one e1) / e2)
         where
         (*) = op1Eff effort1
         (/) = op2Eff effort2

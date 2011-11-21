@@ -257,10 +257,10 @@ mixedDivUpEffByConversion ::
     t -> tn -> t
 mixedDivUpEffByConversion (effDiv, effConv, (effMinmax, effComp)) d n =
     let ?pCompareEffort = effComp in
-    case (nDn >=? zero, nUp <=? zero) of
+    case (nDn >=? (zero d), nUp <=? (zero d)) of
         (Just True, _) -> normalResult 
         (_, Just True) -> normalResult
-        _ -> plusInfinity -- b is too close to zero
+        _ -> plusInfinity d -- b is too close to zero
     where
     normalResult =
         NumOrd.maxDnEff effMinmax  -- we do not know the sign of a
@@ -286,10 +286,10 @@ mixedDivDnEffByConversion ::
     t -> tn -> t
 mixedDivDnEffByConversion (effDiv, effConv, (effMinmax, effComp)) d n = 
     let ?pCompareEffort = effComp in
-    case (nDn >=? zero, nUp <=? zero) of
+    case (nDn >=? (zero d), nUp <=? (zero d)) of
         (Just True, _) -> normalResult 
         (_, Just True) -> normalResult
-        _ -> minusInfinity -- b is too close to zero
+        _ -> minusInfinity d -- b is too close to zero
     where
     normalResult =
         NumOrd.minDnEff effMinmax  -- we do not know the sign of a

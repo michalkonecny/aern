@@ -185,7 +185,7 @@ polyIsZero (IntPoly _ terms)
 termsIsZero ::
     (ArithInOut.RoundedReal cf) => 
     IntPolyTerms var cf -> Bool
-termsIsZero (IntPolyC val) = (val |==? zero) == Just True
+termsIsZero (IntPolyC val) = (val |==? (zero val)) == Just True
 termsIsZero (IntPolyV x polys) = 
     case IntMap.toAscList polys of
         [] -> True
@@ -201,7 +201,7 @@ joinTerms (IntPolyV var terms1) (IntPolyV _ terms2) =
     commonCoeffs =
         IntMap.intersectionWith joinTerms terms1 terms2
     allCoeffsWithZero = 
-        powersMapCoeffs (</\> zero) $ IntMap.union terms1 terms2
+        powersMapCoeffs (\cf -> cf </\> (zero cf)) $ IntMap.union terms1 terms2
         
 
 {-- Basic function-approximation specific ops --}
@@ -247,19 +247,28 @@ instance
     (HasProjections (IntPoly var cf))
     where
     newProjection cfg dombox var =
-        IntPoly cfg $ mkProjTerms var vars
+        IntPoly cfg $ mkProjTerms cfg var vars
         where
         vars = ipolycfg_vars cfg
         
-mkProjTerms var vars = aux vars
+mkProjTerms cfg var vars = aux vars
     where
     aux [] = 
         error $ 
             "IntPoly: newProjection: variable " ++ show var 
             ++ " not among specified variables " ++ show vars
     aux (cvar : rest)
-        | cvar == var = IntPolyV var $ IntMap.fromAscList $ [(1, mkConstTerms one rest),(0, mkConstTerms zero rest)]
-        | otherwise = IntPolyV cvar $ IntMap.singleton 0 (aux rest)
+        | cvar == var = 
+            IntPolyV var $ 
+                IntMap.fromAscList $ 
+                    [(1, mkConstTerms o rest),
+                     (0, mkConstTerms z rest)]
+        | otherwise = 
+            IntPolyV cvar $ IntMap.singleton 0 (aux rest)
+        where
+        o = one sampleCf
+        z = zero sampleCf
+        sampleCf = ipolycfg_sample_cf cfg 
             
             
 -- examples from SpringMassV.hs:

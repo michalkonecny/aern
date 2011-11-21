@@ -40,9 +40,9 @@ diffPoly ::
 diffPoly eff var (IntPoly cfg poly) =
     IntPoly cfg $ dp cfg poly
     where
-    effMult = ArithInOut.mxfldEffortMult sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
-    sample = ipolycfg_sample_cf cfg
-    dp cfg (IntPolyC val) = IntPolyC zero
+    effMult = ArithInOut.mxfldEffortMult sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf eff
+    sampleCf = ipolycfg_sample_cf cfg
+    dp cfg (IntPolyC val) = IntPolyC $ zero sampleCf
     dp cfg (IntPolyV x polys)
         | var == x = IntPolyV x $ polysMultiples
         where

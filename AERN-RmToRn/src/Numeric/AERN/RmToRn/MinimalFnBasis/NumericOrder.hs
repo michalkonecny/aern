@@ -70,8 +70,9 @@ instance (MinimalFnBasis fb
 --            ++ "\n bUp = " ++ show bUp
 --            ++ "\n bDn = " ++ show bDn
 --        ) $
-        NumOrd.pCompareEff effCompDom (Interval bDn bUp) zero
+        NumOrd.pCompareEff effCompDom rangeOut (zero rangeOut)
         where
+        rangeOut = Interval bDn bUp
         _ = [bUp, getSampleDomValue f1]
         Just bUp = ArithUpDn.convertUpEff effBnd diff
         Just bDn = ArithUpDn.convertDnEff effBnd diff
@@ -121,7 +122,7 @@ arbitraryFn maxArity sizeLimits
     where
     arbitraryPowerTerm box varFns degree
         | null varFns || degree == 0 
-            = return $ newConstFn sizeLimits box one
+            = return $ newConstFn sizeLimits box $ one sampleDom
         | otherwise = 
             do
             (n,varFn) <- elements $ zip [0..] varFns
@@ -129,7 +130,9 @@ arbitraryFn maxArity sizeLimits
             let remainingVarFns = take (n-1) varFns ++ drop (n+1) varFns
             restFn <- arbitraryPowerTerm box remainingVarFns (degree - dg)
             let varFnPwr = foldl1 (<*>) $ replicate dg varFn 
-            return $ varFnPwr <*> restFn -- rounding direction irrelevant 
+            return $ varFnPwr <*> restFn -- rounding direction irrelevant
+        where
+        (sampleVar,(sampleDom, _)) = head $ toAscList box
         
 {-|
   Have a fairly long and hairy sequence of polynomials of increasing complexity
@@ -195,10 +198,11 @@ instance (MinimalFnBasis fb, Show fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoin
                     where
                     fnPrevTrCp = fnPrev <+>| distCp
                     upperPrevTrCp = upperPrev <+> distCp
-                    distCp = one
+                    distCp = one sampleDom
                     fnTr = fn <+>| dist
                     upperPrevTr = upperPrev <+> dist
-                    dist = (upperPrev <-> lower) <+> one 
+                    dist = (upperPrev <-> lower) <+> (one sampleDom) 
+                    (sampleDom, _) = snd $ head $ toAscList $ getDomainBox fn
                     
                 fnBounds@(first:rest) = map addBounds list
                 addBounds fn = (fn, lower, upper)
@@ -206,9 +210,9 @@ instance (MinimalFnBasis fb, Show fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoin
                     Just upper = ArithUpDn.convertUpEff eff fn
                     Just lower = ArithUpDn.convertDnEff eff fn
                     eff = ArithUpDn.convertDefaultEffort fn z
-                    z = zero
+                    z = zero sampleDom
                     (sampleDom, _) = snd $ head $ toAscList $ getDomainBox fn
-                    _ = [sampleDom, z, upper, lower]
+                    _ = [z, upper, lower]
                 randomBools = 
                     map even $ 
                         map fst $ 

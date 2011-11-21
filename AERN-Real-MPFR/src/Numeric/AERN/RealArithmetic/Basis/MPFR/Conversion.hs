@@ -84,8 +84,8 @@ instance Convertible MPFR Double where
     type ConvertEffortIndicator MPFR Double = ()
     convertDefaultEffort _ _ = ()
     convertUpEff _ d
-        | d == plusInfinity = Just (1/0) 
-        | d == minusInfinity = Just (-1/0)
+        | d == plusInfinity d = Just (1/0) 
+        | d == minusInfinity d = Just (-1/0)
         | otherwise =
             case M.toDouble2exp M.Up d of
                 (s1,e) ->
@@ -94,8 +94,8 @@ instance Convertible MPFR Double where
                        d2 | d2 == 0 && d > 0 -> Just dblEpsilon
                        d2 -> Just d2 
     convertDnEff _ d
-        | d == plusInfinity = Just (1/0) 
-        | d == minusInfinity = Just (-1/0)
+        | d == plusInfinity d = Just (1/0) 
+        | d == minusInfinity d = Just (-1/0)
         | otherwise =
             case M.toDouble2exp M.Down d of
                 (s1,e) ->

@@ -127,7 +127,7 @@ multTerms poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
                 (n1, p1) <- IntMap.toAscList polys1, 
                 (n2, p2) <- IntMap.toAscList polys2 ] 
         
-powTerms vars = powerFromMult (mkConstTerms one vars) multTerms
+powTerms sample vars = powerFromMult (mkConstTerms (one sample) vars) multTerms
 
         
 instance
@@ -161,10 +161,11 @@ addTermsConst cfg (IntPolyV x polys) const =
     where
     oldConstPoly =
         case IntMap.lookup 0 polys of
-            Nothing -> intpoly_terms $ newConstFn cfgR undefined zero
+            Nothing -> intpoly_terms $ newConstFn cfgR undefined $ zero sampleCf
             Just p -> p
     newConstPoly = addTermsConst cfgR oldConstPoly const
     cfgR = cfgRemVar cfg
+    sampleCf = ipolycfg_sample_cf cfg
          
 instance
     (ArithInOut.RoundedMixedMultiplyEffort cf other) => 
@@ -265,7 +266,8 @@ sinePoly eff n x@(IntPoly cfg _) =
     where
     unitIntPoly = 
         let (</\>) = RefOrd.meetOutEff effJoin in 
-        newConstFn cfg undefined $ (neg one) </\> one
+        newConstFn cfg undefined $ (neg o) </\> o
+    o = one sampleCf
     aux acc 0 = acc
     aux acc n =
 --        unsafePrint
@@ -288,8 +290,8 @@ sinePoly eff n x@(IntPoly cfg _) =
             let (<*>) = multPolys eff in squareX <*> acc 
     squareX =
         let (<*>) = multPolys eff in x <*> x 
-    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
-    effAddInt = ArithInOut.mxfldEffortAdd sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
-    effDivInt = ArithInOut.mxfldEffortDiv sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
-    sample = ipolycfg_sample_cf cfg
+    effJoin = ArithInOut.rrEffortJoinMeetOut sampleCf eff
+    effAddInt = ArithInOut.mxfldEffortAdd sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf eff
+    effDivInt = ArithInOut.mxfldEffortDiv sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf eff
+    sampleCf = ipolycfg_sample_cf cfg
     

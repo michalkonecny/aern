@@ -263,11 +263,13 @@ class (HasOne t, RoundedDivideEffort t, CanBeMutable t) => RoundedDivideInPlace 
     
     recipInInPlaceEff effort resM aM =
         do
-        oneM <- unsafeMakeMutable one
+        sample <- unsafeReadMutable aM
+        oneM <- unsafeMakeMutable (one sample)
         divInInPlaceEff effort resM oneM aM
     recipOutInPlaceEff effort resM aM =
         do
-        oneM <- unsafeMakeMutable one
+        sample <- unsafeReadMutable aM
+        oneM <- unsafeMakeMutable (one sample)
         divOutInPlaceEff effort resM oneM aM
 
 divInInPlaceEffFromPure,

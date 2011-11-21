@@ -61,7 +61,7 @@ sqrtOutThinArg
         effortToDouble
         maxIters
         x
-    | sureIsZero x = zero
+    | sureIsZero x = zero $ Interval x x
     | not (sureAbove0 x) = 
         case (sureAbove0 (neg x)) of
             True -> 
@@ -85,7 +85,7 @@ sqrtOutThinArg
 --            unsafePrint ("AERN: sqrtOutThinArg: lower bound too close to zero, using dummy upper bound") $
         Interval
             (x *. xRecipSqrtDown)
-            (NumOrd.maxUpEff effortMinmax x one)
+            (NumOrd.maxUpEff effortMinmax x (one x))
          -- a dummy fallback upper bound where lower bound is too close to 0
     where
     (xRecipSqrtDownPrev, xRecipSqrtDown) = recipSqrtDown
@@ -110,7 +110,7 @@ sqrtOutThinArg
             Nothing -> False
             
     sureIsZero t = 
-        case NumOrd.pEqualEff effortCompare t zero of
+        case NumOrd.pEqualEff effortCompare t (zero t) of
             Just True -> True
             _ -> False
     
@@ -132,9 +132,10 @@ sqrtOutThinArg
 
     recipSqrtDown
         | q0OK = -- computed an approximation in the stable region:
-            iterRecipSqrt maxIters zero q0 -- then iterate!
-        | otherwise = (zero, zero) -- zero is an always correct lower approximation
+            iterRecipSqrt maxIters z q0 -- then iterate!
+        | otherwise = (z,z) -- zero is an always correct lower approximation
         where
+        z = zero q0
         (q0OK, q0) = 
             (sureAbove0 xPlusOneUp && sureAbove0 babylon2, 
              recipDn babylon2)
@@ -218,7 +219,7 @@ sqrtOutThinArgInPlace
         where
         continue
             | sureIsZero x = 
-                writeMutable resM zero
+                writeMutable resM $ zero $ Interval x x
             | not (sureAbove0 x) = 
                 case (sureAbove0 (neg x)) of
                     True -> 
@@ -230,8 +231,8 @@ sqrtOutThinArgInPlace
             | otherwise =
                 do
                 -- declare some variables:
-                temp1M <- makeMutable zero
-                temp2M <- makeMutable zero
+                temp1M <- makeMutable $ zero x
+                temp2M <- makeMutable $ zero x
                 -- iterate using Newton's method, assign results of last two iterations to the above vars: 
                 prevFirst <- recipSqrtDown temp1M temp2M
                 case prevFirst of
@@ -276,7 +277,7 @@ sqrtOutThinArgInPlace
                         do
                         -- a dummy fallback upper bound where lower bound is too close to 0:
                         unsafeWriteMutable resRM $
-                            NumOrd.maxUpEff effortMinmax x one
+                            NumOrd.maxUpEff effortMinmax x (one x)
                     where
                     xRecipSqrtDownInFastRegion =
                         case ArithUpDn.convertDnEff effortToDouble t of
@@ -319,7 +320,7 @@ sqrtOutThinArgInPlace
                         Nothing -> False
                         
                 sureIsZero t = 
-                    case NumOrd.pEqualEff effortCompare t zero of
+                    case NumOrd.pEqualEff effortCompare t (zero t) of
                         Just True -> True
                         _ -> False
                 
@@ -333,13 +334,13 @@ sqrtOutThinArgInPlace
                 recipSqrtDown aM bM
                     | q0OK = -- computed an approximation in the stable region:
                         do
-                        writeMutable aM zero
+                        writeMutable aM $ zero x
                         writeMutable bM q0
                         iterRecipSqrt maxIters True aM bM -- then iterate!
                     | otherwise = 
                         do
-                        writeMutable aM zero -- zero is an always correct lower approximation
-                        writeMutable bM zero
+                        writeMutable aM $ zero x -- zero is an always correct lower approximation
+                        writeMutable bM $ zero x
                         return True
                     where
                     (q0OK, q0) = 
