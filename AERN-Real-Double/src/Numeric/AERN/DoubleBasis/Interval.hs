@@ -210,18 +210,18 @@ import Numeric.AERN.Basics.Interval
 import qualified Numeric.AERN.Basics.Interval as BI
   (getEndpoints,fromEndpoints)
 
-import qualified Numeric.AERN.Basics.NumericOrder as BNO
+import qualified Numeric.AERN.NumericOrder as BNO
   (least,greatest)
 
-import qualified Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort as BNOODE
+import qualified Numeric.AERN.NumericOrder.OpsDefaultEffort as BNOODE
   ((==?),(<==>?),(</=>?),
    (<?),(>?),(<=?),(>=?),
    minOut,maxOut,minIn,maxIn)
 
-import qualified Numeric.AERN.Basics.RefinementOrder as BRO
+import qualified Numeric.AERN.RefinementOrder as BRO
   (bottom,top,(⊥),(⊤))
 
-import qualified Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort as BROODE
+import qualified Numeric.AERN.RefinementOrder.OpsDefaultEffort as BROODE
   ((|==?),(|<==>?),(|</=>?),
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
    (</\>),(<\/>),(<\/>?),(<⊓>),(<⊔>),(<⊔>?),
@@ -245,7 +245,7 @@ import Numeric.AERN.RealArithmetic.Basis.Double()
 
 import Numeric.AERN.RealArithmetic.Interval.Double(width, bisect)
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Test.QuickCheck
 

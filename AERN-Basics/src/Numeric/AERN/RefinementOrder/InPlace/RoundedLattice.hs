@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.Basics.RefinementOrder.InPlace.RoundedLattice
+    Module      :  Numeric.AERN.RefinementOrder.InPlace.RoundedLattice
     Description :  lattices with directed-rounded in-place operations  
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
@@ -15,7 +15,7 @@
     
     This module is hidden and reexported via its grand-parent RefinementOrder. 
 -}
-module Numeric.AERN.Basics.RefinementOrder.InPlace.RoundedLattice 
+module Numeric.AERN.RefinementOrder.InPlace.RoundedLattice 
 where
 
 import Prelude hiding ((<=))
@@ -27,10 +27,10 @@ import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.RefinementOrder.Arbitrary
-import Numeric.AERN.Basics.RefinementOrder.PartialComparison 
-import Numeric.AERN.Basics.RefinementOrder.Extrema
-import Numeric.AERN.Basics.RefinementOrder.RoundedLattice
+import Numeric.AERN.RefinementOrder.Arbitrary
+import Numeric.AERN.RefinementOrder.PartialComparison 
+import Numeric.AERN.RefinementOrder.Extrema
+import Numeric.AERN.RefinementOrder.RoundedLattice
 
 import Numeric.AERN.Basics.Laws.RoundedOpInPlace
 

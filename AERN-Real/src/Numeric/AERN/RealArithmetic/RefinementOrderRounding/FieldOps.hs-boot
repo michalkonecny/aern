@@ -56,7 +56,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
 
 import Numeric.AERN.Basics.Effort
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 class RoundedAddEffort t where
     type AddEffortIndicator t

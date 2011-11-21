@@ -22,7 +22,7 @@ import Numeric.AERN.Basics.Exception
 import Control.Exception
 
 import Numeric.AERN.Basics.PartialOrdering
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import qualified Data.Number.MPFR as M
 import Data.Number.MPFR (MPFR)

@@ -28,7 +28,7 @@ import Numeric.AERN.RealArithmetic.Interval
 import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
 import Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
 import Test.QuickCheck

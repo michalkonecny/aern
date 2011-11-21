@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 {-|
-    Module      :  Numeric.AERN.Basics.RefinementOrder.Arbitrary
+    Module      :  Numeric.AERN.RefinementOrder.Arbitrary
     Description :  random generation of tuples with various relation constraints  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -14,7 +14,7 @@
     
     This module is hidden and reexported via its parent RefinementOrder. 
 -}
-module Numeric.AERN.Basics.RefinementOrder.Arbitrary where
+module Numeric.AERN.RefinementOrder.Arbitrary where
 
 import Prelude hiding (EQ, LT, GT)
 

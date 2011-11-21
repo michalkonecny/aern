@@ -18,7 +18,7 @@ import Numeric.AERN.Basics.PartialOrdering
 import Control.Monad.ST
 import Data.STRef
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Mutable
 

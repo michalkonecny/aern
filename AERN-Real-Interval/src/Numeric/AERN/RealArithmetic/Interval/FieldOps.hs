@@ -29,8 +29,8 @@ import Numeric.AERN.RealArithmetic.Interval.ExactOps
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 
 instance (ArithUpDn.RoundedAddEffort e) => RoundedAddEffort (Interval e) where

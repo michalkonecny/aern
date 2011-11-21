@@ -98,11 +98,11 @@ where
 import Numeric.AERN.Basics.Mutable
   (CanBeMutable(..),OpMutable2,OpMutable1,OpPartialMutable2,OpMutableNonmut,OpNonmut)
 
-import qualified Numeric.AERN.Basics.NumericOrder.InPlace.OpsDefaultEffort as BNOIPODE
+import qualified Numeric.AERN.NumericOrder.InPlace.OpsDefaultEffort as BNOIPODE
   (minOutInPlace,maxOutInPlace)
 
-import Numeric.AERN.Basics.RefinementOrder
-import qualified Numeric.AERN.Basics.RefinementOrder.InPlace.OpsDefaultEffort as BROIPODE
+import Numeric.AERN.RefinementOrder
+import qualified Numeric.AERN.RefinementOrder.InPlace.OpsDefaultEffort as BROIPODE
   (meetOutInPlace,(</\>=),(<⊓>=),
    partialJoinOutInPlace)
 

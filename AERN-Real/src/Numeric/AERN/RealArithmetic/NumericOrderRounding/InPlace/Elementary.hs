@@ -27,7 +27,7 @@ import Numeric.AERN.Basics.Exception (HasLegalValues)
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Test.QuickCheck
 import Test.Framework (testGroup, Test)

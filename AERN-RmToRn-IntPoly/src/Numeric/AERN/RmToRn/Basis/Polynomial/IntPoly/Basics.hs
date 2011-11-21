@@ -22,7 +22,7 @@ import Numeric.AERN.RmToRn.Domain
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
-import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import Numeric.AERN.Basics.ShowInternals

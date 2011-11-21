@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-|
-    Module      :  Numeric.AERN.Basics.NumericOrder.RefinementRoundedLattice
+    Module      :  Numeric.AERN.NumericOrder.RefinementRoundedLattice
     Description :  lattices over numerical order but with refinement order rounding  
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
@@ -14,7 +14,7 @@
     
     This module is hidden and reexported via its parent NumericOrder. 
 -}
-module Numeric.AERN.Basics.NumericOrder.RefinementRoundedLattice 
+module Numeric.AERN.NumericOrder.RefinementRoundedLattice 
 (
     OuterRoundedLattice(..),
     OuterRoundedLatticeEffort(..),
@@ -33,11 +33,11 @@ import Numeric.AERN.Basics.Exception
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.NumericOrder.Arbitrary 
-import Numeric.AERN.Basics.NumericOrder.PartialComparison 
-import Numeric.AERN.Basics.NumericOrder.Extrema
+import Numeric.AERN.NumericOrder.Arbitrary 
+import Numeric.AERN.NumericOrder.PartialComparison 
+import Numeric.AERN.NumericOrder.Extrema
 
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Laws.PartialRelation
 import Numeric.AERN.Basics.Laws.RoundedOperation

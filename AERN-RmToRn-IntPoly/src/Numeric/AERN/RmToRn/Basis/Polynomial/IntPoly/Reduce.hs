@@ -31,10 +31,10 @@ import Numeric.AERN.RealArithmetic.Measures
 
 import Numeric.AERN.Basics.Interval
 
-import qualified Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort as NumOrdDefEffort
-import Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
-import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder.OpsDefaultEffort as NumOrdDefEffort
+import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+import Numeric.AERN.NumericOrder.OpsImplicitEffort
+import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.PartialOrdering as PartialOrdering
 
 import Numeric.AERN.Misc.Debug

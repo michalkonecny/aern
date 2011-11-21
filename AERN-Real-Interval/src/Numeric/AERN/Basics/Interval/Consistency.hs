@@ -31,8 +31,8 @@ import Numeric.AERN.Basics.Interval.Basics
 
 import Numeric.AERN.Basics.Consistency
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 
 import Test.QuickCheck

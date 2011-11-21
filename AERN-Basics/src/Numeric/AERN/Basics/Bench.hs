@@ -12,7 +12,7 @@
 -}
 module Numeric.AERN.Basics.Bench where
 
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Effort 
 

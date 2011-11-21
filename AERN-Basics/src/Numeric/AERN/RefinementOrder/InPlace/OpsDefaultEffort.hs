@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.Basics.RefinementOrder.InPlace.OpsDefaultEffort
+    Module      :  Numeric.AERN.RefinementOrder.InPlace.OpsDefaultEffort
     Description :  Convenience directed-rounded in-place lattice operations with default effort parameters 
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
@@ -11,10 +11,10 @@
     Convenience directed-rounded in-place lattice operations with default effort parameters.
 -}
 
-module Numeric.AERN.Basics.RefinementOrder.InPlace.OpsDefaultEffort where
+module Numeric.AERN.RefinementOrder.InPlace.OpsDefaultEffort where
 
 import Numeric.AERN.Basics.Mutable
-import Numeric.AERN.Basics.RefinementOrder
+import Numeric.AERN.RefinementOrder
 
 infixr 3 </\>=, >/\<=, <⊓>=, >⊓<= 
 infixr 2 <\/>=, >\/<=, <⊔>=, >⊔<= 

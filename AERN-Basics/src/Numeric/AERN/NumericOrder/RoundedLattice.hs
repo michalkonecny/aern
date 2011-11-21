@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.Basics.NumericOrder.RoundedLattice
+    Module      :  Numeric.AERN.NumericOrder.RoundedLattice
     Description :  lattices with directed-rounded operations  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -15,7 +15,7 @@
     
     This module is hidden and reexported via its parent NumericOrder. 
 -}
-module Numeric.AERN.Basics.NumericOrder.RoundedLattice 
+module Numeric.AERN.NumericOrder.RoundedLattice 
 where
 
 import Prelude hiding ((<=))
@@ -24,9 +24,9 @@ import Numeric.AERN.Basics.Exception
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.NumericOrder.Arbitrary 
-import Numeric.AERN.Basics.NumericOrder.PartialComparison 
-import Numeric.AERN.Basics.NumericOrder.Extrema
+import Numeric.AERN.NumericOrder.Arbitrary 
+import Numeric.AERN.NumericOrder.PartialComparison 
+import Numeric.AERN.NumericOrder.Extrema
 
 import Numeric.AERN.Basics.Laws.PartialRelation
 import Numeric.AERN.Basics.Laws.RoundedOperation

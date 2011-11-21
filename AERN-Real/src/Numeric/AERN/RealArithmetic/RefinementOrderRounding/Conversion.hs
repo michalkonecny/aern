@@ -23,9 +23,9 @@ import Numeric.AERN.RealArithmetic.ExactOps
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion as UpDnConversion
 

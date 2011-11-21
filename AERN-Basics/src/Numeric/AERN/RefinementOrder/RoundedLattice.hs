@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-|
-    Module      :  Numeric.AERN.Basics.RefinementOrder.RoundedLattice
+    Module      :  Numeric.AERN.RefinementOrder.RoundedLattice
     Description :  lattices with outwards and inwards rounded operations  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -14,7 +14,7 @@
     
     This module is hidden and reexported via its parent RefinementOrder. 
 -}
-module Numeric.AERN.Basics.RefinementOrder.RoundedLattice 
+module Numeric.AERN.RefinementOrder.RoundedLattice 
 where
 
 import Numeric.AERN.Basics.Exception
@@ -25,8 +25,8 @@ import Control.Monad.ST (ST)
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.RefinementOrder.Arbitrary
-import Numeric.AERN.Basics.RefinementOrder.PartialComparison
+import Numeric.AERN.RefinementOrder.Arbitrary
+import Numeric.AERN.RefinementOrder.PartialComparison
 
 import Numeric.AERN.Basics.Laws.RoundedOperation
 import Numeric.AERN.Basics.Laws.OperationRelation

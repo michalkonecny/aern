@@ -142,7 +142,8 @@ module Numeric.AERN.MPFRBasis.Interval
     piOut,eOut,
     
     -- ** Elementary functions
-    absOut,expOut,sqrtOut,
+    absOut,
+    RARORODE.expOut,RARORODE.sqrtOut,
 
     -- * Inward rounded operations 
 
@@ -174,7 +175,8 @@ module Numeric.AERN.MPFRBasis.Interval
     piIn,eIn,
     
     -- ** Elementary functions
-    absIn,expIn,sqrtIn,
+    absIn,
+    RARORODE.expIn,RARORODE.sqrtIn,
 
     -- * Low level facilities
 
@@ -194,18 +196,18 @@ import Numeric.AERN.Basics.Interval
 import qualified Numeric.AERN.Basics.Interval as BI
   (getEndpoints,fromEndpoints)
 
-import qualified Numeric.AERN.Basics.NumericOrder as BNO
+import qualified Numeric.AERN.NumericOrder as BNO
   (least,greatest)
 
-import qualified Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort as BNOODE
+import qualified Numeric.AERN.NumericOrder.OpsDefaultEffort as BNOODE
   ((==?),(<==>?),(</=>?),
    (<?),(>?),(<=?),(>=?),
    minOut,maxOut,minIn,maxIn)
 
-import qualified Numeric.AERN.Basics.RefinementOrder as BRO
+import qualified Numeric.AERN.RefinementOrder as BRO
   (bottom,top,(⊥),(⊤))
 
-import qualified Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort as BROODE
+import qualified Numeric.AERN.RefinementOrder.OpsDefaultEffort as BROODE
   ((|==?),(|<==>?),(|</=>?),
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
    (</\>),(<\/>),(<\/>?),(<⊓>),(<⊔>),(<⊔>?),
@@ -230,7 +232,7 @@ import Data.Number.MPFR (Precision)
 
 import Numeric.AERN.RealArithmetic.Interval.MPFR(width, bisect)
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Test.QuickCheck
 
@@ -525,25 +527,25 @@ eIn = RARORODE.eIn
 absOut :: MI -> MI
 absOut = RARORODE.absOut
 
--- | Outward rounded exponential
-expOut :: MI -> MI
-expOut = RARORODE.expOut
-
--- | Outward rounded square root
-sqrtOut :: MI -> MI
-sqrtOut = RARORODE.sqrtOut
+---- | Outward rounded exponential
+--expOut :: MI -> MI
+--expOut = RARORODE.expOut
+--
+---- | Outward rounded square root
+--sqrtOut :: MI -> MI
+--sqrtOut = RARORODE.sqrtOut
 
 -- | Inward rounded absolute value
 absIn :: MI -> MI
 absIn = RARORODE.absIn
 
--- | Inward rounded exponential
-expIn :: MI -> MI
-expIn = RARORODE.expIn
-
--- | Inward rounded square root
-sqrtIn :: MI -> MI
-sqrtIn = RARORODE.sqrtIn
+---- | Inward rounded exponential
+--expIn :: MI -> MI
+--expIn = RARORODE.expIn
+--
+---- | Inward rounded square root
+--sqrtIn :: MI -> MI
+--sqrtIn = RARORODE.sqrtIn
 
 newtype PositiveMI = PositiveMI { unPositiveMI :: MI }
 
