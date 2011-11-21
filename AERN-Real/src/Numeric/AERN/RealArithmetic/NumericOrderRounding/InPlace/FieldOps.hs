@@ -355,11 +355,13 @@ class (HasOne t, RoundedDivideEffort t, CanBeMutable t) =>
 
     recipUpInPlaceEff effort resM aM =
         do
-        oneM <- unsafeMakeMutable one
+        a <- unsafeReadMutable aM
+        oneM <- unsafeMakeMutable (one a)
         divUpInPlaceEff effort resM oneM aM
     recipDnInPlaceEff effort resM aM =
         do
-        oneM <- unsafeMakeMutable one
+        a <- unsafeReadMutable aM
+        oneM <- unsafeMakeMutable (one a)
         divDnInPlaceEff effort resM oneM aM
 
 divUpInPlaceEffFromPure,

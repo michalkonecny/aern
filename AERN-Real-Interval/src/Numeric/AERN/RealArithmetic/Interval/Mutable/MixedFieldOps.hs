@@ -108,8 +108,7 @@ multiplySingletonAndIntervalInPlace
             ((Just True, Just True), _, _) -> 
 --                (zero, zero)
                 do
-                let z = zero
-                let _ = [z,l2]
+                let z = zero l2
                 writeMutable lResM z
                 writeMutable rResM z
  
@@ -150,23 +149,22 @@ multiplySingletonAndIntervalInPlace
 --                -- consistent vs anti-consistent cases giving constant 0
                 do
                 temp1 <- assignResEndpointsUsingBothOptions
-                let z = zero
-                let _ = [z,l2]
+                let z = zero l2
                 writeMutable temp1 z
                 combineLInPlace lResM lResM temp1
                 combineRInPlace rResM rResM temp1
     where
     assignResEndpointsUsingTimesLR l2M r2M =
         do
-        temp1 <- makeMutable zero
+        temp1 <- cloneMutable l2M
         timesLInPlace temp1 l2M s1 -- beware of aliasing between res and param
         timesRInPlace rResM r2M s1
         assignMutable lResM temp1
     assignResEndpointsUsingBothOptions =
         do
-        temp1 <- makeMutable zero
-        temp2 <- makeMutable zero
-        temp3 <- makeMutable zero
+        temp1 <- cloneMutable r2M
+        temp2 <- cloneMutable r2M
+        temp3 <- cloneMutable r2M
         timesLInPlace temp1 r2M s1 
         timesLInPlace temp2 l2M s1 
         combineLInPlace temp3 temp1 temp2

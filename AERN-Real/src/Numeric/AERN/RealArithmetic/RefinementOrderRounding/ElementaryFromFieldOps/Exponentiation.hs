@@ -64,14 +64,14 @@ expOutThinArg eff
     let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField in
     -- infinities not handled well by the Taylor formula,
     -- treat them as special cases, adding also 0 for efficiency:
-    case (xTooBig, xTooLow, x |>=? zero) of
-        (True, _, _) -> x </\> plusInfinity -- x almost oo
-        (_, True, _) -> zero </\> (one </> (neg x)) -- x almost -oo
-        (_, _, Just True) -> one -- x = 0
+    case (xTooBig, xTooLow, x |>=? (zero x)) of
+        (True, _, _) -> x </\> (plusInfinity x) -- x almost oo
+        (_, True, _) -> (zero x) </\> ((one x) </> (neg x)) -- x almost -oo
+        (_, _, Just True) -> one x -- x = 0
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
             expOutViaTaylorForXScaledNearZero
         _ -> -- not equal to infinity but not excluding infinity:
-            zero </\> plusInfinity
+            (zero x) </\> (plusInfinity x)
              -- this is always a valid outer approx
     where
     effortField = ArithInOut.rrEffortField sample eff
@@ -119,9 +119,9 @@ expOutThinArg eff
                 ithDerivBound =
                     case (pNonnegNonposEff effortCompare x) of
                         (Just True, _) -> -- x >= 0:
-                            one </\> eUp
+                            (one x) </\> eUp
                         (_, Just True) -> -- x <= 0:
-                            recipEDn </\> one
+                            recipEDn </\> (one x)
                         _ -> -- near or crossing zero:
                             recipEDn </\> eUp
                 eUp =
@@ -200,15 +200,15 @@ expOutThinArgInPlace
 
     -- infinities not handled well by the Taylor formula,
     -- treat them as special cases, adding also 0 for efficiency:
-    case (xTooBig, xTooLow, x |>=? zero) of
-        (True, _, _) -> unsafeWriteMutable resM (x </\> plusInfinity) -- x almost oo
-        (_, True, _) -> unsafeWriteMutable resM (zero </\> (one </> (neg x))) -- x almost -oo
-        (_, _, Just True) -> unsafeWriteMutable resM one -- x = 0
+    case (xTooBig, xTooLow, x |>=? (zero x)) of
+        (True, _, _) -> unsafeWriteMutable resM (x </\> (plusInfinity x)) -- x almost oo
+        (_, True, _) -> unsafeWriteMutable resM ((zero x) </\> ((one x) </> (neg x))) -- x almost -oo
+        (_, _, Just True) -> unsafeWriteMutable resM (one x) -- x = 0
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
             -- the main case where Taylor is used:
             expOutViaTaylorForXScaledNearZero effortField effortMixedField effortCompare effortFromDouble resM xUp xDn xMNA
         _ -> -- not equal to infinity but not excluding infinity:
-            unsafeWriteMutable resM (zero </\> plusInfinity)
+            unsafeWriteMutable resM ((zero x) </\> (plusInfinity x))
              -- this is always a valid outer approx
     where
     expOutViaTaylorForXScaledNearZero effortField effortMixedField effortCompare effortFromDouble resM xUp xDn xM =
@@ -255,9 +255,9 @@ expOutThinArgInPlace
                 ithDerivBound =
                     case (pNonnegNonposEff effortCompare x) of
                         (Just True, _) -> -- x >= 0:
-                            one </\> eUp
+                            (one x) </\> eUp
                         (_, Just True) -> -- x <= 0:
-                            recipEDn </\> one
+                            recipEDn </\> (one x)
                         _ -> -- near or crossing zero:
                             recipEDn </\> eUp
                 eUp =

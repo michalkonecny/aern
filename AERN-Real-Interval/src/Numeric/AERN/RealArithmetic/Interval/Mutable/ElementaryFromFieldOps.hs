@@ -49,43 +49,31 @@ instance
     where
     expOutInPlaceEff 
         (eff, Int1To10 effortTaylor)
---        ((effortField, effortMixedField),
---         (Int1To10 effortTaylor),
---         ((effortMeet, effortComp), effortConv)) 
         (MInterval resL resR)
         (MInterval lM rM) =
             do
-            (MInterval forgetMeL forgetMeR) <- makeMutable zero 
+            forgetMeL <- cloneMutable lM
+            forgetMeR <- cloneMutable lM  
             expOutThinArgInPlace eff
---                effortField effortMixedField 
---                effortMeet effortComp effortComp effortConv 
                 (MInterval resL forgetMeR)
                 effortTaylor 
                 (MInterval lM lM)
             expOutThinArgInPlace eff
---                effortField effortMixedField
---                effortMeet effortComp effortComp effortConv 
                 (MInterval forgetMeL resR)
                 effortTaylor 
                 (MInterval rM rM)
     expInInPlaceEff 
         (eff, Int1To10 effortTaylor)
---        ((effortField, effortMixedField),
---         (Int1To10 effortTaylor),
---         ((effortMeet, effortComp), effortConv)) 
         (MInterval resL resR)
         (MInterval lM rM) =
             do
-            (MInterval forgetMeL forgetMeR) <- makeMutable zero 
+            forgetMeL <- cloneMutable lM
+            forgetMeR <- cloneMutable lM  
             expOutThinArgInPlace eff 
---                effortField effortMixedField 
---                effortMeet effortComp effortComp effortConv 
                 (MInterval forgetMeL resL)
                 effortTaylor 
                 (MInterval lM lM)
             expOutThinArgInPlace eff
---                effortField effortMixedField
---                effortMeet effortComp effortComp effortConv 
                 (MInterval resR forgetMeR)
                 effortTaylor 
                 (MInterval rM rM)
@@ -129,7 +117,8 @@ instance
 --        (MInterval resL resR)
 --        (MInterval lM rM) =
 --            do
---            (MInterval forgetMeL forgetMeR) <- makeMutable zero 
+--            forgetMeL <- cloneMutable lM
+--            forgetMeR <- cloneMutable lM  
 --            sqrtOutThinArgInPlace 
 --                effortField effortMixedField 
 --                effortMeet effortComp effortConv 
@@ -150,7 +139,8 @@ instance
 --        (MInterval resL resR)
 --        (MInterval lM rM) =
 --            do
---            (MInterval forgetMeL forgetMeR) <- makeMutable zero 
+--            forgetMeL <- cloneMutable lM
+--            forgetMeR <- cloneMutable lM  
 --            sqrtOutThinArgInPlace 
 --                effortField effortMixedField 
 --                effortMeet effortComp effortConv 

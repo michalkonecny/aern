@@ -23,16 +23,16 @@ import Data.Number.MPFR.Instances.Up
 import qualified Data.Number.MPFR.Mutable as MM
 
 instance HasZero MPFR where
-    zero = 0
+    zero _ = 0
     
 instance HasOne MPFR where
-    one = 1
+    one _ = 1
     
 instance HasInfinities MPFR where
-    plusInfinity = 1/0
-    minusInfinity = -1/0
-    excludesPlusInfinity a = (a /= plusInfinity)
-    excludesMinusInfinity a = (a /= minusInfinity)
+    plusInfinity _ = 1/0
+    minusInfinity _ = -1/0
+    excludesPlusInfinity a = (a /= plusInfinity a)
+    excludesMinusInfinity a = (a /= minusInfinity a)
     
 instance Neg MPFR where
     neg = negate

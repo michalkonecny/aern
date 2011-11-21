@@ -68,7 +68,7 @@ propExpOfNegRecip ::
      (ExpEffortIndicator t, MultEffortIndicator t)) -> 
     (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propExpOfNegRecip _ effortConsistency initEffort 
+propExpOfNegRecip sample effortConsistency initEffort 
         (RefOrd.UniformlyOrderedSingleton e1) =
     thinEqualConsLeqRoundingUpDnImprovement "e^a * e^(-a) ⊑/⊒ 1" [e1]
         expr1In expr1Out expr2In expr2Out 
@@ -89,8 +89,8 @@ propExpOfNegRecip _ effortConsistency initEffort
     expr1Out (effExp, effMult) =
         let (<*>) = multOutEff effMult in
         (expOutEff effExp e1) <*> (expOutEff effExp (neg e1))
-    expr2In (effExp, effMult) = one
-    expr2Out (effExp, effMult) = one
+    expr2In (effExp, effMult) = one sample
+    expr2Out (effExp, effMult) = one sample
 
 -- | @e^(b+c) = e^b * e^c@
 propExpOfAddToMult ::

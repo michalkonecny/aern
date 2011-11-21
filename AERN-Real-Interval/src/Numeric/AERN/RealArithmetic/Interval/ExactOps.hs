@@ -22,14 +22,22 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.RealArithmetic.ExactOps
 
 instance  (HasZero e, NumOrd.PartialComparison e) => HasZero (Interval e) where
-    zero = Interval zero zero
+    zero (Interval sampleE _) = Interval z z
+        where
+        z = zero sampleE
 
 instance  (HasOne e) => HasOne (Interval e) where
-    one = Interval one one
+    one (Interval sampleE _) = Interval o o
+        where
+        o = one sampleE
 
 instance (HasInfinities e) => HasInfinities (Interval e) where
-    plusInfinity = Interval plusInfinity plusInfinity
-    minusInfinity = Interval minusInfinity minusInfinity
+    plusInfinity (Interval sampleE _) = Interval i i
+        where
+        i = plusInfinity sampleE
+    minusInfinity (Interval sampleE _) = Interval i i
+        where
+        i = minusInfinity sampleE
     excludesPlusInfinity (Interval l r) = excludesPlusInfinity r
     excludesMinusInfinity (Interval l r) = excludesMinusInfinity l
 

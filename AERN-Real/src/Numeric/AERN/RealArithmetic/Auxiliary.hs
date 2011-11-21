@@ -57,12 +57,13 @@ powerFromMultInPlace mult rM xM n
     | n < 0 = throw $ AERNException "powerFromMultInPlace does not support negative exponents"
     | otherwise =
         do
+        sample <- unsafeReadMutable xM
         nrM <- cloneMutable xM -- a non-aliased variable for interim results
-        p nrM n -- nrM := x^n
+        p sample nrM n -- nrM := x^n
         assignMutable rM nrM -- rM := nr
     where
-    p nrM n -- ensures nrM holds x^n
-        | n == 0 = writeMutable nrM one
+    p sample nrM n -- ensures nrM holds x^n
+        | n == 0 = writeMutable nrM (one sample)
         | n == 1 = return () -- assuming nrM already contains x
         | otherwise =
             case even n of
@@ -77,5 +78,5 @@ powerFromMultInPlace mult rM xM n
                     mult nrM nrM xM -- multiply by x one more time
         where
         rM = () -- avoid accidental use of rM from parent context
-        powHalf = p nrM (n `div` 2)
+        powHalf = p sample nrM (n `div` 2)
 

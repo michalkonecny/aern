@@ -153,15 +153,15 @@ substPolyMainVar eff z (msubstPoly, msubstPolyLR) p@(IntPoly cfg terms) =
         let ?joinmeetOutEffort = effJoin in
         let ?pCompareEffort = effComp in
         PolyEvalOps 
-            (cf2Terms z) addTerms multTerms (powTerms vars) 
+            (cf2Terms z) addTerms multTerms (powTerms sample vars) 
             cf2Terms terms2terms joinTerms leqTerms
     cf2Terms cf = mkConstTerms cf vars
     terms2terms (IntPolyV v ts) | v == mainVar = Nothing
     terms2terms terms = Just $ IntPolyV mainVar $ IntMap.singleton 0 terms
     vars@(mainVar : _) = ipolycfg_vars cfg
     doms = ipolycfg_doms cfg
-    leqTerms terms1 terms2 =
-        zero <=? diffRange 
+    leqTerms terms1 terms2 = 
+        (zero sample) <=? diffRange 
         where
         diffRange = uncurry (</\>) $ evalPolyOnInterval eff z domsR (IntPoly cfgR diff)
         diff = addTerms terms2 $ negTerms terms1
@@ -281,7 +281,7 @@ evalPolyMono eff opsV valuesALR p@(IntPoly cfg _)
                 _ -> (undefined, True)
         Just (valL, valR) = maybeValLR
         deriv = evalPolyDirect opsV values $ diffPoly eff var p -- range of (d p)/(d var)    
-    
+
     
 --evalPolyMono ::
 --    (Ord var, Show var, ArithInOut.RoundedReal cf, Show cf) => 

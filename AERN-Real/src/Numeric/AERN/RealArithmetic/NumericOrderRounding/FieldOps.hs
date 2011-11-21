@@ -79,8 +79,8 @@ propUpDnAddZero ::
      AddEffortIndicator t) -> 
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propUpDnAddZero _ effort (NumOrd.UniformlyOrderedSingleton e) =
-    roundedUnit zero NumOrd.pLeqEff addUpEff addDnEff effort e
+propUpDnAddZero sample effort (NumOrd.UniformlyOrderedSingleton e) =
+    roundedUnit (zero sample) NumOrd.pLeqEff addUpEff addDnEff effort e
 
 propUpDnAddCommutative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -143,8 +143,8 @@ propUpDnSubtrElim ::
      AddEffortIndicator t) -> 
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propUpDnSubtrElim _ effort (NumOrd.UniformlyOrderedSingleton e) =
-    roundedReflexiveCollapse zero NumOrd.pLeqEff subtrUpEff subtrDnEff effort e
+propUpDnSubtrElim sample effort (NumOrd.UniformlyOrderedSingleton e) =
+    roundedReflexiveCollapse (zero sample) NumOrd.pLeqEff subtrUpEff subtrDnEff effort e
 
 propUpDnSubtrNegAdd ::
     (NumOrd.PartialComparison t, RoundedSubtr t, Neg t,
@@ -197,13 +197,13 @@ absUpUsingCompMax ::
      NumOrd.MinmaxEffortIndicator t) ->
     t -> t 
 absUpUsingCompMax (effortComp, effortMinmax) a =
-    case NumOrd.pCompareEff effortComp zero a of
+    case NumOrd.pCompareEff effortComp (zero a) a of
         Just EQ -> a
         Just LT -> a
         Just LEE -> a
         Just GT -> neg a
         Just GEE -> neg a
-        _ -> zero `max` (a `max` (neg a))
+        _ -> (zero a) `max` (a `max` (neg a))
     where
     max = NumOrd.maxUpEff effortMinmax
 
@@ -214,13 +214,13 @@ absDnUsingCompMax ::
      NumOrd.MinmaxEffortIndicator t) ->
     t -> t 
 absDnUsingCompMax (effortComp, effortMinmax) a =
-    case NumOrd.pCompareEff effortComp zero a of
+    case NumOrd.pCompareEff effortComp (zero a) a of
         Just EQ -> a
         Just LT -> a
         Just LEE -> a
         Just GT -> neg a
         Just GEE -> neg a
-        _ -> zero `max` (a `max` (neg a))
+        _ -> (zero a) `max` (a `max` (neg a))
     where
     max = NumOrd.maxDnEff effortMinmax
 
@@ -286,8 +286,8 @@ propUpDnMultOne ::
      MultEffortIndicator t) -> 
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propUpDnMultOne _ effort (NumOrd.UniformlyOrderedSingleton e) =
-    roundedUnit one NumOrd.pLeqEff multUpEff multDnEff effort e
+propUpDnMultOne sample effort (NumOrd.UniformlyOrderedSingleton e) =
+    roundedUnit (one sample) NumOrd.pLeqEff multUpEff multDnEff effort e
 
 propUpDnMultCommutative ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasZero t,
@@ -436,14 +436,14 @@ powerNonnegToNonnegIntUpEffFromMult ::
     PowerNonnegToNonnegIntEffortIndicatorFromMult t -> 
     t -> Int -> t
 powerNonnegToNonnegIntUpEffFromMult effMult e n =
-    powerFromMult one (multUpEff effMult) e n
+    powerFromMult (one e) (multUpEff effMult) e n
 
 powerNonnegToNonnegIntDnEffFromMult ::
     (RoundedMultiply t, HasOne t) => 
     PowerNonnegToNonnegIntEffortIndicatorFromMult t -> 
     t -> Int -> t
 powerNonnegToNonnegIntDnEffFromMult effMult e n =
-    powerFromMult one (multDnEff effMult) e n
+    powerFromMult (one e) (multDnEff effMult) e n
 
 -- now not assuming the argument is non-negative:
 class RoundedPowerToNonnegIntEffort t where
@@ -509,7 +509,7 @@ powerToNonnegIntDir ::
     (NumOrd.PartialCompareEffortIndicator t) -> 
     t -> Int -> t
 powerToNonnegIntDir mult1 mult2 combine effComp x n
-    | n == 0 = one
+    | n == 0 = (one x)
     | n == 1 = x
     | otherwise =
         case (pNonnegNonposEff effComp x) of
@@ -517,12 +517,12 @@ powerToNonnegIntDir mult1 mult2 combine effComp x n
             (_, Just True) -> resNonpos
             _ -> resNonneg `combine` resNonpos
     where
-    resNonneg = powerFromMult one mult1 x n
+    resNonneg = powerFromMult (one x) mult1 x n
     resNonpos 
         | even n = 
-            powerFromMult one mult1 (neg x) n
+            powerFromMult (one x) mult1 (neg x) n
         | otherwise = 
-            neg $ powerFromMult one mult2 (neg x) n 
+            neg $ powerFromMult (one x) mult2 (neg x) n 
             -- switching rounding direction
 
 propUpDnPowerSumExponents ::
@@ -612,8 +612,8 @@ class (HasOne t, RoundedDivideEffort t) => RoundedDivide t where
     divDnEff :: DivEffortIndicator t -> t -> t -> t
     recipUpEff :: DivEffortIndicator t -> t -> t
     recipDnEff :: DivEffortIndicator t -> t -> t
-    recipUpEff eff = divUpEff eff one
-    recipDnEff eff = divDnEff eff one
+    recipUpEff eff a = divUpEff eff (one a) a
+    recipDnEff eff a = divDnEff eff (one a) a
 
 propUpDnDivElim ::
     (NumOrd.PartialComparison t, RoundedDivide t, HasOne t, HasZero t,
@@ -628,9 +628,9 @@ propUpDnDivElim ::
      DivEffortIndicator t) -> 
     (NumOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propUpDnDivElim _ efforts2@(effComp, _) (NumOrd.UniformlyOrderedSingleton a) =
+propUpDnDivElim sample efforts2@(effComp, _) (NumOrd.UniformlyOrderedSingleton a) =
     roundedReflexiveCollapse 
-        one 
+        (one sample) 
         NumOrd.pLeqEff 
         divUpEff divDnEff 
         efforts2 
@@ -654,7 +654,7 @@ propUpDnDivRecipMult ::
      (MultEffortIndicator t, DivEffortIndicator t, NumOrd.MinmaxEffortIndicator t)) -> 
     (NumOrd.UniformlyOrderedPair t) -> 
     Bool
-propUpDnDivRecipMult _ initEffort@(effComp,_) (NumOrd.UniformlyOrderedPair (e1, e2)) =
+propUpDnDivRecipMult sample initEffort@(effComp,_) (NumOrd.UniformlyOrderedPair (e1, e2)) =
     equalRoundingUpDn "a/b=a*(1/b)"
         expr1Up expr1Dn expr2Up expr2Dn 
         NumOrd.pLeqEff initEffort
@@ -662,14 +662,14 @@ propUpDnDivRecipMult _ initEffort@(effComp,_) (NumOrd.UniformlyOrderedPair (e1, 
     expr1Up (effMult, effDiv, effMinmax) =
         let (*^) = multUpEff effMult in
         let (/^) = divUpEff effDiv; (/.) = divDnEff effDiv in
-        let r1 = e1 *^ (one /^ e2) in
-        let r2 = e1 *^ (one /. e2) in
+        let r1 = e1 *^ ((one sample) /^ e2) in
+        let r2 = e1 *^ ((one sample) /. e2) in
         NumOrd.maxUpEff effMinmax r1 r2
     expr1Dn (effMult, effDiv, effMinmax) =
         let (*.) = multDnEff effMult in
         let (/^) = divUpEff effDiv; (/.) = divDnEff effDiv in
-        let r1 = e1 *. (one /^ e2) in
-        let r2 = e1 *. (one /. e2) in
+        let r1 = e1 *. ((one sample) /^ e2) in
+        let r2 = e1 *. ((one sample) /. e2) in
         NumOrd.minDnEff effMinmax r1 r2
     expr2Up (effMult, effDiv, _) =
         let (/^) = divUpEff effDiv in
