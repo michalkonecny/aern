@@ -1,6 +1,6 @@
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
+    Module      :  Numeric.AERN.NumericOrder.OpsImplicitEffort
     Description :  convenience binary infix operators with implicit effort parameters  
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
@@ -12,9 +12,9 @@
     Convenience binary infix operators with implicit effort parameters.
 -}
 
-module Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort where
+module Numeric.AERN.NumericOrder.OpsImplicitEffort where
 
-import Numeric.AERN.Basics.NumericOrder
+import Numeric.AERN.NumericOrder
 
 infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
 

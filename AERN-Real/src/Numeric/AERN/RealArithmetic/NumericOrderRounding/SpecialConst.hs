@@ -23,8 +23,8 @@ module Numeric.AERN.RealArithmetic.NumericOrderRounding.SpecialConst where
 --import Numeric.AERN.Basics.ShowInternals
 --import Numeric.AERN.RealArithmetic.Laws
 --import Numeric.AERN.RealArithmetic.Measures
---import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
---import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
+--import qualified Numeric.AERN.NumericOrder as NumOrd
+--import Numeric.AERN.NumericOrder.OpsImplicitEffort
 --
 --import Numeric.AERN.Misc.Debug
 --

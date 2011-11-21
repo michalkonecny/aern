@@ -1,8 +1,9 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-|
-    Module      :  Numeric.AERN.Basics.RefinementOrder.ApproxOrder
-    Description :  Comparisons with semidecidable order  
+    Module      :  Numeric.AERN.NumericOrder.ApproxOrder
+    Description :  Comparisons in a semidecidable order  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -10,21 +11,20 @@
     Stability   :  experimental
     Portability :  portable
     
-    Comparisons with semidecidable order.
+    Comparisons in a semidecidable order.
     
-    This module is hidden and reexported via its parent RefinementOrder. 
+    This module is hidden and reexported via its parent NumericOrder. 
 -}
 
-module Numeric.AERN.Basics.RefinementOrder.PartialComparison 
+module Numeric.AERN.NumericOrder.PartialComparison 
 where
 
 import Prelude hiding (EQ, LT, GT)
 
-import Numeric.AERN.Basics.RefinementOrder.Extrema
-import Numeric.AERN.Basics.RefinementOrder.Arbitrary
+import Numeric.AERN.NumericOrder.Extrema
+import Numeric.AERN.NumericOrder.Arbitrary
 
 import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Laws.PartialRelation
 
@@ -55,14 +55,71 @@ class PartialComparison t where
     pGreaterEff :: (PartialCompareEffortIndicator t) -> t -> t -> Maybe Bool
     
     -- defaults for all convenience operations:
-    pEqualEff effort a b = fmap (== EQ) (pCompareEff effort a b)
-    pLessEff effort a b = fmap (== LT) (pCompareEff effort a b)
-    pGreaterEff effort a b = fmap (== GT) (pCompareEff effort a b)
+    pEqualEff effort a b =
+        case pCompareEff effort a b of
+            Just EQ -> Just True
+            Just LEE -> Nothing
+            Just GEE -> Nothing
+            Just _ -> Just False
+            _ -> Nothing
+    pLessEff effort a b = 
+        case pCompareEff effort a b of
+            Just LT -> Just True
+            Just LEE -> Nothing
+            Just _ -> Just False
+            _ -> Nothing
+    pGreaterEff effort a b = 
+        case pCompareEff effort a b of
+            Just GT -> Just True
+            Just GEE -> Nothing
+            Just _ -> Just False
+            _ -> Nothing
+    pLeqEff effort a b =
+        case pCompareEff effort a b of
+            Just EQ -> Just True
+            Just LT -> Just True
+            Just LEE -> Just True
+            Just GEE -> Nothing
+            Just _ -> Just False
+            _ -> Nothing
+    pGeqEff effort a b =
+        case pCompareEff effort a b of
+            Just EQ -> Just True
+            Just GT -> Just True
+            Just GEE -> Just True
+            Just LEE -> Nothing
+            Just _ -> Just False
+            _ -> Nothing
     pComparableEff effort a b = fmap (/= NC) (pCompareEff effort a b)
     pIncomparableEff effort a b = fmap (== NC) (pCompareEff effort a b)
-    pLeqEff effort a b = fmap (`elem` [EQ,LT,LEE]) (pCompareEff effort a b)
-    pGeqEff effort a b = fmap (`elem` [EQ,GT,GEE]) (pCompareEff effort a b)
 
+
+instance PartialComparison Int where
+    type PartialCompareEffortIndicator Int = ()
+    pCompareDefaultEffort _ = ()
+    pCompareEff = pComparePreludeCompare    
+    
+instance PartialComparison Integer where
+    type PartialCompareEffortIndicator Integer = ()
+    pCompareDefaultEffort _ = ()
+    pCompareEff = pComparePreludeCompare    
+    
+instance PartialComparison Rational where
+    type PartialCompareEffortIndicator Rational = ()
+    pCompareDefaultEffort _ = ()
+    pCompareEff = pComparePreludeCompare    
+
+instance PartialComparison Double where
+    type PartialCompareEffortIndicator Double = ()
+    pCompareEff _ a b = Just $ toPartialOrdering $ Prelude.compare a b
+--        case (isNaN a, isNaN b) of
+--           (False, False) -> Just $ toPartialOrdering $ Prelude.compare a b  
+--           (True, True) -> Just EQ
+--           _ -> Just NC 
+    pCompareDefaultEffort _ = ()
+    
+pComparePreludeCompare _ a b =
+    Just $ toPartialOrdering $ Prelude.compare a b
 
 propPartialComparisonReflexiveEQ :: 
     (PartialComparison t) => 
@@ -79,7 +136,7 @@ propPartialComparisonAntiSymmetric ::
     (PartialCompareEffortIndicator t) -> 
     UniformlyOrderedPair t -> 
     Bool
-propPartialComparisonAntiSymmetric _ effort (UniformlyOrderedPair (e1, e2)) =
+propPartialComparisonAntiSymmetric _ effort (UniformlyOrderedPair (e1,e2)) =
     case (pCompareEff effort e2 e1, pCompareEff effort e1 e2) of
         (Just b1, Just b2) -> b1 == partialOrderingTranspose b2
         _ -> True 
@@ -116,10 +173,13 @@ propPartialComparisonTransitiveLE _ effort
 
 propExtremaInPartialComparison :: 
     (PartialComparison t, HasExtrema t) => 
-    t -> (PartialCompareEffortIndicator t) -> 
-    (UniformlyOrderedSingleton t) -> Bool
-propExtremaInPartialComparison _ effort (UniformlyOrderedSingleton e) = 
-    partialOrderExtrema (pLeqEff effort) bottom top e
+    t -> 
+    (PartialCompareEffortIndicator t) -> 
+    UniformlyOrderedSingleton t -> 
+    Bool
+propExtremaInPartialComparison _ effort 
+        (UniformlyOrderedSingleton e) = 
+    partialOrderExtrema (pLeqEff effort) least greatest e
 
 testsPartialComparison :: 
     (PartialComparison t,
@@ -129,7 +189,7 @@ testsPartialComparison ::
      Show (PartialCompareEffortIndicator t)) => 
     (String, t) -> Test
 testsPartialComparison (name, sample) =
-    testGroup (name ++ " (⊑?)")
+    testGroup (name ++ " (>=?)")
         [
          testProperty "anti symmetric" (propPartialComparisonAntiSymmetric sample)
         ,
@@ -141,3 +201,4 @@ testsPartialComparison (name, sample) =
         ,
          testProperty "extrema" (propExtremaInPartialComparison sample)
         ]
+        

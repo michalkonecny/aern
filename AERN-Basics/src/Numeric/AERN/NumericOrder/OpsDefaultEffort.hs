@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
+    Module      :  Numeric.AERN.NumericOrder.OpsDefaultEffort
     Description :  convenience binary infix operators with default effort parameters  
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
@@ -11,9 +11,9 @@
     Convenience binary infix operators with default effort parameters.
 -}
 
-module Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort where
+module Numeric.AERN.NumericOrder.OpsDefaultEffort where
 
-import Numeric.AERN.Basics.NumericOrder
+import Numeric.AERN.NumericOrder
 
 -- | Partial equality
 infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?

@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+    Module      :  Numeric.AERN.RefinementOrder.OpsDefaultEffort
     Description :  Convenience binary infix operators with default effort parameters  
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
@@ -11,9 +11,9 @@
     Convenience binary infix operators with default effort parameters.
 -}
 
-module Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort where
+module Numeric.AERN.RefinementOrder.OpsDefaultEffort where
 
-import Numeric.AERN.Basics.RefinementOrder
+import Numeric.AERN.RefinementOrder
 
 infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>?, ⊏?, ⊑?, ⊒?, ⊐?
 infixr 3 </\>, >/\<, <⊓>, >⊓< 

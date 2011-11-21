@@ -21,7 +21,7 @@ import Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps
 import Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder
 
 import Numeric.AERN.Basics.Mutable
-import Numeric.AERN.Basics.NumericOrder
+import Numeric.AERN.NumericOrder
 
 import Numeric.AERN.RealArithmetic.ExactOps
 

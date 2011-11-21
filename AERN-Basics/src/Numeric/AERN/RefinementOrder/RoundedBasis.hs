@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-|
-    Module      :  Numeric.AERN.Basics.RefinementOrder.RoundedBasis
+    Module      :  Numeric.AERN.RefinementOrder.RoundedBasis
     Description :  domain bases with outwards and inwards rounded operations  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -14,7 +14,7 @@
     
     This module is hidden and reexported via its parent RefinementOrder. 
 -}
-module Numeric.AERN.Basics.RefinementOrder.RoundedBasis 
+module Numeric.AERN.RefinementOrder.RoundedBasis 
 where
 
 import Numeric.AERN.Basics.Mutable
@@ -23,8 +23,8 @@ import Control.Monad.ST (ST)
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.RefinementOrder.PartialComparison
-import Numeric.AERN.Basics.RefinementOrder.Arbitrary
+import Numeric.AERN.RefinementOrder.PartialComparison
+import Numeric.AERN.RefinementOrder.Arbitrary
 
 import Numeric.AERN.Basics.Laws.OperationRelation
 import Numeric.AERN.Basics.Laws.RoundedOperation

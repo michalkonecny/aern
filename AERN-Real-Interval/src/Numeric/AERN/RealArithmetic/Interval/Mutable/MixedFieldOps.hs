@@ -28,8 +28,8 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 -- import Numeric.AERN.RealArithmetic.Interval.FieldOps
 import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Control.Monad.ST (ST)
 

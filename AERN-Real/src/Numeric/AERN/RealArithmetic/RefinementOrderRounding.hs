@@ -40,8 +40,8 @@ import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 {-|
    An aggregate class collecting together all functionality

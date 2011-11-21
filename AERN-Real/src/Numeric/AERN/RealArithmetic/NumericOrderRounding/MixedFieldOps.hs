@@ -26,8 +26,8 @@ import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.RealArithmetic.Laws 
 import Numeric.AERN.RealArithmetic.Measures
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Control.Exception
 import Data.Maybe

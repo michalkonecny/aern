@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.Basics.RefinementOrder.Extrema
+    Module      :  Numeric.AERN.RefinementOrder.Extrema
     Description :  types that have top and bottom  
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
@@ -12,7 +12,7 @@
     
     This module is hidden and reexported via its parent RefinementOrder. 
 -}
-module Numeric.AERN.Basics.RefinementOrder.Extrema where
+module Numeric.AERN.RefinementOrder.Extrema where
 
 {-|
     A type with extrema.

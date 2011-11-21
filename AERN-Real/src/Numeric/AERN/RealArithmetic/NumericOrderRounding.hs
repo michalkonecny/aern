@@ -37,9 +37,9 @@ import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
-import Numeric.AERN.Basics.NumericOrder
+import Numeric.AERN.NumericOrder
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 {-|
    An aggregate class collecting together all functionality

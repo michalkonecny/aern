@@ -27,8 +27,8 @@ import Prelude hiding (EQ, LT, GT)
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.PartialOrdering
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Control.DeepSeq
 

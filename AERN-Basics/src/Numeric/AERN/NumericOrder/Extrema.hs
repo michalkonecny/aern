@@ -1,5 +1,5 @@
 {-|
-    Module      :  Numeric.AERN.Basics.NumericOrder.Extrema
+    Module      :  Numeric.AERN.NumericOrder.Extrema
     Description :  types that have least and greatest elements  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -12,7 +12,7 @@
     
     This module is hidden and reexported via its parent NumericOrder. 
 -}
-module Numeric.AERN.Basics.NumericOrder.Extrema where
+module Numeric.AERN.NumericOrder.Extrema where
 
 {-|
     A type with extrema.

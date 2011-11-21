@@ -28,7 +28,7 @@ import Numeric.AERN.Basics.Interval.Mutable
 
 import Numeric.AERN.Misc.List
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Test.QuickCheck
 

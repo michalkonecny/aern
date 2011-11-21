@@ -35,10 +35,10 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
-import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Interval

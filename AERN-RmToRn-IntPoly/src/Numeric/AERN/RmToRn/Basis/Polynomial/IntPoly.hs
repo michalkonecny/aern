@@ -35,7 +35,7 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
 
 import Numeric.AERN.RmToRn.MinimalFnBasis
 
---import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+--import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut

@@ -1,6 +1,6 @@
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.Basics.RefinementOrder.InPlace.OpsImplicitEffort
+    Module      :  Numeric.AERN.RefinementOrder.InPlace.OpsImplicitEffort
     Description :  onvenience directed-rounded in-place lattice operations with implicit effort parameters 
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
@@ -12,10 +12,10 @@
     Convenience directed-rounded in-place lattice operations with implicit effort parameters.
 -}
 
-module Numeric.AERN.Basics.RefinementOrder.InPlace.OpsImplicitEffort where
+module Numeric.AERN.RefinementOrder.InPlace.OpsImplicitEffort where
 
 import Numeric.AERN.Basics.Mutable
-import Numeric.AERN.Basics.RefinementOrder
+import Numeric.AERN.RefinementOrder
 
 infixr 3 </\>=, <⊓>=, >/\<=, >⊓<= 
 infixr 2 <\/>=, <⊔>=, >\/<=, >⊔<= 

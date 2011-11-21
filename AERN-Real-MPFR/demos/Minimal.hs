@@ -5,11 +5,11 @@ module Main where
 
 import Numeric.AERN.Basics.Effort
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
-import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
 

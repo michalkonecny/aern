@@ -22,11 +22,11 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsImplicitEf
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort
 
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
-import Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
-import Numeric.AERN.Basics.RefinementOrder.InPlace.OpsImplicitEffort
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+import Numeric.AERN.RefinementOrder.InPlace.OpsImplicitEffort
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Mutable

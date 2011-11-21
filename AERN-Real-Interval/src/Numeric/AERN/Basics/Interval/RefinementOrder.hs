@@ -26,8 +26,8 @@ import Numeric.AERN.Basics.Interval.Basics
 import Numeric.AERN.Basics.Interval.Mutable
 import Numeric.AERN.Basics.Interval.NumericOrder
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Mutable
 

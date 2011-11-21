@@ -18,7 +18,7 @@ module Numeric.AERN.RealArithmetic.Interval.ExactOps
 where
 
 import Numeric.AERN.Basics.Interval
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd 
+import qualified Numeric.AERN.NumericOrder as NumOrd 
 import Numeric.AERN.RealArithmetic.ExactOps
 
 instance  (HasZero e, NumOrd.PartialComparison e) => HasZero (Interval e) where

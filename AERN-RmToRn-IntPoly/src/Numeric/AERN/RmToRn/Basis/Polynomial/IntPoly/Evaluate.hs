@@ -27,8 +27,8 @@ import Numeric.AERN.RmToRn.New
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
-import Numeric.AERN.Basics.RefinementOrder.OpsImplicitEffort
-import Numeric.AERN.Basics.NumericOrder.OpsImplicitEffort
+import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+import Numeric.AERN.NumericOrder.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import Numeric.AERN.Misc.Debug
