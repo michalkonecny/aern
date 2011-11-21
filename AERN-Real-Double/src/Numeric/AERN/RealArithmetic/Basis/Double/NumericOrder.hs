@@ -36,10 +36,10 @@ nanD :: Double
 nanD = 0/0
 
 instance NumOrd.HasLeast Double where
-    least = - 1/0
+    least _ = - 1/0
 
 instance NumOrd.HasGreatest Double where
-    greatest = 1/0
+    greatest _ = 1/0
 
 instance NumOrd.HasExtrema Double where
 

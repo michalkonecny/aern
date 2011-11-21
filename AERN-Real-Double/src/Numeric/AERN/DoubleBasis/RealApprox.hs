@@ -188,10 +188,10 @@ sampleRealApprox :: RealApprox
 sampleRealApprox = Interval 0 0
 
 least :: RealApprox
-least = BNO.least
+least = BNO.least sampleRealApprox
 
 greatest :: RealApprox
-greatest = BNO.greatest
+greatest = BNO.greatest sampleRealApprox
 
 infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
 
@@ -240,18 +240,18 @@ maxIn :: RealApprox -> RealApprox -> RealApprox
 maxIn = BNOODE.maxIn
 
 bottom :: RealApprox
-bottom = BRO.bottom
+bottom = BRO.bottom sampleRealApprox
 
 top :: RealApprox
-top = BRO.top
+top = BRO.top sampleRealApprox
 
 -- | Convenience Unicode notation for 'bottom'
 (⊥) :: RealApprox
-(⊥) = (BRO.⊥)
+(⊥) = (BRO.⊥) sampleRealApprox
 
 -- | Convenience Unicode notation for 'top'
 (⊤) :: RealApprox
-(⊤) = (BRO.⊤)
+(⊤) = (BRO.⊤) sampleRealApprox
 
 infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>?, ⊏?, ⊑?, ⊒?, ⊐?
 infixr 3 </\>, <⊓> 

@@ -339,7 +339,7 @@ instance
                 (pPosNonnegNegNonposEff effortComp) 
                 (ArithUpDn.divDnEff effortDiv)
                 (ArithUpDn.divUpEff effortDiv)
-                RefOrd.bottom
+                (RefOrd.bottom i1)
                 i2
     divInEff (effortComp, effortMinmax, (effortMult, effortDiv)) i1 i2 =
         multInEff (effortComp, effortMinmax, effortMult) i1 $ 
@@ -347,7 +347,7 @@ instance
                 (pPosNonnegNegNonposEff effortComp) 
                 (ArithUpDn.divUpEff effortDiv)
                 (ArithUpDn.divDnEff effortDiv)
-                RefOrd.top
+                (RefOrd.top i1)
                 i2
 
 
@@ -361,10 +361,10 @@ recipInterval pPosNonnegNegNonpos divL divR fallback (Interval l r) =
              Interval (divL o r) (divR o l)
         -- consistent around zero:
         ((_, _, _, Just True), (_, Just True, _, _)) ->
-             RefOrd.bottom
+             (RefOrd.bottom fallback)
         -- anti-consistent around zero:
         ((_, Just True, _, _), (_,_,_, Just True)) ->  
-             RefOrd.top
+             (RefOrd.top fallback)
         -- unknown:
         _ ->  
              fallback

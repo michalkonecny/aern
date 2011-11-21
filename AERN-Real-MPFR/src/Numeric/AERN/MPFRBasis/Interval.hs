@@ -280,10 +280,10 @@ sampleMI :: MI
 sampleMI = Interval 0 0
 
 least :: MI
-least = BNO.least
+least = BNO.least sampleMI
 
 greatest :: MI
-greatest = BNO.greatest
+greatest = BNO.greatest sampleMI
 
 -- | Partial equality
 (==?) :: MI -> MI -> Maybe Bool
@@ -330,18 +330,18 @@ maxIn :: MI -> MI -> MI
 maxIn = BNOODE.maxIn
 
 bottom :: MI
-bottom = BRO.bottom
+bottom = BRO.bottom sampleMI
 
 top :: MI
-top = BRO.top
+top = BRO.top sampleMI
 
 -- | Convenience Unicode notation for 'bottom'
 (⊥) :: MI
-(⊥) = (BRO.⊥)
+(⊥) = (BRO.⊥) sampleMI
 
 -- | Convenience Unicode notation for 'top'
 (⊤) :: MI
-(⊤) = (BRO.⊤)
+(⊤) = (BRO.⊤) sampleMI
 
 -- | Partial equality
 (|==?) :: MI -> MI -> Maybe Bool

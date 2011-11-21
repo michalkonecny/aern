@@ -293,10 +293,10 @@ bisect ::
 bisect = RAID.bisect
 
 least :: RealIntervalApprox
-least = BNO.least
+least = BNO.least sampleRealIntervalApprox
 
 greatest :: RealIntervalApprox
-greatest = BNO.greatest
+greatest = BNO.greatest sampleRealIntervalApprox
 
 infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
 
@@ -345,18 +345,18 @@ maxIn :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
 maxIn = BNOODE.maxIn
 
 bottom :: RealIntervalApprox
-bottom = BRO.bottom
+bottom = BRO.bottom sampleRealIntervalApprox
 
 top :: RealIntervalApprox
-top = BRO.top
+top = BRO.top sampleRealIntervalApprox
 
 -- | Convenience Unicode notation for 'bottom'
 (⊥) :: RealIntervalApprox
-(⊥) = (BRO.⊥)
+(⊥) = (BRO.⊥) sampleRealIntervalApprox
 
 -- | Convenience Unicode notation for 'top'
 (⊤) :: RealIntervalApprox
-(⊤) = (BRO.⊤)
+(⊤) = (BRO.⊤) sampleRealIntervalApprox
 
 infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>?, ⊏?, ⊑?, ⊒?, ⊐?
 infixr 3 </\>, >/\<, <⊓>, >⊓< 

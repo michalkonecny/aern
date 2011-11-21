@@ -23,18 +23,18 @@ class (HasTop t, HasBottom t) => HasExtrema t
     A type with a top element.
 -}
 class HasTop t where
-    top :: t
+    top :: t -> t
 
 {-|
     A type with a top element.
 -}
 class HasBottom t where
-    bottom :: t
+    bottom :: t -> t
 
 -- | Convenience Unicode notation for 'top'
-(⊤) :: (HasTop t) => t   
+(⊤) :: (HasTop t) => t -> t   
 (⊤) = top
 
 -- | Convenience Unicode notation for 'bottom'
-(⊥) :: (HasBottom t) => t   
+(⊥) :: (HasBottom t) => t -> t 
 (⊥) = bottom
