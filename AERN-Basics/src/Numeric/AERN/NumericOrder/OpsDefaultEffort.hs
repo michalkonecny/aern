@@ -62,19 +62,19 @@ maxUp :: (RoundedLattice t) => t -> t -> t
 maxUp a = maxUpEff (minmaxDefaultEffort a) a
 
 -- | Outward rounded minimum
-minOut :: (OuterRoundedLattice t) => t -> t -> t
-minOut a = minOutEff (minmaxOuterDefaultEffort a) a
+minOut :: (RefinementRoundedLattice t) => t -> t -> t
+minOut a = minOutEff (minmaxInOutDefaultEffort a) a
 
 -- | Outward rounded maximum
-maxOut :: (OuterRoundedLattice t) => t -> t -> t
-maxOut a = maxOutEff (minmaxOuterDefaultEffort a) a
+maxOut :: (RefinementRoundedLattice t) => t -> t -> t
+maxOut a = maxOutEff (minmaxInOutDefaultEffort a) a
 
 -- | Inward rounded minimum
-minIn :: (InnerRoundedLattice t) => t -> t -> t
-minIn a = minInEff (minmaxInnerDefaultEffort a) a
+minIn :: (RefinementRoundedLattice t) => t -> t -> t
+minIn a = minInEff (minmaxInOutDefaultEffort a) a
 
 -- | Inward rounded maximum
-maxIn :: (InnerRoundedLattice t) => t -> t -> t
-maxIn a = maxInEff (minmaxInnerDefaultEffort a) a
+maxIn :: (RefinementRoundedLattice t) => t -> t -> t
+maxIn a = maxInEff (minmaxInOutDefaultEffort a) a
 
 

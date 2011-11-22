@@ -33,19 +33,19 @@ maxUpInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
 maxUpInPlace = mutable2EffToMutable2 maxUpInPlaceEff minmaxDefaultEffort
 
 -- | Outward rounded in-place minimum
-minOutInPlace :: (OuterRoundedLatticeInPlace t) => OpMutable2 t s
-minOutInPlace = mutable2EffToMutable2 minOutInPlaceEff minmaxOuterDefaultEffort
+minOutInPlace :: (RefinementRoundedLatticeInPlace t) => OpMutable2 t s
+minOutInPlace = mutable2EffToMutable2 minOutInPlaceEff minmaxInOutDefaultEffort
 
 -- | Outward rounded in-place maximum
-maxOutInPlace :: (OuterRoundedLatticeInPlace t) => OpMutable2 t s
-maxOutInPlace = mutable2EffToMutable2 maxOutInPlaceEff minmaxOuterDefaultEffort
+maxOutInPlace :: (RefinementRoundedLatticeInPlace t) => OpMutable2 t s
+maxOutInPlace = mutable2EffToMutable2 maxOutInPlaceEff minmaxInOutDefaultEffort
 
 -- | Inward rounded in-place minimum
-minInInPlace :: (InnerRoundedLatticeInPlace t) => OpMutable2 t s
-minInInPlace = mutable2EffToMutable2 minInInPlaceEff minmaxInnerDefaultEffort
+minInInPlace :: (RefinementRoundedLatticeInPlace t) => OpMutable2 t s
+minInInPlace = mutable2EffToMutable2 minInInPlaceEff minmaxInOutDefaultEffort
 
 -- | Inward rounded in-place maximum
-maxInInPlace :: (InnerRoundedLatticeInPlace t) => OpMutable2 t s
-maxInInPlace = mutable2EffToMutable2 maxInInPlaceEff minmaxInnerDefaultEffort
+maxInInPlace :: (RefinementRoundedLatticeInPlace t) => OpMutable2 t s
+maxInInPlace = mutable2EffToMutable2 maxInInPlaceEff minmaxInOutDefaultEffort
 
 

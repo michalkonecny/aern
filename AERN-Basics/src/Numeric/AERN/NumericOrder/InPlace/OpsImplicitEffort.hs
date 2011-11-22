@@ -47,28 +47,28 @@ maxUpInPlace = maxUpInPlaceEff ?minmaxEffort
 
 -- | Outward rounded in-place minimum
 minOutInPlace :: 
-    (OuterRoundedLatticeInPlace t, 
-     ?minmaxOuterEffort :: MinmaxOuterEffortIndicator t) =>
+    (RefinementRoundedLatticeInPlace t, 
+     ?minmaxInOutEffort :: MinmaxInOutEffortIndicator t) =>
     OpMutable2 t s
-minOutInPlace = minOutInPlaceEff ?minmaxOuterEffort
+minOutInPlace = minOutInPlaceEff ?minmaxInOutEffort
 
 -- | Outward rounded in-place maximum
 maxOutInPlace :: 
-    (OuterRoundedLatticeInPlace t, 
-     ?minmaxOuterEffort :: MinmaxOuterEffortIndicator t) =>
+    (RefinementRoundedLatticeInPlace t, 
+     ?minmaxInOutEffort :: MinmaxInOutEffortIndicator t) =>
     OpMutable2 t s
-maxOutInPlace = maxOutInPlaceEff ?minmaxOuterEffort
+maxOutInPlace = maxOutInPlaceEff ?minmaxInOutEffort
 
 -- | Inward rounded in-place minimum
 minInInPlace ::
-    (InnerRoundedLatticeInPlace t,
-     ?minmaxInnerEffort :: MinmaxInnerEffortIndicator t) =>
+    (RefinementRoundedLatticeInPlace t,
+     ?minmaxInOutEffort :: MinmaxInOutEffortIndicator t) =>
     OpMutable2 t s
-minInInPlace = minInInPlaceEff ?minmaxInnerEffort
+minInInPlace = minInInPlaceEff ?minmaxInOutEffort
 
 -- | Inward rounded in-place maximum
 maxInInPlace ::
-    (InnerRoundedLatticeInPlace t,
-     ?minmaxInnerEffort :: MinmaxInnerEffortIndicator t) =>
+    (RefinementRoundedLatticeInPlace t,
+     ?minmaxInOutEffort :: MinmaxInOutEffortIndicator t) =>
     OpMutable2 t s
-maxInInPlace = maxInInPlaceEff ?minmaxInnerEffort
+maxInInPlace = maxInInPlaceEff ?minmaxInOutEffort

@@ -72,11 +72,10 @@ class
     type RoundedRealEffortIndicator t
     roundedRealDefaultEffort :: t -> RoundedRealEffortIndicator t
     rrEffortNumComp :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator t)
-    rrEffortMinmaxIn :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.MinmaxInnerEffortIndicator t)
-    rrEffortMinmaxOut :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.MinmaxOuterEffortIndicator t)
+    rrEffortMinmaxInOut :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.MinmaxInOutEffortIndicator t)
     rrEffortRefComp :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.PartialCompareEffortIndicator t)
-    rrEffortJoinMeetOut :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.JoinMeetOutEffortIndicator t)
-    rrEffortJoinMeetIn :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.JoinMeetInEffortIndicator t)
+    rrEffortPartialJoin :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.PartialJoinEffortIndicator t)
+    rrEffortJoinMeet :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.JoinMeetEffortIndicator t)
     rrEffortImprecision :: t -> (RoundedRealEffortIndicator t) -> (ImprecisionEffortIndicator t)
     rrEffortDistance :: t -> (RoundedRealEffortIndicator t) -> (DistanceEffortIndicator t)
     rrEffortToInt :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Int)

@@ -64,49 +64,49 @@ infixr 2 <\/>?, >\/<?, <\/>, >\/<, <⊔>?, >⊔<?, <⊔>, >⊔<
 (⊐?) = (|>?)
 
 -- | Outward rounded meet
-(</\>) :: (OuterRoundedLattice t) => t -> t -> t
-(</\>) a = meetOutEff (joinmeetOutDefaultEffort a) a 
+(</\>) :: (RoundedLattice t) => t -> t -> t
+(</\>) a = meetOutEff (joinmeetDefaultEffort a) a 
 
 -- | Inward rounded meet
-(>/\<) :: (InnerRoundedLattice t) => t -> t -> t
-(>/\<) a = meetInEff (joinmeetInDefaultEffort a) a 
+(>/\<) :: (RoundedLattice t) => t -> t -> t
+(>/\<) a = meetInEff (joinmeetDefaultEffort a) a 
 
 -- | Partial outward rounded join
-(<\/>?) :: (OuterRoundedBasis t) => t -> t -> Maybe t
-(<\/>?) a = partialJoinOutEff (partialJoinOutDefaultEffort a) a 
+(<\/>?) :: (RoundedBasis t) => t -> t -> Maybe t
+(<\/>?) a = partialJoinOutEff (partialJoinDefaultEffort a) a 
 
 -- | Partial inward rounded join
-(>\/<?) :: (InnerRoundedBasis t) => t -> t -> Maybe t
-(>\/<?) a = partialJoinInEff (partialJoinInDefaultEffort a) a 
+(>\/<?) :: (RoundedBasis t) => t -> t -> Maybe t
+(>\/<?) a = partialJoinInEff (partialJoinDefaultEffort a) a 
 
 -- | Outward rounded join
-(<\/>) :: (OuterRoundedLattice t) => t -> t -> t 
-(<\/>) a = joinOutEff (joinmeetOutDefaultEffort a) a 
+(<\/>) :: (RoundedLattice t) => t -> t -> t 
+(<\/>) a = joinOutEff (joinmeetDefaultEffort a) a 
 
 -- | Inward rounded join
-(>\/<) :: (InnerRoundedLattice t) => t -> t -> t
-(>\/<) a = joinInEff (joinmeetInDefaultEffort a) a 
+(>\/<) :: (RoundedLattice t) => t -> t -> t
+(>\/<) a = joinInEff (joinmeetDefaultEffort a) a 
 
 {-| Convenience Unicode notation for '<\/>?' -}
-(<⊔>?) :: (OuterRoundedBasis t) => t -> t -> Maybe t 
+(<⊔>?) :: (RoundedBasis t) => t -> t -> Maybe t 
 (<⊔>?) = (<\/>?)
 
 {-| Convenience Unicode notation for '>\/<?' -}
-(>⊔<?) :: (InnerRoundedBasis t) => t -> t -> Maybe t
+(>⊔<?) :: (RoundedBasis t) => t -> t -> Maybe t
 (>⊔<?) = (>\/<?)
 
 {-| Convenience Unicode notation for '<\/>' -}
-(<⊔>) :: (OuterRoundedLattice t) => t -> t -> t
+(<⊔>) :: (RoundedLattice t) => t -> t -> t
 (<⊔>) = (<\/>)
 
 {-| Convenience Unicode notation for '</\>' -}
-(<⊓>) :: (OuterRoundedLattice t) => t -> t -> t
+(<⊓>) :: (RoundedLattice t) => t -> t -> t
 (<⊓>) = (</\>)
 
 {-| Convenience Unicode notation for '>\/<' -}
-(>⊔<) :: (InnerRoundedLattice t) => t -> t -> t
+(>⊔<) :: (RoundedLattice t) => t -> t -> t
 (>⊔<) = (>\/<)
 
 {-| Convenience Unicode notation for '>/\<' -}
-(>⊓<) :: (InnerRoundedLattice t) => t -> t -> t
+(>⊓<) :: (RoundedLattice t) => t -> t -> t
 (>⊓<) = (>/\<)

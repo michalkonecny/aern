@@ -39,42 +39,31 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 {-|
     A type with outward-rounding lattice operations.
 -}
-class OuterRoundedBasisEffort t where
-    type PartialJoinOutEffortIndicator t
-    partialJoinOutDefaultEffort :: t -> PartialJoinOutEffortIndicator t
+class RoundedBasisEffort t where
+    type PartialJoinEffortIndicator t
+    partialJoinDefaultEffort :: t -> PartialJoinEffortIndicator t
 
-class (OuterRoundedBasisEffort t) => OuterRoundedBasis t where
-    partialJoinOutEff :: PartialJoinOutEffortIndicator t -> t -> t -> Maybe t
+class (RoundedBasisEffort t) => RoundedBasis t where
+    partialJoinOutEff :: PartialJoinEffortIndicator t -> t -> t -> Maybe t
+    partialJoinInEff :: PartialJoinEffortIndicator t -> t -> t -> Maybe t
 
-{-|
-    A type with inward-rounding lattice operations.
--}
-class InnerRoundedBasisEffort t where
-    type PartialJoinInEffortIndicator t
-    partialJoinInDefaultEffort :: t -> PartialJoinInEffortIndicator t
-
-class (InnerRoundedBasisEffort t) => InnerRoundedBasis t where
-    partialJoinInEff :: PartialJoinInEffortIndicator t -> t -> t -> Maybe t
-
-class (OuterRoundedBasis t, InnerRoundedBasis t) => RoundedBasis t 
-
--- properties of OuterRoundedBasis
-propOuterRoundedBasisComparisonCompatible :: 
-    (PartialComparison t, OuterRoundedBasis t) => 
+-- properties of RoundedBasis
+propRoundedBasisComparisonCompatible :: 
+    (PartialComparison t, RoundedBasis t) => 
     t -> 
-    (PartialCompareEffortIndicator t, PartialJoinOutEffortIndicator t) ->
+    (PartialCompareEffortIndicator t, PartialJoinEffortIndicator t) ->
     t -> t -> Bool
-propOuterRoundedBasisComparisonCompatible _ (effortComp, effortJoin) =
+propRoundedBasisComparisonCompatible _ (effortComp, effortJoin) =
     downRoundedPartialJoinOfOrderedPair (pLeqEff effortComp) 
         (partialJoinOutEff effortJoin)
 
--- properties of InnerRoundedBasis:
-propInnerRoundedBasisJoinAboveBoth :: 
-    (PartialComparison t, InnerRoundedBasis t) => 
+-- properties of RoundedBasis:
+propRoundedBasisJoinAboveBoth :: 
+    (PartialComparison t, RoundedBasis t) => 
     t -> 
-    (PartialCompareEffortIndicator t, PartialJoinInEffortIndicator t) ->
+    (PartialCompareEffortIndicator t, PartialJoinEffortIndicator t) ->
     t -> t -> Bool
-propInnerRoundedBasisJoinAboveBoth _ (effortComp, effortJoin) = 
+propRoundedBasisJoinAboveBoth _ (effortComp, effortJoin) = 
     partialJoinAboveOperands (pLeqEff effortComp) (partialJoinInEff effortJoin)
 
 -- properties of RoundedBasis:
@@ -82,39 +71,36 @@ propRoundedBasisJoinIdempotent ::
     (PartialComparison t, RoundedBasis t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
-     PartialJoinInEffortIndicator t, 
-     PartialJoinOutEffortIndicator t) ->
+     PartialJoinEffortIndicator t) ->
     (UniformlyOrderedSingleton t) -> 
     Bool
-propRoundedBasisJoinIdempotent _ (effortComp, effortJoinIn, effortJoinOut) 
+propRoundedBasisJoinIdempotent _ (effortComp, effortJoinInOut) 
         (UniformlyOrderedSingleton e) = 
     partialRoundedIdempotent (pLeqEff effortComp) 
-        (partialJoinInEff effortJoinIn) (partialJoinOutEff effortJoinOut) e
+        (partialJoinInEff effortJoinInOut) (partialJoinOutEff effortJoinInOut) e
 
 propRoundedBasisJoinCommutative :: 
     (PartialComparison t, RoundedBasis t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
-     PartialJoinInEffortIndicator t, 
-     PartialJoinOutEffortIndicator t) ->
+     PartialJoinEffortIndicator t) ->
     UniformlyOrderedPair t -> Bool
-propRoundedBasisJoinCommutative _ (effortComp, effortJoinIn, effortJoinOut)
+propRoundedBasisJoinCommutative _ (effortComp, effortJoinInOut)
         (UniformlyOrderedPair (e1,e2)) = 
     partialRoundedCommutative (pLeqEff effortComp) 
-        (partialJoinInEff effortJoinIn) (partialJoinOutEff effortJoinOut) 
+        (partialJoinInEff effortJoinInOut) (partialJoinOutEff effortJoinInOut) 
         e1 e2
 
 propRoundedBasisJoinAssociative :: 
     (PartialComparison t, RoundedBasis t, Show t, HasLegalValues t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
-     PartialJoinInEffortIndicator t, 
-     PartialJoinOutEffortIndicator t) ->
+     PartialJoinEffortIndicator t) ->
     UniformlyOrderedTriple t -> Bool
-propRoundedBasisJoinAssociative _ (effortComp, effortJoinIn, effortJoinOut)
+propRoundedBasisJoinAssociative _ (effortComp, effortJoinInOut)
         (UniformlyOrderedTriple (e1,e2,e3)) = 
     partialRoundedAssociative (pLeqEff effortComp) 
-        (partialJoinInEff effortJoinIn) (partialJoinOutEff effortJoinOut) 
+        (partialJoinInEff effortJoinInOut) (partialJoinOutEff effortJoinInOut) 
         e1 e2 e3
 
 
@@ -122,12 +108,11 @@ propRoundedBasisJoinMonotone ::
     (Eq t, RoundedBasis t, PartialComparison t) => 
     t -> 
     (PartialCompareEffortIndicator t, 
-     PartialJoinOutEffortIndicator t, 
-     PartialJoinInEffortIndicator t) -> 
+     PartialJoinEffortIndicator t) -> 
     LEPair t -> 
     LEPair t ->
     Bool
-propRoundedBasisJoinMonotone _ (effortComp, effortOut, effortIn)
+propRoundedBasisJoinMonotone _ (effortComp, effortInOut)
         (LEPair (e1Lower,e1)) 
         (LEPair (e2Lower,e2)) =
     case (maybeRLower, maybeR) of
@@ -137,24 +122,23 @@ propRoundedBasisJoinMonotone _ (effortComp, effortOut, effortIn)
                 Nothing -> True
         (_, _) -> True
     where
-    maybeRLower = partialJoinOutEff effortOut e1Lower e2Lower 
-    maybeR = partialJoinInEff effortIn e1 e2 
+    maybeRLower = partialJoinOutEff effortInOut e1Lower e2Lower 
+    maybeR = partialJoinInEff effortInOut e1 e2 
 
 testsRoundedBasis ::
     (PartialComparison t,
      RoundedBasis t,
      Arbitrary t, Show t, HasLegalValues t,
      Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t), 
-     Arbitrary (PartialJoinOutEffortIndicator t), Show (PartialJoinOutEffortIndicator t), 
-     Arbitrary (PartialJoinInEffortIndicator t), Show (PartialJoinInEffortIndicator t), 
+     Arbitrary (PartialJoinEffortIndicator t), Show (PartialJoinEffortIndicator t), 
      ArbitraryOrderedTuple t,
      Eq t) => 
     (String, t) -> Test
 testsRoundedBasis (name, sample) =
     testGroup (name ++ " (<⊔>?, >⊔<?)") $
         [
-         testProperty "rounded join comparison compatible"  (propOuterRoundedBasisComparisonCompatible sample),
-         testProperty "rounded join above both"  (propInnerRoundedBasisJoinAboveBoth sample),
+         testProperty "rounded join comparison compatible"  (propRoundedBasisComparisonCompatible sample),
+         testProperty "rounded join above both"  (propRoundedBasisJoinAboveBoth sample),
          testProperty "rounded join idempotent" (propRoundedBasisJoinIdempotent sample),
          testProperty "rounded join commutative" (propRoundedBasisJoinCommutative sample),
          testProperty "rounded join associative" (propRoundedBasisJoinAssociative sample),

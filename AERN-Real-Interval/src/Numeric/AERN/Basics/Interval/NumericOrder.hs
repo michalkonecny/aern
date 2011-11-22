@@ -59,42 +59,27 @@ instance
                 
 instance
     (NumOrd.RoundedLatticeEffort e) =>
-    (NumOrd.OuterRoundedLatticeEffort (Interval e))
+    (NumOrd.RefinementRoundedLatticeEffort (Interval e))
     where
-    type NumOrd.MinmaxOuterEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
-    minmaxOuterDefaultEffort (Interval l r) = NumOrd.minmaxDefaultEffort l  
+    type NumOrd.MinmaxInOutEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
+    minmaxInOutDefaultEffort (Interval l r) = NumOrd.minmaxDefaultEffort l  
 
 instance
     (NumOrd.RoundedLattice e) =>
-    (NumOrd.OuterRoundedLattice (Interval e))
+    (NumOrd.RefinementRoundedLattice (Interval e))
     where
     minOutEff effort (Interval l1 r1) (Interval l2 r2) =
         Interval (NumOrd.minDnEff effort l1 l2) (NumOrd.minUpEff effort r1 r2)
     maxOutEff effort (Interval l1 r1) (Interval l2 r2) =
         Interval (NumOrd.maxDnEff effort l1 l2) (NumOrd.maxUpEff effort r1 r2)
-
-instance
-    (NumOrd.RoundedLatticeEffort e) =>
-    (NumOrd.InnerRoundedLatticeEffort (Interval e))
-    where
-    type NumOrd.MinmaxInnerEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
-    minmaxInnerDefaultEffort (Interval l r) = NumOrd.minmaxDefaultEffort l  
-instance
-    (NumOrd.RoundedLattice e) =>
-    (NumOrd.InnerRoundedLattice (Interval e))
-    where
     minInEff effort (Interval l1 r1) (Interval l2 r2) =
         Interval (NumOrd.minUpEff effort l1 l2) (NumOrd.minDnEff effort r1 r2)
     maxInEff effort (Interval l1 r1) (Interval l2 r2) =
         Interval (NumOrd.maxUpEff effort l1 l2) (NumOrd.maxDnEff effort r1 r2)
 
-instance 
-    (NumOrd.RoundedLattice e) => 
-    (NumOrd.RefinementRoundedLattice (Interval e))
-
 instance
     (NumOrd.RoundedLatticeInPlace e) =>
-    (NumOrd.OuterRoundedLatticeInPlace (Interval e))
+    (NumOrd.RefinementRoundedLatticeInPlace (Interval e))
     where
     minOutInPlaceEff effort 
             (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
@@ -106,12 +91,6 @@ instance
         do
         NumOrd.maxDnInPlaceEff effort resLM l1M l2M
         NumOrd.maxUpInPlaceEff effort resRM r1M r2M
-
-
-instance
-    (NumOrd.RoundedLatticeInPlace e) =>
-    (NumOrd.InnerRoundedLatticeInPlace (Interval e))
-    where
     minInInPlaceEff effort 
             (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
@@ -122,10 +101,6 @@ instance
         do
         NumOrd.maxUpInPlaceEff effort resLM l1M l2M
         NumOrd.maxDnInPlaceEff effort resRM r1M r2M
-
-instance 
-    (NumOrd.RoundedLatticeInPlace e) => 
-    (NumOrd.RefinementRoundedLatticeInPlace (Interval e))
 
 instance (NumOrd.HasLeast e) => (NumOrd.HasLeast (Interval e))
     where

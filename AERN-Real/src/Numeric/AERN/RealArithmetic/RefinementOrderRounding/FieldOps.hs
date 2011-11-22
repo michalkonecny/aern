@@ -20,7 +20,7 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
 (
     RoundedAdd(..), RoundedAddEffort(..), RoundedSubtr(..), 
     testsInOutAdd, testsInOutSubtr,
-    RoundedAbs(..), RoundedAbsEffort(..), 
+    RoundedAbs(..), RoundedAbsEffort(..),
     testsInOutAbs,  absInUsingCompMax, absOutUsingCompMax,
     RoundedMultiply(..), RoundedMultiplyEffort(..), testsInOutMult,
     RoundedPowerToNonnegInt(..), RoundedPowerToNonnegIntEffort(..), 
@@ -234,9 +234,9 @@ class (RoundedAbsEffort t) => RoundedAbs t where
 
 absOutUsingCompMax ::
     (HasZero t, Neg t, 
-     NumOrd.PartialComparison t, NumOrd.OuterRoundedLattice t) =>
+     NumOrd.PartialComparison t, NumOrd.RefinementRoundedLattice t) =>
     (NumOrd.PartialCompareEffortIndicator t,
-     NumOrd.MinmaxOuterEffortIndicator t) ->
+     NumOrd.MinmaxInOutEffortIndicator t) ->
     t -> t 
 absOutUsingCompMax (effortComp, effortMinmax) a =
     case NumOrd.pCompareEff effortComp (zero a) a of
@@ -251,9 +251,9 @@ absOutUsingCompMax (effortComp, effortMinmax) a =
 
 absInUsingCompMax ::
     (HasZero t, Neg t, 
-     NumOrd.PartialComparison t, NumOrd.InnerRoundedLattice t) =>
+     NumOrd.PartialComparison t, NumOrd.RefinementRoundedLattice t) =>
     (NumOrd.PartialCompareEffortIndicator t,
-     NumOrd.MinmaxInnerEffortIndicator t) ->
+     NumOrd.MinmaxInOutEffortIndicator t) ->
     t -> t 
 absInUsingCompMax (effortComp, effortMinmax) a =
     case NumOrd.pCompareEff effortComp (zero a) a of

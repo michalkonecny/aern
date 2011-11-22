@@ -225,7 +225,7 @@ import qualified Numeric.AERN.RefinementOrder.OpsDefaultEffort as BROODE
   ((|==?),(|<==>?),(|</=>?),
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
    (</\>),(<\/>),(<\/>?),(<⊓>),(<⊔>),(<⊔>?),
-   (>/\<),(>\/<),(>⊓<),(>⊔<))
+   (>/\<),(>\/<),(>\/<?),(>⊓<),(>⊔<),(>⊔<?))
 
 import Numeric.AERN.RealArithmetic.Interval()
 
@@ -436,9 +436,17 @@ top = BRO.top sampleDI
 (<\/>?) :: DI -> DI -> Maybe DI
 (<\/>?) = (BROODE.<\/>?)
 
+-- | Partial outward rounded join
+(>\/<?) :: DI -> DI -> Maybe DI
+(>\/<?) = (BROODE.>\/<?)
+
 {-| Convenience Unicode notation for '<\/>?' -}
 (<⊔>?) :: DI -> DI -> Maybe DI 
 (<⊔>?) = (BROODE.<⊔>?)
+
+{-| Convenience Unicode notation for '>\/<?' -}
+(>⊔<?) :: DI -> DI -> Maybe DI 
+(>⊔<?) = (BROODE.>⊔<?)
 
 -- | Outward rounded addition
 (<+>) :: DI -> DI -> DI

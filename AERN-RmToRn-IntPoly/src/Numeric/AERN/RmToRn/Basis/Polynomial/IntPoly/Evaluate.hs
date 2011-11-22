@@ -62,7 +62,7 @@ evalPolyAtPoint eff z values p@(IntPoly cfg _)
     let ?multInOutEffort = effMult in
     let ?intPowerInOutEffort = effPwr in
     let ?addInOutEffort = effAdd in
-    let ?joinmeetOutEffort = effJoin in
+    let ?joinmeetEffort = effJoin in
     let ?pCompareEffort = effComp in
     evalPolyDirect (coeffPolyEvalOps z) values p
     where
@@ -70,7 +70,7 @@ evalPolyAtPoint eff z values p@(IntPoly cfg _)
     effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     effComp = ArithInOut.rrEffortNumComp sample eff
-    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
+    effJoin = ArithInOut.rrEffortJoinMeet sample eff
     sample = ipolycfg_sample_cf cfg
 
 evalPolyOnInterval ::
@@ -84,7 +84,7 @@ evalPolyOnInterval eff z valuesLR p@(IntPoly cfg _)
     let ?multInOutEffort = effMult in
     let ?intPowerInOutEffort = effPwr in
     let ?addInOutEffort = effAdd in
-    let ?joinmeetOutEffort = effJoin in
+    let ?joinmeetEffort = effJoin in
     let ?pCompareEffort = effComp in
     evalPolyMono eff (coeffPolyEvalOps z) valuesALR p
     where
@@ -93,7 +93,7 @@ evalPolyOnInterval eff z valuesLR p@(IntPoly cfg _)
         zip values $ map checkEqual valuesLR
         where
         values = 
-            let ?joinmeetOutEffort = effJoin in
+            let ?joinmeetEffort = effJoin in
             map (uncurry (</\>)) valuesLR
         checkEqual (l,r) 
             | (l ==? r) == Just True = Nothing
@@ -102,7 +102,7 @@ evalPolyOnInterval eff z valuesLR p@(IntPoly cfg _)
     effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     effComp = ArithInOut.rrEffortNumComp sample eff
-    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
+    effJoin = ArithInOut.rrEffortJoinMeet sample eff
     sample = ipolycfg_sample_cf cfg
 
 substPolyMainVarElim ::
@@ -150,7 +150,7 @@ substPolyMainVar eff z (msubstPoly, msubstPolyLR) p@(IntPoly cfg terms) =
     substPolyEvalOps =
         let ?multInOutEffort = effMult in
         let ?addInOutEffort = effAdd in
-        let ?joinmeetOutEffort = effJoin in
+        let ?joinmeetEffort = effJoin in
         let ?pCompareEffort = effComp in
         PolyEvalOps 
             (cf2Terms z) addTerms multTerms (powTerms sample vars) 
@@ -175,7 +175,7 @@ substPolyMainVar eff z (msubstPoly, msubstPolyLR) p@(IntPoly cfg terms) =
     effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     effComp = ArithInOut.rrEffortNumComp sample eff
-    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
+    effJoin = ArithInOut.rrEffortJoinMeet sample eff
     sample = ipolycfg_sample_cf cfg
 
 evalPolyDirect ::

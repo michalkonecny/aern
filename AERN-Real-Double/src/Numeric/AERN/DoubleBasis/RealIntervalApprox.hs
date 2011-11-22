@@ -222,7 +222,7 @@ import qualified Numeric.AERN.RefinementOrder.OpsDefaultEffort as BROODE
   ((|==?),(|<==>?),(|</=>?),
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
    (</\>),(<\/>),(<\/>?),(<⊓>),(<⊔>),(<⊔>?),
-   (>/\<),(>\/<),(>⊓<),(>⊔<))
+   (>/\<),(>\/<),(>\/<?),(>⊓<),(>⊔<),(>⊔<?))
 
 import Numeric.AERN.RealArithmetic.Interval()
 
@@ -445,6 +445,15 @@ infixr 2 <\/>?, <\/>, >\/<, <⊔>?, <⊔>, >⊔<
 {-| Convenience Unicode notation for '<\/>?' -}
 (<⊔>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe RealIntervalApprox 
 (<⊔>?) = (BROODE.<⊔>?)
+
+-- | Partial outward rounded join
+(>\/<?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe RealIntervalApprox
+(>\/<?) = (BROODE.>\/<?)
+
+{-| Convenience Unicode notation for '>\/<?' -}
+(>⊔<?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe RealIntervalApprox
+(>⊔<?) = (BROODE.>⊔<?)
+
 
 infixl 6 <+>, >+<, <->, >-<
 infixl 7 <*>, >*<
