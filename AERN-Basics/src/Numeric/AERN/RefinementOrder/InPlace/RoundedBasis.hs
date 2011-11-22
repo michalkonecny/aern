@@ -42,68 +42,58 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 {-|
     A type with outward-rounding lattice operations.
 -}
-class (OuterRoundedBasisEffort t, CanBeMutable t) =>
-    OuterRoundedBasisInPlace t
+class (RoundedBasisEffort t, CanBeMutable t) =>
+    RoundedBasisInPlace t
     where
-    partialJoinOutInPlaceEff :: OpPartialMutable2Eff (PartialJoinOutEffortIndicator t) t s 
+    partialJoinOutInPlaceEff :: OpPartialMutable2Eff (PartialJoinEffortIndicator t) t s 
+    partialJoinInInPlaceEff :: OpPartialMutable2Eff (PartialJoinEffortIndicator t) t s 
 
 partialJoinOutInPlaceEffFromPure :: 
-    (CanBeMutable t, OuterRoundedBasis t) => 
-    OpPartialMutable2Eff (PartialJoinOutEffortIndicator t) t s  
+    (CanBeMutable t, RoundedBasis t) => 
+    OpPartialMutable2Eff (PartialJoinEffortIndicator t) t s  
 partialJoinOutInPlaceEffFromPure = pureToPartial2Eff partialJoinOutEff 
 
 partialJoinOutEffFromInPlace ::
- (CanBeMutable t, OuterRoundedBasisInPlace t) =>
- (PartialJoinOutEffortIndicator t) -> t -> t -> Maybe t
+ (CanBeMutable t, RoundedBasisInPlace t) =>
+ (PartialJoinEffortIndicator t) -> t -> t -> Maybe t
 partialJoinOutEffFromInPlace = mutablePartial2EffToPure partialJoinOutInPlaceEff 
 
-{-|
-    A type with inward-rounding lattice operations.
--}
-class (InnerRoundedBasisEffort t, CanBeMutable t) =>
-    InnerRoundedBasisInPlace t
-    where
-    partialJoinInInPlaceEff :: OpPartialMutable2Eff (PartialJoinInEffortIndicator t) t s 
-
-class (OuterRoundedBasisInPlace t, InnerRoundedBasisInPlace t) => RoundedBasisInPlace t 
-
 partialJoinInInPlaceEffFromPure :: 
-    (CanBeMutable t, InnerRoundedBasis t) => 
-    OpPartialMutable2Eff (PartialJoinInEffortIndicator t) t s  
+    (CanBeMutable t, RoundedBasis t) => 
+    OpPartialMutable2Eff (PartialJoinEffortIndicator t) t s  
 partialJoinInInPlaceEffFromPure = pureToPartial2Eff partialJoinInEff 
 
 partialJoinInEffFromInPlace ::
- (CanBeMutable t, InnerRoundedBasisInPlace t) =>
- (PartialJoinInEffortIndicator t) -> t -> t -> Maybe t
+ (CanBeMutable t, RoundedBasisInPlace t) =>
+ (PartialJoinEffortIndicator t) -> t -> t -> Maybe t
 partialJoinInEffFromInPlace = mutablePartial2EffToPure partialJoinInInPlaceEff 
 
-propOuterInnerRoundedBasisJoinInPlaceConsistentWithPure ::
+propInOutRoundedBasisJoinInPlaceConsistentWithPure ::
     (PartialComparison t, 
-     OuterRoundedBasisInPlace t, InnerRoundedBasisInPlace t, 
+     RoundedBasisInPlace t, 
      RoundedBasis t, 
      CanBeMutable t) =>
     t -> 
-    (PartialJoinOutEffortIndicator t, PartialJoinInEffortIndicator t, 
+    (PartialJoinEffortIndicator t, 
      PartialCompareEffortIndicator t) -> 
      UniformlyOrderedPair t -> Bool
-propOuterInnerRoundedBasisJoinInPlaceConsistentWithPure 
-    _ (partialjoinOutEffort, partialjoinInEffort, effortComp)
+propInOutRoundedBasisJoinInPlaceConsistentWithPure 
+    _ (partialJoinEffort, effortComp)
         (UniformlyOrderedPair (e1,e2)) =
     inPlaceConsistentWithPurePartial2 (pLeqEff effortComp) 
-        (partialJoinOutInPlaceEff partialjoinOutEffort)  
-        (partialJoinInInPlaceEff partialjoinInEffort)
-        (partialJoinOutEff partialjoinOutEffort) 
-        (partialJoinInEff partialjoinInEffort) 
+        (partialJoinOutInPlaceEff partialJoinEffort)  
+        (partialJoinInInPlaceEff partialJoinEffort)
+        (partialJoinOutEff partialJoinEffort) 
+        (partialJoinInEff partialJoinEffort) 
         e1 e2  
 
 testsOuterInnerRoundedBasisInPlace :: 
     (PartialComparison t,
-     OuterRoundedBasisInPlace t, InnerRoundedBasisInPlace t, 
+     RoundedBasisInPlace t, 
      RoundedBasis t, 
      CanBeMutable t,
      Arbitrary t, Show t, 
-     Arbitrary (PartialJoinOutEffortIndicator t), Show (PartialJoinOutEffortIndicator t), 
-     Arbitrary (PartialJoinInEffortIndicator t), Show (PartialJoinInEffortIndicator t), 
+     Arbitrary (PartialJoinEffortIndicator t), Show (PartialJoinEffortIndicator t), 
      Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t), 
      ArbitraryOrderedTuple t,
      Eq t
@@ -113,5 +103,5 @@ testsOuterInnerRoundedBasisInPlace (name, sample) =
     testGroup (name ++ " partial join rounded in-place") $
         [
          testProperty "partial join in-place=pure"
-             (propOuterInnerRoundedBasisJoinInPlaceConsistentWithPure sample)
+             (propInOutRoundedBasisJoinInPlaceConsistentWithPure sample)
         ]

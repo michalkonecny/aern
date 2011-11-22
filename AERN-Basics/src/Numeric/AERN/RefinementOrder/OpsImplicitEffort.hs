@@ -40,33 +40,33 @@ infixr 2 <\/>, <⊔>, >\/<, >⊔<
 
 
 (<\/>?) ::
-    (OuterRoundedBasis t, ?partialJoinOutEffort :: PartialJoinOutEffortIndicator t) => 
+    (RoundedBasis t, ?partialJoinEffort :: PartialJoinEffortIndicator t) => 
     t -> t -> Maybe t
-(<\/>?) = partialJoinOutEff ?partialJoinOutEffort 
+(<\/>?) = partialJoinOutEff ?partialJoinEffort 
 
 (>\/<?) ::
-    (InnerRoundedBasis t, ?partialJoinInEffort :: PartialJoinInEffortIndicator t) => 
+    (RoundedBasis t, ?partialJoinEffort :: PartialJoinEffortIndicator t) => 
     t -> t -> Maybe t
     
-(>\/<?) = partialJoinInEff ?partialJoinInEffort 
+(>\/<?) = partialJoinInEff ?partialJoinEffort 
 
 
 (<\/>), (</\>) :: 
-    (OuterRoundedLattice t, 
-     ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
+    (RoundedLattice t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     t -> t -> t
     
-(<\/>) = joinOutEff ?joinmeetOutEffort 
-(</\>) = meetOutEff ?joinmeetOutEffort 
+(<\/>) = joinOutEff ?joinmeetEffort 
+(</\>) = meetOutEff ?joinmeetEffort 
 
 
 (>\/<), (>/\<) :: 
-    (InnerRoundedLattice t, 
-     ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
+    (RoundedLattice t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     t -> t -> t
     
-(>\/<) = joinInEff ?joinmeetInEffort 
-(>/\<) = meetInEff ?joinmeetInEffort 
+(>\/<) = joinInEff ?joinmeetEffort 
+(>/\<) = meetInEff ?joinmeetEffort 
 
 
 
@@ -83,34 +83,34 @@ infixr 2 <\/>, <⊔>, >\/<, >⊔<
 
 {-| convenience Unicode notation for '<\/>?' -}
 (<⊔>?) :: 
-    (OuterRoundedBasis t, ?partialJoinOutEffort :: PartialJoinOutEffortIndicator t) => 
+    (RoundedBasis t, ?partialJoinEffort :: PartialJoinEffortIndicator t) => 
     t -> t -> Maybe t
 (<⊔>?) = (<\/>?)
 
 {-| convenience Unicode notation for '>\/<?' -}
 (>⊔<?) :: 
-    (InnerRoundedBasis t, ?partialJoinInEffort :: PartialJoinInEffortIndicator t) => 
+    (RoundedBasis t, ?partialJoinEffort :: PartialJoinEffortIndicator t) => 
     t -> t -> Maybe t
 (>⊔<?) = (>\/<?)
 
 {-| convenience Unicode notation for '<\/>' -}
 (<⊔>) :: 
-    (OuterRoundedLattice t, ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
+    (RoundedLattice t, ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     t -> t -> t
 (<⊔>) = (<\/>)
 {-| convenience Unicode notation for '</\>' -}
 (<⊓>) :: 
-    (OuterRoundedLattice t, ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
+    (RoundedLattice t, ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     t -> t -> t
 (<⊓>) = (</\>)
 
 {-| convenience Unicode notation for '>\/<' -}
 (>⊔<) :: 
-    (InnerRoundedLattice t, ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
+    (RoundedLattice t, ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     t -> t -> t
 (>⊔<) = (>\/<)
 {-| convenience Unicode notation for '>/\<' -}
 (>⊓<) :: 
-    (InnerRoundedLattice t, ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
+    (RoundedLattice t, ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     t -> t -> t
 (>⊓<) = (>/\<)

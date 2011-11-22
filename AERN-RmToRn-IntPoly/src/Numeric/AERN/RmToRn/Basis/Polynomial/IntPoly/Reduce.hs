@@ -104,13 +104,13 @@ reduceTermsCount eff cfg terms
     -}
     where
     effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
-    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
+    effJoin = ArithInOut.rrEffortJoinMeet sample eff
     effImprecision = ArithInOut.rrEffortImprecision sample eff
     sample = ipolycfg_sample_cf cfg
 
     varDoms = ipolycfg_doms cfg
     varDomsPowers = 
-        let ?joinmeetOutEffort = effJoin in
+        let ?joinmeetEffort = effJoin in
         let ?multInOutEffort = effMult in 
         map powersOf varDoms
         where
@@ -184,12 +184,12 @@ reduceMarkedTerms eff cfg terms =
         let ?multInOutEffort = effMult in
         let ?intPowerInOutEffort = effPwr in
         let ?addInOutEffort = effAdd in
-        let ?joinmeetOutEffort = effJoin in
+        let ?joinmeetEffort = effJoin in
         aux doms terms
     effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
     effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
-    effJoin = ArithInOut.rrEffortJoinMeetOut sample eff
+    effJoin = ArithInOut.rrEffortJoinMeet sample eff
     sample = ipolycfg_sample_cf cfg
 
     doms = ipolycfg_doms cfg

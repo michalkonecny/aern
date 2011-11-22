@@ -22,82 +22,82 @@ infixr 2 <\/>=, <⊔>=, >\/<=, >⊔<=
 
 -- | Outward rounded in-place join
 joinOutInPlace :: 
-    (OuterRoundedLatticeInPlace t, 
-     ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
+    (RoundedLatticeInPlace t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     OpMutable2 t s
-joinOutInPlace = joinOutInPlaceEff ?joinmeetOutEffort 
+joinOutInPlace = joinOutInPlaceEff ?joinmeetEffort 
 
 -- | Outward rounded join assignment 
 (<\/>=) :: 
-    (OuterRoundedLatticeInPlace t, 
-     ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
+    (RoundedLatticeInPlace t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     OpMutable1 t s
 (<\/>=) = mutable2ToMutable1 joinOutInPlace 
 
 -- | Outward rounded in-place meet
 meetOutInPlace :: 
-    (OuterRoundedLatticeInPlace t, 
-     ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
+    (RoundedLatticeInPlace t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     OpMutable2 t s    
-meetOutInPlace = meetOutInPlaceEff ?joinmeetOutEffort 
+meetOutInPlace = meetOutInPlaceEff ?joinmeetEffort 
 
 -- | Outward rounded meet assignment 
 (</\>=) :: 
-    (OuterRoundedLatticeInPlace t, 
-     ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
+    (RoundedLatticeInPlace t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     OpMutable1 t s    
 (</\>=) = mutable2ToMutable1 meetOutInPlace 
 
 -- | Inward rounded in-place join
 joinInInPlace :: 
-    (InnerRoundedLatticeInPlace t, 
-     ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
+    (RoundedLatticeInPlace t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     OpMutable2 t s
-joinInInPlace = joinInInPlaceEff ?joinmeetInEffort 
+joinInInPlace = joinInInPlaceEff ?joinmeetEffort 
 
 -- | Inward rounded join assignment 
 (>\/<=) :: 
-    (InnerRoundedLatticeInPlace t, 
-     ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
+    (RoundedLatticeInPlace t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     OpMutable1 t s
 (>\/<=) = mutable2ToMutable1 joinInInPlace 
 
 -- | Inward rounded in-place meet
 meetInInPlace :: 
-    (InnerRoundedLatticeInPlace t, 
-     ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
+    (RoundedLatticeInPlace t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     OpMutable2 t s    
-meetInInPlace = meetInInPlaceEff ?joinmeetInEffort 
+meetInInPlace = meetInInPlaceEff ?joinmeetEffort 
 
 -- | Inward rounded meet assignment 
 (>/\<=) :: 
-    (InnerRoundedLatticeInPlace t, 
-     ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
+    (RoundedLatticeInPlace t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     OpMutable1 t s    
 (>/\<=) = mutable2ToMutable1 meetInInPlace 
 
 {-| convenience Unicode notation for '<\/>=' -}
 (<⊔>=) :: 
-    (OuterRoundedLatticeInPlace t, 
-     ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
+    (RoundedLatticeInPlace t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     OpMutable1 t s
 (<⊔>=) = (<\/>=)
 {-| convenience Unicode notation for '</\>=' -}
 (<⊓>=) :: 
-    (OuterRoundedLatticeInPlace t, 
-     ?joinmeetOutEffort :: JoinMeetOutEffortIndicator t) => 
+    (RoundedLatticeInPlace t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     OpMutable1 t s
 (<⊓>=) = (</\>=)
 
 {-| convenience Unicode notation for '>\/<=' -}
 (>⊔<=) :: 
-    (InnerRoundedLatticeInPlace t, 
-     ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
+    (RoundedLatticeInPlace t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     OpMutable1 t s
 (>⊔<=) = (>\/<=)
 {-| convenience Unicode notation for '>/\<=' -}
 (>⊓<=) :: 
-    (InnerRoundedLatticeInPlace t, 
-     ?joinmeetInEffort :: JoinMeetInEffortIndicator t) => 
+    (RoundedLatticeInPlace t, 
+     ?joinmeetEffort :: JoinMeetEffortIndicator t) => 
     OpMutable1 t s
 (>⊓<=) = (>/\<=)

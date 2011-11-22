@@ -44,93 +44,87 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
     A type with directed-rounding lattice operations.
 -}
 class 
-    (OuterRoundedLatticeEffort t, CanBeMutable t) => 
-    OuterRoundedLatticeInPlace t 
+    (RoundedLatticeEffort t, CanBeMutable t) => 
+    RoundedLatticeInPlace t 
     where
-    joinOutInPlaceEff :: OpMutable2Eff (JoinMeetOutEffortIndicator t) t s
-    meetOutInPlaceEff :: OpMutable2Eff (JoinMeetOutEffortIndicator t) t s
+    joinInInPlaceEff :: OpMutable2Eff (JoinMeetEffortIndicator t) t s
+    joinOutInPlaceEff :: OpMutable2Eff (JoinMeetEffortIndicator t) t s
+    meetInInPlaceEff :: OpMutable2Eff (JoinMeetEffortIndicator t) t s
+    meetOutInPlaceEff :: OpMutable2Eff (JoinMeetEffortIndicator t) t s
     
 joinOutInPlaceEffFromPure, 
  meetOutInPlaceEffFromPure :: 
-    (CanBeMutable t, OuterRoundedLattice t) => 
-    OpMutable2Eff (JoinMeetOutEffortIndicator t) t s  
+    (CanBeMutable t, RoundedLattice t) => 
+    OpMutable2Eff (JoinMeetEffortIndicator t) t s  
 joinOutInPlaceEffFromPure = pureToMutable2Eff joinOutEff 
 meetOutInPlaceEffFromPure = pureToMutable2Eff meetOutEff 
 
 joinOutEffFromInPlace,
  meetOutEffFromInPlace ::
- (CanBeMutable t, OuterRoundedLatticeInPlace t) =>
- (JoinMeetOutEffortIndicator t) -> t -> t -> t
+ (CanBeMutable t, RoundedLatticeInPlace t) =>
+ (JoinMeetEffortIndicator t) -> t -> t -> t
 joinOutEffFromInPlace = mutable2EffToPure joinOutInPlaceEff 
 meetOutEffFromInPlace = mutable2EffToPure meetOutInPlaceEff 
 
-class 
-    (InnerRoundedLatticeEffort t, CanBeMutable t) => 
-    InnerRoundedLatticeInPlace t 
-    where
-    joinInInPlaceEff :: OpMutable2Eff (JoinMeetInEffortIndicator t) t s
-    meetInInPlaceEff :: OpMutable2Eff (JoinMeetInEffortIndicator t) t s
-    
 joinInInPlaceEffFromPure, 
  meetInInPlaceEffFromPure :: 
-    (CanBeMutable t, InnerRoundedLattice t) => 
-    OpMutable2Eff (JoinMeetInEffortIndicator t) t s  
+    (CanBeMutable t, RoundedLattice t) => 
+    OpMutable2Eff (JoinMeetEffortIndicator t) t s  
 joinInInPlaceEffFromPure = pureToMutable2Eff joinInEff 
 meetInInPlaceEffFromPure = pureToMutable2Eff meetInEff 
 
 joinInEffFromInPlace,
  meetInEffFromInPlace ::
- (CanBeMutable t, InnerRoundedLatticeInPlace t) =>
- (JoinMeetInEffortIndicator t) -> t -> t -> t
+ (CanBeMutable t, RoundedLatticeInPlace t) =>
+ (JoinMeetEffortIndicator t) -> t -> t -> t
 joinInEffFromInPlace = mutable2EffToPure joinInInPlaceEff 
 meetInEffFromInPlace = mutable2EffToPure meetInInPlaceEff 
 
-propOuterInnerRoundedLatticeJoinInPlaceConsistentWithPure ::
+propInOutRoundedLatticeJoinInPlaceConsistentWithPure ::
     (PartialComparison t, 
-     OuterRoundedLatticeInPlace t, InnerRoundedLatticeInPlace t, 
+     RoundedLatticeInPlace t, 
      RoundedLattice t, 
      CanBeMutable t) =>
     t -> 
-    (JoinMeetOutEffortIndicator t, JoinMeetInEffortIndicator t, 
+    (JoinMeetEffortIndicator t, 
      PartialCompareEffortIndicator t) -> 
      UniformlyOrderedPair t -> Bool
-propOuterInnerRoundedLatticeJoinInPlaceConsistentWithPure 
-    _ (joinmeetOutEffort, joinmeetInEffort, effortComp)
+propInOutRoundedLatticeJoinInPlaceConsistentWithPure 
+    _ (joinmeetEffort, effortComp)
         (UniformlyOrderedPair (e1,e2)) =
     inPlaceConsistentWithPure2 (pLeqEff effortComp) 
-        (joinOutInPlaceEff joinmeetOutEffort)  
-        (joinInInPlaceEff joinmeetInEffort)
-        (joinOutEff joinmeetOutEffort) 
-        (joinInEff joinmeetInEffort) 
+        (joinOutInPlaceEff joinmeetEffort)  
+        (joinInInPlaceEff joinmeetEffort)
+        (joinOutEff joinmeetEffort) 
+        (joinInEff joinmeetEffort) 
         e1 e2  
 
-propOuterInnerRoundedLatticeMeetInPlaceConsistentWithPure ::
+propInOutRoundedLatticeMeetInPlaceConsistentWithPure ::
     (PartialComparison t, 
-     OuterRoundedLatticeInPlace t, InnerRoundedLatticeInPlace t,
+     RoundedLatticeInPlace t,
      RoundedLattice t, 
      CanBeMutable t) => 
     t -> 
-    (JoinMeetOutEffortIndicator t, JoinMeetInEffortIndicator t, 
+    (JoinMeetEffortIndicator t, 
      PartialCompareEffortIndicator t) -> 
      UniformlyOrderedPair t -> Bool
-propOuterInnerRoundedLatticeMeetInPlaceConsistentWithPure 
-    _ (joinmeetOutEffort, joinmeetInEffort, effortComp)
+propInOutRoundedLatticeMeetInPlaceConsistentWithPure 
+    _ (joinmeetEffort, effortComp)
         (UniformlyOrderedPair (e1,e2)) =
     inPlaceConsistentWithPure2 (pLeqEff effortComp) 
-        (meetOutInPlaceEff joinmeetOutEffort)  
-        (meetInInPlaceEff joinmeetInEffort)
-        (meetOutEff joinmeetOutEffort) 
-        (meetInEff joinmeetInEffort) 
+        (meetOutInPlaceEff joinmeetEffort)  
+        (meetInInPlaceEff joinmeetEffort)
+        (meetOutEff joinmeetEffort) 
+        (meetInEff joinmeetEffort) 
         e1 e2  
 
 testsOuterInnerRoundedLatticeInPlace :: 
     (PartialComparison t,
-     OuterRoundedLatticeInPlace t, InnerRoundedLatticeInPlace t, 
+     RoundedLatticeInPlace t, 
      RoundedLattice t, 
      CanBeMutable t,
      Arbitrary t, Show t, 
-     Arbitrary (JoinMeetOutEffortIndicator t), Show (JoinMeetOutEffortIndicator t), 
-     Arbitrary (JoinMeetInEffortIndicator t), Show (JoinMeetInEffortIndicator t), 
+     Arbitrary (JoinMeetEffortIndicator t), Show (JoinMeetEffortIndicator t), 
      Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t), 
      ArbitraryOrderedTuple t,
      Eq t
@@ -140,9 +134,9 @@ testsOuterInnerRoundedLatticeInPlace (name, sample) =
     testGroup (name ++ " (join,meet) rounded in-place") $
         [
          testProperty "join in-place=pure"
-             (propOuterInnerRoundedLatticeJoinInPlaceConsistentWithPure sample)
+             (propInOutRoundedLatticeJoinInPlaceConsistentWithPure sample)
         ,
          testProperty "meet in-place=pure"
-             (propOuterInnerRoundedLatticeMeetInPlaceConsistentWithPure sample)
+             (propInOutRoundedLatticeMeetInPlaceConsistentWithPure sample)
         ]
 

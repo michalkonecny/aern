@@ -54,24 +54,24 @@ instance (HasDistance e, ArithInOut.RoundedAdd (Distance e)) =>
         distR = distanceBetweenEff effortDist r1 r2
     
 instance 
-    (HasDistance e, RefOrd.OuterRoundedLattice (Distance e), Neg (Distance e), 
+    (HasDistance e, RefOrd.RoundedLattice (Distance e), Neg (Distance e), 
      NumOrd.PartialComparison e) => 
     HasImprecision (Interval e) 
     where
     type Imprecision (Interval e) = Distance e
     type ImprecisionEffortIndicator (Interval e) = 
         (DistanceEffortIndicator e,
-         RefOrd.JoinMeetOutEffortIndicator (Distance e), 
+         RefOrd.JoinMeetEffortIndicator (Distance e), 
          ConsistencyEffortIndicator (Interval e))
     imprecisionDefaultEffort i@(Interval l r) = 
         (effortDist, effortMeet, consistencyDefaultEffort i) 
         where
         effortDist = distanceDefaultEffort l
-        effortMeet = RefOrd.joinmeetOutDefaultEffort d
+        effortMeet = RefOrd.joinmeetDefaultEffort d
         d = distanceBetweenEff effortDist l r
     imprecisionOfEff (effortDist, effortMeet, effortConsistency) i@(Interval l r) =
         let 
-        ?joinmeetOutEffort = effortMeet
+        ?joinmeetEffort = effortMeet
         in
         case (isConsistentEff effortConsistency i) of
             Just True -> dist

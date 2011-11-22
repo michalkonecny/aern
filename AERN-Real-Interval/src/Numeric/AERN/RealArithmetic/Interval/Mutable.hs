@@ -41,5 +41,5 @@ instance
     (ArithUpDn.RoundedRealInPlace e, NumOrd.HasExtrema e,
      ArithInOut.RoundedAdd (Distance e), 
      Neg (Distance e),
-     RefOrd.OuterRoundedLattice (Distance e)) => 
+     RefOrd.RoundedLattice (Distance e)) => 
     ArithInOut.RoundedRealInPlace (Interval e)

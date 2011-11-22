@@ -93,28 +93,28 @@ maxUp = maxUpEff ?minmaxEffort
 
 -- | Outward rounded minimum
 minOut :: 
-    (OuterRoundedLattice t, 
-     ?minmaxOuterEffort :: MinmaxOuterEffortIndicator t) =>
+    (RefinementRoundedLattice t, 
+     ?minmaxInOutEffort :: MinmaxInOutEffortIndicator t) =>
     t -> t -> t
-minOut = minOutEff ?minmaxOuterEffort
+minOut = minOutEff ?minmaxInOutEffort
 
 -- | Outward rounded maximum
 maxOut :: 
-    (OuterRoundedLattice t, 
-     ?minmaxOuterEffort :: MinmaxOuterEffortIndicator t) =>
+    (RefinementRoundedLattice t, 
+     ?minmaxInOutEffort :: MinmaxInOutEffortIndicator t) =>
     t -> t -> t
-maxOut = maxOutEff ?minmaxOuterEffort
+maxOut = maxOutEff ?minmaxInOutEffort
 
 -- | Inward rounded minimum
 minIn ::
-    (InnerRoundedLattice t,
-     ?minmaxInnerEffort :: MinmaxInnerEffortIndicator t) =>
+    (RefinementRoundedLattice t,
+     ?minmaxInOutEffort :: MinmaxInOutEffortIndicator t) =>
     t -> t -> t
-minIn = minInEff ?minmaxInnerEffort
+minIn = minInEff ?minmaxInOutEffort
 
 -- | Outward rounded maximum
 maxIn ::
-    (InnerRoundedLattice t,
-     ?minmaxInnerEffort :: MinmaxInnerEffortIndicator t) =>
+    (RefinementRoundedLattice t,
+     ?minmaxInOutEffort :: MinmaxInOutEffortIndicator t) =>
     t -> t -> t
-maxIn = maxInEff ?minmaxInnerEffort
+maxIn = maxInEff ?minmaxInOutEffort

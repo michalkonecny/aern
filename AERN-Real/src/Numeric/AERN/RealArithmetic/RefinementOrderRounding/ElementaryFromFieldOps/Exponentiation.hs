@@ -60,7 +60,7 @@ expOutThinArg ::
 expOutThinArg eff
         degr x =
     let ?pCompareEffort = effortRefinement in
-    let ?joinmeetOutEffort = effortMeet in
+    let ?joinmeetEffort = effortMeet in
     let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField in
     -- infinities not handled well by the Taylor formula,
     -- treat them as special cases, adding also 0 for efficiency:
@@ -76,7 +76,7 @@ expOutThinArg eff
     where
     effortField = ArithInOut.rrEffortField sample eff
     effortMixedField = ArithInOut.rrEffortIntMixedField sample eff
-    effortMeet = ArithInOut.rrEffortJoinMeetOut sample eff
+    effortMeet = ArithInOut.rrEffortJoinMeet sample eff
     effortRefinement = ArithInOut.rrEffortRefComp sample eff
     effortCompare = ArithInOut.rrEffortNumComp sample eff
     effortToInt = ArithInOut.rrEffortToInt sample eff
@@ -91,7 +91,7 @@ expOutThinArg eff
             Just xDn -> (xDn :: Int, False)
             _ -> (error "internal error in expOutThinArg", True)
     expOutViaTaylorForXScaledNearZero =
-        let ?joinmeetOutEffort = effortMeet in
+        let ?joinmeetEffort = effortMeet in
         let ?addInOutEffort = ArithInOut.fldEffortAdd x effortField in
         let ?multInOutEffort = ArithInOut.fldEffortMult x effortField in
         let ?intPowerInOutEffort = ArithInOut.fldEffortPow x effortField in
@@ -175,13 +175,13 @@ expOutThinArgInPlace
     let sample = x
     let effortField = ArithInOut.rrEffortField sample eff
     let effortMixedField = ArithInOut.rrEffortIntMixedField sample eff
-    let effortMeet = ArithInOut.rrEffortJoinMeetOut sample eff
+    let effortMeet = ArithInOut.rrEffortJoinMeet sample eff
     let effortRefinement = ArithInOut.rrEffortRefComp sample eff
     let effortCompare = ArithInOut.rrEffortNumComp sample eff
     let effortToInt = ArithInOut.rrEffortToInt sample eff
     let effortFromDouble = ArithInOut.rrEffortFromDouble sample eff
     let ?pCompareEffort = effortRefinement
-    let ?joinmeetOutEffort = effortMeet
+    let ?joinmeetEffort = effortMeet
     let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField
     let ?multInOutEffort = ArithInOut.fldEffortMult x effortField
     let ?intPowerInOutEffort = ArithInOut.fldEffortPow x effortField

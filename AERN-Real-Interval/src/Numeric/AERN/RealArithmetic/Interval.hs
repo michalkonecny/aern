@@ -51,26 +51,25 @@ instance
     (ArithUpDn.RoundedReal e, NumOrd.HasExtrema e, 
      ArithInOut.RoundedAdd (Distance e), 
      Neg (Distance e),
-     RefOrd.OuterRoundedLattice (Distance e)
+     RefOrd.RoundedLattice (Distance e)
     ) => 
     ArithInOut.RoundedReal (Interval e) 
     where
     type ArithInOut.RoundedRealEffortIndicator (Interval e) = 
         (ArithUpDn.RoundedRealEffortIndicator e, 
          (ArithInOut.AddEffortIndicator (Distance e),
-          RefOrd.JoinMeetOutEffortIndicator (Distance e)
+          RefOrd.JoinMeetEffortIndicator (Distance e)
          ))
     roundedRealDefaultEffort (Interval l r) = 
         (ArithUpDn.roundedRealDefaultEffort l, 
-        (ArithInOut.addDefaultEffort sampleDist, RefOrd.joinmeetOutDefaultEffort sampleDist))
+        (ArithInOut.addDefaultEffort sampleDist, RefOrd.joinmeetDefaultEffort sampleDist))
         where
         sampleDist =  distanceBetweenEff (distanceDefaultEffort l) l l
     rrEffortNumComp (Interval l r) (effR,_) = ArithUpDn.rrEffortComp l effR
-    rrEffortMinmaxIn (Interval l r) (effR,_) = ArithUpDn.rrEffortMinmax l effR
-    rrEffortMinmaxOut (Interval l r) (effR,_) = ArithUpDn.rrEffortMinmax l effR
+    rrEffortMinmaxInOut (Interval l r) (effR,_) = ArithUpDn.rrEffortMinmax l effR
     rrEffortRefComp (Interval l r) (effR,_) = ArithUpDn.rrEffortComp l effR
-    rrEffortJoinMeetOut (Interval l r) (effR,_) = ArithUpDn.rrEffortMinmax l effR
-    rrEffortJoinMeetIn (Interval l r) (effR,_) = ArithUpDn.rrEffortMinmax l effR
+    rrEffortPartialJoin (Interval l r) (effR,_) = (ArithUpDn.rrEffortMinmax l effR, ArithUpDn.rrEffortComp l effR)
+    rrEffortJoinMeet (Interval l r) (effR,_) = ArithUpDn.rrEffortMinmax l effR
     rrEffortDistance (Interval l r) (effR,(effDistAdd, _)) 
         = (ArithUpDn.rrEffortDistance l effR, effDistAdd) 
     rrEffortImprecision (Interval l r) (effR,(effDistAdd, effDistJoin))
