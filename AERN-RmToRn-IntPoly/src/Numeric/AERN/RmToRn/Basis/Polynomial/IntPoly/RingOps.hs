@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ImplicitParams #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE MultiParamTypeClasses, UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps
     Description :  refinement rounded ring operations  
@@ -127,8 +127,32 @@ multTerms poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
                 (n1, p1) <- IntMap.toAscList polys1, 
                 (n2, p2) <- IntMap.toAscList polys2 ] 
         
-powTerms sample vars = powerFromMult (mkConstTerms (one sample) vars) multTerms
+instance
+    (ArithInOut.RoundedReal cf) => 
+    ArithInOut.RoundedPowerToNonnegIntEffort (IntPoly var cf)
+    where
+    type (ArithInOut.PowerToNonnegIntEffortIndicator (IntPoly var cf)) =
+         ArithInOut.PowerToNonnegIntEffortIndicatorFromMult (IntPoly var cf)
+    powerToNonnegIntDefaultEffort = ArithInOut.powerToNonnegIntDefaultEffortFromMult
 
+instance
+    (ArithInOut.RoundedReal cf, 
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf),
+     Show var, Show cf, Ord var) =>
+    ArithInOut.RoundedPowerToNonnegInt (IntPoly var cf) 
+    where
+    powerToNonnegIntInEff eff p n = error "inner rounded operations not available for IntPoly"
+    powerToNonnegIntOutEff eff (IntPoly cfg terms) n = 
+        let ?addInOutEffort = effAdd in
+        let ?multInOutEffort = effMult in
+        IntPoly cfg $ powTerms sample vars terms n
+        where
+        sample = ipolycfg_sample_cf cfg
+        vars = ipolycfg_vars cfg
+        effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+        
+powTerms sample vars = powerFromMult (mkConstTerms (one sample) vars) multTerms
         
 instance
     (ArithInOut.RoundedMixedAddEffort cf other) => 
