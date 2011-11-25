@@ -188,7 +188,7 @@ instance HasSizeLimits fb => HasSizeLimits (FnEndpoint fb)
     where
     type SizeLimits (FnEndpoint fb) = SizeLimits fb
     getSizeLimits (FnEndpoint f) = getSizeLimits f
-    defaultSizes (FnEndpoint f) = defaultSizes f
+    defaultSizeLimits (FnEndpoint f) = defaultSizeLimits f
     changeSizeLimits l (FnEndpoint f) = FnEndpoint $ changeSizeLimits l f
     
 instance CanEvaluateOtherType fb => CanEvaluateOtherType (FnEndpoint fb)

@@ -22,7 +22,7 @@ import Control.Monad.ST (ST)
 class HasSizeLimits f where
     type SizeLimits f
     getSizeLimits :: f -> SizeLimits f
-    defaultSizes :: f -> SizeLimits f
+    defaultSizeLimits :: f -> SizeLimits f
     changeSizeLimits :: SizeLimits f -> f -> f
 
 class (HasDomainBox f, HasSizeLimits f) => HasProjections f where
@@ -32,6 +32,15 @@ class (HasDomainBox f, HasSizeLimits f) => HasProjections f where
         (Var f) {-^ the variable @x@ being projected -} -> 
         f {-^ @ \box -> x @ -}
 
+newProjectionFromSample ::
+    (HasProjections f) =>
+    f -> (Var f) -> f
+newProjectionFromSample sampleF var =
+    newProjection sizeLimits domBox var
+    where
+    sizeLimits = getSizeLimits sampleF
+    domBox = getDomainBox sampleF
+
 class (HasDomainBox f, HasSizeLimits f) => HasConstFns f where
     newConstFn :: 
         (SizeLimits f) {-^ limits of the new function -} -> 
@@ -39,4 +48,11 @@ class (HasDomainBox f, HasSizeLimits f) => HasConstFns f where
         (Domain f) {-^ the value @v@ of the constant function -} -> 
         f {-^ @ \box -> v @ -}
 
-        
+newConstFnFromSample ::
+    (HasConstFns f) =>
+    f -> (Domain f) -> f
+newConstFnFromSample sampleF value =
+    newConstFn sizeLimits domBox value
+    where
+    sizeLimits = getSizeLimits sampleF
+    domBox = getDomainBox sampleF
