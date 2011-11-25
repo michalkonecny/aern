@@ -27,29 +27,28 @@ import Numeric.AERN.Misc.IntegerArithmetic
 bernsteinOut ::
     (HasProjections f, HasConstFns f,
      HasOne (Domain f),
-     ArithInOut.RoundedAdd f, 
-     ArithInOut.RoundedSubtr f, 
-     ArithInOut.RoundedMultiply f,
-     ArithInOut.RoundedMixedMultiply f Int,
-     ArithInOut.RoundedPowerToNonnegInt f) 
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedMixedField f Int) 
      =>
-    (ArithInOut.AddEffortIndicator f,
-     ArithInOut.MultEffortIndicator f,
-     ArithInOut.MixedMultEffortIndicator f Int,
-     ArithInOut.PowerToNonnegIntEffortIndicator f) ->
+    (ArithInOut.RingOpsEffortIndicator f,
+     ArithInOut.MixedFieldOpsEffortIndicator f Int) ->
     f ->
-    (Var f) ->
     Int ->
     Int ->
     f
-bernsteinOut eff@(effAdd, effMult, effMMult, effPwr) sampleF var n p =
+bernsteinOut (effRing, effIntOps) x n p =
     let ?addInOutEffort = effAdd in
     let ?multInOutEffort = effMult in
     let ?mixedMultInOutEffort = effMMult in
-    let ?intPowerInOutEffort = effPwr in
+    let ?intPowerInOutEffort = effPow in
     (binomial n p) |<*>
         ((x<^>p) <*> ((c1 <-> x)<^>(n-p)))
     where
-    x = newProjectionFromSample sampleF var
+    sampleF = x
     c1 = newConstFnFromSample sampleF (one sampleCf)
     sampleCf = getSampleDomValue sampleF
+    effAdd = ArithInOut.ringEffortAdd sampleF effRing
+    effMult = ArithInOut.ringEffortMult sampleF effRing
+    effPow = ArithInOut.ringEffortPow sampleF effRing
+    effMMult = ArithInOut.mxfldEffortMult sampleF (1::Int) effIntOps
+    
