@@ -225,7 +225,7 @@ instance (Ord var, ArithInOut.RoundedReal cf) => (HasDomainBox (IntPoly var cf))
 instance (HasSizeLimits (IntPoly var cf)) 
     where
     type (SizeLimits (IntPoly var cf)) = IntPolyCfg var cf
-    defaultSizes = getSizeLimits 
+    defaultSizeLimits = getSizeLimits 
     getSizeLimits (IntPoly cfg _) = cfg
     changeSizeLimits cfg (IntPoly _ terms) = IntPoly cfg terms
 --        error $ "changeSizeLimits not implemented for IntPoly"

@@ -40,12 +40,14 @@ Library
         random >= 1.0 && < 2.0,
         AERN-Basics == 2011.2.0.0, AERN-Real == 2011.2.0.0, AERN-Real-Interval == 2011.2.0.0
   exposed-modules:       
-        Numeric.AERN.RmToRn.Domain, 
-        Numeric.AERN.RmToRn.New, 
-        Numeric.AERN.RmToRn.Evaluation, 
+        Numeric.AERN.RmToRn.Domain
+        Numeric.AERN.RmToRn.New
+        Numeric.AERN.RmToRn.Evaluation 
         Numeric.AERN.RmToRn.MinimalFnBasis 
+        Numeric.AERN.RmToRn.RefinementOrderRounding.BernsteinPoly 
+        Numeric.AERN.NumericOrder.FromInOutRingOps.RefinementRoundedLattice
   other-modules:
-        Numeric.AERN.RmToRn.MinimalFnBasis.Basics,
-        Numeric.AERN.RmToRn.MinimalFnBasis.RingOps,
+        Numeric.AERN.RmToRn.MinimalFnBasis.Basics
+        Numeric.AERN.RmToRn.MinimalFnBasis.RingOps
         Numeric.AERN.RmToRn.MinimalFnBasis.NumericOrder
 

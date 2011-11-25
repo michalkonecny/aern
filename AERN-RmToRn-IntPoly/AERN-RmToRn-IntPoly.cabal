@@ -44,8 +44,6 @@ Library
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluate
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
---        Numeric.AERN.RmToRn.IntPoly.RefinementOrder
---        Numeric.AERN.RmToRn.IntPoly.RingOps
   other-modules:
 
 Executable minimal
