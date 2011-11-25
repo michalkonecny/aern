@@ -155,6 +155,30 @@ instance
 powTerms sample vars = powerFromMult (mkConstTerms (one sample) vars) multTerms
         
 instance
+    (ArithInOut.RoundedReal cf) 
+    => 
+    ArithInOut.RoundedRingEffort (IntPoly var cf)
+    where
+    type ArithInOut.RingOpsEffortIndicator (IntPoly var cf) =
+        (ArithInOut.RoundedRealEffortIndicator cf)
+    ringOpsDefaultEffort (IntPoly cfg _) = 
+        ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg
+    ringEffortAdd (IntPoly cfg _) eff =  
+        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf eff
+        where
+        sampleCf = ipolycfg_sample_cf cfg 
+    ringEffortMult (IntPoly cfg _) eff = eff  
+    ringEffortPow (IntPoly cfg _) eff = eff  
+
+instance 
+    (ArithInOut.RoundedReal cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithInOut.RoundedRing (IntPoly var cf)
+
+        
+instance
     (ArithInOut.RoundedMixedAddEffort cf other) => 
     ArithInOut.RoundedMixedAddEffort (IntPoly var cf) other 
     where
@@ -264,7 +288,68 @@ divPolyByOther eff (IntPoly cfg poly) c =
         IntPolyC $ val </>| c
     dP (IntPolyV x polys) = 
         IntPolyV x $ IntMap.map dP polys
-    
+
+instance
+    (ArithInOut.RoundedReal cf, ArithInOut.RoundedMixedRingEffort cf other, Ord var) 
+    => 
+    ArithInOut.RoundedMixedRingEffort (IntPoly var cf) other
+    where
+    type ArithInOut.MixedRingOpsEffortIndicator (IntPoly var cf) other =
+        (ArithInOut.RoundedRealEffortIndicator cf,
+         ArithInOut.MixedRingOpsEffortIndicator cf other)
+    mixedRingOpsDefaultEffort (IntPoly cfg _) sampleOther = 
+        (ArithInOut.roundedRealDefaultEffort sampleCf,
+         ArithInOut.mixedRingOpsDefaultEffort sampleCf sampleOther)
+         where
+         sampleCf = ipolycfg_sample_cf cfg
+    mxringEffortAdd (IntPoly cfg _) sampleOther (effRR, effMF) =  
+        ArithInOut.mxringEffortAdd sampleCf sampleOther effMF
+        where
+        sampleCf = ipolycfg_sample_cf cfg 
+    mxringEffortMult (IntPoly cfg _) sampleOther (effRR, effMF) =  
+        ArithInOut.mxringEffortMult sampleCf sampleOther effMF
+        where
+        sampleCf = ipolycfg_sample_cf cfg 
+
+instance
+    (ArithInOut.RoundedReal cf, ArithInOut.RoundedMixedFieldEffort cf other, Ord var) 
+    => 
+    ArithInOut.RoundedMixedFieldEffort (IntPoly var cf) other
+    where
+    type ArithInOut.MixedFieldOpsEffortIndicator (IntPoly var cf) other =
+        (ArithInOut.RoundedRealEffortIndicator cf,
+         ArithInOut.MixedFieldOpsEffortIndicator cf other)
+    mixedFieldOpsDefaultEffort (IntPoly cfg _) sampleOther = 
+        (ArithInOut.roundedRealDefaultEffort sampleCf,
+         ArithInOut.mixedFieldOpsDefaultEffort sampleCf sampleOther)
+         where
+         sampleCf = ipolycfg_sample_cf cfg
+    mxfldEffortAdd (IntPoly cfg _) sampleOther (effRR, effMF) =  
+        ArithInOut.mxfldEffortAdd sampleCf sampleOther effMF
+        where
+        sampleCf = ipolycfg_sample_cf cfg 
+    mxfldEffortMult (IntPoly cfg _) sampleOther (effRR, effMF) =  
+        ArithInOut.mxfldEffortMult sampleCf sampleOther effMF
+        where
+        sampleCf = ipolycfg_sample_cf cfg 
+    mxfldEffortDiv (IntPoly cfg _) sampleOther (effRR, effMF) =  
+        ArithInOut.mxfldEffortDiv sampleCf sampleOther effMF
+        where
+        sampleCf = ipolycfg_sample_cf cfg 
+
+instance 
+    (Ord var,
+     ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedRing cf other)
+    =>
+    ArithInOut.RoundedMixedRing (IntPoly var cf) other
+
+instance 
+    (Ord var,
+     ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedField cf other)
+    =>
+    ArithInOut.RoundedMixedField (IntPoly var cf) other
     
 -- a quick and dirty sine implementation; this should be made generic
 -- and move to AERN-Real
