@@ -238,7 +238,7 @@ class (RoundedMixedAddEffort t tn, RoundedMixedMultiplyEffort t tn) =>
     mxringEffortAdd :: t -> tn -> MixedRingOpsEffortIndicator t tn -> MixedAddEffortIndicator t tn
     mxringEffortMult :: t -> tn -> MixedRingOpsEffortIndicator t tn -> MixedMultEffortIndicator t tn
 
-class (RoundedMixedAdd t tn, RoundedMixedMultiply t tn) => 
+class (RoundedMixedAdd t tn, RoundedMixedMultiply t tn, RoundedMixedRingEffort t tn) => 
     RoundedMixedRing t tn
 
 class (RoundedMixedRingEffort t tn, RoundedMixedDivideEffort t tn) => 
