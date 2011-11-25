@@ -50,3 +50,13 @@ intLog b n
         where
         lgMid = (lgDn + lgUp) `div` 2
         pwMid = pwDn * (b ^ (lgMid - lgDn))
+
+binomial :: 
+    (Integral n) =>
+    n -> n -> n
+binomial n p | p >= 0 =
+    (product [(n-p+1)..n])
+    `div`
+    (product [1..p])
+    
+        
