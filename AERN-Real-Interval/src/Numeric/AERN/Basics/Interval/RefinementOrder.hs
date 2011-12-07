@@ -37,6 +37,27 @@ import Test.QuickCheck
 
 import Data.Maybe
 
+instance
+    (RefOrd.IntervalLike (Interval e))
+    where
+    type RefOrd.GetEndpointsEffortIndicator (Interval e) = ()
+    type RefOrd.FromEndpointsEffortIndicator (Interval e) = ()
+    getEndpointsDefaultEffort _ = ()
+    fromEndpointsDefaultEffort _ = ()
+    getEndpointsInEff _ (Interval l r) = (Interval l l,Interval r r)
+    getEndpointsOutEff _ (Interval l r) = (Interval l l,Interval r r)
+    fromEndpointsInEff _ (Interval ll lr, Interval rl rr) = (Interval ll rr) 
+        -- why not (Interval lr rl) ? because:
+        --   we do not necessarily interpret intervals as approximations of singletons
+        --   we are approximating an interval operation - which one?
+        --      a suitable inverse of getEndpointsInEff, which produces anti-consistent endpoints
+        --         inner rounded (from . get) must produce a sub-interval
+        --           Interval lr rl here would break this property
+        --   in this case no rounding occurs - Out and In versions must be the same
+    fromEndpointsOutEff _ (Interval ll lr, Interval rl rr) = (Interval ll rr)
+    fromEndpointsInWithDefaultEffort (Interval ll lr, Interval rl rr) = (Interval ll rr) 
+    fromEndpointsOutWithDefaultEffort (Interval ll lr, Interval rl rr) = (Interval ll rr) 
+
 instance 
     (NumOrd.PartialComparison e) => 
     (RefOrd.PartialComparison (Interval e))
