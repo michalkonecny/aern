@@ -27,7 +27,7 @@ import qualified Data.IntMap as IntMap
 class (HasVarValue 
         (DomainBox f) 
         (Var f) 
-        (Domain f, Domain f))
+        (Domain f))
         => HasDomainBox f 
     where
     type Var f
@@ -39,16 +39,16 @@ class (HasVarValue
     getDomainBox :: f -> DomainBox f
     defaultDomSplit ::
         f {-^ dummy parameter that aids typechecking -} -> 
-        (Domain f, Domain f) -> 
-        ((Domain f, Domain f), (Domain f, Domain f))
+        (Domain f) -> 
+        (Domain f, Domain f)
 
-type DomainBox f = VarBox f (Domain f, Domain f)
+type DomainBox f = VarBox f (Domain f)
     
 
 --type DomainPointBox f = VarBox f (Domain f)
 --
 --class (HasDomainBox f, 
---       HasVarValue 
+--       HasVarValue
 --        (VarBox f (Domain f)) 
 --        (Var f) 
 --        (Domain f)) => HasDomainPtBox f

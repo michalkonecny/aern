@@ -187,14 +187,18 @@ instance
         ArithInOut.mixedAddDefaultEffort (ipolycfg_sample_cf cfg) c
 
 instance
-    (ArithInOut.RoundedMixedAdd cf other,  Ord var, ArithInOut.RoundedReal cf) =>
+    (ArithInOut.RoundedMixedAdd cf other,  Ord var, 
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf) 
+    =>
     ArithInOut.RoundedMixedAdd (IntPoly var cf) other 
     where
     mixedAddInEff eff p1 a = error "inner rounded operations not available for IntPoly"
     mixedAddOutEff eff p1 a = addPolyConst eff p1 a
 
 addPolyConst :: 
-    (ArithInOut.RoundedMixedAdd cf other, Ord var, ArithInOut.RoundedReal cf) =>
+    (ArithInOut.RoundedMixedAdd cf other, Ord var, 
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf) 
+    =>
     ArithInOut.MixedAddEffortIndicator cf other -> 
     IntPoly var cf -> other -> IntPoly var cf
 addPolyConst eff (IntPoly cfg poly) const =
@@ -339,14 +343,14 @@ instance
 
 instance 
     (Ord var,
-     ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
      ArithInOut.RoundedMixedRing cf other)
     =>
     ArithInOut.RoundedMixedRing (IntPoly var cf) other
 
 instance 
     (Ord var,
-     ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
      ArithInOut.RoundedMixedField cf other)
     =>
     ArithInOut.RoundedMixedField (IntPoly var cf) other
@@ -355,7 +359,7 @@ instance
 -- and move to AERN-Real
 
 sinePoly ::
-    (ArithInOut.RoundedReal cf,
+    (ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
      NumOrd.PartialComparison (Imprecision cf),  Show (Imprecision cf),
      Show var, Ord var, Show cf) =>
     (ArithInOut.RoundedRealEffortIndicator cf) -> 

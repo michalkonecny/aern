@@ -114,7 +114,7 @@ reduceTermsCount eff cfg terms
         let ?multInOutEffort = effMult in 
         map powersOf varDoms
         where
-        powersOf (aL,aR) = iterate (<*> (aL </\> aR)) $ one aL
+        powersOf a = iterate (<*> a) $ one a
     maxSize = ipolycfg_maxsize cfg
     size = length allTermRangesList
     allTermRangesList = 
@@ -197,7 +197,7 @@ reduceMarkedTerms eff cfg terms =
     aux _ t@(IntPolyC (cf, marked)) 
         | marked = (Nothing, Just $ IntPolyC (cf, True))
         | otherwise = (Just $ IntPolyC cf, Nothing)  
-    aux ((varDomL,varDomR):restVars) (IntPolyV var subPolys) =
+    aux (varDom:restVars) (IntPolyV var subPolys) =
         (maybeNewTerms, maybeOverflow)
         where
         maybeNewTerms
@@ -227,7 +227,6 @@ reduceMarkedTerms eff cfg terms =
                         add subTerms (scaleByVarPower (prevDegree - degree) prevOverflowTerms)
         scaleByVarPower pwr p =
             (scale $ varDom <^> pwr) p
-        varDom = varDomL </\> varDomR
         scale c (IntPolyC (val, marked)) =
             IntPolyC (val <*> c, marked)
         scale c (IntPolyV x polys) = 

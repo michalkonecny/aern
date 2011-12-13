@@ -22,8 +22,11 @@ import Numeric.AERN.RmToRn.Domain
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
-import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Measures
+
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Exception
@@ -33,7 +36,13 @@ import qualified Data.IntMap as IntMap
     
 import Data.List (intercalate, sortBy)
     
-{--- multi-variate polynomials, variable-asymmetric representation  ---}
+{-| 
+    Multi-variate polynomials using variable-asymmetric representation.
+      
+    Note that if variables have interval-like domains, each of their domains
+    must be **non-negative**.  The 'RefOrd.IntervalLike' instance
+    of this type is valid only with this assumtion.
+-}
 data IntPoly var cf =
     IntPoly
         {
@@ -68,7 +77,7 @@ termsMapCoeffs :: (cf -> cf) -> IntPolyTerms var cf -> IntPolyTerms var cf
 termsMapCoeffs f (IntPolyC val) = IntPolyC $ f val
 termsMapCoeffs f (IntPolyV var polys) = IntPolyV var $ powersMapCoeffs f polys
 
-polyAddMainVar :: var -> (cf, cf) -> IntPoly var cf -> IntPoly var cf
+polyAddMainVar :: var -> cf -> IntPoly var cf -> IntPoly var cf
 polyAddMainVar var dom p@(IntPoly cfg terms) =
     IntPoly cfgNew termsNew
     where
@@ -127,7 +136,10 @@ groupByFst ((key, val) : assocs) = aux key [val] assocs
         | key == prevKey = aux prevKey (val : prevVals) rest
         | otherwise = (prevKey, reverse prevVals) : (aux key [val] rest)
 
-instance (Show var, Show cf) => (Show (IntPolyTerms var cf))
+instance 
+    (Show var, Show cf) 
+    => 
+    (Show (IntPolyTerms var cf))
     where
     show (IntPolyC val)
         = "C{" ++ show val ++ "}"
@@ -139,7 +151,7 @@ data IntPolyCfg var cf =
     IntPolyCfg
     {
         ipolycfg_vars :: [var], -- arity and variable order
-        ipolycfg_doms :: [(cf, cf)], -- domain of each variable
+        ipolycfg_doms :: [cf], -- domain of each variable, MUST NOT HAVE ZERO IN THE INTERIOR!!
         ipolycfg_sample_cf :: cf,  -- sample coefficient for type inference
         ipolycfg_maxdeg :: Int, -- maximum degree of each term
         ipolycfg_maxsize :: Int -- maximum term size
@@ -151,7 +163,10 @@ cfgRemVar cfg = cfg
             ipolycfg_doms = tail $ ipolycfg_doms cfg 
         }
 
-instance (Show var, Show cf) => Show (IntPolyCfg var cf)
+instance 
+    (Show var, Show cf) 
+    =>
+    Show (IntPolyCfg var cf)
     where
     show (IntPolyCfg vars doms _ maxdeg maxsize) 
         = "cfg{" ++ (show $ zip vars doms) ++ ";" ++ show maxdeg ++ "/" ++ show maxsize ++ "}"
@@ -176,6 +191,20 @@ termsNormalise cfg poly =
 
 {-- Order-related ops --}
 
+polyIsExactEff effImpr p@(IntPoly _ terms) = termsAreExactEff effImpr terms 
+
+termsAreExactEff ::
+    (HasImprecision cf)
+    =>
+    (ImprecisionEffortIndicator cf) ->
+    (IntPolyTerms var cf) ->
+    Maybe Bool
+termsAreExactEff effImpr (IntPolyC val) = isExactEff effImpr val 
+termsAreExactEff effImpr (IntPolyV var polys) =
+    do -- the Maybe monad, ie if any coefficient returns Nothing, so does this function 
+    results <- mapM (termsAreExactEff effImpr) $ IntMap.elems polys
+    return $ and results
+
 polyIsZero ::
     (ArithInOut.RoundedReal cf) => 
     IntPoly var cf -> Bool
@@ -192,21 +221,124 @@ termsIsZero (IntPolyV x polys) =
         [(0,p)] -> termsIsZero p
         _ -> False
 
--- TODO add instances for order-related type classes
-
-joinTerms (IntPolyC c1) (IntPolyC c2) = IntPolyC $ c1 </\> c2
-joinTerms (IntPolyV var terms1) (IntPolyV _ terms2) =
-    IntPolyV var $ IntMap.union commonCoeffs allCoeffsWithZero
+{-
+    The following instance is meaningful only when each
+    variable's domain is non-negative. 
+-}
+instance
+    (RefOrd.IntervalLike cf, HasZero cf)
+    => 
+    (RefOrd.IntervalLike (IntPoly var cf))
     where
-    commonCoeffs =
-        IntMap.intersectionWith joinTerms terms1 terms2
-    allCoeffsWithZero = 
-        powersMapCoeffs (\cf -> cf </\> (zero cf)) $ IntMap.union terms1 terms2
-        
+    type RefOrd.GetEndpointsEffortIndicator (IntPoly var cf) = 
+        RefOrd.GetEndpointsEffortIndicator cf
+    type RefOrd.FromEndpointsEffortIndicator (IntPoly var cf) = 
+        RefOrd.FromEndpointsEffortIndicator cf
+    getEndpointsDefaultEffort (IntPoly cfg _) =
+        RefOrd.getEndpointsDefaultEffort sampleCf
+        where
+        sampleCf = ipolycfg_sample_cf cfg
+    fromEndpointsDefaultEffort (IntPoly cfg _) =
+        RefOrd.fromEndpointsDefaultEffort sampleCf
+        where
+        sampleCf = ipolycfg_sample_cf cfg
+    getEndpointsInEff eff = polySplitWith (RefOrd.getEndpointsInEff eff)
+    getEndpointsOutEff eff = polySplitWith (RefOrd.getEndpointsOutEff eff)
+    fromEndpointsInEff eff pp@(IntPoly cfg _, _) = 
+        polyJoinWith z (RefOrd.fromEndpointsInEff eff) pp
+        where 
+        z = zero $ ipolycfg_sample_cf cfg 
+    fromEndpointsOutEff eff pp@(IntPoly cfg _, _) = 
+        polyJoinWith z (RefOrd.fromEndpointsOutEff eff) pp
+        where 
+        z = zero $ ipolycfg_sample_cf cfg 
+    getEndpointsInWithDefaultEffort = polySplitWith (RefOrd.getEndpointsInWithDefaultEffort)
+    getEndpointsOutWithDefaultEffort = polySplitWith (RefOrd.getEndpointsOutWithDefaultEffort)
+    fromEndpointsInWithDefaultEffort pp@(IntPoly cfg _, _) = 
+        polyJoinWith z (RefOrd.fromEndpointsInWithDefaultEffort) pp
+        where 
+        z = zero $ ipolycfg_sample_cf cfg 
+    fromEndpointsOutWithDefaultEffort pp@(IntPoly cfg _, _) = 
+        polyJoinWith z (RefOrd.fromEndpointsOutWithDefaultEffort) pp
+        where 
+        z = zero $ ipolycfg_sample_cf cfg 
+
+polySplitWith ::
+    (cf -> (cf,cf)) ->
+    (IntPoly var cf) -> (IntPoly var cf, IntPoly var cf)
+polySplitWith splitCf (IntPoly cfg terms) = 
+    (IntPoly cfg termsL, IntPoly cfg termsR)
+    where
+    (termsL, termsR) = termsSplitWith splitCf terms
+termsSplitWith ::
+    (cf -> (cf,cf)) ->
+    (IntPolyTerms var cf) -> (IntPolyTerms var cf, IntPolyTerms var cf)
+termsSplitWith splitCf (IntPolyC val) = 
+    (IntPolyC valL, IntPolyC valR)
+    where
+    (valL, valR) = splitCf val
+termsSplitWith splitCf (IntPolyV var polys) = 
+    (IntPolyV var polysL, IntPolyV var polysR)
+    where
+    polysL = IntMap.map fst polysLR
+    polysR = IntMap.map snd polysLR
+    polysLR = IntMap.map (termsSplitWith splitCf) polys
+
+polyJoinWith ::
+    cf {-^ zero coeff -} ->
+    ((cf,cf) -> cf) ->
+    (IntPoly var cf, IntPoly var cf) -> (IntPoly var cf) 
+polyJoinWith z joinCf (IntPoly cfg termsL, IntPoly _ termsR) =
+    (IntPoly cfg terms) 
+    where
+    terms = termsJoinWith z joinCf (termsL, termsR)
+termsJoinWith ::
+    cf {-^ zero coeff -} ->
+    ((cf,cf) -> cf) ->
+    (IntPolyTerms var cf, IntPolyTerms var cf) -> (IntPolyTerms var cf) 
+termsJoinWith z joinCf (tL, tR) =
+    aux (Just tL, Just tR)
+    where
+    aux (Just (IntPolyC valL), Just (IntPolyC valR)) = 
+        IntPolyC val
+        where
+        val = joinCf (valL, valR)
+    aux (Nothing, Just (IntPolyC valR)) = 
+        IntPolyC val
+        where
+        val = joinCf (z, valR)
+    aux (Just (IntPolyC valL), Nothing) = 
+        IntPolyC val
+        where
+        val = joinCf (valL, z)
+    aux (Just (IntPolyV var polysL), Just (IntPolyV _ polysR)) = 
+        IntPolyV var $ IntMap.map aux polys 
+        where
+        polys = polysLR `IntMap.union` polysLonly `IntMap.union` polysRonly
+        polysLonly = IntMap.map (\l -> (Just l, Nothing)) $ polysL `IntMap.difference` polysR 
+        polysRonly = IntMap.map (\r -> (Nothing, Just r)) $ polysR `IntMap.difference` polysL 
+        polysLR = IntMap.intersectionWith (\l -> \r -> (Just l, Just r)) polysL polysR  
+    aux (Nothing, Just (IntPolyV var polysR)) = 
+        IntPolyV var $ IntMap.map (aux . addNothing) polysR 
+        where
+        addNothing t = (Nothing, Just t)
+    aux (Just (IntPolyV var polysL), Nothing) = 
+        IntPolyV var $ IntMap.map (aux . addNothing) polysL 
+        where
+        addNothing t = (Just t, Nothing)
+
+--joinTerms cfg t1 t2 = termsJoinWith z (uncurry (</\>)) (t1,t2)
+--    where
+--    z = zero $ ipolycfg_sample_cf cfg
+    
 
 {-- Basic function-approximation specific ops --}
 
-instance (Ord var, ArithInOut.RoundedReal cf) => (HasDomainBox (IntPoly var cf))
+instance 
+    (Ord var, ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf) 
+    => 
+    (HasDomainBox (IntPoly var cf))
     where
     type (Domain (IntPoly var cf)) = cf
     type (Var (IntPoly var cf)) = var
@@ -217,10 +349,13 @@ instance (Ord var, ArithInOut.RoundedReal cf) => (HasDomainBox (IntPoly var cf))
         where
         vars = ipolycfg_vars cfg
         doms = ipolycfg_doms cfg
-    defaultDomSplit _ (domL, domR) =
-        ((domL, domM), (domM, domR))
+    defaultDomSplit _ dom =
+        (domL, domR)
         where
-        domM = domL <+> domR
+        domL = RefOrd.fromEndpointsOutWithDefaultEffort (domLE, domME)
+        domR = RefOrd.fromEndpointsOutWithDefaultEffort (domME, domRE)
+        domME = (domLE <+> domRE) </>| (2::Int)
+        (domLE, domRE) = RefOrd.getEndpointsOutWithDefaultEffort dom
 
 instance (HasSizeLimits (IntPoly var cf)) 
     where
@@ -231,7 +366,8 @@ instance (HasSizeLimits (IntPoly var cf))
 --        error $ "changeSizeLimits not implemented for IntPoly"
 
 instance 
-    (Ord var, ArithInOut.RoundedReal cf) => 
+    (Ord var, ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf) => 
     (HasConstFns (IntPoly var cf))
     where
     newConstFn cfg _ value = IntPoly cfg $ mkConstTerms value $ ipolycfg_vars cfg
@@ -243,7 +379,8 @@ mkConstTerms value vars = aux vars
 
 instance 
     (Ord var, Show var, 
-     ArithInOut.RoundedReal cf) => 
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf) => 
     (HasProjections (IntPoly var cf))
     where
     newProjection cfg dombox var =

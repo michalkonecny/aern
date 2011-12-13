@@ -34,15 +34,16 @@ Library
         random >= 1.0 && < 2.0,
         AERN-Basics == 2011.2.0.0, 
         AERN-Real == 2011.2.0.0,
-        AERN-Real-Interval == 2011.2.0.0, 
+        AERN-Real-Interval == 2011.2.0.0,
         AERN-RmToRn == 2011.2.0.0
   exposed-modules:       
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
+        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Reduce
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
-        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluate
+        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
   other-modules:
 

@@ -102,7 +102,7 @@ arbitraryFn maxArity sizeLimits
     -- extract domain box and samples from sizeLimits:
     let
         box = fitDomainBoxToSizeLimits sampleFn sizeLimits $ fromAscList $ zip vars $ domains
-        (sampleVar,(sampleDom, _)) = head $ toAscList box
+        (sampleVar,sampleDom) = head $ toAscList box
         sampleFn = newProjection sizeLimits box sampleVar
     -- choose polynomial generation parameters:
     arity <- choose (1, maxArity)
@@ -132,7 +132,7 @@ arbitraryFn maxArity sizeLimits
             let varFnPwr = foldl1 (<*>) $ replicate dg varFn 
             return $ varFnPwr <*> restFn -- rounding direction irrelevant
         where
-        (sampleVar,(sampleDom, _)) = head $ toAscList box
+        (sampleVar,sampleDom) = head $ toAscList box
         
 {-|
   Have a fairly long and hairy sequence of polynomials of increasing complexity
@@ -202,7 +202,7 @@ instance (MinimalFnBasis fb, Show fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoin
                     fnTr = fn <+>| dist
                     upperPrevTr = upperPrev <+> dist
                     dist = (upperPrev <-> lower) <+> (one sampleDom) 
-                    (sampleDom, _) = snd $ head $ toAscList $ getDomainBox fn
+                    sampleDom = snd $ head $ toAscList $ getDomainBox fn
                     
                 fnBounds@(first:rest) = map addBounds list
                 addBounds fn = (fn, lower, upper)
@@ -211,7 +211,7 @@ instance (MinimalFnBasis fb, Show fb) => NumOrd.ArbitraryOrderedTuple (FnEndpoin
                     Just lower = ArithUpDn.convertDnEff eff fn
                     eff = ArithUpDn.convertDefaultEffort fn z
                     z = zero sampleDom
-                    (sampleDom, _) = snd $ head $ toAscList $ getDomainBox fn
+                    sampleDom = snd $ head $ toAscList $ getDomainBox fn
                     _ = [z, upper, lower]
                 randomBools = 
                     map even $ 

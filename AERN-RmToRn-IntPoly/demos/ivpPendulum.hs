@@ -239,17 +239,16 @@ printParamSearchStep (scoresParams, chosenScore, chosenParams)
 simulate params =
     waitTillPrecBelow resultTolerance $ -- stop when diverging
         iterate (makeStep params stepSize epsilon)
-            (Just (tInit, (y0Init, y0Init), (yDer0Init, yDer0Init)),[]) -- initial values
+            (Just (tInit, y0Init, yDer0Init), []) -- initial values
     where
     tInit = i2mi 0
     y0Init = i2mi initAngle
     yDer0Init = i2mi initAngularSpeed
     waitTillPrecBelow eps ((Nothing,_):rest) = []
-    waitTillPrecBelow eps ((Just this@(_,yNmOnePair,_),iterInfo):rest)
+    waitTillPrecBelow eps ((Just this@(_,yNmOne,_),iterInfo):rest)
         | precGood = (this, iterInfo) : (waitTillPrecBelow eps rest)
         | otherwise = [(this, iterInfo)]
         where
-        yNmOne = joinPair yNmOnePair
         precGood = 
             case MI.width yNmOne MI.<? eps of
                 Just True -> True
@@ -266,7 +265,7 @@ simulate params =
     i2mi n =
         ArithInOut.convertOutEff (paramPrecision params) n
     
-printStep ((t,yPair,yDerPair), iters) =
+printStep ((t,y,yDer), iters) =
     do
     putStrLn $ replicate 120 '*'
     putStrLn $ "iterating interval Picard for t = " ++ show t ++ ":"
@@ -278,9 +277,7 @@ printStep ((t,yPair,yDerPair), iters) =
     putStrLn $ " t = " ++ show t ++ "; y(t) = " ++ showMI y ++ "; y'(t) = " ++ showMI yDer
     putStrLn $ " width of y = " ++ showMI (MI.width y)
     where
-    y = joinPair yPair
-    yDer = joinPair yDerPair
-    printIter (n, ((_,(yPair,yDerPair),(yPoly,yDerPoly)), (_,(yPrevPair,yDerPrevPair),_))) =
+    printIter (n, ((_,(y,yDer),(yPoly,yDerPoly)), (_,(yPrev,yDerPrev),_))) =
         do
         putStrLn $ " >>>>>>>>>>>>>>>>> iteration " ++ show n ++ ":"
         putStrLn $ "  y = " ++ showP yPoly ++ "; "
@@ -288,13 +285,11 @@ printStep ((t,yPair,yDerPair), iters) =
         putStrLn $ "  y(h) = " ++ show y ++ "; " ++ "y'(h) = " ++ show yDer ++ "; "
         putStrLn $ "  width of y(h) = " ++ showMI (MI.width y)
         putStrLn $ "  Improvement: " ++ show (yPrev MI.|<=? y)
-        where
-        yPrev = joinPair yPrevPair
     showMI = showInternals (30,shouldPrintPrecision)
     showP = showPoly id show
     
 makeStep params h epsilon (Nothing, prevStepIters) = (Nothing, prevStepIters)
-makeStep params h epsilon (Just (t, y0Pair, yDer0Pair), prevStepIters) =
+makeStep params h epsilon (Just (t, y0, yDer0), prevStepIters) =
 --    unsafePrint
 --    (
 --        "makeStep:"
@@ -306,8 +301,8 @@ makeStep params h epsilon (Just (t, y0Pair, yDer0Pair), prevStepIters) =
 --        ++ "\n yhDer = " ++ showMI yhDer
 --    )
     case waitTillInclusionThenNoImprovement maxInclusionFailures [] [] [] intPolySequence of
-        (Just (yhPair, yDerhPair), newStepIters) -> 
-            (Just (t + h, yhPair, yDerhPair), newStepIters)
+        (Just (yh, yDerh), newStepIters) -> 
+            (Just (t + h, yh, yDerh), newStepIters)
         (Nothing, newStepIters) -> (Nothing, newStepIters)
     where
 --    showMI = showInternals (20, shouldPrintPrecision)
@@ -321,8 +316,6 @@ makeStep params h epsilon (Just (t, y0Pair, yDer0Pair), prevStepIters) =
         = newConstFn cfg dombox $ y0 MI.<+> hToMinusH
     yDerFirstEncl
         = newConstFn cfg dombox $ yDer0 MI.<+> hToMinusH
-    y0 = joinPair y0Pair
-    yDer0 = joinPair yDer0Pair
     y0Poly = newProjection cfg dombox "y0"
     yDer0Poly = newProjection cfg dombox "yDer0"
     
@@ -337,11 +330,11 @@ makeStep params h epsilon (Just (t, y0Pair, yDer0Pair), prevStepIters) =
             }
     dombox = Map.fromList $ zip vars doms
     vars = ["u","y0","yDer0"]
-    doms = [(0,h), y0Pair, yDer0Pair]
+    doms = [(0 MI.</\> h), y0, yDer0]
 
     evalBoth (n,(p1,p2)) = (n, (evalOne p1, evalOne p2), (p1, p2))
         where
-        evalOne = refinePair .  evalPolyOnInterval (effMI prec) c0 [(h,h),y0Pair,yDer0Pair]
+        evalOne = evalPolyOnInterval (effMI prec) c0 [h,y0,yDer0]
 
     hToMinusH = (-h) MI.</\> h
 
@@ -353,7 +346,7 @@ makeStep params h epsilon (Just (t, y0Pair, yDer0Pair), prevStepIters) =
     waitTillInclusionThenNoImprovement
             maxNonInclusionIters 
             prevYs prevYWidths prevItersInfo
-            (this@(n,thisInts@(yNPair,_),_):rest) 
+            (this@(n,thisInts@(yN,_),_):rest) 
         | maxNonInclusionIters < 0 = (Nothing, reverse currItersInfo)
         | isInclusion = 
 --            unsafePrint
@@ -371,7 +364,6 @@ makeStep params h epsilon (Just (t, y0Pair, yDer0Pair), prevStepIters) =
                 (yN : prevYs) (yNWidth : prevYWidths) currItersInfo
                 rest
         where
-        yN = joinPair yNPair
         yNWidth = MI.width yN         
         currItersInfo = this : prevItersInfo
         isInclusion =
@@ -385,8 +377,8 @@ makeStep params h epsilon (Just (t, y0Pair, yDer0Pair), prevStepIters) =
 --            where
 --            yNSmallerThan yWidth = (yNWidth MI.<? yWidth) == Just True 
     waitTillNoImprovement 
-            maxIters prevItersInfo bestPrevInts@(bestYPair,bestYDerPair) bestYWidth prevConsecutiveFailures
-            (this@(n,thisInts@(yNPair,yDerNPair),_):rest) 
+            maxIters prevItersInfo bestPrevInts@(bestY,bestYDer) bestYWidth prevConsecutiveFailures
+            (this@(n,thisInts@(yN,yDerN),_):rest) 
         | maxIters < 0 = 
 --            unsafePrint("picard " ++ show n ++ " TOO MANY ITERATIONS: width = " ++ show yNIWidth) $
             (Just bestPrevInts, reverse currItersInfo)
@@ -403,16 +395,14 @@ makeStep params h epsilon (Just (t, y0Pair, yDer0Pair), prevStepIters) =
 --            unsafePrint("picard " ++ show n ++ " GIVING UP, BEST SO FAR: width = " ++ show bestYWidth) $
             (Just bestPrevInts, reverse currItersInfo)
         where
-        yN = joinPair yNPair
         yNWidth = MI.width yN
-        yDerN = joinPair yDerNPair
-        yNI = yN MI.<\/> (joinPair bestYPair)
-        yDerNI = yDerN MI.<\/> (joinPair bestYDerPair)
+        yNI = yN MI.<\/> bestY
+        yDerNI = yDerN MI.<\/> bestYDer
         yNIWidth = MI.width yNI
         currItersInfo = this : prevItersInfo
         improvementAboveEpsilon =
             (bestYWidth - yNIWidth MI.>? epsilon) == Just True
-        newBestInts = (refinePair (yNI, yNI), refinePair (yDerNI, yDerNI))
+        newBestInts = (yNI, yDerNI)
         newBestWidth = yNIWidth
         (continue, newConsecutiveFailures)
             | improvementAboveEpsilon = (True, 0)
@@ -452,9 +442,3 @@ picard params z (y0, yDer0) (n,(yPrev, yDerPrev)) =
 
 effMI prec = (prec, (prec, ()))
 
-joinPair (l,r) = l MI.</\> r
-
-refinePair (l,r) = (MI.Interval lL lL, MI.Interval rR rR)
-    where
-    MI.Interval lL _ = l
-    MI.Interval _ rR = r

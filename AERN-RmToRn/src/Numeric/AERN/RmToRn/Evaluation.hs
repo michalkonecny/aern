@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Evaluate
     Description :  operations focusing on function evaluation  
@@ -15,13 +16,17 @@
 module Numeric.AERN.RmToRn.Evaluation where
 
 import Numeric.AERN.RmToRn.Domain
-
 import Numeric.AERN.Basics.Interval
 
 class (HasDomainBox f) => CanEvaluateOtherType f
     where
     type EvalOps f :: * -> *
     evalOtherType :: (EvalOps f t) -> (VarBox f t) -> f -> t
+
+class (CanEvaluateOtherType f) => HasEvalOps f t
+    where
+    evalOpsOut :: f -> t -> EvalOps f t 
+    evalOpsIn :: f -> t -> EvalOps f t 
 
 {-
     The following are special cases of the above, which
@@ -31,8 +36,10 @@ class (HasDomainBox f) => CanEvaluateOtherType f
 class (HasDomainBox f) => CanEvaluate f
     where
     evalAtPointOut :: (VarBox f (Domain f)) -> f -> (Interval (Domain f))
+    evalAtPointIn :: (VarBox f (Domain f)) -> f -> (Interval (Domain f))
     
 class (HasDomainBox f) => CanSubstitute f
     where
-    substitute :: (VarBox f (Domain f)) -> f -> (Interval f)
+    substituteOut :: (VarBox f (Domain f)) -> f -> f
+    substituteIn :: (VarBox f (Domain f)) -> f -> f
     
