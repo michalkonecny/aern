@@ -25,8 +25,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.Misc.IntegerArithmetic
 
 bernsteinOut ::
-    (HasProjections f, HasConstFns f,
-     HasOne (Domain f),
+    (HasProjections f, HasConstFns f, HasOne f,
      ArithInOut.RoundedRing f,
      ArithInOut.RoundedMixedField f Int) 
      =>
@@ -45,7 +44,7 @@ bernsteinOut (effRing, effIntOps) x n p =
         ((x<^>p) <*> ((c1 <-> x)<^>(n-p)))
     where
     sampleF = x
-    c1 = newConstFnFromSample sampleF (one sampleCf)
+    c1 = (one sampleF)
     sampleCf = getSampleDomValue sampleF
     effAdd = ArithInOut.ringEffortAdd sampleF effRing
     effMult = ArithInOut.ringEffortMult sampleF effRing

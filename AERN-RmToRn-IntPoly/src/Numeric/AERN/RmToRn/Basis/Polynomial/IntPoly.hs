@@ -16,7 +16,7 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics,
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Reduce,
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps,
-        module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluate,
+        module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation,
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate,
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
 --    ,
@@ -27,7 +27,7 @@ where
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Reduce
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps (sinePoly)
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluate
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
 --import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder --()

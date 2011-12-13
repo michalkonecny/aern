@@ -79,4 +79,10 @@ instance
             Nothing -> dist <⊓> (neg dist)
         where 
         dist = distanceBetweenEff effortDist l r
+    isExactEff eff@(effortDist, effortMeet, effortConsistency) i =
+        case (isConsistentEff effortConsistency i, isAntiConsistentEff effortConsistency i) of
+            (Just True, Just True) -> Just True
+            (Just False, _) -> Just False
+            (_, Just False) -> Just False
+            _ -> Nothing
     

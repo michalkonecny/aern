@@ -10,6 +10,8 @@ import qualified Numeric.AERN.MPFRBasis.Interval as MI
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+
 import Numeric.AERN.Basics.ShowInternals
 
 import Numeric.AERN.Misc.Debug
@@ -21,8 +23,8 @@ import qualified Data.List as List
 
 type Poly = IntPoly String MI.MI
 
---shouldPrintPrecision = False
-shouldPrintPrecision = True
+shouldPrintPrecision = False
+--shouldPrintPrecision = True
 
 gravity :: Rational
 gravity = 10
@@ -43,16 +45,17 @@ initHeight = 10
 bounceCond (y, yDer) =
     (y MI.<=? 0) &&? (yDer MI.<? 0)
     
-bounceCondSomewhereOnTimeInterval evalPolyAt (domL, domR) (yPoly, yDerPoly)
+bounceCondSomewhereOnTimeInterval evalPolyAt dom (yPoly, yDerPoly)
     | condOnDom /= Nothing = condOnDom
     | condOnDomL == Just True || condOnDomR == Just True = condOnDomR
     | otherwise = Nothing 
     where
-    condOnDom = bounceCondOn (domL, domR)
-    condOnDomL = bounceCondOn (domL, domL)
-    condOnDomR = bounceCondOn (domR, domR)
+    (domL, domR) = RefOrd.getEndpointsOutWithDefaultEffort dom
+    condOnDom = bounceCondOn dom
+    condOnDomL = bounceCondOn domL
+    condOnDomR = bounceCondOn domR
     bounceCondOn d 
-        = bounceCond (joinPair $ evalPolyAt d yPoly, joinPair $ evalPolyAt d yDerPoly)
+        = bounceCond (evalPolyAt d yPoly, evalPolyAt d yDerPoly)
     
 bounceAction (y, yDer) = 
     (c0, (-0.5 :: Rational) |<*> yDer)
@@ -76,13 +79,13 @@ data Params =
     deriving (Show)
 -- Zeno point is at 3*(sqrt 2) = 4.242640...
 --initParams = Params 0 10   90   100 --  21 bounces, then until 4.242703 in 0.9s
---initParams = Params 0 10  100  100 --  23 bounces, then until 4.242656 in 1s
+initParams = Params 0 10  100  100 --  23 bounces, then until 4.242656 in 1s
 --initParams = Params 0 10  200  200 --  46 bounces, then until 4.242675 in 4s
 --initParams = Params 0 10  300  300 --  68 bounces, then until 4.242658 in 9s
 --initParams = Params 0 10  400 400 --  91 bounces, then until 4.242675 in 16s
 --initParams = Params 0 10  600 1000 -- 135 bounces, then until 4.242649 in <35s
 --initParams = Params 0 10  100 1000 -- 23 bounces, then until 4.242649 in <35s
-initParams = Params 0 10 1600 2000 -- 329 bounces, then until 4.242658 in 4min
+--initParams = Params 0 10 1600 2000 -- 329 bounces, then until 4.242658 in 4min
 --initParams = Params 0 10 4000 6000 -- 819 bounces in around 30min 
 
 --initParams = Params 0 10 1000 1000 -- cannot reliably analyse the event the first bounce - need to reduce loc epsilon 
@@ -133,16 +136,15 @@ main =
 simulate params =
     waitTillPrecBelow (10^^(-4)) $ -- stop when diverging
         iterate (makeStep params stepSize locEpsilon) 
-            ((tInit, 0, (y0Init, y0Init), (yDer0Init, yDer0Init)),[]) -- initial values
+            ((tInit, 0, y0Init, yDer0Init),[]) -- initial values
     where
     tInit = i2mi 0
     y0Init = i2mi initHeight
     yDer0Init = i2mi 0
-    waitTillPrecBelow eps (this@(((_,_,yNmOnePair,_),_)):rest)
+    waitTillPrecBelow eps (this@(((_,_,yNmOne,_),_)):rest)
         | precGood = this : (waitTillPrecBelow eps rest)
         | otherwise = [this]
         where
-        yNmOne = joinPair yNmOnePair
         precGood = 
             case MI.width yNmOne MI.<? eps of
                 Just True -> True
@@ -158,7 +160,7 @@ simulate params =
     i2mi n =
         ArithInOut.convertOutEff (paramPrecision params) n
     
-printStep params ((t,prevEvents,yPair,yDerPair), eventEnclsAtHE) =
+printStep params ((t,prevEvents,y,yDer), eventEnclsAtHE) =
     do
     putStrLn $ replicate 120 '*'
     putStrLn $ "solving for t = " ++ show t ++ "(events so far = " ++ show prevEvents ++ ")" ++ ":"
@@ -170,8 +172,6 @@ printStep params ((t,prevEvents,yPair,yDerPair), eventEnclsAtHE) =
     putStrLn $ "   y'(t) = " ++ showMI yDer
     putStrLn $ " width of y = " ++ showMI (MI.width y)
     where
-    y = joinPair yPair
-    yDer = joinPair yDerPair
     showMI = showInternals (30,shouldPrintPrecision)
     zenoPt = (i2mi 3) <*> (MI.sqrtOut (i2mi 2))
     prec = paramPrecision params
@@ -187,7 +187,7 @@ printEventEncl (n, ((yEv,yDerEv), maybeBouncedAfter)) =
     where
     showMI = showInternals (30,shouldPrintPrecision)
     
-makeStep params h locEpsilon ((t, eventCount, y0Pair@(y0L, y0R), yDer0Pair@(yDer0L, yDer0R)),_) =
+makeStep params h locEpsilon ((t, eventCount, y0, yDer0),_) =
 --    unsafePrint
 --    (
 --        "makeStep:"
@@ -197,29 +197,29 @@ makeStep params h locEpsilon ((t, eventCount, y0Pair@(y0L, y0R), yDer0Pair@(yDer
 --        ++ "\n yDer0 = " ++ showMI yDer0
 --        ++ "\n yh = " ++ showMI yh
 --        ++ "\n yhDer = " ++ showMI yhDer
---    )
-    case fst $ locateFirstBounce params (yWidth <+> locEpsilon) (0,h) (yPolyNoEvent, yDerPolyNoEvent) of
+--    ) $
+    case fst $ locateFirstBounce params (yWidth <+> locEpsilon) (0 MI.</\> h) (yPolyNoEvent, yDerPolyNoEvent) of
         Nothing -> -- certainly not bounced, yPoly and yDerPoly enclose solution over (0,h)
-            ((t <+> h, eventCount, yhPair, yhDerPair), [])
+            ((t <+> h, eventCount, yh, yhDer), [])
             where
-            (yhPair, yhDerPair) = 
-                (evalStepPolyAt (h,h) yPolyNoEvent, 
-                 evalStepPolyAt (h,h) yDerPolyNoEvent)
+            (yh, yhDer) = 
+                (evalStepPolyAt h yPolyNoEvent, 
+                 evalStepPolyAt h yDerPolyNoEvent)
         -- TODO: merge the following two cases and simplify locateFirstBounce
         (Just bounceLoc) -> -- maybe bounced, if it did, it was here for the first time
             simulateEventsAux bounceLoc
     where
     yWidth = max y0Width yDer0Width
-    y0Width = y0R <-> y0L
-    yDer0Width = yDer0R <-> yDer0L
+    y0Width = MI.width y0
+    yDer0Width = MI.width yDer0
     simulateEventsAux bounceLoc@(bounceLocL, bounceLocR) 
-        = simulateEvents params t eventCount (yBounceLPair, yDerBounceLPair) bounceLoc
+        = simulateEvents params t eventCount (yBounceL, yDerBounceL) bounceLoc
         where
         -- shift attention to the interval bounceLoc, which is our event analysis time segment
-        (yBounceLPair, yDerBounceLPair) = -- values at the start of event analysis time segment
-            (evalStepPolyAt (bounceLocL, bounceLocL) yPolyNoEvent, 
-             evalStepPolyAt (bounceLocL, bounceLocL) yDerPolyNoEvent)
-    evalStepPolyAt dom = refinePair . evalPolyOnInterval (effMI prec) c0 [dom, y0Pair, yDer0Pair]
+        (yBounceL, yDerBounceL) = -- values at the start of event analysis time segment
+            (evalStepPolyAt bounceLocL yPolyNoEvent, 
+             evalStepPolyAt bounceLocL yDerPolyNoEvent)
+    evalStepPolyAt dom = evalPolyOnInterval (effMI prec) c0 [dom, y0, yDer0]
     
 --    showMI = showInternals (20, shouldPrintPrecision)
     -- solve the ODE assuming there are no events:
@@ -238,7 +238,7 @@ makeStep params h locEpsilon ((t, eventCount, y0Pair@(y0L, y0R), yDer0Pair@(yDer
                 }
         dombox = Map.fromList $ zip vars doms
         vars = ["u","y0","yDer0"]
-        doms = [(0,h), y0Pair, yDer0Pair]
+        doms = [(0 MI.</\> h), y0, yDer0]
     
     c0 = i2mi 0
     c1 = i2mi 1 
@@ -246,19 +246,22 @@ makeStep params h locEpsilon ((t, eventCount, y0Pair@(y0L, y0R), yDer0Pair@(yDer
     i2mi n = ArithInOut.convertOutEff prec n
     prec = paramPrecision params
     
-simulateEvents params t eventCount (yBounceLPair, yDerBounceLPair) bounceLoc@(bounceLocL, bounceLocR)
+simulateEvents params t eventCount (yBounceL, yDerBounceL) bounceLoc@(bounceLocL, bounceLocR)
     =
-    ((leftBound $ t <+> bounceLocR, eventCount <+> eventsHere, yAtHEPair, yDerAtHEPair), hopefullyFiniteEventEnclosuresAtHE)
+    ((leftBound $ t <+> bounceLocR, 
+      eventCount <+> eventsHere, 
+      yAtHE, yDerAtHE), 
+     hopefullyFiniteEventEnclosuresAtHE)
     where
     he = bounceLocR <-> bounceLocL -- event analysis segment size
     evalBounceStepPolyAt dom -- evaluate polynomials with u=0 representing t=bounceLocL
-        = refinePair . evalPolyOnInterval (effMI prec) c0 [dom, yBounceLPair, yDerBounceLPair]
+        = evalPolyOnInterval (effMI prec) c0 [dom, yBounceL, yDerBounceL]
 
     -- enclosures of the solution at the end of event analysis time segment:
-    yAtHEPair = refinePair (yAtHE, yAtHE)
-    yDerAtHEPair = refinePair (yDerAtHE, yDerAtHE)
     (yAtHE, yDerAtHE)
-        = foldl1 mergePairs possibleLastEventsEnclosuresAtHE 
+        | null possibleLastEventsEnclosuresAtHE =
+            error $ "simulateEvents: possibleLastEventsEnclosuresAtHE is empty" 
+        |otherwise = foldl1 mergePairs possibleLastEventsEnclosuresAtHE 
         where
         mergePairs (y1, yDer1) (y2, yDer2) = (y1 MI.</\> y2, yDer1 MI.</\> yDer2)
         possibleLastEventsEnclosuresAtHE 
@@ -269,13 +272,24 @@ simulateEvents params t eventCount (yBounceLPair, yDerBounceLPair) bounceLoc@(bo
         | maybeInfinite = eventsAnalysed MI.</\> (1/0)
         | otherwise = eventsAnalysed
         where
-        eventsAnalysed =
-            foldl1 (MI.</\>) $ map (fromInteger . fst) $ 
-                filter canBeLast $ zip [0..] hopefullyFiniteEventEnclosuresAtHE
-        canBeLast (n, (_,maybeBouncedAfter)) = maybeBouncedAfter /= Just True
+        eventsAnalysed
+            | null hopefullyFiniteEventEnclosuresAtHE =
+                error $ "simulateEvents: hopefullyFiniteEventEnclosuresAtHE is empty" 
+            |otherwise =             
+                foldl1 (MI.</\>) $ map (fromInteger . fst) $ 
+                    filter couldBeLast $ zip [0..] hopefullyFiniteEventEnclosuresAtHE
+        couldBeLast (n, (_,maybeBouncedAfter)) = maybeBouncedAfter /= Just True
     
-    (hopefullyFiniteEventEnclosuresAtHE, maybeInfinite) = detectEnd maxEvents Nothing [] eventEnclosuresAtHE
+    (hopefullyFiniteEventEnclosuresAtHE, maybeInfinite) = 
+--        unsafePrint
+--        (
+--            "simulateEvents: "
+--            ++ "\n take 2 eventEnclosuresAtHE = " ++ (show $ take 2 $ eventEnclosuresAtHE)
+--            ++ "\n |hopefullyFiniteEventEnclosuresAtHE| = " ++ (show $ length $ fst result)
+--        ) $
+        result
         where
+        result = detectEnd maxEvents Nothing [] eventEnclosuresAtHE
         maxEvents = paramMaxEvents params
         -- detect last event or whether it suffices to consider 
         -- only a finite number of infinitely many potential events:
@@ -308,7 +322,7 @@ simulateEvents params t eventCount (yBounceLPair, yDerBounceLPair) bounceLoc@(bo
         where
         maybeBouncedAfter0 =
             bounceCondSomewhereOnTimeInterval 
-                evalBounceStepPolyAt (0,he) (yPoly0, yDerPoly0)
+                evalBounceStepPolyAt (0 MI.</\> he) (yPoly0, yDerPoly0)
 
     -- (re-)obtain enclosures of solutions that assume no events, but with a different initial time point:  
     (yPoly0, yDerPoly0) = solveUncValODE params c0 (yBounceLPoly, yDerBounceLPoly)
@@ -322,27 +336,25 @@ simulateEvents params t eventCount (yBounceLPair, yDerBounceLPair) bounceLoc@(bo
                     ipolycfg_doms = doms,
                     ipolycfg_sample_cf = he,
                     ipolycfg_maxdeg = 2,
-                    ipolycfg_maxsize = 0 -- not used at the moment
+                    ipolycfg_maxsize = 1000
                 }
         dombox = Map.fromList $ zip vars doms
         vars = ["u","y0","yDer0"]
-        doms = [(0,he), yBounceLPair, yDerBounceLPair]
+        doms = [(0 MI.</\> he), yBounceL, yDerBounceL]
 
     getNextEvent event@((yPoly, yDerPoly), _maybeBouncedAfter) =
         ((yPolyNext, yDerPolyNext), maybeBouncedAfterNext)
         where
         maybeBouncedAfterNext =
             bounceCondSomewhereOnTimeInterval 
-                evalBounceStepPolyAt (0,he) (yPolyNext, yDerPolyNext)
+                evalBounceStepPolyAt (0 MI.</\> he) (yPolyNext, yDerPolyNext)
         (yPolyNext, yDerPolyNext) = solveUncTimeValODE params c0 he (yBounced, yDerBounced) 
         (yBounced, yDerBounced) = bounceAction (yPoly, yDerPoly) 
 
     evalAtHE ((yiPoly, yDeriPoly), maybeLasti) = ((yiAtHE, yDeriAtHE), maybeLasti)
         where 
-        yiAtHE = joinPair yiAtHEPair
-        yDeriAtHE = joinPair yDeriAtHEPair
-        yiAtHEPair = evalBounceStepPolyAt (he,he) yiPoly
-        yDeriAtHEPair = evalBounceStepPolyAt (he,he) yDeriPoly 
+        yiAtHE = evalBounceStepPolyAt he yiPoly
+        yDeriAtHE = evalBounceStepPolyAt he yDeriPoly 
 
     c0 = i2mi 0
     c1 = i2mi 1 
@@ -353,16 +365,16 @@ simulateEvents params t eventCount (yBounceLPair, yDerBounceLPair) bounceLoc@(bo
 locateFirstBounce ::
     Params ->
     MI.MI ->
-    (MI.MI, MI.MI) ->
+    MI.MI ->
 --    (MI.MI -> MI.MI -> MI.MI) ->
     (Poly, Poly) ->
     (Maybe -- Nothing = the guard is false everywhere in the domain  
-        (MI.MI, MI.MI), -- the guard false outside this interval - inside it, we do not know
+    (MI.MI, MI.MI), -- the guard false outside this interval - inside it, we do not know
      Bool) -- is there certainly an event?
 locateFirstBounce params locEpsilon dom (y0Poly, yDer0Poly)
     = aux 0 False dom
     where
-    aux n prevDetectedEvent dom@(domL, domR) =
+    aux n prevDetectedEvent dom =
 --        result `seq`
 --        unsafePrintReturn
 --        (
@@ -373,30 +385,33 @@ locateFirstBounce params locEpsilon dom (y0Poly, yDer0Poly)
         result@(maybeloc, eventIsCertain) =
             case bounceCondSomewhereOnTimeInterval evalPolyAt dom (y0Poly, yDer0Poly) of
                 Just True
-                    | tooSmall -> (Just dom, True)
+                    | tooSmall -> (Just (domL, domR), True)
                     | otherwise -> split True
                 Just False 
                     -> (Nothing, False) -- false on dom
                 _ 
-                    | tooSmall -> (Just dom, False) -- cannot say anything about the guard on dom
+                    | tooSmall -> (Just (domL, domR), False) -- cannot say anything about the guard on dom
                     | otherwise -> split prevDetectedEvent
+            where
+            (domL, domR) = RefOrd.getEndpointsOutWithDefaultEffort dom
         tooSmall 
-            = ((domR <-> domL) MI.<=? locEpsilon) == Just True
+            = ((MI.width dom) MI.<=? locEpsilon) == Just True
         split prevDetectedEvent
             = 
-            case (aux (n+1) False (domL, domM)) of -- try left half first
+            case (aux (n+1) False dom1) of -- try left half first
                 res@(_, True) -> res -- it is here!
                 (Nothing, _) -> -- not here..
-                    aux (n+1) prevDetectedEvent (domM, domR) -- try next door
+                    aux (n+1) prevDetectedEvent dom2 -- try next door
                 res@(Just b@(bL,_), _) -> -- cannot rule it out in the left half
-                    case (aux (n+1) False (domM, domR)) of
+                    case (aux (n+1) False dom2) of
                         (Nothing, _) -> res -- nothing in the right half, left half rules
                         (Just (_,bR), isCertain) -- it could be here, but possibly not the firt occurrence
                             -> (Just (bL, bR), isCertain)
-        domM = leftBound $ (domR <+> domL) </>| (2 :: Int)
+        (dom1, dom2) = defaultDomSplit sampleP dom
+        sampleP = y0Poly
 
-        evalPolyAt dom = evalPolyOnInterval (effMI prec) c0 [dom,y0Pair,yDer0Pair]
-        [_,y0Pair, yDer0Pair] = ipolycfg_doms $ getSizeLimits $ y0Poly
+        evalPolyAt dom = evalPolyOnInterval (effMI prec) c0 [dom,y0,yDer0]
+        [_,y0, yDer0] = ipolycfg_doms $ getSizeLimits $ y0Poly
 
     c0 = i2mi 0
     i2mi :: Integer -> MI.MI
@@ -456,7 +471,7 @@ solveUncTimeValODE params z h (y0Poly, yDer0Poly) =
     -}
     [y0PolyUT0, yDer0PolyUT0] = map addT [y0Poly, yDer0Poly]
         where
-        addT = polyAddMainVar "u" (z,h) . polyRenameMainVar "t0" 
+        addT = polyAddMainVar "u" (z MI.</\> h) . polyRenameMainVar "t0" 
     {-
         2. Integrate as usual to get a quadratic in u.
     -}
@@ -475,7 +490,7 @@ solveUncTimeValODE params z h (y0Poly, yDer0Poly) =
     -}
     [yNextShiftedUT0, yDerNextShiftedUT0] = map shiftU [yNextUT0, yDerNextUT0]
         where
-        shiftU = substPolyMainVar (effMI prec) z (Just uMt0, Nothing) 
+        shiftU = substPolyMainVar (effMI prec) z uMt0 
         uMt0 = u <-> t0
         u = newProjection cfgUT0 domainboxUT0 "u"
         t0 = newProjection cfgUT0 domainboxUT0 "t0"
@@ -487,9 +502,14 @@ solveUncTimeValODE params z h (y0Poly, yDer0Poly) =
     {-
         5. Substitute t0 |-> t0*u.
     -}
-    [yNextNormalisedT0U, yDerNextNormalisedT0U] = map normaliseT0 [yNextT0ShiftedU, yDerNextT0ShiftedU]
+    [yNextNormalisedT0U, yDerNextNormalisedT0U] =
+        unsafePrint
+        (
+            "uTt0 = " ++ show uTt0
+        ) $
+        map normaliseT0 [yNextT0ShiftedU, yDerNextT0ShiftedU]
         where
-        normaliseT0 = substPolyMainVar (effMI prec) z (Just uTt0, Nothing) 
+        normaliseT0 = substPolyMainVar (effMI prec) z uTt0 
         uTt0 = u <*> t0
         u = newProjection cfgT0U domainboxT0U "u"
         t0 = newProjection cfgT0U domainboxT0U "t0"
@@ -500,19 +520,12 @@ solveUncTimeValODE params z h (y0Poly, yDer0Poly) =
     -}
     [yNext, yDerNext] = map elimT0 [yNextNormalisedT0U, yDerNextNormalisedT0U]
         where
-        elimT0 = substPolyMainVarElim (effMI prec) z (Nothing, Just (z,c1))
+        elimT0 = substPolyMainVarElim (effMI prec) z (z MI.</\> c1)
         c1 = i2mi 1
         i2mi :: Integer -> MI.MI
         i2mi n = ArithInOut.convertOutEff prec n
 
 effMI prec = (prec, (prec, ()))
-
-joinPair (l,r) = l MI.</\> r
-
-refinePair (l,r) = (MI.Interval lL lL, MI.Interval rR rR)
-    where
-    MI.Interval lL _ = l
-    MI.Interval _ rR = r
 
 leftBound (MI.Interval l r) = MI.Interval l l
 

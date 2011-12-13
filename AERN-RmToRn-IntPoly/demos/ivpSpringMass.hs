@@ -33,7 +33,7 @@ resultTolerance :: MI.MI
 resultTolerance = (10^^(-4))
 
 simulationTime :: MI.MI
-simulationTime = 36
+simulationTime = 3600
 
 main =
     do
@@ -161,19 +161,18 @@ simulate params =
 --    waitTillPrecBelow resultTolerance $ -- stop when diverging
     waitTillTime simulationTime $ -- stop when target time reached
         iterate (makeStep params stepSize epsilon) 
-            ((tInit, (y0Init, y0Init), (y0DerInit, y0DerInit)),[]) -- initial values
+            ((tInit, y0Init, y0DerInit),[]) -- initial values
     where
     tInit = i2mi 0
     y0Init = i2mi 20
     y0DerInit = i2mi 0
-    waitTillTime maxT (this@((t,yNmOnePair,_),_):rest)
+    waitTillTime maxT (this@((t,yNmOne,_),_):rest)
         | (t MI.>=? maxT) == Just True = [this]
         | otherwise =  this : (waitTillTime maxT rest)
-    waitTillPrecBelow eps (this@((_,yNmOnePair,_),_):rest)
+    waitTillPrecBelow eps (this@((_,yNmOne,_),_):rest)
         | precGood = this : (waitTillPrecBelow eps rest)
         | otherwise = [this]
         where
-        yNmOne = joinPair yNmOnePair
         precGood = 
             case MI.width yNmOne MI.<? eps of
                 Just True -> True
@@ -190,7 +189,7 @@ simulate params =
     i2mi n =
         ArithInOut.convertOutEff (paramPrecision params) n
     
-printStep ((t,yPair,yDerPair), iters) =
+printStep ((t,y,yDer), iters) =
     do
     putStrLn $ replicate 120 '*'
     putStrLn $ "iterating interval Picard for t = " ++ show t ++ ":"
@@ -202,9 +201,7 @@ printStep ((t,yPair,yDerPair), iters) =
     putStrLn $ " t = " ++ show t ++ "; y(t) = " ++ showMI y ++ "; y'(t) = " ++ showMI yDer
     putStrLn $ " width of y = " ++ showMI (MI.width y)
     where
-    y = joinPair yPair
-    yDer = joinPair yDerPair
-    printIter (n, (((yPair,yDerPair),(yPoly,yDerPoly)), ((yPrevPair,yDerPrevPair),_))) =
+    printIter (n, (((y,yDer),(yPoly,yDerPoly)), ((yPrev,yDerPrev),_))) =
         do
         putStrLn $ " >>>>>>>>>>>>>>>>> iteration " ++ show n ++ ":"
         putStrLn $ "  y = " ++ showP yPoly ++ "; "
@@ -212,12 +209,10 @@ printStep ((t,yPair,yDerPair), iters) =
         putStrLn $ "  y(h) = " ++ show y ++ "; " ++ "y'(h) = " ++ show yDer ++ "; "
         putStrLn $ "  width of y(h) = " ++ showMI (MI.width y)
         putStrLn $ "  Improvement: " ++ show (yPrev MI.|<=? y)
-        where
-        yPrev = joinPair yPrevPair
     showMI = showInternals (30,shouldPrintPrecision)
     showP = showPoly id show
     
-makeStep params h epsilon ((t, y0Pair, y0DerPair), prevStepIters) =
+makeStep params h epsilon ((t, y0, y0Der), prevStepIters) =
 --    unsafePrint
 --    (
 --        "makeStep:"
@@ -228,10 +223,10 @@ makeStep params h epsilon ((t, y0Pair, y0DerPair), prevStepIters) =
 --        ++ "\n yh = " ++ showMI yh
 --        ++ "\n yhDer = " ++ showMI yhDer
 --    )
-    ((t + h, yhPair, yhDerPair), newStepIters)
+    ((t + h, yh, yhDer), newStepIters)
     where
 --    showMI = showInternals (20, shouldPrintPrecision)
-    ((yhPair, yhDerPair), newStepIters) 
+    ((yh, yhDer), newStepIters) 
         = waitTillNoImprovementCheckInclusion False 1000 [] intPolySequence
     intPolySequence = map evalBoth polySequence
     polySequence
@@ -243,8 +238,6 @@ makeStep params h epsilon ((t, y0Pair, y0DerPair), prevStepIters) =
         = newConstFn cfg dombox $ y0 MI.<+> hToMinusH
     yDerFirstEncl
         = newConstFn cfg dombox $ y0Der MI.<+> hToMinusH
-    y0 = joinPair y0Pair
-    y0Der = joinPair y0DerPair
     y0Poly = newProjection cfg dombox "y0"
     y0DerPoly = newProjection cfg dombox "y0Der"
     
@@ -259,12 +252,11 @@ makeStep params h epsilon ((t, y0Pair, y0DerPair), prevStepIters) =
             }
     dombox = Map.fromList $ zip vars doms
     vars = ["u","y0","y0Der"]
-    doms = [(0,h), y0Pair, y0DerPair]
+    doms = [(0 MI.</\> h), y0, y0Der]
 
     evalBoth (p1,p2) = ((evalOne p1, evalOne p2), (p1, p2))
         where
-        evalOne = refinePair .  evalPolyOnInterval (effMI prec) c0 [(h,h),y0Pair,y0DerPair]
-
+        evalOne = evalPolyOnInterval (effMI prec) c0 [h,y0,y0Der]
     hToMinusH = (-h) MI.</\> h
 
 --    rtol =  
@@ -276,7 +268,7 @@ makeStep params h epsilon ((t, y0Pair, y0DerPair), prevStepIters) =
     c1 = i2mi 1 
     waitTillNoImprovementCheckInclusion 
             wasInclusion maxIters prevIters 
-            (this@(thisInts@(yNmOnePair,_),_):rest@(((yNPair,_),_):_)) 
+            (this@(thisInts@(yNmOne,_),_):rest@(((yN,_),_):_)) 
         | maxIters < 0 = (thisInts, reverse currIters)
 --        | wasInclusion && (not isInclusion) =
 --            error "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX internal error: inclusion ceased"
@@ -284,8 +276,6 @@ makeStep params h epsilon ((t, y0Pair, y0DerPair), prevStepIters) =
             waitTillNoImprovementCheckInclusion isInclusion (maxIters - 1) currIters rest
         | otherwise = (thisInts, reverse currIters)
         where
-        yNmOne = joinPair yNmOnePair
-        yN = joinPair yNPair
         currIters = this : prevIters
         isInclusion =
             case yNmOne MI.|<=? yN of
@@ -317,9 +307,3 @@ picard params z (y0, y0Der) (yPrev, yPrevDer) =
 
 effMI prec = (prec, (prec, ()))
 
-joinPair (l,r) = l MI.</\> r
-
-refinePair (l,r) = (MI.Interval lL lL, MI.Interval rR rR)
-    where
-    MI.Interval lL _ = l
-    MI.Interval _ rR = r

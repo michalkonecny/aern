@@ -89,6 +89,7 @@ class HasImprecision t where
     type ImprecisionEffortIndicator t
     imprecisionDefaultEffort :: t -> ImprecisionEffortIndicator t
     imprecisionOfEff :: ImprecisionEffortIndicator t -> t -> Imprecision t
+    isExactEff :: ImprecisionEffortIndicator t -> t -> Maybe Bool
 
 propImprecisionDecreasesWithRefinement ::
     (HasImprecision t, NumOrd.PartialComparison (Imprecision t)) =>

@@ -8,6 +8,8 @@ import Numeric.AERN.Basics.Interval
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.ShowInternals
@@ -33,6 +35,8 @@ main =
     putStrLn $ "(x + y)*(x - y) = " ++ (showP $ xPyBTxMyB)
     putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
     putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
+    putStrLn $ "getEndpoints([0,1]x^2+[-1,0]) = " ++ (showPPair $ RefOrd.getEndpointsOutWithDefaultEffort $ c01 <*> (x <*> x <-> c1))
+    putStrLn $ "fromEndpoints(x^2-1, 0) = " ++ (showP $ RefOrd.fromEndpointsOutWithDefaultEffort ((x <*> x <-> c1), c0))
     putStrLn $ "d (2(x + y + 2))/dx = " ++ (showP $ diffPoly eff "x" twoBxPyP2)
     putStrLn $ "d (2(x + y + 2))/dy = " ++ (showP $ diffPoly eff "y" twoBxPyP2) 
     putStrLn $ "d (x^2 + 2xy + 4x + 1)/dx = " ++ (showP $ diffPoly eff "x" integTwoBxPyP2)
@@ -42,19 +46,19 @@ main =
     putStrLn $ "(x + y + 2)drct[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyAtPoint eff 0 [mOneToZ,mOneToZ] xPyP1P1)
     putStrLn $ "(x^2 + 2xy + 4x + 1)drct[x=-1,y=-1] = " ++ (show $ evalPolyAtPoint eff 0 [-1,-1] integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)drct[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyAtPoint eff 0 [mOneToZ,mOneToZ] integTwoBxPyP2)
-    putStrLn $ "(x + y + 2)mono[x=-1,y=-1] = " ++ (show $ evalPolyOnInterval eff 0 [(-1,-1),(-1,-1)] xPyP1P1)
-    putStrLn $ "(x + y + 2)mono[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyOnInterval eff 0 [(-1,0),(-1,0)] xPyP1P1)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)mono[x=-1,y=-1] = " ++ (show $ evalPolyOnInterval eff 0 [(-1,-1),(-1,-1)] integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)mono[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyOnInterval eff 0 [(-1,0),(-1,0)] integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[y,y]] = " ++ (showP $ substPolyMainVar eff 0 (Just y,Nothing) integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[y,0]] = " ++ (showP $ substPolyMainVar eff 0 (Nothing, Just (y,c0)) integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[x,0]] = " ++ (showP $ substPolyMainVar eff 0 (Nothing, Just (x,c0)) integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[x^2-1,0]] = " ++ (showP $ substPolyMainVar eff 0 (Nothing, Just (x <*> x <-> c1,c0)) integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)substElim[x=[2,2]] = " ++ (showP $ substPolyMainVarElim eff 0 (Just 2, Nothing) integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)substElim[x=[0,2]] = " ++ (showP $ substPolyMainVarElim eff 0 (Nothing, Just (0,2)) integTwoBxPyP2)
+    putStrLn $ "(x + y + 2)mono[x=-1,y=-1] = " ++ (show $ evalPolyOnInterval eff 0 [(-1),(-1)] xPyP1P1)
+    putStrLn $ "(x + y + 2)mono[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyOnInterval eff 0 [(-1) </\> 0,(-1) </\> 0] xPyP1P1)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)mono[x=-1,y=-1] = " ++ (show $ evalPolyOnInterval eff 0 [(-1),(-1)] integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)mono[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyOnInterval eff 0 [(-1) </\> 0,(-1) </\> 0] integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[y,y]] = " ++ (showP $ substPolyMainVar eff 0 y integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[0,y]] = " ++ (showP $ substPolyMainVar eff 0 (c01 <*> y) integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[0,x]] = " ++ (showP $ substPolyMainVar eff 0 (c01 <*> x) integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[x^2-1,0]] = " ++ (showP $ substPolyMainVar eff 0 (RefOrd.fromEndpointsOutWithDefaultEffort ((x <*> x <-> c1), c0)) integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)substElim[x=[2,2]] = " ++ (showP $ substPolyMainVarElim eff 0 2 integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)substElim[x=[0,2]] = " ++ (showP $ substPolyMainVarElim eff 0 (0 </\> 2) integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[swap order of x,y] = " ++ (showP $ polySwapFirstTwoVars integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[x->z] = " ++ (showP $ polyRenameMainVar "z" integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)[add z] = " ++ (showP $ polyAddMainVar "z" (0,2) integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[add z] = " ++ (showP $ polyAddMainVar "z" (0 </\> 2) integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[degree 1] = " ++ (showP $ reducePolyDegree eff $ changeSizeLimits cfgDeg1 integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[degree 0] = " ++ (showP $ reducePolyDegree eff $ changeSizeLimits cfgDeg0 integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[size 2] = " ++ (showP $ reducePolyTermCount eff $ changeSizeLimits cfgSize2 integTwoBxPyP2)
@@ -68,13 +72,15 @@ main =
     where
     mOneToZ = (-1) </\> 0
 
-showP p = showPoly id show p ++ " [" ++ show p ++ "]" 
+showP p = showPoly id show p -- ++ " [" ++ show p ++ "]"
+showPPair (p1,p2) = "(" ++ showP p1 ++ "," ++ showP p2 ++ ")" 
 
-c1,c0,x,y :: Poly
+c1,c0,x,y,c01 :: Poly
 x = newProjection cfg dombox "x"
 y = newProjection cfg dombox "y"
 c0 = newConstFn cfg dombox 0
 c1 = newConstFn cfg dombox 1
+c01 = newConstFn cfg dombox $ 0 </\> 1
 
 xPy = x <+> y
 xMy = x <-> y
@@ -112,9 +118,9 @@ dombox = Map.fromList $ zip vars doms
 
 vars = ["x", "y"]
 
-doms :: [(MI, MI)]
-doms = [(0, 1), (0, 1)]
+doms :: [MI]
+doms = [(0 </\> 1), 0 </\> 1]
 
-domsXTiny :: [(MI, MI)]
-domsXTiny = [(0, 0.0625), (0, 1)]
+domsXTiny :: [MI]
+domsXTiny = [(0 </\> 0.0625), (0 </\> 1)]
 
