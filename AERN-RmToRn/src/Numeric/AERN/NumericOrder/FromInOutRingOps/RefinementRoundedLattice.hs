@@ -48,7 +48,10 @@ type MinmaxInOutEffortIndicatorFromRingOps f t =
     ((ArithUpDn.ConvertEffortIndicator t (Domain f), -- finding the range of a function of type t
       ArithInOut.RoundedRealEffortIndicator (Domain f),
       Int, -- ^ degree of Bernstein approximations
-      f), -- ^ variable x over [0,1] of the function type @f@ to use for computing Bernstein approximation of max(0,x-c)
+      f) -- ^ variable x over [0,1] of the function type @f@ to use for computing Bernstein approximation of max(0,x-c)
+      ,
+      EvalOpsEffortIndicator f t
+      ,
      (ArithInOut.RingOpsEffortIndicator f,
       ArithInOut.MixedFieldOpsEffortIndicator f Int
      ),
@@ -61,6 +64,7 @@ defaultMinmaxInOutEffortIndicatorFromRingOps ::
     (ArithUpDn.Convertible t (Domain f), 
      ArithInOut.RoundedReal (Domain f),
      HasDomainBox f,
+     HasEvalOps f t,
      ArithInOut.RoundedRingEffort f,
      ArithInOut.RoundedMixedFieldEffort f Int,
      ArithInOut.RoundedMixedField t (Domain f),
@@ -77,6 +81,7 @@ defaultMinmaxInOutEffortIndicatorFromRingOpsDegree ::
     (ArithUpDn.Convertible t (Domain f), 
      ArithInOut.RoundedReal (Domain f),
      HasDomainBox f,
+     HasEvalOps f t,
      ArithInOut.RoundedRingEffort f,
      ArithInOut.RoundedMixedFieldEffort f Int,
      ArithInOut.RoundedMixedField t (Domain f),
@@ -91,7 +96,10 @@ defaultMinmaxInOutEffortIndicatorFromRingOpsDegree degree sampleF@x sampleT =
     ((ArithUpDn.convertDefaultEffort sampleT sampleDF, -- finding the range of a function of type t
       ArithInOut.roundedRealDefaultEffort sampleDF,
       degree, -- ^ degree of Bernstein approximations
-      x), -- ^ variable x over [0,1] of the function type @f@ to use for computing Bernstein approximation of max(0,x-c)
+      x) -- ^ variable x over [0,1] of the function type @f@ to use for computing Bernstein approximation of max(0,x-c)
+     ,
+     evalOpsDefaultEffort sampleF sampleT
+     ,
      (ArithInOut.ringOpsDefaultEffort sampleF,
       ArithInOut.mixedFieldOpsDefaultEffort sampleF (1::Int)
      ),
@@ -124,6 +132,7 @@ defaultMinmaxInOutEffortIndicatorFromRingOpsDegree degree sampleF@x sampleT =
     
 maxZeroUp ::    
     (
+     Show t,
      HasZero t, 
      ArithInOut.RoundedRing t,
      ArithUpDn.Convertible t (Domain f), 
@@ -148,7 +157,7 @@ maxZeroUp ::
     * r' = evaluate this polynomial with a' for y and add [-e,0] 
     * transform r' back to the range of a to get the result r 
 -}    
-maxZeroUp ((effTToDom, effDomReal, degree, x), (effRingF, effIntFldF), (effRingT, effFldTDF)) a =
+maxZeroUp ((effTToDom, effDomReal, degree, x), effEvalOps, (effRingF, effIntFldF), (effRingT, effFldTDF)) a =
     let ?pCompareEffort = effCompDF in
     case (maybeaDn, c0 <=? aDn, maybeaUp, aUp <=? c0) of
         (Nothing, _,_,_) -> error "maxZeroUp called for an unbounded value"
@@ -166,7 +175,7 @@ maxZeroUp ((effTToDom, effDomReal, degree, x), (effRingF, effIntFldF), (effRingT
     Just aDn = maybeaDn
     viaBernstein =
         translateFromUnit $
-        evalOtherType (evalOpsOut sampleF sampleT) varBox $
+        evalOtherType (evalOpsOut effEvalOps sampleF sampleT) varBox $
             hillbaseApproxUp effCompDF effRingF effIntFldF effDomReal x c degree
         where
         varBox = fromAscList [(var, translateToUnit a)]
