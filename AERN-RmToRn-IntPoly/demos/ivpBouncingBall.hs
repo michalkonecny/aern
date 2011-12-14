@@ -219,7 +219,7 @@ makeStep params h locEpsilon ((t, eventCount, y0, yDer0),_) =
         (yBounceL, yDerBounceL) = -- values at the start of event analysis time segment
             (evalStepPolyAt bounceLocL yPolyNoEvent, 
              evalStepPolyAt bounceLocL yDerPolyNoEvent)
-    evalStepPolyAt dom = evalPolyOnInterval (effMI prec) c0 [dom, y0, yDer0]
+    evalStepPolyAt dom = evalPolyOnInterval (effMI prec) [dom, y0, yDer0]
     
 --    showMI = showInternals (20, shouldPrintPrecision)
     -- solve the ODE assuming there are no events:
@@ -255,7 +255,7 @@ simulateEvents params t eventCount (yBounceL, yDerBounceL) bounceLoc@(bounceLocL
     where
     he = bounceLocR <-> bounceLocL -- event analysis segment size
     evalBounceStepPolyAt dom -- evaluate polynomials with u=0 representing t=bounceLocL
-        = evalPolyOnInterval (effMI prec) c0 [dom, yBounceL, yDerBounceL]
+        = evalPolyOnInterval (effMI prec) [dom, yBounceL, yDerBounceL]
 
     -- enclosures of the solution at the end of event analysis time segment:
     (yAtHE, yDerAtHE)
@@ -410,7 +410,7 @@ locateFirstBounce params locEpsilon dom (y0Poly, yDer0Poly)
         (dom1, dom2) = defaultDomSplit sampleP dom
         sampleP = y0Poly
 
-        evalPolyAt dom = evalPolyOnInterval (effMI prec) c0 [dom,y0,yDer0]
+        evalPolyAt dom = evalPolyOnInterval (effMI prec) [dom,y0,yDer0]
         [_,y0, yDer0] = ipolycfg_doms $ getSizeLimits $ y0Poly
 
     c0 = i2mi 0
