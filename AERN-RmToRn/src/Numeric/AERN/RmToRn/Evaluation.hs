@@ -21,12 +21,14 @@ import Numeric.AERN.Basics.Interval
 class (HasDomainBox f) => CanEvaluateOtherType f
     where
     type EvalOps f :: * -> *
-    evalOtherType :: (EvalOps f t) -> (VarBox f t) -> f -> t
+    evalOtherType :: (Show t) => (EvalOps f t) -> (VarBox f t) -> f -> t
 
 class (CanEvaluateOtherType f) => HasEvalOps f t
     where
-    evalOpsOut :: f -> t -> EvalOps f t 
-    evalOpsIn :: f -> t -> EvalOps f t 
+    type EvalOpsEffortIndicator f t
+    evalOpsDefaultEffort :: f -> t -> EvalOpsEffortIndicator f t
+    evalOpsOut :: EvalOpsEffortIndicator f t -> f -> t -> EvalOps f t 
+    evalOpsIn :: EvalOpsEffortIndicator f t -> f -> t -> EvalOps f t 
 
 {-
     The following are special cases of the above, which
