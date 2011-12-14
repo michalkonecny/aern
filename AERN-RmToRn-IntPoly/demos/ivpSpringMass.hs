@@ -256,7 +256,7 @@ makeStep params h epsilon ((t, y0, y0Der), prevStepIters) =
 
     evalBoth (p1,p2) = ((evalOne p1, evalOne p2), (p1, p2))
         where
-        evalOne = evalPolyOnInterval (effMI prec) c0 [h,y0,y0Der]
+        evalOne = evalPolyOnInterval (effMI prec) [h,y0,y0Der]
     hToMinusH = (-h) MI.</\> h
 
 --    rtol =  

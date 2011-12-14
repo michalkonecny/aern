@@ -54,6 +54,7 @@ instance
     evalOtherType ops valsMap p@(IntPoly cfg _) =
         case polyEvalMonoOps ops of
             Nothing -> evalPolyDirect ops vals p
+            _ -> evalPolyMono ops vals p 
         where
         vals = map getValue vars
         vars = ipolycfg_vars cfg
@@ -68,18 +69,7 @@ instance
     type EvalOpsEffortIndicator (IntPoly var cf) cf = ArithInOut.RoundedRealEffortIndicator cf
     evalOpsDefaultEffort _ sampleCf = ArithInOut.roundedRealDefaultEffort sampleCf 
     evalOpsOut eff sampleP sampleCf = 
-        let ?multInOutEffort = effMult in
-        let ?intPowerInOutEffort = effPwr in
-        let ?addInOutEffort = effAdd in
-        let ?joinmeetEffort = effJoin in
-        let ?pCompareEffort = effComp in
-        coeffPolyEvalOps sampleCf
-        where
-        effMult = ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf eff
-        effPwr = ArithInOut.fldEffortPow sampleCf $ ArithInOut.rrEffortField sampleCf eff
-        effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf eff
-        effComp = ArithInOut.rrEffortNumComp sampleCf eff
-        effJoin = ArithInOut.rrEffortJoinMeet sampleCf eff
+        coeffPolyEvalOpsOut eff sampleCf
 
 data PolyEvalOps var cf val =
     PolyEvalOps
@@ -91,49 +81,56 @@ data PolyEvalOps var cf val =
         polyEvalCoeff :: (cf -> val), {-^ coeff conversion -}
         polyEvalMaybePoly :: (IntPolyTerms var cf -> Maybe val), {-^ optional direct poly conversion -}
         polyEvalLeq :: (val -> val -> Maybe Bool),
-        polyEvalMonoOps :: Maybe (PolyEvalMonoOps val)
+        polyEvalMonoOps :: Maybe (PolyEvalMonoOps cf val)
     }
 
-data PolyEvalMonoOps val =
+data PolyEvalMonoOps cf val =
     PolyEvalMonoOps
     {
         polyEvalMonoGetEndpoints :: val -> (val, val),
         polyEvalMonoFromEndpoints :: (val, val) -> val,
-        polyEvalMonoIsThin :: val -> Bool
+        polyEvalMonoIsThin :: val -> Bool,
+        polyEvalMonoCfEffortIndicator :: ArithInOut.RoundedRealEffortIndicator cf
     }
 
-coeffPolyEvalOps z =
-    PolyEvalOps z (<+>) (<*>) (<^>) id (const Nothing) (<=?) $
+coeffPolyEvalOpsOut ::
+    (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf)
+    =>
+   (ArithInOut.RoundedRealEffortIndicator cf) ->
+   cf ->
+   PolyEvalOps var cf cf
+coeffPolyEvalOpsOut eff sample =
+    let ?multInOutEffort = effMult in
+    let ?intPowerInOutEffort = effPwr in
+    let ?addInOutEffort = effAdd in
+    let ?joinmeetEffort = effJoin in
+    let ?pCompareEffort = effComp in
+    PolyEvalOps (zero sample) (<+>) (<*>) (<^>) id (const Nothing) (<=?) $
         Just $ PolyEvalMonoOps
             RefOrd.getEndpointsOutWithDefaultEffort
             RefOrd.fromEndpointsOutWithDefaultEffort
             isDefinitelyExact
+            eff
     where
     isDefinitelyExact a =
-        (isExactEff $ imprecisionDefaultEffort a) a == Just True
+        (isExactEff $ ArithInOut.rrEffortImprecision a eff) a == Just True
+    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+    effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
+    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+    effComp = ArithInOut.rrEffortNumComp sample eff
+    effJoin = ArithInOut.rrEffortJoinMeet sample eff
 
 evalPolyAtPoint ::
     (Ord var, Show var, 
      ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf, Show cf) 
     => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
-    cf {- zero coefficient -} ->
     [cf] {- values for each variable respectively -} -> 
     IntPoly var cf -> cf
-evalPolyAtPoint eff z values p@(IntPoly cfg _)
+evalPolyAtPoint eff values p@(IntPoly cfg _)
     = 
-    let ?multInOutEffort = effMult in
-    let ?intPowerInOutEffort = effPwr in
-    let ?addInOutEffort = effAdd in
-    let ?joinmeetEffort = effJoin in
-    let ?pCompareEffort = effComp in
-    evalPolyDirect (coeffPolyEvalOps z) values p
+    evalPolyDirect (coeffPolyEvalOpsOut eff sample) values p
     where
-    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
-    effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
-    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
-    effComp = ArithInOut.rrEffortNumComp sample eff
-    effJoin = ArithInOut.rrEffortJoinMeet sample eff
     sample = ipolycfg_sample_cf cfg
 
 evalPolyOnInterval ::
@@ -142,17 +139,11 @@ evalPolyOnInterval ::
      Show cf) 
     => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
-    cf {- zero coefficient -} ->
     [cf] {- values for each variable respectively -} -> 
     IntPoly var cf -> cf
-evalPolyOnInterval eff z values p@(IntPoly cfg _)
+evalPolyOnInterval eff values p@(IntPoly cfg _)
     = 
-    let ?multInOutEffort = effMult in
-    let ?intPowerInOutEffort = effPwr in
-    let ?addInOutEffort = effAdd in
-    let ?joinmeetEffort = effJoin in
-    let ?pCompareEffort = effComp in
-    evalPolyMono eff (coeffPolyEvalOps z)  values p
+    evalPolyMono (coeffPolyEvalOpsOut eff sample)  values p
     where
     valuesLR = map RefOrd.getEndpointsOutWithDefaultEffort values
     valuesALR =
@@ -165,12 +156,8 @@ evalPolyOnInterval eff z values p@(IntPoly cfg _)
         checkEqual (l,r) 
             | (l ==? r) == Just True = Nothing
             | otherwise = Just (l,r)
-    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
-    effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
-    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     effComp = ArithInOut.rrEffortNumComp sample eff
     effJoin = ArithInOut.rrEffortJoinMeet sample eff
-    effImpr = ArithInOut.rrEffortImprecision sample eff
     sample = ipolycfg_sample_cf cfg
 
 substPolyMainVarElim ::
@@ -216,7 +203,7 @@ substPolyMainVar eff z substPoly p@(IntPoly cfg terms) =
 --    showP = showPoly show show
     result =
         IntPoly cfg $
-            evalPolyMono eff substPolyEvalOps [substTerms] p
+            evalPolyMono substPolyEvalOps [substTerms] p
     isDefinitelyExact p = termsAreExactEff effImpr p == Just True
     termsFromEndpoints (terms1, terms2) =
         intpoly_terms $ 
@@ -236,7 +223,7 @@ substPolyMainVar eff z substPoly p@(IntPoly cfg terms) =
             (cf2Terms z) addTerms multTerms (powTerms sample vars) 
             cf2Terms terms2terms leqTerms $
             Just $ PolyEvalMonoOps 
-                termsGetEndpoints termsFromEndpoints isDefinitelyExact
+                termsGetEndpoints termsFromEndpoints isDefinitelyExact eff
     cf2Terms cf = mkConstTerms cf vars
     terms2terms (IntPolyV v ts) | v == mainVar = Nothing
     terms2terms terms = Just $ IntPolyV mainVar $ IntMap.singleton 0 terms
@@ -245,7 +232,7 @@ substPolyMainVar eff z substPoly p@(IntPoly cfg terms) =
     leqTerms terms1 terms2 =
         (zero sample) <=? diffRange 
         where
-        diffRange = evalPolyOnInterval eff z domsR (IntPoly cfgR diff)
+        diffRange = evalPolyOnInterval eff domsR (IntPoly cfgR diff)
         diff = addTerms terms2 $ negTerms terms1
         (cfgR, domsR) =
             case terms1 of
@@ -312,11 +299,10 @@ evalPolyMono ::
      ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
      Show cf, Show val) 
     => 
-    (ArithInOut.RoundedRealEffortIndicator cf) ->
     (PolyEvalOps var cf val) ->
     [val] {-^ value for each variable -} -> 
     IntPoly var cf -> val
-evalPolyMono eff opsV values p@(IntPoly cfg _)
+evalPolyMono opsV values p@(IntPoly cfg _)
     | noMonoOps = direct
     | noMonotoneVar = direct
     | otherwise =
@@ -345,6 +331,7 @@ evalPolyMono eff opsV values p@(IntPoly cfg _)
     fromEndPtsV = polyEvalMonoFromEndpoints monoOpsV
     getEndPtsV = polyEvalMonoGetEndpoints monoOpsV
     isThin = polyEvalMonoIsThin monoOpsV
+    eff= polyEvalMonoCfEffortIndicator monoOpsV
     left = evalPolyDirect opsV valuesL p
     right = evalPolyDirect opsV valuesR p
     (noMonotoneVar, valuesL, valuesR) =
