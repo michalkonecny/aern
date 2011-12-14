@@ -349,13 +349,8 @@ instance
         where
         vars = ipolycfg_vars cfg
         doms = ipolycfg_doms cfg
-    defaultDomSplit _ dom =
-        (domL, domR)
-        where
-        domL = RefOrd.fromEndpointsOutWithDefaultEffort (domLE, domME)
-        domR = RefOrd.fromEndpointsOutWithDefaultEffort (domME, domRE)
-        domME = (domLE <+> domRE) </>| (2::Int)
-        (domLE, domRE) = RefOrd.getEndpointsOutWithDefaultEffort dom
+    defaultDomSplit _ =
+        defaultDomSplitUsingEndpointsDefaultEffort
 
 instance (HasSizeLimits (IntPoly var cf)) 
     where

@@ -19,6 +19,8 @@
 module Numeric.AERN.RmToRn.Domain where
 
 --import Numeric.AERN.Basics.Interval
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
@@ -41,6 +43,26 @@ class (HasVarValue
         f {-^ dummy parameter that aids typechecking -} -> 
         (Domain f) -> 
         (Domain f, Domain f)
+
+defaultDomSplitUsingEndpointsDefaultEffort dom =
+    defaultDomSplitUsingEndpointsEff (effFromE, effGetE, effAdd, effIntDiv) dom
+    where
+    effFromE = RefOrd.fromEndpointsDefaultEffort dom
+    effGetE = RefOrd.getEndpointsDefaultEffort dom
+    effAdd = ArithInOut.addDefaultEffort dom
+    effIntDiv = ArithInOut.mixedDivDefaultEffort dom (1 :: Int)
+    
+defaultDomSplitUsingEndpointsEff (effFromE, effGetE, effAdd, effIntDiv) dom =
+    (domL, domR)
+    where
+    domL = RefOrd.fromEndpointsOutEff effFromE (domLE, domME)
+    domR = RefOrd.fromEndpointsOutEff effFromE (domME, domRE)
+    domME = 
+        let (<+>) = ArithInOut.addOutEff effAdd in 
+        let (</>|) = ArithInOut.mixedDivOutEff effIntDiv in 
+        (domLE <+> domRE) </>| (2::Int)
+    (domLE, domRE) = RefOrd.getEndpointsOutEff effGetE dom
+
 
 type DomainBox f = VarBox f (Domain f)
     
