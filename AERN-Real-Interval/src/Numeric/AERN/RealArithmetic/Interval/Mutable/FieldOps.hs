@@ -59,7 +59,7 @@ instance
     (ArithUpDn.RoundedMultiplyInPlace e,
      NumOrd.RoundedLatticeInPlace e,
      HasZero e,  NumOrd.PartialComparison e,
-     CanBeMutable e) => 
+     CanBeMutable e) =>
     RoundedMultiplyInPlace (Interval e) 
     where
     multOutInPlaceEff (effortComp, effortMinmax, effortMult) r i1 i2 =
@@ -519,7 +519,7 @@ instance
         multOutInPlaceEff (effortComp, effortMinmax, effortMult) res a temp
         where
         bottom = RefOrd.bottom sampleI
-        sampleI@(Interval sampleE _) = getDummySample res
+        sampleI = getDummySample res
         divUp = ArithUpDn.divUpInPlaceEff effortDiv
         divDn = ArithUpDn.divDnInPlaceEff effortDiv
     divInInPlaceEff 
@@ -536,7 +536,7 @@ instance
         multInInPlaceEff (effortComp, effortMinmax, effortMult) res a temp
         where
         top = RefOrd.top sampleI
-        sampleI@(Interval sampleE _) = getDummySample res
+        sampleI = getDummySample res
         divUp = ArithUpDn.divUpInPlaceEff effortDiv
         divDn = ArithUpDn.divDnInPlaceEff effortDiv
 
