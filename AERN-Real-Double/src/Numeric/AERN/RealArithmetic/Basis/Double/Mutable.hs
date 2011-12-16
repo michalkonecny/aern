@@ -36,6 +36,7 @@ import Control.Monad.ST (unsafeIOToST)
 instance CanBeMutable Double where
     data Mutable Double s = 
         MDouble { unMDouble :: STRef s Double }
+    getDummySample _ = 0
     makeMutable a = 
         do
         v <- newSTRef a

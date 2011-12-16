@@ -32,6 +32,7 @@ import qualified Data.Number.MPFR.Mutable as MM
 
 instance CanBeMutable MPFR where
     data Mutable MPFR s = MMPFR { unMMPFR :: MM.MMPFR s }
+    getDummySample _ = 0
     makeMutable a = do { aM <- MM.thaw a; return $ MMPFR aM } 
     unsafeMakeMutable a = do { aM <- MM.unsafeThaw a; return $ MMPFR aM }
     writeMutable (MMPFR m) = MM.writeMMPFR m 

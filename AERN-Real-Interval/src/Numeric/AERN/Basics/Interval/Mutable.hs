@@ -24,6 +24,10 @@ import Numeric.AERN.RealArithmetic.ExactOps
 instance (CanBeMutable e) => CanBeMutable (Interval e) where
     data Mutable (Interval e) s = 
         MInterval { mIntervalLeft :: Mutable e s, mIntervalRight :: Mutable e s }
+    getDummySample (MInterval lM rM) =
+        Interval sE sE
+        where
+        sE = getDummySample lM
     makeMutable (Interval l r) = 
         do
         lM <- makeMutable l
