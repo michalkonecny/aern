@@ -1,6 +1,7 @@
 module Main where
 
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
+
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
 
@@ -12,6 +13,9 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.ShowInternals
 
@@ -38,6 +42,11 @@ main =
     putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
     putStrLn $ "getEndpoints([0,1]x^2+[-1,0]) = " ++ (showPPair $ RefOrd.getEndpointsOutWithDefaultEffort $ c01 <*> (x <*> x <-> c1))
     putStrLn $ "fromEndpoints(x^2-1, 0) = " ++ (showP $ RefOrd.fromEndpointsOutWithDefaultEffort ((x <*> x <-> c1), c0))
+    putStrLn $ "(x^2-1 `comp` 1) = " ++ (show $ numCompare (x <*> x <-> c1) c1)
+    putStrLn $ "(x^2-1 `comp` 0) = " ++ (show $ numCompare (x <*> x <-> c1) c0)
+    putStrLn $ "(x^2-1 `comp` -0.5) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> (c1 </>| (2::Int)))) ++ " should be Just NC"
+    putStrLn $ "(x^2-1 `comp` -1) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> c1))
+    putStrLn $ "(x^2-1 `comp` -2) = " ++ (show $ numCompare (x <*> x <-> c1) ((c0 <-> c1) <-> c1))
     putStrLn $ "d (2(x + y + 2))/dx = " ++ (showP $ diffPoly eff "x" twoBxPyP2)
     putStrLn $ "d (2(x + y + 2))/dy = " ++ (showP $ diffPoly eff "y" twoBxPyP2) 
     putStrLn $ "d (x^2 + 2xy + 4x + 1)/dx = " ++ (showP $ diffPoly eff "x" integTwoBxPyP2)
@@ -98,6 +107,9 @@ integTwoBxPyP2 = integratePolyMainVar eff 0 c1 twoBxPyP2
 eff = (100, (100,()))
 
 evalOpsOutCf = evalOpsOut eff x (0::MI)
+
+numCompare a b =
+    NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort a) a b
 
 cfg =
     IntPolyCfg

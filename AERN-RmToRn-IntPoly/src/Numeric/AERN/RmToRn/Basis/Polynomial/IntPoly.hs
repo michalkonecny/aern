@@ -18,9 +18,8 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps,
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation,
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate,
-        module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
---    ,
---        module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder
+        module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate,
+        module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder
     )
 where
 
@@ -30,7 +29,7 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps (sinePoly)
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
---import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder --()
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder ()
 
 
 import Numeric.AERN.RmToRn.MinimalFnBasis
