@@ -45,6 +45,7 @@ Library
         Numeric.AERN.RmToRn.Evaluation 
         Numeric.AERN.RmToRn.MinimalFnBasis 
         Numeric.AERN.RmToRn.RefinementOrderRounding.BernsteinPoly 
+        Numeric.AERN.NumericOrder.FromInOutRingOps.Comparison
         Numeric.AERN.NumericOrder.FromInOutRingOps.RefinementRoundedLattice
   other-modules:
         Numeric.AERN.RmToRn.MinimalFnBasis.Basics
