@@ -2,6 +2,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.MixedFieldOps
     Description :  rounded basic arithmetic operations mixing MPFR and another type

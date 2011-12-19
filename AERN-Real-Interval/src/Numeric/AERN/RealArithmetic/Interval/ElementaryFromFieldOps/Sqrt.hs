@@ -2,6 +2,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE NoMonoLocalBinds #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt
     Description :  an interval-specific implementation of sqrt

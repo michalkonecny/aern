@@ -1,7 +1,12 @@
+{-# LANUGAGE CPP #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE RankNTypes #-}
+
+{-# LANGUAGE NoMonoLocalBinds #-}
+
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps
     Description :  rounded basic arithmetic operations mixing 2 types
@@ -299,7 +304,10 @@ propMixedDivInPlaceEqualsConvert sample1 sample2
             dR /^|= n
             unsafeReadMutable dR
     expr1Dn (effMDiv,_) =
-        let (/.|=) dR = mixedDivDnInPlaceEff effMDiv dR dR in
+        let 
+--            (/.|=) :: forall t tn . ((RoundedMixedDivideInPlace t tn) => forall s . Mutable t s -> tn -> ST s ())
+            (/.|=) dR = mixedDivDnInPlaceEff effMDiv dR dR 
+        in
         runST $ 
             do
             dR <- makeMutable d
