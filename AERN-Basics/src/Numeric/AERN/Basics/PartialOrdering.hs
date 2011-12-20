@@ -62,6 +62,22 @@ data PartialOrderingPartialInfo =
         pOrdInfGEQ :: Maybe Bool,
         pOrdInfGT :: Maybe Bool
     }
+    
+instance Show PartialOrderingPartialInfo
+    where
+    show info =
+        "PartialOrderingPartialInfo{"
+        ++ "LT:" ++ showM (pOrdInfLT info) 
+        ++ ",LEQ:" ++ showM (pOrdInfLEQ info) 
+        ++ ",EQ:" ++ showM (pOrdInfEQ info) 
+        ++ ",NC:" ++ showM (pOrdInfNC info) 
+        ++ ",GEQ:" ++ showM (pOrdInfGEQ info) 
+        ++ ",GT:" ++ showM (pOrdInfGT info) 
+        ++ "}" 
+        where
+        showM (Just True) = "T"
+        showM (Just False) = "F"
+        showM _ = "?"
 
 partialOrderingPartialInfoAllFalse :: PartialOrderingPartialInfo
 partialOrderingPartialInfoAllFalse = 

@@ -27,7 +27,7 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
 
 import Numeric.AERN.RmToRn.Domain
 --import Numeric.AERN.RmToRn.Evaluation
-import Numeric.AERN.NumericOrder.FromInOutRingOps.Comparison
+import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
@@ -39,6 +39,8 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
+import Numeric.AERN.Basics.PartialOrdering
+
 import Numeric.AERN.Misc.Debug
 
 instance
@@ -48,10 +50,17 @@ instance
     NumOrd.PartialComparison (IntPoly var cf) 
     where
     type NumOrd.PartialCompareEffortIndicator (IntPoly var cf) =
-        ArithInOut.RoundedRealEffortIndicator cf 
+        (Int, ArithInOut.RoundedRealEffortIndicator cf) 
     pCompareDefaultEffort (IntPoly cfg terms) = 
-        ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg    
-    pCompareEff effDom p1 = pCompareEffFromRingOps (effAdd, effCompDom, effDom) p1 
+        (4 * varsN, ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg)
+        where
+        varsN = length vars
+        vars = ipolycfg_vars cfg
+    pCompareEff eff p1 p2 =
+        case partialInfo2PartialOrdering $ NumOrd.pCompareInFullEff eff p1 p2 of
+            [rel] -> Just rel
+            _ -> Nothing 
+    pCompareInFullEff (n, effDom) p1 = pCompareFunFromRingOps (n, effAdd, effCompDom, effDom) p1 
         where
         effCompDom = ArithInOut.rrEffortNumComp sampleDom effDom
         effAdd = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom

@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.NumericOrder.FromInOutRingOps.RefinementRoundedLattice
+    Module      :  Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.RefinementRoundedLattice
     Description :  approximation of min and max using only ring operations
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -16,7 +16,7 @@
     /function/ pointwise over its domain.
 -}
 
-module Numeric.AERN.NumericOrder.FromInOutRingOps.RefinementRoundedLattice where
+module Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.RefinementRoundedLattice where
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
