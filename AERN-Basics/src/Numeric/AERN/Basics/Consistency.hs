@@ -24,13 +24,32 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+data ConsistencyStatus =
+    Inconsistent -- ie neither Consistent nor Anticonsistent
+    | Consistent 
+    | Anticonsistent 
+    | Thin -- ie both Consistent and Anticonsistent
+    
 class HasConsistency t where
     type ConsistencyEffortIndicator t
     consistencyDefaultEffort :: t -> ConsistencyEffortIndicator t
+    getConsistencyEff :: (ConsistencyEffortIndicator t) -> t -> Maybe ConsistencyStatus
     isConsistentEff :: (ConsistencyEffortIndicator t) -> t -> Maybe Bool
+    isConsistentEff eff e = 
+        case getConsistencyEff eff e of
+            Just Consistent -> Just True
+            Just Thin -> Just True
+            Just _ -> Just False
+            _ -> Nothing
     
 class (HasConsistency t) => HasAntiConsistency t where
     isAntiConsistentEff :: (ConsistencyEffortIndicator t) -> t -> Maybe Bool
+    isAntiConsistentEff eff e = 
+        case getConsistencyEff eff e of
+            Just Anticonsistent -> Just True
+            Just Thin -> Just True
+            Just _ -> Just False
+            _ -> Nothing
     flipConsistency :: t -> t
     
 class HasThinRepresentative t where
