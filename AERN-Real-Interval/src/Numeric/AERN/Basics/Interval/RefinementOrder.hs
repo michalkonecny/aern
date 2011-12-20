@@ -66,19 +66,61 @@ instance
         NumOrd.PartialCompareEffortIndicator e 
     pCompareDefaultEffort (Interval l r) = 
         NumOrd.pCompareDefaultEffort l
-    pCompareEff effort (Interval l1 r1) (Interval l2 r2) =
-            case (c l1 l2, c r1 r2) of
-                (Just EQ, Just EQ) -> Just EQ
-                (Just LT, Just GT) -> Just LT  
-                (Just LT, Just EQ) -> Just LT  
-                (Just EQ, Just GT) -> Just LT  
-                (Just GT, Just LT) -> Just GT  
-                (Just GT, Just EQ) -> Just GT  
-                (Just EQ, Just LT) -> Just GT  
-                (Just _, Just _) -> Just NC  
+    pCompareEff effort i1 i2 =
+        case partialInfo2PartialOrdering $ NumOrd.pCompareInFullEff effort i1 i2 of
+            [ord] -> Just ord
+            _ -> Nothing
+    pCompareInFullEff effort (Interval l1 r1) (Interval l2 r2) = 
+        PartialOrderingPartialInfo
+        {
+            pOrdInfEQ = fromD (eqD, neqD),
+            pOrdInfLT = fromD (ltD, nltD),
+            pOrdInfLEQ = fromD (leqD, nleqD),
+            pOrdInfGT = fromD (gtD, ngtD),
+            pOrdInfGEQ = fromD (geqD, ngeqD),
+            pOrdInfNC = fromD (nleqD && ngeqD, leqD || geqD)
+        }
+--        case (c l1 l2, c r1 r2) of
+--            (Just EQ, Just EQ) -> Just EQ
+--            (Just LT, Just GT) -> Just LT  
+--            (Just LT, Just EQ) -> Just LT  
+--            (Just EQ, Just GT) -> Just LT  
+--            (Just GT, Just LT) -> Just GT  
+--            (Just GT, Just EQ) -> Just GT  
+--            (Just EQ, Just LT) -> Just GT  
+--            (Just _, Just _) -> Just NC  
+--            _ -> Nothing
+        where
+        fromD (definitelyTrue, definitelyFalse) =
+            case (definitelyTrue, definitelyFalse) of
+                (True, _) -> Just True
+                (_, True) -> Just False
                 _ -> Nothing
-            where
-            c = NumOrd.pCompareEff effort 
+        eqD = leftEQ == jt && rightEQ == jt
+        neqD = leftEQ == jf || rightEQ == jf
+        leqD = leftLEQ == jt && rightGEQ == jt
+        nleqD = leftLEQ == jf || rightGEQ == jf
+        ltD = leqD && neqD
+        nltD = nleqD || eqD
+        gtD = geqD && neqD
+        ngtD = ngeqD || eqD
+        geqD = leftGEQ == jt && rightLEQ == jt
+        ngeqD = leftGEQ == jf || rightLEQ == jf
+        
+        leftEQ = pOrdInfEQ leftInfo
+        leftLT = pOrdInfLT leftInfo
+        leftLEQ = pOrdInfLEQ leftInfo
+        leftGT = pOrdInfGT leftInfo
+        leftGEQ = pOrdInfGEQ leftInfo
+        leftInfo = NumOrd.pCompareInFullEff effort l1 l2 
+        rightEQ = pOrdInfEQ rightInfo
+        rightLT = pOrdInfLT rightInfo
+        rightLEQ = pOrdInfLEQ rightInfo
+        rightGT = pOrdInfGT rightInfo
+        rightGEQ = pOrdInfGEQ rightInfo
+        rightInfo = NumOrd.pCompareInFullEff effort r1 r2 
+        jt = Just True
+        jf = Just False
         
 
 instance (NumOrd.HasExtrema e) => (RefOrd.HasTop (Interval e))
@@ -257,8 +299,8 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices thinIndices co
     intervalConstraintsToEndpointConstraints ((ix1, ix2),rels) =
         concat $ map forEachRel rels
         where
-        endpoints1Comparable = [(((ix1,-1),(ix1, 1)), [EQ,LT,LEE,GT,GEE])]
-        endpoints2Comparable = [(((ix2,-1),(ix2, 1)), [EQ,LT,LEE,GT,GEE])]
+        endpoints1Comparable = [(((ix1,-1),(ix1, 1)), [EQ,LT,GT])]
+        endpoints2Comparable = [(((ix2,-1),(ix2, 1)), [EQ,LT,GT])]
         endpointsComparable = endpoints1Comparable ++ endpoints2Comparable
         forEachRel EQ = -- both endpoints agree 
             [[(((ix1,-1),(ix2,-1)), [EQ]), (((ix1,1),(ix2,1)), [EQ])]]
@@ -266,27 +308,27 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices thinIndices co
             -- the interval ix1 is indide ix2, but not equal
             [
                 endpointsComparable ++
-                [(((ix1,-1),(ix2,-1)), [GT, GEE])] ++ 
-                [(((ix1,1),(ix2,1)), [EQ, LT, LEE])]
+                [(((ix1,-1),(ix2,-1)), [GT])] ++ 
+                [(((ix1,1),(ix2,1)), [EQ, LT])]
             ]
             ++
             [
                 endpointsComparable ++
-                [(((ix1,-1),(ix2,-1)), [EQ, GT, GEE])] ++ 
-                [(((ix1,1),(ix2,1)), [LT, LEE])]
+                [(((ix1,-1),(ix2,-1)), [EQ, GT])] ++ 
+                [(((ix1,1),(ix2,1)), [LT])]
             ]
         forEachRel LT =  
             -- the interval ix2 is indide ix1, but not equal
             [
                 endpointsComparable ++
-                [(((ix2,-1),(ix1,-1)), [GT, GEE])] ++ 
-                [(((ix2,1),(ix1,1)), [EQ, LT, LEE])]
+                [(((ix2,-1),(ix1,-1)), [GT])] ++ 
+                [(((ix2,1),(ix1,1)), [EQ, LT])]
             ]
             ++
             [
                 endpointsComparable ++
-                [(((ix2,-1),(ix1,-1)), [EQ, GT, GEE])] ++ 
-                [(((ix2,1),(ix1,1)), [LT, LEE])]
+                [(((ix2,-1),(ix1,-1)), [EQ, GT])] ++ 
+                [(((ix2,1),(ix1,1)), [LT])]
             ]
         forEachRel NC =
             -- either some pair of endpoints is NC:
@@ -297,15 +339,15 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices thinIndices co
             -- or the interval ix1 is to the left of ix2
             [
                 endpointsComparable ++
-                [(((ix1,-1),(ix2,-1)), [LT, LEE]), 
-                 (((ix1,1),(ix2,1)), [LT,LEE])]
+                [(((ix1,-1),(ix2,-1)), [LT]), 
+                 (((ix1,1),(ix2,1)), [LT])]
             ]
             ++
             -- or the interval ix2 is to the left of ix1
             [
                 endpointsComparable ++
-                [(((ix2,-1),(ix1,-1)), [LT, LEE]), 
-                 (((ix2,1),(ix1,1)), [LT,LEE])]
+                [(((ix2,-1),(ix1,-1)), [LT]), 
+                 (((ix2,1),(ix1,1)), [LT])]
             ]
         forEachRel _ = []
        

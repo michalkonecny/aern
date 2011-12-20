@@ -51,9 +51,9 @@ instance (ShowInternals e, NumOrd.PartialComparison e) => (ShowInternals (Interv
         case (NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort l) l r) of
             Just EQ -> "<" ++ showL ++ ">"
             Just LT -> showConsistent
-            Just LEE -> showConsistent
+--            Just LEE -> showConsistent
             Just GT -> showAnticonsistent
-            Just GEE -> showAnticonsistent
+--            Just GEE -> showAnticonsistent
             _ -> showUnknown
         where
         showL = showInternals indicator l

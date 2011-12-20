@@ -34,13 +34,13 @@ pNonnegNonposEff effort a =
         pPosNonnegNegNonposEff effort a
     
 pPosNonnegNegNonposEff effort a =
-    case NumOrd.pCompareEff effort a (zero a) of
-       Just EQ -> (Just False, Just True, Just False, Just True) 
-       Just LT -> (Just False, Just False, Just True, Just True) 
-       Just GT -> (Just True, Just True, Just False, Just False)
-       Just LEE -> (Just False, Nothing, Nothing, Just True) 
-       Just GEE -> (Nothing, Just True, Just False, Nothing)
-       _ -> (Nothing, Nothing, Nothing, Nothing)
+    (infoGT, infoGEQ, infoLT, infoLEQ) 
+    where
+    info = NumOrd.pCompareInFullEff effort a (zero a)
+    infoLT = pOrdInfLT info
+    infoGT = pOrdInfGT info
+    infoLEQ = pOrdInfLEQ info
+    infoGEQ = pOrdInfGEQ info
     
 class HasOne t where
     one :: t -> t

@@ -42,6 +42,8 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 class PartialComparison t where
     type PartialCompareEffortIndicator t
     pCompareEff :: PartialCompareEffortIndicator t -> t -> t -> Maybe PartialOrdering
+    pCompareInFullEff :: PartialCompareEffortIndicator t -> t -> t -> PartialOrderingPartialInfo
+    pCompareInFullEff eff a b = partialOrdering2PartialInfo $ pCompareEff eff a b 
     pCompareDefaultEffort :: t -> PartialCompareEffortIndicator t
     
     -- | Partial equality
@@ -57,42 +59,19 @@ class PartialComparison t where
     
     -- defaults for all convenience operations:
     pEqualEff effort a b =
-        case pCompareEff effort a b of
-            Just EQ -> Just True
-            Just LEE -> Nothing
-            Just GEE -> Nothing
-            Just _ -> Just False
-            _ -> Nothing
+        pOrdInfEQ $ pCompareInFullEff effort a b
     pLessEff effort a b = 
-        case pCompareEff effort a b of
-            Just LT -> Just True
-            Just LEE -> Nothing
-            Just _ -> Just False
-            _ -> Nothing
+        pOrdInfLT $ pCompareInFullEff effort a b
     pGreaterEff effort a b = 
-        case pCompareEff effort a b of
-            Just GT -> Just True
-            Just GEE -> Nothing
-            Just _ -> Just False
-            _ -> Nothing
+        pOrdInfGT $ pCompareInFullEff effort a b
     pLeqEff effort a b =
-        case pCompareEff effort a b of
-            Just EQ -> Just True
-            Just LT -> Just True
-            Just LEE -> Just True
-            Just GEE -> Nothing
-            Just _ -> Just False
-            _ -> Nothing
+        pOrdInfLEQ $ pCompareInFullEff effort a b
     pGeqEff effort a b =
-        case pCompareEff effort a b of
-            Just EQ -> Just True
-            Just GT -> Just True
-            Just GEE -> Just True
-            Just LEE -> Nothing
-            Just _ -> Just False
-            _ -> Nothing
-    pComparableEff effort a b = fmap (/= NC) (pCompareEff effort a b)
-    pIncomparableEff effort a b = fmap (== NC) (pCompareEff effort a b)
+        pOrdInfGEQ $ pCompareInFullEff effort a b
+    pComparableEff effort a b = 
+        fmap not $ pOrdInfNC $ pCompareInFullEff effort a b
+    pIncomparableEff effort a b =
+        pOrdInfNC $ pCompareInFullEff effort a b
 
 
 instance PartialComparison Int where

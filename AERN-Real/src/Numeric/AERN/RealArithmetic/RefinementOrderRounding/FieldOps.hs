@@ -242,9 +242,9 @@ absOutUsingCompMax (effortComp, effortMinmax) a =
     case NumOrd.pCompareEff effortComp (zero a) a of
         Just EQ -> a
         Just LT -> a
-        Just LEE -> a
+--        Just LEE -> a
         Just GT -> neg a
-        Just GEE -> neg a
+--        Just GEE -> neg a
         _ -> (zero a) `max` (a `max` (neg a))
     where
     max = NumOrd.maxOutEff effortMinmax
@@ -259,9 +259,9 @@ absInUsingCompMax (effortComp, effortMinmax) a =
     case NumOrd.pCompareEff effortComp (zero a) a of
         Just EQ -> a
         Just LT -> a
-        Just LEE -> a
+--        Just LEE -> a
         Just GT -> neg a
-        Just GEE -> neg a
+--        Just GEE -> neg a
         _ -> (zero a) `max` (a `max` (neg a))
     where
     max = NumOrd.maxInEff effortMinmax

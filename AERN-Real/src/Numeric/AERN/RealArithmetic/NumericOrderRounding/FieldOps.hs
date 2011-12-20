@@ -47,7 +47,7 @@ import Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Exception (HasLegalValues)
-import Numeric.AERN.RealArithmetic.Laws
+import Numeric.AERN.RealArithmetic.Laws 
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsImplicitEffort
@@ -200,9 +200,7 @@ absUpUsingCompMax (effortComp, effortMinmax) a =
     case NumOrd.pCompareEff effortComp (zero a) a of
         Just EQ -> a
         Just LT -> a
-        Just LEE -> a
         Just GT -> neg a
-        Just GEE -> neg a
         _ -> (zero a) `max` (a `max` (neg a))
     where
     max = NumOrd.maxUpEff effortMinmax
@@ -217,9 +215,7 @@ absDnUsingCompMax (effortComp, effortMinmax) a =
     case NumOrd.pCompareEff effortComp (zero a) a of
         Just EQ -> a
         Just LT -> a
-        Just LEE -> a
         Just GT -> neg a
-        Just GEE -> neg a
         _ -> (zero a) `max` (a `max` (neg a))
     where
     max = NumOrd.maxDnEff effortMinmax
