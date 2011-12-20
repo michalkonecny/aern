@@ -42,11 +42,11 @@ Library
   exposed-modules:       
         Numeric.AERN.RmToRn.Domain
         Numeric.AERN.RmToRn.New
-        Numeric.AERN.RmToRn.Evaluation 
+        Numeric.AERN.RmToRn.Evaluation
         Numeric.AERN.RmToRn.MinimalFnBasis 
         Numeric.AERN.RmToRn.RefinementOrderRounding.BernsteinPoly 
-        Numeric.AERN.NumericOrder.FromInOutRingOps.Comparison
-        Numeric.AERN.NumericOrder.FromInOutRingOps.RefinementRoundedLattice
+        Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison
+        Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.RefinementRoundedLattice
   other-modules:
         Numeric.AERN.RmToRn.MinimalFnBasis.Basics
         Numeric.AERN.RmToRn.MinimalFnBasis.RingOps

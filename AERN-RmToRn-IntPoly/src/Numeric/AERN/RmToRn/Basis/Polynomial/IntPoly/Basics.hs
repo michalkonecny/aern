@@ -344,13 +344,16 @@ instance
     type (Var (IntPoly var cf)) = var
     type (VarBox (IntPoly var cf)) = Map.Map var
     getSampleDomValue (IntPoly cfg _) = ipolycfg_sample_cf cfg
---    getNVariables _ = error "operation getNVariables not implemented for IntPoly"
+    defaultDomSplit _ =
+        defaultDomSplitUsingEndpointsDefaultEffort
     getDomainBox (IntPoly cfg _) = Map.fromList $ zip vars doms
         where
         vars = ipolycfg_vars cfg
         doms = ipolycfg_doms cfg
-    defaultDomSplit _ =
-        defaultDomSplitUsingEndpointsDefaultEffort
+    getNSamplesFromDomainBox sampleP@(IntPoly cfg _) dombox n =
+        getNSamplesFromDomainBoxUsingEndpointsDefaultEffort sampleDom sampleP dombox n
+        where
+        sampleDom = ipolycfg_sample_cf cfg
 
 instance (HasSizeLimits (IntPoly var cf)) 
     where

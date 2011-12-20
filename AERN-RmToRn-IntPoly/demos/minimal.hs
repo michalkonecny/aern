@@ -44,7 +44,7 @@ main =
     putStrLn $ "fromEndpoints(x^2-1, 0) = " ++ (showP $ RefOrd.fromEndpointsOutWithDefaultEffort ((x <*> x <-> c1), c0))
     putStrLn $ "(x^2-1 `comp` 1) = " ++ (show $ numCompare (x <*> x <-> c1) c1)
     putStrLn $ "(x^2-1 `comp` 0) = " ++ (show $ numCompare (x <*> x <-> c1) c0)
-    putStrLn $ "(x^2-1 `comp` -0.5) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> (c1 </>| (2::Int)))) ++ " should be Just NC"
+    putStrLn $ "(x^2-1 `comp` -0.5) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> (c1 </>| (2::Int))))
     putStrLn $ "(x^2-1 `comp` -1) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> c1))
     putStrLn $ "(x^2-1 `comp` -2) = " ++ (show $ numCompare (x <*> x <-> c1) ((c0 <-> c1) <-> c1))
     putStrLn $ "d (2(x + y + 2))/dx = " ++ (showP $ diffPoly eff "x" twoBxPyP2)
@@ -109,7 +109,7 @@ eff = (100, (100,()))
 evalOpsOutCf = evalOpsOut eff x (0::MI)
 
 numCompare a b =
-    NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort a) a b
+    NumOrd.pCompareInFullEff (NumOrd.pCompareDefaultEffort a) a b
 
 cfg =
     IntPolyCfg
