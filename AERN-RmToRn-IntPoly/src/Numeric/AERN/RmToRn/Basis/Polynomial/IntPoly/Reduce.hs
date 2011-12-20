@@ -129,8 +129,8 @@ reduceTermsCount eff cfg terms
             case NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort a) a b of
                 Just PartialOrdering.LT -> GT 
                 Just PartialOrdering.GT -> LT 
-                Just PartialOrdering.LEE -> GT 
-                Just PartialOrdering.GEE -> LT 
+--                Just PartialOrdering.LEE -> GT 
+--                Just PartialOrdering.GEE -> LT 
                 _ -> EQ 
     termsMarkedTooSmall =
         let ?multInOutEffort = effMult in

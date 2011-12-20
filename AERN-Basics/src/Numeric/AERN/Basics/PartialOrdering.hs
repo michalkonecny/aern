@@ -10,7 +10,28 @@
     
     Extension of 'Prelude.Ordering' with non-comparable variant.
 -}
-module Numeric.AERN.Basics.PartialOrdering where
+module Numeric.AERN.Basics.PartialOrdering 
+(
+    PartialOrderingPartialInfo(..),
+    partialOrderingPartialInfoAllNothing,
+    partialOrderingPartialInfoAllFalse,
+    PartialOrdering(..),
+    partialOrdering2PartialInfo,
+    partialInfo2PartialOrdering,
+    partialOrderingVariants,
+    partialOrderingVariantsSet,
+    permittedInReflexiveOrder,
+    partialOrderingVariantsReflexive,
+    permittedInLinearOrder,
+    partialOrderingVariantsLinear,
+    toPartialOrdering,
+    fromPartialOrdering,
+    partialOrderingTranspose,
+    pickConsistentOrderings,
+    transitivityConsequences,
+    partialOrderingVariantsTriples
+)
+where
 
 import qualified Prelude
 import Prelude hiding (EQ, LT, GT)
@@ -21,19 +42,107 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.List as List
 
+{-| A summary of /partial/ knowledge about the relative position
+    of two elements of a partial order.
+    
+    This is more flexible than @Maybe PartialOrdering@ because,
+    for example, sometimes one can establish that two elements are NOT leq
+    (and thus also not EQ and not LESS) but not whether the elements
+    are GT or NC.  This happens, in particular, when comparing functions
+    and it is established that GT or NC holds in some part of the function's
+    domain, such as at one point of the domain.
+ -}
+data PartialOrderingPartialInfo =
+    PartialOrderingPartialInfo
+    {
+        pOrdInfLT :: Maybe Bool,
+        pOrdInfLEQ :: Maybe Bool,
+        pOrdInfEQ :: Maybe Bool,
+        pOrdInfNC :: Maybe Bool,
+        pOrdInfGEQ :: Maybe Bool,
+        pOrdInfGT :: Maybe Bool
+    }
+
+partialOrderingPartialInfoAllFalse :: PartialOrderingPartialInfo
+partialOrderingPartialInfoAllFalse = 
+    PartialOrderingPartialInfo jf jf jf jf jf jf
+
+partialOrderingPartialInfoAllNothing :: PartialOrderingPartialInfo
+partialOrderingPartialInfoAllNothing = 
+    PartialOrderingPartialInfo Nothing Nothing Nothing Nothing Nothing Nothing
+
+jf = Just False
+jt = Just True
 
 {-| Like 'Prelude.Ordering' but with a non-comparable option
-      + LE does not imply LT or EQ, thus has to be separately available 
  -}
 data PartialOrdering = 
         EQ -- equal 
       | LT -- less than
-      | LEE -- less-than-or-equal exclusive, ie not equal and not less than 
-      | GT -- greater than 
-      | GEE -- greater-than-or-equal exclusive, ie not equal and not greater than
+      | GT -- greater than
       | NC -- not comparable
     deriving (Eq, Ord, Show, Enum, Bounded)
+
+partialOrdering2PartialInfo :: Maybe PartialOrdering -> PartialOrderingPartialInfo
+partialOrdering2PartialInfo (Just EQ) =
+    partialOrderingPartialInfoAllFalse
+    {
+        pOrdInfLEQ = jt, pOrdInfEQ = jt, pOrdInfGEQ = jt
+    }
+partialOrdering2PartialInfo (Just LT) =
+    partialOrderingPartialInfoAllFalse
+    {
+        pOrdInfLEQ = jt, pOrdInfLT = jt
+    }
+partialOrdering2PartialInfo (Just GT) =
+    partialOrderingPartialInfoAllFalse
+    {
+        pOrdInfGEQ = jt, pOrdInfGT = jt
+    }
+partialOrdering2PartialInfo (Just NC) =
+    partialOrderingPartialInfoAllFalse
+    {
+        pOrdInfNC = jt
+    }
+partialOrdering2PartialInfo Nothing =
+    partialOrderingPartialInfoAllNothing
     
+
+{-|
+    For a given record of partial information about partial ordering
+    of two elements, give a list of all relations that are
+    not ruled out by the partial information.
+    
+    (We assume that the partial information record is consistent.)
+-}
+partialInfo2PartialOrdering :: 
+    PartialOrderingPartialInfo -> 
+    [PartialOrdering]
+partialInfo2PartialOrdering info 
+    | infoEQ == jt = [EQ]
+    | infoLT == jt = [LT]
+    | infoGT == jt = [GT]
+    | infoLEQ == jt = [LT, EQ]
+    | infoGEQ == jt = [GT, EQ]
+    | infoNC == jt = [NC]
+    | otherwise = mnc ++ mlt ++ mgt ++ meq
+    where
+    infoEQ = pOrdInfEQ info
+    infoNC = pOrdInfNC info
+    infoLT = pOrdInfLT info
+    infoLEQ = pOrdInfLEQ info
+    infoGT = pOrdInfGT info
+    infoGEQ = pOrdInfGEQ info
+    mnc | infoNC /= jf = [NC]
+        | otherwise = []
+    mlt | (infoLT /= jf) && (infoLEQ /= jf) = [LT]
+        | otherwise = []
+    mgt | (infoGT /= jf) && (infoGEQ /= jf) = [GT]
+        | otherwise = []
+    meq | (infoEQ /= jf) && (infoLEQ /= jf) && (infoGEQ /= jf) = [EQ]
+        | otherwise = []
+    
+
 instance Arbitrary PartialOrdering
     where
     arbitrary = elements partialOrderingVariants
@@ -45,15 +154,15 @@ partialOrderingVariantsSet :: Set.Set PartialOrdering
 partialOrderingVariantsSet = Set.fromList partialOrderingVariants
         
 permittedInReflexiveOrder :: PartialOrdering -> Bool
-permittedInReflexiveOrder GEE = False
-permittedInReflexiveOrder LEE = False
+--permittedInReflexiveOrder GEE = False
+--permittedInReflexiveOrder LEE = False
 permittedInReflexiveOrder _ = True
 
 partialOrderingVariantsReflexive = [EQ, LT, GT, NC]
     
 permittedInLinearOrder :: PartialOrdering -> Bool
-permittedInLinearOrder GEE = False
-permittedInLinearOrder LEE = False
+--permittedInLinearOrder GEE = False
+--permittedInLinearOrder LEE = False
 permittedInLinearOrder NC = False
 permittedInLinearOrder _ = True
 
@@ -73,9 +182,9 @@ fromPartialOrdering rel = error $ "cannot convert " ++ show rel ++ " to Prelude.
 {-| flip an ordering relation -}
 partialOrderingTranspose :: PartialOrdering -> PartialOrdering
 partialOrderingTranspose LT = GT
-partialOrderingTranspose LEE = GEE
+--partialOrderingTranspose LEE = GEE
 partialOrderingTranspose GT = LT
-partialOrderingTranspose GEE = LEE
+--partialOrderingTranspose GEE = LEE
 partialOrderingTranspose a = a
 
 {-
@@ -138,23 +247,28 @@ transitivityConsequences rel12 rel23 =
         (EQ, rel23) -> Set.singleton rel23
         (rel12, EQ) -> Set.singleton rel12
         (LT, LT) -> Set.singleton LT
-        (LEE, LT) -> Set.singleton LT 
-        (LT, LEE) -> Set.singleton LT
-        (LEE, LEE) -> Set.fromList [LEE, LT]
+--        (LEE, LT) -> Set.singleton LT 
+--        (LT, LEE) -> Set.singleton LT
+--        (LEE, LEE) -> Set.fromList [LEE, LT]
         (GT, GT) -> Set.singleton GT
-        (GEE, GT) -> Set.singleton GT
-        (GT, GEE) -> Set.singleton GT
-        (GEE, GEE) -> Set.fromList [GEE, GT]
-        (LEE, GEE) -> noneOf [GT, LT]
-        (GEE, LEE) -> noneOf [GT, LT]
-        (LT, NC) -> noneOf [GT, GEE, EQ]
-        (LEE, NC) -> noneOf [GT, GEE, EQ]
-        (GT, NC) -> noneOf [LT, LEE, EQ]
-        (GEE, NC) -> noneOf [LT, LEE, EQ]
-        (NC, LT) -> noneOf [GT, GEE, EQ]
-        (NC, LEE) -> noneOf [GT, GEE, EQ]
-        (NC, GT) -> noneOf [LT, LEE, EQ]
-        (NC, GEE) -> noneOf [LT, LEE, EQ]
+--        (GEE, GT) -> Set.singleton GT
+--        (GT, GEE) -> Set.singleton GT
+--        (GEE, GEE) -> Set.fromList [GEE, GT]
+--        (LEE, GEE) -> noneOf [GT, LT]
+--        (GEE, LEE) -> noneOf [GT, LT]
+        (LT, NC) -> noneOf [GT, EQ]
+        (GT, NC) -> noneOf [LT, EQ]
+        (NC, LT) -> noneOf [GT, EQ]
+        (NC, GT) -> noneOf [LT, EQ]
+
+--        (LT, NC) -> noneOf [GT, GEE, EQ]
+--        (LEE, NC) -> noneOf [GT, GEE, EQ]
+--        (GT, NC) -> noneOf [LT, LEE, EQ]
+--        (GEE, NC) -> noneOf [LT, LEE, EQ]
+--        (NC, LT) -> noneOf [GT, GEE, EQ]
+--        (NC, LEE) -> noneOf [GT, GEE, EQ]
+--        (NC, GT) -> noneOf [LT, LEE, EQ]
+--        (NC, GEE) -> noneOf [LT, LEE, EQ]
         _ -> partialOrderingVariantsSet
     where
     noneOf list = partialOrderingVariantsSet `Set.difference` (Set.fromList list) 

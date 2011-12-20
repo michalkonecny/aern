@@ -41,6 +41,8 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 class PartialComparison t where
     type PartialCompareEffortIndicator t
     pCompareEff :: PartialCompareEffortIndicator t -> t -> t -> Maybe PartialOrdering
+    pCompareInFullEff :: PartialCompareEffortIndicator t -> t -> t -> PartialOrderingPartialInfo
+    pCompareInFullEff eff a b = partialOrdering2PartialInfo $ pCompareEff eff a b 
     pCompareDefaultEffort :: t -> PartialCompareEffortIndicator t
     
     -- | Partial equality
@@ -55,13 +57,20 @@ class PartialComparison t where
     pGreaterEff :: (PartialCompareEffortIndicator t) -> t -> t -> Maybe Bool
     
     -- defaults for all convenience operations:
-    pEqualEff effort a b = fmap (== EQ) (pCompareEff effort a b)
-    pLessEff effort a b = fmap (== LT) (pCompareEff effort a b)
-    pGreaterEff effort a b = fmap (== GT) (pCompareEff effort a b)
-    pComparableEff effort a b = fmap (/= NC) (pCompareEff effort a b)
-    pIncomparableEff effort a b = fmap (== NC) (pCompareEff effort a b)
-    pLeqEff effort a b = fmap (`elem` [EQ,LT,LEE]) (pCompareEff effort a b)
-    pGeqEff effort a b = fmap (`elem` [EQ,GT,GEE]) (pCompareEff effort a b)
+    pEqualEff effort a b =
+        pOrdInfEQ $ pCompareInFullEff effort a b
+    pLessEff effort a b = 
+        pOrdInfLT $ pCompareInFullEff effort a b
+    pGreaterEff effort a b = 
+        pOrdInfGT $ pCompareInFullEff effort a b
+    pLeqEff effort a b =
+        pOrdInfLEQ $ pCompareInFullEff effort a b
+    pGeqEff effort a b =
+        pOrdInfGEQ $ pCompareInFullEff effort a b
+    pComparableEff effort a b = 
+        fmap not $ pOrdInfNC $ pCompareInFullEff effort a b
+    pIncomparableEff effort a b =
+        pOrdInfNC $ pCompareInFullEff effort a b
 
 
 propPartialComparisonReflexiveEQ :: 
