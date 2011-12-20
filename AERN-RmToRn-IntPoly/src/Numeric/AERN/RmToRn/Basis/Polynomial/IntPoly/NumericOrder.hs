@@ -17,8 +17,8 @@
 -}
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder
---    (
---    )
+    (
+    )
 where
     
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics

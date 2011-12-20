@@ -48,13 +48,16 @@ instance (NumOrd.PartialComparison e) => HasConsistency (Interval e)
         NumOrd.PartialCompareEffortIndicator e
     consistencyDefaultEffort (Interval l r) =
         NumOrd.pCompareDefaultEffort l
-    isConsistentEff effort (Interval l r) =
-        NumOrd.pLeqEff effort l r
+    getConsistencyEff effort (Interval l r) =
+        case (NumOrd.pLeqEff effort l r, NumOrd.pGeqEff effort l r) of
+            (Just True, Just True) -> Just Thin
+            (Just True, _) -> Just Consistent
+            (_, Just True) -> Just Anticonsistent
+            (Just False, Just False) -> Just Inconsistent
+            _ -> Nothing 
 
 instance (NumOrd.PartialComparison e) => HasAntiConsistency (Interval e)
     where
-    isAntiConsistentEff effort (Interval l r) = 
-        NumOrd.pLeqEff effort r l
     flipConsistency (Interval l r) = Interval r l
 
 instance HasThinRepresentative (Interval e)
