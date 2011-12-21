@@ -66,12 +66,13 @@ pCompareFunFromRingOps (n, effAdd, effCompDom, effEval) f1 f2 =
     sampleF = f1
     dombox = getDomainBox sampleF 
     sampleDom = getSampleDomValue sampleF
+    evalOps = evalOpsOut effEval sampleF sampleDom
     
     infoRanges = compareOver dombox
     compareOver db =
         NumOrd.pCompareInFullEff effCompDom diffRange (zero sampleDom)
         where
-        diffRange = evalOtherType (evalOpsOut effEval diff sampleDom) db diff
+        diffRange = evalOtherType evalOps db diff
         diff = ArithInOut.subtrOutEff effAdd f1 f2
     addEQ pInfo
         | (pOrdInfEQ pInfo == Nothing) && neqD = pInfo { pOrdInfEQ = Just False }

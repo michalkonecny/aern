@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RefinementOrderRounding.MixedFieldOps
@@ -41,6 +42,18 @@ class RoundedMixedAddEffort t tn where
 class (RoundedMixedAddEffort t tn) => RoundedMixedAdd t tn where
     mixedAddInEff :: MixedAddEffortIndicator t tn -> t -> tn -> t
     mixedAddOutEff :: MixedAddEffortIndicator t tn -> t -> tn -> t
+
+-- The following would prevent one from defining a generic instance
+-- for an interval based on its endpoints: 
+--
+--instance (RoundedAddEffort t) => (RoundedMixedAddEffort t t)
+--    where
+--    type MixedAddEffortIndicator t t = AddEffortIndicator t
+--    mixedAddDefaultEffort _ sample = addDefaultEffort sample 
+--instance (RoundedAdd t) => (RoundedMixedAdd t t)
+--    where
+--    mixedAddOutEff = addOutEff
+--    mixedAddInEff = addInEff
 
 mixedAddDefaultEffortByConversion d n = 
         (addDefaultEffort d, convertDefaultEffort n d)

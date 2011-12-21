@@ -76,6 +76,8 @@ class ArbitraryOrderedTuple t where
         Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}
     arbitraryTuple n = arbitraryTupleRelatedBy [1..n] [] 
 
+{--  specific instances of ArbitraryOrderedTuple: --}
+
 data AreaWholeOnly t =
     AreaWholeOnly 
     {

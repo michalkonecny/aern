@@ -17,6 +17,7 @@ import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
+import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.ShowInternals
 
 import Numeric.AERN.Misc.Debug
@@ -26,11 +27,14 @@ import System.IO
 import qualified Data.Map as Map
 import qualified Data.List as List
 
+import Test.QuickCheck
+
 type MI = Interval MPFR
 type Poly = IntPoly String MI
 
 main =
     do
+    putStrLn "basic arithmetic:"
     putStrLn $ "0 = " ++ showP c0
     putStrLn $ "1 = " ++ showP c1
     putStrLn $ "x = " ++ showP x
@@ -40,18 +44,33 @@ main =
     putStrLn $ "(x + y)*(x - y) = " ++ (showP $ xPyBTxMyB)
     putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
     putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
+    putStrLn "endpoints (ie boundaries):"
     putStrLn $ "getEndpoints([0,1]x^2+[-1,0]) = " ++ (showPPair $ RefOrd.getEndpointsOutWithDefaultEffort $ c01 <*> (x <*> x <-> c1))
     putStrLn $ "fromEndpoints(x^2-1, 0) = " ++ (showP $ RefOrd.fromEndpointsOutWithDefaultEffort ((x <*> x <-> c1), c0))
+    putStrLn "evaluation and substitution:"
+    putStrLn $ "(x + y + 2)generic[x=-1,y=-1] = " ++ (show $ evalOtherType evalOpsOutCf (Map.fromList [("x",-1),("y",-1)]) xPyP1P1)
+    putStrLn $ "(x + y + 2)generic[x=[-1,0],y=[-1,0]] = " ++ (show $ evalOtherType evalOpsOutCf (Map.fromList [("x",(-1) </\> 0),("y",(-1) </\> 0)]) xPyP1P1)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)generic[x=-1,y=-1] = " ++ (show $ evalOtherType evalOpsOutCf (Map.fromList [("x",-1),("y",-1)]) integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)generic[x=[-1,0],y=[-1,0]] = " ++ (show $ evalOtherType evalOpsOutCf (Map.fromList [("x",(-1) </\> 0),("y",(-1) </\> 0)]) integTwoBxPyP2)
+    putStrLn "numerical comparison:"
     putStrLn $ "(x^2-1 `comp` 1) = " ++ (show $ numCompare (x <*> x <-> c1) c1)
     putStrLn $ "(x^2-1 `comp` 0) = " ++ (show $ numCompare (x <*> x <-> c1) c0)
     putStrLn $ "(x^2-1 `comp` -0.5) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> (c1 </>| (2::Int))))
     putStrLn $ "(x^2-1 `comp` -1) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> c1))
     putStrLn $ "(x^2-1 `comp` -2) = " ++ (show $ numCompare (x <*> x <-> c1) ((c0 <-> c1) <-> c1))
+    putStrLn "random generation:"
+    randomPolysThin <- sample' (case NumOrd.arbitraryTupleInAreaRelatedBy (x, Just (0 </\> 1)) [1] [] of Just gen -> gen)
+    let _ = [x] : randomPolysThin
+    putStrLn $ "random 10 polynomials:\n" ++ (unlines $ map (showP . head) $ randomPolysThin)
+    putStrLn "*** ops not using generic interfaces (yet): ***"
+    putStrLn "differentiation:"
     putStrLn $ "d (2(x + y + 2))/dx = " ++ (showP $ diffPoly eff "x" twoBxPyP2)
     putStrLn $ "d (2(x + y + 2))/dy = " ++ (showP $ diffPoly eff "y" twoBxPyP2) 
     putStrLn $ "d (x^2 + 2xy + 4x + 1)/dx = " ++ (showP $ diffPoly eff "x" integTwoBxPyP2)
     putStrLn $ "d (x^2 + 2xy + 4x + 1)/dy = " ++ (showP $ diffPoly eff "y" integTwoBxPyP2)
+    putStrLn "integration:"
     putStrLn $ "1 + int (2(x + y + 2)) dx = " ++ (showP integTwoBxPyP2)
+    putStrLn "(ad hoc) evaluation and substitution:"
     putStrLn $ "(x + y + 2)drct[x=-1,y=-1] = " ++ (show $ evalPolyAtPoint eff [-1, -1] xPyP1P1)
     putStrLn $ "(x + y + 2)drct[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyAtPoint eff [mOneToZ,mOneToZ] xPyP1P1)
     putStrLn $ "(x^2 + 2xy + 4x + 1)drct[x=-1,y=-1] = " ++ (show $ evalPolyAtPoint eff [-1,-1] integTwoBxPyP2)
@@ -60,16 +79,13 @@ main =
     putStrLn $ "(x + y + 2)mono[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyOnInterval eff [(-1) </\> 0,(-1) </\> 0] xPyP1P1)
     putStrLn $ "(x^2 + 2xy + 4x + 1)mono[x=-1,y=-1] = " ++ (show $ evalPolyOnInterval eff [(-1),(-1)] integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)mono[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyOnInterval eff [(-1) </\> 0,(-1) </\> 0] integTwoBxPyP2)
-    putStrLn $ "(x + y + 2)generic[x=-1,y=-1] = " ++ (show $ evalOtherType evalOpsOutCf (Map.fromList [("x",-1),("y",-1)]) xPyP1P1)
-    putStrLn $ "(x + y + 2)generic[x=[-1,0],y=[-1,0]] = " ++ (show $ evalOtherType evalOpsOutCf (Map.fromList [("x",(-1) </\> 0),("y",(-1) </\> 0)]) xPyP1P1)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)generic[x=-1,y=-1] = " ++ (show $ evalOtherType evalOpsOutCf (Map.fromList [("x",-1),("y",-1)]) integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)generic[x=[-1,0],y=[-1,0]] = " ++ (show $ evalOtherType evalOpsOutCf (Map.fromList [("x",(-1) </\> 0),("y",(-1) </\> 0)]) integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[y,y]] = " ++ (showP $ substPolyMainVar eff 0 y integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[0,y]] = " ++ (showP $ substPolyMainVar eff 0 (c01 <*> y) integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[0,x]] = " ++ (showP $ substPolyMainVar eff 0 (c01 <*> x) integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[x^2-1,0]] = " ++ (showP $ substPolyMainVar eff 0 (RefOrd.fromEndpointsOutWithDefaultEffort ((x <*> x <-> c1), c0)) integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)substElim[x=[2,2]] = " ++ (showP $ substPolyMainVarElim eff 0 2 integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)substElim[x=[0,2]] = " ++ (showP $ substPolyMainVarElim eff 0 (0 </\> 2) integTwoBxPyP2)
+    putStrLn "structural ops:"
     putStrLn $ "(x^2 + 2xy + 4x + 1)[swap order of x,y] = " ++ (showP $ polySwapFirstTwoVars integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[x->z] = " ++ (showP $ polyRenameMainVar "z" integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[add z] = " ++ (showP $ polyAddMainVar "z" (0 </\> 2) integTwoBxPyP2)
@@ -79,6 +95,7 @@ main =
     putStrLn $ "(x^2 + 2xy + 4x + 1)[size 1] = " ++ (showP $ reducePolyTermCount eff $ changeSizeLimits cfgSize1 integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[size 2, x tiny] = " ++ (showP $ reducePolyTermCount eff $ changeSizeLimits cfgXTinySize2 integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[size 1, x tiny] = " ++ (showP $ reducePolyTermCount eff $ changeSizeLimits cfgXTinySize1 integTwoBxPyP2)
+    putStrLn "elementary ops:"
     putStrLn $ "sin x [n = 1] = " ++ (showP $ sinePoly eff 1 x)
     putStrLn $ "sin x [n = 2] = " ++ (showP $ sinePoly eff 2 x)
     putStrLn $ "sin x [n = 3] = " ++ (showP $ sinePoly eff 3 x)
