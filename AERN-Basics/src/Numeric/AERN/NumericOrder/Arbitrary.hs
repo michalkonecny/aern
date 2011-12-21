@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-|
     Module      :  Numeric.AERN.NumericOrder.Arbitrary
     Description :  random generation of tuples with various relation constraints  
@@ -75,6 +76,7 @@ class ArbitraryOrderedTuple t where
         Int {-^ how many elements should be generated -} -> 
         Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}
     arbitraryTuple n = arbitraryTupleRelatedBy [1..n] [] 
+
 
 {--  specific instances of ArbitraryOrderedTuple: --}
 
@@ -384,6 +386,19 @@ arbitraryPairRelatedBy rel =
             [e1,e2] <- gen 
             return (e1,e2)
 
+arbitraryPairInAreaRelatedBy ::
+    (ArbitraryOrderedTuple t) =>
+    Area t -> 
+    PartialOrdering -> 
+    Maybe (Gen (t,t))
+arbitraryPairInAreaRelatedBy area rel =
+    case arbitraryTupleInAreaRelatedBy area [1,2] [((1,2),[rel])] of
+        Nothing -> Nothing
+        Just gen -> Just $
+            do
+            [e1,e2] <- gen 
+            return (e1,e2)
+
 arbitraryTripleRelatedBy ::
     (ArbitraryOrderedTuple t) => 
     (PartialOrdering, PartialOrdering, PartialOrdering) -> 
@@ -397,6 +412,22 @@ arbitraryTripleRelatedBy (r1, r2, r3) =
             return (e1, e2, e3)
     where
     constraints = [((1,2),[r1]), ((2,3),[r2]), ((1,3),[r3])]
+
+arbitraryTripleInAreaRelatedBy ::
+    (ArbitraryOrderedTuple t) => 
+    Area t ->
+    (PartialOrdering, PartialOrdering, PartialOrdering) -> 
+    Maybe (Gen (t,t,t))
+arbitraryTripleInAreaRelatedBy area (r1, r2, r3) =
+    case arbitraryTupleInAreaRelatedBy area [1,2,3] constraints of
+        Nothing -> Nothing
+        Just gen -> Just $
+            do
+            [e1,e2,e3] <- gen
+            return (e1, e2, e3)
+    where
+    constraints = [((1,2),[r1]), ((2,3),[r2]), ((1,3),[r3])]
+
 
 newtype UniformlyOrderedSingleton t = UniformlyOrderedSingleton t deriving (Show)
 
@@ -416,7 +447,11 @@ data NCLTLTTriple t = NCLTLTTriple (t,t,t) deriving (Show)
 data NCGTGTTriple t = NCGTGTTriple (t,t,t) deriving (Show)
 data NCLTNCTriple t = NCLTNCTriple (t,t,t) deriving (Show)
 
-instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedSingleton t) where
+instance 
+    (ArbitraryOrderedTuple t) 
+    => 
+    Arbitrary (UniformlyOrderedSingleton t) 
+    where
     arbitrary =
         do
         [elem] <- gen
@@ -424,14 +459,43 @@ instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedSingleton t) wh
         where
         Just gen = arbitraryTupleRelatedBy [1] []
 
-instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedPair t) where
+instance
+    (ArbitraryOrderedTuple t, a ~ Area t) 
+    => 
+    ArbitraryWithParam (UniformlyOrderedSingleton t) a 
+    where
+    arbitraryWithParam area =
+        do
+        [elem] <- gen
+        return $ UniformlyOrderedSingleton elem
+        where
+        Just gen = arbitraryTupleInAreaRelatedBy area [1] []
+
+instance
+    (ArbitraryOrderedTuple t) 
+    => 
+    Arbitrary (UniformlyOrderedPair t) 
+    where
     arbitrary =
         do
         gen <- elements gens
         pair <- gen
         return $ UniformlyOrderedPair pair
         where
-        gens = catMaybes $ map arbitraryPairRelatedBy partialOrderingVariants  
+        gens = catMaybes $ map (arbitraryPairRelatedBy) partialOrderingVariants  
+
+instance
+    (ArbitraryOrderedTuple t, a ~ Area t) 
+    => 
+    ArbitraryWithParam (UniformlyOrderedPair t) a 
+    where
+    arbitraryWithParam area =
+        do
+        gen <- elements gens
+        pair <- gen
+        return $ UniformlyOrderedPair pair
+        where
+        gens = catMaybes $ map (arbitraryPairInAreaRelatedBy area) partialOrderingVariants  
 
 instance (ArbitraryOrderedTuple t) => Arbitrary (LEPair t) where
     arbitrary =
@@ -468,6 +532,19 @@ instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedTriple t) where
         return $ UniformlyOrderedTriple triple
         where
         gens = catMaybes $ map arbitraryTripleRelatedBy partialOrderingVariantsTriples
+
+instance 
+    (ArbitraryOrderedTuple t, a ~ Area t) 
+    => 
+    ArbitraryWithParam (UniformlyOrderedTriple t) a 
+    where
+    arbitraryWithParam area =
+        do
+        gen <- elements gens
+        triple <- gen
+        return $ UniformlyOrderedTriple triple
+        where
+        gens = catMaybes $ map (arbitraryTripleInAreaRelatedBy area) partialOrderingVariantsTriples  
 
 instance (ArbitraryOrderedTuple t) => Arbitrary (LELELETriple t) where
     arbitrary =

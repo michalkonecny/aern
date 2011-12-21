@@ -129,7 +129,8 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
             arbitraryFn (effAddFn, effMultFn, effMultFnDFn, effGetEndptsDom) sampleFn
     fixedRandSeqQuantityOfSize :: Int -> Int
     fixedRandSeqQuantityOfSize size
-        = 10 + ((size*(size+100)) `div` 10)  
+--        = 10 + ((size*(size+100)) `div` 10)  
+        = 10 + (3*size)
     arbitraryFromSequence seq 
         =
         sized $ \size ->
@@ -232,7 +233,7 @@ arbitraryFn
     do
     -- choose polynomial generation parameters:
     degree <- choose (0,2 + (size `div` 7))
-    constrTerms <- choose (1,3 + 2* size)
+    constrTerms <- choose (1,3 + size)
     -- start building the result polynomial, first creating variables:
     varFns <- mapM (\v -> return $ newProjection sizeLimits box v) vars
     -- now multiplying variables in various powers:  

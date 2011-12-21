@@ -38,7 +38,7 @@ tests = testsMPFR ++ testsMI
 testsMPFR =
     [
 --       NumOrd.testsArbitraryTuple ("MPFR", sampleM, NumOrd.compare),
-       NumOrd.testsPartialComparison ("MPFR", sampleM),
+       NumOrd.testsPartialComparison ("MPFR", sampleM) (NumOrd.areaWhole sampleM),
        NumOrd.testsRoundedLatticeDistributive ("MPFR", sampleM),
        testsDistance ("MPFR", sampleM),
        ArithUpDn.testsConvert ("MPFR", sampleM, "Integer", sampleI),
@@ -66,7 +66,7 @@ testsMPFR =
 testsMI =
     [
        testsConsistency ("MI", sampleMI),
-       NumOrd.testsPartialComparison ("MI", sampleMI),
+       NumOrd.testsPartialComparison ("MI", sampleMI) (NumOrd.areaWhole sampleMI),
        NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("MI", sampleMI),
        NumOrd.testsRefinementRoundedLatticeInPlace ("MI", sampleMI),
        RefOrd.testsPartialComparison  ("MI", sampleMI), 
