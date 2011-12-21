@@ -23,6 +23,7 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
 --import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
 
+import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
 --import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison
@@ -68,6 +69,44 @@ instance
         effCompDom = ArithInOut.rrEffortNumComp sampleDom effDom
         effAdd = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
         sampleDom = getSampleDomValue p1
+        
+instance
+    (Ord var,
+     NumOrd.HasGreatest cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf
+    )
+    =>
+    NumOrd.HasGreatest (IntPoly var cf)
+    where
+    greatest sampleF = 
+        newConstFnFromSample sampleF (NumOrd.greatest sampleDom)
+        where
+        sampleDom = getSampleDomValue sampleF
+        
+instance
+    (Ord var,
+     NumOrd.HasLeast cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf
+    )
+    =>
+    NumOrd.HasLeast (IntPoly var cf)
+    where
+    least sampleF = 
+        newConstFnFromSample sampleF (NumOrd.least sampleDom)
+        where
+        sampleDom = getSampleDomValue sampleF
+        
+instance
+    (Ord var,
+     NumOrd.HasExtrema cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf
+    )
+    =>
+    NumOrd.HasExtrema (IntPoly var cf)
+        
         
 --instance
 --    (

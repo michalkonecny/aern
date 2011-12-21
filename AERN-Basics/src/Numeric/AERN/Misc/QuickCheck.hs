@@ -1,3 +1,4 @@
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 {-|
     Module      :  Numeric.AERN.Misc.QuickCheck
     Description :  miscellaneous utilities for QuickCheck  
@@ -16,6 +17,19 @@ import qualified Data.List as List
 import Test.QuickCheck
 import Test.QuickCheck.Gen (unGen)
 import qualified System.Random as R
+
+sampleOfLength ::
+    (Gen a) ->
+    Int ->
+    IO [a]
+sampleOfLength gen n =
+    do
+    rnd0 <- R.newStdGen
+    return [(m r n) | (r,n) <- rnds rnd0 `zip` [0,2..2*n] ]
+    where
+    m = unGen gen
+    rnds rnd = rnd1 : rnds rnd2 
+        where (rnd1,rnd2) = R.split rnd
 
 {-| Run the generator with size increased by 1 (useful for avoiding 
     too narrow selection at size 0 - in particular Double "randomly" generates 
@@ -65,4 +79,20 @@ fixedRandSeq fixedRandSeqQuantityOfSize gen =
         = map snd $ drop 13 $ iterate (R.next . snd) (0,g)
     g = R.mkStdGen 754657854089 -- no magic, just bashed at the keyboard at random
 
+class ArbitraryWithParam t param
+    where
+    arbitraryWithParam :: param -> Gen t
+
+instance 
+    (ArbitraryWithParam t param, 
+     Show t, 
+     Testable prop) 
+    => 
+    Testable (param, t -> prop)
+    where
+    property (param, fn) =
+        forAll (arbitraryWithParam param) fn
         
+
+
+
