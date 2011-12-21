@@ -14,6 +14,8 @@ module Numeric.AERN.Misc.QuickCheck where
 
 import qualified Data.List as List
 import Test.QuickCheck
+import Test.QuickCheck.Gen (unGen)
+import qualified System.Random as R
 
 {-| Run the generator with size increased by 1 (useful for avoiding 
     too narrow selection at size 0 - in particular Double "randomly" generates 
@@ -38,3 +40,29 @@ arbitraryOrder elems =
     where
     permuteBy nums elems =
         map snd $ List.sort $ zip nums elems
+
+{-|
+  Have a fairly long and hairy sequence of elements of increasing complexity
+  pre-generated and fixed and then pick from it randomly.
+  This deals with the problem that the random generation takes a long time
+  when the elements' construction is expensive, eg when functions are built
+  using a fairly large sequence of multiplications and additions.
+-}
+fixedRandSeq ::
+    (Int -> Int) -> Gen a -> [a]
+fixedRandSeq fixedRandSeqQuantityOfSize gen =
+    aux 0 0
+    where
+    aux prevQuantity size 
+        = newSeqPortion ++ (aux currQuantity (size + 1))
+        where
+        newSeqPortion 
+            =
+            take (currQuantity - prevQuantity) $ 
+                map (\g -> unGen gen g size) randomGens
+        currQuantity = fixedRandSeqQuantityOfSize size
+    randomGens 
+        = map snd $ drop 13 $ iterate (R.next . snd) (0,g)
+    g = R.mkStdGen 754657854089 -- no magic, just bashed at the keyboard at random
+
+        

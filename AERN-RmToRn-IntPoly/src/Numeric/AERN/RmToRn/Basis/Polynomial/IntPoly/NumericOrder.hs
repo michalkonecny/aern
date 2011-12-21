@@ -17,8 +17,6 @@
 -}
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder
-    (
-    )
 where
     
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
@@ -28,12 +26,15 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
 import Numeric.AERN.RmToRn.Domain
 --import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison
+import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Arbitrary
+
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 --import Numeric.AERN.RealArithmetic.ExactOps
---import Numeric.AERN.RealArithmetic.Measures
+import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
@@ -42,6 +43,8 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.PartialOrdering
 
 import Numeric.AERN.Misc.Debug
+
+import Test.QuickCheck
 
 instance
     (Ord var, Show var, 
@@ -66,3 +69,51 @@ instance
         effAdd = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
         sampleDom = getSampleDomValue p1
         
+--instance
+--    (
+--    )
+--    =>
+--    ArithUpDn.Convertible (IntPoly var cf) cf
+--    where
+--    type ArithUpDn.ConvertEffortIndicator (IntPoly var cf) cf = 
+--        ArithInOut.RoundedRealEffortIndicator cf
+--    convertDnEff = 
+        
+instance
+    (Show var, Ord var,
+     Show cf, RefOrd.ArbitraryOrderedTuple cf, RefOrd.IntervalLike cf,
+     ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedMultiply cf cf,
+     ArithInOut.RoundedMixedAdd cf cf,
+     Show (Imprecision cf),
+     NumOrd.PartialComparison (Imprecision cf),
+     Arbitrary (RefOrd.GetEndpointsEffortIndicator cf),
+     Arbitrary (ArithInOut.MixedMultEffortIndicator cf cf),
+     Arbitrary (ArithInOut.MixedAddEffortIndicator cf cf),
+     Arbitrary (ArithInOut.RoundedRealEffortIndicator cf),
+     Arbitrary (ArithInOut.AddEffortIndicator cf)
+    )
+    =>
+    NumOrd.ArbitraryOrderedTuple (IntPoly var cf)
+    where
+    type NumOrd.Area (IntPoly var cf) = Area4FunFromRingOps (IntPoly var cf)
+    areaWhole sampleF = areaWhole4FunFromRingOps sampleF
+    arbitraryTupleRelatedBy = 
+        error "AERN internal error: arbitraryTupleRelatedBy not defined for IntPoly"
+    arbitraryTupleInAreaRelatedBy area@(sampleFn,_) indices rels =
+        case arbitraryTupleInAreaRelatedBy4FunFromRingOps dummyEff area indices rels of
+            Nothing -> Nothing
+            Just _ -> Just $
+                do
+                eff <- arbitrary
+                case arbitraryTupleInAreaRelatedBy4FunFromRingOps eff area indices rels of
+                    Just gen -> gen
+        where
+        dummyEff = 
+            ((e,e,e),
+             (e,e),
+             (e,e)
+            )
+        e :: t
+        e = error "AERN internal error: arbitraryTupleInAreaRelatedBy4FunFromRingOps: dummyEff should not be used"
+    

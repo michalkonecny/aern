@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams, NoMonomorphismRestriction #-}
+{-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Arbitrary
     Description :  approximation of min and max using ring operations
@@ -31,10 +32,9 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 ----import Numeric.AERN.RefinementOrder.InPlace.OpsImplicitEffort
 
---import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsImplicitEffort
@@ -43,34 +43,54 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.RefinementOrder.IntervalLike
 
 import Test.QuickCheck
-import Test.QuickCheck.Gen (unGen)
 import Numeric.AERN.Misc.QuickCheck
 import qualified System.Random as R
 
 
 type Area4FunFromRingOps f = 
-    (f, Maybe ConsistencyStatus, Maybe (Domain f))
+    (f, Maybe (Domain f))
 
 areaWhole4FunFromRingOps sampleFn =
-    (sampleFn, Nothing, Nothing)
-    
+    (sampleFn, Nothing)
+
+{-|
+   An arbitraryTupleInAreaRelatedBy implementation
+   for almost any function type.  
+   
+   LIMITATION 1:
+   Currently this function produces only elements
+   that are consistent and close to thin.  The generated
+   elements need to be further processed to get examples
+   of thick, anticonsistent or inconsistent elements.
+   
+   LIMITATION 2:
+   Currently this function always
+   produces lists of elements that are linearly orderable
+   and refuses requests to generate incomparable elements.
+-}    
 arbitraryTupleInAreaRelatedBy4FunFromRingOps ::
     (Show ix, Ord ix, 
      HasDomainBox fn,  HasConstFns fn, HasProjections fn, 
      ArithInOut.RoundedAdd fn,
      ArithInOut.RoundedMultiply fn,
-     HasOne (Domain fn), HasZero (Domain fn), ArithInOut.RoundedSubtr (Domain fn),
+     HasEvalOps fn (Domain fn),
+     Show (Domain fn), IntervalLike (Domain fn),
+     ArithInOut.RoundedReal (Domain fn),
      RefOrd.ArbitraryOrderedTuple (Domain fn),
-     ArithUpDn.Convertible fn (Domain fn),
      ArithInOut.RoundedMixedAdd fn (Domain fn),
      ArithInOut.RoundedMixedMultiply fn (Domain fn)
     )
     =>
-    (ArithInOut.AddEffortIndicator (Domain fn),
+    ((ArithInOut.RoundedRealEffortIndicator (Domain fn),
+      GetEndpointsEffortIndicator (Domain fn),
+      EvalOpsEffortIndicator fn (Domain fn)
+     ),
      (ArithInOut.AddEffortIndicator fn,
-      ArithInOut.MultEffortIndicator fn),
+      ArithInOut.MultEffortIndicator fn
+     ),
      (ArithInOut.MixedAddEffortIndicator fn (Domain fn),
       ArithInOut.MixedMultEffortIndicator fn (Domain fn)
      )
@@ -80,21 +100,41 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps ::
     [((ix, ix),[PartialOrdering])]
     -> Maybe (Gen [fn])
 arbitraryTupleInAreaRelatedBy4FunFromRingOps 
-        (effAddDom, 
+        ((effDom, effGetEndptsDom, effEval), 
          (effAddFn, effMultFn), 
-         (effAddFnDom, effMultFnDFn)) 
-        area@(sampleFn, maybeCons, maybeRange) =
+         (effAddFnDFn, effMultFnDFn)) 
+        area@(sampleFn, maybeRange) =
     let ?addInOutEffort = effAddDom in
-    let ?mixedAddInOutEffort = effAddFnDom in
-    NumOrd.forcedLinearArbitraryTupleRelatedBy 
-        (arbitraryFromSequence (fixedSeq $ arbitraryFn (effAddFn, effMultFn, effMultFnDFn) sampleFn)) 
+    let ?multInOutEffort = effMulDom in
+    let ?divInOutEffort = effDivDom in
+    let ?mixedAddInOutEffort = effAddFnDFn in
+    let ?mixedMultInOutEffort = effMultFnDFn in
+    let ?pCompareEffort = effRefComp in
+    let ?joinmeetEffort = effJoin in
+    NumOrd.forcedLinearArbitraryTupleRelatedBy
+        arbitraryFnFromSequence 
         pickAndShiftGetSorted
     where
+    sampleDom = getSampleDomValue sampleFn
+    effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+    effMulDom = ArithInOut.fldEffortMult sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+    effDivDom = ArithInOut.fldEffortDiv sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+    effRefComp = ArithInOut.rrEffortRefComp sampleDom effDom
+    effJoin = ArithInOut.rrEffortJoinMeet sampleDom effDom
+    
+    arbitraryFnFromSequence =
+        arbitraryFromSequence fnSequence 
+    fnSequence = 
+        fixedRandSeq fixedRandSeqQuantityOfSize $ 
+            arbitraryFn (effAddFn, effMultFn, effMultFnDFn, effGetEndptsDom) sampleFn
+    fixedRandSeqQuantityOfSize :: Int -> Int
+    fixedRandSeqQuantityOfSize size
+        = 10 + ((size*(size+100)) `div` 10)  
     arbitraryFromSequence seq 
         =
         sized $ \size ->
         do
-        ix <- choose (0, quantityOfSize size - 1)
+        ix <- choose (0, fixedRandSeqQuantityOfSize size - 1)
         return $ 
 --            unsafePrintReturn ("arbitraryTupleInAreaRelatedBy4FunFromRingOps: size = " ++ show size ++ "ix = " ++ show ix ++ " p = ") $ 
                 seq !! ix
@@ -102,56 +142,87 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
         | n < 1 = []
         | otherwise 
             =
+            shrinkToRange $
             pick n first (zip randomBools rest)
             where
             pick n (fnPrev, lowerPrev, upperPrev) ((copyPrev, current@(fn,lower,upper)):rest) 
                 | n == 0 = []
                 | copyPrev
                     =
-                    fnPrevTrCp : (pick (n-1) (fnPrevTrCp, lowerPrev, upperPrevTrCp) ((False, current):rest))
+                    (fnPrevTrCp, (lowerPrev, upperPrevTrCp)) : (pick (n-1) (fnPrevTrCp, lowerPrev, upperPrevTrCp) ((False, current):rest))
                 | otherwise
                     =
-                    fnTr : (pick (n-1) (fnTr, lowerPrev, upperPrevTr) rest) 
+                    (fnTr, (lowerTr, upperTr)) : (pick (n-1) (fnTr, lowerTr, upperTr) rest) 
                 where
                 fnPrevTrCp = fnPrev <+>| distCp
                 upperPrevTrCp = upperPrev <+> distCp
                 distCp = one sampleDom
                 fnTr = fn <+>| dist
                 upperPrevTr = upperPrev <+> dist
+                upperTr = upper <+> dist
+                lowerTr = lower <+> dist
                 dist = (upperPrev <-> lower) <+> (one sampleDom) 
                 sampleDom = snd $ head $ toAscList $ getDomainBox fn
                 
             fnBounds@(first:rest) = map addBounds list
             addBounds fn = (fn, lower, upper)
                 where
-                Just upper = ArithUpDn.convertUpEff eff fn
-                Just lower = ArithUpDn.convertDnEff eff fn
-                eff = ArithUpDn.convertDefaultEffort fn z
-                z = zero sampleDom
+                (lower, upper) = getEndpointsOutEff effGetEndptsDom range
+                range = evalOtherType (evalOpsOut effEval fn sampleDom) domainbox fn
+                domainbox = getDomainBox fn
                 sampleDom = getSampleDomValue fn
-                _ = [z, upper, lower]
             randomBools = 
                 map even $ 
                     map fst $ 
                         drop 13 $ iterate (R.next . snd) (0,g)
             g = R.mkStdGen seed
+            
+            shrinkToRange list =
+                case maybeRange of 
+                    Nothing -> map fst list
+                    Just range -> map (shrink range) list
+                where
+                shrink range (fn,_) =
+                    (fn <*>| scalingFactor) <+>| shift
+                    where
+                    scalingFactor 
+                        | ((z </\> listWidth) ⊒? (z </\> rangeWidth)) == Just True
+                            -- ie listWidth <= rangeWidth
+                            = one range
+                        | (z ⊒? listWidth) == Just False
+                            -- ie no division by zero
+                            = rangeWidth </> listWidth
+                        | otherwise
+                            = one range 
+                        where
+                        z = zero range
+                    rangeWidth = rangeR <-> rangeL
+                    (rangeL, rangeR) = RefOrd.getEndpointsOutEff effGetEndptsDom range
+                    shift = rangeL <-> (listL <*> scalingFactor)
+                (_, (listL,_)) = head list 
+                (_, (_,listR)) = last list
+                listWidth = listR <-> listL 
+                        
 
 arbitraryFn ::
     (HasProjections fn, HasConstFns fn,
      ArithInOut.RoundedAdd fn,
      ArithInOut.RoundedMultiply fn,
      ArithInOut.RoundedMixedMultiply fn (Domain fn),
+     RefOrd.IntervalLike (Domain fn),
+     HasInfinities (Domain fn),
      RefOrd.ArbitraryOrderedTuple (Domain fn),
      HasOne (Domain fn)
     )
     =>
     (ArithInOut.AddEffortIndicator fn, 
      ArithInOut.MultEffortIndicator fn,
-     ArithInOut.MixedMultEffortIndicator fn (Domain fn)) ->
+     ArithInOut.MixedMultEffortIndicator fn (Domain fn),
+     RefOrd.GetEndpointsEffortIndicator (Domain fn)) ->
     fn ->
     Gen fn
 arbitraryFn 
-        (effAddFn, effMultFn, effMultFnDFn) 
+        (effAddFn, effMultFn, effMultFnDFn, effGetEndptsDom) 
         sampleFn
     =
     let ?multInOutEffort = effMultFn in
@@ -167,12 +238,14 @@ arbitraryFn
     -- now multiplying variables in various powers:  
     powerTerms <- mapM (const $ arbitraryPowerTerm varFns degree) [1..constrTerms]
     -- and combining them as a linear combination:
-    coeffsL <- vectorOf constrTerms ((\(Just a) -> a) $ RefOrd.arbitraryTuple 1)
-    let coeffs = map (\[a] -> a) coeffsL
+    coeffsL <- vectorOf (3 * constrTerms) ((\(Just a) -> a) $ RefOrd.arbitraryTuple 1)
+    let coeffs = filter bounded $ map getEndpoint coeffsL
     let _ = sampleDom : coeffs
     return $ 
         foldl1 (<+>) $ zipWith (<*>|) powerTerms coeffs
     where
+    getEndpoint [a] = fst $ RefOrd.getEndpointsOutEff effGetEndptsDom a
+    bounded a = excludesInfinity a 
     arbitraryPowerTerm varFns degree
         | null varFns || degree == 0 
             = return $ newConstFn sizeLimits box $ one sampleDom
@@ -191,30 +264,5 @@ arbitraryFn
         
 
 
-{-|
-  Have a fairly long and hairy sequence of elements of increasing complexity
-  pre-generated and fixed and then pick from it randomly.
-  This deals with the problem that the random generation takes a long time
-  when the elements' construction is expensive, eg when functions are built
-  using a fairly large sequence of multiplications and additions.
--}
-fixedSeq ::
-    Gen a -> [a]
-fixedSeq gen =
-    aux 0 0
-    where
-    aux prevQuantity size 
-        = newSeqPortion ++ (aux currQuantity (size + 1))
-        where
-        newSeqPortion 
-            =
-            take (currQuantity - prevQuantity) $ 
-                map (\g -> unGen gen g size) randomGens
-        currQuantity = quantityOfSize size
-    randomGens 
-        = map snd $ drop 13 $ iterate (R.next . snd) (0,g)
-    g = R.mkStdGen 754657854089 -- no magic, just bashed at the keyboard at random
-quantityOfSize size
-    = 10 + ((size*(size+100)) `div` 10)  
 
 
