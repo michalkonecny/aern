@@ -45,6 +45,8 @@ import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.RefinementOrder.IntervalLike
 
+import Numeric.AERN.Misc.Debug
+
 import Test.QuickCheck
 import Numeric.AERN.Misc.QuickCheck
 import qualified System.Random as R
@@ -95,6 +97,8 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps ::
       ArithInOut.MixedMultEffortIndicator fn (Domain fn)
      )
     ) ->
+    [fn] ->
+    (Int -> Int) ->
     (Area4FunFromRingOps fn) ->
     [ix] -> 
     [((ix, ix),[PartialOrdering])]
@@ -102,7 +106,9 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps ::
 arbitraryTupleInAreaRelatedBy4FunFromRingOps 
         ((effDom, effGetEndptsDom, effEval), 
          (effAddFn, effMultFn), 
-         (effAddFnDFn, effMultFnDFn)) 
+         (effAddFnDFn, effMultFnDFn))
+        fnSequence
+        fixedRandSeqQuantityOfSize
         area@(sampleFn, maybeRange) =
     let ?addInOutEffort = effAddDom in
     let ?multInOutEffort = effMulDom in
@@ -124,20 +130,13 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
     
     arbitraryFnFromSequence =
         arbitraryFromSequence fnSequence 
-    fnSequence = 
-        fixedRandSeq fixedRandSeqQuantityOfSize $ 
-            arbitraryFn (effAddFn, effMultFn, effMultFnDFn, effGetEndptsDom) sampleFn
-    fixedRandSeqQuantityOfSize :: Int -> Int
-    fixedRandSeqQuantityOfSize size
---        = 10 + ((size*(size+100)) `div` 10)  
-        = 10 + (3*size)
     arbitraryFromSequence seq 
         =
         sized $ \size ->
         do
         ix <- choose (0, fixedRandSeqQuantityOfSize size - 1)
         return $ 
---            unsafePrintReturn ("arbitraryTupleInAreaRelatedBy4FunFromRingOps: size = " ++ show size ++ "ix = " ++ show ix ++ " p = ") $ 
+--            unsafePrint ("arbitraryTupleInAreaRelatedBy4FunFromRingOps: size = " ++ show size ++ ", ix = " ++ show ix) $ 
                 seq !! ix
     pickAndShiftGetSorted seed n list 
         | n < 1 = []
@@ -203,7 +202,16 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
                 (_, (listL,_)) = head list 
                 (_, (_,listR)) = last list
                 listWidth = listR <-> listL 
-                        
+
+fnSequence fixedRandSeqQuantityOfSize sampleFn = 
+    fixedRandSeq fixedRandSeqQuantityOfSize $ 
+        arbitraryFn (effAddFn, effMultFn, effMultFnDFn, effGetEndptsDom) sampleFn
+        where
+        effAddFn = ArithInOut.addDefaultEffort sampleFn
+        effMultFn = ArithInOut.multDefaultEffort sampleFn
+        effMultFnDFn = ArithInOut.mixedMultDefaultEffort sampleFn sampleDom
+        effGetEndptsDom = RefOrd.getEndpointsDefaultEffort sampleDom
+        sampleDom = getSampleDomValue sampleFn
 
 arbitraryFn ::
     (HasProjections fn, HasConstFns fn,
@@ -242,6 +250,7 @@ arbitraryFn
     coeffsL <- vectorOf (3 * constrTerms) ((\(Just a) -> a) $ RefOrd.arbitraryTuple 1)
     let coeffs = filter bounded $ map getEndpoint coeffsL
     let _ = sampleDom : coeffs
+--    unsafePrint ("arbitraryFn: size = " ++ show size) $
     return $ 
         foldl1 (<+>) $ zipWith (<*>|) powerTerms coeffs
     where

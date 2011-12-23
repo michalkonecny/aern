@@ -42,6 +42,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.PartialOrdering
+import Numeric.AERN.Basics.Effort
 
 import Numeric.AERN.Misc.Debug
 
@@ -54,9 +55,9 @@ instance
     NumOrd.PartialComparison (IntPoly var cf) 
     where
     type NumOrd.PartialCompareEffortIndicator (IntPoly var cf) =
-        (Int, ArithInOut.RoundedRealEffortIndicator cf) 
+        (Int1To1000, ArithInOut.RoundedRealEffortIndicator cf) 
     pCompareDefaultEffort (IntPoly cfg terms) = 
-        (4 * varsN, ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg)
+        (Int1To1000 $ 4 * varsN, ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg)
         where
         varsN = length vars
         vars = ipolycfg_vars cfg
@@ -64,7 +65,7 @@ instance
         case partialInfo2PartialOrdering $ NumOrd.pCompareInFullEff eff p1 p2 of
             [rel] -> Just rel
             _ -> Nothing 
-    pCompareInFullEff (n, effDom) p1 = pCompareFunFromRingOps (n, effAdd, effCompDom, effDom) p1 
+    pCompareInFullEff (Int1To1000 n, effDom) p1 = pCompareFunFromRingOps (n, effAdd, effCompDom, effDom) p1 
         where
         effCompDom = ArithInOut.rrEffortNumComp sampleDom effDom
         effAdd = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
@@ -140,14 +141,28 @@ instance
     arbitraryTupleRelatedBy = 
         error "AERN internal error: arbitraryTupleRelatedBy not defined for IntPoly"
     arbitraryTupleInAreaRelatedBy area@(sampleFn,_) indices rels =
-        case arbitraryTupleInAreaRelatedBy4FunFromRingOps dummyEff area indices rels of
+        case 
+            arbitraryTupleInAreaRelatedBy4FunFromRingOps 
+                dummyEff 
+                (fnSequence fixedRandSeqQuantityOfSize sampleFn) 
+                fixedRandSeqQuantityOfSize 
+                area indices rels of
             Nothing -> Nothing
             Just _ -> Just $
                 do
                 eff <- arbitrary
-                case arbitraryTupleInAreaRelatedBy4FunFromRingOps eff area indices rels of
+                case
+                    arbitraryTupleInAreaRelatedBy4FunFromRingOps 
+                        eff 
+                        (fnSequence fixedRandSeqQuantityOfSize sampleFn) 
+                        fixedRandSeqQuantityOfSize 
+                        area indices rels of
                     Just gen -> gen
         where
+        fixedRandSeqQuantityOfSize :: Int -> Int
+        fixedRandSeqQuantityOfSize size
+            = 10 + ((size*(size+100)) `div` 10)  
+--            = 10 + (3*size)
         dummyEff = 
             ((e,e,e),
              (e,e),

@@ -14,6 +14,7 @@ module Main where
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
 import Numeric.AERN.RmToRn.New
 
+import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Basis.MPFR
 import Numeric.AERN.Basics.Interval
 
@@ -37,19 +38,20 @@ import Test.Framework (defaultMain)
 
 import qualified Data.Map as Map
 
-type MI = Interval MPFR
-type Poly = IntPoly String MI
+--type CF = Interval MPFR
+type CF = Interval Double
+type Poly = IntPoly String CF
 
 main =
     do
     defaultMain tests
 
-tests = testsIntPolyMI
+tests = testsIntPoly
 
-testsIntPolyMI =
+testsIntPoly =
     [
 --       testsConsistency ("MI", sampleMI),
-       NumOrd.testsPartialComparison ("IntPoly-MI", samplePoly) (NumOrd.areaWhole samplePoly)
+       NumOrd.testsPartialComparison ("IntPoly-DI", samplePoly) (NumOrd.areaWhole samplePoly)
 --       ,
 --       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("MI", sampleMI),
 --       NumOrd.testsRefinementRoundedLatticeInPlace ("MI", sampleMI),
@@ -91,14 +93,14 @@ cfg =
         {
             ipolycfg_vars = vars,
             ipolycfg_doms = doms,
-            ipolycfg_sample_cf = 0 :: MI,
+            ipolycfg_sample_cf = 0 :: CF,
             ipolycfg_maxdeg = 4,
             ipolycfg_maxsize = 30
         }
 
 dombox = Map.fromList $ zip vars doms
 
-doms :: [MI]
+doms :: [CF]
 doms = [(0 </\> 1), 0 </\> 1]
 
 vars = ["x", "y"]
