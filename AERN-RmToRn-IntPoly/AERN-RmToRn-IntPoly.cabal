@@ -80,6 +80,7 @@ Executable testAERN-RmToRn-IntPoly
         AERN-Real == 2011.2.0.0, 
         AERN-Real-Interval == 2011.2.0.0, 
         AERN-Real-MPFR == 2011.2.0.0, 
+        AERN-Real-Double == 2011.2.0.0, 
         AERN-RmToRn == 2011.2.0.0 
 
 Executable ivpSpringMass
