@@ -41,17 +41,20 @@ import qualified Data.Map as Map
 --type CF = Interval MPFR
 type CF = Interval Double
 type Poly = IntPoly String CF
+polyTypeName = "IntPoly-DI"
 
 main =
     do
     defaultMain tests
 
-tests = testsIntPoly
+tests = testsPoly
 
-testsIntPoly =
+testsPoly =
     [
 --       testsConsistency ("MI", sampleMI),
        NumOrd.testsPartialComparison ("IntPoly-DI", samplePoly) (NumOrd.areaWhole samplePoly)
+--       ,
+--       NumOrd.testsRoundedLatticeDistributive ("IntPoly-DI", samplePoly) -- (NumOrd.areaWhole samplePoly)
 --       ,
 --       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("MI", sampleMI),
 --       NumOrd.testsRefinementRoundedLatticeInPlace ("MI", sampleMI),

@@ -20,14 +20,16 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder
 where
     
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
---import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
 --import Numeric.AERN.RmToRn.Evaluation
+
 import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison
 import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Arbitrary
+import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Minmax
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
@@ -108,6 +110,7 @@ instance
     =>
     NumOrd.HasExtrema (IntPoly var cf)
         
+
         
 --instance
 --    (
@@ -170,4 +173,4 @@ instance
             )
         e :: t
         e = error "AERN internal error: arbitraryTupleInAreaRelatedBy4FunFromRingOps: dummyEff should not be used"
-    
+        
