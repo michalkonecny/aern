@@ -39,12 +39,14 @@ Library
   exposed-modules:       
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
-        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Reduce
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps
+        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
-        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
+        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder
+        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Substitution
+        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Minmax
   other-modules:
 
 Executable minimal

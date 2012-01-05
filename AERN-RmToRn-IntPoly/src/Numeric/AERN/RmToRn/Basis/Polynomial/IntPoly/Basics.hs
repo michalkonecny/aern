@@ -375,6 +375,28 @@ mkConstTerms value vars = aux vars
     aux [] = IntPolyC value
     aux (var:rest) = IntPolyV var $ IntMap.singleton 0 (aux rest)
 
+instance
+    (Ord var,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf)
+    =>
+    HasZero (IntPoly var cf)
+    where
+    zero sampleP = newConstFnFromSample sampleP $ zero sampleCf
+        where
+        sampleCf = getSampleDomValue sampleP
+        
+instance
+    (Ord var,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf)
+    =>
+    HasOne (IntPoly var cf)
+    where
+    one sampleP = newConstFnFromSample sampleP $ one sampleCf
+        where
+        sampleCf = getSampleDomValue sampleP
+        
 instance 
     (Ord var, Show var, 
      ArithInOut.RoundedReal cf,
