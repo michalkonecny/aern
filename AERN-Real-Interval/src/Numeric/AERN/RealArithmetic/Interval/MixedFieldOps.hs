@@ -52,27 +52,6 @@ instance (ArithUpDn.RoundedMixedAdd e tn) =>
             (ArithUpDn.mixedAddDnEff effort l2 n)
             (ArithUpDn.mixedAddUpEff effort r2 n)
 
-{- to allow the above instance to be applied when tn = Interval e,
-   ie to allow "mixed" addition of Interval and Interval, 
-   we define the following weird mixed addition: -}
-instance (ArithUpDn.RoundedAddEffort e) => 
-    ArithUpDn.RoundedMixedAddEffort e (Interval e) 
-    where
-    type ArithUpDn.MixedAddEffortIndicator e (Interval e) = ArithUpDn.AddEffortIndicator e
-    mixedAddDefaultEffort e (Interval l r) = 
-        ArithUpDn.addDefaultEffort l
-   
-instance (ArithUpDn.RoundedAdd e) => 
-    ArithUpDn.RoundedMixedAdd e (Interval e) 
-    where
-    mixedAddUpEff effort e i =
-        case addOutEff effort (Interval e e) i of
-            Interval l r -> r  
-    mixedAddDnEff effort e i =
-        case addOutEff effort (Interval e e) i of
-            Interval l r -> l  
-{- end of weird mixed addition instance -}   
-
 
 instance (ArithUpDn.RoundedMixedMultiplyEffort e tn,
           NumOrd.PartialComparison tn, NumOrd.PartialComparison e,
@@ -159,39 +138,6 @@ multiplySingletonWithInterval
         z = zero l2
         
         
-{- to allow the above instance to be applied when tn = Interval e,
-   ie to allow "mixed" multiplication of Interval and Interval, 
-   we define the following weird mixed multiplication: -}
-instance 
-    (ArithUpDn.RoundedMultiplyEffort e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLatticeEffort e
-    ) 
-    => 
-    ArithUpDn.RoundedMixedMultiplyEffort e (Interval e) 
-    where
-    type ArithUpDn.MixedMultEffortIndicator e (Interval e) = 
-        MultEffortIndicator (Interval e)
-    mixedMultDefaultEffort e i = 
-        multDefaultEffort i
-   
-instance 
-    (ArithUpDn.RoundedMultiply e,
-     HasZero e, Neg e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e
-    )
-    =>
-    ArithUpDn.RoundedMixedMultiply e (Interval e) 
-    where
-    mixedMultUpEff effort e i =
-        case multOutEff effort (Interval e e) i of
-            Interval l r -> r  
-    mixedMultDnEff effort e i =
-        case multOutEff effort (Interval e e) i of
-            Interval l r -> l  
-{- end of weird mixed multiplication instance -}   
-        
 instance (RoundedDivideEffort (Interval e),
           Convertible tn (Interval e)) => 
     RoundedMixedDivideEffort (Interval e) tn 
@@ -270,4 +216,140 @@ instance (RoundedMixedRing (Interval e) tn,
           RoundedMixedDivide (Interval e) tn,
           RoundedMixedFieldEffort (Interval e) tn) => 
         RoundedMixedField (Interval e) tn
+
+
+
+{- to allow the above instance to be applied when tn = Interval e,
+   ie to allow "mixed" addition of Interval and Interval, 
+   we define the following weird mixed operations: -}
+   
+instance (ArithUpDn.RoundedAddEffort e) => 
+    ArithUpDn.RoundedMixedAddEffort e (Interval e)
+    where
+    type ArithUpDn.MixedAddEffortIndicator e (Interval e) = ArithUpDn.AddEffortIndicator e
+    mixedAddDefaultEffort e (Interval l r) = 
+        ArithUpDn.addDefaultEffort l
+   
+instance (ArithUpDn.RoundedAdd e) => 
+    ArithUpDn.RoundedMixedAdd e (Interval e) 
+    where
+    mixedAddUpEff effort e i =
+        case addOutEff effort (Interval e e) i of
+            Interval l r -> r  
+    mixedAddDnEff effort e i =
+        case addOutEff effort (Interval e e) i of
+            Interval l r -> l  
+
+instance 
+    (ArithUpDn.RoundedMultiplyEffort e,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLatticeEffort e
+    ) 
+    => 
+    ArithUpDn.RoundedMixedMultiplyEffort e (Interval e) 
+    where
+    type ArithUpDn.MixedMultEffortIndicator e (Interval e) = 
+        MultEffortIndicator (Interval e)
+    mixedMultDefaultEffort e i = 
+        multDefaultEffort i
+   
+instance 
+    (ArithUpDn.RoundedMultiply e,
+     HasZero e, Neg e,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLattice e
+    )
+    =>
+    ArithUpDn.RoundedMixedMultiply e (Interval e) 
+    where
+    mixedMultUpEff effort e i =
+        case multOutEff effort (Interval e e) i of
+            Interval l r -> r  
+    mixedMultDnEff effort e i =
+        case multOutEff effort (Interval e e) i of
+            Interval l r -> l  
+
+instance 
+    (ArithUpDn.RoundedMultiplyEffort e,
+     ArithUpDn.RoundedDivideEffort e,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLatticeEffort e
+    ) 
+    => 
+    ArithUpDn.RoundedMixedDivideEffort e (Interval e) 
+    where
+    type ArithUpDn.MixedDivEffortIndicator e (Interval e) = 
+        DivEffortIndicator (Interval e)
+    mixedDivDefaultEffort e i = 
+        divDefaultEffort i
+   
+instance 
+    (ArithUpDn.RoundedMultiply e,
+     ArithUpDn.RoundedDivide e,
+     NumOrd.HasExtrema e,
+     HasZero e, Neg e,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLattice e
+    )
+    =>
+    ArithUpDn.RoundedMixedDivide e (Interval e) 
+    where
+    mixedDivUpEff effort e i =
+        case divOutEff effort (Interval e e) i of
+            Interval l r -> r  
+    mixedDivDnEff effort e i =
+        case divOutEff effort (Interval e e) i of
+            Interval l r -> l  
+
+instance
+    (ArithUpDn.RoundedRingEffort e,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLatticeEffort e
+    )
+    =>
+    ArithUpDn.RoundedMixedRingEffort e (Interval e)
+    where
+    type ArithUpDn.MixedRingOpsEffortIndicator e (Interval e) =
+        (RingOpsEffortIndicator (Interval e))
+    mixedRingOpsDefaultEffort _ sampleI = ringOpsDefaultEffort sampleI
+    mxringEffortAdd _ sampleI eff = ringEffortAdd sampleI eff
+    mxringEffortMult _ sampleI eff = ringEffortMult sampleI eff
+
+instance
+    (ArithUpDn.RoundedRing e,
+     NumOrd.HasExtrema e,
+     HasZero e, Neg e,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLattice e
+    )
+    =>
+    ArithUpDn.RoundedMixedRing e (Interval e)
+
+instance
+    (ArithUpDn.RoundedFieldEffort e,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLatticeEffort e
+    )
+    =>
+    ArithUpDn.RoundedMixedFieldEffort e (Interval e)
+    where
+    type ArithUpDn.MixedFieldOpsEffortIndicator e (Interval e) =
+        (FieldOpsEffortIndicator (Interval e))
+    mixedFieldOpsDefaultEffort _ sampleI = fieldOpsDefaultEffort sampleI
+    mxfldEffortAdd _ sampleI eff = fldEffortAdd sampleI eff
+    mxfldEffortMult _ sampleI eff = fldEffortMult sampleI eff
+    mxfldEffortDiv _ sampleI eff = fldEffortDiv sampleI eff
+
+instance
+    (ArithUpDn.RoundedField e,
+     NumOrd.HasExtrema e,
+     HasZero e, Neg e,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLattice e
+    )
+    =>
+    ArithUpDn.RoundedMixedField e (Interval e)
+
+{- end of weird mixed operations -}   
+
     
