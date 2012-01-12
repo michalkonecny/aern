@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
     Description :  conversion between approximations and other types  
@@ -39,14 +40,21 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-class Convertible t1 t2 where
+class
+    (EffortIndicator (ConvertEffortIndicator t1 t2))
+    => 
+    Convertible t1 t2 
+    where
     type ConvertEffortIndicator t1 t2
     convertDefaultEffort :: t1 -> t2 -> ConvertEffortIndicator t1 t2 
     convertInEff :: ConvertEffortIndicator t1 t2 -> t1 -> t2
     convertOutEff :: ConvertEffortIndicator t1 t2 -> t1 -> t2
 
 propConvertMonotoneFromNumOrd ::
-    (Convertible t1 t2, NumOrd.ArbitraryOrderedTuple t1, NumOrd.PartialComparison t2) =>
+    (Convertible t1 t2, 
+     NumOrd.ArbitraryOrderedTuple t1, 
+     NumOrd.PartialComparison t2) 
+    =>
     t1 -> t2 ->
     (ConvertEffortIndicator t1 t2, NumOrd.PartialCompareEffortIndicator t2) ->  
     NumOrd.LEPair t1 -> Bool
@@ -63,7 +71,8 @@ propConvertMonotoneFromNumOrd sample1 sample2 (effortFrom, effortComp) (NumOrd.L
 
 propConvertRoundTripNumOrd ::
     (UpDnConversion.Convertible t1 t2, Convertible t2 t1, 
-     NumOrd.PartialComparison t1, Show t1, Show t2) =>
+     NumOrd.PartialComparison t1, Show t1, Show t2) 
+    =>
     t1 -> t2 -> 
     (NumOrd.PartialCompareEffortIndicator t1, 
      ConvertEffortIndicator t2 t1, 

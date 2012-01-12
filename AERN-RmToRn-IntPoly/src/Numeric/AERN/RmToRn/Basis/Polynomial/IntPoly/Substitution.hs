@@ -61,7 +61,7 @@ instance
         (Int1To1000, ArithInOut.RoundedRealEffortIndicator cf)
     evalOpsDefaultEffort _ sampleP@(IntPoly cfg _) = 
         NumOrd.pCompareDefaultEffort sampleP
-    evalOpsOut eff sampleP _ =
+    evalOpsOut eff _ sampleP =
         polyPolyEvalOpsOut eff sampleP sampleCf
         where
         sampleCf = getSampleDomValue sampleP

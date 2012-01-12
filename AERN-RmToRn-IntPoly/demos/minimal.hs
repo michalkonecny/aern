@@ -5,11 +5,14 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
 
+import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Basis.MPFR
 import Numeric.AERN.Basics.Interval
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+
+import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort
@@ -29,8 +32,9 @@ import qualified Data.List as List
 
 import Test.QuickCheck
 
-type MI = Interval MPFR
-type Poly = IntPoly String MI
+--type CF = Interval MPFR
+type CF = Interval Double
+type Poly = IntPoly String CF
 
 main =
     do
@@ -52,16 +56,25 @@ main =
     putStrLn $ "(x + y + 2)generic[x=[-1,0],y=[-1,0]] = " ++ (show $ evalOtherType evalOpsOutCf (Map.fromList [("x",(-1) </\> 0),("y",(-1) </\> 0)]) xPyP1P1)
     putStrLn $ "(x^2 + 2xy + 4x + 1)generic[x=-1,y=-1] = " ++ (show $ evalOtherType evalOpsOutCf (Map.fromList [("x",-1),("y",-1)]) integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)generic[x=[-1,0],y=[-1,0]] = " ++ (show $ evalOtherType evalOpsOutCf (Map.fromList [("x",(-1) </\> 0),("y",(-1) </\> 0)]) integTwoBxPyP2)
-    putStrLn "numerical comparison:"
-    putStrLn $ "(x^2-1 `comp` 1) = " ++ (show $ numCompare (x <*> x <-> c1) c1)
-    putStrLn $ "(x^2-1 `comp` 0) = " ++ (show $ numCompare (x <*> x <-> c1) c0)
-    putStrLn $ "(x^2-1 `comp` -0.5) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> (c1 </>| (2::Int))))
-    putStrLn $ "(x^2-1 `comp` -1) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> c1))
-    putStrLn $ "(x^2-1 `comp` -2) = " ++ (show $ numCompare (x <*> x <-> c1) ((c0 <-> c1) <-> c1))
     putStrLn "random generation:"
     randomPolysThin <- sample' (case NumOrd.arbitraryTupleInAreaRelatedBy (x, Just (0 </\> 1)) [1] [] of Just gen -> gen)
     let _ = [x] : randomPolysThin
-    putStrLn $ "random 10 polynomials:\n" ++ (unlines $ map (showP . head) $ randomPolysThin)
+    putStr $ "random 10 polynomials:\n" ++ (unlines $ map (showP . head) $ randomPolysThin)
+    putStrLn "numerical comparison:"
+    putStrLn $ "(x^2-1 `comp` 1) = " ++ (show $ numCompare (x <*> x <-> c1) c1)
+    putStrLn $ "(x^2-1 `comp` 0) = " ++ (show $ numCompare (x <*> x <-> c1) c0)
+    putStrLn $ "(x^2-1 `comp` -0.5) = " ++ (show $ numCompare (x <*> x <-> c1) (neg (cHalf)))
+    putStrLn $ "(x^2-1 `comp` -1) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> c1))
+    putStrLn $ "(x^2-1 `comp` -2) = " ++ (show $ numCompare (x <*> x <-> c1) ((c0 <-> c1) <-> c1))
+    putStrLn "min/max:"
+    putStrLn $ "x - 0.5 `maxUp` 0 = " ++ (showP $ NumOrd.maxUpEff minmaxEff (x <-> cHalf) c0)
+    putStrLn $ "x - 0.5 `maxDn` 0 = " ++ (showP $ NumOrd.maxDnEff minmaxEff (x <-> cHalf) c0)
+    putStrLn $ "x - 0.5 `minUp` 0 = " ++ (showP $ NumOrd.minUpEff minmaxEff (x <-> cHalf) c0)
+    putStrLn $ "x - 0.5 `minDn` 0 = " ++ (showP $ NumOrd.minDnEff minmaxEff (x <-> cHalf) c0)
+    putStrLn $ "x - 1/16 `maxUp` 0 = " ++ (showP $ NumOrd.maxUpEff minmaxEff (x <-> cOneOver16) c0)
+    putStrLn $ "x - 1/16 `maxDn` 0 = " ++ (showP $ NumOrd.maxDnEff minmaxEff (x <-> cOneOver16) c0)
+    putStrLn $ "x - 1/16 `minUp` 0 = " ++ (showP $ NumOrd.minUpEff minmaxEff (x <-> cOneOver16) c0)
+    putStrLn $ "x - 1/16 `minDn` 0 = " ++ (showP $ NumOrd.minDnEff minmaxEff (x <-> cOneOver16) c0)
     putStrLn "*** ops not using generic interfaces (yet): ***"
     putStrLn "differentiation:"
     putStrLn $ "d (2(x + y + 2))/dx = " ++ (showP $ diffPoly eff "x" twoBxPyP2)
@@ -111,6 +124,8 @@ x = newProjection cfg dombox "x"
 y = newProjection cfg dombox "y"
 c0 = newConstFn cfg dombox 0
 c1 = newConstFn cfg dombox 1
+cHalf = newConstFn cfg dombox 0.5
+cOneOver16 = newConstFn cfg dombox $ 0.5^4
 c01 = newConstFn cfg dombox $ 0 </\> 1
 
 xPy = x <+> y
@@ -121,9 +136,11 @@ twoBxPyP2 = (2::Int) |<*> xPyP1P1
 integTwoBxPyP2 = integratePolyMainVar eff 0 c1 twoBxPyP2
 --expBxPyP2 = exp xPyP1P1
 
-eff = (100, (100,()))
+--eff = (100, (100,())) -- MPFR
+eff = ArithInOut.roundedRealDefaultEffort (0:: CF)
+minmaxEff = NumOrd.minmaxDefaultEffort x
 
-evalOpsOutCf = evalOpsOut eff x (0::MI)
+evalOpsOutCf = evalOpsOut eff x (0::CF)
 
 numCompare a b =
     NumOrd.pCompareInFullEff (NumOrd.pCompareDefaultEffort a) a b
@@ -133,7 +150,7 @@ cfg =
         {
             ipolycfg_vars = vars,
             ipolycfg_doms = doms,
-            ipolycfg_sample_cf = 0 :: MI,
+            ipolycfg_sample_cf = 0 :: CF,
             ipolycfg_maxdeg = 4,
             ipolycfg_maxsize = 30
         }
@@ -154,9 +171,9 @@ dombox = Map.fromList $ zip vars doms
 
 vars = ["x", "y"]
 
-doms :: [MI]
+doms :: [CF]
 doms = [(0 </\> 1), 0 </\> 1]
 
-domsXTiny :: [MI]
+domsXTiny :: [CF]
 domsXTiny = [(0 </\> 0.0625), (0 </\> 1)]
 

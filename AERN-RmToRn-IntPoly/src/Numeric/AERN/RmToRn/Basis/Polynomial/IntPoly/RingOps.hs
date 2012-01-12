@@ -126,6 +126,10 @@ multTerms poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
             [(n1 + n2, multTerms p1 p2) | 
                 (n1, p1) <- IntMap.toAscList polys1, 
                 (n2, p2) <- IntMap.toAscList polys2 ] 
+multTerms poly1 poly2 =
+    error $ "AERN internal error: multTerms: incompatible operands: "
+        ++ "\n poly1 = " ++ show poly1
+        ++ "\n poly2 = " ++ show poly2
         
 instance
     (ArithInOut.RoundedReal cf) => 

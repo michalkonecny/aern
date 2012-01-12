@@ -16,7 +16,11 @@ import Numeric.AERN.Misc.List
 
 import Test.QuickCheck
 
-class EffortIndicator t where
+class 
+    (Show t, Arbitrary t) 
+    => 
+    EffortIndicator t 
+    where
     {-| get a range of independent increments to a given effort indicator (may be empty) -}
     effortIncrementVariants :: t -> [t]
     {-| repeat the increment present in the given pair for the larger effort indicator -}
@@ -169,7 +173,9 @@ instance (EffortIndicator t1, EffortIndicator t2, EffortIndicator t3) => EffortI
         i3Variants =
             map (\i -> (i1, i2, i)) (effortIncrementVariants i3)
     effortRepeatIncrement ((i1, i2, i3), (j1, j2, j3)) = 
-        (effortRepeatIncrement (i1, j1), effortRepeatIncrement (i2, j2), effortRepeatIncrement (i3, j3)) 
+        (effortRepeatIncrement (i1, j1), 
+         effortRepeatIncrement (i2, j2), 
+         effortRepeatIncrement (i3, j3)) 
     effortIncrementSequence (i1, i2, i3) =
         case (effortIncrementSequence i1, effortIncrementSequence i2, effortIncrementSequence i3) of
             ([], [], []) -> []
@@ -181,4 +187,23 @@ instance (EffortIndicator t1, EffortIndicator t2, EffortIndicator t3) => EffortI
             ([], s2, s3) -> map (\(e2,e3) -> (i1, e2, e3)) $ zipFill s2 s3 
             (s1, s2, s3) -> zipFill3 s1 s2 s3
         
-        
+instance 
+    (EffortIndicator t1, EffortIndicator t2, EffortIndicator t3, EffortIndicator t4)
+    => 
+    EffortIndicator (t1, t2, t3, t4)
+    where
+    effortIncrementVariants (i1, i2, i3, i4) =
+        map regroup $
+            effortIncrementVariants ((i1,i2),(i3,i4))
+        where
+        regroup ((a,b),(c,d)) = (a,b,c,d) 
+    effortRepeatIncrement ((i1, i2, i3, i4), (j1, j2, j3, j4)) = 
+        (effortRepeatIncrement (i1, j1), 
+         effortRepeatIncrement (i2, j2), 
+         effortRepeatIncrement (i3, j3),
+         effortRepeatIncrement (i4, j4)) 
+    effortIncrementSequence (i1, i2, i3, i4) =
+        map regroup $
+            effortIncrementSequence ((i1,i2),(i3,i4))
+        where
+        regroup ((a,b),(c,d)) = (a,b,c,d) 

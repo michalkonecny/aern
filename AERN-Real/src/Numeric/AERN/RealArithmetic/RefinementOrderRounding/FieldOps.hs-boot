@@ -49,6 +49,7 @@
 
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps where
 
@@ -58,7 +59,11 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
 import Numeric.AERN.Basics.Effort
 import qualified Numeric.AERN.NumericOrder as NumOrd
 
-class RoundedAddEffort t where
+class
+    (EffortIndicator (AddEffortIndicator t))
+    => 
+    RoundedAddEffort t 
+    where
     type AddEffortIndicator t
     addDefaultEffort :: t -> AddEffortIndicator t
 

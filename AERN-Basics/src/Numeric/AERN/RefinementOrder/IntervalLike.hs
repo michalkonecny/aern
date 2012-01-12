@@ -18,6 +18,7 @@ module Numeric.AERN.RefinementOrder.IntervalLike where
 import Numeric.AERN.RefinementOrder.PartialComparison
 
 import Numeric.AERN.Basics.Exception
+import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Laws.RoundedOperation
 
 import Numeric.AERN.Misc.Bool
@@ -29,7 +30,12 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-class IntervalLike t where
+class
+    (EffortIndicator (GetEndpointsEffortIndicator t), 
+     EffortIndicator (FromEndpointsEffortIndicator t))
+    => 
+    IntervalLike t 
+    where
     type GetEndpointsEffortIndicator t
     type FromEndpointsEffortIndicator t
     getEndpointsDefaultEffort :: t -> GetEndpointsEffortIndicator t
@@ -70,14 +76,8 @@ propEndpointsFromGet _ effGet effFrom effComp e =
 testsEndpoints :: 
     (Arbitrary t, Show t, Eq t,
      IntervalLike t,
-     HasLegalValues t, PartialComparison t,
-     Arbitrary (GetEndpointsEffortIndicator t),
-     Arbitrary (FromEndpointsEffortIndicator t),
-     Arbitrary (PartialCompareEffortIndicator t),
-     Show (GetEndpointsEffortIndicator t),
-     Show (FromEndpointsEffortIndicator t),
-     Show (PartialCompareEffortIndicator t)
-     ) => 
+     HasLegalValues t, PartialComparison t) 
+    => 
     (String, t) -> Test
 testsEndpoints (name, sample) =
     testGroup (name ++ " consistency flip")

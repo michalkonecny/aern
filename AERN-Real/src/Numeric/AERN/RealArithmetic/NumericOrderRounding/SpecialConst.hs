@@ -18,7 +18,7 @@
 
 module Numeric.AERN.RealArithmetic.NumericOrderRounding.SpecialConst where
 
---import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.Exception
 --import Numeric.AERN.Basics.ShowInternals
 --import Numeric.AERN.RealArithmetic.Laws
@@ -32,7 +32,11 @@ module Numeric.AERN.RealArithmetic.NumericOrderRounding.SpecialConst where
 --import Test.Framework (testGroup, Test)
 --import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-class RoundedSpecialConstEffort t where
+class
+    (EffortIndicator (SpecialConstEffortIndicator t))
+    => 
+    RoundedSpecialConstEffort t 
+    where
     type SpecialConstEffortIndicator t
     specialConstDefaultEffort :: t -> SpecialConstEffortIndicator t
 

@@ -74,12 +74,8 @@ addDnInPlaceEffFromInPlace = mutable2EffToPure addDnInPlaceEff
 propUpDnAddInPlace ::
     (NumOrd.PartialComparison t, Neg t, 
      RoundedAddInPlace t, RoundedAdd t, 
-     Show t, HasLegalValues t,
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
@@ -119,12 +115,8 @@ propUpDnSubtrInPlace ::
     (NumOrd.PartialComparison t, 
      RoundedSubtrInPlace t, RoundedSubtr t, 
      Neg t,
-     Show t, HasLegalValues t,
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
@@ -169,12 +161,8 @@ propUpDnAbsInPlace ::
     (NumOrd.PartialComparison t, 
      RoundedAbsInPlace t, RoundedAbs t,
      Neg t,
-     Show t, HasLegalValues t,
-     Show (AbsEffortIndicator t),
-     EffortIndicator (AbsEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
@@ -214,12 +202,8 @@ propUpDnMultInPlace ::
     (NumOrd.PartialComparison t, 
      RoundedMultiplyInPlace t, RoundedMultiply t,
      Neg t,
-     Show t, HasLegalValues t,
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
@@ -315,12 +299,8 @@ propUpDnPowerToNonnegInPlace ::
      RoundedPowerToNonnegIntInPlace t, 
      RoundedPowerToNonnegInt t, 
      Neg t,
-     Show t, HasLegalValues t,
-     Show (PowerToNonnegIntEffortIndicator t),
-     EffortIndicator (PowerToNonnegIntEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      PowerToNonnegIntEffortIndicator t) -> 
@@ -396,12 +376,8 @@ propUpDnDivInPlace ::
     (NumOrd.PartialComparison t, 
      RoundedDivideInPlace t, RoundedDivide t,
      Neg t,
-     Show t, HasZero t, HasLegalValues t,
-     Show (DivEffortIndicator t),
-     EffortIndicator (DivEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasZero t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      DivEffortIndicator t) -> 
@@ -441,16 +417,18 @@ testsUpDnFieldOpsInPlace (name, sample) =
         
 
 class 
-        (RoundedSubtrInPlace t, 
-         RoundedMultiplyInPlace t,
-         RoundedPowerNonnegToNonnegIntInPlace t,
-         RoundedRingEffort t) => 
+    (RoundedSubtrInPlace t, 
+     RoundedMultiplyInPlace t,
+     RoundedPowerNonnegToNonnegIntInPlace t,
+     RoundedRingEffort t) 
+    => 
     RoundedRingInPlace t
     
 class
-        (RoundedRingInPlace t, 
-         RoundedDivideInPlace t,
-         RoundedFieldEffort t) => 
-     RoundedFieldInPlace t
+    (RoundedRingInPlace t, 
+     RoundedDivideInPlace t,
+     RoundedFieldEffort t) 
+    => 
+    RoundedFieldInPlace t
 
     

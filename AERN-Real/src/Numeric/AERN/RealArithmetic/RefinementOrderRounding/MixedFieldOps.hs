@@ -35,7 +35,11 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-class RoundedMixedAddEffort t tn where
+class
+    (EffortIndicator (MixedAddEffortIndicator t tn))
+    => 
+    RoundedMixedAddEffort t tn 
+    where
     type MixedAddEffortIndicator t tn
     mixedAddDefaultEffort :: t -> tn -> MixedAddEffortIndicator t tn
 
@@ -76,16 +80,8 @@ mixedAddOutEffByConversion (effAdd, effConv) d n =
 propMixedAddEqualsConvert ::
     (RefOrd.PartialComparison t, Convertible tn t,
      RoundedMixedAdd t tn, RoundedAdd t,
-     Show t, HasLegalValues t,
-     Show (MixedAddEffortIndicator t tn),
-     EffortIndicator (MixedAddEffortIndicator t tn),
-     Show (ConvertEffortIndicator tn t),
-     EffortIndicator (ConvertEffortIndicator tn t),
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t -> tn ->
     (RefOrd.PartialCompareEffortIndicator t,
      (MixedAddEffortIndicator t tn,      
@@ -109,7 +105,11 @@ propMixedAddEqualsConvert sample sampleN initEffort
         let (<+>) = addOutEff effAdd in  d <+> (convertOutEff effConv n)
 
 
-class RoundedMixedMultiplyEffort t tn where
+class
+    (EffortIndicator (MixedMultEffortIndicator t tn))
+    =>
+    RoundedMixedMultiplyEffort t tn 
+    where
     type MixedMultEffortIndicator t tn
     mixedMultDefaultEffort :: t -> tn -> MixedMultEffortIndicator t tn
 
@@ -138,16 +138,8 @@ mixedMultOutEffByConversion (effMult, effConv) d n =
 propMixedMultEqualsConvert ::
     (RefOrd.PartialComparison t, Convertible tn t,
      RoundedMixedMultiply t tn, RoundedMultiply t,
-     Show t, HasLegalValues t,
-     Show (MixedMultEffortIndicator t tn),
-     EffortIndicator (MixedMultEffortIndicator t tn),
-     Show (ConvertEffortIndicator tn t),
-     EffortIndicator (ConvertEffortIndicator tn t),
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t -> tn ->
     (RefOrd.PartialCompareEffortIndicator t,
       (MixedMultEffortIndicator t tn,      
@@ -170,7 +162,11 @@ propMixedMultEqualsConvert sample sampleN initEffort
     expr2Out (_,effMult,effConv) =
         let (<*>) = multOutEff effMult in d <*> (convertOutEff effConv n)
 
-class RoundedMixedDivideEffort t tn where
+class
+    (EffortIndicator (MixedDivEffortIndicator t tn))
+    => 
+    RoundedMixedDivideEffort t tn 
+    where
     type MixedDivEffortIndicator t tn
     mixedDivDefaultEffort :: t -> tn -> MixedDivEffortIndicator t tn
 
@@ -199,16 +195,8 @@ mixedDivOutEffByConversion (effDiv, effConv) d n =
 propMixedDivEqualsConvert ::
     (RefOrd.PartialComparison t, Convertible tn t,
      RoundedMixedDivide t tn, RoundedDivide t,
-     Show t, HasZero t, HasLegalValues t,
-     Show (MixedDivEffortIndicator t tn),
-     EffortIndicator (MixedDivEffortIndicator t tn),
-     Show (ConvertEffortIndicator tn t),
-     EffortIndicator (ConvertEffortIndicator tn t),
-     Show (DivEffortIndicator t),
-     EffortIndicator (DivEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasZero t, HasLegalValues t) 
+    =>
     t -> tn ->
     (RefOrd.PartialCompareEffortIndicator t,
      (MixedDivEffortIndicator t tn,      
@@ -243,7 +231,10 @@ testsInOutMixedFieldOps (name, sample) (nameN, sampleN) =
             testProperty "division" (propMixedDivEqualsConvert sample sampleN)
         ]
 
-class (RoundedMixedAddEffort t tn, RoundedMixedMultiplyEffort t tn) => 
+class 
+    (RoundedMixedAddEffort t tn, RoundedMixedMultiplyEffort t tn,
+     EffortIndicator (MixedRingOpsEffortIndicator t tn)) 
+    => 
     RoundedMixedRingEffort t tn
     where
     type MixedRingOpsEffortIndicator t tn
@@ -254,7 +245,10 @@ class (RoundedMixedAddEffort t tn, RoundedMixedMultiplyEffort t tn) =>
 class (RoundedMixedAdd t tn, RoundedMixedMultiply t tn, RoundedMixedRingEffort t tn) => 
     RoundedMixedRing t tn
 
-class (RoundedMixedRingEffort t tn, RoundedMixedDivideEffort t tn) => 
+class 
+    (RoundedMixedRingEffort t tn, RoundedMixedDivideEffort t tn,
+     EffortIndicator (MixedFieldOpsEffortIndicator t tn)) 
+    => 
     RoundedMixedFieldEffort t tn
     where
     type MixedFieldOpsEffortIndicator t tn

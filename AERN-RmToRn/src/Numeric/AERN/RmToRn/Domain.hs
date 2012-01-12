@@ -3,6 +3,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Domain
     Description :  operations focusing on function domains  
@@ -24,6 +25,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Misc.Debug
 
+--import qualified Data.Set as Set
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
 
@@ -41,8 +43,6 @@ class
     type Domain f
     type VarBox f :: * -> *
     getSampleDomValue :: f -> Domain f
---    getFreshVariable :: f -> [Var f] -> Var f
---    getNVariables :: f -> Int -> [Var f]
     defaultDomSplit ::
         f {-^ dummy parameter that aids typechecking -} -> 
         (Domain f) {-^ domain area to split -} -> 
@@ -59,8 +59,16 @@ class
         (DomainBox f) {-^ @dom@ -} -> 
         Int {-^ @n@ -} -> 
         [DomainBox f] 
-            {-^ a list of @n@ points (ie thin boxes) inside @dom@, 
-                relatively well interspersed over @dom@ -}
+            {-^ a list of @n@ points (ie thin boxes) in @dom@, 
+                relatively well interspersed over @dom@, 
+                typically including some points on the boundary -}
+    getSampleFromInsideDomainBox ::
+        f {-^ dummy parameter that aids typechecking -} -> 
+        (DomainBox f) {-^ @dom@ -} -> 
+        DomainBox f 
+            {-^ a point (ie thin boxe) inside @dom@, 
+                ie not on the boundary -}
+
 
 defaultDomSplitUsingEndpointsDefaultEffort dom =
     defaultDomSplitUsingEndpointsEff (effFromE, effGetE, effAdd, effIntDiv) dom
@@ -82,15 +90,15 @@ defaultDomSplitUsingEndpointsEff (effFromE, effGetE, effAdd, effIntDiv) dom =
     (domLE, domRE) = RefOrd.getEndpointsOutEff effGetE dom
 
 getNSamplesFromDomainBoxUsingEndpointsDefaultEffort dom =
-    getNSamplesFromDomainBoxUsingEndpointsEff (effFromE, effGetE, effAdd, effIntDiv)
+    getNSamplesFromDomainBoxUsingEndpointsEff effGetE
     where
-    effFromE = RefOrd.fromEndpointsDefaultEffort dom
     effGetE = RefOrd.getEndpointsDefaultEffort dom
-    effAdd = ArithInOut.addDefaultEffort dom
-    effIntDiv = ArithInOut.mixedDivDefaultEffort dom (1 :: Int)
+--    effFromE = RefOrd.fromEndpointsDefaultEffort dom
+--    effAdd = ArithInOut.addDefaultEffort dom
+--    effIntDiv = ArithInOut.mixedDivDefaultEffort dom (1 :: Int)
     
 getNSamplesFromDomainBoxUsingEndpointsEff 
-        eff@(effFromE, effGetE, effAdd, effIntDiv)
+        effGetE
         sampleF
         dombox n =
     take n $ samples
@@ -151,11 +159,33 @@ mergeListsOfLists lists = aux 1 lists
             where 
             (elems, lists) = scanHeads remLists
 
+getSampleFromInsideDomainBoxUsingEndpointsDefaultEffort dom =
+    getSampleFromInsideDomainBoxUsingEndpointsEff effGetE
+    where
+    effGetE = RefOrd.getEndpointsDefaultEffort dom
+
+getSampleFromInsideDomainBoxUsingEndpointsEff 
+        effGetE
+        sampleF
+        dombox
+    =
+    centre
+    where
+    centre = 
+        fromAscList $ map computeDomCentre $ toAscList dombox
+        where
+        computeDomCentre (var, dom) =
+            (var, domME)
+            where
+            (domME, _) = RefOrd.getEndpointsOutEff effGetE domR
+            (domL, domR) = defaultDomSplit sampleF dom
+
 class HasVarValue vbox var val 
     | vbox -> var val
     where
     emptyVarBox :: vbox -> vbox
-    unitVarBox :: var -> val -> vbox
+    unaryVarBox :: var -> val -> vbox
+    mapVarBox :: (val -> val) -> vbox -> vbox 
     fromList :: [(var, val)] -> vbox
     fromAscList :: [(var, val)] -> vbox
     toAscList :: vbox -> [(var, val)]
@@ -169,7 +199,8 @@ class HasVarValue vbox var val
 instance HasVarValue (IntMap.IntMap val) Int val
     where
     emptyVarBox _ = IntMap.empty
-    unitVarBox var val = IntMap.singleton var val
+    unaryVarBox = IntMap.singleton
+    mapVarBox = IntMap.map
     fromList varVals = IntMap.fromList varVals
     fromAscList varVals = IntMap.fromAscList varVals
     toAscList vbox = IntMap.toAscList vbox
@@ -182,7 +213,8 @@ instance HasVarValue (IntMap.IntMap val) Int val
 instance (Ord var) => HasVarValue (Map.Map var val) var val
     where
     emptyVarBox _ = Map.empty
-    unitVarBox var val = Map.singleton var val
+    unaryVarBox = Map.singleton
+    mapVarBox = Map.map
     fromList varVals = Map.fromList varVals
     fromAscList varVals = Map.fromAscList varVals
     toAscList vbox = Map.toAscList vbox
@@ -192,3 +224,19 @@ instance (Ord var) => HasVarValue (Map.Map var val) var val
     insertVar = Map.insert
      
            
+class GeneratableVariables var 
+    where
+--    getFreshVariable :: Set.Set var -> var
+    getNVariables :: Int -> [var]
+    
+instance GeneratableVariables String
+    where
+    getNVariables n 
+        | n <= 3 = take n ["x","y","z"]
+        | otherwise =
+            take n $ map (\i -> "x" ++ show i) [1..]  
+
+instance GeneratableVariables Int
+    where
+    getNVariables n = [1..n] 
+        

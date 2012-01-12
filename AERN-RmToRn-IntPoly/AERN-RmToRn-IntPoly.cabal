@@ -36,7 +36,7 @@ Library
         AERN-Real == 2011.2.0.0,
         AERN-Real-Interval == 2011.2.0.0,
         AERN-RmToRn == 2011.2.0.0
-  exposed-modules:       
+  exposed-modules:
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Reduce

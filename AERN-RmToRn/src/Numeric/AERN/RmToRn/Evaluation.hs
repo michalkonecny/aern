@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Evaluate
     Description :  operations focusing on function evaluation  
@@ -16,14 +17,21 @@
 module Numeric.AERN.RmToRn.Evaluation where
 
 import Numeric.AERN.RmToRn.Domain
+
 import Numeric.AERN.Basics.Interval
+
+import Numeric.AERN.Basics.Effort
 
 class (HasDomainBox f) => CanEvaluateOtherType f
     where
     type EvalOps f :: * -> *
     evalOtherType :: (Show t) => (EvalOps f t) -> (VarBox f t) -> f -> t
 
-class (CanEvaluateOtherType f) => HasEvalOps f t
+class 
+    (CanEvaluateOtherType f,
+     EffortIndicator (EvalOpsEffortIndicator f t)) 
+    => 
+    HasEvalOps f t
     where
     type EvalOpsEffortIndicator f t
     evalOpsDefaultEffort :: f -> t -> EvalOpsEffortIndicator f t

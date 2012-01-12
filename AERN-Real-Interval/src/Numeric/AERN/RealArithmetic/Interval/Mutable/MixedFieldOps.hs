@@ -174,8 +174,17 @@ multiplySingletonAndIntervalInPlace
         assignMutable lResM temp3
         return temp1
     
-instance (RoundedDivideInPlace (Interval e),
-          Convertible tn (Interval e)) => 
+instance 
+    (RoundedDivideInPlace (Interval e),
+     -- MK has no idea why the following four need to be stated;
+     --    they should be inferred from the one above automatically...
+     ArithUpDn.RoundedMultiplyEffort e, 
+     ArithUpDn.RoundedDivideEffort e,  
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLatticeEffort e,
+     --
+     Convertible tn (Interval e)) 
+    => 
     RoundedMixedDivideInPlace (Interval e) tn 
     where
     mixedDivInInPlaceEff = mixedDivInInPlaceEffByConversion
@@ -193,11 +202,17 @@ instance
 instance 
     (ArithUpDn.RoundedMixedFieldInPlace e tn,
      RoundedDivideInPlace (Interval e),
+     -- MK has no idea why the following four need to be stated;
+     --    they should be inferred from the one above automatically...
+     ArithUpDn.RoundedMultiplyEffort e, 
+     ArithUpDn.RoundedDivideEffort e,  
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLatticeEffort e,
+     --
      Convertible tn (Interval e),
      NumOrd.PartialComparison tn,
      HasZero tn,
      HasZero e, 
-     NumOrd.PartialComparison e, 
      NumOrd.RoundedLatticeInPlace e) => 
     RoundedMixedFieldInPlace (Interval e) tn
     

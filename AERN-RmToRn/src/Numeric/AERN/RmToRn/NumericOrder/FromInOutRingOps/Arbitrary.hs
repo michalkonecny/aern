@@ -19,6 +19,8 @@
 
 module Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Arbitrary where
 
+import Prelude hiding (LT,GT,EQ)
+
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
@@ -69,7 +71,8 @@ areaWhole4FunFromRingOps sampleFn =
    of thick, anticonsistent or inconsistent elements.
    
    LIMITATION 2:
-   Currently this function always
+   With requests for more than 2 elements, 
+   this function currently always
    produces lists of elements that are linearly orderable
    and refuses requests to generate incomparable elements.
 -}    
@@ -109,17 +112,38 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
          (effAddFnDFn, effMultFnDFn))
         fnSequence
         fixedRandSeqQuantityOfSize
-        area@(sampleFn, maybeRange) =
-    let ?addInOutEffort = effAddDom in
-    let ?multInOutEffort = effMulDom in
-    let ?divInOutEffort = effDivDom in
-    let ?mixedAddInOutEffort = effAddFnDFn in
-    let ?mixedMultInOutEffort = effMultFnDFn in
-    let ?pCompareEffort = effRefComp in
-    let ?joinmeetEffort = effJoin in
-    NumOrd.forcedLinearArbitraryTupleRelatedBy
-        arbitraryFnFromSequence 
-        pickAndShiftGetSorted
+        area@(sampleFn, maybeRange)
+        indices rels
+    =
+--    unsafePrint 
+--        ("arbitraryTupleInAreaRelatedBy4FunFromRingOps: ids = " 
+--         ++ show indices ++ "; rels = " ++ show rels ) $ 
+    case (indices, rels) of
+        ([_], _) ->
+            Just $
+                do
+                fn <- arbitraryFnFromSequence
+                return [fn]
+        ([i1,i2], [((i1a,i2a),[NC])]) ->
+            let ?addInOutEffort = effAddDom in
+            let ?mixedAddInOutEffort = effAddFnDFn in
+            Just $
+                do
+                fn1 <- arbitraryFnFromSequence
+                fn2 <- arbitraryFnFromSequence
+                return $ ensureOverlap [fn1, fn2]
+        _ ->
+            let ?addInOutEffort = effAddDom in
+            let ?multInOutEffort = effMulDom in
+            let ?divInOutEffort = effDivDom in
+            let ?mixedAddInOutEffort = effAddFnDFn in
+            let ?mixedMultInOutEffort = effMultFnDFn in
+            let ?pCompareEffort = effRefComp in
+            let ?joinmeetEffort = effJoin in
+            NumOrd.forcedLinearArbitraryTupleRelatedBy
+                arbitraryFnFromSequence 
+                pickAndShiftGetSorted
+                indices rels
     where
     sampleDom = getSampleDomValue sampleFn
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
@@ -138,6 +162,20 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
         return $ 
 --            unsafePrint ("arbitraryTupleInAreaRelatedBy4FunFromRingOps: size = " ++ show size ++ ", ix = " ++ show ix) $ 
                 seq !! ix
+    ensureOverlap fns@[fn1,fn2] = [fn1,fn2Shifted]
+        where
+        fn2Shifted = fn2 <+>| ((evalAtPt fn1) <-> (evalAtPt fn2))
+        pt = getSampleFromInsideDomainBox fn1 domainBox 
+        sampleDom = getSampleDomValue fn1
+        domainBox = getDomainBox fn1
+        evalAtPt fn =
+            evalOtherType (evalOpsOut effEval fn sampleDom) pt fn 
+    addBounds fn = (fn, lower, upper)
+        where
+        (lower, upper) = getEndpointsOutEff effGetEndptsDom range
+        range = evalOtherType (evalOpsOut effEval fn sampleDom) domainbox fn
+        domainbox = getDomainBox fn
+        sampleDom = getSampleDomValue fn
     pickAndShiftGetSorted seed n list 
         | n < 1 = []
         | otherwise 
@@ -165,12 +203,6 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
                 sampleDom = snd $ head $ toAscList $ getDomainBox fn
                 
             fnBounds@(first:rest) = map addBounds list
-            addBounds fn = (fn, lower, upper)
-                where
-                (lower, upper) = getEndpointsOutEff effGetEndptsDom range
-                range = evalOtherType (evalOpsOut effEval fn sampleDom) domainbox fn
-                domainbox = getDomainBox fn
-                sampleDom = getSampleDomValue fn
             randomBools = 
                 map even $ 
                     map fst $ 

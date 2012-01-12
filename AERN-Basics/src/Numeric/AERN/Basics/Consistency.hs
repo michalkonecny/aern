@@ -15,6 +15,8 @@
 
 module Numeric.AERN.Basics.Consistency where
 
+import Numeric.AERN.Basics.Effort
+
 import Numeric.AERN.Misc.Bool
 import Numeric.AERN.Misc.Maybe
 
@@ -30,7 +32,11 @@ data ConsistencyStatus =
     | Anticonsistent 
     | Thin -- ie both Consistent and Anticonsistent
     
-class HasConsistency t where
+class
+    (EffortIndicator (ConsistencyEffortIndicator t))
+    => 
+    HasConsistency t 
+    where
     type ConsistencyEffortIndicator t
     consistencyDefaultEffort :: t -> ConsistencyEffortIndicator t
     getConsistencyEff :: (ConsistencyEffortIndicator t) -> t -> Maybe ConsistencyStatus
@@ -75,9 +81,8 @@ propConsistencyFlipSelfInverse _ e =
 
 testsConsistency :: 
     (Arbitrary t, Show t, Eq t,
-     HasAntiConsistency t,
-     Arbitrary (ConsistencyEffortIndicator t),
-     Show (ConsistencyEffortIndicator t)) => 
+     HasAntiConsistency t) 
+     => 
     (String, t) -> Test
 testsConsistency (name, sample) =
     testGroup (name ++ " consistency flip")

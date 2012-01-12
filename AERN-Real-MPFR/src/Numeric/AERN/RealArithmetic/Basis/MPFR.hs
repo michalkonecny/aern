@@ -16,6 +16,7 @@
 module Numeric.AERN.RealArithmetic.Basis.MPFR 
 (
    M.MPFR, MM.MMPFR, M.Precision,
+   module Numeric.AERN.RealArithmetic.Basis.MPFR.Effort,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.ShowInternals,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder,
    module Numeric.AERN.RealArithmetic.Basis.MPFR.Conversion,
@@ -30,6 +31,7 @@ module Numeric.AERN.RealArithmetic.Basis.MPFR
 )
 where
 
+import Numeric.AERN.RealArithmetic.Basis.MPFR.Effort
 import Numeric.AERN.RealArithmetic.Basis.MPFR.ShowInternals
 import Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder
 import Numeric.AERN.RealArithmetic.Basis.MPFR.Conversion
@@ -50,25 +52,8 @@ import Numeric.AERN.Basics.Exception
 import qualified Data.Number.MPFR as M
 import qualified Data.Number.MPFR.Mutable as MM
 
-import Test.QuickCheck
 import Data.Word
 
-instance Arbitrary M.Precision where
-    arbitrary =
-        do
-        p <- choose (10,1000)
-        return (fromInteger $ toInteger (p :: Int))
-    
-instance EffortIndicator M.Precision where
-    effortIncrementVariants p = [2*p + 1]
-    effortRepeatIncrement (p1, p2) 
-        | p2 > 2*p1 = 2*p2
-        | otherwise = p2 + (p2 - p1)
-    effortIncrementSequence p =
-        map (p +) fibsp2p
-        where
-        fibsp2p = scanl (+) p (p:fibsp2p)
-    
 instance RoundedReal M.MPFR where
     type RoundedRealEffortIndicator M.MPFR = M.Precision
     roundedRealDefaultEffort _ = 100

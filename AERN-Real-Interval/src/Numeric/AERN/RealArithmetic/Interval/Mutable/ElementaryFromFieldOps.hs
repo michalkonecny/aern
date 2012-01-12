@@ -35,6 +35,7 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Interval
+import Numeric.AERN.RealArithmetic.Measures
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Consistency
@@ -43,7 +44,13 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Mutable
 
 instance
-    (CanBeMutable e, ArithUpDn.RoundedReal e, ArithInOut.RoundedRealInPlace (Interval e)) 
+    (CanBeMutable e, 
+     ArithInOut.RoundedRealInPlace (Interval e),
+     -- MK has no idea why the following three are not automatically deduced from the above...
+     ArithUpDn.RoundedReal e,
+     ArithInOut.RoundedAddEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)
+    ) 
     => 
     (ArithInOut.RoundedExponentiationInPlace (Interval e))
     where
@@ -79,7 +86,13 @@ instance
                 (MInterval rM rM)
 
 expOutInPlaceIters, expInInPlaceIters ::
-    (CanBeMutable e, ArithUpDn.RoundedReal e, ArithInOut.RoundedRealInPlace (Interval e)) 
+    (CanBeMutable e, 
+     ArithInOut.RoundedRealInPlace (Interval e),
+     -- MK has no idea why the following three are not automatically deduced from the above...
+     ArithUpDn.RoundedReal e,
+     ArithInOut.RoundedAddEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)
+    ) 
     => 
     Int -> OpMutable1 (Interval e) s 
 expOutInPlaceIters n resM iM =

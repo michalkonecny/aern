@@ -42,7 +42,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import Criterion
 
-class RoundedExponentiationEffort t where
+class
+    (EffortIndicator (ExpEffortIndicator t))
+    => 
+    RoundedExponentiationEffort t 
+    where
     type ExpEffortIndicator t
     expDefaultEffort :: t -> ExpEffortIndicator t
 
@@ -54,14 +58,8 @@ class (RoundedExponentiationEffort t) => RoundedExponentiation t where
 propExpOfNegRecip ::
     (RefOrd.PartialComparison t,
      RoundedExponentiation t, RoundedMultiply t, Neg t, HasOne t,
-     Show t, HasAntiConsistency t, HasLegalValues t,
-     Show (ExpEffortIndicator t),
-     EffortIndicator (ExpEffortIndicator t),
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasAntiConsistency t, HasLegalValues t) 
+    =>
     t ->
     (ConsistencyEffortIndicator t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
@@ -96,16 +94,8 @@ propExpOfNegRecip sample effortConsistency initEffort
 propExpOfAddToMult ::
     (RefOrd.PartialComparison t,
      RoundedExponentiation t, RoundedMultiply t,  RoundedAdd t,
-     Show t, HasLegalValues t,
-     Show (ExpEffortIndicator t),
-     EffortIndicator (ExpEffortIndicator t),
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      (ExpEffortIndicator t, MultEffortIndicator t, AddEffortIndicator t)) -> 
@@ -153,7 +143,11 @@ benchExpAreasReal =
         ("near 20", NumOrd.AreaLinear (Just $ 19.5) True (Just $ 20.5) True [])
     ]
 
-class RoundedSquareRootEffort t where
+class
+    (EffortIndicator (SqrtEffortIndicator t))
+    => 
+    RoundedSquareRootEffort t 
+    where
     type SqrtEffortIndicator t
     sqrtDefaultEffort :: t -> SqrtEffortIndicator t
 
@@ -166,18 +160,8 @@ propSqrtSquare ::
      RoundedSquareRoot t, RoundedMultiply t, HasZero t,
      UpDnConversion.Convertible t Double,
      RoundedMixedAdd t Double,
-     Show t, HasLegalValues t,
+     Show t, HasLegalValues t
 --     ShowInternals t,
-     Show (UpDnConversion.ConvertEffortIndicator t Double),
-     EffortIndicator (UpDnConversion.ConvertEffortIndicator t Double),
-     Show (MixedAddEffortIndicator t Double),
-     EffortIndicator (MixedAddEffortIndicator t Double),
-     Show (SqrtEffortIndicator t),
-     EffortIndicator (SqrtEffortIndicator t),
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
      ) =>
     t ->
     (tInArea -> t) ->

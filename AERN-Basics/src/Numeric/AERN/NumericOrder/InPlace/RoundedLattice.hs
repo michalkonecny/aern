@@ -111,8 +111,6 @@ testsRoundedLatticeInPlace ::
      RoundedLatticeInPlace t, RoundedLattice t, 
      CanBeMutable t,
      Arbitrary t, Show t, 
-     Arbitrary (MinmaxEffortIndicator t), Show (MinmaxEffortIndicator t), 
-     Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t), 
      ArbitraryOrderedTuple t,
      Eq t
      ) => 

@@ -38,7 +38,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 {-|
     A type with outward-rounding lattice operations.
 -}
-class RoundedLatticeEffort t where
+class
+    (EffortIndicator (JoinMeetEffortIndicator t))
+    => 
+    RoundedLatticeEffort t 
+    where
     type JoinMeetEffortIndicator t
     joinmeetDefaultEffort :: t -> JoinMeetEffortIndicator t
 
@@ -208,8 +212,6 @@ testsRoundedLatticeDistributive ::
     (PartialComparison t,
      RoundedLattice t,
      Arbitrary t, Show t, HasLegalValues t,
-     Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t), 
-     Arbitrary (JoinMeetEffortIndicator t), Show (JoinMeetEffortIndicator t), 
      ArbitraryOrderedTuple t,
      Eq t) => 
     (String, t) -> Test
