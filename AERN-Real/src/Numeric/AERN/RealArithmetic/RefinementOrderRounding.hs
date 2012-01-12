@@ -43,6 +43,8 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
+import Numeric.AERN.Basics.Effort
+
 {-|
    An aggregate class collecting together all functionality
    normally expected from up/down rounded approximations to
@@ -66,7 +68,9 @@ class
      RoundedMixedField t Int, 
      RoundedMixedField t Integer, 
      RoundedMixedField t Double, 
-     RoundedMixedField t Rational) => 
+     RoundedMixedField t Rational,
+     EffortIndicator (RoundedRealEffortIndicator t)) 
+    => 
     RoundedReal t
     where
     type RoundedRealEffortIndicator t

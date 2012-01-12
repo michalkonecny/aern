@@ -22,6 +22,8 @@ import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
+import Numeric.AERN.Basics.Effort
+
 import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
@@ -31,7 +33,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
    should be a numeric type approximating the
    positive real numbers with Partial comparison.
 -}
-class HasDistance t where
+class
+    (EffortIndicator (DistanceEffortIndicator t))
+    => 
+    HasDistance t 
+    where
     type Distance t
     type DistanceEffortIndicator t
     distanceDefaultEffort :: t -> (DistanceEffortIndicator t)

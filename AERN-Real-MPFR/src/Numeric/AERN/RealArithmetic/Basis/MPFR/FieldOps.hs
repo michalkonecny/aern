@@ -19,6 +19,7 @@ module Numeric.AERN.RealArithmetic.Basis.MPFR.FieldOps
 ()
 where
 
+import Numeric.AERN.RealArithmetic.Basis.MPFR.Effort
 import Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps
 import Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder
 import Numeric.AERN.RealArithmetic.Basis.MPFR.Utilities

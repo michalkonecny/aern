@@ -14,6 +14,8 @@
 
 module Numeric.AERN.RealArithmetic.Basis.MPFR.SpecialConst where
 
+import Numeric.AERN.RealArithmetic.Basis.MPFR.Effort
+
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
 import qualified Data.Number.MPFR as M

@@ -55,7 +55,11 @@ class (RefinementRoundedLatticeEffort t) => RefinementRoundedLattice t where
     minInEff :: MinmaxInOutEffortIndicator t -> t -> t -> t
     minOutEff :: MinmaxInOutEffortIndicator t -> t -> t -> t
 
-class RefinementRoundedLatticeEffort t where
+class
+    (EffortIndicator (MinmaxInOutEffortIndicator t))
+    => 
+    RefinementRoundedLatticeEffort t 
+    where
     type MinmaxInOutEffortIndicator t
     minmaxInOutDefaultEffort :: t -> MinmaxInOutEffortIndicator t
 
@@ -205,8 +209,6 @@ testsRefinementRoundedLattice ::
      RefinementRoundedLattice t,
      ArbitraryOrderedTuple t,
      Arbitrary t, Show t, HasLegalValues t,
-     Arbitrary (RefOrd.PartialCompareEffortIndicator t), Show (RefOrd.PartialCompareEffortIndicator t), 
-     Arbitrary (MinmaxInOutEffortIndicator t), Show (MinmaxInOutEffortIndicator t), 
      Eq t 
      ) => 
     (String, t) -> Test
@@ -220,8 +222,6 @@ testsRefinementRoundedLatticeDistributive ::
      RefinementRoundedLattice t,
      ArbitraryOrderedTuple t,
      Arbitrary t, Show t, HasLegalValues t, 
-     Arbitrary (RefOrd.PartialCompareEffortIndicator t), Show (RefOrd.PartialCompareEffortIndicator t), 
-     Arbitrary (MinmaxInOutEffortIndicator t), Show (MinmaxInOutEffortIndicator t), 
      Eq t 
      ) => 
     (String, t) -> Test
@@ -235,8 +235,6 @@ testsRefinementRoundedLatticeDistributiveMonotone ::
      RefinementRoundedLattice t,
      ArbitraryOrderedTuple t,
      Arbitrary t, Show t, HasLegalValues t, 
-     Arbitrary (RefOrd.PartialCompareEffortIndicator t), Show (RefOrd.PartialCompareEffortIndicator t), 
-     Arbitrary (MinmaxInOutEffortIndicator t), Show (MinmaxInOutEffortIndicator t), 
      Eq t 
      ) => 
     (String, t) -> Test

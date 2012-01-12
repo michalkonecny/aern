@@ -39,7 +39,7 @@ testsDouble =
     [
 --       NumOrd.testsArbitraryTuple ("Double", sampleD, NumOrd.compare),
        NumOrd.testsPartialComparison ("Double", sampleD) (NumOrd.areaWhole sampleD),
-       NumOrd.testsRoundedLatticeDistributive ("Double", sampleD), -- (Just ("NaN", nanD)),
+       NumOrd.testsRoundedLatticeDistributive ("Double", sampleD)  (NumOrd.areaWhole sampleD), -- (Just ("NaN", nanD)),
        NumOrd.testsRoundedLatticeInPlace ("Double", sampleD),
        testsDistance ("Double", sampleD),
        ArithUpDn.testsConvert ("Double", sampleD, "Integer", sampleI),

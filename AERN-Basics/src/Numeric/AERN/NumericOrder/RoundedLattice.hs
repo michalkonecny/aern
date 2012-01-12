@@ -47,17 +47,24 @@ class (RoundedLatticeEffort t) => RoundedLattice t where
     minUpEff :: MinmaxEffortIndicator t -> t -> t -> t
     minDnEff :: MinmaxEffortIndicator t -> t -> t -> t
 
-class RoundedLatticeEffort t where
+class
+    (EffortIndicator (MinmaxEffortIndicator t))
+    => 
+    RoundedLatticeEffort t 
+    where
     type MinmaxEffortIndicator t
     minmaxDefaultEffort :: t -> MinmaxEffortIndicator t
 
 propRoundedLatticeComparisonCompatible :: 
     (PartialComparison t, RoundedLattice t) => 
     t -> 
+    UniformlyOrderedPair t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
-    UniformlyOrderedPair t -> Bool
-propRoundedLatticeComparisonCompatible _ (minmaxEffort, effortComp) 
-        (UniformlyOrderedPair (e1,e2)) =
+    Bool
+propRoundedLatticeComparisonCompatible _ 
+        (UniformlyOrderedPair (e1,e2)) 
+        (minmaxEffort, effortComp) 
+        =
     (downRoundedJoinOfOrderedPair (pLeqEff effortComp) (minDnEff minmaxEffort) e1 e2)
     && 
     (upRoundedMeetOfOrderedPair (pLeqEff effortComp) (maxUpEff minmaxEffort) e1 e2)
@@ -65,83 +72,110 @@ propRoundedLatticeComparisonCompatible _ (minmaxEffort, effortComp)
 propRoundedLatticeJoinAboveBoth :: 
     (PartialComparison t, RoundedLattice t) => 
     t -> 
+    UniformlyOrderedPair t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
-    UniformlyOrderedPair t -> Bool
-propRoundedLatticeJoinAboveBoth _ (minmaxEffort, effortComp) 
-        (UniformlyOrderedPair (e1,e2)) = 
+    Bool
+propRoundedLatticeJoinAboveBoth _ 
+        (UniformlyOrderedPair (e1,e2)) 
+        (minmaxEffort, effortComp) 
+    = 
     joinAboveOperands (pLeqEff effortComp) (maxUpEff minmaxEffort) e1 e2
 
 propRoundedLatticeMeetBelowBoth :: 
     (PartialComparison t, RoundedLattice t) => 
     t -> 
+    UniformlyOrderedPair t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
-    UniformlyOrderedPair t -> Bool
-propRoundedLatticeMeetBelowBoth _ (minmaxEffort, effortComp)
-        (UniformlyOrderedPair (e1,e2)) = 
+    Bool
+propRoundedLatticeMeetBelowBoth _ 
+        (UniformlyOrderedPair (e1,e2)) 
+        (minmaxEffort, effortComp)
+    = 
     meetBelowOperands (pLeqEff effortComp) (minDnEff minmaxEffort) e1 e2
 
 propRoundedLatticeJoinIdempotent :: 
     (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedSingleton t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
-    t -> Bool
-propRoundedLatticeJoinIdempotent _ (minmaxEffort, effortComp) = 
-    roundedIdempotent (pLeqEff effortComp) (maxUpEff minmaxEffort) (maxDnEff minmaxEffort)
+    Bool
+propRoundedLatticeJoinIdempotent _ 
+        (UniformlyOrderedSingleton a) 
+        (minmaxEffort, effortComp) 
+    = 
+    roundedIdempotent (pLeqEff effortComp) (maxUpEff minmaxEffort) (maxDnEff minmaxEffort) a
 
 propRoundedLatticeJoinCommutative :: 
     (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedPair t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
-    UniformlyOrderedPair t -> Bool
-propRoundedLatticeJoinCommutative _ (minmaxEffort, effortComp)
-        (UniformlyOrderedPair (e1,e2)) = 
+    Bool
+propRoundedLatticeJoinCommutative _ 
+        (UniformlyOrderedPair (e1,e2)) 
+        (minmaxEffort, effortComp)
+    = 
     roundedCommutative (pLeqEff effortComp) (maxUpEff minmaxEffort) (maxDnEff minmaxEffort) e1 e2
 
 propRoundedLatticeJoinAssocative :: 
     (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedTriple t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
-    UniformlyOrderedTriple t -> Bool
-propRoundedLatticeJoinAssocative _ (minmaxEffort, effortComp)
-        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    Bool
+propRoundedLatticeJoinAssocative _ 
+        (UniformlyOrderedTriple (e1,e2,e3)) 
+        (minmaxEffort, effortComp)
+    = 
     roundedAssociative (pLeqEff effortComp) (maxUpEff minmaxEffort) (maxDnEff minmaxEffort) e1 e2 e3
 
 propRoundedLatticeMeetIdempotent :: 
     (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
-    (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
     UniformlyOrderedSingleton t -> 
+    (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
     Bool
-propRoundedLatticeMeetIdempotent _ (minmaxEffort, effortComp) 
-        (UniformlyOrderedSingleton e) = 
+propRoundedLatticeMeetIdempotent _ 
+        (UniformlyOrderedSingleton e) 
+        (minmaxEffort, effortComp) 
+    = 
     roundedIdempotent (pLeqEff effortComp) (minUpEff minmaxEffort) (minDnEff minmaxEffort) e
 
 propRoundedLatticeMeetCommutative :: 
     (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedPair t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
-    UniformlyOrderedPair t -> Bool
-propRoundedLatticeMeetCommutative _ (minmaxEffort, effortComp)
-        (UniformlyOrderedPair (e1,e2)) = 
+    Bool
+propRoundedLatticeMeetCommutative _ 
+        (UniformlyOrderedPair (e1,e2)) 
+        (minmaxEffort, effortComp)
+    = 
     roundedCommutative (pLeqEff effortComp) (minUpEff minmaxEffort) (minDnEff minmaxEffort) e1 e2
 
 propRoundedLatticeMeetAssocative :: 
     (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedTriple t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
-    UniformlyOrderedTriple t -> Bool
-propRoundedLatticeMeetAssocative _ (minmaxEffort, effortComp)
-        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    Bool
+propRoundedLatticeMeetAssocative _ 
+        (UniformlyOrderedTriple (e1,e2,e3)) 
+        (minmaxEffort, effortComp)
+    = 
     roundedAssociative (pLeqEff effortComp) (minUpEff minmaxEffort) (minDnEff minmaxEffort) e1 e2 e3
 
 {- optional properties: -}
 propRoundedLatticeModular :: 
     (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedTriple t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
-    UniformlyOrderedTriple t -> Bool
-propRoundedLatticeModular _ (minmaxEffort, effortComp)
-        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    Bool
+propRoundedLatticeModular _ 
+        (UniformlyOrderedTriple (e1,e2,e3)) 
+        (minmaxEffort, effortComp)
+    = 
     roundedModular (pLeqEff effortComp) 
         (maxUpEff minmaxEffort) (minUpEff minmaxEffort) 
         (maxDnEff minmaxEffort) (minDnEff minmaxEffort) 
@@ -150,10 +184,13 @@ propRoundedLatticeModular _ (minmaxEffort, effortComp)
 propRoundedLatticeDistributive :: 
     (PartialComparison t, RoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedTriple t -> 
     (MinmaxEffortIndicator t, PartialCompareEffortIndicator t) -> 
-    UniformlyOrderedTriple t -> Bool
-propRoundedLatticeDistributive _ (minmaxEffort, effortComp)
-        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    Bool
+propRoundedLatticeDistributive _ 
+        (UniformlyOrderedTriple (e1,e2,e3)) 
+        (minmaxEffort, effortComp)
+    = 
     (roundedLeftDistributive (pLeqEff effortComp) 
         (maxUpEff minmaxEffort) (minUpEff minmaxEffort) 
         (maxDnEff minmaxEffort) (minDnEff minmaxEffort) 
@@ -167,33 +204,34 @@ propRoundedLatticeDistributive _ (minmaxEffort, effortComp)
 testsRoundedLatticeDistributive :: 
     (PartialComparison t,
      RoundedLattice t,
-     Arbitrary t, Show t, HasLegalValues t, 
-     Arbitrary (MinmaxEffortIndicator t), Show (MinmaxEffortIndicator t), 
-     Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t), 
-     ArbitraryOrderedTuple t,
-     Eq t
-     ) => 
-    (String, t) -> Test
-testsRoundedLatticeDistributive (name, sample) =
+     Show t, HasLegalValues t, 
+     ArbitraryOrderedTuple t) 
+    => 
+    (String, t) -> 
+    (Area t) ->
+    Test
+testsRoundedLatticeDistributive (name, sample) area =
     testGroup (name ++ " (min,max) rounded") $
         [
-         testProperty "Comparison compatible" (propRoundedLatticeComparisonCompatible sample)
+         testProperty "Comparison compatible" (area, propRoundedLatticeComparisonCompatible sample)
         ,
-         testProperty "join above" (propRoundedLatticeJoinAboveBoth sample)
+         testProperty "join above" (area, propRoundedLatticeJoinAboveBoth sample)
         ,
-         testProperty "meet below" (propRoundedLatticeMeetBelowBoth sample)
+         testProperty "meet below" (area, propRoundedLatticeMeetBelowBoth sample)
         ,
-         testProperty "join idempotent" (propRoundedLatticeJoinIdempotent sample)
+         testProperty "join idempotent" (area, propRoundedLatticeJoinIdempotent sample)
         ,
-         testProperty "join commutative" (propRoundedLatticeJoinCommutative sample)
+         testProperty "join commutative" (area, propRoundedLatticeJoinCommutative sample)
         ,
-         testProperty "join associative" (propRoundedLatticeJoinAssocative sample)
+         testProperty "join associative" (area, propRoundedLatticeJoinAssocative sample)
         ,
-         testProperty "meet idempotent" (propRoundedLatticeMeetIdempotent sample)
+         testProperty "meet idempotent" (area, propRoundedLatticeMeetIdempotent sample)
         ,
-         testProperty "meet commutative" (propRoundedLatticeMeetCommutative sample)
+         testProperty "meet commutative" (area, propRoundedLatticeMeetCommutative sample)
         ,
-         testProperty "meet associative" (propRoundedLatticeMeetAssocative sample)
+         testProperty "meet associative" (area, propRoundedLatticeMeetAssocative sample)
         ,
-         testProperty "distributive" (propRoundedLatticeDistributive sample)
+         testProperty "distributive" (area, propRoundedLatticeDistributive sample)
         ]
+
+        

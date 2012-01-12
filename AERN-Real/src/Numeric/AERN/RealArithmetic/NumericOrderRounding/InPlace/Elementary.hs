@@ -60,12 +60,8 @@ propUpDnExpInPlace ::
      RoundedExponentiationInPlace t, 
      RoundedExponentiation t, 
      Neg t,
-     Show t, HasLegalValues t,
-     Show (ExpEffortIndicator t),
-     EffortIndicator (ExpEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      ExpEffortIndicator t) -> 
@@ -117,12 +113,8 @@ propUpDnSqrtInPlace ::
      RoundedSquareRootInPlace t, 
      RoundedSquareRoot t, 
      Neg t,
-     Show t, HasLegalValues t,
-     Show (SqrtEffortIndicator t),
-     EffortIndicator (SqrtEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      SqrtEffortIndicator t) -> 

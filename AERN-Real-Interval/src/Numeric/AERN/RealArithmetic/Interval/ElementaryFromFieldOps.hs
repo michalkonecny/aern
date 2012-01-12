@@ -33,13 +33,19 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Interval
+import Numeric.AERN.RealArithmetic.Measures
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 
 instance
-    (ArithInOut.RoundedReal (Interval e))
+    (ArithInOut.RoundedReal (Interval e),
+     -- MK has no idea why the following three are not automatically deduced from the above...
+     ArithUpDn.RoundedReal e,
+     ArithInOut.RoundedAddEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)
+     )
     => 
     (ArithInOut.RoundedExponentiationEffort (Interval e))
     where
@@ -59,7 +65,13 @@ expDefaultEffortWithIters  i@(Interval l r) n =
 
 
 instance
-    (ArithInOut.RoundedReal (Interval e), NumOrd.HasExtrema e)
+    (ArithInOut.RoundedReal (Interval e), 
+     -- MK has no idea why the following three are not automatically deduced from the above...
+     ArithUpDn.RoundedReal e,
+     ArithInOut.RoundedAddEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     --
+     NumOrd.HasExtrema e)
     => 
     (ArithInOut.RoundedExponentiation (Interval e))
     where
@@ -95,7 +107,13 @@ instance
                 (Interval r r)
 
 expOutIters, expInIters ::
-    (ArithInOut.RoundedReal (Interval e), NumOrd.HasExtrema e)
+    (ArithInOut.RoundedReal (Interval e), 
+     -- MK has no idea why the following three are not automatically deduced from the above...
+     ArithUpDn.RoundedReal e,
+     ArithInOut.RoundedAddEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     --
+     NumOrd.HasExtrema e)
     => 
     Int -> (Interval e) -> (Interval e)
 expOutIters n i = ArithInOut.expOutEff (expDefaultEffortWithIters i n) i

@@ -109,16 +109,8 @@ propMixedAddInPlaceEqualsConvert ::
      RoundedMixedAddInPlace t tn, 
      RoundedMixedAdd t tn, 
      RoundedAdd t,
-     Show t, HasLegalValues t,
-     Show (MixedAddEffortIndicator t tn),
-     EffortIndicator (MixedAddEffortIndicator t tn),
-     Show (ConvertEffortIndicator tn t),
-     EffortIndicator (ConvertEffortIndicator tn t),
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t -> tn ->
     (NumOrd.PartialCompareEffortIndicator t,
      (MixedAddEffortIndicator t tn,      
@@ -185,18 +177,8 @@ propMixedMultInPlaceEqualsConvert ::
      RoundedMixedMultiplyInPlace t tn, 
      RoundedMixedMultiply t tn, 
      RoundedMultiply t,
-     Show t, HasLegalValues t,
-     Show (MixedMultEffortIndicator t tn),
-     EffortIndicator (MixedMultEffortIndicator t tn),
-     Show (ConvertEffortIndicator tn t),
-     EffortIndicator (ConvertEffortIndicator tn t),
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (NumOrd.MinmaxEffortIndicator t),
-     EffortIndicator (NumOrd.MinmaxEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t -> tn ->
     (NumOrd.PartialCompareEffortIndicator t,
      (MixedMultEffortIndicator t tn,      
@@ -268,18 +250,8 @@ propMixedDivInPlaceEqualsConvert ::
      RoundedMixedDivideInPlace t tn, 
      RoundedMixedDivide t tn, 
      RoundedDivide t,
-     Show t, HasZero t, HasLegalValues t,
-     Show (MixedDivEffortIndicator t tn),
-     EffortIndicator (MixedDivEffortIndicator t tn),
-     Show (ConvertEffortIndicator tn t),
-     EffortIndicator (ConvertEffortIndicator tn t),
-     Show (DivEffortIndicator t),
-     EffortIndicator (DivEffortIndicator t),
-     Show (NumOrd.MinmaxEffortIndicator t),
-     EffortIndicator (NumOrd.MinmaxEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasZero t, HasLegalValues t)
+    =>
     t -> tn ->
     (NumOrd.PartialCompareEffortIndicator t,
      (MixedDivEffortIndicator t tn,      
@@ -335,14 +307,16 @@ testsUpDnMixedFieldOpsInPlace (name, sample) (nameN, sampleN) =
         ]
 
 class 
-        (RoundedMixedAddInPlace t tn, 
-         RoundedMixedMultiplyInPlace t tn, 
-         RoundedMixedRingEffort t tn) => 
+    (RoundedMixedAddInPlace t tn, 
+     RoundedMixedMultiplyInPlace t tn, 
+     RoundedMixedRingEffort t tn) 
+    => 
     RoundedMixedRingInPlace t tn
 
 class 
-        (RoundedMixedRingInPlace t tn, 
-         RoundedMixedDivideInPlace t tn,
-         RoundedMixedFieldEffort t tn) => 
+    (RoundedMixedRingInPlace t tn, 
+     RoundedMixedDivideInPlace t tn,
+     RoundedMixedFieldEffort t tn) 
+    => 
     RoundedMixedFieldInPlace t tn
     

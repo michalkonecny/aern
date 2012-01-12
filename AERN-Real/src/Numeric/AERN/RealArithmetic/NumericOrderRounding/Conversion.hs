@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
     Description :  conversion between approximations and other types  
@@ -36,7 +37,11 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-class Convertible t1 t2 where
+class
+    (EffortIndicator (ConvertEffortIndicator t1 t2))
+    => 
+    Convertible t1 t2 
+    where
     type ConvertEffortIndicator t1 t2
     convertDefaultEffort :: t1 -> t2 -> ConvertEffortIndicator t1 t2 
     convertUpEff :: ConvertEffortIndicator t1 t2 -> t1 -> Maybe t2

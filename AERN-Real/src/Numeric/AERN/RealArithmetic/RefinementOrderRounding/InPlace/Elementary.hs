@@ -63,12 +63,8 @@ propInOutExpInPlace ::
      RoundedExponentiationInPlace t, 
      RoundedExponentiation t, 
      Neg t,
-     Show t, HasLegalValues t,
-     Show (ExpEffortIndicator t),
-     EffortIndicator (ExpEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      ExpEffortIndicator t) -> 
@@ -121,17 +117,13 @@ propInOutSqrtInPlace ::
      RoundedSquareRootInPlace t, 
      RoundedSquareRoot t, 
      Neg t,
-     Show t, HasLegalValues t,
-     Show (SqrtEffortIndicator t),
-     EffortIndicator (SqrtEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (tInArea -> t) ->
     (RefOrd.PartialCompareEffortIndicator t, 
      SqrtEffortIndicator t) -> 
-    tInArea -> 
+    tInArea ->
     Bool
 propInOutSqrtInPlace sample fromArea initEffort e1InArea =
     equalRoundingUpDn "in-place sqrt"

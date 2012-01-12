@@ -58,7 +58,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import Data.Maybe
 
-class RoundedAddEffort t where
+class
+    (EffortIndicator (AddEffortIndicator t))
+    => 
+    RoundedAddEffort t 
+    where
     type AddEffortIndicator t
     addDefaultEffort :: t -> AddEffortIndicator t
 
@@ -68,12 +72,8 @@ class (RoundedAddEffort t) => RoundedAdd t where
 
 propUpDnAddZero ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
-     Show t, HasLegalValues t,
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
@@ -84,12 +84,8 @@ propUpDnAddZero sample effort (NumOrd.UniformlyOrderedSingleton e) =
 
 propUpDnAddCommutative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
-     Show t, HasLegalValues t,
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
@@ -100,12 +96,8 @@ propUpDnAddCommutative _ effort (NumOrd.UniformlyOrderedPair (e1,e2)) =
        
 propUpDnAddAssociative ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
-     Show t, HasLegalValues t,
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
@@ -132,12 +124,8 @@ class (RoundedAdd t, Neg t) => RoundedSubtr t where
 
 propUpDnSubtrElim ::
     (NumOrd.PartialComparison t, RoundedSubtr t, HasZero t,
-     Show t, HasLegalValues t,
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
@@ -148,12 +136,8 @@ propUpDnSubtrElim sample effort (NumOrd.UniformlyOrderedSingleton e) =
 
 propUpDnSubtrNegAdd ::
     (NumOrd.PartialComparison t, RoundedSubtr t, Neg t,
-     Show t, HasLegalValues t,
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
@@ -182,7 +166,11 @@ testsUpDnSubtr (name, sample) =
             testProperty "a+b=a-(-b)" (propUpDnSubtrNegAdd sample)
         ]
 
-class RoundedAbsEffort t where
+class
+    (EffortIndicator (AbsEffortIndicator t))
+    => 
+    RoundedAbsEffort t 
+    where
     type AbsEffortIndicator t
     absDefaultEffort :: t -> AbsEffortIndicator t
 
@@ -222,12 +210,8 @@ absDnUsingCompMax (effortComp, effortMinmax) a =
 
 propUpDnAbsNegSymmetric ::
     (NumOrd.PartialComparison t, RoundedAbs t, HasZero t,
-     Show t, Neg t, HasLegalValues t,
-     Show (AbsEffortIndicator t),
-     EffortIndicator (AbsEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, Neg t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
@@ -238,12 +222,8 @@ propUpDnAbsNegSymmetric _ effort (NumOrd.UniformlyOrderedSingleton e) =
 
 propUpDnAbsIdempotent ::
     (NumOrd.PartialComparison t, RoundedAbs t, HasZero t,
-     Show t, HasLegalValues t,
-     Show (AbsEffortIndicator t),
-     EffortIndicator (AbsEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
@@ -261,7 +241,11 @@ testsUpDnAbs (name, sample) =
         ]
 
 
-class RoundedMultiplyEffort t where
+class
+    (EffortIndicator (MultEffortIndicator t))
+    => 
+    RoundedMultiplyEffort t 
+    where
     type MultEffortIndicator t
     multDefaultEffort :: t -> MultEffortIndicator t
 
@@ -271,12 +255,8 @@ class (RoundedMultiplyEffort t) => RoundedMultiply t where
 
 propUpDnMultOne ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasOne t,
-     Show t, HasLegalValues t,
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
@@ -287,12 +267,8 @@ propUpDnMultOne sample effort (NumOrd.UniformlyOrderedSingleton e) =
 
 propUpDnMultCommutative ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasZero t,
-     Show t, HasLegalValues t,
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
@@ -304,14 +280,8 @@ propUpDnMultCommutative _ effort (NumOrd.UniformlyOrderedPair (e1,e2)) =
 propUpDnMultAssociative ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t, 
      Show t, HasLegalValues t,
-     RoundedMultiply t, HasZero t,
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (NumOrd.MinmaxEffortIndicator t),
-     EffortIndicator (NumOrd.MinmaxEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     RoundedMultiply t, HasZero t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      (MultEffortIndicator t, NumOrd.MinmaxEffortIndicator t)) -> 
@@ -346,16 +316,8 @@ propUpDnMultAssociative _ initEffort (NumOrd.UniformlyOrderedTriple (e1, e2, e3)
 propUpDnMultDistributesOverAdd ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
      Show t, HasLegalValues t,
-     RoundedMultiply t,  RoundedAdd t,
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (NumOrd.MinmaxEffortIndicator t),
-     EffortIndicator (NumOrd.MinmaxEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     RoundedMultiply t,  RoundedAdd t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      (MultEffortIndicator t, AddEffortIndicator t, NumOrd.MinmaxEffortIndicator t)) -> 
@@ -401,7 +363,11 @@ testsUpDnMult (name, sample) =
         ]
 
 -- simpler versions assuming the argument is non-negative:
-class RoundedPowerNonnegToNonnegIntEffort t where
+class
+    (EffortIndicator (PowerNonnegToNonnegIntEffortIndicator t))
+    => 
+    RoundedPowerNonnegToNonnegIntEffort t 
+    where
     type PowerNonnegToNonnegIntEffortIndicator t
     powerNonnegToNonnegIntDefaultEffort :: 
         t -> PowerNonnegToNonnegIntEffortIndicator t 
@@ -442,12 +408,20 @@ powerNonnegToNonnegIntDnEffFromMult effMult e n =
     powerFromMult (one e) (multDnEff effMult) e n
 
 -- now not assuming the argument is non-negative:
-class RoundedPowerToNonnegIntEffort t where
+class
+    (EffortIndicator (PowerToNonnegIntEffortIndicator t))
+    => 
+    RoundedPowerToNonnegIntEffort t 
+    where
     type PowerToNonnegIntEffortIndicator t
     powerToNonnegIntDefaultEffort :: 
         t -> PowerToNonnegIntEffortIndicator t 
 
-class (RoundedPowerToNonnegIntEffort t) => RoundedPowerToNonnegInt t where
+class 
+    (RoundedPowerToNonnegIntEffort t) 
+    => 
+    RoundedPowerToNonnegInt t 
+    where
     powerToNonnegIntUpEff ::
         (PowerToNonnegIntEffortIndicator t) -> 
         t {-^ @x@ -} -> 
@@ -525,16 +499,8 @@ propUpDnPowerSumExponents ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
      RoundedPowerToNonnegInt t, RoundedMultiply t, 
      HasOne t, HasZero t, Neg t,
-     Show t, HasLegalValues t,
-     Show (PowerToNonnegIntEffortIndicator t),
-     EffortIndicator (PowerToNonnegIntEffortIndicator t),
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (NumOrd.MinmaxEffortIndicator t),
-     EffortIndicator (NumOrd.MinmaxEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t,
      (PowerToNonnegIntEffortIndicator t,
@@ -599,7 +565,11 @@ testsUpDnIntPower (name, sample) =
         ]
 
 
-class RoundedDivideEffort t where
+class
+    (EffortIndicator (DivEffortIndicator t))
+    => 
+    RoundedDivideEffort t 
+    where
     type DivEffortIndicator t
     divDefaultEffort :: t -> DivEffortIndicator t
 
@@ -613,12 +583,8 @@ class (HasOne t, RoundedDivideEffort t) => RoundedDivide t where
 
 propUpDnDivElim ::
     (NumOrd.PartialComparison t, RoundedDivide t, HasOne t, HasZero t,
-     Show t, HasLegalValues t,
-     Show (DivEffortIndicator t),
-     EffortIndicator (DivEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t, 
      DivEffortIndicator t) -> 
@@ -635,16 +601,8 @@ propUpDnDivElim sample efforts2@(effComp, _) (NumOrd.UniformlyOrderedSingleton a
 propUpDnDivRecipMult ::
     (NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
      Show t, HasLegalValues t,
-     RoundedMultiply t, RoundedDivide t, HasOne t, HasZero t,
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (DivEffortIndicator t),
-     EffortIndicator (DivEffortIndicator t),
-     Show (NumOrd.MinmaxEffortIndicator t),
-     EffortIndicator (NumOrd.MinmaxEffortIndicator t),
-     Show (NumOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (NumOrd.PartialCompareEffortIndicator t)
-     ) =>
+     RoundedMultiply t, RoundedDivide t, HasOne t, HasZero t) 
+    =>
     t ->
     (NumOrd.PartialCompareEffortIndicator t,
      (MultEffortIndicator t, DivEffortIndicator t, NumOrd.MinmaxEffortIndicator t)) -> 
@@ -682,10 +640,13 @@ testsUpDnDiv (name, sample) =
             testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
         ]
 
-class (RoundedAddEffort t, 
-       RoundedMultiplyEffort t, 
-       RoundedPowerNonnegToNonnegIntEffort t, 
-       RoundedPowerToNonnegIntEffort t) => 
+class 
+    (RoundedAddEffort t,
+     RoundedMultiplyEffort t, 
+     RoundedPowerNonnegToNonnegIntEffort t, 
+     RoundedPowerToNonnegIntEffort t,
+     EffortIndicator (RingOpsEffortIndicator t)) 
+    =>
     RoundedRingEffort t
     where
     type RingOpsEffortIndicator t
@@ -701,7 +662,11 @@ class (RoundedAdd t, RoundedSubtr t,
        RoundedRingEffort t) => 
     RoundedRing t
 
-class (RoundedRingEffort t, RoundedDivideEffort t) => RoundedFieldEffort t
+class 
+    (RoundedRingEffort t, RoundedDivideEffort t,
+     EffortIndicator (FieldOpsEffortIndicator t)) 
+    => 
+    RoundedFieldEffort t
     where
     type FieldOpsEffortIndicator t
     fieldOpsDefaultEffort :: t -> FieldOpsEffortIndicator t

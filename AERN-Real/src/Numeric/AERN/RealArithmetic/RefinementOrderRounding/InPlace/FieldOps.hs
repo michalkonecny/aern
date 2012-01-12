@@ -77,12 +77,8 @@ propInOutAddInPlace ::
      RoundedAddInPlace t, 
      RoundedAdd t, 
      Neg t,
-     Show t, HasLegalValues t,
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
@@ -112,12 +108,8 @@ propInOutSubtrInPlace ::
      RoundedSubtrInPlace t, 
      RoundedSubtr t, 
      Neg t,
-     Show t, HasLegalValues t,
-     Show (AddEffortIndicator t),
-     EffortIndicator (AddEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t)
+    =>
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
@@ -136,12 +128,8 @@ class (RoundedAbs t, CanBeMutable t) => RoundedAbsInPlace t where
 
 propInOutAbsInPlace ::
     (RefOrd.PartialComparison t, RoundedAbsInPlace t, Neg t,
-     Show t, HasLegalValues t,
-     Show (AbsEffortIndicator t),
-     EffortIndicator (AbsEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
@@ -176,12 +164,8 @@ propInOutMultInPlace ::
      RoundedMultiplyInPlace t, 
      RoundedMultiply t, 
      Neg t,
-     Show t, HasLegalValues t,
-     Show (MultEffortIndicator t),
-     EffortIndicator (MultEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
@@ -236,12 +220,8 @@ propInOutPowerToNonnegInPlace ::
      RoundedPowerToNonnegIntInPlace t, 
      RoundedPowerToNonnegInt t, 
      Neg t,
-     Show t, HasLegalValues t,
-     Show (PowerToNonnegIntEffortIndicator t),
-     EffortIndicator (PowerToNonnegIntEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasLegalValues t) 
+    =>
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      PowerToNonnegIntEffortIndicator t) -> 
@@ -305,12 +285,8 @@ propInOutDivInPlace ::
      RoundedDivideInPlace t, 
      RoundedDivide t, 
      Neg t,
-     Show t, HasZero t, HasLegalValues t,
-     Show (DivEffortIndicator t),
-     EffortIndicator (DivEffortIndicator t),
-     Show (RefOrd.PartialCompareEffortIndicator t),
-     EffortIndicator (RefOrd.PartialCompareEffortIndicator t)
-     ) =>
+     Show t, HasZero t, HasLegalValues t) 
+    =>
     t ->
     (RefOrd.PartialCompareEffortIndicator t, 
      DivEffortIndicator t) -> 
@@ -340,16 +316,18 @@ testsInOutFieldOpsInPlace (name, sample) =
 
 
 class 
-        (RoundedSubtrInPlace t, 
-         RoundedMultiplyInPlace t,
-         RoundedPowerToNonnegIntInPlace t, 
-         RoundedRingEffort t) => 
+    (RoundedSubtrInPlace t, 
+     RoundedMultiplyInPlace t,
+     RoundedPowerToNonnegIntInPlace t, 
+     RoundedRingEffort t)
+    => 
     RoundedRingInPlace t
 
 class
-        (RoundedRingInPlace t,
-         RoundedDivideInPlace t,
-         RoundedFieldEffort t) => 
+    (RoundedRingInPlace t,
+     RoundedDivideInPlace t,
+     RoundedFieldEffort t)
+    => 
     RoundedFieldInPlace t
 
     

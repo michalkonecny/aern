@@ -138,8 +138,17 @@ multiplySingletonWithInterval
         z = zero l2
         
         
-instance (RoundedDivideEffort (Interval e),
-          Convertible tn (Interval e)) => 
+instance 
+    (RoundedDivideEffort (Interval e),
+     -- MK has no idea why the following four need to be stated;
+     --    they should be inferred from the one above automatically...
+     ArithUpDn.RoundedMultiplyEffort e, 
+     ArithUpDn.RoundedDivideEffort e,  
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLatticeEffort e,
+     --
+     Convertible tn (Interval e)) 
+    => 
     RoundedMixedDivideEffort (Interval e) tn 
     where
     type MixedDivEffortIndicator (Interval e) tn =
@@ -147,8 +156,17 @@ instance (RoundedDivideEffort (Interval e),
          ConvertEffortIndicator tn (Interval e))
     mixedDivDefaultEffort = mixedDivDefaultEffortByConversion
 
-instance (RoundedDivide (Interval e),
-          Convertible tn (Interval e)) => 
+instance 
+    (RoundedDivide (Interval e),
+     -- MK has no idea why the following four need to be stated;
+     --    they should be inferred from the one above automatically...
+     ArithUpDn.RoundedMultiplyEffort e, 
+     ArithUpDn.RoundedDivideEffort e,  
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLatticeEffort e,
+     --
+     Convertible tn (Interval e)) 
+    => 
     RoundedMixedDivide (Interval e) tn 
     where
     mixedDivInEff = mixedDivInEffByConversion
@@ -179,18 +197,25 @@ instance (RoundedMixedAddEffort (Interval e) tn,
           effortMinmax, 
           ArithUpDn.mxringEffortMult l n effortRing) 
 
-instance (RoundedMixedAdd (Interval e) tn,
-          RoundedMixedMultiply (Interval e) tn,
-          RoundedMixedRingEffort (Interval e) tn) => 
-        RoundedMixedRing (Interval e) tn
+instance 
+    (RoundedMixedAdd (Interval e) tn,
+     RoundedMixedMultiply (Interval e) tn,
+     RoundedMixedRingEffort (Interval e) tn) 
+    => 
+    RoundedMixedRing (Interval e) tn
     
-instance (RoundedMixedRingEffort (Interval e) tn,
-          RoundedMixedDivideEffort (Interval e) tn,
-          NumOrd.PartialComparison e,
-          NumOrd.RoundedLatticeEffort e,
-          NumOrd.PartialComparison tn,
-          ArithUpDn.RoundedMixedFieldEffort e tn) => 
-        RoundedMixedFieldEffort (Interval e) tn
+instance 
+    (Convertible tn (Interval e),
+     ArithUpDn.RoundedMultiplyEffort e, 
+     ArithUpDn.RoundedDivideEffort e,
+     RoundedMixedRingEffort (Interval e) tn,
+     RoundedMixedDivideEffort (Interval e) tn,
+     NumOrd.PartialComparison e,
+     NumOrd.RoundedLatticeEffort e,
+     NumOrd.PartialComparison tn,
+     ArithUpDn.RoundedMixedFieldEffort e tn) 
+    => 
+    RoundedMixedFieldEffort (Interval e) tn
     where
     type MixedFieldOpsEffortIndicator (Interval e) tn =
         (ArithUpDn.MixedFieldOpsEffortIndicator e tn,

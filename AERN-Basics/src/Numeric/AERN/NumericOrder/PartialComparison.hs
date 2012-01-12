@@ -39,7 +39,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 {-|
     A type with semi-decidable equality and partial order
 -}
-class PartialComparison t where
+class 
+    (EffortIndicator (PartialCompareEffortIndicator t)) 
+    => 
+    PartialComparison t 
+    where
     type PartialCompareEffortIndicator t
     pCompareEff :: PartialCompareEffortIndicator t -> t -> t -> Maybe PartialOrdering
     pCompareInFullEff :: PartialCompareEffortIndicator t -> t -> t -> PartialOrderingPartialInfo
@@ -164,9 +168,9 @@ propExtremaInPartialComparison _
 testsPartialComparison :: 
     (PartialComparison t,
      HasExtrema t,
-     ArbitraryOrderedTuple t, Show t,
-     Arbitrary (PartialCompareEffortIndicator t),
-     Show (PartialCompareEffortIndicator t)) => 
+     ArbitraryOrderedTuple t, 
+     Show t) 
+    => 
     (String, t) -> 
     (Area t) ->
     Test

@@ -30,11 +30,18 @@ import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Exception
+import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Consistency
+
+--import Numeric.AERN.Misc.QuickCheck
+
+import Test.QuickCheck
 
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
-    
+
 import Data.List (intercalate, sortBy)
+
     
 {-| 
     Multi-variate polynomials using variable-asymmetric representation.
@@ -52,8 +59,8 @@ data IntPoly var cf =
 
 instance (Show var, Show cf) => Show (IntPoly var cf)
     where
-    show (IntPoly cfg terms)
-        = "IntPoly{" ++ show cfg ++ "; " ++ show terms ++ "}" 
+    show p@(IntPoly cfg terms)
+        = "IntPoly{" ++ showPoly show show p ++ "; " ++ show cfg ++ "; " ++ show terms ++ "}" 
 
 data IntPolyTerms var cf = 
         IntPolyC -- constant
@@ -170,6 +177,59 @@ instance
     where
     show (IntPolyCfg vars doms _ maxdeg maxsize) 
         = "cfg{" ++ (show $ zip vars doms) ++ ";" ++ show maxdeg ++ "/" ++ show maxsize ++ "}"
+
+instance
+    (RefOrd.IntervalLike cf, 
+     HasOne cf, HasZero cf, HasAntiConsistency cf, 
+     Arbitrary cf, GeneratableVariables var) 
+    =>
+    (Arbitrary (IntPolyCfg var cf))
+    where
+    arbitrary =
+        do
+        Int1To10 arity <- arbitrary
+        Int1To10 maxdeg <- arbitrary
+        Int1To1000 maxsizeRaw <- arbitrary
+        sampleCfs <- vectorOf (50 * arity) arbitrary -- probability that too many of these are anti-consistent is negligible
+        return $ mkCfg arity maxdeg maxsizeRaw sampleCfs
+        where
+        mkCfg arity maxdeg maxsizeRaw sampleCfs =
+            IntPolyCfg
+                vars doms (head sampleCfs) maxdeg (max 2 maxsizeRaw)
+            where
+            vars = getNVariables arity
+            doms = take arity $ filter notAntiConsistent sampleCfs
+            notAntiConsistent a =
+                (isAntiConsistentEff eff a) == Just False
+                where
+                eff = consistencyDefaultEffort a
+             
+instance
+    (Show var, Show cf,
+     RefOrd.IntervalLike cf, 
+     HasOne cf, HasZero cf, HasAntiConsistency cf, 
+     Arbitrary cf, GeneratableVariables var) 
+    =>
+    (EffortIndicator (IntPolyCfg var cf))
+    where
+    effortIncrementVariants (IntPolyCfg vars doms sample maxdeg maxsize) =
+        map recreateCfg $ effortIncrementVariants (Int1To10 maxdeg, Int1To1000 maxsize)
+        where
+        recreateCfg (Int1To10 md, Int1To1000 ms) =
+            IntPolyCfg vars doms sample md ms 
+    effortIncrementSequence (IntPolyCfg vars doms sample maxdeg maxsize) =
+        map recreateCfg $ effortIncrementSequence (Int1To10 maxdeg, Int1To1000 maxsize)
+        where
+        recreateCfg (Int1To10 md, Int1To1000 ms) =
+            IntPolyCfg vars doms sample md ms
+    effortRepeatIncrement 
+            (IntPolyCfg vars doms sample maxdeg1 maxsize1, 
+             IntPolyCfg _ _ _ maxdeg2 maxsize2)
+        =
+        IntPolyCfg vars doms sample md ms
+        where
+        Int1To10 md = effortRepeatIncrement (Int1To10 maxdeg1, Int1To10 maxdeg2)  
+        Int1To1000 ms = effortRepeatIncrement (Int1To1000 maxsize1, Int1To1000 maxsize2)  
 
 {-- Internal checks and normalisation --}
 
@@ -352,6 +412,10 @@ instance
         doms = ipolycfg_doms cfg
     getNSamplesFromDomainBox sampleP@(IntPoly cfg _) dombox n =
         getNSamplesFromDomainBoxUsingEndpointsDefaultEffort sampleDom sampleP dombox n
+        where
+        sampleDom = ipolycfg_sample_cf cfg
+    getSampleFromInsideDomainBox sampleP@(IntPoly cfg _) dombox =
+        getSampleFromInsideDomainBoxUsingEndpointsDefaultEffort sampleDom sampleP dombox
         where
         sampleDom = ipolycfg_sample_cf cfg
 

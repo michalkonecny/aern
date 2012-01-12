@@ -237,8 +237,10 @@ multiplyIntervals
 instance
     (ArithUpDn.RoundedPowerNonnegToNonnegIntEffort e,
      ArithUpDn.RoundedMultiplyEffort e,
-     NumOrd.PartialComparison e, NumOrd.RoundedLatticeEffort e
-     ) => 
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLatticeEffort e
+     ) 
+    => 
     RoundedPowerToNonnegIntEffort (Interval e)
     where
     type PowerToNonnegIntEffortIndicator (Interval e) =
@@ -310,9 +312,11 @@ instance
         z = zero i
 
 instance 
-    (ArithUpDn.RoundedMultiplyEffort e, ArithUpDn.RoundedDivideEffort e,  
+    (ArithUpDn.RoundedMultiplyEffort e, 
+     ArithUpDn.RoundedDivideEffort e,  
      NumOrd.PartialComparison e, 
-     NumOrd.RoundedLatticeEffort e) => 
+     NumOrd.RoundedLatticeEffort e) 
+    =>
     RoundedDivideEffort (Interval e)
     where
     type DivEffortIndicator (Interval e) = 

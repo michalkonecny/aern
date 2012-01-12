@@ -39,7 +39,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 {-|
     A type with outward-rounding lattice operations.
 -}
-class RoundedBasisEffort t where
+class
+    (EffortIndicator (PartialJoinEffortIndicator t))
+    => 
+    RoundedBasisEffort t 
+    where
     type PartialJoinEffortIndicator t
     partialJoinDefaultEffort :: t -> PartialJoinEffortIndicator t
 
@@ -129,8 +133,6 @@ testsRoundedBasis ::
     (PartialComparison t,
      RoundedBasis t,
      Arbitrary t, Show t, HasLegalValues t,
-     Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t), 
-     Arbitrary (PartialJoinEffortIndicator t), Show (PartialJoinEffortIndicator t), 
      ArbitraryOrderedTuple t,
      Eq t) => 
     (String, t) -> Test

@@ -117,8 +117,6 @@ testsRefinementRoundedLatticeInPlace ::
      RefinementRoundedLatticeInPlace t, RefinementRoundedLattice t, 
      CanBeMutable t,
      Arbitrary t, Show t, 
-     Arbitrary (MinmaxInOutEffortIndicator t), Show (MinmaxInOutEffortIndicator t), 
-     Arbitrary (PartialCompareEffortIndicator t), Show (PartialCompareEffortIndicator t), 
      ArbitraryOrderedTuple t,
      Eq t
      ) => 
