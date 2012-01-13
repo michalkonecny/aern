@@ -42,8 +42,13 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
+import Numeric.AERN.Misc.IntegerArithmetic
+
 --import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+
+--import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Graphics.Rendering.Cairo as Cairo
 import qualified Graphics.UI.Gtk as Gtk
@@ -169,28 +174,43 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fn
             Just fontSize ->
                 do
                 setFontSize fontSize
-                mapM_ showPt xPts
-                mapM_ showPt yPts
+                setSourceRGBA 0 0 0 1
+                setLineWidth 0.5
+                mapM_ (showPt (0,12)) xPts
+                mapM_ (showPt (12,0)) yPts
                 return ()
             _ -> return ()
 
-    showPt (pt,val) =
+    showPt (offX, offY) (pt,text) =
         do
-        uncurry moveTo $ toScreenCoords pt
-        showText $ show $ val
-    yPts = map translYtoPt $ pickAFewDyadicBetween valLO valHI
-    xPts = map translXtoPt $ pickAFewDyadicBetween domLO domHI
-    translXtoPt x = ((xUnit, little), x)
+        -- draw a small cross at the point:  
+        moveTo (pX - 2) pY
+        lineTo (pX + 2) pY
+        stroke
+        moveTo pX (pY - 2)
+        lineTo pX (pY + 2)
+        stroke
+        -- work out the size of the text:
+        extents <- textExtents text
+        let textWidthHalf = (textExtentsWidth extents)/2  
+        let textHeight = textExtentsHeight extents
+        -- center the label below the cross:
+        moveTo (pX - textWidthHalf) (pY + textHeight + 2)
+        showText text
         where
-        (xUnit,_) = translateToCoordSystem effReal coorSystem (x,x)
-    translYtoPt y = ((little, yUnit), y)
+        pX = x + offX
+        pY = y - offY
+        (x,y) = toScreenCoords pt
+    yPts = map translYtoPt $ pickAFewDyadicBetween sampleDom effReal valLO valHI
+    xPts = map translXtoPt $ pickAFewDyadicBetween sampleDom effReal domLO domHI
+    translXtoPt (x, xText) = ((xUnit, little), xText)
         where
-        (_,yUnit) = translateToCoordSystem effReal coorSystem (y,y)
-    pickAFewDyadicBetween a b =
-        let ?addInOutEffort = effAdd in
-        [a <+> little,b <-> little] -- TODO: find dyadic scale that has 2-3 values here
+        (xUnit,_) = translateToCoordSystem effReal coordSystem (x,x)
+    translYtoPt (y, yText) = ((little, yUnit), yText)
+        where
+        (_,yUnit) = translateToCoordSystem effReal coordSystem (y,y)
 
-    (valLO,valHI,domLO,domHI) = getVisibleDomExtents coorSystem 
+    (valHI,valLO,domLO,domHI) = getVisibleDomExtents coordSystem 
     _ = [valLO,valHI,domLO,domHI,sampleDom,little]
     little =
         ArithInOut.convertOutEff effFromDouble $ (0.5^4 :: Double)
@@ -205,7 +225,7 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fn
         Just xUnitD = ArithUpDn.convertUpEff effToDouble xUnit
         Just yUnitD = ArithUpDn.convertUpEff effToDouble yUnit
 
-    coorSystem = cnvprmCoordSystem canvasParams
+    coordSystem = cnvprmCoordSystem canvasParams
     sampleDom = getSampleDomValue sampleF
     effToDouble = ArithInOut.rrEffortToDouble sampleDom effReal
     effFromDouble = ArithInOut.rrEffortFromDouble sampleDom effReal
@@ -213,3 +233,86 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fn
         ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effReal
 
 
+pickAFewDyadicBetween ::
+    (ArithInOut.RoundedReal t)
+    =>
+    t ->
+    (ArithInOut.RoundedRealEffortIndicator t) ->
+    t ->
+    t ->
+    [(t,String)]
+pickAFewDyadicBetween sampleDom effReal a b =
+    let ?mixedMultInOutEffort = effMultInteger in
+    map mkPt [aCount..bCount]
+    where
+    mkPt count =
+        (value, text)
+        where
+        value = 
+            count |<*> partitionBase
+        text =
+            case logOfSizeIMinusOne of
+--                _ | count == 0 -> "0" 
+                lgs | 0 <= lgs && lgs < 10 -> show (count * (2^lgs))
+                lgs | -10 < lgs && lgs < 0 -> show count ++ "/" ++ (show $ 2^(-lgs))
+                lgs | lgs < 0 -> show count ++ "*2^(" ++ show lgs ++ ")"
+                lgs -> show count ++ "*2^" ++ show lgs
+    
+    aCount, bCount :: Integer
+    Just aCount =
+        ArithUpDn.convertUpEff effToInteger $
+            let ?divInOutEffort = effDiv in
+            a </> partitionBase
+    Just bCount = 
+        ArithUpDn.convertDnEff effToInteger $
+            let ?divInOutEffort = effDiv in
+            b </> partitionBase
+    
+    partitionBase =
+        let ?divInOutEffort = effDiv in
+        let ?intPowerInOutEffort = effPow in
+        case logOfSizeIMinusOne < 0 of
+            True ->
+                c1 </> (c2 <^> (negate logOfSizeIMinusOne))
+            _ ->
+                c2 <^> logOfSizeIMinusOne
+                      
+    logOfSizeIMinusOne = logOfSizeI - 1
+    
+    logOfSizeI :: Int
+    logOfSizeI 
+        | sizeBelowOne =
+            negate $ intLogUp (2::Integer) sizeRecipUpI
+        | otherwise =
+            intLogDown (2::Integer) sizeDnI
+    
+    sizeRecipUpI, sizeDnI :: Integer
+    Just sizeRecipUpI = ArithUpDn.convertUpEff effToInteger sizeRecip
+    Just sizeDnI = ArithUpDn.convertDnEff effToInteger size
+
+    sizeBelowOne =
+        let ?pCompareEffort = effComp in
+        (size <? c1) == Just True
+    sizeRecip = 
+        let ?divInOutEffort = effDiv in
+        c1 </> size
+    size = 
+        let ?addInOutEffort = effAdd in 
+        b <-> a
+
+    c1 = one sampleDom
+    c2 = 
+        let ?addInOutEffort = effAdd in 
+        c1 <+> c1
+    effPow =
+        ArithInOut.fldEffortPow sampleDom $ ArithInOut.rrEffortField sampleDom effReal
+    effAdd =
+        ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effReal
+    effDiv =
+        ArithInOut.fldEffortDiv sampleDom $ ArithInOut.rrEffortField sampleDom effReal
+    effMultInteger =
+        ArithInOut.mxfldEffortMult sampleDom (1::Integer) $ ArithInOut.rrEffortIntegerMixedField sampleDom effReal
+    effToInteger = ArithInOut.rrEffortToInteger sampleDom effReal
+    effComp = ArithInOut.rrEffortNumComp sampleDom effReal
+    _ = [a,b,c1,c2,size,partitionBase,sampleDom]
+    
