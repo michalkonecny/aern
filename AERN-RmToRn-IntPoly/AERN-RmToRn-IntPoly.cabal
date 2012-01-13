@@ -47,19 +47,35 @@ Library
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Substitution
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Minmax
+        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Plot
   other-modules:
 
 Executable minimal
   hs-source-dirs: src, demos
 --  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
-  ghc-options:  -O2
+--  ghc-options:  -O2
   main-is: minimal.hs
   Build-Depends:
         base >= 4 && < 5,
         containers >= 0.3 && < 0.4,
-        QuickCheck >= 2.1 && < 3,
-        test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
         random >= 1.0 && < 2.0,
+        AERN-Basics == 2011.2.0.0, 
+        AERN-Real == 2011.2.0.0, 
+        AERN-Real-Interval == 2011.2.0.0, 
+        AERN-Real-MPFR == 2011.2.0.0, 
+        AERN-RmToRn == 2011.2.0.0 
+
+Executable plot
+  hs-source-dirs: src, demos
+--  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
+--  ghc-options:  -O2
+  main-is: plot.hs
+  Build-Depends:
+        base >= 4 && < 5,
+        containers >= 0.3 && < 0.4,
+        random >= 1.0 && < 2.0,
+        gtk >= 0.12.0 && < 0.13,
+        stm >= 2 && < 3,
         AERN-Basics == 2011.2.0.0, 
         AERN-Real == 2011.2.0.0, 
         AERN-Real-Interval == 2011.2.0.0, 
@@ -69,7 +85,7 @@ Executable minimal
 Executable testAERN-RmToRn-IntPoly
   hs-source-dirs: src, tests
 --  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
-  ghc-options:  -O2
+--  ghc-options:  -O2
   main-is: Main.hs
   Build-Depends:
         base >= 4 && < 5,
@@ -85,57 +101,57 @@ Executable testAERN-RmToRn-IntPoly
         AERN-Real-Double == 2011.2.0.0, 
         AERN-RmToRn == 2011.2.0.0 
 
-Executable ivpSpringMass
-  hs-source-dirs: src, demos
---  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
-  ghc-options:  -O2
-  main-is: ivpSpringMass.hs
-  Build-Depends:
-        base >= 4 && < 5,
-        containers >= 0.3 && < 0.4,
-        QuickCheck >= 2.1 && < 3,
-        test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
-        criterion >= 0.5 && < 0.6,
-        random >= 1.0 && < 2.0,
-        AERN-Basics == 2011.2.0.0, 
-        AERN-Real == 2011.2.0.0, 
-        AERN-Real-Interval == 2011.2.0.0, 
-        AERN-Real-MPFR == 2011.2.0.0, 
-        AERN-RmToRn == 2011.2.0.0 
+-- Executable ivpSpringMass
+--   hs-source-dirs: src, demos
+-- --  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
+--   ghc-options:  -O2
+--   main-is: ivpSpringMass.hs
+--   Build-Depends:
+--         base >= 4 && < 5,
+--         containers >= 0.3 && < 0.4,
+--         QuickCheck >= 2.1 && < 3,
+--         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
+--         criterion >= 0.5 && < 0.6,
+--         random >= 1.0 && < 2.0,
+--         AERN-Basics == 2011.2.0.0, 
+--         AERN-Real == 2011.2.0.0, 
+--         AERN-Real-Interval == 2011.2.0.0, 
+--         AERN-Real-MPFR == 2011.2.0.0, 
+--         AERN-RmToRn == 2011.2.0.0 
 
-Executable ivpPendulum
-  hs-source-dirs: src, demos
---  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
-  ghc-options:  -O2
-  main-is: ivpPendulum.hs
-  Build-Depends:
-        base >= 4 && < 5,
-        containers >= 0.3 && < 0.4,
-        QuickCheck >= 2.1 && < 3,
-        test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
-        criterion >= 0.5 && < 0.6,
-        random >= 1.0 && < 2.0,
-        AERN-Basics == 2011.2.0.0, 
-        AERN-Real == 2011.2.0.0, 
-        AERN-Real-Interval == 2011.2.0.0, 
-        AERN-Real-MPFR == 2011.2.0.0, 
-        AERN-RmToRn == 2011.2.0.0 
+-- Executable ivpPendulum
+--   hs-source-dirs: src, demos
+-- --  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
+--   ghc-options:  -O2
+--   main-is: ivpPendulum.hs
+--   Build-Depends:
+--         base >= 4 && < 5,
+--         containers >= 0.3 && < 0.4,
+--         QuickCheck >= 2.1 && < 3,
+--         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
+--         criterion >= 0.5 && < 0.6,
+--         random >= 1.0 && < 2.0,
+--         AERN-Basics == 2011.2.0.0, 
+--         AERN-Real == 2011.2.0.0, 
+--         AERN-Real-Interval == 2011.2.0.0, 
+--         AERN-Real-MPFR == 2011.2.0.0, 
+--         AERN-RmToRn == 2011.2.0.0 
 
-Executable ivpBouncingBall
-  hs-source-dirs: src, demos
---  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
-  ghc-options:  -O2
-  main-is: ivpBouncingBall.hs
-  Build-Depends:
-        base >= 4 && < 5,
-        containers >= 0.3 && < 0.4,
-        QuickCheck >= 2.1 && < 3,
-        test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
-        criterion >= 0.5 && < 0.6,
-        random >= 1.0 && < 2.0,
-        AERN-Basics == 2011.2.0.0, 
-        AERN-Real == 2011.2.0.0, 
-        AERN-Real-Interval == 2011.2.0.0, 
-        AERN-Real-MPFR == 2011.2.0.0, 
-        AERN-RmToRn == 2011.2.0.0 
+-- Executable ivpBouncingBall
+--   hs-source-dirs: src, demos
+-- --  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
+--   ghc-options:  -O2
+--   main-is: ivpBouncingBall.hs
+--   Build-Depends:
+--         base >= 4 && < 5,
+--         containers >= 0.3 && < 0.4,
+--         QuickCheck >= 2.1 && < 3,
+--         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
+--         criterion >= 0.5 && < 0.6,
+--         random >= 1.0 && < 2.0,
+--         AERN-Basics == 2011.2.0.0, 
+--         AERN-Real == 2011.2.0.0, 
+--         AERN-Real-Interval == 2011.2.0.0, 
+--         AERN-Real-MPFR == 2011.2.0.0, 
+--         AERN-RmToRn == 2011.2.0.0 
 
