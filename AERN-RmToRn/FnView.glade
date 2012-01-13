@@ -505,8 +505,8 @@ linear</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkButton" id="exportJPGButton1">
-                            <property name="label" translatable="yes">jpg</property>
+                          <widget class="GtkButton" id="exportPNGButton1">
+                            <property name="label" translatable="yes">png</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
