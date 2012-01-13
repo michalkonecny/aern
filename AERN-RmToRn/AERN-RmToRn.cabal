@@ -26,7 +26,7 @@ Description:
     AERN-Real-Double or AERN-Real-MPFR.
 
 Extra-Source-Files:
-    CHANGES
+    FnView.glade
 
 Library
   hs-source-dirs: src
