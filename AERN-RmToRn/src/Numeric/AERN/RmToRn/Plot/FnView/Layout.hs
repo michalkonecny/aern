@@ -51,6 +51,8 @@ loadGlade gladeFileName =
     centreXEntry <- Glade.xmlGetWidget xml Gtk.castToEntry "centreXEntry1"
     centreYEntry <- Glade.xmlGetWidget xml Gtk.castToEntry "centreYEntry1"
     exportJPGButton <- Glade.xmlGetWidget xml Gtk.castToButton "exportJPGButton1"
+    exportSVGButton <- Glade.xmlGetWidget xml Gtk.castToButton "exportSVGButton1"
+    exportPDFButton <- Glade.xmlGetWidget xml Gtk.castToButton "exportPDFButton1"
     printTXTButton <- Glade.xmlGetWidget xml Gtk.castToButton "printTXTButton1"
     return $ Widgets
         {
@@ -66,6 +68,8 @@ loadGlade gladeFileName =
             centreXEntry = centreXEntry,
             centreYEntry = centreYEntry,
             exportJPGButton = exportJPGButton,
+            exportSVGButton = exportSVGButton,
+            exportPDFButton = exportPDFButton,
             printTXTButton = printTXTButton,
             canvas = error "canvas not created yet"
         }
@@ -85,6 +89,8 @@ data Widgets =
         centreXEntry :: Gtk.Entry,
         centreYEntry :: Gtk.Entry,
         exportJPGButton :: Gtk.Button,
+        exportSVGButton :: Gtk.Button,
+        exportPDFButton :: Gtk.Button,
         printTXTButton :: Gtk.Button,
         canvas :: Gtk.DrawingArea
     }

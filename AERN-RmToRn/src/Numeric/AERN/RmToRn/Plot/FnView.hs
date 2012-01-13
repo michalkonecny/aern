@@ -34,7 +34,8 @@ where
 import Numeric.AERN.RmToRn.Plot.FnView.FnData
 import Numeric.AERN.RmToRn.Plot.FnView.State
 import Numeric.AERN.RmToRn.Plot.FnView.Layout
-import Numeric.AERN.RmToRn.Plot.FnView.UpdateView
+import Numeric.AERN.RmToRn.Plot.FnView.WatchData
+import Numeric.AERN.RmToRn.Plot.FnView.Canvas
 
 import Numeric.AERN.RmToRn.Plot.Params
 import Numeric.AERN.RmToRn.Plot.CairoDrawable (CairoDrawableFn(..))
@@ -98,7 +99,7 @@ new sampleF effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) maybeParentWi
         do
         atomically $ modifyTVar fnmetaTV $ \fnmeta -> fnmeta { dataDestroyed = True }
         Gtk.mainQuit
-    setHandlers sampleF effReal effEval widgets dynWidgetsRef fndataTVs stateTV
+    setHandlers sampleF effDraw effReal effEval widgets dynWidgetsRef fndataTVs stateTV
     -- start thread that reponds to changes in fndataTVs:
     forkIO $
         dataWatchThread 
@@ -110,109 +111,15 @@ new sampleF effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) maybeParentWi
     sampleDom = getSampleDomValue sampleF
     effToDouble = ArithInOut.rrEffortToDouble sampleDom effReal
 
-makeCanvas sampleF effDraw effToDouble widgets fndataTVs@(fadataTV, fndataTV) stateTV =
-    do
-    -- create canvas:
-    canvas <- Gtk.drawingAreaNew
-    -- set canvas properties:
---    Gtk.onRealize canvas $
---        do
-----        Gtk.widgetModifyBg canvas Gtk.StateNormal 
-----        Gtk.set canvas []
---        return () 
-    -- open font for labels:
-    let font = () -- a dummy
-    -- set the canvas repaint handler:
-    Gtk.onExpose canvas $ \ event ->
-        do
-        (fndatas, state) <- atomically $
-            do
-            fadata <- readTVar fadataTV
-            fndata <- readTVar fndataTV
-            state <- readTVar stateTV
-            return ((fadata, fndata), state)  
-        repaintCanvas sampleF effDraw effToDouble canvas font fndatas state
---    Gtk.timeoutAdd (Gtk.widgetQueueDraw canvas >> return True) 500 >> return ()
-    -- plug the canvas in the GUI:
-    Gtk.set (canvasAlignment widgets)
-        [ Gtk.containerChild := canvas ]
-    return $ widgets { canvas = canvas }
-    
-repaintCanvas ::
-    (CairoDrawableFn f,
-     HasDomainBox f,
-     ArithUpDn.Convertible (Domain f) Double,
-     Show (Domain f))
-    =>
-    f ->
-    (CairoDrawFnEffortIndicator f) ->
-    (ArithUpDn.ConvertEffortIndicator (Domain f) Double) ->
-    Gtk.DrawingArea ->
---    FTGL.Font ->
-    () ->
-    ((FnData f),
-     FnMetaData f) ->
-    (FnViewState f) ->
-    IO Bool
-repaintCanvas (sampleF :: f) effDraw effToDouble da _font (fndata, fnmeta) state =
-    do
-    putStrLn "repaintCanvas: starting"
-    drawWin <- Gtk.widgetGetDrawWindow da
-    (wi,hi) <- Gtk.widgetGetSize da
-    let w = realToFrac wi; h = realToFrac hi
-    Gtk.renderWithDrawable drawWin $
-        do
---        background w h
-        -- draw outlines of all function enclosures: 
-        mapM_ (drawFn w h) $ collectFns fnsActive fns fnsColours 
---    putStrLn "repaintCanvas: done"
-    return True
-    where
---    background w h = 
---        do
---        moveTo 0 0
---        mapM_ (uncurry lineTo) [(w,0),(w,h),(0,h),(0,0)]
---        setSourceRGBA 0.8 0.8 0.8 1 -- background colour
---        fill
-    plotParams = favstPlotParams state
-    fnsActive = concat $ favstActiveFns state
-    fnsColours = concat $ dataFnColours fnmeta
-    fns = concat $ dataFns fndata
-    
-    collectFns [] _ _ = []
-    collectFns (False:restActive) (_:restFns) (_:restColours) = 
-        collectFns restActive restFns restColours
-    collectFns (True:restActive) (fn:restFns) (col:restColours) = 
-        (fn, col) : (collectFns restActive restFns restColours)
-    
-    drawFn ::
-        Double -> Double ->
-        (f, ColourRGBA) ->
-        Render ()
-    drawFn wi hi (fn, color@(r,g,b,a)) =
-        cairoDrawFn effDraw plotParams (toScreenCoords wi hi) (Just color) (Just (r,g,b,0.1)) fn
-        where
-        _ = [sampleF, fn]
-    toScreenCoords ::
-        Double -> Double ->
-        (Domain f, Domain f) ->
-        (Double, Double)        
-    toScreenCoords w h (xUnit,yUnit) =
-        (w*xUnitD,h*(1-yUnitD)) -- Cairo's origin is the top left corner 
-        where
-        _ = [sampleDom, xUnit, yUnit]
-        Just xUnitD = ArithUpDn.convertUpEff effToDouble xUnit
-        Just yUnitD = ArithUpDn.convertUpEff effToDouble yUnit
-    sampleDom = getSampleDomValue sampleF
-
-
 setHandlers :: 
-    (ArithInOut.RoundedReal (Domain f),
+    (CairoDrawableFn f,
+     ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
      HasEvalOps f (Domain f), 
      Show f, Show (Domain f))
     =>
     f {-^ sample value -} ->
+    (CairoDrawFnEffortIndicator f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
     EvalOpsEffortIndicator f (Domain f) ->
     Widgets -> 
@@ -220,8 +127,9 @@ setHandlers ::
     (TVar (FnData f), TVar (FnMetaData f)) -> 
     TVar (FnViewState f) -> 
     IO ()
-setHandlers (sampleF :: f) effReal effEval widgets dynWidgetsRef fndataTVs@(fndataTV, fnmetaTV) stateTV =
+setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataTVs@(fndataTV, fnmetaTV) stateTV =
     do
+    setHandlerExportPDFButton
     setHandlerPrintTXTButton
     setHandlerDefaultEvalPointButton
     setHandlerEvalPointEntry
@@ -408,17 +316,6 @@ setHandlers (sampleF :: f) effReal effEval widgets dynWidgetsRef fndataTVs@(fnda
                 return False
         return () -- TODO
             
-    setHandlerPrintTXTButton =
-        Gtk.onClicked (printTXTButton widgets) $
-            do
-            (state, FnData fas) <- 
-                atomically $
-                    do
-                    state <- readTVar stateTV
-                    fas <- readTVar fndataTV
-                    return (state, fas)
-            putStrLn $
-                unlines $ map show $ fas
     setHandlerDefaultEvalPointButton =
         Gtk.onClicked (defaultEvalPointButton widgets) $
             do
@@ -456,6 +353,59 @@ setHandlers (sampleF :: f) effReal effEval widgets dynWidgetsRef fndataTVs@(fnda
             -- update the values for the new point:  
             updateValueDisplayTV effFromDouble effEval widgets dynWidgetsRef fndataTVs stateTV
 
-    
+    setHandlerPrintTXTButton =
+        Gtk.onClicked (printTXTButton widgets) $
+            do
+            (state, FnData fns) <- 
+                atomically $
+                    do
+                    state <- readTVar stateTV
+                    fns <- readTVar fndataTV
+                    return (state, fns)
+            putStrLn $
+                unlines $ map show $ fns
 
+    setHandlerExportPDFButton =
+        Gtk.onClicked (exportPDFButton widgets) $
+            do
+            (state, FnData fns, fnmeta) <- 
+                atomically $
+                    do
+                    state <- readTVar stateTV
+                    fndata <- readTVar fndataTV
+                    fnmeta <- readTVar fnmetaTV
+                    return (state, fndata, fnmeta)
+            let fnsActive = concat $ favstActiveFns state
+            let plotParams = favstPlotParams state
+            let fnsColours = concat $ dataFnColours fnmeta
+            maybeFilepath <- letUserChooseFileToSaveInto "PDF" "pdf"
+            case maybeFilepath of
+                Just filepath ->
+                    withPDFSurface filepath w h $ \ surface ->
+                        renderWith surface $
+                            drawFunctions sampleF effDraw effToDouble plotParams w h fnsActive (concat fns) fnsColours
+                _ -> return ()
+            where
+--            filepath = "/t/FnView.pdf" -- TODO: ask user
+            w = 360 :: Double -- in 1/72 inch TODO: ask user
+            h = 360 :: Double -- in 1/72 inch TODO: ask user
+
+
+letUserChooseFileToSaveInto formatName extension =
+    do
+    chooser <- Gtk.fileChooserDialogNew 
+        (Just $ "Save a plot in " ++ formatName) 
+        Nothing -- no parent window specified 
+        Gtk.FileChooserActionSave 
+        [("Cancel", Gtk.ResponseCancel),
+         ("Save as " ++ formatName, Gtk.ResponseAccept)]
+    filter <- Gtk.fileFilterNew
+    Gtk.fileFilterAddPattern filter $ "*." ++ extension
+    Gtk.fileChooserSetFilter chooser filter
+    response <- Gtk.dialogRun chooser
+    case response of
+        Gtk.ResponseOk ->
+            Gtk.fileChooserGetFilename chooser
+        _ -> return Nothing
+    
     

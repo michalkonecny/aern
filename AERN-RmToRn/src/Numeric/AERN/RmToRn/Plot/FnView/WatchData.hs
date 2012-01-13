@@ -4,8 +4,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-    Module      :  Numeric.AERN.RmToRn.Plot.FnView.UpdateView
-    Description :  layout of the FnView widget
+    Module      :  Numeric.AERN.RmToRn.Plot.FnView.WatchData
+    Description :  dynamically respond to a change in the function data
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -14,9 +14,9 @@
     Portability :  portable
     
     Internal module for FnView.
-    Layout of the FnView widget. 
+    Dynamically respond to a change in the function data. 
 -}
-module Numeric.AERN.RmToRn.Plot.FnView.UpdateView
+module Numeric.AERN.RmToRn.Plot.FnView.WatchData
 --(
 --)
 where
