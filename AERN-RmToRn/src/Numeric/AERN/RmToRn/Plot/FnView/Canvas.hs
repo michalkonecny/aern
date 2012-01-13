@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ImplicitParams #-}
 #ifdef GLADE_DIR
 #else
 #define GLADE_DIR "./"
@@ -34,8 +35,10 @@ import Numeric.AERN.RmToRn.Plot.CairoDrawable (CairoDrawableFn(..))
 import Numeric.AERN.RmToRn.Domain
 --import Numeric.AERN.RmToRn.Evaluation
 
---import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
---import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+import Numeric.AERN.RealArithmetic.ExactOps
+
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
@@ -49,7 +52,7 @@ import qualified Graphics.UI.Gtk.Gdk.EventM as GdkEv
 
 import Control.Concurrent.STM -- as STM
 
-makeCanvas sampleF effDraw effToDouble widgets fndataTVs@(fadataTV, fndataTV) stateTV =
+makeCanvas sampleF effDraw effReal widgets fndataTVs@(fadataTV, fndataTV) stateTV =
     do
     -- create canvas:
     canvas <- Gtk.drawingAreaNew
@@ -70,7 +73,7 @@ makeCanvas sampleF effDraw effToDouble widgets fndataTVs@(fadataTV, fndataTV) st
             fndata <- readTVar fndataTV
             state <- readTVar stateTV
             return ((fadata, fndata), state)  
-        repaintCanvas sampleF effDraw effToDouble canvas font fndatas state
+        repaintCanvas sampleF effDraw effReal canvas font fndatas state
 --    Gtk.timeoutAdd (Gtk.widgetQueueDraw canvas >> return True) 500 >> return ()
     -- plug the canvas in the GUI:
     Gtk.set (canvasAlignment widgets)
@@ -79,13 +82,13 @@ makeCanvas sampleF effDraw effToDouble widgets fndataTVs@(fadataTV, fndataTV) st
     
 repaintCanvas ::
     (CairoDrawableFn f,
+     ArithInOut.RoundedReal (Domain f),
      HasDomainBox f,
-     ArithUpDn.Convertible (Domain f) Double,
      Show (Domain f))
     =>
     f ->
     (CairoDrawFnEffortIndicator f) ->
-    (ArithUpDn.ConvertEffortIndicator (Domain f) Double) ->
+    (ArithInOut.RoundedRealEffortIndicator (Domain f)) ->
     Gtk.DrawingArea ->
 --    FTGL.Font ->
     () ->
@@ -93,7 +96,7 @@ repaintCanvas ::
      FnMetaData f) ->
     (FnViewState f) ->
     IO Bool
-repaintCanvas (sampleF :: f) effDraw effToDouble da _font (fndata, fnmeta) state =
+repaintCanvas (sampleF :: f) effDraw effReal da _font (fndata, fnmeta) state =
     do
 --    putStrLn "repaintCanvas: starting"
     drawWin <- Gtk.widgetGetDrawWindow da
@@ -103,41 +106,47 @@ repaintCanvas (sampleF :: f) effDraw effToDouble da _font (fndata, fnmeta) state
         do
 --        background w h
         -- draw outlines of all function enclosures:
-        drawFunctions sampleF effDraw effToDouble plotParams w h fnsActive fns fnsStyles
+        drawFunctions sampleF effDraw effReal canvasParams state w h fnsActive fns fnsStyles
 --    putStrLn "repaintCanvas: done"
     return True
     where
---    background w h = 
---        do
---        moveTo 0 0
---        mapM_ (uncurry lineTo) [(w,0),(w,h),(0,h),(0,0)]
---        setSourceRGBA 0.8 0.8 0.8 1 -- background colour
---        fill
-    plotParams = favstPlotParams state
+    canvasParams = favstCanvasParams state
     fnsActive = concat $ favstActiveFns state
     fnsStyles = concat $ dataFnStyles fnmeta
     fns = concat $ dataFns fndata
     
 drawFunctions ::
     (CairoDrawableFn f,
+     ArithInOut.RoundedReal (Domain f),
      HasDomainBox f,
-     ArithUpDn.Convertible (Domain f) Double,
      Show (Domain f))
     =>
     f ->
     (CairoDrawFnEffortIndicator f) ->
-    (ArithUpDn.ConvertEffortIndicator (Domain f) Double) ->
-    PlotParams (Domain f) ->
+    (ArithInOut.RoundedRealEffortIndicator (Domain f)) ->
+    CanvasParams (Domain f) ->
+    FnViewState f ->
     Double -> Double ->
     [Bool] ->
     [f] ->
     [FnPlotStyle] ->
     Render ()
-drawFunctions (sampleF :: f) effDraw effToDouble plotParams w h fnsActive fns fnsStyles =
+drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fns fnsStyles =
     do
+    background
     mapM_ drawFn $ collectFns fnsActive fns fnsStyles
-    drawAxisLabels
+    drawAxes
+    drawSampleValues
     where
+    background =
+        case cnvprmBackgroundColour canvasParams of
+            Just (r,g,b,a) ->
+                do
+                moveTo 0 0
+                mapM_ (uncurry lineTo) [(w,0),(w,h),(0,h),(0,0)]
+                setSourceRGBA r g b a
+                fill
+    
     collectFns [] _ _ = []
     collectFns (False:restActive) (_:restFns) (_:restStyles) = 
         collectFns restActive restFns restStyles
@@ -148,11 +157,43 @@ drawFunctions (sampleF :: f) effDraw effToDouble plotParams w h fnsActive fns fn
         (f, FnPlotStyle) ->
         Render ()
     drawFn (fn, style) =
-        cairoDrawFn effDraw plotParams toScreenCoords style fn
+        cairoDrawFn effDraw canvasParams toScreenCoords style fn
         
-    drawAxisLabels =
+    drawAxes 
+        | cnvprmShowAxes canvasParams =
+            do
+            return () -- TODO
+        | otherwise = return ()
+    drawSampleValues =
+        case cnvprmShowSampleValuesFontSize canvasParams of
+            Just fontSize ->
+                do
+                setFontSize fontSize
+                mapM_ showPt xPts
+                mapM_ showPt yPts
+                return ()
+            _ -> return ()
+
+    showPt (pt,val) =
         do
-        return ()
+        uncurry moveTo $ toScreenCoords pt
+        showText $ show $ val
+    yPts = map translYtoPt $ pickAFewDyadicBetween valLO valHI
+    xPts = map translXtoPt $ pickAFewDyadicBetween domLO domHI
+    translXtoPt x = ((xUnit, little), x)
+        where
+        (xUnit,_) = translateToCoordSystem effReal coorSystem (x,x)
+    translYtoPt y = ((little, yUnit), y)
+        where
+        (_,yUnit) = translateToCoordSystem effReal coorSystem (y,y)
+    pickAFewDyadicBetween a b =
+        let ?addInOutEffort = effAdd in
+        [a <+> little,b <-> little] -- TODO: find dyadic scale that has 2-3 values here
+
+    (valLO,valHI,domLO,domHI) = getVisibleDomExtents coorSystem 
+    _ = [valLO,valHI,domLO,domHI,sampleDom,little]
+    little =
+        ArithInOut.convertOutEff effFromDouble $ (0.5^4 :: Double)
     
     toScreenCoords ::
         (Domain f, Domain f) ->
@@ -163,6 +204,12 @@ drawFunctions (sampleF :: f) effDraw effToDouble plotParams w h fnsActive fns fn
         _ = [sampleDom, xUnit, yUnit]
         Just xUnitD = ArithUpDn.convertUpEff effToDouble xUnit
         Just yUnitD = ArithUpDn.convertUpEff effToDouble yUnit
+
+    coorSystem = cnvprmCoordSystem canvasParams
     sampleDom = getSampleDomValue sampleF
+    effToDouble = ArithInOut.rrEffortToDouble sampleDom effReal
+    effFromDouble = ArithInOut.rrEffortFromDouble sampleDom effReal
+    effAdd =
+        ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effReal
 
 

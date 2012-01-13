@@ -40,7 +40,7 @@ data FnViewState f =
     {
         favstActiveFns :: [[Bool]],
         favstTrackingDefaultEvalPt :: Bool,
-        favstPlotParams :: PlotParams (Domain f),
+        favstCanvasParams :: CanvasParams (Domain f),
         favstZoomPercent :: Double,
         favstPanCentre :: (Domain f, Domain f) 
     }
@@ -56,7 +56,7 @@ initState effReal (_, fnmeta) =
     {
         favstActiveFns = map (map $ const True) $ dataFnNames fnmeta,
         favstTrackingDefaultEvalPt = True,
-        favstPlotParams = dataDefaultPlotParams fnmeta,
+        favstCanvasParams = dataDefaultCanvasParams fnmeta,
         favstZoomPercent = defaultZoom,
         favstPanCentre = getDefaultCentre effReal fnmeta
     }
@@ -73,9 +73,9 @@ updateZoomPanCentreCoordSystem ::
 updateZoomPanCentreCoordSystem zoomPercent panCentre coordSystem state = 
     state 
     { 
-        favstPlotParams = 
-            (favstPlotParams state) 
-                { pltprmCoordSystem = coordSystem },
+        favstCanvasParams = 
+            (favstCanvasParams state) 
+                { cnvprmCoordSystem = coordSystem },
         favstZoomPercent = zoomPercent,
         favstPanCentre = panCentre
     }
@@ -90,14 +90,14 @@ updatePanCentreCoordSystem = updateZoomPanCentreCoordSystem defaultZoom
 updateZoomPercentAndFnExtents effFromDouble zoomPercent fnExtents state =
     state
     {
-        favstPlotParams = 
-            (favstPlotParams state) 
-                { pltprmCoordSystem = newCoordSystem },
+        favstCanvasParams = 
+            (favstCanvasParams state) 
+                { cnvprmCoordSystem = newCoordSystem },
         favstZoomPercent = zoomPercent
     }
     where
     newCoordSystem =
-        case pltprmCoordSystem (favstPlotParams state) of
+        case cnvprmCoordSystem (favstCanvasParams state) of
             csys@(CoordSystemLogSqueeze _) -> 
                 csys
             CoordSystemLinear _ ->
@@ -114,7 +114,7 @@ updateCentreByRatio ::
     FnViewState f -> 
     FnViewState f
 updateCentreByRatio effReal (ratX, ratY) state =
-    case pltprmCoordSystem (favstPlotParams state) of
+    case cnvprmCoordSystem (favstCanvasParams state) of
         CoordSystemLogSqueeze _ -> state
         CoordSystemLinear (Rectangle hi lo l r) ->
 --            unsafePrint (
@@ -130,9 +130,9 @@ updateCentreByRatio effReal (ratX, ratY) state =
 --            ) $ 
             state
             {
-                favstPlotParams = 
-                    (favstPlotParams state) 
-                        { pltprmCoordSystem = coordSystem },
+                favstCanvasParams = 
+                    (favstCanvasParams state) 
+                        { cnvprmCoordSystem = coordSystem },
                 favstPanCentre = (shiftX cX, shiftY cY)
             }
             where

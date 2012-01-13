@@ -254,7 +254,7 @@ updateZoomWidgets toDbl widgets state =
     cX = toDbl cXDF
     cY = toDbl cYDF
     (cXDF,cYDF) = favstPanCentre state
-    coordSystem = pltprmCoordSystem $ favstPlotParams state
+    coordSystem = cnvprmCoordSystem $ favstCanvasParams state
 
 {-|
     Reconfigure the GUI to show variable names appropriate

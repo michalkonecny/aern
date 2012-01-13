@@ -91,20 +91,20 @@ cairoDrawFnFromEval ::
     )
     =>
     CairoDrawEffortIndicatorFnFromEval f ->
-    PlotParams (Domain f) ->
+    CanvasParams (Domain f) ->
     ((Domain f, Domain f) -> (Double, Double)) ->
     FnPlotStyle ->
     f ->
     Render ()
 cairoDrawFnFromEval 
         eff@(effEval, (effReal, effGetE, effConsistency))
-        plotParams toScreenCoords 
+        canvasParams toScreenCoords 
         style fn 
     = 
 --    unsafePrint (
 --        "cairoDrawFnFromEval: starting"
 --        ++ "\n dom = " ++ show dom
---        ++ "\n plotParams = " ++ show plotParams
+--        ++ "\n canvasParams = " ++ show canvasParams
 --    ) $ 
     case isAntiConsistentEff effConsistency visibleDom of
         Just False ->
@@ -195,9 +195,9 @@ cairoDrawFnFromEval
     dom =
         case toAscList dombox of [(_,dom)] -> dom
     dombox = getDomainBox fn
-    coordSystem = pltprmCoordSystem plotParams
-    segPerUnit = pltprmSegsPerUnit plotParams
---    activeDimensions = pltprmPlotDimensions plotParams
+    coordSystem = cnvprmCoordSystem canvasParams
+    segPerUnit = cnvprmSamplesPerUnit canvasParams
+--    activeDimensions = cnvprmPlotDimensions canvasParams
     
     sampleF = fn
     sampleDF = dom

@@ -93,7 +93,7 @@ new sampleF effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) maybeParentWi
     -- create most widgets:
     widgets <- loadGlade (FilePath.combine GLADE_DIR "FnView.glade")
     -- create plotting canvas:
-    widgets <- makeCanvas sampleF effDraw effToDouble widgets fndataTVs stateTV
+    widgets <- makeCanvas sampleF effDraw effReal widgets fndataTVs stateTV
     -- attach handlers to widgets
     Gtk.onDestroy (window widgets) $
         do
@@ -139,7 +139,7 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
     setHandlerZoomByMouse
     state <- atomically $ readTVar stateTV
     updateZoomWidgets toDbl widgets state
---    putStrLn $ "setHandlers: " ++ (show $ pltprmCoordSystem $ favstPlotParams state)
+--    putStrLn $ "setHandlers: " ++ (show $ cnvprmCoordSystem $ favstCanvasParams state)
     return ()
     where        
     toDbl :: (Domain f) -> Double
@@ -376,14 +376,14 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                     fnmeta <- readTVar fnmetaTV
                     return (state, fndata, fnmeta)
             let fnsActive = concat $ favstActiveFns state
-            let plotParams = favstPlotParams state
+            let canvasParams = favstCanvasParams state
             let fnsStyles = concat $ dataFnStyles fnmeta
             maybeFilepath <- letUserChooseFileToSaveInto "PDF" "pdf"
             case maybeFilepath of
                 Just filepath ->
                     withPDFSurface filepath w h $ \ surface ->
                         renderWith surface $
-                            drawFunctions sampleF effDraw effToDouble plotParams w h fnsActive (concat fns) fnsStyles
+                            drawFunctions sampleF effDraw effReal canvasParams state w h fnsActive (concat fns) fnsStyles
                 _ -> return ()
             where
 --            filepath = "/t/FnView.pdf" -- TODO: ask user
