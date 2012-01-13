@@ -176,20 +176,25 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fn
                 setFontSize fontSize
                 setSourceRGBA 0 0 0 1
                 setLineWidth 0.5
-                mapM_ (showPt (0,12)) xPts
-                mapM_ (showPt (12,0)) yPts
+                mapM_ (showPt True (0,12)) xPts
+                mapM_ (showPt False (12,0)) yPts
                 return ()
             _ -> return ()
 
-    showPt (offX, offY) (pt,text) =
+    showPt isX (offX, offY) (pt,text) =
         do
-        -- draw a small cross at the point:  
-        moveTo (pX - 2) pY
-        lineTo (pX + 2) pY
-        stroke
-        moveTo pX (pY - 2)
-        lineTo pX (pY + 2)
-        stroke
+        -- draw a small line at the point:
+        case isX of
+            True ->
+                do  
+                moveTo pX (pY - 5)
+                lineTo pX (pY + 5)
+                stroke
+            False ->
+                do  
+                moveTo (pX - 5) pY
+                lineTo (pX + 5) pY
+                stroke
         -- work out the size of the text:
         extents <- textExtents text
         let textWidthHalf = (textExtentsWidth extents)/2  

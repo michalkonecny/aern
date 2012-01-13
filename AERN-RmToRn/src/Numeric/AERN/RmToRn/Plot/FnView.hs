@@ -129,14 +129,17 @@ setHandlers ::
     IO ()
 setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataTVs@(fndataTV, fnmetaTV) stateTV =
     do
-    setHandlerExportPDFButton
-    setHandlerPrintTXTButton
-    setHandlerDefaultEvalPointButton
-    setHandlerEvalPointEntry
     setHandlerCoordSystem
     setHandlerZoomAndPanEntries
     setHandlerPanByMouse
     setHandlerZoomByMouse
+    setHandlerDefaultEvalPointButton
+    setHandlerEvalPointEntry
+    setHandlerPrintTXTButton
+    setHandlerExportPDFButton
+    setHandlerExportSVGButton
+    setHandlerExportPNGButton
+
     state <- atomically $ readTVar stateTV
     updateZoomWidgets toDbl widgets state
 --    putStrLn $ "setHandlers: " ++ (show $ cnvprmCoordSystem $ favstCanvasParams state)
@@ -386,9 +389,60 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                             drawFunctions sampleF effDraw effReal canvasParams state w h fnsActive (concat fns) fnsStyles
                 _ -> return ()
             where
---            filepath = "/t/FnView.pdf" -- TODO: ask user
             w = 360 :: Double -- in 1/72 inch TODO: ask user
             h = 360 :: Double -- in 1/72 inch TODO: ask user
+
+    setHandlerExportSVGButton =
+        Gtk.onClicked (exportPDFButton widgets) $
+            do
+            (state, FnData fns, fnmeta) <- 
+                atomically $
+                    do
+                    state <- readTVar stateTV
+                    fndata <- readTVar fndataTV
+                    fnmeta <- readTVar fnmetaTV
+                    return (state, fndata, fnmeta)
+            let fnsActive = concat $ favstActiveFns state
+            let canvasParams = favstCanvasParams state
+            let fnsStyles = concat $ dataFnStyles fnmeta
+            maybeFilepath <- letUserChooseFileToSaveInto "SVG" "svg"
+            case maybeFilepath of
+                Just filepath ->
+                    withSVGSurface filepath w h $ \ surface ->
+                        renderWith surface $
+                            drawFunctions sampleF effDraw effReal canvasParams state w h fnsActive (concat fns) fnsStyles
+                _ -> return ()
+            where
+            w = 360 :: Double -- in 1/72 inch TODO: ask user
+            h = 360 :: Double -- in 1/72 inch TODO: ask user
+
+    setHandlerExportPNGButton =
+        Gtk.onClicked (exportPNGButton widgets) $
+            do
+            (state, FnData fns, fnmeta) <- 
+                atomically $
+                    do
+                    state <- readTVar stateTV
+                    fndata <- readTVar fndataTV
+                    fnmeta <- readTVar fnmetaTV
+                    return (state, fndata, fnmeta)
+            let fnsActive = concat $ favstActiveFns state
+            let canvasParams = favstCanvasParams state
+            let fnsStyles = concat $ dataFnStyles fnmeta
+            maybeFilepath <- letUserChooseFileToSaveInto "PNG" "png"
+            case maybeFilepath of
+                Just filepath ->
+                    withImageSurface FormatARGB32 wI hI $ \ surface ->
+                        do
+                        renderWith surface $
+                            drawFunctions sampleF effDraw effReal canvasParams state wD hD fnsActive (concat fns) fnsStyles
+                        surfaceWriteToPNG surface filepath
+                _ -> return ()
+            where
+            wI = 1024 :: Int -- in pixels TODO: ask user
+            hI = 1024 :: Int -- in pixels TODO: ask user
+            wD = realToFrac wI
+            hD = realToFrac hI
 
 
 letUserChooseFileToSaveInto formatName extension =

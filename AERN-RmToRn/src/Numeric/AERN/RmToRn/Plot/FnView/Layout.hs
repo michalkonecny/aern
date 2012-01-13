@@ -50,7 +50,7 @@ loadGlade gladeFileName =
     defaultZoomPanButton <- Glade.xmlGetWidget xml Gtk.castToButton "defaultZoomPanButton1"
     centreXEntry <- Glade.xmlGetWidget xml Gtk.castToEntry "centreXEntry1"
     centreYEntry <- Glade.xmlGetWidget xml Gtk.castToEntry "centreYEntry1"
-    exportJPGButton <- Glade.xmlGetWidget xml Gtk.castToButton "exportJPGButton1"
+    exportPNGButton <- Glade.xmlGetWidget xml Gtk.castToButton "exportPNGButton1"
     exportSVGButton <- Glade.xmlGetWidget xml Gtk.castToButton "exportSVGButton1"
     exportPDFButton <- Glade.xmlGetWidget xml Gtk.castToButton "exportPDFButton1"
     printTXTButton <- Glade.xmlGetWidget xml Gtk.castToButton "printTXTButton1"
@@ -67,7 +67,7 @@ loadGlade gladeFileName =
             defaultZoomPanButton = defaultZoomPanButton,
             centreXEntry = centreXEntry,
             centreYEntry = centreYEntry,
-            exportJPGButton = exportJPGButton,
+            exportPNGButton = exportPNGButton,
             exportSVGButton = exportSVGButton,
             exportPDFButton = exportPDFButton,
             printTXTButton = printTXTButton,
@@ -88,7 +88,7 @@ data Widgets =
         defaultZoomPanButton :: Gtk.Button,
         centreXEntry :: Gtk.Entry,
         centreYEntry :: Gtk.Entry,
-        exportJPGButton :: Gtk.Button,
+        exportPNGButton :: Gtk.Button,
         exportSVGButton :: Gtk.Button,
         exportPDFButton :: Gtk.Button,
         printTXTButton :: Gtk.Button,
