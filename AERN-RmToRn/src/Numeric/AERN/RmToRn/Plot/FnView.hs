@@ -158,7 +158,7 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
         resetZoomPanFromCoordSystem =
             do
             maybeCSysIx <- Gtk.comboBoxGetActive (coorSystemCombo widgets)
-            putStrLn $ "resetZoomPanFromCoordSystem: maybeCSysIx = " ++ show maybeCSysIx
+--            putStrLn $ "resetZoomPanFromCoordSystem: maybeCSysIx = " ++ show maybeCSysIx
             case maybeCSysIx of
                 -1 -> return ()
                 ix ->
@@ -377,13 +377,13 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                     return (state, fndata, fnmeta)
             let fnsActive = concat $ favstActiveFns state
             let plotParams = favstPlotParams state
-            let fnsColours = concat $ dataFnColours fnmeta
+            let fnsStyles = concat $ dataFnStyles fnmeta
             maybeFilepath <- letUserChooseFileToSaveInto "PDF" "pdf"
             case maybeFilepath of
                 Just filepath ->
                     withPDFSurface filepath w h $ \ surface ->
                         renderWith surface $
-                            drawFunctions sampleF effDraw effToDouble plotParams w h fnsActive (concat fns) fnsColours
+                            drawFunctions sampleF effDraw effToDouble plotParams w h fnsActive (concat fns) fnsStyles
                 _ -> return ()
             where
 --            filepath = "/t/FnView.pdf" -- TODO: ask user

@@ -93,14 +93,13 @@ cairoDrawFnFromEval ::
     CairoDrawEffortIndicatorFnFromEval f ->
     PlotParams (Domain f) ->
     ((Domain f, Domain f) -> (Double, Double)) ->
-    Maybe ColourRGBA {-^ outline colour -} ->
-    Maybe ColourRGBA {-^ fill colour -} ->
+    FnPlotStyle ->
     f ->
     Render ()
 cairoDrawFnFromEval 
         eff@(effEval, (effReal, effGetE, effConsistency))
         plotParams toScreenCoords 
-        maybeOutlineColour maybeFillColour fn 
+        style fn 
     = 
 --    unsafePrint (
 --        "cairoDrawFnFromEval: starting"
@@ -118,7 +117,7 @@ cairoDrawFnFromEval
             plotEnclosure =
                 do
                 -- fill the enclosure first:
-                case maybeFillColour of
+                case styleFillColour style of
                     Just (r,g,b,a) ->
                         do 
                         setSourceRGBA r g b a
@@ -126,11 +125,12 @@ cairoDrawFnFromEval
                         fill
                     _ -> return ()
                 -- then draw the outline:
-                case maybeOutlineColour of
+                case styleOutlineColour style of
                     Just (r,g,b,a) ->
                         do 
                         setSourceRGBA r g b a
                         enclosureOutline
+                        setLineWidth $ styleOutlineThickness style
                         stroke
                     _ -> return ()
                 where

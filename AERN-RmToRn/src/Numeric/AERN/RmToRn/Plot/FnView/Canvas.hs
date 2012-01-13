@@ -103,7 +103,7 @@ repaintCanvas (sampleF :: f) effDraw effToDouble da _font (fndata, fnmeta) state
         do
 --        background w h
         -- draw outlines of all function enclosures:
-        drawFunctions sampleF effDraw effToDouble plotParams w h fnsActive fns fnsColours
+        drawFunctions sampleF effDraw effToDouble plotParams w h fnsActive fns fnsStyles
 --    putStrLn "repaintCanvas: done"
     return True
     where
@@ -115,7 +115,7 @@ repaintCanvas (sampleF :: f) effDraw effToDouble da _font (fndata, fnmeta) state
 --        fill
     plotParams = favstPlotParams state
     fnsActive = concat $ favstActiveFns state
-    fnsColours = concat $ dataFnColours fnmeta
+    fnsStyles = concat $ dataFnStyles fnmeta
     fns = concat $ dataFns fndata
     
 drawFunctions ::
@@ -131,31 +131,33 @@ drawFunctions ::
     Double -> Double ->
     [Bool] ->
     [f] ->
-    [ColourRGBA] ->
+    [FnPlotStyle] ->
     Render ()
-drawFunctions (sampleF :: f) effDraw effToDouble plotParams w h fnsActive fns fnsColours =
+drawFunctions (sampleF :: f) effDraw effToDouble plotParams w h fnsActive fns fnsStyles =
     do
-    mapM_ (drawFn w h) $ collectFns fnsActive fns fnsColours
+    mapM_ drawFn $ collectFns fnsActive fns fnsStyles
+    drawAxisLabels
     where
     collectFns [] _ _ = []
-    collectFns (False:restActive) (_:restFns) (_:restColours) = 
-        collectFns restActive restFns restColours
-    collectFns (True:restActive) (fn:restFns) (col:restColours) = 
-        (fn, col) : (collectFns restActive restFns restColours)
+    collectFns (False:restActive) (_:restFns) (_:restStyles) = 
+        collectFns restActive restFns restStyles
+    collectFns (True:restActive) (fn:restFns) (col:restStyles) = 
+        (fn, col) : (collectFns restActive restFns restStyles)
     
     drawFn ::
-        Double -> Double ->
-        (f, ColourRGBA) ->
+        (f, FnPlotStyle) ->
         Render ()
-    drawFn wi hi (fn, color@(r,g,b,a)) =
-        cairoDrawFn effDraw plotParams (toScreenCoords wi hi) (Just color) (Just (r,g,b,0.1)) fn
-        where
-        _ = [sampleF, fn]
+    drawFn (fn, style) =
+        cairoDrawFn effDraw plotParams toScreenCoords style fn
+        
+    drawAxisLabels =
+        do
+        return ()
+    
     toScreenCoords ::
-        Double -> Double ->
         (Domain f, Domain f) ->
         (Double, Double)        
-    toScreenCoords w h (xUnit,yUnit) =
+    toScreenCoords (xUnit,yUnit) =
         (w*xUnitD,h*(1-yUnitD)) -- Cairo's origin is the top left corner 
         where
         _ = [sampleDom, xUnit, yUnit]
