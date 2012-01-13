@@ -403,9 +403,10 @@ letUserChooseFileToSaveInto formatName extension =
     Gtk.fileFilterAddPattern filter $ "*." ++ extension
     Gtk.fileChooserSetFilter chooser filter
     response <- Gtk.dialogRun chooser
+    maybeFilename <- Gtk.fileChooserGetFilename chooser
+    Gtk.widgetDestroy chooser
     case response of
-        Gtk.ResponseOk ->
-            Gtk.fileChooserGetFilename chooser
+        Gtk.ResponseAccept -> return maybeFilename
         _ -> return Nothing
     
     
