@@ -17,7 +17,7 @@ module Numeric.AERN.RmToRn.Plot.CairoDrawable
 )
 where
 
-import Numeric.AERN.RmToRn.Plot.Params (PlotParams,FnPlotStyle)
+import Numeric.AERN.RmToRn.Plot.Params (CanvasParams,FnPlotStyle)
 
 import Numeric.AERN.RmToRn.Domain
 
@@ -34,7 +34,7 @@ class
      -}
     cairoDrawFn ::
         CairoDrawFnEffortIndicator f -> 
-        PlotParams (Domain f) ->
+        CanvasParams (Domain f) ->
         ((Domain f, Domain f) -> (Double, Double)) {-^ conversion from [0,1]^2 (origin bottom left) to screen coords -} ->
         FnPlotStyle ->
         f -> 

@@ -61,7 +61,7 @@ data FnMetaData f =
         dataFnStyles :: [[FnPlotStyle]],
         dataDefaultEvalPoint :: Domain f, -- ^ show the values of the functions at this point
         dataDefaultEvalPointName :: String, -- ^ label to put on the button
-        dataDefaultPlotParams :: PlotParams (Domain f)
+        dataDefaultCanvasParams :: CanvasParams (Domain f)
     }
     
 instance 
@@ -82,7 +82,7 @@ instance
         &&
         equalComp dataDefaultEvalPointName
         &&
-        equalComp dataDefaultPlotParams
+        equalComp dataDefaultCanvasParams
         &&
         (and $ map equalCompDF [dataDomL, dataDomR, dataValLO, dataValHI, dataDefaultEvalPoint])
         where
@@ -124,7 +124,7 @@ defaultFnMetaData sampleF =
         dataFnStyles = [[defaultFnPlotStyle]], -- black
         dataDefaultEvalPoint = zero sampleDom,
         dataDefaultEvalPointName = "default",
-        dataDefaultPlotParams = defaultPlotParams sampleDom
+        dataDefaultCanvasParams = defaultCanvasParams sampleDom
     }
     where
     sampleDom = getSampleDomValue sampleF
