@@ -22,7 +22,7 @@ module Numeric.AERN.RmToRn.Plot.FnView.FnData
 --)
 where
 
-import Numeric.AERN.RmToRn.Plot.Params (ColourRGBA,PlotParams(..),defaultPlotParams)
+import Numeric.AERN.RmToRn.Plot.Params
 
 import Numeric.AERN.RmToRn.Domain
 
@@ -58,7 +58,7 @@ data FnMetaData f =
         dataValHI :: Domain f, -- ^ upper bounds for values of all functions
         dataFnNames :: [[String]], -- ^ a name for each function
         dataFnGroupNames :: [String],
-        dataFnColours :: [[ColourRGBA]],
+        dataFnStyles :: [[FnPlotStyle]],
         dataDefaultEvalPoint :: Domain f, -- ^ show the values of the functions at this point
         dataDefaultEvalPointName :: String, -- ^ label to put on the button
         dataDefaultPlotParams :: PlotParams (Domain f)
@@ -78,7 +78,7 @@ instance
         &&
         equalComp dataFnNames
         &&
-        equalComp dataFnColours
+        equalComp dataFnStyles
         &&
         equalComp dataDefaultEvalPointName
         &&
@@ -121,7 +121,7 @@ defaultFnMetaData sampleF =
         dataValHI = one sampleDom,
         dataFnNames = [["fn1"]],
         dataFnGroupNames = ["group1"],
-        dataFnColours = [[(0,0,0,1)]], -- black
+        dataFnStyles = [[defaultFnPlotStyle]], -- black
         dataDefaultEvalPoint = zero sampleDom,
         dataDefaultEvalPointName = "default",
         dataDefaultPlotParams = defaultPlotParams sampleDom

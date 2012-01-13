@@ -15,6 +15,8 @@
 -}
 module Numeric.AERN.RmToRn.Plot.Params 
 (
+    FnPlotStyle(..),
+    defaultFnPlotStyle,
     ColourRGBA,
     PlotParams(..),
     defaultPlotParams,
@@ -41,7 +43,25 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 --import Data.Binary
 
+data FnPlotStyle =
+    FnPlotStyle
+    {
+        styleOutlineColour :: Maybe ColourRGBA,
+        styleFillColour :: Maybe ColourRGBA,
+        styleOutlineThickness :: Double
+    }
+    deriving (Eq, Show)
+
 type ColourRGBA = (Double, Double, Double, Double)
+
+defaultFnPlotStyle =
+    FnPlotStyle
+    {
+        styleOutlineColour = Just (0,0,0,1), -- black
+        styleFillColour = Just (0,0,0,0.1), -- transparent black
+        styleOutlineThickness = 0.5
+    }
+
 
 data PlotParams t =
     PlotParams

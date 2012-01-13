@@ -83,7 +83,7 @@ dataWatchThread
         return ()
     action DataChangeMeta (fndata, fnmeta) state =
         do
-        putStrLn $ "DataChangeMeta"
+--        putStrLn $ "DataChangeMeta"
 --        putStrLn $ show $ dataFAs fndata
         updateFnWidgets toDbl widgets dynWidgetsRef fnmeta fndataTVs stateTV
         let initialisedState = initState effReal (fndata, fnmeta)
@@ -91,7 +91,7 @@ dataWatchThread
         updateView sampleF effReal effEval widgets dynWidgetsRef initialisedState (fndata, fnmeta)
     action DataChangeFn (fndata, fnmeta) state =
         do
-        putStrLn $ "DataChangeFn"
+--        putStrLn $ "DataChangeFn"
 --        putStrLn $ show $ dataFAs fndata
         case favstTrackingDefaultEvalPt state of
             True -> 
@@ -103,7 +103,7 @@ dataWatchThread
         updateView sampleF effReal effEval widgets dynWidgetsRef state (fndata, fnmeta)
     action DataChangeDefaultEvalPoint (fndata, fnmeta) state =
         do
-        putStrLn $ "DataChangeDefaultEvalPoint"
+--        putStrLn $ "DataChangeDefaultEvalPoint"
         case favstTrackingDefaultEvalPt state of
             True ->
                 do
@@ -158,7 +158,7 @@ dataWatchThread
             domNameChanged = changed dataDomName
             resNamesChanged = changed dataFnNames
             fnNamesChanged = changed dataFnGroupNames 
-            fnColoursChanged = changed dataFnColours 
+            fnStylesChanged = changed dataFnStyles 
             evalPtChanged = changed (toDbl . dataDefaultEvalPoint)
     toDbl :: (Domain f) -> Double
     toDbl a = d
