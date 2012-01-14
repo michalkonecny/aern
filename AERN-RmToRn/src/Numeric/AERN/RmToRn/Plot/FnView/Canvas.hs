@@ -139,9 +139,9 @@ drawFunctions ::
 drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fns fnsStyles =
     do
     background
-    mapM_ drawFn $ collectFns fnsActive fns fnsStyles
     drawAxes
     drawSampleValues
+    mapM_ drawFn $ collectFns fnsActive fns fnsStyles
     where
     background =
         case cnvprmBackgroundColour canvasParams of
@@ -162,12 +162,19 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fn
         (f, FnPlotStyle) ->
         Render ()
     drawFn (fn, style) =
-        cairoDrawFn effDraw canvasParams toScreenCoords style fn
+        cairoDrawFn effDraw canvasParams toScreenCoordsFromUnit style fn
         
     drawAxes 
         | cnvprmShowAxes canvasParams =
             do
-            return () -- TODO
+            setSourceRGBA 0 0 0 1
+            setLineWidth 0.5
+            uncurry moveTo $ toScreenCoordsFromOrig (domLO,c0)  
+            uncurry lineTo $ toScreenCoordsFromOrig (domHI,c0)
+            stroke  
+            uncurry moveTo $ toScreenCoordsFromOrig (c0,valLO)  
+            uncurry lineTo $ toScreenCoordsFromOrig (c0,valHI)
+            stroke  
         | otherwise = return ()
     drawSampleValues =
         case cnvprmShowSampleValuesFontSize canvasParams of
@@ -176,13 +183,21 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fn
                 setFontSize fontSize
                 setSourceRGBA 0 0 0 1
                 setLineWidth 0.5
-                mapM_ (showPt True (0,12)) xPts
-                mapM_ (showPt False (12,0)) yPts
+                mapM_ (showPt True) xPts
+                mapM_ (showPt False) yPts
                 return ()
             _ -> return ()
 
-    showPt isX (offX, offY) (pt,text) =
+    showPt isX (pt,text) =
         do
+        -- work out the size of the text:
+        extents <- textExtents text
+        let textWidthHalf = (textExtentsWidth extents)/2  
+        let textHeight = textExtentsHeight extents
+        -- fix the base position of the label:
+        let (x,y) = toScreenCoordsFromUnit pt
+        let pX = if isX then x else x + textWidthHalf + 2
+        let pY = if isX then y - textHeight - 4 else y
         -- draw a small line at the point:
         case isX of
             True ->
@@ -195,35 +210,29 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fn
                 moveTo (pX - 5) pY
                 lineTo (pX + 5) pY
                 stroke
-        -- work out the size of the text:
-        extents <- textExtents text
-        let textWidthHalf = (textExtentsWidth extents)/2  
-        let textHeight = textExtentsHeight extents
         -- center the label below the cross:
         moveTo (pX - textWidthHalf) (pY + textHeight + 2)
         showText text
-        where
-        pX = x + offX
-        pY = y - offY
-        (x,y) = toScreenCoords pt
+        
     yPts = map translYtoPt $ pickAFewDyadicBetween sampleDom effReal valLO valHI
     xPts = map translXtoPt $ pickAFewDyadicBetween sampleDom effReal domLO domHI
-    translXtoPt (x, xText) = ((xUnit, little), xText)
+    translXtoPt (x, xText) = ((xUnit, c0), xText)
         where
         (xUnit,_) = translateToCoordSystem effReal coordSystem (x,x)
-    translYtoPt (y, yText) = ((little, yUnit), yText)
+    translYtoPt (y, yText) = ((c0, yUnit), yText)
         where
         (_,yUnit) = translateToCoordSystem effReal coordSystem (y,y)
 
     (valHI,valLO,domLO,domHI) = getVisibleDomExtents coordSystem 
-    _ = [valLO,valHI,domLO,domHI,sampleDom,little]
-    little =
-        ArithInOut.convertOutEff effFromDouble $ (0.5^4 :: Double)
+    _ = [valLO,valHI,domLO,domHI,sampleDom]
     
-    toScreenCoords ::
+    toScreenCoordsFromOrig =
+        toScreenCoordsFromUnit . translateToCoordSystem effReal coordSystem
+    
+    toScreenCoordsFromUnit ::
         (Domain f, Domain f) ->
         (Double, Double)        
-    toScreenCoords (xUnit,yUnit) =
+    toScreenCoordsFromUnit (xUnit,yUnit) =
         (w*xUnitD,h*(1-yUnitD)) -- Cairo's origin is the top left corner 
         where
         _ = [sampleDom, xUnit, yUnit]
@@ -231,6 +240,7 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fn
         Just yUnitD = ArithUpDn.convertUpEff effToDouble yUnit
 
     coordSystem = cnvprmCoordSystem canvasParams
+    c0 = zero sampleDom
     sampleDom = getSampleDomValue sampleF
     effToDouble = ArithInOut.rrEffortToDouble sampleDom effReal
     effFromDouble = ArithInOut.rrEffortFromDouble sampleDom effReal
