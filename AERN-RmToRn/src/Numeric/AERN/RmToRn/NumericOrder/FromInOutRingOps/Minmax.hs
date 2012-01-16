@@ -313,8 +313,11 @@ maxZeroDnUp
         where
         dInit = 
             let (<->) = ArithInOut.subtrOutEff effAddDF in
+--            let (</>|) = ArithInOut.mixedDivOutEff effDivDFI in
             let (<*>|) = ArithInOut.mixedMultOutEff effMultDFI in
-            (maxCUpAtC <-> c) <*>| (2 :: Int)
+            (maxCUpAtC <-> c)
+                  <*>| (2 :: Int)
+--                  </>| (2 :: Int)
         maxCUpAtC =
             evalOtherType (evalOpsOut effEvalOpsDF sampleF sampleDF) varC maxCUp
         varC = fromAscList [(var, c)]
@@ -344,6 +347,7 @@ maxZeroDnUp
     effDivTDF = ArithInOut.mxfldEffortDiv a c0 effFldTDF
     
     effMultDFI = ArithInOut.mxfldEffortMult sampleDF (1::Int) $ ArithInOut.rrEffortIntMixedField sampleDF effRealDF
+    effDivDFI = ArithInOut.mxfldEffortDiv sampleDF (1::Int) $ ArithInOut.rrEffortIntMixedField sampleDF effRealDF
 
 {-| compute an upper Bernstein approximation of the function max(x,c) over [0,1] -}
 hillbaseApproxUp :: 
@@ -394,7 +398,13 @@ hillbaseApproxUp effComp effRingF effIntFldF effRealDF x c n =
     effMultDF = ArithInOut.fldEffortMult sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
     effAddDF = ArithInOut.fldEffortAdd sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
 
-{-| compute a lower Bernstein approximation of the function max(c,x) over [0,1] -}
+{-| compute a lower Bernstein approximation of the function max(c,x) over [0,1] 
+    This needs to be done by choosing the control points somewhat below the exact
+    answer.  To work out how much below we search for a close-to-optimal parameter
+    for the hillbaseApproxDnD function.  We expect the @dInit@ value to be larger
+    than necessary.  First we recursively decrease this d until it below the safe limit.
+    Then we recursively increase it to make a little above the safe limit value. 
+-}
 hillbaseApproxDn :: 
     (HasConstFns f, HasProjections f, HasOne f, ArithInOut.RoundedRing f, 
      ArithInOut.RoundedMixedField f Int,
@@ -411,34 +421,48 @@ hillbaseApproxDn ::
     EvalOpsEffortIndicator f (Domain f) -> 
     f {-^ the variable @x@ to use in the result uni-variate polynomial -} ->
     Domain f {-^ @c@ the only non-smooth point of the approximated piece-wise linear function -} ->
-    Domain f {-^ @d@ initial value for the offset @d@ by which to translate the approximated fn down at point c -} ->
+    Domain f {-^ @dInit@ initial value for the offset @d@ by which to translate the approximated fn down at point c -} ->
     Int {-^ @n@ Bernstein approximation degree -} ->
     f
 hillbaseApproxDn effGetE effComp effRingF effIntFldF effRealDF effEvalOps x c dInit n =
-    findBelowCAtC approximations
+    let ?addInOutEffort = effAddDF in
+    let ?mixedMultInOutEffort = effMultDFDbl in
+    findDWithBelowCAtC $ findDWithAboveCAtC dInit
     where
-    approximations =
-        let ?addInOutEffort = effAddDF in
-        getApproxFrom dInit
+    findDWithAboveCAtC d =
+        let ?pCompareEffort = effComp in
+        case (fnAtCRE <=? c) of
+            Just False -> d
+            _ -> findDWithAboveCAtC newD
         where
-        getApproxFrom d =
-            (fnAtC, fn) : getApproxFrom newD
+        (_, fnAtCRE) =
+            RefOrd.getEndpointsOutEff effGetE fnAtC
+        fnAtC = evalOtherType (evalOpsOut effEvalOps sampleF sampleDF) varC fn
             where
-            fnAtC = evalOtherType (evalOpsOut effEvalOps sampleF sampleDF) varC fn
-            fn = hillDnD d
             varC = fromAscList [(var, c)]
-            (_, newD) = 
-                 RefOrd.getEndpointsOutEff effGetE $
-                    d <+> fnAtCMinusC <+> fnAtCMinusC 
+        fn = hillDnD d
+        (newD, _) = -- round downwards because we are trying to decrease d below safe limit
+             RefOrd.getEndpointsOutEff effGetE $
+                d <+> (fnAtCMinusC <*>| (1.25 :: Double)) -- get nearer the optimal value of d
+            where
             fnAtCMinusC = fnAtC <-> c
-    findBelowCAtC ((fnAtC, fn) : rest) =
+    findDWithBelowCAtC d =
         let ?pCompareEffort = effComp in
         case (fnAtCLE <=? c) of
             Just True -> fn
-            _ -> findBelowCAtC rest
+            _ -> findDWithBelowCAtC newD
         where
         (fnAtCLE,_) =
             RefOrd.getEndpointsOutEff effGetE fnAtC
+        fnAtC = evalOtherType (evalOpsOut effEvalOps sampleF sampleDF) varC fn
+            where
+            varC = fromAscList [(var, c)]
+        fn = hillDnD d
+        (_, newD) = -- round upwards because we are trying to increase d above safe limit
+             RefOrd.getEndpointsOutEff effGetE $
+                d <+> (fnAtCMinusC <*>| (1.25 :: Double)) -- get nearer the optimal value of d
+            where
+            fnAtCMinusC = fnAtC <-> c
     hillDnD = 
         hillbaseApproxDnD effComp effRingF effIntFldF effRealDF x c n
     
@@ -446,10 +470,12 @@ hillbaseApproxDn effGetE effComp effRingF effIntFldF effRealDF effEvalOps x c dI
     sampleF = x
     sampleDF = getSampleDomValue x
     effAddDF = ArithInOut.fldEffortAdd sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
+    effMultDFDbl = ArithInOut.mxfldEffortMult sampleDF (1::Double) $ ArithInOut.rrEffortDoubleMixedField sampleDF effRealDF
 
 {-| 
-  Compute an upper Bernstein approximation of the function @max(c-xd/c,x-(1-x)d/(1-c))@ over @[0,1]@,
-  which is a valid lower approximation of @max(c,x)@ when @d@ is large enough.
+  Compute an upper Bernstein approximation of the function @max(c-l-x(d-l)/c,x-r-(1-x)(d-r)/(1-c))@ over @[0,1]@,
+  which is a valid lower approximation of @max(c,x)@ when @l,d,r@ are large enough.
+  @l,d,r@ are the downwards offsets of the control points at @0,c,1@, respectively. 
 -}
 hillbaseApproxDnD :: 
     (HasConstFns f, HasProjections f, HasOne f, ArithInOut.RoundedRing f, 
@@ -472,14 +498,23 @@ hillbaseApproxDnD effComp effRingF effIntFldF effRealDF x c n d =
     let ?multInOutEffort = effMultDF in
     let ?mixedMultInOutEffort = effMultDFI in
     let ?mixedDivInOutEffort = effDivDFI in
-    unsafePrint ( "hillbaseApproxDnD:"
-        ++ " n = " ++ show n
-        ++ " c = " ++ show c
-        ++ " d = " ++ show d
-    ) $
+--    unsafePrint ( "hillbaseApproxDnD:"
+--        ++ " n = " ++ show n
+--        ++ " c = " ++ show c
+--        ++ " d = " ++ show d
+--    ) $
     foldl1 (ArithInOut.addOutEff effAddF) $
         map mkBT [0..n]
     where
+    l = 
+        let ?multInOutEffort = effMultDF in
+        let ?addInOutEffort = effAddDF in  
+        let ?intPowerInOutEffort = effPowDF in
+        d <*> ((c1 <-> c) <^> (4 :: Int))
+    r = 
+        let ?multInOutEffort = effMultDF in
+        let ?intPowerInOutEffort = effPowDF in
+        d <*> (c <^> (4 :: Int))
     mkBT p =
         let ?multInOutEffort = effMultF in
         (newConstFnFromSample x fOfpOverN)
@@ -487,22 +522,31 @@ hillbaseApproxDnD effComp effRingF effIntFldF effRealDF x c n d =
         (bernsteinOut (effRingF, effIntFldF) x n p)
         where
         fOfpOverN
-            | (pOverN <? c) == Just True = 
-                c <+> pOverN <*> minusDOverC
+            | (pOverN <? c) == Just True =
+                cMinusL <-> (pOverN <*> dMinusLOverC)
+                -- (c-l) - (p/n(d-l)/c) 
             | otherwise =
-                (pOverN <*> onePlusDOverOneMinusC) <-> dOverOneMinusC
-                -- (p/n)(1 + d/(1-c)) - d/(1-c)
+                pOverN <*> onePlusDMinusROverOneMinusC <-> rPlusDMinusROverOneMinusC
+                -- (p/n)(1 + (d-r)/(1-c)) - (r + (d-r)/(1-c))
         pOverN = (c1 <*>| p) </>| n
-    minusDOverC = 
-        let ?divInOutEffort = effDivDF in  
-        neg $ d </> c
-    onePlusDOverOneMinusC = 
+    cMinusL =
         let ?addInOutEffort = effAddDF in  
-        c1 <+> dOverOneMinusC
-    dOverOneMinusC = 
+        c <-> l
+    dMinusLOverC = 
         let ?addInOutEffort = effAddDF in  
         let ?divInOutEffort = effDivDF in  
-        d </> (c1 <-> c)
+        (d <-> l) </> c
+    onePlusDMinusROverOneMinusC = 
+        let ?addInOutEffort = effAddDF in  
+        c1 <+> dMinusROverOneMinusC
+    rPlusDMinusROverOneMinusC = 
+        let ?addInOutEffort = effAddDF in  
+        r <+> dMinusROverOneMinusC
+    dMinusROverOneMinusC = 
+        let ?addInOutEffort = effAddDF in  
+        let ?divInOutEffort = effDivDF in  
+        (d <-> r) </> (c1 <-> c)
+
     c1 = one sampleDF
     sampleDF = getSampleDomValue x
     
@@ -512,9 +556,9 @@ hillbaseApproxDnD effComp effRingF effIntFldF effRealDF x c n d =
     effMultDFI = ArithInOut.mxfldEffortMult sampleDF (1::Int) $ ArithInOut.rrEffortIntMixedField sampleDF effRealDF
     effDivDFI = ArithInOut.mxfldEffortDiv sampleDF (1::Int) $ ArithInOut.rrEffortIntMixedField sampleDF effRealDF
 
-    effMultDF = ArithInOut.fldEffortMult sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
     effAddDF = ArithInOut.fldEffortAdd sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
-    
+    effMultDF = ArithInOut.fldEffortMult sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
+    effPowDF = ArithInOut.fldEffortPow sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
     effDivDF = ArithInOut.fldEffortDiv sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
 
 

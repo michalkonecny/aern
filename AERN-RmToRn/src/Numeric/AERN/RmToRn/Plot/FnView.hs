@@ -81,19 +81,22 @@ new ::
      TVar (FnMetaData f)) ->
     (Maybe Gtk.Window) {- ^ parent window -} -> 
     IO Gtk.Window
-new sampleF effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) maybeParentWindow =
+new (sampleF :: f) effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) maybeParentWindow =
     do
     -- create initial state objects:
-    stateTV <- atomically $
+    (stateTV, fnmeta) <- atomically $
         do
         fndata <- readTVar fndataTV
         fnmeta <- readTVar fnmetaTV
-        newTVar $ initState effReal (fndata, fnmeta)
+        stateTV <- newTVar $ initState effReal (fndata, fnmeta)
+        return (stateTV, fnmeta)
     dynWidgetsRef <- newIORef initFnViewDynWidgets
     -- create most widgets:
     widgets <- loadGlade (FilePath.combine GLADE_DIR "FnView.glade")
     -- create plotting canvas:
     widgets <- makeCanvas sampleF effDraw effReal widgets fndataTVs stateTV
+    -- add dynamic function label widgets:
+    updateFnWidgets toDbl widgets dynWidgetsRef fnmeta fndataTVs stateTV
     -- attach handlers to widgets
     Gtk.onDestroy (window widgets) $
         do
@@ -110,6 +113,10 @@ new sampleF effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) maybeParentWi
     where
     sampleDom = getSampleDomValue sampleF
     effToDouble = ArithInOut.rrEffortToDouble sampleDom effReal
+    toDbl :: (Domain f) -> Double
+    toDbl a = d
+        where
+        (Just d) = ArithUpDn.convertUpEff effToDouble a
 
 setHandlers :: 
     (CairoDrawableFn f,
@@ -393,7 +400,7 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
             h = 360 :: Double -- in 1/72 inch TODO: ask user
 
     setHandlerExportSVGButton =
-        Gtk.onClicked (exportPDFButton widgets) $
+        Gtk.onClicked (exportSVGButton widgets) $
             do
             (state, FnData fns, fnmeta) <- 
                 atomically $

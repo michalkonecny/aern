@@ -19,6 +19,7 @@
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Minmax
 (
+    minmaxDefaultEffortIntPolyWithBezierDegree
 )
 where
     
@@ -75,6 +76,9 @@ instance
         MinmaxInOutEffortIndicatorFromRingOps (IntPoly var cf) (IntPoly var cf)
     minmaxDefaultEffort f =
         defaultMinmaxInOutEffortIndicatorFromRingOps f f 
+
+minmaxDefaultEffortIntPolyWithBezierDegree degree f =
+    defaultMinmaxInOutEffortIndicatorFromRingOpsDegree degree f f
 
 instance
     (Ord var,

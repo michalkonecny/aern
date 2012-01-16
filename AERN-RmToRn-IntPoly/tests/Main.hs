@@ -52,8 +52,8 @@ tests = testsPoly
 testsPoly =
     [
 --       testsConsistency ("MI", sampleMI),
---       NumOrd.testsPartialComparison ("IntPoly-DI", samplePoly) (NumOrd.areaWhole samplePoly)
---       ,
+       NumOrd.testsPartialComparison ("IntPoly-DI", samplePoly) (NumOrd.areaWhole samplePoly)
+       ,
        NumOrd.testsRoundedLatticeDistributive ("IntPoly-DI", samplePoly) (NumOrd.areaWhole samplePoly)
 --       ,
 --       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("MI", sampleMI),
@@ -104,8 +104,8 @@ cfg =
 dombox = Map.fromList $ zip vars doms
 
 doms :: [CF]
---doms = [(0 </\> 1), 0 </\> 1]
---vars = ["x", "y"]
-doms = [(0 </\> 1)]
-vars = ["x"]
+doms = [(0 </\> 1), 0 </\> 1]
+vars = ["x", "y"]
+--doms = [(0 </\> 1)]
+--vars = ["x"]
         
