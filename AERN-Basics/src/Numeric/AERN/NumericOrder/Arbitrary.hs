@@ -434,18 +434,11 @@ newtype UniformlyOrderedSingleton t = UniformlyOrderedSingleton t deriving (Show
 {-| type for generating pairs distributed in such a way that all ordering relations 
     permitted by this structure have similar probabilities of occurrence -}
 data UniformlyOrderedPair t = UniformlyOrderedPair (t,t) deriving (Show)
-data LTPair t = LTPair (t,t) deriving (Show)
 data LEPair t = LEPair (t,t) deriving (Show)
-data NCPair t = NCPair (t,t) deriving (Show)
 
 {-| type for generating triples distributed in such a way that all ordering relation combinations 
     permitted by this structure have similar probabilities of occurrence -}
 data UniformlyOrderedTriple t = UniformlyOrderedTriple (t,t,t) deriving (Show)
-data LTLTLTTriple t = LTLTLTTriple (t,t,t) deriving (Show)
-data LELELETriple t = LELELETriple (t,t,t) deriving (Show)
-data NCLTLTTriple t = NCLTLTTriple (t,t,t) deriving (Show)
-data NCGTGTTriple t = NCGTGTTriple (t,t,t) deriving (Show)
-data NCLTNCTriple t = NCLTNCTriple (t,t,t) deriving (Show)
 
 instance 
     (ArbitraryOrderedTuple t) 
@@ -506,23 +499,18 @@ instance (ArbitraryOrderedTuple t) => Arbitrary (LEPair t) where
         where
         gens = catMaybes $ map arbitraryPairRelatedBy [LT, LT, LT, EQ]  
 
-instance (ArbitraryOrderedTuple t) => Arbitrary (LTPair t) where
-    arbitrary =
-        case arbitraryPairRelatedBy LT of
-            Nothing -> error $ "LTPair used with an incompatible type"
-            Just gen ->
-                do
-                pair <- gen
-                return $ LTPair pair
-
-instance (ArbitraryOrderedTuple t) => Arbitrary (NCPair t) where
-    arbitrary =
-        case arbitraryPairRelatedBy NC of
-            Nothing -> error $ "NCPair used with an incompatible type"
-            Just gen ->
-                do
-                pair <- gen
-                return $ NCPair pair
+instance
+    (ArbitraryOrderedTuple t, a ~ Area t) 
+    => 
+    ArbitraryWithParam (LEPair t) a
+    where
+    arbitraryWithParam area =
+        do
+        gen <- elements gens
+        pair <- gen
+        return $ LEPair pair
+        where
+        gens = catMaybes $ map (arbitraryPairInAreaRelatedBy area) [LT, LT, LT, EQ]  
 
 instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedTriple t) where
     arbitrary = 
@@ -533,7 +521,7 @@ instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedTriple t) where
         where
         gens = catMaybes $ map arbitraryTripleRelatedBy partialOrderingVariantsTriples
 
-instance 
+instance
     (ArbitraryOrderedTuple t, a ~ Area t) 
     => 
     ArbitraryWithParam (UniformlyOrderedTriple t) a 
@@ -545,31 +533,6 @@ instance
         return $ UniformlyOrderedTriple triple
         where
         gens = catMaybes $ map (arbitraryTripleInAreaRelatedBy area) partialOrderingVariantsTriples  
-
-instance (ArbitraryOrderedTuple t) => Arbitrary (LELELETriple t) where
-    arbitrary =
-        do
-        gen <- elements gens
-        triple <- gen
-        return $ LELELETriple triple
-        where
-        gens = 
-            catMaybes $ 
-                map arbitraryTripleRelatedBy 
-                    [(LT,LT,LT), (LT,LT,LT), (LT,LT,LT), (LT,LT,LT), (LT,LT,LT), 
-                     (EQ,LT,LT), (EQ,LT,LT),
-                     (LT,EQ,LT), (LT,EQ,LT),
-                     (EQ,EQ,EQ)]  
-
-instance (ArbitraryOrderedTuple t) => Arbitrary (LTLTLTTriple t) where
-    arbitrary =
-        case arbitraryTripleRelatedBy (LT, LT, LT) of
-            Nothing -> error $ "LTLTLTTriple used with an incompatible type"
-            Just gen ->
-                do
-                triple <- gen
-                return $ LTLTLTTriple triple
-
 
 propArbitraryOrderedPair ::
     (ArbitraryOrderedTuple t) =>

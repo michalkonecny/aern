@@ -83,8 +83,8 @@ mkBenchSequence1 mkComment fnEff maybeArea n initEffort sample =
         -- sequence of random generators
     arbitraryInArea =
        case case maybeArea of
-            Nothing -> RefOrd.arbitraryTupleRelatedBy [1] [] []
-            (Just area) -> RefOrd.arbitraryTupleInAreaRelatedBy area [1] [] []
+            Nothing -> RefOrd.arbitraryTupleRelatedBy [1] []
+            (Just area) -> RefOrd.arbitraryTupleInAreaRelatedBy area [1] []
        of Just gen -> gen
     sizes = 
         concat $ map (replicate 1) $ scanl1 (*) [2,2..] 

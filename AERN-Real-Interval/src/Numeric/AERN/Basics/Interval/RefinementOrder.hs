@@ -259,8 +259,8 @@ instance (NumOrd.ArbitraryOrderedTuple e) => RefOrd.ArbitraryOrderedTuple (Inter
    arbitraryTupleRelatedBy = 
        arbitraryIntervalTupleInAreaRefinementRelatedBy Nothing
 
-arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices thinIndices constraints =
-    case endpointGens of 
+arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices constraints =
+    case endpointGens of
         [] -> Nothing
         _ -> Just $
             do
@@ -291,9 +291,10 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices thinIndices co
 --         ++ "\n endpointIndices = " ++ show endpointIndices 
 --         ++ "\n endpointConstraintsVersions = "
 --        ) $
-        map ((++ thinnessConstraints) . concat) $ 
+        map concat $ 
+--        map ((++ thinnessConstraints) . concat) $ 
             combinations $ map intervalConstraintsToEndpointConstraints constraints
-    thinnessConstraints = map (\ix -> (((ix,-1),(ix,1)),[EQ])) thinIndices
+--    thinnessConstraints = map (\ix -> (((ix,-1),(ix,1)),[EQ])) thinIndices
     intervalConstraintsToEndpointConstraints :: 
         ((ix, ix), [PartialOrdering]) -> [[(((ix,Int), (ix,Int)), [PartialOrdering])]]
     intervalConstraintsToEndpointConstraints ((ix1, ix2),rels) =
