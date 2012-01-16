@@ -129,14 +129,22 @@ newtype Thin t = Thin t deriving (Show)
 
 newtype UniformlyOrderedSingleton t = UniformlyOrderedSingleton t deriving (Show)
 
+data TwoUniformlyOrderedSingletons t = TwoUniformlyOrderedSingletons (t,t) deriving (Show)
+data ThreeUniformlyOrderedSingletons t = ThreeUniformlyOrderedSingletons (t,t,t) deriving (Show)
+
 {-| type for generating pairs distributed in such a way that all ordering relations 
     permitted by this structure have similar probabilities of occurrence -}
 data UniformlyOrderedPair t = UniformlyOrderedPair (t,t) deriving (Show)
 data LEPair t = LEPair (t,t) deriving (Show)
 
+data TwoUniformlyOrderedPairs t = TwoUniformlyOrderedPairs ((t,t),(t,t)) deriving (Show)
+data ThreeUniformlyOrderedPairs t = ThreeUniformlyOrderedPairs ((t,t),(t,t),(t,t)) deriving (Show)
+
+
 {-| type for generating triples distributed in such a way that all ordering relation combinations 
     permitted by this structure have similar probabilities of occurrence -}
 data UniformlyOrderedTriple t = UniformlyOrderedTriple (t,t,t) deriving (Show)
+
 
 instance (ArbitraryOrderedTuple t) => Arbitrary (UniformlyOrderedSingleton t) where
     arbitrary =
@@ -157,6 +165,29 @@ instance
         return $ UniformlyOrderedSingleton elem
         where
         Just gen = arbitraryTupleInAreaRelatedBy area [1] []
+
+instance
+    (ArbitraryOrderedTuple t, a ~ Area t) 
+    => 
+    ArbitraryWithParam (TwoUniformlyOrderedSingletons t) a 
+    where
+    arbitraryWithParam area =
+        do
+        (UniformlyOrderedSingleton e1) <- arbitraryWithParam area
+        (UniformlyOrderedSingleton e2) <- arbitraryWithParam area
+        return $ TwoUniformlyOrderedSingletons (e1,e2)
+
+instance
+    (ArbitraryOrderedTuple t, a ~ Area t)
+    => 
+    ArbitraryWithParam (ThreeUniformlyOrderedSingletons t) a 
+    where
+    arbitraryWithParam area =
+        do
+        (UniformlyOrderedSingleton e1) <- arbitraryWithParam area
+        (UniformlyOrderedSingleton e2) <- arbitraryWithParam area
+        (UniformlyOrderedSingleton e3) <- arbitraryWithParam area
+        return $ ThreeUniformlyOrderedSingletons (e1,e2,e3)
 
 instance 
     (ArbitraryOrderedTuple t) 
@@ -196,6 +227,30 @@ instance
         return $ LEPair pair
         where
         gens = catMaybes $ map arbitraryPairRelatedBy [LT, LT, LT, EQ]  
+
+instance
+    (ArbitraryOrderedTuple t, a ~ Area t) 
+    => 
+    ArbitraryWithParam (TwoUniformlyOrderedPairs t) a 
+    where
+    arbitraryWithParam area =
+        do
+        (UniformlyOrderedPair p1) <- arbitraryWithParam area
+        (UniformlyOrderedPair p2) <- arbitraryWithParam area
+        return $ TwoUniformlyOrderedPairs (p1,p2)
+
+instance
+    (ArbitraryOrderedTuple t, a ~ Area t)
+    => 
+    ArbitraryWithParam (ThreeUniformlyOrderedPairs t) a 
+    where
+    arbitraryWithParam area =
+        do
+        (UniformlyOrderedPair p1) <- arbitraryWithParam area
+        (UniformlyOrderedPair p2) <- arbitraryWithParam area
+        (UniformlyOrderedPair p3) <- arbitraryWithParam area
+        return $ ThreeUniformlyOrderedPairs (p1,p2,p3)
+
 
 instance
     (ArbitraryOrderedTuple t, a ~ Area t) 
