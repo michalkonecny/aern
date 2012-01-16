@@ -67,7 +67,7 @@ instance
     pCompareDefaultEffort (Interval l r) = 
         NumOrd.pCompareDefaultEffort l
     pCompareEff effort i1 i2 =
-        case partialInfo2PartialOrdering $ NumOrd.pCompareInFullEff effort i1 i2 of
+        case partialInfo2PartialOrdering $ RefOrd.pCompareInFullEff effort i1 i2 of
             [ord] -> Just ord
             _ -> Nothing
     pCompareInFullEff effort (Interval l1 r1) (Interval l2 r2) = 
