@@ -49,8 +49,8 @@ main =
     Gtk.timeoutAddFull 
         (Concurrent.yield >> Concurrent.yield >> Concurrent.yield >> return True) 
         Gtk.priorityDefaultIdle 20
-    fnDataTV <- atomically $ newTVar $ FV.FnData fns
-    fnMetaTV <- atomically $ newTVar $ fnmeta 
+    fnDataTV <- atomically $ newTVar $ FV.FnData fnsTest
+    fnMetaTV <- atomically $ newTVar $ fnmetaTest
 --    putStrLn "plot main: calling FV.new"
     FV.new samplePoly effDrawFn eff eff (fnDataTV, fnMetaTV) Nothing
 --    putStrLn "plot main: FV.new completed"
@@ -64,22 +64,43 @@ main =
 --        fnmeta <- readTVar fnMetaTV
 --        writeTVar fnMetaTV $ fnmeta { FV.dataFnsUpdated = True }
 
-fns :: [[Poly]]    
-fns = [
-       [x, cOneOver16, 
-            NumOrd.maxUpEff minmaxEff x cOneOver16,  
-            NumOrd.maxDnEff minmaxEff x cOneOver16]
-      ,
-       [x, cSevenOver16, 
-            NumOrd.maxUpEff minmaxEff x cSevenOver16,  
-            NumOrd.maxDnEff minmaxEff x cSevenOver16]
-      ,
-       [x, cOneMinusOneOver16, 
-            NumOrd.maxUpEff minmaxEff x cOneMinusOneOver16,  
-            NumOrd.maxDnEff minmaxEff x cOneMinusOneOver16]
-      ]
+fnsTest :: [[Poly]]
+fnsTest = 
+    [[
+        x <*> cHalf1,
+        x <*> cHalf1 <+> (c10 </>| (4::Int))
+    ]]
+    
+fnmetaTest = (FV.defaultFnMetaData x)
+    {
+        FV.dataFnGroupNames = ["test"],
+        FV.dataFnNames = 
+            [["thick","mixed"]],
+        FV.dataFnStyles = 
+            [[black, blue]]
+    }
+    
 
-fnmeta = (FV.defaultFnMetaData x)
+fnsMinmax :: [[Poly]]    
+fnsMinmax = 
+    [
+     [x, cOneOver16, 
+      NumOrd.maxUpEff minmaxEff x cOneOver16,  
+      NumOrd.maxDnEff minmaxEff x cOneOver16
+     ]
+     ,
+     [x, cSevenOver16, 
+      NumOrd.maxUpEff minmaxEff x cSevenOver16,  
+      NumOrd.maxDnEff minmaxEff x cSevenOver16
+     ]
+     ,
+     [x, cOneMinusOneOver16, 
+      NumOrd.maxUpEff minmaxEff x cOneMinusOneOver16,  
+      NumOrd.maxDnEff minmaxEff x cOneMinusOneOver16
+     ]
+    ]
+
+fnmetaMinmax = (FV.defaultFnMetaData x)
     {
         FV.dataFnGroupNames = ["minimax 1/16", "minmax 7/16", "minmax 15/16"],
         FV.dataFnNames = 
@@ -93,8 +114,13 @@ fnmeta = (FV.defaultFnMetaData x)
     }
     
 black = FV.defaultFnPlotStyle
+blue = FV.defaultFnPlotStyle 
+    { 
+        FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
+        FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
+    } 
     
-c1,c0,x,c01,cHalf,cHalf1,cOneOver16,cSevenOver16,cOneMinusOneOver16, samplePoly :: Poly
+c1,c0,x,c01,c10,cHalf,cHalf1,cOneOver16,cSevenOver16,cOneMinusOneOver16, samplePoly :: Poly
 x = newProjection cfg dombox "x"
 c0 = newConstFn cfg dombox 0
 c1 = newConstFn cfg dombox 1
@@ -104,6 +130,7 @@ cOneOver16 = newConstFn cfg dombox $ 0.5^4
 cSevenOver16 = newConstFn cfg dombox $ 7 * 0.5^4
 cOneMinusOneOver16 = newConstFn cfg dombox $ 15 * 0.5^4
 c01 = newConstFn cfg dombox $ 0 </\> 1
+c10 = newConstFn cfg dombox $ 1 <\/> 0
 
 samplePoly = x
 
