@@ -83,16 +83,22 @@ propPartialComparisonReflexiveEQ ::
     (PartialCompareEffortIndicator t) -> 
     (UniformlyOrderedSingleton t) -> 
     Bool
-propPartialComparisonReflexiveEQ _ effort (UniformlyOrderedSingleton e) = 
+propPartialComparisonReflexiveEQ _ 
+        effort 
+        (UniformlyOrderedSingleton e) 
+    = 
     case pCompareEff effort e e of Just EQ -> True; Nothing -> True; _ -> False 
 
 propPartialComparisonAntiSymmetric :: 
     (PartialComparison t) => 
     t -> 
-    (PartialCompareEffortIndicator t) -> 
     UniformlyOrderedPair t -> 
+    (PartialCompareEffortIndicator t) -> 
     Bool
-propPartialComparisonAntiSymmetric _ effort (UniformlyOrderedPair (e1, e2)) =
+propPartialComparisonAntiSymmetric _ 
+        (UniformlyOrderedPair (e1, e2)) 
+        effort 
+    =
     case (pCompareEff effort e2 e1, pCompareEff effort e1 e2) of
         (Just b1, Just b2) -> b1 == partialOrderingTranspose b2
         _ -> True 
@@ -100,38 +106,49 @@ propPartialComparisonAntiSymmetric _ effort (UniformlyOrderedPair (e1, e2)) =
 propPartialComparisonTransitiveEQ :: 
     (PartialComparison t) => 
     t -> 
-    (PartialCompareEffortIndicator t) -> 
     UniformlyOrderedTriple t -> 
+    (PartialCompareEffortIndicator t) -> 
     Bool
-propPartialComparisonTransitiveEQ _ effort 
-        (UniformlyOrderedTriple (e1,e2,e3)) = 
+propPartialComparisonTransitiveEQ _ 
+        (UniformlyOrderedTriple (e1,e2,e3)) 
+        effort 
+    = 
     partialTransitive (pEqualEff effort) e1 e2 e3
 
 propPartialComparisonTransitiveLT :: 
     (PartialComparison t) => 
     t -> 
-    (PartialCompareEffortIndicator t) -> 
     UniformlyOrderedTriple t -> 
+    (PartialCompareEffortIndicator t) -> 
     Bool
-propPartialComparisonTransitiveLT _ effort 
-        (UniformlyOrderedTriple (e1,e2,e3)) = 
+propPartialComparisonTransitiveLT _ 
+        (UniformlyOrderedTriple (e1,e2,e3)) 
+        effort 
+    = 
     partialTransitive (pLessEff effort) e1 e2 e3
 
 propPartialComparisonTransitiveLE :: 
     (PartialComparison t) => 
     t -> 
-    (PartialCompareEffortIndicator t) -> 
     UniformlyOrderedTriple t -> 
+    (PartialCompareEffortIndicator t) -> 
     Bool
-propPartialComparisonTransitiveLE _ effort
-        (UniformlyOrderedTriple (e1,e2,e3)) = 
+propPartialComparisonTransitiveLE _ 
+        (UniformlyOrderedTriple (e1,e2,e3)) 
+        effort
+    = 
     partialTransitive (pLeqEff effort) e1 e2 e3
 
 propExtremaInPartialComparison :: 
     (PartialComparison t, HasExtrema t) => 
-    t -> (PartialCompareEffortIndicator t) -> 
-    (UniformlyOrderedSingleton t) -> Bool
-propExtremaInPartialComparison _ effort (UniformlyOrderedSingleton e) = 
+    t -> 
+    (UniformlyOrderedSingleton t) -> 
+    (PartialCompareEffortIndicator t) -> 
+    Bool
+propExtremaInPartialComparison _ 
+        (UniformlyOrderedSingleton e) 
+        effort 
+    = 
     partialOrderExtrema (pLeqEff effort) (bottom e) (top e) e
 
 testsPartialComparison :: 
@@ -139,17 +156,19 @@ testsPartialComparison ::
      HasExtrema t,
      ArbitraryOrderedTuple t, Show t) 
     => 
-    (String, t) -> Test
-testsPartialComparison (name, sample) =
+    (String, t) -> 
+    (Area t) ->
+    Test
+testsPartialComparison (name, sample) area =
     testGroup (name ++ " (⊑?)")
         [
-         testProperty "anti symmetric" (propPartialComparisonAntiSymmetric sample)
+         testProperty "anti symmetric" (area, propPartialComparisonAntiSymmetric sample)
         ,
-         testProperty "transitive EQ" (propPartialComparisonTransitiveEQ sample)
+         testProperty "transitive EQ" (area, propPartialComparisonTransitiveEQ sample)
         ,
-         testProperty "transitive LE" (propPartialComparisonTransitiveLE sample)
+         testProperty "transitive LE" (area, propPartialComparisonTransitiveLE sample)
         ,
-         testProperty "transitive LT" (propPartialComparisonTransitiveLT sample)
+         testProperty "transitive LT" (area, propPartialComparisonTransitiveLT sample)
         ,
-         testProperty "extrema" (propExtremaInPartialComparison sample)
+         testProperty "extrema" (area, propExtremaInPartialComparison sample)
         ]

@@ -38,8 +38,8 @@ tests = testsMPFR ++ testsMI
 testsMPFR =
     [
 --       NumOrd.testsArbitraryTuple ("MPFR", sampleM, NumOrd.compare),
-       NumOrd.testsPartialComparison ("MPFR", sampleM) (NumOrd.areaWhole sampleM),
-       NumOrd.testsRoundedLatticeDistributive ("MPFR", sampleM)  (NumOrd.areaWhole sampleM),
+       NumOrd.testsPartialComparison ("MPFR", sampleM) areaN,
+       NumOrd.testsRoundedLatticeDistributive ("MPFR", sampleM) areaN,
        testsDistance ("MPFR", sampleM),
        ArithUpDn.testsConvert ("MPFR", sampleM, "Integer", sampleI),
        ArithUpDn.testsConvert ("Integer", sampleI, "MPFR", sampleM),
@@ -66,10 +66,10 @@ testsMPFR =
 testsMI =
     [
        testsConsistency ("MI", sampleMI),
-       NumOrd.testsPartialComparison ("MI", sampleMI) (NumOrd.areaWhole sampleMI),
-       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("MI", sampleMI),
+       NumOrd.testsPartialComparison ("MI", sampleMI) areaNInterval,
+       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone ("MI", sampleMI) areaNInterval areaR,
        NumOrd.testsRefinementRoundedLatticeInPlace ("MI", sampleMI),
-       RefOrd.testsPartialComparison  ("MI", sampleMI), 
+       RefOrd.testsPartialComparison  ("MI", sampleMI) areaR, 
        RefOrd.testsRoundedBasis ("MI", sampleMI),
        RefOrd.testsRoundedLatticeDistributive ("MI", sampleMI),
        testsDistance ("MI", sampleMI),
@@ -94,6 +94,10 @@ testsMI =
        ArithInOut.testsInOutExp ("MI", sampleMI),
        ArithInOut.testsInOutSqrt ("MI", sampleMI) unPositiveMI
     ]
+
+areaN = NumOrd.areaWhole sampleM
+areaNInterval = NumOrd.areaWhole sampleMI
+areaR = RefOrd.areaWhole sampleMI
 
 sampleD = 1 :: Double
 sampleI = 1 :: Integer

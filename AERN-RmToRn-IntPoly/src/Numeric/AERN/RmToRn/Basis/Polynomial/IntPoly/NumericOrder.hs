@@ -142,7 +142,7 @@ instance
     type NumOrd.Area (IntPoly var cf) = Area4FunFromRingOps (IntPoly var cf)
     areaWhole sampleF = areaWhole4FunFromRingOps sampleF
     arbitraryTupleRelatedBy = 
-        error "AERN internal error: arbitraryTupleRelatedBy not defined for IntPoly"
+        error "AERN internal error: NumOrd.arbitraryTupleRelatedBy not defined for IntPoly"
     arbitraryTupleInAreaRelatedBy area@(sampleFn,_) indices rels =
         case 
             arbitraryTupleInAreaRelatedBy4FunFromRingOps 

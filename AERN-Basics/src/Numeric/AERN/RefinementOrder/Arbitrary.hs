@@ -140,6 +140,8 @@ data LEPair t = LEPair (t,t) deriving (Show)
 data TwoUniformlyOrderedPairs t = TwoUniformlyOrderedPairs ((t,t),(t,t)) deriving (Show)
 data ThreeUniformlyOrderedPairs t = ThreeUniformlyOrderedPairs ((t,t),(t,t),(t,t)) deriving (Show)
 
+data TwoLEPairs t = TwoLEPairs ((t,t),(t,t)) deriving (Show)
+data ThreeLEPairs t = ThreeLEPairs ((t,t),(t,t),(t,t)) deriving (Show)
 
 {-| type for generating triples distributed in such a way that all ordering relation combinations 
     permitted by this structure have similar probabilities of occurrence -}
@@ -264,6 +266,29 @@ instance
         return $ LEPair pair
         where
         gens = catMaybes $ map (arbitraryPairInAreaRelatedBy area) [LT, LT, LT, EQ]  
+
+instance
+    (ArbitraryOrderedTuple t, a ~ Area t) 
+    => 
+    ArbitraryWithParam (TwoLEPairs t) a 
+    where
+    arbitraryWithParam area =
+        do
+        (LEPair p1) <- arbitraryWithParam area
+        (LEPair p2) <- arbitraryWithParam area
+        return $ TwoLEPairs (p1,p2)
+
+instance
+    (ArbitraryOrderedTuple t, a ~ Area t)
+    => 
+    ArbitraryWithParam (ThreeLEPairs t) a 
+    where
+    arbitraryWithParam area =
+        do
+        (LEPair p1) <- arbitraryWithParam area
+        (LEPair p2) <- arbitraryWithParam area
+        (LEPair p3) <- arbitraryWithParam area
+        return $ ThreeLEPairs (p1,p2,p3)
 
 instance 
     (ArbitraryOrderedTuple t)

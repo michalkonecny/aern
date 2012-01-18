@@ -66,66 +66,84 @@ class
 propRefinementRoundedLatticeJoinIdempotent :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t ->
+    (UniformlyOrderedSingleton t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInOutEffortIndicator t) -> 
-    (UniformlyOrderedSingleton t) -> Bool
-propRefinementRoundedLatticeJoinIdempotent _ (effortComp, effortInOut) 
-        (UniformlyOrderedSingleton e) =
+    Bool
+propRefinementRoundedLatticeJoinIdempotent _ 
+        (UniformlyOrderedSingleton e) 
+        (effortComp, effortInOut) 
+    =
     roundedIdempotent (RefOrd.pLeqEff effortComp) 
         (maxInEff effortInOut) (maxOutEff effortInOut) e
 
 propRefinementRoundedLatticeJoinCommutative :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedPair t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInOutEffortIndicator t) -> 
-    UniformlyOrderedPair t -> Bool
-propRefinementRoundedLatticeJoinCommutative _ (effortComp, effortInOut)
-        (UniformlyOrderedPair (e1,e2)) = 
+    Bool
+propRefinementRoundedLatticeJoinCommutative _ 
+        (UniformlyOrderedPair (e1,e2)) 
+        (effortComp, effortInOut)
+    = 
     roundedCommutative (RefOrd.pLeqEff effortComp) 
         (maxInEff effortInOut) (maxOutEff effortInOut) e1 e2
 
 propRefinementRoundedLatticeJoinAssocative :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedTriple t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInOutEffortIndicator t) -> 
-    UniformlyOrderedTriple t -> Bool
-propRefinementRoundedLatticeJoinAssocative _ (effortComp, effortInOut)
-        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    Bool
+propRefinementRoundedLatticeJoinAssocative _ 
+        (UniformlyOrderedTriple (e1,e2,e3)) 
+        (effortComp, effortInOut)
+    = 
     roundedAssociative (RefOrd.pLeqEff effortComp) 
         (maxInEff effortInOut) (maxOutEff effortInOut) e1 e2 e3
 
 propRefinementRoundedLatticeMeetIdempotent :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    (UniformlyOrderedSingleton t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInOutEffortIndicator t) -> 
-    (UniformlyOrderedSingleton t) -> Bool
-propRefinementRoundedLatticeMeetIdempotent _ (effortComp, effortInOut) 
-        (UniformlyOrderedSingleton e) = 
+    Bool
+propRefinementRoundedLatticeMeetIdempotent _ 
+        (UniformlyOrderedSingleton e) 
+        (effortComp, effortInOut) 
+    = 
     roundedIdempotent (RefOrd.pLeqEff effortComp) 
         (minInEff effortInOut) (minOutEff effortInOut) e
 
 propRefinementRoundedLatticeMeetCommutative :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedPair t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInOutEffortIndicator t) -> 
-    UniformlyOrderedPair t -> Bool
-propRefinementRoundedLatticeMeetCommutative _  (effortComp, effortInOut)
-        (UniformlyOrderedPair (e1,e2)) = 
+    Bool
+propRefinementRoundedLatticeMeetCommutative _  
+        (UniformlyOrderedPair (e1,e2)) 
+        (effortComp, effortInOut)
+    = 
     roundedCommutative (RefOrd.pLeqEff effortComp) 
         (minInEff effortInOut) (minOutEff effortInOut) e1 e2
 
 propRefinementRoundedLatticeMeetAssocative :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedTriple t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInOutEffortIndicator t) -> 
-    UniformlyOrderedTriple t -> Bool
-propRefinementRoundedLatticeMeetAssocative _ (effortComp, effortInOut)
-        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    Bool
+propRefinementRoundedLatticeMeetAssocative _ 
+        (UniformlyOrderedTriple (e1,e2,e3)) 
+        (effortComp, effortInOut)
+    = 
     roundedAssociative  (RefOrd.pLeqEff effortComp) 
         (minInEff effortInOut) (minOutEff effortInOut) e1 e2 e3
 
@@ -133,11 +151,14 @@ propRefinementRoundedLatticeMeetAssocative _ (effortComp, effortInOut)
 propRefinementRoundedLatticeModular :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedTriple t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInOutEffortIndicator t) -> 
-    UniformlyOrderedTriple t -> Bool
-propRefinementRoundedLatticeModular _ (effortComp, effortInOut)
-        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    Bool
+propRefinementRoundedLatticeModular _ 
+        (UniformlyOrderedTriple (e1,e2,e3)) 
+        (effortComp, effortInOut)
+    = 
     roundedModular (RefOrd.pLeqEff effortComp) 
         (maxInEff effortInOut) (minInEff effortInOut)
         (maxOutEff effortInOut) (minOutEff effortInOut)
@@ -147,11 +168,14 @@ propRefinementRoundedLatticeDistributive ::
     (RefOrd.PartialComparison t, RefinementRoundedLattice t,
      Show t, HasLegalValues t) => 
     t -> 
+    UniformlyOrderedTriple t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInOutEffortIndicator t) -> 
-    UniformlyOrderedTriple t -> Bool
-propRefinementRoundedLatticeDistributive _ (effortComp, effortInOut)
-        (UniformlyOrderedTriple (e1,e2,e3)) = 
+    Bool
+propRefinementRoundedLatticeDistributive _ 
+        (UniformlyOrderedTriple (e1,e2,e3)) 
+        (effortComp, effortInOut)
+    = 
     (roundedModular (RefOrd.pLeqEff effortComp) 
         (maxInEff effortInOut) (minInEff effortInOut)
         (maxOutEff effortInOut) (minOutEff effortInOut)
@@ -163,17 +187,17 @@ propRefinementRoundedLatticeDistributive _ (effortComp, effortInOut)
         e1 e2 e3)
     
 propRefinementRoundedLatticeJoinMonotone ::
-    (Eq t, RefinementRoundedLattice t, RefOrd.PartialComparison t, 
+    (RefinementRoundedLattice t, RefOrd.PartialComparison t, 
      Show t, HasLegalValues t) => 
     t -> 
+    RefOrd.TwoLEPairs t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
-     MinmaxInOutEffortIndicator t) -> 
-    RefOrd.LEPair t -> 
-    RefOrd.LEPair t ->
+     MinmaxInOutEffortIndicator t) ->
     Bool
-propRefinementRoundedLatticeJoinMonotone _ (effortComp, effortInOut)
-        (RefOrd.LEPair (e1Lower,e1)) 
-        (RefOrd.LEPair (e2Lower,e2)) =
+propRefinementRoundedLatticeJoinMonotone _ 
+        (RefOrd.TwoLEPairs ((e1Lower,e1),(e2Lower,e2))) 
+        (effortComp, effortInOut)
+    =
     case RefOrd.pLeqEff effortComp rLower r of
         Just b -> b
         Nothing -> True
@@ -182,17 +206,17 @@ propRefinementRoundedLatticeJoinMonotone _ (effortComp, effortInOut)
     r = maxInEff effortInOut e1 e2 
     
 propRefinementRoundedLatticeMeetMonotone ::
-    (Eq t, RefinementRoundedLattice t, RefOrd.PartialComparison t, 
+    (RefinementRoundedLattice t, RefOrd.PartialComparison t, 
      Show t, HasLegalValues t) => 
     t -> 
+    RefOrd.TwoLEPairs t -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MinmaxInOutEffortIndicator t) -> 
-    RefOrd.LEPair t -> 
-    RefOrd.LEPair t ->
     Bool
-propRefinementRoundedLatticeMeetMonotone _ (effortComp, effortInOut)
-        (RefOrd.LEPair (e1Lower,e1)) 
-        (RefOrd.LEPair (e2Lower,e2)) =
+propRefinementRoundedLatticeMeetMonotone _ 
+        (RefOrd.TwoLEPairs ((e1Lower,e1),(e2Lower,e2))) 
+        (effortComp, effortInOut)
+    =
     case RefOrd.pLeqEff effortComp rLower r of
         Just b -> b
         Nothing -> True
@@ -208,12 +232,14 @@ testsRefinementRoundedLattice ::
      HasExtrema t,
      RefinementRoundedLattice t,
      ArbitraryOrderedTuple t,
-     Arbitrary t, Show t, HasLegalValues t,
-     Eq t 
-     ) => 
-    (String, t) -> Test
-testsRefinementRoundedLattice (name, sample) =
-    mkTestGroupLattice name (testsRefinementRoundedLatticeL sample)
+     Show t, HasLegalValues t
+     ) =>
+    (String, t) -> 
+    Area t -> 
+    RefOrd.Area t -> 
+    Test
+testsRefinementRoundedLattice (name, sample) areaN areaR =
+    mkTestGroupLattice name (testsRefinementRoundedLatticeL areaN areaR sample)
 
 testsRefinementRoundedLatticeDistributive :: 
     (RefOrd.PartialComparison t,
@@ -221,12 +247,14 @@ testsRefinementRoundedLatticeDistributive ::
      HasExtrema t,
      RefinementRoundedLattice t,
      ArbitraryOrderedTuple t,
-     Arbitrary t, Show t, HasLegalValues t, 
-     Eq t 
+     Show t, HasLegalValues t
      ) => 
-    (String, t) -> Test
-testsRefinementRoundedLatticeDistributive (name, sample) =
-    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveL sample)
+    (String, t) -> 
+    Area t -> 
+    RefOrd.Area t -> 
+    Test
+testsRefinementRoundedLatticeDistributive (name, sample) areaN areaR =
+    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveL areaN areaR sample)
 
 testsRefinementRoundedLatticeDistributiveMonotone :: 
     (RefOrd.PartialComparison t,
@@ -234,39 +262,41 @@ testsRefinementRoundedLatticeDistributiveMonotone ::
      HasExtrema t,
      RefinementRoundedLattice t,
      ArbitraryOrderedTuple t,
-     Arbitrary t, Show t, HasLegalValues t, 
-     Eq t 
+     Show t, HasLegalValues t 
      ) => 
-    (String, t) -> Test
-testsRefinementRoundedLatticeDistributiveMonotone (name, sample) =
-    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveMonotoneL sample)
+    (String, t) -> 
+    Area t -> 
+    RefOrd.Area t -> 
+    Test
+testsRefinementRoundedLatticeDistributiveMonotone (name, sample) areaN areaR =
+    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveMonotoneL areaN areaR sample)
 
-testsRefinementRoundedLatticeL sample =    
+testsRefinementRoundedLatticeL areaN areaR sample =    
         [
-         testProperty "join idempotent" (propRefinementRoundedLatticeJoinIdempotent sample)
+         testProperty "join idempotent" (areaN, propRefinementRoundedLatticeJoinIdempotent sample)
         ,
-         testProperty "join commutative" (propRefinementRoundedLatticeJoinCommutative sample)
+         testProperty "join commutative" (areaN, propRefinementRoundedLatticeJoinCommutative sample)
         ,
-         testProperty "join associative" (propRefinementRoundedLatticeJoinAssocative sample)
+         testProperty "join associative" (areaN, propRefinementRoundedLatticeJoinAssocative sample)
         ,
-         testProperty "meet idempotent" (propRefinementRoundedLatticeMeetIdempotent sample)
+         testProperty "meet idempotent" (areaN, propRefinementRoundedLatticeMeetIdempotent sample)
         ,
-         testProperty "meet commutative" (propRefinementRoundedLatticeMeetCommutative sample)
+         testProperty "meet commutative" (areaN, propRefinementRoundedLatticeMeetCommutative sample)
         ,
-         testProperty "meet associative" (propRefinementRoundedLatticeMeetAssocative sample)
+         testProperty "meet associative" (areaN, propRefinementRoundedLatticeMeetAssocative sample)
         ]
         
-testsRefinementRoundedLatticeDistributiveL sample =
-    testsRefinementRoundedLatticeL sample ++
+testsRefinementRoundedLatticeDistributiveL areaN areaR sample =
+    testsRefinementRoundedLatticeL areaN areaR sample ++
         [    
-         testProperty "distributive" (propRefinementRoundedLatticeDistributive sample)
+         testProperty "distributive" (areaN, propRefinementRoundedLatticeDistributive sample)
         ]
         
-testsRefinementRoundedLatticeDistributiveMonotoneL sample =
-    testsRefinementRoundedLatticeDistributiveL sample ++
+testsRefinementRoundedLatticeDistributiveMonotoneL areaN areaR sample =
+    testsRefinementRoundedLatticeDistributiveL areaN areaR sample ++
         [    
-         testProperty "join monotone" (propRefinementRoundedLatticeJoinMonotone sample)
+         testProperty "join monotone" (areaR, propRefinementRoundedLatticeJoinMonotone sample)
         ,
-         testProperty "meet monotone" (propRefinementRoundedLatticeMeetMonotone sample)
+         testProperty "meet monotone" (areaR, propRefinementRoundedLatticeMeetMonotone sample)
         ]
     
