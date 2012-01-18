@@ -18,6 +18,7 @@ import Numeric.AERN.Basics.Exception
 
 import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Misc.Bool
+import Numeric.AERN.Misc.Debug
 
 partialRoundedIdempotent :: 
     (Show t, HasLegalValues t) => 
@@ -159,9 +160,18 @@ equalRoundingUpDn23 contextDescription expr1 expr2  (<=?) (*^) (**^) (*.) (**.) 
     && 
     leqIfDefined contextDescription (<=?) (expr2 (*.) (**.) e1 e2 e3) (expr1 (*^) (**^) e1 e2 e3) 
     
-leqIfDefined contextDescription (<=?) val1 val2 =
-    (defined (val1OK <=? val2OK) ===> (val1OK <= val2OK))
+leqIfDefined contextDescription (<=?) val1 val2 
+    | result == True = result
+    | otherwise =
+        unsafePrint
+        (
+            contextDescription ++ ": leqIfDefined: val1 <= val2 failed:"
+            ++ "\n val1 = " ++ show val1
+            ++ "\n val2 = " ++ show val2
+        ) $
+        result
     where
+    result = (defined (val1OK <=? val2OK)) ===> (val1OK <= val2OK) 
     val1OK = check val1
     val2OK = check val2
     check = detectIllegalValues contextDescription

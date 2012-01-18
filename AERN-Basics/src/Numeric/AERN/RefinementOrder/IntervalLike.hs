@@ -55,7 +55,7 @@ class
     fromEndpointsOutWithDefaultEffort p@(l,r) = fromEndpointsOutEff (fromEndpointsDefaultEffort l) p
     
 propEndpointsFromGet :: 
-    (IntervalLike t, Eq t, 
+    (IntervalLike t, Show t, 
      HasLegalValues t, PartialComparison t) 
     => 
     t -> 
