@@ -71,7 +71,7 @@ testsDI =
        RefOrd.testsPartialComparison  ("DI", sampleDI) areaR, 
        RefOrd.testsRoundedBasis ("DI", sampleDI),
        RefOrd.testsOuterInnerRoundedBasisInPlace ("DI", sampleDI),
-       RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI),
+       RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI) areaR,
        RefOrd.testsOuterInnerRoundedLatticeInPlace ("DI", sampleDI),
        testsDistance ("DI", sampleDI),
        testsImprecision ("DI", sampleDI),
