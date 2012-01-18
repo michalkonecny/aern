@@ -41,7 +41,7 @@ pPosNonnegNegNonposEff effort a =
     infoGT = pOrdInfGT info
     infoLEQ = pOrdInfLEQ info
     infoGEQ = pOrdInfGEQ info
-    
+        
 class HasOne t where
     one :: t -> t
     

@@ -28,6 +28,9 @@ import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
+import qualified Numeric.AERN.NumericOrder as NumOrd
+--import Numeric.AERN.NumericOrder.OpsDefaultEffort
+
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.Effort
@@ -180,7 +183,8 @@ instance
 
 instance
     (RefOrd.IntervalLike cf, 
-     HasOne cf, HasZero cf, HasAntiConsistency cf, 
+     HasOne cf, HasZero cf, HasAntiConsistency cf,
+     NumOrd.PartialComparison cf, 
      Arbitrary cf, GeneratableVariables var) 
     =>
     (Arbitrary (IntPolyCfg var cf))
@@ -190,7 +194,8 @@ instance
         Int1To10 arity <- arbitrary
         Int1To10 maxdeg <- arbitrary
         Int1To1000 maxsizeRaw <- arbitrary
-        sampleCfs <- vectorOf (50 * arity) arbitrary -- probability that too many of these are anti-consistent is negligible
+        sampleCfs <- vectorOf (50 * arity) arbitrary 
+            -- probability that too many of these are anti-consistent and not nonnegative is negligible
         return $ mkCfg arity maxdeg maxsizeRaw sampleCfs
         where
         mkCfg arity maxdeg maxsizeRaw sampleCfs =
@@ -198,16 +203,27 @@ instance
                 vars doms (head sampleCfs) maxdeg (max 2 maxsizeRaw)
             where
             vars = getNVariables arity
-            doms = take arity $ filter notAntiConsistent sampleCfs
-            notAntiConsistent a =
-                (isAntiConsistentEff eff a) == Just False
+            doms = 
+                take arity $ filter notAntiConsistentNotNegative sampleCfs
+                -- domain intervals must not be anti-contistent (in particular not singletons)
+                -- and domain intervals must be non-negative
+            notAntiConsistentNotNegative a =
+                (isAntiConsistentEff effConsistency a) == Just False
+                &&
+                nonnegative
                 where
-                eff = consistencyDefaultEffort a
+                nonnegative =
+                    case pNonnegNonposEff effNumComp a of
+                        (Just True,_) -> True
+                        _ -> False
+                effConsistency = consistencyDefaultEffort a
+                effNumComp = NumOrd.pCompareDefaultEffort a
              
 instance
     (Show var, Show cf,
      RefOrd.IntervalLike cf, 
      HasOne cf, HasZero cf, HasAntiConsistency cf, 
+     NumOrd.PartialComparison cf, 
      Arbitrary cf, GeneratableVariables var) 
     =>
     (EffortIndicator (IntPolyCfg var cf))

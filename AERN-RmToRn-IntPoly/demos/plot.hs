@@ -43,14 +43,22 @@ type Poly = IntPoly String CF
 
 main =
     do
+    putStrLn $ "comparing v1 and v2: " 
+        ++ (show $ RefOrd.pCompareInFullEff effRefComp v1 v2)
+        ++ "\n a1 = " ++ showP a1
+        ++ "\n a2 = " ++ showP a2
+        ++ "\n v1 = " ++ showP v1
+        ++ "\n v2 = " ++ showP v2
 --    Gtk.initGUI
     -- enable multithreaded GUI:
     Gtk.unsafeInitGUIForThreadedRTS
     Gtk.timeoutAddFull 
         (Concurrent.yield >> Concurrent.yield >> Concurrent.yield >> return True) 
         Gtk.priorityDefaultIdle 20
-    fnDataTV <- atomically $ newTVar $ FV.FnData fnsTest
-    fnMetaTV <- atomically $ newTVar $ fnmetaTest
+--    let (fns, fnmeta) = (fnsMinmaxInOut, fnmetaMinmaxInOut)
+    let (fns, fnmeta) = (fnsTest, fnmetaTest)
+    fnDataTV <- atomically $ newTVar $ FV.FnData fns
+    fnMetaTV <- atomically $ newTVar $ fnmeta
 --    putStrLn "plot main: calling FV.new"
     FV.new samplePoly effDrawFn eff eff (fnDataTV, fnMetaTV) Nothing
 --    putStrLn "plot main: FV.new completed"
@@ -64,49 +72,130 @@ main =
 --        fnmeta <- readTVar fnMetaTV
 --        writeTVar fnMetaTV $ fnmeta { FV.dataFnsUpdated = True }
 
+showP p = showPoly id show p -- ++ " [" ++ show p ++ "]"
+
 fnsTest :: [[Poly]]
 fnsTest = 
     [[
-        x <*> cHalf1,
-        x <*> cHalf1 <+> (c10 </>| (4::Int))
+        a1,
+        a2,
+        v1,
+        v2
     ]]
+    
+a1,a2,v1,v2 :: Poly
+a1 = 
+    x <*>| (constructCF (0.9929615885375352) (0.9929615885375354)) 
+        <+>| (constructCF (1.0000063533391987) (1.000006353339199)) 
+a2 = 
+    x <*>| (constructCF (-269.30527783337715) (-269.30527783337686)) 
+        <+>| (constructCF (272.29824577525386) (272.2982457752539)) 
+v1 = NumOrd.maxOutEff (minmaxInOutDefaultEffortIntPolyWithBezierDegree 6 x) a1 a2
+v2 = NumOrd.maxInEff (minmaxInOutDefaultEffortIntPolyWithBezierDegree 6 x) a2 a1  
+
     
 fnmetaTest = (FV.defaultFnMetaData x)
     {
         FV.dataFnGroupNames = ["test"],
         FV.dataFnNames = 
+            [["0.5-x","0","maxOut 0 _", "maxIn _ 0"]],
+        FV.dataFnStyles = 
+            [[black, black, blue, blue]]
+    }
+
+{- Error report being investigated:
+
+unsafe: roundedCommutative: leqIfDefined: val1 <= val2 failed:
+ val1 = IntPoly{[_-269.30527783337715,-269.30527783337686^]"x" + [_272.29824577525386,272.2982457752539^]; cfg{[("x",[_0.0,1.0^])];4/30}; V{"x"/[(0,C{[_272.29824577525386,272.2982457752539^]}),(1,C{[_-269.30527783337715,-269.30527783337686^]})]}}
+ val2 = IntPoly{[_-269.3052778333772,-269.3052778333768^]"x" + [_272.2982457752538,272.298245775254^]; cfg{[("x",[_0.0,1.0^])];4/30}; V{"x"/[(0,C{[_272.2982457752538,272.298245775254^]}),(1,C{[_-269.3052778333772,-269.3052778333768^]})]}}
+UniformlyOrderedPair (
+  IntPoly{[_0.9929615885375352,0.9929615885375354^]"x" + [_1.0000063533391987,1.000006353339199^]; cfg{[("x",[_0.0,1.0^])];4/30}; V{"x"/[(0,C{[_1.0000063533391987,1.000006353339199^]}),(1,C{[_0.9929615885375352,0.9929615885375354^]})]}},
+  IntPoly{[_-269.30527783337715,-269.30527783337686^]"x" + [_272.29824577525386,272.2982457752539^]; cfg{[("x",[_0.0,1.0^])];4/30}; V{"x"/[(0,C{[_272.29824577525386,272.2982457752539^]}),(1,C{[_-269.30527783337715,-269.30527783337686^]})]}})
+(((429,((),((),()))),()),((((((),((),())),()),((),((),())),()),((69,((),((),()))),((),((),()))),(((),((),())),(((),((),())),((),((),(),()),(((),(),((),())),()))),cfg{[("x1",[_1.9244607101950584e-166,1.2657998066848274e-17^]),("x2",[_0.0,1.3976435349666616^]),("x3",[_6.441276949365498e-107,0.3401295543363387^]),("x4",[_0.0,1.0^]),("x5",[_0.0,0.870610416865817^]),("x6",[_1.2158278549217246e-101,1.0087914398193338^])];1/809}),(((),((),())),(((),((),())),(((),(),()),((),(),()),(((),(),((),())),()))))),10,(),()))
+
+  join commutative: [Failed]
+Falsifiable with seed -1963584063, after 13 tests. Reason: Falsifiable
+
+-}
+
+---------------------------------
+
+fnsMixed :: [[Poly]]
+fnsMixed = 
+    [[
+        x <*> cHalf1,
+        x <*> cHalf1 <+> (c10 </>| (4::Int))
+    ]]
+    
+fnmetaMixed = (FV.defaultFnMetaData x)
+    {
+        FV.dataFnGroupNames = ["consistency"],
+        FV.dataFnNames = 
             [["thick","mixed"]],
         FV.dataFnStyles = 
             [[black, blue]]
     }
-    
 
-fnsMinmax :: [[Poly]]    
-fnsMinmax = 
-    [
-     [x, cOneOver16, 
-      NumOrd.maxUpEff minmaxEff x cOneOver16,  
-      NumOrd.maxDnEff minmaxEff x cOneOver16
+---------------------------------
+    
+fnsMinmaxUpDn :: [[Poly]]    
+fnsMinmaxUpDn = 
+    [ 
+     [x <*> cHalf1, cOneOver16, 
+      NumOrd.maxUpEff minmaxUpDnEff (x <*> cHalf1) cOneOver16,  
+      NumOrd.maxDnEff minmaxUpDnEff (x <*> cHalf1) cOneOver16
      ]
      ,
-     [x, cSevenOver16, 
-      NumOrd.maxUpEff minmaxEff x cSevenOver16,  
-      NumOrd.maxDnEff minmaxEff x cSevenOver16
+     [x <*> cHalf1, cSevenOver16, 
+      NumOrd.maxUpEff minmaxUpDnEff (x <*> cHalf1) cSevenOver16,  
+      NumOrd.maxDnEff minmaxUpDnEff (x <*> cHalf1) cSevenOver16
      ]
      ,
-     [x, cOneMinusOneOver16, 
-      NumOrd.maxUpEff minmaxEff x cOneMinusOneOver16,  
-      NumOrd.maxDnEff minmaxEff x cOneMinusOneOver16
+     [x <*> cHalf1, cOneMinusOneOver16, 
+      NumOrd.maxUpEff minmaxUpDnEff (x <*> cHalf1) cOneMinusOneOver16,  
+      NumOrd.maxDnEff minmaxUpDnEff (x <*> cHalf1) cOneMinusOneOver16
+     ]
+    ]
+    
+fnsMinmaxInOut :: [[Poly]]    
+fnsMinmaxInOut = 
+    [ 
+     [x <*> cHalf1, cOneOver16, 
+      NumOrd.maxOutEff minmaxInOutEff (x <*> cHalf1) cOneOver16,  
+      NumOrd.maxInEff minmaxInOutEff (x <*> cHalf1) cOneOver16
+     ]
+     ,
+     [x <*> cHalf1, cSevenOver16, 
+      NumOrd.maxOutEff minmaxInOutEff (x <*> cHalf1) cSevenOver16,  
+      NumOrd.maxInEff minmaxInOutEff (x <*> cHalf1) cSevenOver16
+     ]
+     ,
+     [x <*> cHalf1, cOneMinusOneOver16, 
+      NumOrd.maxOutEff minmaxInOutEff (x <*> cHalf1) cOneMinusOneOver16,  
+      NumOrd.maxInEff minmaxInOutEff (x <*> cHalf1) cOneMinusOneOver16
      ]
     ]
 
-fnmetaMinmax = (FV.defaultFnMetaData x)
+fnmetaMinmaxUpDn = (FV.defaultFnMetaData x)
     {
         FV.dataFnGroupNames = ["minimax 1/16", "minmax 7/16", "minmax 15/16"],
         FV.dataFnNames = 
             [["x", "1/16", "maxUp", "maxDn"], 
              ["x", "7/16", "maxUp", "maxDn"],
              ["x", "15/16", "maxUp", "maxDn"]],
+        FV.dataFnStyles = 
+            [[black, black, black, black],
+             [black, black, black, black],
+             [black, black, black, black]]
+    }
+
+fnmetaMinmaxInOut = (FV.defaultFnMetaData x)
+    {
+        FV.dataFnGroupNames = ["minimax 1/16", "minmax 7/16", "minmax 15/16"],
+        FV.dataFnNames = 
+            [["x", "1/16", "maxOut", "maxIn"], 
+             ["x", "7/16", "maxOut", "maxIn"],
+             ["x", "15/16", "maxOut", "maxIn"]],
         FV.dataFnStyles = 
             [[black, black, black, black],
              [black, black, black, black],
@@ -136,8 +225,12 @@ samplePoly = x
 
 --eff = (100, (100,())) -- MPFR
 eff = ArithInOut.roundedRealDefaultEffort (0:: CF)
-minmaxEff = minmaxDefaultEffortIntPolyWithBezierDegree 10 x
+effNumComp = NumOrd.pCompareDefaultEffort x
+effRefComp = RefOrd.pCompareDefaultEffort x
+minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 x
+minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 x
 effDrawFn = cairoDrawFnDefaultEffort samplePoly
+
 
 evalOpsOutCf = evalOpsOut eff x (0::CF)
 
@@ -147,7 +240,7 @@ cfg =
             ipolycfg_vars = vars,
             ipolycfg_doms = doms,
             ipolycfg_sample_cf = 0 :: CF,
-            ipolycfg_maxdeg = 10,
+            ipolycfg_maxdeg = 4,
             ipolycfg_maxsize = 30
         }
 
@@ -158,4 +251,8 @@ vars = ["x"]
 doms :: [CF]
 doms = [(0 </\> 1)]
 
-
+constructCF :: Double -> Double -> CF
+constructCF l r =
+    RefOrd.fromEndpointsOutWithDefaultEffort (cf0 <+>| l, cf0 <+>| r)
+cf0 = 0 :: CF
+    
