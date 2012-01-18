@@ -71,7 +71,7 @@ testsMI =
        NumOrd.testsRefinementRoundedLatticeInPlace ("MI", sampleMI),
        RefOrd.testsPartialComparison  ("MI", sampleMI) areaR, 
        RefOrd.testsRoundedBasis ("MI", sampleMI),
-       RefOrd.testsRoundedLatticeDistributive ("MI", sampleMI),
+       RefOrd.testsRoundedLatticeDistributive ("MI", sampleMI) areaR,
        testsDistance ("MI", sampleMI),
        testsImprecision ("MI", sampleMI),
        ArithInOut.testsConvertNumOrd ("Integer", sampleI, "MI", sampleMI),

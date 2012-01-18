@@ -56,12 +56,12 @@ testsPoly =
 --       ,
 --       NumOrd.testsRoundedLatticeDistributive ("IntPoly-DI", samplePoly) areaN
 --       ,
-       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone ("IntPoly-DI", samplePoly) areaN areaR
+--       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone ("IntPoly-DI", samplePoly) areaN areaR
 --       ,
---       RefOrd.testsPartialComparison ("IntPoly-DI", samplePoly) (RefOrd.areaWhole samplePoly)
+--       RefOrd.testsPartialComparison ("IntPoly-DI", samplePoly) areaR
 --       ,
 ----       RefOrd.testsRoundedBasis ("MI", sampleMI),
---       RefOrd.testsRoundedLatticeDistributive ("IntPoly-DI", samplePoly) (RefOrd.areaWhole samplePoly)
+       RefOrd.testsRoundedLatticeDistributive ("IntPoly-DI", samplePoly) areaR
 --       ,
 --       testsDistance ("MI", sampleMI),
 --       testsImprecision ("MI", sampleMI),
