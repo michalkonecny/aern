@@ -38,8 +38,8 @@ tests = testsDouble ++ testsDI
 testsDouble =
     [
 --       NumOrd.testsArbitraryTuple ("Double", sampleD, NumOrd.compare),
-       NumOrd.testsPartialComparison ("Double", sampleD) (NumOrd.areaWhole sampleD),
-       NumOrd.testsRoundedLatticeDistributive ("Double", sampleD)  (NumOrd.areaWhole sampleD), -- (Just ("NaN", nanD)),
+       NumOrd.testsPartialComparison ("Double", sampleD) areaN,
+       NumOrd.testsRoundedLatticeDistributive ("Double", sampleD) areaN,
        NumOrd.testsRoundedLatticeInPlace ("Double", sampleD),
        testsDistance ("Double", sampleD),
        ArithUpDn.testsConvert ("Double", sampleD, "Integer", sampleI),
@@ -65,10 +65,10 @@ testsDouble =
 testsDI =
     [
        testsConsistency ("DI", sampleDI),
-       NumOrd.testsPartialComparison ("DI", sampleDI) (NumOrd.areaWhole sampleDI),
-       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("DI", sampleDI),
+       NumOrd.testsPartialComparison ("DI", sampleDI) areaNInterval,
+       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("DI", sampleDI) areaNInterval areaR,
        NumOrd.testsRefinementRoundedLatticeInPlace ("DI", sampleDI),
-       RefOrd.testsPartialComparison  ("DI", sampleDI), 
+       RefOrd.testsPartialComparison  ("DI", sampleDI) areaR, 
        RefOrd.testsRoundedBasis ("DI", sampleDI),
        RefOrd.testsOuterInnerRoundedBasisInPlace ("DI", sampleDI),
        RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI),
@@ -97,5 +97,10 @@ testsDI =
        ArithInOut.testsInOutSqrtInPlace ("DI", sampleDI) unPositiveDI
     ]
 
+areaN = NumOrd.areaWhole sampleD
+areaNInterval = NumOrd.areaWhole sampleDI
+areaR = RefOrd.areaWhole sampleDI
+
 sampleI = 1 :: Integer
 sampleR = 1 :: Rational
+

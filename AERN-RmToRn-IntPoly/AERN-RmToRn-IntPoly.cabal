@@ -44,10 +44,11 @@ Library
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
-        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Substitution
-        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Minmax
         Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Plot
+        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder
+        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Minmax
+        Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RefinementOrder
   other-modules:
 
 Executable minimal

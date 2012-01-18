@@ -20,6 +20,7 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate,
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation,
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder,
+        module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RefinementOrder,
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Substitution,
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Minmax,
         module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Plot
@@ -33,6 +34,7 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RefinementOrder
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Substitution
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Minmax
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Plot
