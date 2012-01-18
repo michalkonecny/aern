@@ -66,15 +66,24 @@ main =
     putStrLn $ "(x^2-1 `comp` -0.5) = " ++ (show $ numCompare (x <*> x <-> c1) (neg (cHalf)))
     putStrLn $ "(x^2-1 `comp` -1) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> c1))
     putStrLn $ "(x^2-1 `comp` -2) = " ++ (show $ numCompare (x <*> x <-> c1) ((c0 <-> c1) <-> c1))
-    putStrLn "min/max:"
-    putStrLn $ "x - 0.5 `maxUp` 0 = " ++ (showP $ NumOrd.maxUpEff minmaxEff (x <-> cHalf) c0)
-    putStrLn $ "x - 0.5 `maxDn` 0 = " ++ (showP $ NumOrd.maxDnEff minmaxEff (x <-> cHalf) c0)
-    putStrLn $ "x - 0.5 `minUp` 0 = " ++ (showP $ NumOrd.minUpEff minmaxEff (x <-> cHalf) c0)
-    putStrLn $ "x - 0.5 `minDn` 0 = " ++ (showP $ NumOrd.minDnEff minmaxEff (x <-> cHalf) c0)
-    putStrLn $ "x - 1/16 `maxUp` 0 = " ++ (showP $ NumOrd.maxUpEff minmaxEff (x <-> cOneOver16) c0)
-    putStrLn $ "x - 1/16 `maxDn` 0 = " ++ (showP $ NumOrd.maxDnEff minmaxEff (x <-> cOneOver16) c0)
-    putStrLn $ "x - 1/16 `minUp` 0 = " ++ (showP $ NumOrd.minUpEff minmaxEff (x <-> cOneOver16) c0)
-    putStrLn $ "x - 1/16 `minDn` 0 = " ++ (showP $ NumOrd.minDnEff minmaxEff (x <-> cOneOver16) c0)
+    putStrLn "min/max up/dn:"
+    putStrLn $ "x - 0.5 `maxUp` 0 = " ++ (showP $ NumOrd.maxUpEff minmaxUpDnEff (x <-> cHalf) c0)
+    putStrLn $ "x - 0.5 `maxDn` 0 = " ++ (showP $ NumOrd.maxDnEff minmaxUpDnEff (x <-> cHalf) c0)
+    putStrLn $ "x - 0.5 `minUp` 0 = " ++ (showP $ NumOrd.minUpEff minmaxUpDnEff (x <-> cHalf) c0)
+    putStrLn $ "x - 0.5 `minDn` 0 = " ++ (showP $ NumOrd.minDnEff minmaxUpDnEff (x <-> cHalf) c0)
+    putStrLn $ "x - 1/16 `maxUp` 0 = " ++ (showP $ NumOrd.maxUpEff minmaxUpDnEff (x <-> cOneOver16) c0)
+    putStrLn $ "x - 1/16 `maxDn` 0 = " ++ (showP $ NumOrd.maxDnEff minmaxUpDnEff (x <-> cOneOver16) c0)
+    putStrLn $ "x - 1/16 `minUp` 0 = " ++ (showP $ NumOrd.minUpEff minmaxUpDnEff (x <-> cOneOver16) c0)
+    putStrLn $ "x - 1/16 `minDn` 0 = " ++ (showP $ NumOrd.minDnEff minmaxUpDnEff (x <-> cOneOver16) c0)
+    putStrLn "min/max in/out:"
+    putStrLn $ "x - 0.5 `maxOut` 0 = " ++ (showP $ NumOrd.maxOutEff minmaxInOutEff (x <-> cHalf) c0)
+    putStrLn $ "x - 0.5 `maxIn` 0 = " ++ (showP $ NumOrd.maxInEff minmaxInOutEff (x <-> cHalf) c0)
+    putStrLn $ "x - 0.5 `minOut` 0 = " ++ (showP $ NumOrd.minOutEff minmaxInOutEff (x <-> cHalf) c0)
+    putStrLn $ "x - 0.5 `minIn` 0 = " ++ (showP $ NumOrd.minInEff minmaxInOutEff (x <-> cHalf) c0)
+    putStrLn $ "x - 1/16 `maxOut` 0 = " ++ (showP $ NumOrd.maxOutEff minmaxInOutEff (x <-> cOneOver16) c0)
+    putStrLn $ "x - 1/16 `maxIn` 0 = " ++ (showP $ NumOrd.maxInEff minmaxInOutEff (x <-> cOneOver16) c0)
+    putStrLn $ "x - 1/16 `minOut` 0 = " ++ (showP $ NumOrd.minOutEff minmaxInOutEff (x <-> cOneOver16) c0)
+    putStrLn $ "x - 1/16 `minIn` 0 = " ++ (showP $ NumOrd.minInEff minmaxInOutEff (x <-> cOneOver16) c0)
     putStrLn "*** ops not using generic interfaces (yet): ***"
     putStrLn "differentiation:"
     putStrLn $ "d (2(x + y + 2))/dx = " ++ (showP $ diffPoly eff "x" twoBxPyP2)
@@ -138,7 +147,8 @@ integTwoBxPyP2 = integratePolyMainVar eff 0 c1 twoBxPyP2
 
 --eff = (100, (100,())) -- MPFR
 eff = ArithInOut.roundedRealDefaultEffort (0:: CF)
-minmaxEff = NumOrd.minmaxDefaultEffort x
+minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 x
+minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 x
 
 evalOpsOutCf = evalOpsOut eff x (0::CF)
 

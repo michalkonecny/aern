@@ -52,15 +52,17 @@ tests = testsPoly
 testsPoly =
     [
 --       testsConsistency ("MI", sampleMI),
-       NumOrd.testsPartialComparison ("IntPoly-DI", samplePoly) (NumOrd.areaWhole samplePoly)
-       ,
-       NumOrd.testsRoundedLatticeDistributive ("IntPoly-DI", samplePoly) (NumOrd.areaWhole samplePoly)
+--       NumOrd.testsPartialComparison ("IntPoly-DI", samplePoly) areaN
 --       ,
---       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("MI", sampleMI),
---       NumOrd.testsRefinementRoundedLatticeInPlace ("MI", sampleMI),
---       RefOrd.testsPartialComparison  ("MI", sampleMI), 
---       RefOrd.testsRoundedBasis ("MI", sampleMI),
---       RefOrd.testsRoundedLatticeDistributive ("MI", sampleMI),
+--       NumOrd.testsRoundedLatticeDistributive ("IntPoly-DI", samplePoly) areaN
+--       ,
+       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone ("IntPoly-DI", samplePoly) areaN areaR
+--       ,
+--       RefOrd.testsPartialComparison ("IntPoly-DI", samplePoly) (RefOrd.areaWhole samplePoly)
+--       ,
+----       RefOrd.testsRoundedBasis ("MI", sampleMI),
+--       RefOrd.testsRoundedLatticeDistributive ("IntPoly-DI", samplePoly) (RefOrd.areaWhole samplePoly)
+--       ,
 --       testsDistance ("MI", sampleMI),
 --       testsImprecision ("MI", sampleMI),
 --       ArithInOut.testsConvertNumOrd ("Integer", sampleI, "MI", sampleMI),
@@ -84,6 +86,9 @@ testsPoly =
 --       ArithInOut.testsInOutSqrt ("MI", sampleMI) unPositiveMI
     ]
 
+areaN = NumOrd.areaWhole samplePoly
+areaR = RefOrd.areaWhole samplePoly
+
 sampleD = 1 :: Double
 sampleI = 1 :: Integer
 sampleR = 1 :: Rational
@@ -104,8 +109,8 @@ cfg =
 dombox = Map.fromList $ zip vars doms
 
 doms :: [CF]
-doms = [(0 </\> 1), 0 </\> 1]
-vars = ["x", "y"]
---doms = [(0 </\> 1)]
---vars = ["x"]
+--doms = [(0 </\> 1), 0 </\> 1]
+--vars = ["x", "y"]
+doms = [(0 </\> 1)]
+vars = ["x"]
         

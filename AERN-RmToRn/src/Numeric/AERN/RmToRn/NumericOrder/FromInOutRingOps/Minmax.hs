@@ -53,7 +53,7 @@ import Test.QuickCheck
 import Control.Monad.ST (ST)
 
 
-type MinmaxInOutEffortIndicatorFromRingOps f t =
+type MinmaxEffortIndicatorFromRingOps f t =
         ((ArithUpDn.ConvertEffortIndicator t (Domain f), -- finding the range of a function of type t
           ArithInOut.RoundedRealEffortIndicator (Domain f),
           RefOrd.GetEndpointsEffortIndicator (Domain f)
@@ -64,8 +64,7 @@ type MinmaxInOutEffortIndicatorFromRingOps f t =
           ,
          (ArithInOut.RingOpsEffortIndicator f,
           ArithInOut.MixedFieldOpsEffortIndicator f Int,
-          SizeLimits f,
-          Int1To10 -- ^ degree of Bernstein approximations - 1 (1 is added to avoid the illegal degree 1)
+          SizeLimits f
          ),
          (ArithInOut.RingOpsEffortIndicator t,
           ArithInOut.MixedFieldOpsEffortIndicator t (Domain f)
@@ -82,30 +81,17 @@ type MinmaxInOutEffortIndicatorFromRingOps f t =
 --     ArithInOut.RoundedMixedField t (Domain f),
 --     Show (SizeLimits f)) 
 --    =>
---    Show (MinmaxInOutEffortIndicatorFromRingOps f t)
+--    Show (MinmaxEffortIndicatorFromRingOps f t)
 
     
-defaultMinmaxInOutEffortIndicatorFromRingOps :: 
-    (ArithUpDn.Convertible t (Domain f), 
-     ArithInOut.RoundedReal (Domain f),
-     RefOrd.IntervalLike (Domain f),
-     HasSizeLimits f,
-     HasDomainBox f,
-     HasEvalOps f t,
-     HasEvalOps f (Domain f),
-     ArithInOut.RoundedRingEffort f,
-     ArithInOut.RoundedMixedFieldEffort f Int,
-     ArithInOut.RoundedMixedField t (Domain f),
-     ArithInOut.RoundedRingEffort t
-    )
-    =>
-    f {-^ the identity function over interval [0,1] in the type used for approximating Bernstein polynomials -} -> 
-    t {-^ an arbitrary sample value of the main type -} -> 
-    MinmaxInOutEffortIndicatorFromRingOps f t
-defaultMinmaxInOutEffortIndicatorFromRingOps =
-    defaultMinmaxInOutEffortIndicatorFromRingOpsDegree 3
+--minmaxEffortIndicatorFromRingOpsAdjustDegree ::
+--    MinmaxEffortIndicatorFromRingOps f t ->
+--    (Int -> Int) ->
+--    MinmaxEffortIndicatorFromRingOps f t
+--minmaxEffortIndicatorFromRingOpsAdjustDegree effMinmax@(a,b,(c1,c2,c3,Int1To10 degree),d) adjDegree =
+--    (a,b,(c1,c2,c3, Int1To10 $ adjDegree degree),d)
 
-defaultMinmaxInOutEffortIndicatorFromRingOpsDegree :: 
+defaultMinmaxEffortIndicatorFromRingOps :: 
     (ArithUpDn.Convertible t (Domain f), 
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
@@ -119,11 +105,10 @@ defaultMinmaxInOutEffortIndicatorFromRingOpsDegree ::
      ArithInOut.RoundedRingEffort t
     )
     =>
-    Int ->
     f {-^ an arbitrary sample value of a function type used to model internal Bernstein approximations -} -> 
     t {-^ an arbitrary sample value of the main type -} -> 
-    MinmaxInOutEffortIndicatorFromRingOps f t
-defaultMinmaxInOutEffortIndicatorFromRingOpsDegree degree sampleF sampleT =
+    MinmaxEffortIndicatorFromRingOps f t
+defaultMinmaxEffortIndicatorFromRingOps sampleF sampleT =
       -- ^ variable @x@ over @[0,1]@ of the function type @f@ to use for computing Bernstein approximation of @max(0,x-c)@
     ((ArithUpDn.convertDefaultEffort sampleT sampleDF, -- finding the range of a function of type t
       ArithInOut.roundedRealDefaultEffort sampleDF,
@@ -136,8 +121,7 @@ defaultMinmaxInOutEffortIndicatorFromRingOpsDegree degree sampleF sampleT =
      ,
      (ArithInOut.ringOpsDefaultEffort sampleF,
       ArithInOut.mixedFieldOpsDefaultEffort sampleF (1::Int),
-      getSizeLimits sampleF,
-      Int1To10 (degree - 1) -- ^ degree of Bernstein approximations - 1
+      getSizeLimits sampleF
      )
      ,
      (ArithInOut.ringOpsDefaultEffort sampleT,
@@ -167,11 +151,12 @@ maxUpEffFromRingOps ::
     =>
     f ->
     (SizeLimits f -> f) ->
-    MinmaxInOutEffortIndicatorFromRingOps f t -> 
+    MinmaxEffortIndicatorFromRingOps f t ->
+    Int -> -- ^ degree of Bernstein approximations (must be > 1)
     t -> t -> t
-maxUpEffFromRingOps _ getX eff@(_, _, _, (effRing, _)) a b =
+maxUpEffFromRingOps _ getX eff@(_, _, _, (effRing, _)) degree a b =
     let ?addInOutEffort = effAdd in
-    a <+> (snd $ maxZeroDnUp getX eff $ b <-> a)
+    a <+> (snd $ maxZeroDnUp getX eff degree $ b <-> a)
     where
     effAdd = ArithInOut.ringEffortAdd sampleT $ effRing
     sampleT = a
@@ -196,34 +181,68 @@ maxDnEffFromRingOps ::
     =>
     f ->
     (SizeLimits f -> f) ->
-    MinmaxInOutEffortIndicatorFromRingOps f t -> 
+    MinmaxEffortIndicatorFromRingOps f t -> 
+    Int -> -- ^ degree of Bernstein approximations (must be > 1)
     t -> t -> t
-maxDnEffFromRingOps _ getX eff@(_, _, _, (effRing, _)) a b =
+maxDnEffFromRingOps _ getX eff@(_, _, _, (effRing, _)) degree a b =
     let ?addInOutEffort = effAdd in
-    a <+> (fst $ maxZeroDnUp getX eff $ b <-> a)
+    a <+> (fst $ maxZeroDnUp getX eff degree $ b <-> a)
     where
     effAdd = ArithInOut.ringEffortAdd sampleT $ effRing
     sampleT = a
 
---maxOutEffFromRingOps :: 
---    (ArithInOut.RoundedAdd t, 
---     ArithInOut.RoundedSubtr t, 
---     ArithInOut.RoundedMultiply t, 
---     ArithInOut.RoundedPowerToNonnegInt t) =>
---    MinmaxInOutEffortIndicatorFromRingOps f t -> t -> t -> t
---maxOutEffFromRingOps eff@(_, _, effAdd, _) a b =
---    let ?addInOutEffort = effAdd in
---    a <+> (maxZeroOut eff $ b <-> a)
---
---maxZeroOut ::    
---    (ArithInOut.RoundedAdd t, 
---     ArithInOut.RoundedSubtr t, 
---     ArithInOut.RoundedMultiply t, 
---     ArithInOut.RoundedPowerToNonnegInt t) =>
---    MinmaxInOutEffortIndicatorFromRingOps f t -> t -> t
---maxZeroOut (degree, x, effAdd, effMult) a =
---    error $ "maxZero not implemented yet"
-    
+minUpEffFromRingOps ::
+    (
+     Show t, Show f,
+     HasZero t, 
+     ArithInOut.RoundedRing t,
+     ArithUpDn.Convertible t (Domain f), 
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     Show (Domain f),
+     ArithInOut.RoundedMixedField t (Domain f),
+     HasEvalOps f t, 
+     HasVarValue (VarBox f t) (Var f) t,
+     HasEvalOps f (Domain f),
+     HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
+     HasProjections f, HasConstFns f, HasOne f, -- HasZero f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedMixedField f Int) 
+    =>
+    f ->
+    (SizeLimits f -> f) ->
+    MinmaxEffortIndicatorFromRingOps f t -> 
+    Int -> -- ^ degree of Bernstein approximations (must be > 1)
+    t -> t -> t
+minUpEffFromRingOps sampleF getX eff degree a b =
+    neg $ maxDnEffFromRingOps sampleF getX eff degree (neg a) (neg b)
+
+minDnEffFromRingOps ::
+    (
+     Show t, Show f,
+     HasZero t, 
+     ArithInOut.RoundedRing t,
+     ArithUpDn.Convertible t (Domain f), 
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     Show (Domain f),
+     ArithInOut.RoundedMixedField t (Domain f),
+     HasEvalOps f t, 
+     HasVarValue (VarBox f t) (Var f) t,
+     HasEvalOps f (Domain f),
+     HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
+     HasProjections f, HasConstFns f, HasOne f, -- HasZero f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedMixedField f Int) 
+    =>
+    f ->
+    (SizeLimits f -> f) ->
+    MinmaxEffortIndicatorFromRingOps f t -> 
+    Int -> -- ^ degree of Bernstein approximations (must be > 1)
+    t -> t -> t
+minDnEffFromRingOps sampleF getX eff degree a b =
+    neg $ maxUpEffFromRingOps sampleF getX eff degree (neg a) (neg b)
+
 maxZeroDnUp ::    
     (
      Show t, Show f,
@@ -243,7 +262,8 @@ maxZeroDnUp ::
      ArithInOut.RoundedMixedField f Int) 
     =>
     (SizeLimits f -> f) ->
-    MinmaxInOutEffortIndicatorFromRingOps f t -> 
+    MinmaxEffortIndicatorFromRingOps f t ->
+    Int -> -- ^ degree of Bernstein approximations (must be > 1)
     t -> 
     (t,t)
 {-
@@ -262,8 +282,9 @@ maxZeroDnUp
         getX
         ((effTToDom, effRealDF, effGetEDF), 
          (effEvalOpsT, effEvalOpsDF), 
-         (effRingF, effIntFldF, sizeLimits, Int1To10 degreeMinusOne), 
+         (effRingF, effIntFldF, sizeLimits), 
          (effRingT, effFldTDF))
+        degree
         a =
     let ?pCompareEffort = effCompDF in
     case (bounded, maybeaDn, c0 <=? aDn, maybeaUp, aUp <=? c0) of
@@ -286,7 +307,6 @@ maxZeroDnUp
 --            ) $ 
             (viaBernsteinDn, viaBernsteinUp)
     where
-    degree = degreeMinusOne + 1
     sampleT = a
     sampleF = x
     x = getX sizeLimits

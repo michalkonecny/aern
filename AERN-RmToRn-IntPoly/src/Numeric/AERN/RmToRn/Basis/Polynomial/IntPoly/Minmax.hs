@@ -19,7 +19,8 @@
 
 module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Minmax
 (
-    minmaxDefaultEffortIntPolyWithBezierDegree
+    minmaxUpDnDefaultEffortIntPolyWithBezierDegree,
+    minmaxInOutDefaultEffortIntPolyWithBezierDegree
 )
 where
     
@@ -73,12 +74,18 @@ instance
     NumOrd.RoundedLatticeEffort (IntPoly var cf)
     where
     type NumOrd.MinmaxEffortIndicator (IntPoly var cf) =
-        MinmaxInOutEffortIndicatorFromRingOps (IntPoly var cf) (IntPoly var cf)
+        (MinmaxEffortIndicatorFromRingOps (IntPoly var cf) (IntPoly var cf),
+         Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
+         RefOrd.GetEndpointsEffortIndicator (IntPoly var cf))
     minmaxDefaultEffort f =
-        defaultMinmaxInOutEffortIndicatorFromRingOps f f 
+        (defaultMinmaxEffortIndicatorFromRingOps f f,
+         Int1To10 3, -- degree 4
+         RefOrd.getEndpointsDefaultEffort f)
 
-minmaxDefaultEffortIntPolyWithBezierDegree degree f =
-    defaultMinmaxInOutEffortIndicatorFromRingOpsDegree degree f f
+minmaxUpDnDefaultEffortIntPolyWithBezierDegree degree f =
+    (defaultMinmaxEffortIndicatorFromRingOps f f,
+     Int1To10 (degree - 1),
+     RefOrd.getEndpointsDefaultEffort f)
 
 instance
     (Ord var,
@@ -95,7 +102,7 @@ instance
     =>
     NumOrd.RoundedLattice (IntPoly var cf)
     where
-    maxUpEff eff a b =
+    maxUpEff (effMinmax,Int1To10 degreeMinusOne,effGetE) a b =
 --        unsafePrint 
 --            ( "IntPoly maxUpEff:"
 --                ++ "\n a = " ++ showPoly show show a
@@ -104,27 +111,27 @@ instance
 --            ) $
         result
         where
-        result = maxUpEffFromRingOps a getX eff a b
-    maxDnEff eff a b =
+        result = maxUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+        (_aL,aR) = RefOrd.getEndpointsOutEff effGetE a
+        (_bL,bR) = RefOrd.getEndpointsOutEff effGetE b
+    maxDnEff (effMinmax,Int1To10 degreeMinusOne,effGetE) a b =
         result
         where
-        result =  
-            maxDnEffFromRingOps a getX eff a b
-    minUpEff eff a b = 
+        result = maxDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+        (aL,_aR) = RefOrd.getEndpointsOutEff effGetE a
+        (bL,_bR) = RefOrd.getEndpointsOutEff effGetE b
+    minUpEff (effMinmax,Int1To10 degreeMinusOne,effGetE) a b = 
         result
         where
-        result =  
-            neg $ maxDnEffFromRingOps a getX eff (neg a) (neg b)
-    minDnEff eff a b = 
---        unsafePrint 
---            ( "IntPoly minDnEff:"
---                ++ "\n a = " ++ showPoly show show a
---                ++ "\n b = " ++ showPoly show show b
---                ++ "\n a `minDn` b = " ++ showPoly show show result 
---            ) $
+        result = minUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+        (_aL,aR) = RefOrd.getEndpointsOutEff effGetE a
+        (_bL,bR) = RefOrd.getEndpointsOutEff effGetE b
+    minDnEff (effMinmax,Int1To10 degreeMinusOne,effGetE) a b = 
         result
         where
-        result = neg $ maxUpEffFromRingOps a getX eff (neg a) (neg b)
+        result = minDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+        (aL,_aR) = RefOrd.getEndpointsOutEff effGetE a
+        (bL,_bR) = RefOrd.getEndpointsOutEff effGetE b
     
 getX sizeLimits@(IntPolyCfg vars doms sample md ms) =
     newProjection cfg undefined var
@@ -136,3 +143,96 @@ getX sizeLimits@(IntPolyCfg vars doms sample md ms) =
     unit =
         RefOrd.fromEndpointsOutWithDefaultEffort (zero sample, one sample)
     
+instance
+    (Ord var,
+     GeneratableVariables var,
+     HasAntiConsistency cf, 
+     Arbitrary cf, 
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
+     ArithInOut.RoundedMixedField cf cf,
+     Show var,
+     Show cf,
+     Show (Imprecision cf),
+     NumOrd.PartialComparison (Imprecision cf))
+    =>
+    NumOrd.RefinementRoundedLatticeEffort (IntPoly var cf)
+    where
+    type NumOrd.MinmaxInOutEffortIndicator (IntPoly var cf) =
+        (MinmaxEffortIndicatorFromRingOps (IntPoly var cf) (IntPoly var cf),
+         Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
+         RefOrd.GetEndpointsEffortIndicator (IntPoly var cf),
+         RefOrd.FromEndpointsEffortIndicator (IntPoly var cf))
+
+    minmaxInOutDefaultEffort f =
+        (defaultMinmaxEffortIndicatorFromRingOps f f, 
+         Int1To10 3, -- degree 4
+         RefOrd.getEndpointsDefaultEffort f,
+         RefOrd.fromEndpointsDefaultEffort f)
+
+minmaxInOutDefaultEffortIntPolyWithBezierDegree degree f =
+    (defaultMinmaxEffortIndicatorFromRingOps f f,
+     Int1To10 (degree - 1),
+     RefOrd.getEndpointsDefaultEffort f,
+     RefOrd.fromEndpointsDefaultEffort f)
+
+instance
+    (Ord var,
+     GeneratableVariables var,
+     HasAntiConsistency cf, 
+     Arbitrary cf, 
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
+     ArithInOut.RoundedMixedField cf cf,
+     Show var,
+     Show cf,
+     Show (Imprecision cf),
+     NumOrd.PartialComparison (Imprecision cf))
+    =>
+    NumOrd.RefinementRoundedLattice (IntPoly var cf)
+    where
+    maxOutEff (effMinmax,Int1To10 degreeMinusOne,effGetE,effFromE) a b =
+        result
+        where
+        result = RefOrd.fromEndpointsOutEff effFromE (resL,resR)
+        resL = maxDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+        resR = maxUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+        (aL,aR) = RefOrd.getEndpointsOutEff effGetE a
+        (bL,bR) = RefOrd.getEndpointsOutEff effGetE b
+    maxInEff (effMinmax,Int1To10 degreeMinusOne,effGetE,effFromE) a b =
+        result
+        where
+        result = RefOrd.fromEndpointsOutEff effFromE (resL,resR)
+        -- flip consistency of resLOut and resROut so that they are inwards rounded:
+        (_,resL) = RefOrd.getEndpointsOutEff effGetE resLOut
+        (resR,_) = RefOrd.getEndpointsOutEff effGetE resROut
+        -- beware, these are outwards rounded upper/lower estimates of max:
+        resLOut = maxUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+        resROut = maxDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+        (aL,aR) = RefOrd.getEndpointsOutEff effGetE a
+        (bL,bR) = RefOrd.getEndpointsOutEff effGetE b
+    minOutEff (effMinmax,Int1To10 degreeMinusOne,effGetE,effFromE) a b =
+        result
+        where
+        result = RefOrd.fromEndpointsOutEff effFromE (resL,resR)
+        resL = minDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+        resR = minUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+        (aL,aR) = RefOrd.getEndpointsOutEff effGetE a
+        (bL,bR) = RefOrd.getEndpointsOutEff effGetE b
+    minInEff (effMinmax,Int1To10 degreeMinusOne,effGetE,effFromE) a b =
+        result
+        where
+        result = RefOrd.fromEndpointsOutEff effFromE (resL,resR)
+        -- flip consistency of resLOut and resROut so that they are inwards rounded:
+        (_,resL) = RefOrd.getEndpointsOutEff effGetE resLOut
+        (resR,_) = RefOrd.getEndpointsOutEff effGetE resROut
+        -- beware, these are outwards rounded upper/lower estimates of min:
+        resLOut = minUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+        resROut = minDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+        (aL,aR) = RefOrd.getEndpointsOutEff effGetE a
+        (bL,bR) = RefOrd.getEndpointsOutEff effGetE b
+    
+getDegree degreeMinusOne (IntPoly cfg _) =
+    max 2 $ min (degreeMinusOne + 1) maxDeg
+    where
+    maxDeg = ipolycfg_maxdeg cfg
