@@ -74,13 +74,13 @@ testsPoly =
 --       ArithInOut.testsInOutMult ("MI", sampleMI),
 --       ArithInOut.testsInOutIntPower ("MI", sampleMI),
 --       ArithInOut.testsInOutDiv ("MI", sampleMI),
---       ArithInOut.testsInOutFieldOpsInPlace ("MI", sampleMI),
+----       ArithInOut.testsInOutFieldOpsInPlace ("MI", sampleMI),
 --       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Integer", sampleI),
 --       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Rational", sampleR),
 --       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Double", sampleD),
---       ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Integer", sampleI),
---       ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Rational", sampleR),
---       ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Double", sampleD)
+----       ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Integer", sampleI),
+----       ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Rational", sampleR),
+----       ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Double", sampleD)
 --       ,
 --       ArithInOut.testsInOutExp ("MI", sampleMI),
 --       ArithInOut.testsInOutSqrt ("MI", sampleMI) unPositiveMI
