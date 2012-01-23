@@ -1,0 +1,100 @@
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE ImplicitParams #-}
+{-|
+    Module      :  Numeric.AERN.RmToRn.Plot.PicardView.State
+    Description :  internal state of a PicardView widget
+    Copyright   :  (c) Michal Konecny
+    License     :  BSD3
+
+    Maintainer  :  mikkonecny@gmail.com
+    Stability   :  experimental
+    Portability :  portable
+    
+    Internal module for PicardView.
+    Internal state of a PicardView widget.
+-}
+module Numeric.AERN.RmToRn.Plot.PicardView.State
+--(
+--)
+where
+
+import Numeric.AERN.RmToRn.Plot.PicardView.IVP
+
+import Numeric.AERN.RmToRn.Domain
+import Numeric.AERN.RmToRn.New
+
+import Numeric.AERN.RealArithmetic.ExactOps
+
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+
+import Numeric.AERN.Misc.Debug
+
+data PicardViewState =
+    PicardViewState
+    {
+        pcrdvstComputed :: [Int],  
+        pcrdvstRequested :: [Int]  
+    }
+    
+type PicardViewFns f =
+    [ -- list of segment information
+     ([Domain f] -- initial values on this segment
+     , 
+     [ -- list of Picard iterations for this segment
+      ([f], -- the solution enclosure produced by this iteration
+       Bool -- whether this enclosure is within the previous enclosure (if any)
+      )
+     ]
+     )
+    ]
+    
+initState :: 
+    (ArithInOut.RoundedReal (Domain f), 
+     HasConstFns f)
+    =>
+    f ->
+    (ArithInOut.RoundedRealEffortIndicator (Domain f)) ->
+    IVP f -> 
+    (PicardViewFns f, PicardViewState)
+initState sampleF effReal ivp =
+    ([(initialVals, [(mkInitialEnclosures sampleF effReal initialVals, False)])],
+        PicardViewState
+        {
+            pcrdvstRequested = [1],
+            pcrdvstComputed = [1]
+        }
+    )
+    where
+    initialVals = ivpInitialValues ivp
+
+mkInitialEnclosures ::
+    (ArithInOut.RoundedReal (Domain f), 
+     HasConstFns f)
+    =>
+    f ->
+    (ArithInOut.RoundedRealEffortIndicator (Domain f)) ->
+    [Domain f] ->
+    [f]
+mkInitialEnclosures sampleF effReal initialVals =
+    let ?addInOutEffort = effAdd in
+    let ?joinmeetEffort = effJoinMeet in
+    map mkInitEncl initialVals
+    where
+    mkInitEncl initialVal =
+        newConstFnFromSample sampleF $ initialVal <+> cm11
+        where
+        c1 = one sampleDom
+        cm11 = (neg c1) </\> c1
+
+    effJoinMeet = ArithInOut.rrEffortJoinMeet sampleDom effReal
+    effAdd =
+        ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effReal
+    sampleDom = getSampleDomValue sampleF
+        
