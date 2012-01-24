@@ -110,7 +110,7 @@ main =
     putStrLn "structural ops:"
     putStrLn $ "(x^2 + 2xy + 4x + 1)[swap order of x,y] = " ++ (showP $ polySwapFirstTwoVars integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[x->z] = " ++ (showP $ polyRenameMainVar "z" integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)[add z] = " ++ (showP $ polyAddMainVar "z" (0 </\> 2) integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[add z] = " ++ (showP $ polyAddMainVar () eff "z" (0 </\> 2) integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[degree 1] = " ++ (showP $ reducePolyDegree eff $ changeSizeLimits cfgDeg1 integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[degree 0] = " ++ (showP $ reducePolyDegree eff $ changeSizeLimits cfgDeg0 integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[size 2] = " ++ (showP $ reducePolyTermCount eff $ changeSizeLimits cfgSize2 integTwoBxPyP2)
@@ -159,7 +159,8 @@ cfg =
     IntPolyCfg
         {
             ipolycfg_vars = vars,
-            ipolycfg_doms = doms,
+            ipolycfg_domsLZ = doms,
+            ipolycfg_domsLE = replicate (length vars) (0 :: CF),
             ipolycfg_sample_cf = 0 :: CF,
             ipolycfg_maxdeg = 4,
             ipolycfg_maxsize = 30
@@ -172,7 +173,7 @@ cfgSize1 = cfg { ipolycfg_maxsize = 1 }
 cfgSize2 = cfg { ipolycfg_maxsize = 2 }
 cfgSize3 = cfg { ipolycfg_maxsize = 3 }
 
-cfgXTiny = cfg { ipolycfg_doms = domsXTiny }
+cfgXTiny = cfg { ipolycfg_domsLZ = domsXTiny }
 
 cfgXTinySize1 = cfgXTiny { ipolycfg_maxsize = 1 }
 cfgXTinySize2 = cfgXTiny { ipolycfg_maxsize = 2 }

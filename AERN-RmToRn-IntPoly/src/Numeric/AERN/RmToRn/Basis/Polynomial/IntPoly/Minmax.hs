@@ -312,13 +312,13 @@ instance
         (aL,aR) = RefOrd.getEndpointsOutEff effGetE a
         (bL,bR) = RefOrd.getEndpointsOutEff effGetE b
 
-getX sizeLimits@(IntPolyCfg vars doms sample md ms) =
+getX sizeLimits@(IntPolyCfg vars _ _ sample md ms) =
     newProjection cfg undefined var
     where
     _ = [sizeLimits, cfg] -- , getSizeLimits sampleT]
     var = head vars
     cfg =
-        IntPolyCfg [var] [unit] sample md ms
+        IntPolyCfg [var] [unit] [zero sample] sample md ms
     unit =
         RefOrd.fromEndpointsOutWithDefaultEffort (zero sample, one sample)
     

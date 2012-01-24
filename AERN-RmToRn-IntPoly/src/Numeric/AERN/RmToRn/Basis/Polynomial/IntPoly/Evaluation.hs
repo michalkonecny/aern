@@ -190,7 +190,7 @@ evalPolyOnInterval eff values p@(IntPoly cfg _)
     sample = ipolycfg_sample_cf cfg
 
 evalPolyDirect ::
-    (Ord var, Show var, Show cf, Show val) => 
+    (Ord var, Show var, Show cf, Show val, Neg cf) => 
     (PolyEvalOps var cf val) ->
     [val] ->
     IntPoly var cf -> val
@@ -202,7 +202,7 @@ evalPolyDirect opsV values p@(IntPoly cfg terms)
 --        ++ "\n  values = " ++ show values
 --        ++ "\n  p = " ++ show p
 --    ) $
-    ev values terms
+    ev values domsLE terms
     where
     zV = polyEvalZero opsV
     addV = polyEvalAdd opsV 
@@ -210,14 +210,17 @@ evalPolyDirect opsV values p@(IntPoly cfg terms)
     powV = polyEvalPow opsV
     cfV = polyEvalCoeff opsV
     polyV = polyEvalMaybePoly opsV
-    ev [] (IntPolyC cf) = cfV cf
-    ev (varValue : restVars) (IntPolyV _ polys)
+    domsLE = ipolycfg_domsLE cfg
+    ev [] [] (IntPolyC cf) = cfV cf
+    ev (varValue : restVars) (domLE : restDoms) (IntPolyV _ polys)
         | IntMap.null polys = zV
         | lowestExponent == 0 = 
             resultMaybeWithoutConstantTerm
-        | otherwise = 
-            (varValue `powV` lowestExponent) `multV` resultMaybeWithoutConstantTerm 
+        | otherwise =
+            (varValueLZ `powV` lowestExponent) `multV` resultMaybeWithoutConstantTerm 
         where
+        varValueLZ =
+            addV varValue (cfV $ neg domLE)
         (lowestExponent, resultMaybeWithoutConstantTerm) 
             = IntMap.foldWithKey addTerm (highestExponent, zV) polys 
         (highestExponent, _) = IntMap.findMax polys 
@@ -226,13 +229,17 @@ evalPolyDirect opsV values p@(IntPoly cfg terms)
             newVal = -- Horner scheme:
                 polyValue 
                 `addV`
-                (prevVal `multV` (varValue `powV` (prevExponent - exponent)))
+                (prevVal `multV` (varValueLZ `powV` (prevExponent - exponent)))
             polyValue =
                 case polyV poly of
                     Just value -> value
-                    Nothing -> ev restVars poly  
-    ev varVals terms =
-        error $ "evalPolyDirect: illegal case: varVals = " ++ show varVals ++ "; terms = " ++ show terms
+                    Nothing -> ev restVars restDoms poly  
+    ev varVals domsLE terms =
+        error $ 
+            "evalPolyDirect: illegal case:" 
+            ++ "\n varVals = " ++ show varVals 
+            ++ "\n domsLE = " ++ show domsLE 
+            ++ "\n terms = " ++ show terms
 
 -- TODO: make the following function generic for any function representation with nominal derivatives    
 evalPolyMono ::
@@ -278,7 +285,6 @@ evalPolyMono opsV values p@(IntPoly cfg _)
     (noMonotoneVar, valuesL, valuesR) =
         detectMono True [] [] $ reverse $ zip vars $ values -- undo reverse due to the accummulators
     vars = ipolycfg_vars cfg
-    sampleDom = head values
     detectMono noMonotoneVarPrev valuesLPrev valuesRPrev []
         = (noMonotoneVarPrev, valuesLPrev, valuesRPrev)
     detectMono noMonotoneVarPrev valuesLPrev valuesRPrev ((var, val) : rest)

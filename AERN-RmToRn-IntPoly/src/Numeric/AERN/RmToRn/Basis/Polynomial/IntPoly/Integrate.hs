@@ -41,12 +41,12 @@ integratePolyMainVar ::
      Show cf) => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
     cf {- zero coefficient -} ->
-    IntPoly var cf {- initial value at 0 -} -> --  point domLE -} ->
+    IntPoly var cf {- initial value at point domLE -} ->
     IntPoly var cf {- polynomial to integrate in its main variable -} ->
     IntPoly var cf
 integratePolyMainVar eff z initPoly p@(IntPoly cfg poly) =
 --    let ?addInOutEffort = effAdd in
-    initPoly <+> (IntPoly cfg $ ip poly) 
+    initPoly <+> (IntPoly cfg $ ip poly)
 --    (initPoly <+> (neg projectionAtDomLE)) <+> (IntPoly cfg $ ip poly) 
     where
     (<+>) = ArithInOut.addOutEff effAdd

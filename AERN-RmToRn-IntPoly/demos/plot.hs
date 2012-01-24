@@ -260,7 +260,8 @@ cfgD maxdeg =
     IntPolyCfg
         {
             ipolycfg_vars = vars,
-            ipolycfg_doms = doms,
+            ipolycfg_domsLZ = doms,
+            ipolycfg_domsLE = replicate (length vars) 0,
             ipolycfg_sample_cf = 0 :: CF,
             ipolycfg_maxdeg = maxdeg,
             ipolycfg_maxsize = 1000
