@@ -2,7 +2,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ImplicitParams #-}
-{-# LANGUAGE MultiParamTypeClasses, UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps
     Description :  refinement rounded ring operations  
@@ -25,6 +26,7 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Reduce
 
 import Numeric.AERN.RmToRn.New
+import Numeric.AERN.RmToRn.Domain
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
@@ -34,6 +36,7 @@ import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.Auxiliary
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsImplicitEffort
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
@@ -358,57 +361,4 @@ instance
      ArithInOut.RoundedMixedField cf other)
     =>
     ArithInOut.RoundedMixedField (IntPoly var cf) other
-    
--- a quick and dirty sine implementation; this should be made generic
--- and move to AERN-Real
-
-sinePoly ::
-    (ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
-     NumOrd.PartialComparison (Imprecision cf),  Show (Imprecision cf),
-     Show var, Ord var, Show cf) =>
-    (ArithInOut.RoundedRealEffortIndicator cf) -> 
-    Int {-^ how many terms of the Taylor expansion to consider -} -> 
-    IntPoly var cf -> 
-    IntPoly var cf
-sinePoly eff n x@(IntPoly cfg _) =
---    unsafePrintReturn
---    (
---        "sinePoly:"
---        ++ "\n x = " ++ show x
---        ++ "\n n = " ++ show n
---        ++ "\n result = "
---    ) $
-    let (<*>) = multPolys eff in 
-    x <*> (aux unitIntPoly (2*n+2)) -- x * (1 - x^2/(2*3)(1 - x^2/(4*5)(1 - ...)))
-    where
-    unitIntPoly = 
-        let (</\>) = RefOrd.meetOutEff effJoin in 
-        newConstFn cfg undefined $ (neg o) </\> o
-    o = one sampleCf
-    aux acc 0 = acc
-    aux acc n =
---        unsafePrint
---        (
---            "  sinePoly aux:"
---            ++ "\n    acc = " ++ (show $ checkPoly acc)
---            ++ "\n    n = " ++ show n
---            ++ "\n    squareX = " ++ (show $ checkPoly squareX)
---            ++ "\n    squareXAcc = " ++ (show $ checkPoly squareXAcc)
---            ++ "\n    squareXDivNNPlusOneAcc = " ++ (show $ checkPoly squareXDivNNPlusOneAcc)
---            ++ "\n    negSquareXDivNNPlusOneAcc = " ++ (show $ checkPoly negSquareXDivNNPlusOneAcc)
---            ++ "\n    newAcc = " ++ (show $ checkPoly newAcc)
---        )$
-        aux newAcc (n-2)
-        where
-        newAcc = addPolyConst effAddInt negSquareXDivNNPlusOneAcc (1::Int)
-        negSquareXDivNNPlusOneAcc = negPoly squareXDivNNPlusOneAcc
-        squareXDivNNPlusOneAcc = divPolyByOther effDivInt squareXAcc (n*(n+1))
-        squareXAcc = 
-            let (<*>) = multPolys eff in squareX <*> acc 
-    squareX =
-        let (<*>) = multPolys eff in x <*> x 
-    effJoin = ArithInOut.rrEffortJoinMeet sampleCf eff
-    effAddInt = ArithInOut.mxfldEffortAdd sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf eff
-    effDivInt = ArithInOut.mxfldEffortDiv sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf eff
-    sampleCf = ipolycfg_sample_cf cfg
     
