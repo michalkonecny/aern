@@ -9,6 +9,9 @@ import qualified Numeric.AERN.MPFRBasis.Interval as MI
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+--import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+
 import Numeric.AERN.Basics.ShowInternals
 
 import Numeric.AERN.Misc.Debug
@@ -323,7 +326,8 @@ makeStep params h epsilon (Just (t, y0, yDer0), prevStepIters) =
         IntPolyCfg 
             {
                 ipolycfg_vars = vars,
-                ipolycfg_doms = doms,
+                ipolycfg_domsLZ = domsLZ,
+                ipolycfg_domsLE = domsLE,
                 ipolycfg_sample_cf = h,
                 ipolycfg_maxdeg = paramDegree params,
                 ipolycfg_maxsize = paramTermSize params
@@ -331,6 +335,10 @@ makeStep params h epsilon (Just (t, y0, yDer0), prevStepIters) =
     dombox = Map.fromList $ zip vars doms
     vars = ["u","y0","yDer0"]
     doms = [(0 MI.</\> h), y0, yDer0]
+    domsLZ = [(0 MI.</\> h), y0 <-> y0LE, yDer0 <-> yDer0LE]
+    domsLE = [0, y0LE, yDer0LE]
+    (y0LE, _) = RefOrd.getEndpointsOutWithDefaultEffort y0
+    (yDer0LE, _) = RefOrd.getEndpointsOutWithDefaultEffort yDer0
 
     evalBoth (n,(p1,p2)) = (n, (evalOne p1, evalOne p2), (p1, p2))
         where

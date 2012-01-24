@@ -108,7 +108,7 @@ reduceTermsCount eff cfg terms
     effImprecision = ArithInOut.rrEffortImprecision sample eff
     sample = ipolycfg_sample_cf cfg
 
-    varDoms = ipolycfg_doms cfg
+    varDoms = ipolycfg_domsLZ cfg
     varDomsPowers = 
         let ?joinmeetEffort = effJoin in
         let ?multInOutEffort = effMult in 
@@ -192,7 +192,7 @@ reduceMarkedTerms eff cfg terms =
     effJoin = ArithInOut.rrEffortJoinMeet sample eff
     sample = ipolycfg_sample_cf cfg
 
-    doms = ipolycfg_doms cfg
+    doms = ipolycfg_domsLZ cfg
     
     aux _ t@(IntPolyC (cf, marked)) 
         | marked = (Nothing, Just $ IntPolyC (cf, True))

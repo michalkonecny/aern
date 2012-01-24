@@ -163,7 +163,7 @@ substPolyMainVar eff z substPoly p@(IntPoly cfg terms) =
     terms2terms (IntPolyV v ts) | v == mainVar = Nothing
     terms2terms terms = Just $ IntPolyV mainVar $ IntMap.singleton 0 terms
     vars@(mainVar : _) = ipolycfg_vars cfg
-    doms = ipolycfg_doms cfg
+    domsLZ = ipolycfg_domsLZ cfg
     leqTerms terms1 terms2 =
         (zero sample) <=? diffRange 
         where
@@ -171,11 +171,12 @@ substPolyMainVar eff z substPoly p@(IntPoly cfg terms) =
         diff = addTerms terms2 $ negTerms terms1
         (cfgR, domsR) =
             case terms1 of 
-                IntPolyV v _ | v == mainVar -> (cfg, doms)
-                _ -> (cfgR, domsR)
+                IntPolyV v _ | v == mainVar -> (cfgNoLE, domsLZ)
+                _ -> (cfgNoLER, domsLZR)
             where
-            cfgR = cfgRemVar cfg
-            domR = ipolycfg_doms cfgR
+            cfgNoLER = cfgRemVar cfgNoLE
+            domsLZR = ipolycfg_domsLZ cfgNoLER
+            cfgNoLE = cfg { ipolycfg_domsLE = replicate (length domsLZ) $ zero sample }
     effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     effComp = ArithInOut.rrEffortNumComp sample eff

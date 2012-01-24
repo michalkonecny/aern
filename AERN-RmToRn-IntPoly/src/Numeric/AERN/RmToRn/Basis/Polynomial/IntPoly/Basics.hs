@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basis
     Description :  datatype of polynomials with interval coefficients  
@@ -48,10 +49,6 @@ import Data.List (intercalate, sortBy)
     
 {-| 
     Multi-variate polynomials using variable-asymmetric representation.
-      
-    Note that if variables have interval-like domains, each of their domains
-    must be **non-negative**.  The 'RefOrd.IntervalLike' instance
-    of this type is valid only with this assumtion.
 -}
 data IntPoly var cf =
     IntPoly
@@ -60,7 +57,9 @@ data IntPoly var cf =
             intpoly_terms :: IntPolyTerms var cf
         }
 
-instance (Show var, Show cf) => Show (IntPoly var cf)
+instance 
+    (Show var, Show cf, ArithInOut.RoundedReal cf) => 
+    Show (IntPoly var cf)
     where
     show p@(IntPoly cfg terms)
         = "IntPoly{" ++ showPoly show show p ++ "; " ++ show cfg ++ "; " ++ show terms ++ "}" 
@@ -87,16 +86,31 @@ termsMapCoeffs :: (cf -> cf) -> IntPolyTerms var cf -> IntPolyTerms var cf
 termsMapCoeffs f (IntPolyC val) = IntPolyC $ f val
 termsMapCoeffs f (IntPolyV var polys) = IntPolyV var $ powersMapCoeffs f polys
 
-polyAddMainVar :: var -> cf -> IntPoly var cf -> IntPoly var cf
-polyAddMainVar var dom p@(IntPoly cfg terms) =
+polyAddMainVar ::
+    (ArithInOut.RoundedReal cf, 
+     RefOrd.IntervalLike cf)
+    =>
+    RefOrd.GetEndpointsEffortIndicator (IntPoly var cf) -> 
+    (ArithInOut.RoundedRealEffortIndicator cf) -> 
+    var -> 
+    cf -> 
+    IntPoly var cf -> 
+    IntPoly var cf
+polyAddMainVar effGetE effCF var dom p@(IntPoly cfg terms) =
     IntPoly cfgNew termsNew
     where
     termsNew = IntPolyV var $ IntMap.singleton 0 terms
     cfgNew = cfg 
         { 
             ipolycfg_vars = var : ipolycfg_vars cfg, 
-            ipolycfg_doms = dom : ipolycfg_doms cfg 
+            ipolycfg_domsLZ = domLZ : ipolycfg_domsLZ cfg, 
+            ipolycfg_domsLE = domLE : ipolycfg_domsLE cfg 
         }
+    (domLZ, domLE) = domToDomLZLE effGetE effCF dom
+    sampleCf = ipolycfg_sample_cf cfg
+    _ = [sampleCf, dom]
+
+
 
 polyRenameMainVar :: var -> IntPoly var cf -> IntPoly var cf
 polyRenameMainVar newVarName p@(IntPoly cfg (IntPolyV _ coeffs)) =
@@ -114,9 +128,15 @@ polySwapFirstTwoVars (IntPoly cfg terms) =
     where
     swappedTerms = termsSwapFirstTwoVars vars terms
     vars = ipolycfg_vars cfg
-    doms = ipolycfg_doms cfg
+    domsLZ = ipolycfg_domsLZ cfg
+    domsLE = ipolycfg_domsLE cfg
     cfgSwapped =
-        cfg { ipolycfg_vars = swapFirstTwo vars, ipolycfg_doms = swapFirstTwo doms }
+        cfg 
+            {
+                ipolycfg_vars = swapFirstTwo vars, 
+                ipolycfg_domsLZ = swapFirstTwo domsLZ, 
+                ipolycfg_domsLE = swapFirstTwo domsLE
+            }
     swapFirstTwo :: [a] -> [a]
     swapFirstTwo (e1 : e2 : rest) = e2 : e1 : rest
 
@@ -161,29 +181,72 @@ data IntPolyCfg var cf =
     IntPolyCfg
     {
         ipolycfg_vars :: [var], -- arity and variable order
-        ipolycfg_doms :: [cf], -- domain of each variable, MUST NOT HAVE ZERO IN THE INTERIOR!!
+        ipolycfg_domsLZ :: [cf], -- domain of each variable - shifted so that the left endpoint is 0
+        ipolycfg_domsLE :: [cf], -- the left endpoint of the domain for all variables
         ipolycfg_sample_cf :: cf,  -- sample coefficient for type inference
         ipolycfg_maxdeg :: Int, -- maximum degree of each term
         ipolycfg_maxsize :: Int -- maximum term size
     }
 
+domToDomLZLE ::
+    (ArithInOut.RoundedReal cf, 
+     RefOrd.IntervalLike cf)
+    =>
+    RefOrd.GetEndpointsEffortIndicator (IntPoly var cf) -> 
+    (ArithInOut.RoundedRealEffortIndicator cf) -> 
+    cf -> 
+    (cf, cf)
+domToDomLZLE effGetE effCF dom =
+    (domLZ, domLE)
+    where
+    (domLE, _) = RefOrd.getEndpointsOutEff effGetE dom
+    domLZ = 
+        let ?addInOutEffort = effAdd in
+        dom <-> domLE
+    effAdd = 
+        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCF
+    sampleCf = dom
+
+domLZLEToDom ::
+    (ArithInOut.RoundedReal cf)
+    =>
+    (ArithInOut.RoundedRealEffortIndicator cf) -> 
+    cf -> 
+    cf ->
+    cf
+domLZLEToDom effCF domLZ domLE =
+    dom
+    where
+    dom = 
+        let ?addInOutEffort = effAdd in
+        domLZ <+> domLE
+    effAdd = 
+        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCF
+    sampleCf = dom
+     
+     
 cfgRemVar cfg = cfg
         { 
             ipolycfg_vars = tail $ ipolycfg_vars cfg, 
-            ipolycfg_doms = tail $ ipolycfg_doms cfg 
+            ipolycfg_domsLZ = tail $ ipolycfg_domsLZ cfg, 
+            ipolycfg_domsLE = tail $ ipolycfg_domsLE cfg 
         }
 
 instance 
-    (Show var, Show cf) 
+    (Show var, Show cf, ArithInOut.RoundedReal cf) 
     =>
     Show (IntPolyCfg var cf)
     where
-    show (IntPolyCfg vars doms _ maxdeg maxsize) 
-        = "cfg{" ++ (show $ zip vars doms) ++ ";" ++ show maxdeg ++ "/" ++ show maxsize ++ "}"
+    show (IntPolyCfg vars domsLZ domsLE sampleCf maxdeg maxsize) 
+        = 
+        "cfg{" ++ (show $ zip vars doms) ++ ";" ++ show maxdeg ++ "/" ++ show maxsize ++ "}"
+        where
+        doms = zipWith (domLZLEToDom effCF) domsLZ domsLE
+        effCF = ArithInOut.roundedRealDefaultEffort sampleCf
 
 instance
     (RefOrd.IntervalLike cf, 
-     HasOne cf, HasZero cf, HasAntiConsistency cf,
+     ArithInOut.RoundedReal cf, HasAntiConsistency cf,
      NumOrd.PartialComparison cf, 
      Arbitrary cf, GeneratableVariables var) 
     =>
@@ -195,54 +258,54 @@ instance
         Int1To10 maxdeg <- arbitrary
         Int1To1000 maxsizeRaw <- arbitrary
         sampleCfs <- vectorOf (50 * arity) arbitrary 
-            -- probability that too many of these are anti-consistent and not nonnegative is negligible
-        return $ mkCfg arity maxdeg maxsizeRaw sampleCfs
+            -- probability that too many of these are anti-consistent is negligible
+        efforts <- arbitrary
+        return $ mkCfg arity maxdeg maxsizeRaw sampleCfs efforts
         where
-        mkCfg arity maxdeg maxsizeRaw sampleCfs =
+        mkCfg arity maxdeg maxsizeRaw sampleCfs (effConsistency, effGetE, effCF) =
             IntPolyCfg
-                vars doms (head sampleCfs) maxdeg (max 2 maxsizeRaw)
+                vars domsLZ domsLE (head sampleCfs) maxdeg (max 2 maxsizeRaw)
             where
             vars = getNVariables arity
+            (domsLZ, domsLE) = unzip $ map (domToDomLZLE effGetE effCF) doms
             doms = 
-                take arity $ filter notAntiConsistentNotNegative sampleCfs
+                take arity $ filter notAntiConsistent sampleCfs
                 -- domain intervals must not be anti-contistent (in particular not singletons)
-                -- and domain intervals must be non-negative
-            notAntiConsistentNotNegative a =
+            notAntiConsistent a =
                 (isAntiConsistentEff effConsistency a) == Just False
-                &&
-                nonnegative
-                where
-                nonnegative =
-                    case pNonnegNonposEff effNumComp a of
-                        (Just True,_) -> True
-                        _ -> False
-                effConsistency = consistencyDefaultEffort a
-                effNumComp = NumOrd.pCompareDefaultEffort a
+--                &&
+--                nonnegative
+--                where
+--                nonnegative =
+--                    case pNonnegNonposEff effNumComp a of
+--                        (Just True,_) -> True
+--                        _ -> False
              
 instance
     (Show var, Show cf,
      RefOrd.IntervalLike cf, 
-     HasOne cf, HasZero cf, HasAntiConsistency cf, 
+     ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf, 
      NumOrd.PartialComparison cf, 
      Arbitrary cf, GeneratableVariables var) 
     =>
     (EffortIndicator (IntPolyCfg var cf))
     where
-    effortIncrementVariants (IntPolyCfg vars doms sample maxdeg maxsize) =
+    effortIncrementVariants (IntPolyCfg vars domsLZ domsLE sample maxdeg maxsize) =
         map recreateCfg $ effortIncrementVariants (Int1To10 maxdeg, Int1To1000 maxsize)
         where
         recreateCfg (Int1To10 md, Int1To1000 ms) =
-            IntPolyCfg vars doms sample md ms 
-    effortIncrementSequence (IntPolyCfg vars doms sample maxdeg maxsize) =
+            IntPolyCfg vars domsLZ domsLE sample md ms 
+    effortIncrementSequence (IntPolyCfg vars domsLZ domsLE sample maxdeg maxsize) =
         map recreateCfg $ effortIncrementSequence (Int1To10 maxdeg, Int1To1000 maxsize)
         where
         recreateCfg (Int1To10 md, Int1To1000 ms) =
-            IntPolyCfg vars doms sample md ms
+            IntPolyCfg vars domsLZ domsLE sample md ms
     effortRepeatIncrement 
-            (IntPolyCfg vars doms sample maxdeg1 maxsize1, 
-             IntPolyCfg _ _ _ maxdeg2 maxsize2)
+            (IntPolyCfg vars domsLZ domsLE sample maxdeg1 maxsize1, 
+             IntPolyCfg _ _ _ _ maxdeg2 maxsize2)
         =
-        IntPolyCfg vars doms sample md ms
+        IntPolyCfg vars domsLZ domsLE sample md ms
         where
         Int1To10 md = effortRepeatIncrement (Int1To10 maxdeg1, Int1To10 maxdeg2)  
         Int1To1000 ms = effortRepeatIncrement (Int1To1000 maxsize1, Int1To1000 maxsize2)  
@@ -297,10 +360,6 @@ termsIsZero (IntPolyV x polys) =
         [(0,p)] -> termsIsZero p
         _ -> False
 
-{-
-    The following instance is meaningful only when each
-    variable's domain is non-negative. 
--}
 instance
     (RefOrd.IntervalLike cf, HasZero cf)
     => 
@@ -425,7 +484,9 @@ instance
     getDomainBox (IntPoly cfg _) = Map.fromList $ zip vars doms
         where
         vars = ipolycfg_vars cfg
-        doms = ipolycfg_doms cfg
+        doms = zipWith (<+>) domsLE domsLZ
+        domsLZ = ipolycfg_domsLZ cfg
+        domsLE = ipolycfg_domsLE cfg
     getNSamplesFromDomainBox sampleP@(IntPoly cfg _) dombox n =
         getNSamplesFromDomainBoxUsingEndpointsDefaultEffort sampleDom sampleP dombox n
         where
@@ -484,27 +545,28 @@ instance
     (HasProjections (IntPoly var cf))
     where
     newProjection cfg dombox var =
-        IntPoly cfg $ mkProjTerms cfg var vars
+        IntPoly cfg $ mkProjTerms cfg var vars domsLE
         where
         vars = ipolycfg_vars cfg
+        domsLE = ipolycfg_domsLE cfg
         
-mkProjTerms cfg var vars = aux vars
+mkProjTerms cfg var vars domsLE = aux vars domsLE
     where
-    aux [] = 
+    aux [] [] = 
         error $ 
             "IntPoly: newProjection: variable " ++ show var 
             ++ " not among specified variables " ++ show vars
-    aux (cvar : rest)
+    aux (cvar : restVars) (domLE : restDoms)
         | cvar == var = 
             IntPolyV var $ 
                 IntMap.fromAscList $ 
-                    [(1, mkConstTerms o rest),
-                     (0, mkConstTerms z rest)]
+                    [(1, mkConstTerms o restVars),
+                     (0, mkConstTerms domLE restVars)]
         | otherwise = 
-            IntPolyV cvar $ IntMap.singleton 0 (aux rest)
+            IntPolyV cvar $ IntMap.singleton 0 (aux restVars restDoms)
         where
         o = one sampleCf
-        z = zero sampleCf
+--        z = zero sampleCf
         sampleCf = ipolycfg_sample_cf cfg 
             
             
@@ -539,7 +601,11 @@ showPoly showVar showCoeff (IntPoly cfg poly) =
         showVarPower 1 = showVar var
         showVarPower n = showVar var ++ "^" ++ show n
     
-instance (HasLegalValues cf, Show cf, Show var, Ord var) => HasLegalValues (IntPoly var cf)
+instance
+    (HasLegalValues cf, Show cf, ArithInOut.RoundedReal cf, 
+     Show var, Ord var) 
+    => 
+    HasLegalValues (IntPoly var cf)
     where
     maybeGetProblem (IntPoly cfg terms) = 
         maybeGetProblemForTerms cfg terms

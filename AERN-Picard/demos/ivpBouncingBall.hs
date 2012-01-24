@@ -231,14 +231,19 @@ makeStep params h locEpsilon ((t, eventCount, y0, yDer0),_) =
             IntPolyCfg 
                 {
                     ipolycfg_vars = vars,
-                    ipolycfg_doms = doms,
+                    ipolycfg_domsLZ = domsLZ,
+                    ipolycfg_domsLE = domsLE,
                     ipolycfg_sample_cf = h,
                     ipolycfg_maxdeg = 2,
                     ipolycfg_maxsize = 0 -- not used at the moment
                 }
         dombox = Map.fromList $ zip vars doms
         vars = ["u","y0","yDer0"]
+        domsLZ = [(0 MI.</\> h), y0 <-> y0LE, yDer0 <-> yDer0LE]
+        domsLE = [0, y0LE, yDer0LE]
         doms = [(0 MI.</\> h), y0, yDer0]
+        (y0LE, _) = RefOrd.getEndpointsOutWithDefaultEffort y0
+        (yDer0LE, _) = RefOrd.getEndpointsOutWithDefaultEffort yDer0
     
     c0 = i2mi 0
     c1 = i2mi 1 
@@ -333,7 +338,8 @@ simulateEvents params t eventCount (yBounceL, yDerBounceL) bounceLoc@(bounceLocL
             IntPolyCfg 
                 {
                     ipolycfg_vars = vars,
-                    ipolycfg_doms = doms,
+                    ipolycfg_domsLZ = domsLZ,
+                    ipolycfg_domsLE = domsLE,
                     ipolycfg_sample_cf = he,
                     ipolycfg_maxdeg = 2,
                     ipolycfg_maxsize = 1000
@@ -341,6 +347,10 @@ simulateEvents params t eventCount (yBounceL, yDerBounceL) bounceLoc@(bounceLocL
         dombox = Map.fromList $ zip vars doms
         vars = ["u","y0","yDer0"]
         doms = [(0 MI.</\> he), yBounceL, yDerBounceL]
+        domsLZ = [(0 MI.</\> he), yBounceL <-> yBounceLLE , yDerBounceL <-> yDerBounceLLE]
+        domsLE = [0, yBounceLLE, yDerBounceLLE]
+        (yBounceLLE, _) = RefOrd.getEndpointsOutWithDefaultEffort yBounceL 
+        (yDerBounceLLE, _) = RefOrd.getEndpointsOutWithDefaultEffort yDerBounceL 
 
     getNextEvent event@((yPoly, yDerPoly), _maybeBouncedAfter) =
         ((yPolyNext, yDerPolyNext), maybeBouncedAfterNext)
@@ -411,7 +421,10 @@ locateFirstBounce params locEpsilon dom (y0Poly, yDer0Poly)
         sampleP = y0Poly
 
         evalPolyAt dom = evalPolyOnInterval (effMI prec) [dom,y0,yDer0]
-        [_,y0, yDer0] = ipolycfg_doms $ getSizeLimits $ y0Poly
+        [_,y0, yDer0] =
+            zipWith (<+>)
+                (ipolycfg_domsLZ $ getSizeLimits $ y0Poly)
+                (ipolycfg_domsLE $ getSizeLimits $ y0Poly)
 
     c0 = i2mi 0
     i2mi :: Integer -> MI.MI
@@ -471,7 +484,7 @@ solveUncTimeValODE params z h (y0Poly, yDer0Poly) =
     -}
     [y0PolyUT0, yDer0PolyUT0] = map addT [y0Poly, yDer0Poly]
         where
-        addT = polyAddMainVar "u" (z MI.</\> h) . polyRenameMainVar "t0" 
+        addT = polyAddMainVar () (effMI prec) "u" (z MI.</\> h) . polyRenameMainVar "t0" 
     {-
         2. Integrate as usual to get a quadratic in u.
     -}
