@@ -65,7 +65,10 @@ dataWatchThread
         effReal effEval 
         widgets dynWidgetsRef fndataTVs@(fndataTV, fnmetaTV) stateTV =
     do
-    fnmeta <- atomically $ readTVar fnmetaTV
+    (fndatas@(_, fnmeta), state) <- atomically $ readAll3TVars fndataTVs stateTV
+    -- initial update:
+    action DataChangeMeta fndatas state
+    -- enter watch loop:
     dataWatchLoop fnmeta
     where
     dataWatchLoop fnmetaOld =
