@@ -118,9 +118,9 @@ main =
     putStrLn $ "(x^2 + 2xy + 4x + 1)[size 2, x tiny] = " ++ (showP $ reducePolyTermCount eff $ changeSizeLimits cfgXTinySize2 integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[size 1, x tiny] = " ++ (showP $ reducePolyTermCount eff $ changeSizeLimits cfgXTinySize1 integTwoBxPyP2)
     putStrLn "elementary ops:"
-    putStrLn $ "sin x [n = 1] = " ++ (showP $ sinePoly eff 1 x)
-    putStrLn $ "sin x [n = 2] = " ++ (showP $ sinePoly eff 2 x)
-    putStrLn $ "sin x [n = 3] = " ++ (showP $ sinePoly eff 3 x)
+    putStrLn $ "sin x [n = 1] = " ++ (showP $ sineOutPolyThin ((),()) 4 eff 1 x)
+    putStrLn $ "sin x [n = 2] = " ++ (showP $ sineOutPolyThin ((),()) 4 eff 2 x)
+    putStrLn $ "sin x [n = 3] = " ++ (showP $ sineOutPolyThin ((),()) 4 eff 3 x)
 --    putStrLn $ "exp(x + y + 2) = " ++ (showP $ expBxPyP2)
     where
     mOneToZ = (-1) </\> 0

@@ -21,7 +21,7 @@ import qualified Data.List as List
 
 type Poly = IntPoly String MI.MI
 
-field prec sineTerms angle = (-100 :: Int) |<*> (sinePoly prec sineTerms angle)
+field prec sineTerms angle = (-100 :: Int) |<*> (sineOutPoly ((),()) 10 prec sineTerms angle)
 
 initAngle :: Rational
 initAngle = 1

@@ -33,7 +33,7 @@ Library
         stm >= 2 && < 3,
         filepath >= 1.1.0.4 && < 2,
         directory >= 1.0.1.1 && < 2,
-        AERN-Basics == 2011.2.0.0, 
+        AERN-Basics == 2011.2.0.0,
         AERN-Real == 2011.2.0.0, 
         AERN-Real-Interval == 2011.2.0.0, 
         AERN-RmToRn == 2011.2.0.0
