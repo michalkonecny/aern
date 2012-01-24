@@ -18,7 +18,7 @@
 -}
 
 module Numeric.AERN.RealArithmetic.Interval.FieldOps
-()
+(multiplyIntervals, recipInterval)
 where
 
 import Numeric.AERN.Basics.Interval

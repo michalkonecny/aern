@@ -50,7 +50,6 @@ Library
     Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
     Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
 
-  Other-modules:
     Numeric.AERN.Basics.Interval.Basics
     Numeric.AERN.Basics.Interval.Consistency
     Numeric.AERN.Basics.Interval.NumericOrder
