@@ -313,11 +313,17 @@ instance
 {-- Internal checks and normalisation --}
 
 polyNormalise ::
-    (ArithInOut.RoundedReal cf) => 
+    (ArithInOut.RoundedReal cf) 
+    => 
     IntPoly var cf -> IntPoly var cf
 polyNormalise (IntPoly cfg poly)
     = IntPoly cfg (termsNormalise cfg poly) 
 
+termsNormalise ::
+    (ArithInOut.RoundedReal cf) 
+    =>
+    (IntPolyCfg var cf) ->
+    IntPolyTerms var cf -> IntPolyTerms var cf
 termsNormalise cfg poly =
     pn poly
     where    
@@ -330,6 +336,12 @@ termsNormalise cfg poly =
 
 {-- Order-related ops --}
 
+polyIsExactEff ::
+    (HasImprecision cf)
+    =>
+    (ImprecisionEffortIndicator cf) ->
+    (IntPoly var cf) ->
+    Maybe Bool
 polyIsExactEff effImpr p@(IntPoly _ terms) = termsAreExactEff effImpr terms 
 
 termsAreExactEff ::
@@ -345,13 +357,15 @@ termsAreExactEff effImpr (IntPolyV var polys) =
     return $ and results
 
 polyIsZero ::
-    (ArithInOut.RoundedReal cf) => 
+    (ArithInOut.RoundedReal cf) 
+    => 
     IntPoly var cf -> Bool
 polyIsZero (IntPoly _ terms)
     = termsIsZero terms
 
 termsIsZero ::
-    (ArithInOut.RoundedReal cf) => 
+    (ArithInOut.RoundedReal cf) 
+    => 
     IntPolyTerms var cf -> Bool
 termsIsZero (IntPolyC val) = (val |==? (zero val)) == Just True
 termsIsZero (IntPolyV x polys) = 

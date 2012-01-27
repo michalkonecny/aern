@@ -109,8 +109,8 @@ sineOutPoly (effGetE, effFromE) degreeBezier effCF n x@(IntPoly cfg _) =
     xPlus1pt5 = x <+>| (1.5 :: Double) 
     c0 = newConstFnFromSample x $ zero sampleCf
     
-    (<+>) = addPolys effAdd
-    (<+>|) = addPolyConst effAddDbl
+    (<+>) = ArithInOut.addOutEff effCF
+    (<+>|) = ArithInOut.mixedAddOutEff effAddDbl
     (<=?) = NumOrd.pLeqEff (Int1To1000 0, effCF) 
 
     effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCF
@@ -143,11 +143,11 @@ sineOutPolyThin (effGetE, effFromE) degreeBezier effCF n x@(IntPoly cfg _) =
 --        ++ "\n n = " ++ show n
 --        ++ "\n result = "
 --    ) $
-    let (<*>) = multPolys effCF in 
+    let (<*>) = ArithInOut.multOutEff effCF in 
     x <*> (aux unitIntPoly (2*n+2)) -- x * (1 - x^2/(2*3)(1 - x^2/(4*5)(1 - ...)))
     where
     unitIntPoly = 
-        let (</\>) = RefOrd.meetOutEff effJoin in 
+        let (</\>) = RefOrd.meetOutEff effJoin in
         newConstFn cfg undefined $ (neg o) </\> o
     o = one sampleCf
     aux acc 0 = acc
@@ -165,13 +165,14 @@ sineOutPolyThin (effGetE, effFromE) degreeBezier effCF n x@(IntPoly cfg _) =
 --        )$
         aux newAcc (n-2)
         where
-        newAcc = addPolyConst effAddInt negSquareXDivNNPlusOneAcc (1::Int)
+        newAcc = ArithInOut.mixedAddOutEff effAddInt negSquareXDivNNPlusOneAcc (1::Int)
         negSquareXDivNNPlusOneAcc = negPoly squareXDivNNPlusOneAcc
         squareXDivNNPlusOneAcc = divPolyByOther effDivInt squareXAcc (n*(n+1))
         squareXAcc = squareX <*> acc 
     squareX = x <*> x
-    a <*> b = 
-        multPolys effCF a b
+    (<*>) = ArithInOut.multOutEff effCF
+--    a <*> b = 
+--        multPolys effCF a b
 --        RefOrd.fromEndpointsOutEff effFromE $
 --        multiplyIntervals
 --            (pNonnegNonposEff (Int1To1000 0, effCF))
@@ -183,9 +184,9 @@ sineOutPolyThin (effGetE, effFromE) degreeBezier effCF n x@(IntPoly cfg _) =
 --            (NumOrd.minDnEff effortMinmax)
 --            (NumOrd.maxUpEff effortMinmax) 
 --            (Interval aL aR) (Interval bL bR)
-        where
-        (aL, aR) = RefOrd.getEndpointsOutEff effGetE a
-        (bL, bR) = RefOrd.getEndpointsOutEff effGetE b
+--        where
+--        (aL, aR) = RefOrd.getEndpointsOutEff effGetE a
+--        (bL, bR) = RefOrd.getEndpointsOutEff effGetE b
     effortMinmax = minmaxUpDnDefaultEffortIntPolyWithBezierDegree degreeBezier sampleF
     effJoin = ArithInOut.rrEffortJoinMeet sampleCf effCF
     effAddInt = ArithInOut.mxfldEffortAdd sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCF

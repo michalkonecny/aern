@@ -42,19 +42,39 @@ import Numeric.AERN.Misc.Debug
 import qualified Data.IntMap as IntMap
 import qualified Data.List as List
 
-reducePolyDegree eff p@(IntPoly cfg terms) =
-    IntPoly cfg $ reduceTermsDegree eff cfg terms
+reducePolyDegree ::
+    (Show var, Show cf) 
+    =>
+    (cf -> cf -> cf) -> 
+    (cf -> cf -> cf) -> 
+    (cf -> Int -> cf) -> 
+    (IntPoly var cf) ->
+    (IntPoly var cf)
+reducePolyDegree (+) (*) (^) p@(IntPoly cfg terms) =
+    IntPoly cfg $ reduceTermsDegree (+) (*) (^) cfg terms
     
-reducePolyTermCount eff p@(IntPoly cfg terms) =
-    IntPoly cfg $ reduceTermsCount eff cfg terms
+reducePolyTermCount ::
+    (Show var, Show cf, 
+     HasOne cf, NumOrd.PartialComparison imprecision) =>
+    (cf -> cf -> cf) -> 
+    (cf -> cf -> cf) -> 
+    (cf -> Int -> cf) -> 
+    (cf -> imprecision) -> 
+    (IntPoly var cf) ->
+    (IntPoly var cf)
+reducePolyTermCount (+) (*) (^) getImpr p@(IntPoly cfg terms) =
+    IntPoly cfg $ reduceTermsCount (+) (*) (^) getImpr cfg terms
     
 reduceTermsDegree ::
-    (ArithInOut.RoundedReal cf, Show var, Show cf) =>
-    (ArithInOut.RoundedRealEffortIndicator cf) ->
+    (Show var, Show cf) 
+    =>
+    (cf -> cf -> cf) ->
+    (cf -> cf -> cf) ->
+    (cf -> Int -> cf) ->
     (IntPolyCfg var cf) ->
     (IntPolyTerms var cf) ->
     (IntPolyTerms var cf)
-reduceTermsDegree eff cfg terms
+reduceTermsDegree (+) (*) (^) cfg terms
     =
 --    (terms, result) `seq`
 --    unsafePrintReturn
@@ -71,7 +91,7 @@ reduceTermsDegree eff cfg terms
         * remove the marked terms and compensate for them by widening the remaining coeffs
     -}
     where
-    result = reduceMarkedTerms eff cfg termsMarkedExcessDegree
+    result = reduceMarkedTerms (+) (*) (^) cfg termsMarkedExcessDegree
     maxDeg = ipolycfg_maxdeg cfg
     termsMarkedExcessDegree = mapTermsCoeffsWithDegrees markDegreeTooLarge terms 
     markDegreeTooLarge varDegrees coeff = (coeff, totalDegree > maxDeg)
@@ -79,13 +99,16 @@ reduceTermsDegree eff cfg terms
         totalDegree = sum varDegrees
 
 reduceTermsCount ::
-    (ArithInOut.RoundedReal cf, Show var, Show cf, 
-     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf)) =>
-    (ArithInOut.RoundedRealEffortIndicator cf) ->
+    (Show var, Show cf, 
+     HasOne cf, NumOrd.PartialComparison imprecision) =>
+    (cf -> cf -> cf) -> 
+    (cf -> cf -> cf) -> 
+    (cf -> Int -> cf) -> 
+    (cf -> imprecision) -> 
     (IntPolyCfg var cf) ->
     (IntPolyTerms var cf) ->
     (IntPolyTerms var cf)
-reduceTermsCount eff cfg terms
+reduceTermsCount (+) (*) (^) getImpr cfg terms
     | size <= maxSize = terms
     | otherwise = 
 --        unsafePrint
@@ -94,7 +117,7 @@ reduceTermsCount eff cfg terms
 --            ++ "\n varDomsPowers = " ++ (show $ map (take 3) varDomsPowers)
 --            ++ "\n allTermRangesListSortedDescending = " ++ show allTermRangesListSortedDescending  
 --        ) $
-        reduceMarkedTerms eff cfg termsMarkedTooSmall
+        reduceMarkedTerms (+) (*) (^) cfg termsMarkedTooSmall
     {- overview:
         * count terms, return without change if not over maxSize 
         * collect the widths of the ranges of all terms
@@ -103,25 +126,19 @@ reduceTermsCount eff cfg terms
         * remove the marked terms and compensate for them by widening the remaining coeffs
     -}
     where
-    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
-    effJoin = ArithInOut.rrEffortJoinMeet sample eff
-    effImprecision = ArithInOut.rrEffortImprecision sample eff
     sample = ipolycfg_sample_cf cfg
 
     varDoms = ipolycfg_domsLZ cfg
     varDomsPowers = 
-        let ?joinmeetEffort = effJoin in
-        let ?multInOutEffort = effMult in 
         map powersOf varDoms
         where
-        powersOf a = iterate (<*> a) $ one a
+        powersOf a = iterate (* a) $ one a
     maxSize = ipolycfg_maxsize cfg
     size = length allTermRangesList
     allTermRangesList = 
-        let ?multInOutEffort = effMult in 
         (collectCoeffs evalTermRangeWidth) terms
     evalTermRangeWidth varDegrees coeff =
-        imprecisionOfEff effImprecision $ foldl (<*>) coeff $ zipWith (!!) varDomsPowers varDegrees
+        getImpr $ foldl (*) coeff $ zipWith (!!) varDomsPowers varDegrees
     tresholdSmallestAllowed = allTermRangesListSortedDescending !! (maxSize-1)
     allTermRangesListSortedDescending = List.sortBy compareCf allTermRangesList
         where
@@ -133,7 +150,6 @@ reduceTermsCount eff cfg terms
 --                Just PartialOrdering.GEE -> LT 
                 _ -> EQ 
     termsMarkedTooSmall =
-        let ?multInOutEffort = effMult in
         mapTermsCoeffsWithDegrees markTooSmall terms
         where
         markTooSmall degrees cf = 
@@ -170,27 +186,20 @@ mapTermsCoeffsWithDegrees fn terms = aux [] terms
         applyAux degree = aux (degree : prevDegrees)
         
 reduceMarkedTerms ::
-    (ArithInOut.RoundedReal cf, Show var, Show cf) =>
-    (ArithInOut.RoundedRealEffortIndicator cf) ->
+    (Show var, Show cf) =>
+    (cf -> cf -> cf) -> 
+    (cf -> cf -> cf) -> 
+    (cf -> Int -> cf) -> 
     (IntPolyCfg var cf) ->
     (IntPolyTerms var (cf,Bool)) ->
     (IntPolyTerms var cf)
-reduceMarkedTerms eff cfg terms =
+reduceMarkedTerms (+) (*) (^) cfg terms =
     case (maybeReducedTerms, maybeOverflow) of
         (Just reducedTerms, Nothing) -> reducedTerms
         _ -> error $ "internal error in reduceMarkedTerms: cannot reduce the constant term!\n  terms = " ++ show terms
     where  
     (maybeReducedTerms, maybeOverflow) = 
-        let ?multInOutEffort = effMult in
-        let ?intPowerInOutEffort = effPwr in
-        let ?addInOutEffort = effAdd in
-        let ?joinmeetEffort = effJoin in
         aux doms terms
-    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
-    effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
-    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
-    effJoin = ArithInOut.rrEffortJoinMeet sample eff
-    sample = ipolycfg_sample_cf cfg
 
     doms = ipolycfg_domsLZ cfg
     
@@ -226,14 +235,14 @@ reduceMarkedTerms eff cfg terms =
                     (Just prevOverflowTerms, Just prevDegree) ->
                         add subTerms (scaleByVarPower (prevDegree - degree) prevOverflowTerms)
         scaleByVarPower pwr p =
-            (scale $ varDom <^> pwr) p
+            (scale $ varDom ^ pwr) p
         scale c (IntPolyC (val, marked)) =
-            IntPolyC (val <*> c, marked)
+            IntPolyC (val * c, marked)
         scale c (IntPolyV x polys) = 
             IntPolyV x $ IntMap.map (scale c) polys
         
         add poly1@(IntPolyC (val1, marked)) poly2@(IntPolyC (val2, _)) 
-            = IntPolyC $ (val1 <+> val2, marked) 
+            = IntPolyC $ (val1 + val2, marked) 
         add poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
             = IntPolyV xName2 $ IntMap.unionWith add polys1 polys2
         {-

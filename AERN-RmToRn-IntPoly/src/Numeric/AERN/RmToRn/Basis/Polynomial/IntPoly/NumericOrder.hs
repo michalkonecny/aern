@@ -52,7 +52,10 @@ import Test.QuickCheck
 
 instance
     (Ord var, Show var, 
-     Show cf, ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf) 
+     Show cf, 
+     ArithInOut.RoundedReal cf, 
+     NumOrd.PartialComparison (Imprecision cf), 
+     RefOrd.IntervalLike cf) 
     => 
     NumOrd.PartialComparison (IntPoly var cf) 
     where
@@ -67,10 +70,10 @@ instance
         case partialInfo2PartialOrdering $ NumOrd.pCompareInFullEff eff p1 p2 of
             [rel] -> Just rel
             _ -> Nothing 
-    pCompareInFullEff (Int1To1000 n, effDom) p1 = pCompareFunFromRingOps (n, effAdd, effCompDom, effDom) p1 
+    pCompareInFullEff (Int1To1000 n, effDom) p1 = 
+        pCompareFunFromRingOps (n, effDom, effCompDom, effDom) p1 
         where
         effCompDom = ArithInOut.rrEffortNumComp sampleDom effDom
-        effAdd = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
         sampleDom = getSampleDomValue p1
         
 instance

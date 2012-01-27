@@ -45,37 +45,62 @@ import Numeric.AERN.Misc.Debug
 import qualified Data.IntMap as IntMap
 
 instance
-    (ArithInOut.RoundedAddEffort cf) => 
+    (ArithInOut.RoundedReal cf) => 
     ArithInOut.RoundedAddEffort (IntPoly var cf) 
     where
-    type ArithInOut.AddEffortIndicator (IntPoly var cf) = ArithInOut.AddEffortIndicator cf 
-    addDefaultEffort (IntPoly cfg _) = ArithInOut.addDefaultEffort (ipolycfg_sample_cf cfg)
+    type ArithInOut.AddEffortIndicator (IntPoly var cf) = 
+        ArithInOut.RoundedRealEffortIndicator cf 
+    addDefaultEffort (IntPoly cfg _) = 
+        ArithInOut.roundedRealDefaultEffort (ipolycfg_sample_cf cfg)
     
 instance
-    (ArithInOut.RoundedAdd cf, Show var, Show cf) =>
+    (ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf), 
+     Show var, Show cf) 
+    =>
     ArithInOut.RoundedAdd (IntPoly var cf) 
     where
-    addInEff eff p1 p2 = error "inner rounded operations not available for IntPoly"
-    addOutEff eff p1 p2 = addPolys eff p1 p2
+    addInEff eff (IntPoly cfg terms1) (IntPoly _ terms2) =
+        IntPoly cfg $ 
+            reduceTermsCount (+) (*) (^) (imprecisionOfEff effImpr) cfg $ 
+                addTerms (+) terms1 terms2
+        where
+        (+) = ArithInOut.addInEff effAdd
+        (*) = ArithInOut.multInEff effMult
+        (^) = ArithInOut.powerToNonnegIntInEff effPwr
+        effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+        effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
+        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+        effImpr = ArithInOut.rrEffortImprecision sample eff
+        sample = ipolycfg_sample_cf cfg
+    addOutEff eff (IntPoly cfg terms1) (IntPoly _ terms2) =
+        IntPoly cfg $ 
+            reduceTermsCount (+) (*) (^) (imprecisionOfEff effImpr) cfg $ 
+                addTerms (+) terms1 terms2
+        where
+        (+) = ArithInOut.addOutEff effAdd
+        (*) = ArithInOut.multOutEff effMult
+        (^) = ArithInOut.powerToNonnegIntOutEff effPwr
+        effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+        effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
+        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+        effImpr = ArithInOut.rrEffortImprecision sample eff
+        sample = ipolycfg_sample_cf cfg
 
 instance
-    (ArithInOut.RoundedAdd cf, Neg cf, Show var, Show cf) =>
+    (ArithInOut.RoundedReal cf, 
+     NumOrd.PartialComparison (Imprecision cf), 
+     Neg cf, Show var, Show cf) =>
     ArithInOut.RoundedSubtr (IntPoly var cf) 
     
-addPolys :: 
-    (ArithInOut.RoundedAdd cf, Show var, Show cf) =>
-    ArithInOut.AddEffortIndicator cf -> 
-    IntPoly var cf -> IntPoly var cf -> IntPoly var cf
-addPolys eff (IntPoly cfg1 poly1) (IntPoly cfg2 poly2)
-    =
-    let ?addInOutEffort = eff in
-    (IntPoly cfg1 $ addTerms poly1 poly2)
-
---    where
-addTerms poly1@(IntPolyC val1) poly2@(IntPolyC val2) = IntPolyC $ val1 <+> val2 
-addTerms poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
-    = IntPolyV xName2 $ IntMap.unionWith addTerms polys1 polys2 
-addTerms p1 p2 =
+addTerms :: 
+    (Show var, Show cf) =>
+    (cf -> cf -> cf) ->
+    IntPolyTerms var cf -> IntPolyTerms var cf -> IntPolyTerms var cf
+addTerms (+) poly1@(IntPolyC val1) poly2@(IntPolyC val2) = IntPolyC $ val1 + val2 
+addTerms (+) poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
+    = IntPolyV xName2 $ IntMap.unionWith (addTerms (+)) polys1 polys2 
+addTerms (+) p1 p2 =
     error $ "addPolys: cannot add p1=" ++ show p1 ++ " and p2=" ++ show p2
 
 instance
@@ -90,46 +115,76 @@ instance
         sample_cf = (ipolycfg_sample_cf cfg)
     
 instance
-    (ArithInOut.RoundedReal cf, 
+    (ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf, 
      NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf),
-     Show var, Show cf) =>
+     Ord var, Show var, Show cf) =>
     ArithInOut.RoundedMultiply (IntPoly var cf) 
     where
-    multInEff eff p1 p2 = error "inner rounded operations not available for IntPoly"
-    multOutEff eff p1 p2 = multPolys eff p1 p2
+    multInEff eff p1 p2 = 
+        multPolys 
+            (ArithInOut.addInEff effAdd) 
+            (ArithInOut.multInEff effMult) 
+            (ArithInOut.powerToNonnegIntInEff effPwr) 
+            (imprecisionOfEff effImpr) 
+            p1 p2
+        where
+        effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+        effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
+        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+        effImpr = ArithInOut.rrEffortImprecision sample eff
+        sample = getSampleDomValue p1
+    multOutEff eff p1 p2 = 
+        multPolys 
+            (ArithInOut.addOutEff effAdd) 
+            (ArithInOut.multOutEff effMult) 
+            (ArithInOut.powerToNonnegIntOutEff effPwr) 
+            (imprecisionOfEff effImpr) 
+            p1 p2
+        where
+        effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+        effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
+        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+        effImpr = ArithInOut.rrEffortImprecision sample eff
+        sample = getSampleDomValue p1
+        
     
 multPolys ::
-    (ArithInOut.RoundedReal cf, 
-     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf),
-     Show var, Show cf) =>
-    (ArithInOut.RoundedRealEffortIndicator cf) -> 
+    (Show var, Show cf,
+     ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison imprecision) =>
+    (cf -> cf -> cf) -> 
+    (cf -> cf -> cf) -> 
+    (cf -> Int -> cf) -> 
+    (cf -> imprecision) -> 
     IntPoly var cf -> IntPoly var cf -> IntPoly var cf
-multPolys eff (IntPoly cfg1 poly1) (IntPoly cfg2 poly2)
+multPolys (+) (*) (^) getImpr (IntPoly cfg1 poly1) (IntPoly cfg2 poly2)
     =
-    let ?addInOutEffort = effAdd in
-    let ?multInOutEffort = effMult in
     IntPoly cfg1 $ 
-        reduceTermsCount eff cfg1 $ 
-            reduceTermsDegree eff cfg1 $ 
-                termsNormalise cfg1 $ multTerms poly1 poly2
-    where
-    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
-    effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
-    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
-    sample = ipolycfg_sample_cf cfg1
+        reduceTermsCount (+) (*) (^) getImpr cfg1 $ 
+            reduceTermsDegree (+) (*) (^) cfg1 $ 
+                termsNormalise cfg1 $ multTerms (+) (*) poly1 poly2
     
-
-multTerms poly1@(IntPolyC val1) poly2@(IntPolyC val2) = IntPolyC $ val1 <*> val2 
-multTerms poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
+multTerms ::
+    (Show var, Show cf) 
+    =>
+    (cf -> cf -> cf) -> 
+    (cf -> cf -> cf) -> 
+    IntPolyTerms var cf -> IntPolyTerms var cf -> IntPolyTerms var cf
+multTerms (+) (*) poly1@(IntPolyC val1) poly2@(IntPolyC val2) 
+    = 
+    IntPolyC $ val1 * val2 
+multTerms (+) (*) poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
     =
     IntPolyV xName2 multSubPolys
     where
     multSubPolys 
-        = IntMap.fromListWith addTerms $
-            [(n1 + n2, multTerms p1 p2) | 
+        = IntMap.fromListWith (addTerms (+)) $
+            [(n1 Prelude.+ n2, multTerms (+) (*) p1 p2) | 
                 (n1, p1) <- IntMap.toAscList polys1, 
                 (n2, p2) <- IntMap.toAscList polys2 ] 
-multTerms poly1 poly2 =
+multTerms (+) (*) poly1 poly2 
+    =
     error $ "AERN internal error: multTerms: incompatible operands: "
         ++ "\n poly1 = " ++ show poly1
         ++ "\n poly2 = " ++ show poly2
@@ -148,18 +203,58 @@ instance
      Show var, Show cf, Ord var) =>
     ArithInOut.RoundedPowerToNonnegInt (IntPoly var cf) 
     where
-    powerToNonnegIntInEff eff p n = error "inner rounded operations not available for IntPoly"
-    powerToNonnegIntOutEff eff (IntPoly cfg terms) n = 
-        let ?addInOutEffort = effAdd in
-        let ?multInOutEffort = effMult in
-        IntPoly cfg $ powTerms sample vars terms n
+    powerToNonnegIntInEff eff (IntPoly cfg terms) n =
+        IntPoly cfg $ 
+            powTerms 
+                (ArithInOut.addInEff effAdd) 
+                (ArithInOut.multInEff effMult) 
+                (ArithInOut.powerToNonnegIntOutEff effPwr) 
+                (imprecisionOfEff effImpr) 
+                sample cfg 
+                terms n
         where
         sample = ipolycfg_sample_cf cfg
-        vars = ipolycfg_vars cfg
         effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+        effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
         effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+        effImpr = ArithInOut.rrEffortImprecision sample eff
+    powerToNonnegIntOutEff eff (IntPoly cfg terms) n = 
+        IntPoly cfg $ 
+            powTerms 
+                (ArithInOut.addOutEff effAdd) 
+                (ArithInOut.multOutEff effMult) 
+                (ArithInOut.powerToNonnegIntOutEff effPwr) 
+                (imprecisionOfEff effImpr) 
+                sample cfg
+                terms n
+        where
+        sample = ipolycfg_sample_cf cfg
+        effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+        effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
+        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+        effImpr = ArithInOut.rrEffortImprecision sample eff
         
-powTerms sample vars = powerFromMult (mkConstTerms (one sample) vars) multTerms
+powTerms ::
+    (Show var, Show cf,
+     ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison imprecision) =>
+    (cf -> cf -> cf) -> 
+    (cf -> cf -> cf) -> 
+    (cf -> Int -> cf) -> 
+    (cf -> imprecision) ->
+    cf ->
+    (IntPolyCfg var cf) ->
+    IntPolyTerms var cf -> Int -> IntPolyTerms var cf
+powTerms (+) (*) (^) getImpr sample cfg = 
+    powerFromMult 
+        (mkConstTerms (one sample) vars) 
+        multTermsReduce
+        where
+        vars = ipolycfg_vars cfg
+        multTermsReduce t1 t2 =
+            reduceTermsCount (+) (*) (^) getImpr cfg $
+            reduceTermsDegree (+) (*) (^) cfg $
+            multTerms (+) (*) t1 t2
         
 instance
     (ArithInOut.RoundedReal cf) 
@@ -170,15 +265,13 @@ instance
         (ArithInOut.RoundedRealEffortIndicator cf)
     ringOpsDefaultEffort (IntPoly cfg _) = 
         ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg
-    ringEffortAdd (IntPoly cfg _) eff =  
-        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf eff
-        where
-        sampleCf = ipolycfg_sample_cf cfg 
+    ringEffortAdd (IntPoly cfg _) eff = eff  
     ringEffortMult (IntPoly cfg _) eff = eff  
     ringEffortPow (IntPoly cfg _) eff = eff  
 
 instance 
     (ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
      Show var, Ord var, Show cf,
      NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
     =>
@@ -199,30 +292,25 @@ instance
     =>
     ArithInOut.RoundedMixedAdd (IntPoly var cf) other 
     where
-    mixedAddInEff eff p1 a = error "inner rounded operations not available for IntPoly"
-    mixedAddOutEff eff p1 a = addPolyConst eff p1 a
+    mixedAddInEff eff (IntPoly cfg terms) a = 
+        IntPoly cfg $ addTermsConst (+|) cfg terms a
+        where
+        (+|) = ArithInOut.mixedAddInEff eff
+    mixedAddOutEff eff (IntPoly cfg terms) a = 
+        IntPoly cfg $ addTermsConst (+|) cfg terms a
+        where
+        (+|) = ArithInOut.mixedAddOutEff eff
 
-addPolyConst :: 
-    (ArithInOut.RoundedMixedAdd cf other, Ord var, 
-     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf) 
-    =>
-    ArithInOut.MixedAddEffortIndicator cf other -> 
-    IntPoly var cf -> other -> IntPoly var cf
-addPolyConst eff (IntPoly cfg poly) const =
-    let ?mixedAddInOutEffort = eff in
-    IntPoly cfg $ addTermsConst cfg poly const
-
-
-addTermsConst _ (IntPolyC val) const =
-    IntPolyC $ val <+>| const
-addTermsConst cfg (IntPolyV x polys) const =
+addTermsConst (+|) _ (IntPolyC val) const =
+    IntPolyC $ val +| const
+addTermsConst (+|) cfg (IntPolyV x polys) const =
     IntPolyV x $ IntMap.insert 0 newConstPoly polys
     where
     oldConstPoly =
         case IntMap.lookup 0 polys of
             Nothing -> intpoly_terms $ newConstFn cfgR undefined $ zero sampleCf
             Just p -> p
-    newConstPoly = addTermsConst cfgR oldConstPoly const
+    newConstPoly = addTermsConst (+|) cfgR oldConstPoly const
     cfgR = cfgRemVar cfg
     sampleCf = ipolycfg_sample_cf cfg
          
@@ -240,20 +328,16 @@ instance
     ArithInOut.RoundedMixedMultiply (IntPoly var cf) other 
     where
     mixedMultInEff eff p1 a = error "inner rounded operations not available for IntPoly"
-    mixedMultOutEff eff p1 a = scalePoly eff p1 a
+    mixedMultOutEff eff (IntPoly cfg terms) a = 
+        IntPoly cfg $ scaleTerms (*|) a terms
+        where
+        (*|) = ArithInOut.mixedMultOutEff eff
+        
 
-scalePoly ::
-    (ArithInOut.RoundedMixedMultiply cf other) =>
-    ArithInOut.MixedMultEffortIndicator cf other -> 
-    IntPoly var cf -> other -> IntPoly var cf
-scalePoly eff (IntPoly cfg poly) c = 
-    let ?mixedMultInOutEffort = eff in
-    IntPoly cfg $ scaleTerms c poly 
-
-scaleTerms c (IntPolyC val) =
-    IntPolyC $ val <*>| c
-scaleTerms c (IntPolyV x polys) = 
-    IntPolyV x $ IntMap.map (scaleTerms c) polys
+scaleTerms (*|) c (IntPolyC val) =
+    IntPolyC $ val *| c
+scaleTerms (*|) c (IntPolyV x polys) = 
+    IntPolyV x $ IntMap.map (scaleTerms (*|) c) polys
 
 instance
     (Neg cf) => Neg (IntPoly var cf)

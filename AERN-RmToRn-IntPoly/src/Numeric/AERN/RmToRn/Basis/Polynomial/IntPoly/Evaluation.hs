@@ -70,7 +70,9 @@ instance
     where
     type EvalOpsEffortIndicator (IntPoly var cf) cf = ArithInOut.RoundedRealEffortIndicator cf
     evalOpsDefaultEffort _ sampleCf = ArithInOut.roundedRealDefaultEffort sampleCf 
-    evalOpsOut eff sampleP sampleCf = 
+    evalOpsIn eff sampleP sampleCf =
+        coeffPolyEvalOpsIn eff sampleCf
+    evalOpsOut eff sampleP sampleCf =
         coeffPolyEvalOpsOut eff sampleCf
 
 data PolyEvalOps var cf val =
@@ -95,6 +97,32 @@ data PolyEvalMonoOps cf val =
         polyEvalMonoCfEffortIndicator :: ArithInOut.RoundedRealEffortIndicator cf
     }
 
+coeffPolyEvalOpsIn ::
+    (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf)
+    =>
+   (ArithInOut.RoundedRealEffortIndicator cf) ->
+   cf ->
+   PolyEvalOps var cf cf
+coeffPolyEvalOpsIn eff sample =
+    let ?multInOutEffort = effMult in
+    let ?intPowerInOutEffort = effPwr in
+    let ?addInOutEffort = effAdd in
+    let ?pCompareEffort = effComp in
+    PolyEvalOps (zero sample) (>+<) (>*<) (>^<) id (const Nothing) (<=?) $
+        Just $ PolyEvalMonoOps
+            RefOrd.getEndpointsOutWithDefaultEffort
+            RefOrd.fromEndpointsOutWithDefaultEffort
+            isDefinitelyExact
+            eff
+    where
+    isDefinitelyExact a =
+        (isExactEff $ ArithInOut.rrEffortImprecision a eff) a == Just True
+    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+    effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
+    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+    effComp = ArithInOut.rrEffortNumComp sample eff
+    effJoin = ArithInOut.rrEffortJoinMeet sample eff
+
 coeffPolyEvalOpsOut ::
     (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf)
     =>
@@ -105,7 +133,6 @@ coeffPolyEvalOpsOut eff sample =
     let ?multInOutEffort = effMult in
     let ?intPowerInOutEffort = effPwr in
     let ?addInOutEffort = effAdd in
-    let ?joinmeetEffort = effJoin in
     let ?pCompareEffort = effComp in
     PolyEvalOps (zero sample) (<+>) (<*>) (<^>) id (const Nothing) (<=?) $
         Just $ PolyEvalMonoOps
