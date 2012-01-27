@@ -13,6 +13,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Measures 
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort
@@ -111,12 +112,12 @@ main =
     putStrLn $ "(x^2 + 2xy + 4x + 1)[swap order of x,y] = " ++ (showP $ polySwapFirstTwoVars integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[x->z] = " ++ (showP $ polyRenameMainVar "z" integTwoBxPyP2)
     putStrLn $ "(x^2 + 2xy + 4x + 1)[add z] = " ++ (showP $ polyAddMainVar () eff "z" (0 </\> 2) integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)[degree 1] = " ++ (showP $ reducePolyDegree eff $ changeSizeLimits cfgDeg1 integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)[degree 0] = " ++ (showP $ reducePolyDegree eff $ changeSizeLimits cfgDeg0 integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)[size 2] = " ++ (showP $ reducePolyTermCount eff $ changeSizeLimits cfgSize2 integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)[size 1] = " ++ (showP $ reducePolyTermCount eff $ changeSizeLimits cfgSize1 integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)[size 2, x tiny] = " ++ (showP $ reducePolyTermCount eff $ changeSizeLimits cfgXTinySize2 integTwoBxPyP2)
-    putStrLn $ "(x^2 + 2xy + 4x + 1)[size 1, x tiny] = " ++ (showP $ reducePolyTermCount eff $ changeSizeLimits cfgXTinySize1 integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[degree 1] = " ++ (showP $ reduceDeg $ changeSizeLimits cfgDeg1 integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[degree 0] = " ++ (showP $ reduceDeg $ changeSizeLimits cfgDeg0 integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[size 2] = " ++ (showP $ reduceCount $ changeSizeLimits cfgSize2 integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[size 1] = " ++ (showP $ reduceCount $ changeSizeLimits cfgSize1 integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[size 2, x tiny] = " ++ (showP $ reduceCount $ changeSizeLimits cfgXTinySize2 integTwoBxPyP2)
+    putStrLn $ "(x^2 + 2xy + 4x + 1)[size 1, x tiny] = " ++ (showP $ reduceCount $ changeSizeLimits cfgXTinySize1 integTwoBxPyP2)
     putStrLn "elementary ops:"
     putStrLn $ "sin x [n = 1] = " ++ (showP $ sineOutPolyThin ((),()) 4 eff 1 x)
     putStrLn $ "sin x [n = 2] = " ++ (showP $ sineOutPolyThin ((),()) 4 eff 2 x)
@@ -149,6 +150,9 @@ integTwoBxPyP2 = integratePolyMainVar eff 0 c1 twoBxPyP2
 eff = ArithInOut.roundedRealDefaultEffort (0:: CF)
 minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 x
 minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 x
+
+reduceDeg = reducePolyDegree (<+>) (<*>) (<^>)
+reduceCount = reducePolyTermCount (<+>) (<*>) (<^>) (imprecisionOfEff $ imprecisionDefaultEffort (0::CF))
 
 evalOpsOutCf = evalOpsOut eff x (0::CF)
 

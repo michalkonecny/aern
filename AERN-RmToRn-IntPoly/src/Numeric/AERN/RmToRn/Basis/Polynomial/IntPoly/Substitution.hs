@@ -65,6 +65,10 @@ instance
         polyPolyEvalOpsOut eff sampleP sampleCf
         where
         sampleCf = getSampleDomValue sampleP
+    evalOpsIn eff _ sampleP =
+        polyPolyEvalOpsIn eff sampleP sampleCf
+        where
+        sampleCf = getSampleDomValue sampleP
 
 polyPolyEvalOpsOut ::
     (Ord var, Show var, Show cf,
@@ -78,7 +82,7 @@ polyPolyEvalOpsOut ::
    cf ->
    PolyEvalOps var cf (IntPoly var cf)
 polyPolyEvalOpsOut effCmp@(_,effCf) sampleP sampleCf =
-    let (<+>) = ArithInOut.addOutEff effAddCf in
+    let (<+>) = ArithInOut.addOutEff effCf in
     let (<*>) = ArithInOut.multOutEff effCf in
     let (<^>) = ArithInOut.powerToNonnegIntOutEff effCf in
     let (<=?) = NumOrd.pLeqEff effCmp in
@@ -94,10 +98,39 @@ polyPolyEvalOpsOut effCmp@(_,effCf) sampleP sampleCf =
     effImpr = ArithInOut.rrEffortImprecision sampleCf effCf
     effAddCf = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
 
+polyPolyEvalOpsIn ::
+    (Ord var, Show var, Show cf,
+     RefOrd.IntervalLike cf, 
+     ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf),
+     Show (Imprecision cf))
+    =>
+   (Int1To1000, ArithInOut.RoundedRealEffortIndicator cf) ->
+   (IntPoly var cf) ->
+   cf ->
+   PolyEvalOps var cf (IntPoly var cf)
+polyPolyEvalOpsIn effCmp@(_,effCf) sampleP sampleCf =
+    let (>+<) = ArithInOut.addInEff effCf in
+    let (>*<) = ArithInOut.multInEff effCf in
+    let (>^<) = ArithInOut.powerToNonnegIntInEff effCf in
+    let (<=?) = NumOrd.pLeqEff effCmp in
+    PolyEvalOps (zero sampleP) (>+<) (>*<) (>^<) (newConstFnFromSample sampleP) (const Nothing) (<=?) $
+        Just $ PolyEvalMonoOps
+            RefOrd.getEndpointsOutWithDefaultEffort
+            RefOrd.fromEndpointsOutWithDefaultEffort
+            isDefinitelyExact
+            effCf
+    where
+    isDefinitelyExact p = 
+        polyIsExactEff effImpr p == Just True
+    effImpr = ArithInOut.rrEffortImprecision sampleCf effCf
+    effAddCf = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+
 
 substPolyMainVarElim ::
     (Ord var, Show var, 
      ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf, 
+     NumOrd.PartialComparison (Imprecision cf),
      Show cf) 
     => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
@@ -119,6 +152,7 @@ substPolyMainVarElim eff z substVal p@(IntPoly cfg _)
 substPolyMainVar ::
     (Ord var, Show var, 
      ArithInOut.RoundedReal cf, Show cf,
+     NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf) 
     => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
@@ -150,12 +184,16 @@ substPolyMainVar eff z substPoly p@(IntPoly cfg terms) =
             RefOrd.getEndpointsOutWithDefaultEffort (IntPoly cfg terms)
     substTerms = intpoly_terms substPoly
     substPolyEvalOps =
+        let ?intPowerInOutEffort = effPwr in
         let ?multInOutEffort = effMult in
         let ?addInOutEffort = effAdd in
         let ?joinmeetEffort = effJoin in
         let ?pCompareEffort = effComp in
         PolyEvalOps 
-            (cf2Terms z) addTerms multTerms (powTerms sample vars) 
+            (cf2Terms z) 
+            (addTerms (<+>)) 
+            (multTerms (<+>) (<*>))
+            (powTerms (<+>) (<*>) (<^>) (imprecisionOfEff effImpr) sample cfg) 
             cf2Terms terms2terms leqTerms $
             Just $ PolyEvalMonoOps 
                 termsGetEndpoints termsFromEndpoints isDefinitelyExact eff
@@ -168,7 +206,7 @@ substPolyMainVar eff z substPoly p@(IntPoly cfg terms) =
         (zero sample) <=? diffRange 
         where
         diffRange = evalPolyOnInterval eff domsR (IntPoly cfgR diff)
-        diff = addTerms terms2 $ negTerms terms1
+        diff = addTerms (ArithInOut.addOutEff effAdd) terms2 $ negTerms terms1
         (cfgR, domsR) =
             case terms1 of 
                 IntPolyV v _ | v == mainVar -> (cfgNoLE, domsLZ)
@@ -177,6 +215,7 @@ substPolyMainVar eff z substPoly p@(IntPoly cfg terms) =
             cfgNoLER = cfgRemVar cfgNoLE
             domsLZR = ipolycfg_domsLZ cfgNoLER
             cfgNoLE = cfg { ipolycfg_domsLE = replicate (length domsLZ) $ zero sample }
+    effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
     effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     effComp = ArithInOut.rrEffortNumComp sample eff

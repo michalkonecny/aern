@@ -38,7 +38,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
---import Numeric.AERN.RealArithmetic.Measures
+import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
@@ -56,6 +56,7 @@ import Test.QuickCheck
 instance
     (Ord var, Show var, 
      Show cf, ArithInOut.RoundedReal cf, 
+     NumOrd.PartialComparison (Imprecision cf), 
      RefOrd.IntervalLike cf) 
     => 
     RefOrd.PartialComparison (IntPoly var cf) 

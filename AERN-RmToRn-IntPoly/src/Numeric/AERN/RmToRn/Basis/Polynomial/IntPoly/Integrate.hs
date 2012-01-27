@@ -32,12 +32,17 @@ import Numeric.AERN.RealArithmetic.ExactOps
 
 --import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+import qualified Numeric.AERN.NumericOrder as NumOrd
+--import Numeric.AERN.NumericOrder.OpsImplicitEffort
+
+import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Data.IntMap as IntMap
 
 integratePolyMainVar ::
     (Ord var, Show var, 
      ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf), 
      Show cf) => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
     cf {- zero coefficient -} ->
@@ -49,7 +54,7 @@ integratePolyMainVar eff z initPoly p@(IntPoly cfg poly) =
     initPoly <+> (IntPoly cfg $ ip poly)
 --    (initPoly <+> (neg projectionAtDomLE)) <+> (IntPoly cfg $ ip poly) 
     where
-    (<+>) = ArithInOut.addOutEff effAdd
+    (<+>) = ArithInOut.addOutEff eff
     effDiv = ArithInOut.mxfldEffortDiv sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     sample = ipolycfg_sample_cf cfg
