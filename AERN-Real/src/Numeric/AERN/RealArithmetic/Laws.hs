@@ -47,10 +47,11 @@ roundedRefinementMonotone1 ::
     String ->
     (Expr1Eff ei t) ->
     (Expr1Eff ei t) ->
-    ei -> (RefOrd.LEPair t) -> 
+    (RefOrd.LEPair t) -> 
+    ei -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
-roundedRefinementMonotone1 contextDescription exprUp exprDn effort (RefOrd.LEPair (e1L, e1H)) effortComp =
+roundedRefinementMonotone1 contextDescription exprUp exprDn (RefOrd.LEPair (e1L, e1H)) effort effortComp =
     case RefOrd.pLeqEff effortComp resDn resUp of
         Just b -> b
         _ -> True
@@ -66,12 +67,16 @@ roundedRefinementMonotone2 ::
     String ->
     (Expr2Eff ei t) ->
     (Expr2Eff ei t) ->
-    ei -> (RefOrd.LEPair t) -> (RefOrd.LEPair t) -> 
+    (RefOrd.TwoLEPairs t) -> 
+    ei -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 roundedRefinementMonotone2 
-        contextDescription exprUp exprDn effort 
-        (RefOrd.LEPair (e1L, e1H)) (RefOrd.LEPair (e2L, e2H)) effortComp =
+        contextDescription exprUp exprDn 
+        (RefOrd.TwoLEPairs ((e1L, e1H), (e2L, e2H))) 
+        effort 
+        effortComp 
+        =
 --    unsafePrint ("\nroundedRefinementMonotone2: " 
 --      ++ "\n Up: op(" ++ show e1H ++ ", " ++ show e2H ++ ") = " ++ show resUp 
 --      ++ "\n Dn: op(" ++ show e1L ++ ", " ++ show e2L ++ ") = " ++ show resDn

@@ -83,14 +83,17 @@ propMixedAddEqualsConvert ::
      Show t, HasLegalValues t) 
     =>
     t -> tn ->
+    (RefOrd.UniformlyOrderedSingleton t) -> 
     (RefOrd.PartialCompareEffortIndicator t,
      (MixedAddEffortIndicator t tn,      
       AddEffortIndicator t,
       ConvertEffortIndicator tn t)) -> 
-    (RefOrd.UniformlyOrderedSingleton t) -> 
     tn -> Bool
-propMixedAddEqualsConvert sample sampleN initEffort 
-        (RefOrd.UniformlyOrderedSingleton d) n =
+propMixedAddEqualsConvert sample sampleN 
+        (RefOrd.UniformlyOrderedSingleton d) 
+        initEffort 
+        n 
+    =
     equalRoundingUpDn "mixed addition by conversion"
         expr1In expr1Out expr2In expr2Out
         RefOrd.pLeqEff initEffort
@@ -141,14 +144,17 @@ propMixedMultEqualsConvert ::
      Show t, HasLegalValues t) 
     =>
     t -> tn ->
+    (RefOrd.UniformlyOrderedSingleton t) -> 
     (RefOrd.PartialCompareEffortIndicator t,
       (MixedMultEffortIndicator t tn,      
        MultEffortIndicator t,
        ConvertEffortIndicator tn t)) -> 
-    (RefOrd.UniformlyOrderedSingleton t) -> 
     tn -> Bool
-propMixedMultEqualsConvert sample sampleN initEffort 
-        (RefOrd.UniformlyOrderedSingleton d) n =
+propMixedMultEqualsConvert sample sampleN 
+        (RefOrd.UniformlyOrderedSingleton d) 
+        initEffort 
+        n 
+    =
     equalRoundingUpDn "mixed multiplication by conversion"
         expr1In expr1Out expr2In expr2Out
         RefOrd.pLeqEff initEffort
@@ -198,14 +204,16 @@ propMixedDivEqualsConvert ::
      Show t, HasZero t, HasLegalValues t) 
     =>
     t -> tn ->
+    (RefOrd.UniformlyOrderedSingleton t) -> 
     (RefOrd.PartialCompareEffortIndicator t,
      (MixedDivEffortIndicator t tn,      
       DivEffortIndicator t,
       ConvertEffortIndicator tn t)) -> 
-    (RefOrd.UniformlyOrderedSingleton t) -> 
     tn -> Bool
-propMixedDivEqualsConvert sample sampleN initEffort@(effComp,(_,_,effConv)) 
-        (RefOrd.UniformlyOrderedSingleton d) n
+propMixedDivEqualsConvert sample sampleN 
+        (RefOrd.UniformlyOrderedSingleton d) 
+        initEffort@(effComp,(_,_,effConv)) 
+        n
     =
     equalRoundingUpDn "mixed division by conversion"
         expr1In expr1Out expr2In expr2Out
@@ -221,14 +229,14 @@ propMixedDivEqualsConvert sample sampleN initEffort@(effComp,(_,_,effConv))
         let (</>) = divOutEff effDiv in d </> (convertOutEff effConv n)
 
     
-testsInOutMixedFieldOps (name, sample) (nameN, sampleN) =
+testsInOutMixedFieldOps (name, sample) (nameN, sampleN) area =
     testGroup (name ++ " with " ++ nameN ++ ": mixed in/out rounded ops") $
         [
-            testProperty "addition" (propMixedAddEqualsConvert sample sampleN)
+            testProperty "addition" (area, propMixedAddEqualsConvert sample sampleN)
         ,
-            testProperty "multiplication" (propMixedMultEqualsConvert sample sampleN)
+            testProperty "multiplication" (area, propMixedMultEqualsConvert sample sampleN)
         ,
-            testProperty "division" (propMixedDivEqualsConvert sample sampleN)
+            testProperty "division" (area, propMixedDivEqualsConvert sample sampleN)
         ]
 
 class 

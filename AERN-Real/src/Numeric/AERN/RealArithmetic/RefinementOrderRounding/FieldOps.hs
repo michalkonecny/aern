@@ -78,11 +78,11 @@ propInOutAddZero ::
      Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedSingleton t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propInOutAddZero sample effort (RefOrd.UniformlyOrderedSingleton e) =
+propInOutAddZero sample (RefOrd.UniformlyOrderedSingleton e) effort =
     roundedUnit (zero sample) RefOrd.pLeqEff addInEff addOutEff effort e
 
 propInOutAddCommutative ::
@@ -90,11 +90,11 @@ propInOutAddCommutative ::
      Show t, HasLegalValues t)
     =>
     t ->
+    (RefOrd.UniformlyOrderedPair t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    (RefOrd.UniformlyOrderedPair t) -> 
     Bool
-propInOutAddCommutative _ effort (RefOrd.UniformlyOrderedPair (e1,e2)) =
+propInOutAddCommutative _ (RefOrd.UniformlyOrderedPair (e1,e2)) effort =
     roundedCommutative RefOrd.pLeqEff addInEff addOutEff effort e1 e2
 
 propInOutAddAssociative ::
@@ -102,36 +102,36 @@ propInOutAddAssociative ::
      Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedTriple t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    (RefOrd.UniformlyOrderedTriple t) -> 
     Bool
-propInOutAddAssociative _ effort (RefOrd.UniformlyOrderedTriple (e1,e2,e3)) =
+propInOutAddAssociative _ (RefOrd.UniformlyOrderedTriple (e1,e2,e3)) effort =
     roundedAssociative RefOrd.pLeqEff addInEff addOutEff effort e1 e2 e3
 
 propInOutAddMonotone ::
     (RefOrd.PartialComparison t, RoundedAdd t, 
      Show t, HasLegalValues t,
-     RefOrd.ArbitraryOrderedTuple t) 
+     RefOrd.ArbitraryOrderedTuple t)
     =>
     t ->
+    (RefOrd.TwoLEPairs t) -> 
     (AddEffortIndicator t) -> 
-    (RefOrd.LEPair t) -> (RefOrd.LEPair t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 propInOutAddMonotone _ =
     roundedRefinementMonotone2 "addition" addInEff addOutEff
 
-testsInOutAdd (name, sample) =
+testsInOutAdd (name, sample) area =
     testGroup (name ++ " >+< <+>") $
         [
-            testProperty "0 absorbs" (propInOutAddZero sample)
+            testProperty "0 absorbs" (area, propInOutAddZero sample)
         ,
-            testProperty "commutative" (propInOutAddCommutative sample)
+            testProperty "commutative" (area, propInOutAddCommutative sample)
         ,
-            testProperty "associative" (propInOutAddAssociative sample)
+            testProperty "associative" (area, propInOutAddAssociative sample)
         ,
-            testProperty "refinement monotone" (propInOutAddMonotone sample)
+            testProperty "refinement monotone" (area, propInOutAddMonotone sample)
         ]
 
 
@@ -146,11 +146,11 @@ propInOutSubtrElim ::
      Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedSingleton t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propInOutSubtrElim sample effort (RefOrd.UniformlyOrderedSingleton e) =
+propInOutSubtrElim sample (RefOrd.UniformlyOrderedSingleton e) effort =
     roundedReflexiveCollapse (zero sample) RefOrd.pLeqEff subtrInEff subtrOutEff effort e
 
 propInOutSubtrNegAdd ::
@@ -158,11 +158,11 @@ propInOutSubtrNegAdd ::
      Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedPair t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      AddEffortIndicator t) -> 
-    (RefOrd.UniformlyOrderedPair t) -> 
     Bool
-propInOutSubtrNegAdd _ initEffort (RefOrd.UniformlyOrderedPair (e1, e2)) =
+propInOutSubtrNegAdd _ (RefOrd.UniformlyOrderedPair (e1, e2)) initEffort =
     equalRoundingUpDn "a+b=a-(-b)"
         expr1Up expr1Dn expr2Up expr2Dn 
         RefOrd.pLeqEff initEffort
@@ -182,21 +182,21 @@ propInOutSubtrMonotone ::
      RefOrd.ArbitraryOrderedTuple t) 
     =>
     t ->
+    (RefOrd.TwoLEPairs t) -> 
     (AddEffortIndicator t) -> 
-    (RefOrd.LEPair t) -> (RefOrd.LEPair t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 propInOutSubtrMonotone _ =
     roundedRefinementMonotone2 "subtraction" subtrInEff subtrOutEff
 
-testsInOutSubtr (name, sample) =
+testsInOutSubtr (name, sample) area =
     testGroup (name ++ " >-< <->") $
         [
 --            testProperty "a-a=0" (propInOutSubtrElim sample)
 --            ,
-            testProperty "a+b=a-(-b)" (propInOutSubtrNegAdd sample)
+            testProperty "a+b=a-(-b)" (area, propInOutSubtrNegAdd sample)
             ,
-            testProperty "refinement monotone" (propInOutSubtrMonotone sample)
+            testProperty "refinement monotone" (area, propInOutSubtrMonotone sample)
         ]
 
 
@@ -252,11 +252,11 @@ propInOutAbsNegSymmetric ::
      Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedSingleton t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
-    (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propInOutAbsNegSymmetric _ effort (RefOrd.UniformlyOrderedSingleton e) =
+propInOutAbsNegSymmetric _ (RefOrd.UniformlyOrderedSingleton e) effort =
     roundedNegSymmetric RefOrd.pLeqEff absInEff absOutEff effort e
 
 propInOutAbsIdempotent ::
@@ -264,11 +264,11 @@ propInOutAbsIdempotent ::
      Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedSingleton t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      AbsEffortIndicator t) -> 
-    (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propInOutAbsIdempotent _ effort (RefOrd.UniformlyOrderedSingleton e) =
+propInOutAbsIdempotent _ (RefOrd.UniformlyOrderedSingleton e) effort =
     roundedIdempotent RefOrd.pLeqEff absInEff absOutEff effort e
 
 propInOutAbsMonotone ::
@@ -277,21 +277,21 @@ propInOutAbsMonotone ::
      Show t, HasLegalValues t) 
     =>
     t ->
-    (AbsEffortIndicator t) -> 
     (RefOrd.LEPair t) -> 
+    (AbsEffortIndicator t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 propInOutAbsMonotone _ =
     roundedRefinementMonotone1 "abs" absInEff absOutEff
 
-testsInOutAbs (name, sample) =
+testsInOutAbs (name, sample) area =
     testGroup (name ++ " in/out rounded abs") $
         [
-            testProperty "neg -> no change" (propInOutAbsNegSymmetric sample)
+            testProperty "neg -> no change" (area, propInOutAbsNegSymmetric sample)
         ,
-            testProperty "idempotent" (propInOutAbsIdempotent sample)
+            testProperty "idempotent" (area, propInOutAbsIdempotent sample)
         ,
-            testProperty "refinement monotone" (propInOutAbsMonotone sample)
+            testProperty "refinement monotone" (area, propInOutAbsMonotone sample)
         ]
 
 
@@ -313,8 +313,8 @@ propInOutMultMonotone ::
      RefOrd.ArbitraryOrderedTuple t) 
     =>
     t ->
+    (RefOrd.TwoLEPairs t) -> 
     (MultEffortIndicator t) -> 
-    (RefOrd.LEPair t) -> (RefOrd.LEPair t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 propInOutMultMonotone _ =
@@ -325,11 +325,11 @@ propInOutMultOne ::
      Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedSingleton t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
-    (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propInOutMultOne sample effort (RefOrd.UniformlyOrderedSingleton e) =
+propInOutMultOne sample (RefOrd.UniformlyOrderedSingleton e) effort =
     roundedUnit (one sample) RefOrd.pLeqEff multInEff multOutEff effort e
 
 propInOutMultCommutative ::
@@ -337,11 +337,11 @@ propInOutMultCommutative ::
      Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedPair t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
-    (RefOrd.UniformlyOrderedPair t) -> 
     Bool
-propInOutMultCommutative _ effort (RefOrd.UniformlyOrderedPair (e1,e2)) =
+propInOutMultCommutative _ (RefOrd.UniformlyOrderedPair (e1,e2)) effort =
     roundedCommutative RefOrd.pLeqEff multInEff multOutEff effort e1 e2
        
 propInOutMultAssociative ::
@@ -350,11 +350,11 @@ propInOutMultAssociative ::
      Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedTriple t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      MultEffortIndicator t) -> 
-    (RefOrd.UniformlyOrderedTriple t) -> 
     Bool
-propInOutMultAssociative _ effort (RefOrd.UniformlyOrderedTriple (e1,e2,e3)) =
+propInOutMultAssociative _ (RefOrd.UniformlyOrderedTriple (e1,e2,e3)) effort =
     roundedAssociative RefOrd.pLeqEff multInEff multOutEff effort e1 e2 e3
 
 propInOutMultDistributesOverAdd ::
@@ -363,30 +363,30 @@ propInOutMultDistributesOverAdd ::
      HasAntiConsistency t, Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedTriple t) -> 
     (ConsistencyEffortIndicator t) ->
     (RefOrd.PartialCompareEffortIndicator t, 
      (MultEffortIndicator t, AddEffortIndicator t)) -> 
-    (RefOrd.UniformlyOrderedTriple t) -> 
     Bool
-propInOutMultDistributesOverAdd _ effortConst effort (RefOrd.UniformlyOrderedTriple (e1,e2,e3)) =
+propInOutMultDistributesOverAdd _ (RefOrd.UniformlyOrderedTriple (e1,e2,e3)) effortConst effort =
     roundedDistributive 
         RefOrd.pLeqEff 
         multInEff addInEff multOutEff addOutEff
         effortConst effort e1 e2 e3
        
     
-testsInOutMult (name, sample) =
+testsInOutMult (name, sample) area =
     testGroup (name ++ " >*< <*>") $
         [
-            testProperty "1 absorbs" (propInOutMultOne sample)
+            testProperty "1 absorbs" (area, propInOutMultOne sample)
         ,
-            testProperty "commutative" (propInOutMultCommutative sample)
+            testProperty "commutative" (area, propInOutMultCommutative sample)
         ,
-            testProperty "associative" (propInOutMultAssociative sample)
+            testProperty "associative" (area, propInOutMultAssociative sample)
         ,
-            testProperty "weakly distributes over +" (propInOutMultDistributesOverAdd sample)
+            testProperty "weakly distributes over +" (area, propInOutMultDistributesOverAdd sample)
         ,
-            testProperty "refinement monotone" (propInOutMultMonotone sample)
+            testProperty "refinement monotone" (area, propInOutMultMonotone sample)
         ]
 
 class
@@ -438,13 +438,13 @@ propInOutPowerMonotone ::
      Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.LEPair t) -> 
     Int ->
     (PowerToNonnegIntEffortIndicator t) -> 
-    (RefOrd.LEPair t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
-propInOutPowerMonotone _ nR =
-    roundedRefinementMonotone1 "non-neg integer power" powerNInEff powerNOutEff
+propInOutPowerMonotone _ pair nR =
+    roundedRefinementMonotone1 "non-neg integer power" powerNInEff powerNOutEff pair
     where
     n = nR `mod` 10
     powerNInEff eff x = powerToNonnegIntInEff eff x n
@@ -457,14 +457,15 @@ propInOutPowerSumExponents ::
      HasOne t, HasAntiConsistency t, Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedSingleton t) -> 
     (ConsistencyEffortIndicator t) -> 
     (RefOrd.PartialCompareEffortIndicator t,
      (PowerToNonnegIntEffortIndicator t,
       MultEffortIndicator t)) ->
-    (RefOrd.UniformlyOrderedSingleton t) -> 
     Int -> Int -> Bool
-propInOutPowerSumExponents _ effortConsistency initEffort 
-        (RefOrd.UniformlyOrderedSingleton a) nR mR =
+propInOutPowerSumExponents _ (RefOrd.UniformlyOrderedSingleton a) 
+        effortConsistency initEffort 
+        nR mR =
     thinEqualConsLeqRoundingUpDnImprovement "a^n * a^m ⊑/⊒ a^(n+m)" [a]
         expr1Up expr1Dn expr2Up expr2Dn 
         RefOrd.pLeqEff
@@ -488,12 +489,12 @@ propInOutPowerSumExponents _ effortConsistency initEffort
         let (<^>) = powerToNonnegIntOutEff effPower in
         a <^> (n + m)
 
-testsInOutIntPower (name, sample) =
+testsInOutIntPower (name, sample) area =
     testGroup (name ++ " non-negative integer power") $
         [
-            testProperty "a^n * a^m ⊑/⊒ a^(n+m)" (propInOutPowerSumExponents sample)
+            testProperty "a^n * a^m ⊑/⊒ a^(n+m)" (area, propInOutPowerSumExponents sample)
             ,
-            testProperty "refinement monotone" (propInOutPowerMonotone sample)
+            testProperty "refinement monotone" (area, propInOutPowerMonotone sample)
 --            ,
 --            testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
         ]
@@ -521,8 +522,8 @@ propInOutDivMonotone ::
      RefOrd.ArbitraryOrderedTuple t) 
     =>
     t ->
+    (RefOrd.TwoLEPairs t) -> 
     (DivEffortIndicator t) -> 
-    (RefOrd.LEPair t) -> (RefOrd.LEPair t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
 propInOutDivMonotone _ =
@@ -533,11 +534,11 @@ propInOutDivElim ::
      Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedSingleton t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      DivEffortIndicator t) -> 
-    (RefOrd.UniformlyOrderedSingleton t) -> 
     Bool
-propInOutDivElim sample efforts2@(effComp, _) (RefOrd.UniformlyOrderedSingleton a) =
+propInOutDivElim sample (RefOrd.UniformlyOrderedSingleton a) efforts2@(effComp, _) =
     roundedReflexiveCollapse 
         (one sample)
         RefOrd.pLeqEff 
@@ -551,11 +552,11 @@ propInOutDivRecipMult ::
      Show t, HasLegalValues t) 
     =>
     t ->
+    (RefOrd.UniformlyOrderedPair t) -> 
     (RefOrd.PartialCompareEffortIndicator t, 
      (MultEffortIndicator t, DivEffortIndicator t)) -> 
-    (RefOrd.UniformlyOrderedPair t) -> 
     Bool
-propInOutDivRecipMult _ initEffort@(effComp,_) (RefOrd.UniformlyOrderedPair (e1, e2)) =
+propInOutDivRecipMult _ (RefOrd.UniformlyOrderedPair (e1, e2)) initEffort@(effComp,_) =
     equalRoundingUpDnBin2Var2 "a/b=a*(1/b)"
         expr1 expr2 RefOrd.pLeqEff
         multInEff divInEff
@@ -572,14 +573,14 @@ propInOutDivRecipMult _ initEffort@(effComp,_) (RefOrd.UniformlyOrderedPair (e1,
         where
         (/) = op2Eff effort2
 
-testsInOutDiv (name, sample) =
+testsInOutDiv (name, sample) area =
     testGroup (name ++ " </> >/<") $
         [
 --            testProperty "a/a=1" (propInOutDivElim sample)
 --            ,
-            testProperty "a/b=a*(1/b)" (propInOutDivRecipMult sample)
+            testProperty "a/b=a*(1/b)" (area, propInOutDivRecipMult sample)
         ,
-            testProperty "refinement monotone" (propInOutDivMonotone sample)
+            testProperty "refinement monotone" (area, propInOutDivMonotone sample)
         ]
 
 class 
