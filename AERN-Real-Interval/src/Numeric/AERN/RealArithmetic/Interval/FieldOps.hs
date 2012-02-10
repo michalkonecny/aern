@@ -103,7 +103,7 @@ instance
             (NumOrd.maxUpEff effortMinmax) -- maxR
             (NumOrd.minDnEff effortMinmax)
             (NumOrd.maxUpEff effortMinmax) 
-            i1 i2
+            (getEndpoints i1) (getEndpoints i2)
     multInEff (effortComp, effortMinmax, effortMult) i1 i2 =
         fromEndpoints $
         multiplyIntervals 
@@ -115,12 +115,12 @@ instance
             (NumOrd.maxDnEff effortMinmax) -- maxR
             (NumOrd.maxUpEff effortMinmax)
             (NumOrd.minDnEff effortMinmax) 
-            i1 i2
+            (getEndpoints i1) (getEndpoints i2)
     
 multiplyIntervals
         pNonnegNonpos timesL timesR minL minR maxL maxR 
         combineL combineR 
-        (Interval l1 r1) (Interval l2 r2) =
+        (l1, r1) (l2, r2) =
     let _ = [minL, maxR, combineL, combineR] in
         case (pNonnegNonpos l1, -- sign of l1 
               pNonnegNonpos r1, -- sign of r1
