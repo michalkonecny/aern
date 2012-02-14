@@ -24,8 +24,8 @@ import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 -- import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
 import Numeric.AERN.Basics.Interval
 
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import qualified Numeric.AERN.Basics.RefinementOrder as RefOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Exception
@@ -53,6 +53,7 @@ sampleP = FnEndpoint sampleFn
 main =
     do
     hSetBuffering stdout LineBuffering
+--    hSetBuffering stdout NoBuffering
     mapM print $ zip [1..2010] $ map isLegal (fixedSeq :: [P])
 --    mapM printNP $ zip [1..2000] (fixedSeq :: [P]) 
 --    defaultMain tests

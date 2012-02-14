@@ -37,8 +37,8 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Show
 
 import Numeric.AERN.RmToRn.MinimalFnBasis
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
-import Numeric.AERN.Basics.RefinementOrder.OpsDefaultEffort
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.ShowInternals

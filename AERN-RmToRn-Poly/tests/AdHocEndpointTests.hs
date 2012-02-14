@@ -14,7 +14,7 @@ import Numeric.AERN.Basics.ShowInternals
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.OpsDefaultEffort
 
-import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
