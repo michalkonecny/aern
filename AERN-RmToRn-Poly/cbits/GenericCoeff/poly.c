@@ -80,6 +80,9 @@ ADD_COEFF_CODE(checkPoly)(Ops * ops, Poly * p)
       int dg = 0;
       int ta = 0;
       Power * powers = terms[i].powers;
+
+      CHECK_NOT(powers == NULL, ("checkPoly: term %d powers are NULL\n", i));
+
       FOREACH_VAR_ARITY(var,arity)
         {
           int pw = POWER_OF_VAR(powers, var);
@@ -127,13 +130,13 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
   Term * terms = p -> terms;
   CFM_FREE(p -> constTerm);
   CFM_FREE(p -> errorBound);
-  free(p);
+  FREE(p);
 
   Size i = 0;
   // free the power arrays:
   while (i < psize)
     {
-      free(terms[i].powers);
+      FREE(terms[i].powers);
       CFM_FREE(terms[i].coeff);
       i++;
     }
@@ -141,12 +144,12 @@ ADD_COEFF_CODE(freePoly)(Poly *p)
   // free the coeffs:
   while (i < maxSize)
     {
-      free(terms[i].powers);
+      FREE(terms[i].powers);
       i++;
     }
 
   // free the terms array:
-  free(terms);
+  FREE(terms);
 
   DEBUG_FREE(printf("freePoly: finishing\n"));
 

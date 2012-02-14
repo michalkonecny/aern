@@ -18,8 +18,8 @@
 module Numeric.AERN.RmToRn.Basis.Polynomial.Internal.Symbolic where
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
-import Numeric.AERN.Basics.NumericOrder.OpsDefaultEffort
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import Numeric.AERN.Misc.Debug
 

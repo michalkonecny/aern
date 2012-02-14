@@ -338,7 +338,7 @@ ADD_COEFF_CODE(addTermsAndErrorBounds)(Ops * ops, Poly *res, Poly * p1,
 
       ADD_COEFF_CODE(copyTerms)(newCoeffs, i, arity, terms, terms1, terms2);
 
-      free(newCoeffs);
+      FREE(newCoeffs);
     }
 
   DEBUG_ADD(printf("addTermsAndErrorBounds: finishing\n"));

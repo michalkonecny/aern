@@ -1,11 +1,13 @@
 /*
- * haskell_fn_types.h
+ * basics.h
  */
 
-#ifndef HASKELL_FN_TYPES_H_
-#define HASKELL_FN_TYPES_H_
+#ifndef BASICS_H_
+#define BASICS_H_
 
 #include <stdint.h>
+
+#define FREE(p) free(p); (p) = NULL
 
 typedef uint32_t Var;
 /* variables in polynomials range from 0 to arity-1 */

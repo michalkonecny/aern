@@ -303,9 +303,9 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
                       CFM_ADD_UP(ops, maxError, maxError, newCP -> cf);
 
                       // free the term:
-                      free(newCP -> powers);
+                      FREE(newCP -> powers);
                       CFM_FREE(newCP -> cf);
-                      free(newCP);
+                      FREE(newCP);
                     }
                   else
                     {
@@ -333,9 +333,9 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
                           // value of temp2 no longer needed
 
                           // free the newCP:
-                          free(newCP -> powers);
+                          FREE(newCP -> powers);
                           CFM_FREE(newCP -> cf);
-                          free(newCP);
+                          FREE(newCP);
                         }
                     }
                 }
@@ -345,7 +345,7 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
 
       DEBUG_MULT(printf("multiplyTermsAndConsts: about to free tempCoeffPowers\n"));
       // free temp CoeffPowers:
-      free(tempCoeffPowers);
+      FREE(tempCoeffPowers);
 
       // work out whether the constant term is included in the tree:
       CoeffPowers * firstCoeffPowers = (CoeffPowers *) index234(newTerms, 0);
@@ -404,10 +404,10 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
               CFM_ADD_UP(ops, maxError, maxError, t -> abs_cf);
 
               // free the term:
-              free(t -> powers);
+              FREE(t -> powers);
               CFM_FREE(t -> cf);
               CFM_FREE(t -> abs_cf);
-              free(t);
+              FREE(t);
             }
 
           // deallocate the abs value variables:
@@ -416,7 +416,7 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
               CFM_FREE(newTermsArray[i] -> abs_cf);
             }
 
-          free(newTermsArray); // no longer needed
+          FREE(newTermsArray); // no longer needed
 
           // update the size count:
           newTermsSize = maxSize;
@@ -441,7 +441,7 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
               DEBUG_MULT(printf("multiplyTermsAndConsts: about to copy constant term to res\n"));
               CFM_FREE(res -> constTerm);
               res -> constTerm = t -> cf;
-              free(t -> powers);
+              FREE(t -> powers);
               DEBUG_MULT(printf("multiplyTermsAndConsts: copied constant term to res\n"));
             }
           else
@@ -452,12 +452,12 @@ ADD_COEFF_CODE(multiplyTermsAndConsts)(Ops * ops, Poly *res, Poly * p1,
                   CFM_FREE(terms[i].coeff);
                 }
               terms[i].coeff = t -> cf;
-              free(terms[i].powers);
+              FREE(terms[i].powers);
               terms[i].powers = t -> powers;
               DEBUG_MULT(printf("multiplyTermsAndConsts: copied term %d to res\n", i));
             }
           // free the rest of t:
-          free(t);
+          FREE(t);
         }
 
       // having freed all its contents, free also the newTerms tree:

@@ -30,7 +30,7 @@ import Numeric.AERN.RmToRn.Basis.Polynomial.GenericCoeff.Internal.Coeff
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
-import qualified Numeric.AERN.Basics.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Interval
 

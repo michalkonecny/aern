@@ -189,7 +189,7 @@ ADD_COEFF_CODE(copyEncl)(Ops * ops, Poly * res, Poly * src)
   CFM_ASSIGN(ops, res -> errorBound, errorBound);
 
   CFM_FREE(temp);
-  free(reducedTerms);
+  FREE(reducedTerms);
 
   DEBUG_REDUCE(printf("copyEncl: exit\n"));
   DEBUG_REDUCE(printf("copyEncl: res = \n"));
@@ -355,7 +355,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(Ops * ops, Var arity,
           CFM_FREE(coeffP -> coeff);
           //          printf("copyEncl: freed coefficient\n");
           reducedTerms[coeffP -> index] = true; // mark the original position of reduced term in srcTerms
-          free(coeffP); // delete and free the element
+          FREE(coeffP); // delete and free the element
           //          printf("copyEncl: deleted least element\n");
           //          printf("copyEncl: %d elements in tree\n", count234(tree));
         }
@@ -371,7 +371,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreCopiedTerms)(Ops * ops, Var arity,
       //          printf("copyEncl: deleted element number %d\n", i);
       CFM_FREE(coeffP -> coeff);
       //          printf("copyEncl: freed coefficient\n");
-      free(coeffP); // free the struct
+      FREE(coeffP); // free the struct
       //          printf("copyEncl: freed element\n");
       //          printf("copyEncl: %d elements in tree\n", count234(tree));
     }
@@ -458,7 +458,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(Ops * ops, Var arity,
       //          printf("copyEncl: deleted greatest element\n");
       CFM_FREE(coeffP -> coeff);
       //          printf("copyEncl: freed the coefficient\n");
-      free(coeffP);
+      FREE(coeffP);
       //          printf("copyEncl: freed the element\n");
       //          printf("copyEncl: %d elements in tree\n", count234(tree));
       iSrc++;
@@ -475,7 +475,7 @@ ADD_COEFF_CODE(copyEnclReduceSizeStoreReducedTerms)(Ops * ops, Var arity,
       reducedTerms[coeffP -> index] = true; // mark the original position of reduced term in srcTerms
       CFM_FREE(coeffP -> coeff);
       //          printf("copyEncl: freed the coefficient\n");
-      free(coeffP); // free the element
+      FREE(coeffP); // free the element
       //          printf("copyEncl: freed the element\n");
       //          printf("copyEncl: %d elements left in tree\n", count234(tree));
     }

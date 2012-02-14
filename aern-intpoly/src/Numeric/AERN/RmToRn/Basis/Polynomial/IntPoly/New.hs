@@ -1,0 +1,141 @@
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ImplicitParams #-}
+{-|
+    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.New
+    Description :  creating constant and single-variable polynomials  
+    Copyright   :  (c) Michal Konecny
+    License     :  BSD3
+
+    Maintainer  :  mikkonecny@gmail.com
+    Stability   :  experimental
+    Portability :  portable
+    
+    Creating constant and single-variable polynomials.
+-}
+
+module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.New
+--    (
+--    )
+where
+    
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Config
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Poly
+    
+import Numeric.AERN.RmToRn.New
+import Numeric.AERN.RmToRn.Domain
+
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.ExactOps
+
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+--import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+
+import qualified Data.Map as Map
+import qualified Data.IntMap as IntMap
+
+{-- Basic function-approximation specific ops --}
+
+instance
+    (Ord var, ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf) 
+    => 
+    (HasDomainBox (IntPoly var cf))
+    where
+    type (Domain (IntPoly var cf)) = cf
+    type (Var (IntPoly var cf)) = var
+    type (VarBox (IntPoly var cf)) = Map.Map var
+    getSampleDomValue (IntPoly cfg _) = ipolycfg_sample_cf cfg
+    defaultDomSplit _ =
+        defaultDomSplitUsingEndpointsDefaultEffort
+    getDomainBox (IntPoly cfg _) = Map.fromList $ zip vars doms
+        where
+        vars = ipolycfg_vars cfg
+        doms = zipWith (<+>) domsLE domsLZ
+        domsLZ = ipolycfg_domsLZ cfg
+        domsLE = ipolycfg_domsLE cfg
+    getNSamplesFromDomainBox sampleP@(IntPoly cfg _) dombox n =
+        getNSamplesFromDomainBoxUsingEndpointsDefaultEffort sampleDom sampleP dombox n
+        where
+        sampleDom = ipolycfg_sample_cf cfg
+    getSampleFromInsideDomainBox sampleP@(IntPoly cfg _) dombox =
+        getSampleFromInsideDomainBoxUsingEndpointsDefaultEffort sampleDom sampleP dombox
+        where
+        sampleDom = ipolycfg_sample_cf cfg
+
+instance (HasSizeLimits (IntPoly var cf)) 
+    where
+    type (SizeLimits (IntPoly var cf)) = IntPolyCfg var cf
+    defaultSizeLimits = getSizeLimits 
+    getSizeLimits (IntPoly cfg _) = cfg
+    changeSizeLimits cfg (IntPoly _ terms) = IntPoly cfg terms
+--        error $ "changeSizeLimits not implemented for IntPoly"
+
+instance 
+    (Ord var, ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf) => 
+    (HasConstFns (IntPoly var cf))
+    where
+    newConstFn cfg _ value = IntPoly cfg $ mkConstTerms value $ ipolycfg_vars cfg
+
+mkConstTerms value vars = aux vars
+    where
+    aux [] = IntPolyC value
+    aux (var:rest) = IntPolyV var $ IntMap.singleton 0 (aux rest)
+
+instance
+    (Ord var,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf)
+    =>
+    HasZero (IntPoly var cf)
+    where
+    zero sampleP = newConstFnFromSample sampleP $ zero sampleCf
+        where
+        sampleCf = getSampleDomValue sampleP
+        
+instance
+    (Ord var,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf)
+    =>
+    HasOne (IntPoly var cf)
+    where
+    one sampleP = newConstFnFromSample sampleP $ one sampleCf
+        where
+        sampleCf = getSampleDomValue sampleP
+        
+instance 
+    (Ord var, Show var, 
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf) => 
+    (HasProjections (IntPoly var cf))
+    where
+    newProjection cfg dombox var =
+        IntPoly cfg $ mkProjTerms cfg var vars domsLE
+        where
+        vars = ipolycfg_vars cfg
+        domsLE = ipolycfg_domsLE cfg
+        
+mkProjTerms cfg var vars domsLE = aux vars domsLE
+    where
+    aux [] [] = 
+        error $ 
+            "IntPoly: newProjection: variable " ++ show var 
+            ++ " not among specified variables " ++ show vars
+    aux (cvar : restVars) (domLE : restDoms)
+        | cvar == var = 
+            IntPolyV var $ 
+                IntMap.fromAscList $ 
+                    [(1, mkConstTerms o restVars),
+                     (0, mkConstTerms domLE restVars)]
+        | otherwise = 
+            IntPolyV cvar $ IntMap.singleton 0 (aux restVars restDoms)
+        where
+        o = one sampleCf
+--        z = zero sampleCf
+        sampleCf = ipolycfg_sample_cf cfg 
+            
+            
+
+            

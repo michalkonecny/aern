@@ -77,7 +77,7 @@ instance RoundedReal M.MPFR where
     
 instance HasLegalValues M.MPFR where
     maybeGetProblem d 
-        | not (d == d) = Just "A NaN MPFR"
+        | M.isNaN d = Just "A NaN MPFR"
 --        | d == 1/0 = False
 --        | d == -1/0 = False
         | otherwise = Nothing

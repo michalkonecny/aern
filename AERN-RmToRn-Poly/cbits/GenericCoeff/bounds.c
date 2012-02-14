@@ -352,7 +352,7 @@ ADD_COEFF_CODE(boundUpUsingDer)(Ops * ops, CoeffMutable * res, Poly *p)
 
       CFM_ADD_UP(ops, *res, *res, p -> errorBound);
     }
-  free(monotonicityInfo);
+  FREE(monotonicityInfo);
   CFM_FREE(temp);
   CFM_FREE(temp2);
   CFM_FREE(temp3);

@@ -115,12 +115,12 @@ ADD_COEFF_CODE(evalAtPtChebBasis)(Poly * p, Value * values, Value one,
           free_SP_hs(varPowers[var][power]);
         };
       // free the array of pointers to power values:
-      free(varPowers[var]);
+      FREE(varPowers[var]);
     }
   // free the array of pointers to arrays that point to power values:
-  free(varPowers);
+  FREE(varPowers);
   // free the array with maximum powers for each variable:
-  free(maxPowers);
+  FREE(maxPowers);
 
   DEBUG_EVAL(printf("evalAtPtChebBasis: finished, returning result\n"));
   return result;
@@ -227,14 +227,14 @@ ADD_COEFF_CODE(evalAtPtPowerBasis)(Poly * p, Value * values, Value one,
           free_SP_hs(varPowers[var][power]);
         };
       // free the array of pointers to power values:
-      free(varPowers[var]);
+      FREE(varPowers[var]);
     }
 
   // free the array of pointers to arrays that point to power values:
-  free(varPowers);
+  FREE(varPowers);
 
   // free the array with maximum powers for each variable:
-  free(maxPowers);
+  FREE(maxPowers);
 
 //  printf("evalAtPtPowerBasis: returning\n");
   return result;
