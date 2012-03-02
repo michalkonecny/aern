@@ -134,14 +134,17 @@ benchInOutExp (name, sample) areas =
 
 benchExpAreasReal =
     [
-        ("near 0", NumOrd.AreaLinear (Just $ -1/2) True (Just $ 1/2) True [] (const False) [])
+        ("near 0", areaWithBounds (-1/2) (1/2))
     ,
-        ("near -10", NumOrd.AreaLinear (Just $ -10.5) True (Just $ -9.5) True [] (const False) [])
+        ("near -10", areaWithBounds (-10.5) (-9.5))
     ,
-        ("near 10", NumOrd.AreaLinear (Just $ 9.5) True (Just $ 10.5) True [] (const False) [])
+        ("near 10", areaWithBounds (9.5) (10.5))
     ,
-        ("near 20", NumOrd.AreaLinear (Just $ 19.5) True (Just $ 20.5) True [] (const False) [])
+        ("near 20", areaWithBounds (19.5) (20.5))
     ]
+    where
+    areaWithBounds l r =
+         (NumOrd.AreaLinear (Just l) True (Just r) True [] (const False) [], RefOrd.AreaOnlyExact)
 
 class
     (EffortIndicator (SqrtEffortIndicator t))

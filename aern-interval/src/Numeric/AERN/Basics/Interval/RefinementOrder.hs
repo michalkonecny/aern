@@ -267,12 +267,16 @@ instance
      NumOrd.PartialComparison e) 
     => 
     RefOrd.ArbitraryOrderedTuple (Interval e) where
-    type Area (Interval e) = NumOrd.Area e
-    areaWhole (Interval l r) = NumOrd.areaWhole l
+    type Area (Interval e) = (NumOrd.Area e, RefOrd.AreaConsistencyConstraint)
+    areaWhole (Interval l r) = (NumOrd.areaWhole l, RefOrd.AreaAnyConsistency)
     arbitraryTupleInAreaRelatedBy area = 
         arbitraryIntervalTupleInAreaRefinementRelatedBy (Just area)
     arbitraryTupleRelatedBy = 
         arbitraryIntervalTupleInAreaRefinementRelatedBy Nothing
+
+instance RefOrd.AreaHasConsistencyConstraint (Interval e)
+    where
+    areaSetConsistencyConstraint constraint (areaEndpt, _) = (areaEndpt, constraint)
 
 arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices constraints =
     case endpointGens of
@@ -294,10 +298,10 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices constraints =
     nothingForbiddenInsideIntervals intervals =
         case maybeArea of
             Nothing -> True
-            Just area ->
-                and $ map (nothingForbiddenInsideInterval area) intervals
-    nothingForbiddenInsideInterval area interval =
-        and $ map (notInside interval) $ NumOrd.areaGetForbiddenValues area
+            Just (areaEndpt, _) ->
+                and $ map (nothingForbiddenInsideInterval areaEndpt) intervals
+    nothingForbiddenInsideInterval areaEndpt interval =
+        and $ map (notInside interval) $ NumOrd.areaGetForbiddenValues areaEndpt
         where
         notInside (Interval l r) value = 
             ((value <? l) == Just True)
@@ -306,9 +310,9 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices constraints =
 
     endpointGens =
         case maybeArea of
-            (Just area) ->
+            (Just (areaEndpt, _areaConsistency)) ->
                 catMaybes $
-                   map (NumOrd.arbitraryTupleInAreaRelatedBy area endpointIndices)
+                   map (NumOrd.arbitraryTupleInAreaRelatedBy areaEndpt endpointIndices)
                        endpointConstraintsVersions
             Nothing ->
                 catMaybes $
@@ -336,12 +340,18 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices constraints =
     intervalConstraintsToEndpointConstraints ((ix1, ix2),rels) =
         concat $ map forEachRel rels
         where
-        endpoints1Comparable = [(((ix1,-1),(ix1, 1)), [EQ,LT,GT])]
-        endpoints2Comparable = [(((ix2,-1),(ix2, 1)), [EQ,LT,GT])]
+        endpoints1Comparable = [(((ix1,-1),(ix1, 1)), allowedEndpointRelations)]
+        endpoints2Comparable = [(((ix2,-1),(ix2, 1)), allowedEndpointRelations)]
+        allowedEndpointRelations =
+            case maybeArea of
+                Just (_, RefOrd.AreaOnlyConsistent) -> [EQ,LT]
+                Just (_, RefOrd.AreaOnlyAnticonsistent) -> [EQ,GT]
+                Just (_, RefOrd.AreaOnlyExact) -> [EQ]
+                _ -> [EQ,LT,GT]
         endpointsComparable = endpoints1Comparable ++ endpoints2Comparable
         forEachRel EQ = -- both endpoints agree 
             [[(((ix1,-1),(ix2,-1)), [EQ]), (((ix1,1),(ix2,1)), [EQ])]]
-        forEachRel GT =  
+        forEachRel GT =
             -- the interval ix1 is indide ix2, but not equal
             [
                 endpointsComparable ++

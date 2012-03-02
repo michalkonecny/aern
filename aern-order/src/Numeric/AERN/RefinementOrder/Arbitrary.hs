@@ -73,13 +73,11 @@ class ArbitraryOrderedTuple t where
     arbitraryTuple n = arbitraryTupleRelatedBy [1..n] [] 
 
 {-| generic mechanism for adding common restriction on the area of random generation -}
-class AreaHasExactOption a where
-    restrictAreaToExact :: a -> a
-class AreaHasConsistentOption a where
-    restrictAreaToConsistent :: a -> a
-class AreaHasAntiConsistentOption a where
-    restrictAreaToAntiConsistent :: a -> a
+class AreaHasConsistencyConstraint t where
+    areaSetConsistencyConstraint :: AreaConsistencyConstraint -> (Area t) -> (Area t)
 
+data AreaConsistencyConstraint =
+    AreaAnyConsistency | AreaOnlyConsistent | AreaOnlyAnticonsistent | AreaOnlyExact
 
 arbitraryPairRelatedBy ::
     (ArbitraryOrderedTuple t) => PartialOrdering -> Maybe (Gen (t,t))
