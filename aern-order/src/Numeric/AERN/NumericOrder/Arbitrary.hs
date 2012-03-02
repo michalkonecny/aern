@@ -107,11 +107,41 @@ data AreaLinear t =
         areaLinLowerBoundStrict :: Bool,
         areaLinUpperBound :: Maybe t,
         areaLinUpperBoundStrict :: Bool,
+        areaLinIsValueForbidden :: t -> Bool,
         areaLinSpecialValues :: [t]
     } 
 
 areaLinearWhole :: [t] -> AreaLinear t
-areaLinearWhole = AreaLinear Nothing True Nothing True 
+areaLinearWhole specialValues = AreaLinear Nothing True Nothing True (const False) specialValues
+
+restrictLinearAreaToNonNeg ::
+    (Ord t) =>
+    t {-^ the zero -} ->
+    (AreaLinear t) ->
+    (AreaLinear t)
+restrictLinearAreaToNonNeg z area = 
+    area
+        {
+            areaLinLowerBound = 
+                fmap (max z) $ areaLinLowerBound area
+            ,
+            areaLinSpecialValues =
+                filter (>= z) $ areaLinSpecialValues area
+        }
+
+restrictLinearAreaToNonZero ::
+    (Ord t) =>
+    t {-^ the zero -} ->
+    (AreaLinear t) ->
+    (AreaLinear t)
+restrictLinearAreaToNonZero z area = 
+    area
+        {
+            areaLinIsValueForbidden =
+                \value ->
+                    value == z ||
+                    (areaLinIsValueForbidden area) value
+        }
 
 arbitraryLinear ::
     (Arbitrary t) =>
@@ -122,7 +152,7 @@ arbitraryLinear ::
     AreaLinear t ->
     Gen t
 arbitraryLinear (least, greatest) succ pred choose 
-        (AreaLinear mlb lbStrict mub ubStrict specialValues) =
+        (AreaLinear mlb lbStrict mub ubStrict isForbidden specialValues) =
     incrSize $ -- at size 0 we get only 0s...
     do
     useSpecial <-
@@ -132,11 +162,17 @@ arbitraryLinear (least, greatest) succ pred choose
                  -- 1 in 4 values should be special
     case useSpecial of
         True -> elements specialValues
-        False -> 
+        False -> avoidForbidden
+    where
+    avoidForbidden =
+        do
+        result <-
             case (mlb, mub) of 
                 (Nothing, Nothing) -> arbitrary
-                _ -> choose (lb, ub) 
-    where
+                _ -> choose (lb, ub)
+        if isForbidden result
+            then avoidForbidden 
+            else return result
     lb = 
         case (mlb, lbStrict) of
             (Nothing, _) -> least
@@ -182,18 +218,9 @@ instance ArbitraryOrderedTuple Rational where
     arbitraryTupleRelatedBy =
         linearArbitraryTupleRelatedBy $ incrSize arbitrary
 
---data AreaDouble =
---    AreaDouble
---    {
---        areaDblExp :: AreaLinear Int,
---        areaDblEncourageOne :: Bool,
---        areaDblAllowPos :: Bool,
---        areaDblAllowNeg :: Bool
---    }
-    
 areaDoubleSmall :: AreaLinear Double
 areaDoubleSmall =
-    AreaLinear (Just $ -256) False (Just 256) False [0,-1,1]
+    AreaLinear (Just $ -256) False (Just 256) False (const False) [0,-1,1]
 
 instance ArbitraryOrderedTuple Double where
     type (Area Double) = AreaLinear Double
@@ -290,6 +317,16 @@ instance ArbitraryOrderedTuple Double where
 --           dE = encodeFloat m (e - 53)
 --           (m,_) = decodeFloat (d :: Double)
 --           
+
+instance (AreaHasNonNegativeOption Double)
+    where
+    restrictAreaToNonNeg _ =
+        restrictLinearAreaToNonNeg 0
+
+instance (AreaHasNonZeroOption Double)
+    where
+    restrictAreaToNonZero _ =
+        restrictLinearAreaToNonZero 0
 
 {-| Default implementation of linearArbitraryTupleRelatedBy for Ord instances -}   
 linearArbitraryTupleRelatedBy ::
@@ -429,10 +466,10 @@ arbitraryTripleInAreaRelatedBy area (r1, r2, r3) =
     constraints = [((1,2),[r1]), ((2,3),[r2]), ((1,3),[r3])]
 
 {-| generic mechanism for adding common restriction on the area of random generation -}
-class AreaHasNonNegativeOption a where
-    restrictAreaToNonNeg :: a -> a
-class AreaHasNonZeroOption a where
-    restrictAreaToNonZero :: a -> a
+class AreaHasNonNegativeOption t where
+    restrictAreaToNonNeg :: t -> Area t -> Area t
+class AreaHasNonZeroOption t where
+    restrictAreaToNonZero :: t -> Area t -> Area t
 
 {-| type for randomly generating single elements using the distribution of the 'ArbitraryOrderedTuple' instance -}
 newtype UniformlyOrderedSingleton t = UniformlyOrderedSingleton t deriving (Show)
