@@ -2,7 +2,7 @@
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
+    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiation
     Description :  symbolic differentiation of interval polynomials  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -14,7 +14,7 @@
     Symbolic differentiation of interval polynomials.
 -}
 
-module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
+module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiation
     (
         diffPolyOut
     )
@@ -50,8 +50,8 @@ diffPolyOut effCf var (IntPoly cfg poly) =
     where
     effMult = ArithInOut.mxfldEffortMult sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
     sampleCf = ipolycfg_sample_cf cfg
-    dp cfg (IntPolyC val) = IntPolyC $ zero sampleCf
-    dp cfg (IntPolyV x polys)
+    dp _cfg (IntPolyC _val) = IntPolyC $ zero sampleCf
+    dp _cfg (IntPolyV x polys)
         | var == x = IntPolyV x $ polysMultiples
         where
         polysMultiples = 
@@ -62,11 +62,10 @@ diffPolyOut effCf var (IntPoly cfg poly) =
 --            let (<*>|) = ArithInOut.mixedMultOutEff effMult in
             let ?mixedMultInOutEffort = effMult in
             (n - 1, termsMapCoeffs (<*>| n) terms)
-        cfgR = cfgRemVar cfg 
-    dp cfg (IntPolyV x polys)
+    dp cfg2 (IntPolyV x polys)
         =
         termsNormalise $ 
             IntPolyV x $ IntMap.map (dp cfgR) polys
         where
-        cfgR = cfgRemVar cfg 
+        cfgR = cfgRemVar cfg2 
         

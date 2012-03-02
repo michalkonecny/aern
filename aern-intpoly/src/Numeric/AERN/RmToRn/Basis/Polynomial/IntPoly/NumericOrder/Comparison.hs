@@ -19,9 +19,9 @@
 module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.NumericOrder.Comparison
 where
     
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Config
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Poly
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps.Addition
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
@@ -52,7 +52,7 @@ import Numeric.AERN.Misc.Debug
 instance
     (Ord var, Show var, 
      Show cf, 
-     ArithInOut.RoundedReal cf, 
+     ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
      NumOrd.PartialComparison (Imprecision cf), 
      RefOrd.IntervalLike cf) 
@@ -69,7 +69,7 @@ instance
     pCompareEff eff p1 p2 =
         case partialInfo2PartialOrdering $ NumOrd.pCompareInFullEff eff p1 p2 of
             [rel] -> Just rel
-            _ -> Nothing 
+            _ -> Nothing
     pCompareInFullEff (Int1To1000 n, effDom) p1 = 
         pCompareFunFromRingOps (n, effDom, effCompDom, effDom) p1 
         where

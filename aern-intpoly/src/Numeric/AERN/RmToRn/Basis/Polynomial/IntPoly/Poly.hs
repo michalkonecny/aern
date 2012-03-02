@@ -21,7 +21,7 @@ where
 import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Config
     
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures (HasImprecision(..))
 
@@ -115,7 +115,7 @@ showPoly ::
     (var -> String) -> 
     (cf -> String) -> 
     (IntPoly var cf -> String)
-showPoly showVar showCoeff (IntPoly cfg poly) =
+showPoly showVar showCoeff (IntPoly _cfg poly) =
     sp "" poly
     where
     sp vars (IntPolyC value) 
@@ -130,12 +130,47 @@ showPoly showVar showCoeff (IntPoly cfg poly) =
     
 {-- simple spine-crawling operations --}
 
+termsCollectCoeffsWith :: 
+    ([Int] -> cf -> a) {-^ a function for creating result values from coefficients and their term powers -} -> 
+    IntPolyTerms var cf -> 
+    [a]
+termsCollectCoeffsWith fn terms = aux [] terms
+    where
+    aux prevDegrees (IntPolyC cf) = [fn (reverse prevDegrees) cf] 
+    aux prevDegrees (IntPolyV _var powers) = 
+        IntMap.fold (++) [] $ IntMap.mapWithKey applyAux powers
+        where
+        applyAux degree = aux (degree : prevDegrees)
+
+--countTermsCoeffsSatisfying cond (IntPolyC cf) 
+--    | cond cf = 1
+--    | otherwise = 0
+--countTermsCoeffsSatisfying cond (IntPolyV x polys) = 
+--    IntMap.fold (+) 0 $ IntMap.map (countTermsCoeffsSatisfying cond) polys
+
 powersMapCoeffs :: (cf -> cf) -> IntPolyPowers var cf -> IntPolyPowers var cf
 powersMapCoeffs f pwrCoeffs = IntMap.map (termsMapCoeffs f) pwrCoeffs
 
 termsMapCoeffs :: (cf -> cf) -> IntPolyTerms var cf -> IntPolyTerms var cf
 termsMapCoeffs f (IntPolyC val) = IntPolyC $ f val
 termsMapCoeffs f (IntPolyV var polys) = IntPolyV var $ powersMapCoeffs f polys
+
+polyMapCoeffs :: (cf -> cf) -> IntPoly var cf -> IntPoly var cf
+polyMapCoeffs f (IntPoly cfg terms) = IntPoly cfg $ termsMapCoeffs f terms
+
+termsMapCoeffsWithDegrees ::
+    ([Int] -> cf1 -> cf2) {-^ mapping function whose first argument is the list of degrees for each variable in _reverse_ order -} ->
+    (IntPolyTerms var cf1) ->
+    (IntPolyTerms var cf2)
+termsMapCoeffsWithDegrees fn terms = aux [] terms    
+    where
+    aux prevDegrees (IntPolyC cf) = IntPolyC $ fn prevDegrees cf
+    aux prevDegrees (IntPolyV x polys) =
+        IntPolyV x $ IntMap.mapWithKey applyAux polys
+        where
+        applyAux degree = aux (degree : prevDegrees)
+        
+
 
 polySplitWith ::
     (cf -> (cf,cf)) ->
@@ -200,10 +235,11 @@ termsJoinWith z joinCf (tL, tR) =
         IntPolyV var $ IntMap.map (aux . addNothing) polysL 
         where
         addNothing t = (Just t, Nothing)
+    aux _ = 
+        error $ "aern-intpoly internal error: Poly: termsJoinWith used with illegal values"
 
 
 {-- Internal checks and normalisation --}
-
 polyNormalise ::
     (ArithInOut.RoundedReal cf)
     => 
@@ -218,7 +254,7 @@ termsNormalise ::
 termsNormalise poly =
     pn poly
     where    
-    pn p@(IntPolyC val) = p
+    pn p@(IntPolyC _val) = p
     pn (IntPolyV x polys)
         = IntPolyV x $ IntMap.filterWithKey nonZeroOrConst $ IntMap.map pn polys
         where
@@ -234,13 +270,23 @@ instance
     maybeGetProblem (IntPoly cfg terms) = 
         maybeGetProblemForTerms cfg terms
     
+maybeGetProblemForTerms :: 
+      (Eq var,
+       Show cf,
+       Show var,
+       ArithInOut.RoundedReal cf,
+       HasLegalValues cf) 
+      =>
+      IntPolyCfg var cf -> 
+      IntPolyTerms var cf -> 
+      Maybe [Char]
 maybeGetProblemForTerms cfg terms
     =
     aux vars terms
     where
     vars = ipolycfg_vars cfg
     intro = "cfg = " ++ show cfg ++ "; terms = " ++ show terms ++ ": "
-    aux [] p@(IntPolyC value) = 
+    aux [] _p@(IntPolyC value) = 
         fmap ((intro ++ "problem with coefficient: ") ++) $ maybeGetProblem value
     aux (cvar : rest) (IntPolyV tvar polys)
         | cvar == tvar =
@@ -253,12 +299,16 @@ maybeGetProblemForTerms cfg terms
         Just $ intro ++ "more variables than declared"  
     aux _ _ =
         Just $ intro ++ "less variables than declared"  
-    findFirstJust (j@(Just _) : rest) = j
+    findFirstJust (j@(Just _) : _rest) = j
     findFirstJust (Nothing:rest) = findFirstJust rest    
     findFirstJust [] = Nothing
 
 {-- Order-related ops --}
 
+flipConsistencyPoly :: 
+    HasAntiConsistency cf 
+    =>
+    IntPoly var cf -> IntPoly var cf
 flipConsistencyPoly (IntPoly cfg terms) =
     IntPoly cfg $ termsMapCoeffs flipConsistency terms 
     
@@ -268,7 +318,7 @@ polyIsExactEff ::
     (ImprecisionEffortIndicator cf) ->
     (IntPoly var cf) ->
     Maybe Bool
-polyIsExactEff effImpr p@(IntPoly _ terms) = termsAreExactEff effImpr terms 
+polyIsExactEff effImpr _p@(IntPoly _ terms) = termsAreExactEff effImpr terms 
 
 termsAreExactEff ::
     (HasImprecision cf)
@@ -277,7 +327,7 @@ termsAreExactEff ::
     (IntPolyTerms var cf) ->
     Maybe Bool
 termsAreExactEff effImpr (IntPolyC val) = isExactEff effImpr val 
-termsAreExactEff effImpr (IntPolyV var polys) =
+termsAreExactEff effImpr (IntPolyV _var polys) =
     do -- the Maybe monad, ie if any coefficient returns Nothing, so does this function 
     results <- mapM (termsAreExactEff effImpr) $ IntMap.elems polys
     return $ and results
@@ -294,7 +344,7 @@ termsIsZero ::
     => 
     IntPolyTerms var cf -> Bool
 termsIsZero (IntPolyC val) = (val |==? (zero val)) == Just True
-termsIsZero (IntPolyV x polys) = 
+termsIsZero (IntPolyV _var polys) = 
     case IntMap.toAscList polys of
         [] -> True
         [(0,p)] -> termsIsZero p

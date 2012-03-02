@@ -34,10 +34,6 @@ import Numeric.AERN.Basics.Consistency
 
 import Test.QuickCheck (Arbitrary, arbitrary, vectorOf)
 
-import qualified Data.Map as Map
-import qualified Data.IntMap as IntMap
-    
- 
 data IntPolyCfg var cf =
     IntPolyCfg
     {
@@ -86,6 +82,7 @@ domLZLEToDom effCF domLZ domLE =
     sampleCf = dom
      
      
+cfgRemVar :: IntPolyCfg var a -> IntPolyCfg var a
 cfgRemVar cfg = cfg
         { 
             ipolycfg_vars = tail $ ipolycfg_vars cfg, 

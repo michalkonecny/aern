@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -22,10 +23,11 @@ module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
 --    )
 where
 
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiate
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Config
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Poly
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.New ()
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Differentiation
 
-import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
 
@@ -37,11 +39,12 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
-import qualified Numeric.AERN.NumericOrder as NumOrd
+--import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+
+--import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
-import Numeric.AERN.Misc.Debug
+--import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
 
@@ -59,7 +62,10 @@ instance
         where
         vals = map getValue vars
         vars = ipolycfg_vars cfg
-        getValue var = case lookupVar valsMap var of Just val -> val
+        getValue var = 
+            case lookupVar valsMap var of 
+                Just val -> val
+                _ -> error "aern-intpoly internal error in Evaluation...evalOtherType"
 
 instance
     (Ord var, Show var,
@@ -69,9 +75,9 @@ instance
     where
     type EvalOpsEffortIndicator (IntPoly var cf) cf = ArithInOut.RoundedRealEffortIndicator cf
     evalOpsDefaultEffort _ sampleCf = ArithInOut.roundedRealDefaultEffort sampleCf 
-    evalOpsIn eff sampleP sampleCf =
+    evalOpsIn eff _sampleP sampleCf =
         coeffPolyEvalOpsIn eff sampleCf
-    evalOpsOut eff sampleP sampleCf =
+    evalOpsOut eff _sampleP sampleCf =
         coeffPolyEvalOpsOut eff sampleCf
 
 data PolyEvalOps var cf val =
@@ -120,7 +126,7 @@ coeffPolyEvalOpsIn eff sample =
     effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     effComp = ArithInOut.rrEffortNumComp sample eff
-    effJoin = ArithInOut.rrEffortJoinMeet sample eff
+--    effJoin = ArithInOut.rrEffortJoinMeet sample eff
 
 coeffPolyEvalOpsOut ::
     (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf)
@@ -146,7 +152,7 @@ coeffPolyEvalOpsOut eff sample =
     effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     effComp = ArithInOut.rrEffortNumComp sample eff
-    effJoin = ArithInOut.rrEffortJoinMeet sample eff
+--    effJoin = ArithInOut.rrEffortJoinMeet sample eff
 
 
 instance
@@ -157,7 +163,7 @@ instance
     where
     type ArithUpDn.ConvertEffortIndicator (IntPoly var cf) cf = 
         (ArithInOut.RoundedRealEffortIndicator cf, RefOrd.GetEndpointsEffortIndicator cf)
-    convertDefaultEffort sampleP sampleCf = 
+    convertDefaultEffort _sampleP sampleCf = 
         (ArithInOut.roundedRealDefaultEffort sampleCf, RefOrd.getEndpointsDefaultEffort sampleCf)
     convertUpEff (effCf, effGetEndpts) p =
         Just $ snd $ RefOrd.getEndpointsOutEff effGetEndpts range
@@ -171,6 +177,7 @@ instance
         where
         range = evalOtherType (evalOpsOut effCf sampleP sampleCf) varDoms p 
         sampleP = p
+        
         sampleCf = getSampleDomValue sampleP
         varDoms = getDomainBox p
     
@@ -198,21 +205,8 @@ evalPolyOnInterval ::
     IntPoly var cf -> cf
 evalPolyOnInterval eff values p@(IntPoly cfg _)
     = 
-    evalPolyMono (coeffPolyEvalOpsOut eff sample)  values p
+    evalPolyMono (coeffPolyEvalOpsOut eff sample) values p
     where
-    valuesLR = map RefOrd.getEndpointsOutWithDefaultEffort values
-    valuesALR =
-        let ?pCompareEffort = effComp in
-        zip values $ map checkEqual valuesLR
-        where
-        values = 
-            let ?joinmeetEffort = effJoin in
-            map (uncurry (</\>)) valuesLR
-        checkEqual (l,r) 
-            | (l ==? r) == Just True = Nothing
-            | otherwise = Just (l,r)
-    effComp = ArithInOut.rrEffortNumComp sample eff
-    effJoin = ArithInOut.rrEffortJoinMeet sample eff
     sample = ipolycfg_sample_cf cfg
 
 evalPolyDirect ::
@@ -220,7 +214,7 @@ evalPolyDirect ::
     (PolyEvalOps var cf val) ->
     [val] ->
     IntPoly var cf -> val
-evalPolyDirect opsV values p@(IntPoly cfg terms)
+evalPolyDirect opsV values _p@(IntPoly cfg terms)
     = 
 --    unsafePrint
 --    (
@@ -250,22 +244,22 @@ evalPolyDirect opsV values p@(IntPoly cfg terms)
         (lowestExponent, resultMaybeWithoutConstantTerm) 
             = IntMap.foldWithKey addTerm (highestExponent, zV) polys 
         (highestExponent, _) = IntMap.findMax polys 
-        addTerm exponent poly (prevExponent, prevVal) = (exponent, newVal)
+        addTerm exponent_2 poly (prevExponent, prevVal) = (exponent_2, newVal)
             where
             newVal = -- Horner scheme:
                 polyValue 
                 `addV`
-                (prevVal `multV` (varValueLZ `powV` (prevExponent - exponent)))
+                (prevVal `multV` (varValueLZ `powV` (prevExponent - exponent_2)))
             polyValue =
                 case polyV poly of
                     Just value -> value
                     Nothing -> ev restVars restDoms poly  
-    ev varVals domsLE terms =
+    ev varVals domsLE_2 terms_2 =
         error $ 
             "evalPolyDirect: illegal case:" 
             ++ "\n varVals = " ++ show varVals 
-            ++ "\n domsLE = " ++ show domsLE 
-            ++ "\n terms = " ++ show terms
+            ++ "\n domsLE = " ++ show domsLE_2 
+            ++ "\n terms = " ++ show terms_2
 
 -- TODO: make the following function generic for any function representation with nominal derivatives    
 evalPolyMono ::
@@ -293,16 +287,16 @@ evalPolyMono opsV values p@(IntPoly cfg _)
     where
     direct = evalPolyDirect opsV values p
     zV = polyEvalZero opsV
-    addV = polyEvalAdd opsV 
-    multV = polyEvalMult opsV
-    powV = polyEvalPow opsV
-    cfV = polyEvalCoeff opsV
-    polyV = polyEvalMaybePoly opsV
+--    addV = polyEvalAdd opsV 
+--    multV = polyEvalMult opsV
+--    powV = polyEvalPow opsV
+--    cfV = polyEvalCoeff opsV
+--    polyV = polyEvalMaybePoly opsV
     leqV = polyEvalLeq opsV
     (noMonoOps, monoOpsV) = 
         case polyEvalMonoOps opsV of
             Nothing -> (True, error "evalPolyMono: internal error: monoOpsV used when not present")
-            Just monoOpsV -> (False, monoOpsV)
+            Just monoOpsV_2 -> (False, monoOpsV_2)
     fromEndPtsV = polyEvalMonoFromEndpoints monoOpsV
     getEndPtsV = polyEvalMonoGetEndpoints monoOpsV
     isThin = polyEvalMonoIsThin monoOpsV
@@ -336,7 +330,7 @@ evalPolyMono opsV values p@(IntPoly cfg _)
                 _ -> (undefined, True)
         deriv =
             evalPolyDirect opsV values $ 
-                diffPoly (\p n -> scalePolyByThinOut (<*>|) n p) var p -- range of (d p)/(d var)    
+                diffPolyOut eff var p -- range of (d p)/(d var)    
         (valL, valR) = getEndPtsV val
         valIsThin = isThin val
     effMult = ArithInOut.mxfldEffortMult sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf eff

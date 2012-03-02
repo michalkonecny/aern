@@ -2,7 +2,7 @@
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Reduce
+    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Reduction
     Description :  size reduction of interval polynomials  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -14,14 +14,22 @@
     Size reduction of interval polynomials.
 -}
 
-module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Reduce
---    (
---    )
+module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Reduction
+    (
+        reducePolyDegreeIn,
+        reducePolyDegreeOut,
+        reducePolyTermCountOut,
+        reducePolyTermCountIn
+    )
 where
     
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
+import Prelude hiding ((+),(*),(^))
+    
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Config
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Poly
+import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.New ()
 
---import Numeric.AERN.RmToRn.New
+import Numeric.AERN.RmToRn.Domain
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
@@ -32,53 +40,116 @@ import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.Basics.Consistency
 
 import qualified Numeric.AERN.NumericOrder.OpsDefaultEffort as NumOrdDefEffort
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
+--import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+--import Numeric.AERN.NumericOrder.OpsImplicitEffort
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.PartialOrdering as PartialOrdering
 
-import Numeric.AERN.Misc.Debug
+--import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
 import qualified Data.List as List
 
-reducePolyDegree ::
+reducePolyTermCountOut ::
+    (Show var,
+     Show cf,
+     HasDomainBox (IntPoly var cf),
+     ArithInOut.RoundedReal cf,
+     HasAntiConsistency cf) 
+    =>
+    ArithInOut.RoundedRealEffortIndicator cf -> 
+    IntPoly var cf -> 
+    IntPoly var cf
+reducePolyTermCountOut effCf p =
+    let ?addInOutEffort = effAdd in
+    let ?multInOutEffort = effMult in
+    let ?intPowerInOutEffort = effPow in
+    reducePolyTermCountWithOps (<+>) (<*>) (<^>) (imprecisionOfEff effImpr) p
+    where
+    effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effMult = ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effPow = ArithInOut.fldEffortPow sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effImpr = ArithInOut.rrEffortImprecision sampleCf effCf
+    sampleCf = getSampleDomValue p
+
+reducePolyTermCountIn ::
+    (Show var,
+     Show cf,
+     HasDomainBox (IntPoly var cf),
+     ArithInOut.RoundedReal cf,
+     HasAntiConsistency cf) 
+    =>
+    ArithInOut.RoundedRealEffortIndicator cf -> 
+    IntPoly var cf -> 
+    IntPoly var cf
+reducePolyTermCountIn effCf =
+    flipConsistencyPoly . reducePolyTermCountOut effCf . flipConsistencyPoly
+
+reducePolyDegreeOut ::
+    (Show var,
+     Show cf,
+     HasDomainBox (IntPoly var cf),
+     ArithInOut.RoundedReal cf,
+     HasAntiConsistency cf) 
+    =>
+    ArithInOut.RoundedRealEffortIndicator cf -> 
+    IntPoly var cf -> 
+    IntPoly var cf
+reducePolyDegreeOut effCf p =
+    let ?addInOutEffort = effAdd in
+    let ?multInOutEffort = effMult in
+    let ?intPowerInOutEffort = effPow in
+    reducePolyDegreeWithOps (<+>) (<*>) (<^>) p
+    where
+    effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effMult = ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effPow = ArithInOut.fldEffortPow sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    sampleCf = getSampleDomValue p
+
+reducePolyDegreeIn ::
+    (Show var,
+     Show cf,
+     HasDomainBox (IntPoly var cf),
+     ArithInOut.RoundedReal cf,
+     HasAntiConsistency cf) 
+    =>
+    ArithInOut.RoundedRealEffortIndicator cf -> 
+    IntPoly var cf -> 
+    IntPoly var cf
+reducePolyDegreeIn effCf =
+    flipConsistencyPoly . reducePolyDegreeOut effCf . flipConsistencyPoly
+
+reducePolyDegreeWithOps ::
     (Show var, Show cf, HasAntiConsistency cf) 
     =>
-    Bool ->
     (cf -> cf -> cf) -> 
     (cf -> cf -> cf) -> 
     (cf -> Int -> cf) -> 
     (IntPoly var cf) ->
     (IntPoly var cf)
-reducePolyDegree isOut (+) (*) (^) p@(IntPoly cfg terms) =
-    IntPoly cfg $ reduceTermsDegree (+) (*) (^) varDoms maxDeg terms
+reducePolyDegreeWithOps (+) (*) (^) (IntPoly cfg terms) =
+    IntPoly cfg $ reduceTermsDegreeWithOps (+) (*) (^) varDoms maxDeg terms
     where
     maxDeg = ipolycfg_maxdeg cfg
-    varDoms
-        | isOut = ipolycfg_domsLZ cfg
-        | otherwise = map flipConsistency $ ipolycfg_domsLZ cfg
+    varDoms = ipolycfg_domsLZ cfg
     
-reducePolyTermCount ::
+reducePolyTermCountWithOps ::
     (Show var, Show cf, 
      HasOne cf, HasAntiConsistency cf, 
      NumOrd.PartialComparison imprecision) =>
-    Bool ->
     (cf -> cf -> cf) -> 
     (cf -> cf -> cf) -> 
     (cf -> Int -> cf) -> 
     (cf -> imprecision) -> 
     (IntPoly var cf) ->
     (IntPoly var cf)
-reducePolyTermCount isOut (+) (*) (^) getImpr p@(IntPoly cfg terms) =
-    IntPoly cfg $ reduceTermsCount (+) (*) (^) getImpr varDoms maxSize terms
+reducePolyTermCountWithOps (+) (*) (^) getImpr (IntPoly cfg terms) =
+    IntPoly cfg $ reduceTermsCountWithOps (+) (*) (^) getImpr varDoms maxSize terms
     where
     maxSize = ipolycfg_maxsize cfg
-    varDoms
-        | isOut = ipolycfg_domsLZ cfg
-        | otherwise = map flipConsistency $ ipolycfg_domsLZ cfg
+    varDoms = ipolycfg_domsLZ cfg
     
-reduceTermsDegree ::
+reduceTermsDegreeWithOps ::
     (Show var, Show cf) 
     =>
     (cf -> cf -> cf) ->
@@ -88,7 +159,7 @@ reduceTermsDegree ::
     Int ->
     (IntPolyTerms var cf) ->
     (IntPolyTerms var cf)
-reduceTermsDegree (+) (*) (^) varDoms maxDeg terms
+reduceTermsDegreeWithOps (+) (*) (^) varDoms maxDeg terms
     =
 --    (terms, result) `seq`
 --    unsafePrintReturn
@@ -106,12 +177,12 @@ reduceTermsDegree (+) (*) (^) varDoms maxDeg terms
     -}
     where
     result = reduceMarkedTerms (+) (*) (^) varDoms termsMarkedExcessDegree
-    termsMarkedExcessDegree = mapTermsCoeffsWithDegrees markDegreeTooLarge terms 
+    termsMarkedExcessDegree = termsMapCoeffsWithDegrees markDegreeTooLarge terms 
     markDegreeTooLarge varDegrees coeff = (coeff, totalDegree > maxDeg)
         where
         totalDegree = sum varDegrees
 
-reduceTermsCount ::
+reduceTermsCountWithOps ::
     (Show var, Show cf, 
      HasOne cf, NumOrd.PartialComparison imprecision) =>
     (cf -> cf -> cf) -> 
@@ -122,7 +193,7 @@ reduceTermsCount ::
     Int ->
     (IntPolyTerms var cf) ->
     (IntPolyTerms var cf)
-reduceTermsCount (+) (*) (^) getImpr varDoms maxSize terms
+reduceTermsCountWithOps (+) (*) (^) getImpr varDoms maxSize terms
     | size <= maxSize = terms
     | otherwise = 
 --        unsafePrint
@@ -146,7 +217,7 @@ reduceTermsCount (+) (*) (^) getImpr varDoms maxSize terms
         powersOf a = iterate (* a) $ one a
     size = length allTermRangesList
     allTermRangesList = 
-        (collectCoeffs evalTermRangeWidth) terms
+        termsCollectCoeffsWith evalTermRangeWidth terms
     evalTermRangeWidth varDegrees coeff =
         getImpr $ foldl (*) coeff $ zipWith (!!) varDomsPowers varDegrees
     tresholdSmallestAllowed = allTermRangesListSortedDescending !! (maxSize-1)
@@ -158,7 +229,7 @@ reduceTermsCount (+) (*) (^) getImpr varDoms maxSize terms
                 Just PartialOrdering.GT -> LT 
                 _ -> EQ 
     termsMarkedTooSmall =
-        mapTermsCoeffsWithDegrees markTooSmall terms
+        termsMapCoeffsWithDegrees markTooSmall terms
         where
         markTooSmall degrees cf = 
             (cf, tooSmall && notConst)
@@ -167,32 +238,6 @@ reduceTermsCount (+) (*) (^) getImpr varDoms maxSize terms
             tooSmall =
                 (evalTermRangeWidth (reverse degrees) cf NumOrdDefEffort.<? tresholdSmallestAllowed) == Just True
 
-collectCoeffs fn terms = aux [] terms
-    where
-    aux prevDegrees (IntPolyC cf) = [fn (reverse prevDegrees) cf] 
-    aux prevDegrees (IntPolyV x polys) = 
-        IntMap.fold (++) [] $ IntMap.mapWithKey applyAux polys
-        where
-        applyAux degree = aux (degree : prevDegrees)
-
---countTermsCoeffsSatisfying cond (IntPolyC cf) 
---    | cond cf = 1
---    | otherwise = 0
---countTermsCoeffsSatisfying cond (IntPolyV x polys) = 
---    IntMap.fold (+) 0 $ IntMap.map (countTermsCoeffsSatisfying cond) polys
-
-mapTermsCoeffsWithDegrees ::
-    ([Int] -> cf1 -> cf2) {-^ mapping function whose first argument is the list of degrees for each variable in _reverse_ order -} ->
-    (IntPolyTerms var cf1) ->
-    (IntPolyTerms var cf2)
-mapTermsCoeffsWithDegrees fn terms = aux [] terms    
-    where
-    aux prevDegrees (IntPolyC cf) = IntPolyC $ fn prevDegrees cf
-    aux prevDegrees (IntPolyV x polys) =
-        IntPolyV x $ IntMap.mapWithKey applyAux polys
-        where
-        applyAux degree = aux (degree : prevDegrees)
-        
 reduceMarkedTerms ::
     (Show var, Show cf) =>
     (cf -> cf -> cf) -> 
@@ -209,16 +254,16 @@ reduceMarkedTerms (+) (*) (^) doms terms =
     (maybeReducedTerms, maybeOverflow) = 
         aux doms terms
 
-    aux _ t@(IntPolyC (cf, marked)) 
+    aux _ (IntPolyC (cf, marked)) 
         | marked = (Nothing, Just $ IntPolyC (cf, True))
         | otherwise = (Just $ IntPolyC cf, Nothing)  
     aux (varDom:restVars) (IntPolyV var subPolys) =
-        (maybeNewTerms, maybeOverflow)
+        (maybeNewTerms, maybeOverflow2)
         where
         maybeNewTerms
             | null newTermsList = Nothing
             | otherwise = Just $ IntPolyV var $ IntMap.fromAscList newTermsList
-        maybeOverflow =
+        maybeOverflow2 =
             case (maybeLeastDegree, maybeSubOverflow) of
                 (Just leastDegree, Just subOverflow) ->
                     Just $ IntPolyV var (IntMap.singleton leastDegree subOverflow)
@@ -232,7 +277,7 @@ reduceMarkedTerms (+) (*) (^) doms terms =
             nextNewTermsList = 
                 case maybeNextNewTerms of
                     Nothing -> prevNewTerms
-                    Just terms -> (degree, terms) : prevNewTerms
+                    Just terms2 -> (degree, terms2) : prevNewTerms
             (maybeNextNewTerms, maybeNextOverflowTerms) 
                 = aux restVars subTermsWithOverflow
             subTermsWithOverflow =
@@ -247,9 +292,9 @@ reduceMarkedTerms (+) (*) (^) doms terms =
         scale c (IntPolyV x polys) = 
             IntPolyV x $ IntMap.map (scale c) polys
         
-        add poly1@(IntPolyC (val1, marked)) poly2@(IntPolyC (val2, _)) 
+        add _poly1@(IntPolyC (val1, marked)) _poly2@(IntPolyC (val2, _)) 
             = IntPolyC $ (val1 + val2, marked) 
-        add poly1@(IntPolyV xName1 polys1) poly2@(IntPolyV xName2 polys2)
+        add _poly1@(IntPolyV _xName1 polys1) _poly2@(IntPolyV xName2 polys2)
             = IntPolyV xName2 $ IntMap.unionWith add polys1 polys2
         {-
             Traverse subPolys from highest degree to lowest,
