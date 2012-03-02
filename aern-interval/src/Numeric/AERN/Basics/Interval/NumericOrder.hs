@@ -33,6 +33,7 @@ import Numeric.AERN.NumericOrder
         (PartialCompareEffortIndicator,
          MinmaxInOutEffortIndicator,
          Area)
+import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import Test.QuickCheck
 
@@ -143,13 +144,18 @@ instance (NumOrd.HasGreatest e) => (NumOrd.HasGreatest (Interval e))
     
 instance (NumOrd.HasExtrema e) => (NumOrd.HasExtrema (Interval e))
 
-instance (NumOrd.ArbitraryOrderedTuple e) => NumOrd.ArbitraryOrderedTuple (Interval e) where
-   type Area (Interval e) = Area e
-   areaWhole (Interval l r) = NumOrd.areaWhole l
-   arbitraryTupleInAreaRelatedBy area = 
-       arbitraryIntervalTupleInAreaNumericallyRelatedBy (Just area)
-   arbitraryTupleRelatedBy = 
-       arbitraryIntervalTupleInAreaNumericallyRelatedBy Nothing
+instance 
+    (NumOrd.ArbitraryOrderedTuple e,
+     NumOrd.AreaHasForbiddenValues e,
+     NumOrd.PartialComparison e) 
+    => 
+    NumOrd.ArbitraryOrderedTuple (Interval e) where
+    type Area (Interval e) = Area e
+    areaWhole (Interval l r) = NumOrd.areaWhole l
+    arbitraryTupleInAreaRelatedBy area = 
+        arbitraryIntervalTupleInAreaNumericallyRelatedBy (Just area)
+    arbitraryTupleRelatedBy =
+        arbitraryIntervalTupleInAreaNumericallyRelatedBy Nothing
 
 arbitraryIntervalTupleInAreaNumericallyRelatedBy maybeArea indices constraints =
     case endpointGens of 
@@ -157,12 +163,33 @@ arbitraryIntervalTupleInAreaNumericallyRelatedBy maybeArea indices constraints =
         _ -> Just $
             do
             gen <- elements endpointGens
-            endpointTuple <- gen
-            return $ endpointsToIntervals endpointTuple
+            avoidForbidden gen 100 -- maximum tries
     where
+    avoidForbidden gen maxTries =
+        do
+        endpointTuple <- gen
+        let results = endpointsToIntervals endpointTuple
+        case nothingForbiddenInsideIntervals results of
+            True -> return results
+            _ | maxTries > 0 -> avoidForbidden gen $ maxTries - 1
+            _ -> error "aern-interval: internal error in arbitraryIntervalTupleInAreaNumericallyRelatedBy: failed to avoid forbidden values"
+    
+    nothingForbiddenInsideIntervals intervals =
+        case maybeArea of
+            Nothing -> True
+            Just area ->
+                and $ map (nothingForbiddenInsideInterval area) intervals
+    nothingForbiddenInsideInterval area interval =
+        and $ map (notInside interval) $ NumOrd.areaGetForbiddenValues area
+        where
+        notInside (Interval l r) value = 
+            ((value <? l) == Just True)
+            ||
+            ((value >? r) == Just True)  
+
     endpointGens =
         case maybeArea of
-            (Just area) ->
+            Just area ->
                 catMaybes $
                    map (NumOrd.arbitraryTupleInAreaRelatedBy area endpointIndices) 
                        endpointConstraintsVersions
