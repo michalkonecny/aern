@@ -123,23 +123,28 @@ arbitraryTripleInAreaRelatedBy area (r1, r2, r3) =
     where
     constraints = [((1,2),[r1]), ((2,3),[r2]), ((1,3),[r3])]
 
+{-| generic mechanism for adding common restriction on the area of random generation -}
+class AreaHasExactOption a where
+    restrictAreaToExact :: a -> a
+class AreaHasConsistentOption a where
+    restrictAreaToConsistent :: a -> a
+class AreaHasAntiConsistentOption a where
+    restrictAreaToAntiConsistent :: a -> a
 
-{-| type for generating random thin elements -}
-newtype Thin t = Thin t deriving (Show)
-
+{-| type for randomly generating single elements using the distribution of the 'ArbitraryOrderedTuple' instance -}
 newtype UniformlyOrderedSingleton t = UniformlyOrderedSingleton t deriving (Show)
-
+{-| type for randomly generating pairs of unrelated elements using the distribution of the 'ArbitraryOrderedTuple' instance -}
 data TwoUniformlyOrderedSingletons t = TwoUniformlyOrderedSingletons (t,t) deriving (Show)
+{-| type for randomly generating triples of unrelated elements using the distribution of the 'ArbitraryOrderedTuple' instance -}
 data ThreeUniformlyOrderedSingletons t = ThreeUniformlyOrderedSingletons (t,t,t) deriving (Show)
 
 {-| type for generating pairs distributed in such a way that all ordering relations 
     permitted by this structure have similar probabilities of occurrence -}
 data UniformlyOrderedPair t = UniformlyOrderedPair (t,t) deriving (Show)
-data LEPair t = LEPair (t,t) deriving (Show)
-
 data TwoUniformlyOrderedPairs t = TwoUniformlyOrderedPairs ((t,t),(t,t)) deriving (Show)
 data ThreeUniformlyOrderedPairs t = ThreeUniformlyOrderedPairs ((t,t),(t,t),(t,t)) deriving (Show)
 
+data LEPair t = LEPair (t,t) deriving (Show)
 data TwoLEPairs t = TwoLEPairs ((t,t),(t,t)) deriving (Show)
 data ThreeLEPairs t = ThreeLEPairs ((t,t),(t,t),(t,t)) deriving (Show)
 
