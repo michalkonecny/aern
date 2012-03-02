@@ -27,6 +27,7 @@ import Numeric.AERN.Basics.Interval.Mutable
 import Numeric.AERN.Basics.Interval.NumericOrder
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsDefaultEffort
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder
         (
@@ -260,13 +261,18 @@ instance
         NumOrd.minUpInPlaceEff effort resLM l1M l2M
         NumOrd.maxDnInPlaceEff effort resRM r1M r2M
 
-instance (NumOrd.ArbitraryOrderedTuple e) => RefOrd.ArbitraryOrderedTuple (Interval e) where
-   type Area (Interval e) = NumOrd.Area e
-   areaWhole (Interval l r) = NumOrd.areaWhole l
-   arbitraryTupleInAreaRelatedBy area = 
-       arbitraryIntervalTupleInAreaRefinementRelatedBy (Just area)
-   arbitraryTupleRelatedBy = 
-       arbitraryIntervalTupleInAreaRefinementRelatedBy Nothing
+instance 
+    (NumOrd.ArbitraryOrderedTuple e,
+     NumOrd.AreaHasForbiddenValues e,
+     NumOrd.PartialComparison e) 
+    => 
+    RefOrd.ArbitraryOrderedTuple (Interval e) where
+    type Area (Interval e) = NumOrd.Area e
+    areaWhole (Interval l r) = NumOrd.areaWhole l
+    arbitraryTupleInAreaRelatedBy area = 
+        arbitraryIntervalTupleInAreaRefinementRelatedBy (Just area)
+    arbitraryTupleRelatedBy = 
+        arbitraryIntervalTupleInAreaRefinementRelatedBy Nothing
 
 arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices constraints =
     case endpointGens of
@@ -274,9 +280,30 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices constraints =
         _ -> Just $
             do
             gen <- elements endpointGens
-            endpointTuple <- gen
-            return $ endpointsToIntervals endpointTuple
+            avoidForbidden gen 100 -- maximum tries
     where
+    avoidForbidden gen maxTries =
+        do
+        endpointTuple <- gen
+        let results = endpointsToIntervals endpointTuple
+        case nothingForbiddenInsideIntervals results of
+            True -> return results
+            _ | maxTries > 0 -> avoidForbidden gen $ maxTries - 1
+            _ -> error "aern-interval: internal error in arbitraryIntervalTupleInAreaRefinementRelatedBy: failed to avoid forbidden values"
+    
+    nothingForbiddenInsideIntervals intervals =
+        case maybeArea of
+            Nothing -> True
+            Just area ->
+                and $ map (nothingForbiddenInsideInterval area) intervals
+    nothingForbiddenInsideInterval area interval =
+        and $ map (notInside interval) $ NumOrd.areaGetForbiddenValues area
+        where
+        notInside (Interval l r) value = 
+            ((value <? l) == Just True)
+            ||
+            ((value >? r) == Just True)  
+
     endpointGens =
         case maybeArea of
             (Just area) ->

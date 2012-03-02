@@ -51,27 +51,26 @@ Library
         aern-order == 0.5.*,
         aern-real == 0.5.*
   Exposed-modules:
-    Numeric.AERN.Basics.Interval
-    Numeric.AERN.RealArithmetic.Interval
-    Numeric.AERN.RealArithmetic.Interval.Mutable
-    Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
-    Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
-    Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
-
-    Numeric.AERN.Basics.Interval.Basics
-    Numeric.AERN.Basics.Interval.Consistency
-    Numeric.AERN.Basics.Interval.NumericOrder
-    Numeric.AERN.Basics.Interval.RefinementOrder
-    Numeric.AERN.Basics.Interval.Mutable
-    Numeric.AERN.RealArithmetic.Interval.ExactOps
-    Numeric.AERN.RealArithmetic.Interval.Measures
-    Numeric.AERN.RealArithmetic.Interval.Conversion
-    Numeric.AERN.RealArithmetic.Interval.FieldOps
-    Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
-    Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps 
-    Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps
-    Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps
+    Numeric.AERN.Basics.Interval,
+    Numeric.AERN.Basics.Interval.Basics,
+    Numeric.AERN.Basics.Interval.Consistency,
+    Numeric.AERN.Basics.Interval.Mutable,
+    Numeric.AERN.Basics.Interval.NumericOrder,
+    Numeric.AERN.Basics.Interval.RefinementOrder,
+    Numeric.AERN.RealArithmetic.Interval,
+    Numeric.AERN.RealArithmetic.Interval.Conversion,
+    Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis,
+    Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps,
+    Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt,
+    Numeric.AERN.RealArithmetic.Interval.ExactOps,
+    Numeric.AERN.RealArithmetic.Interval.FieldOps,
+    Numeric.AERN.RealArithmetic.Interval.Floating,
+    Numeric.AERN.RealArithmetic.Interval.Measures,
+    Numeric.AERN.RealArithmetic.Interval.MixedFieldOps,
+    Numeric.AERN.RealArithmetic.Interval.Mutable,
+    Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps,
+    Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps,
+    Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps,
+    Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps,
     Numeric.AERN.RealArithmetic.Interval.SpecialConst
-    Numeric.AERN.RealArithmetic.Interval.Floating
-    Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt
 
