@@ -162,3 +162,14 @@ instance NumOrd.ArbitraryOrderedTuple MPFR where
     arbitraryTupleRelatedBy =
         NumOrd.arbitraryTupleInAreaRelatedBy (NumOrd.areaWhole (0::MPFR))
     
+instance (NumOrd.AreaHasNonNegativeOption MPFR)
+    where
+    areaRestrictToNonNeg _ =
+        NumOrd.linearAreaRestrictToNonNeg 0
+
+instance (NumOrd.AreaHasForbiddenValues MPFR)
+    where
+    areaGetForbiddenValues = NumOrd.areaLinForbiddenValues
+    areaAddForbiddenValues = NumOrd.linearAreaAddForbiddenValues
+
+    
