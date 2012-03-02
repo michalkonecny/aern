@@ -72,6 +72,15 @@ class ArbitraryOrderedTuple t where
         Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}
     arbitraryTuple n = arbitraryTupleRelatedBy [1..n] [] 
 
+{-| generic mechanism for adding common restriction on the area of random generation -}
+class AreaHasExactOption a where
+    restrictAreaToExact :: a -> a
+class AreaHasConsistentOption a where
+    restrictAreaToConsistent :: a -> a
+class AreaHasAntiConsistentOption a where
+    restrictAreaToAntiConsistent :: a -> a
+
+
 arbitraryPairRelatedBy ::
     (ArbitraryOrderedTuple t) => PartialOrdering -> Maybe (Gen (t,t))
 arbitraryPairRelatedBy rel =
@@ -122,14 +131,6 @@ arbitraryTripleInAreaRelatedBy area (r1, r2, r3) =
             return (e1, e2, e3)
     where
     constraints = [((1,2),[r1]), ((2,3),[r2]), ((1,3),[r3])]
-
-{-| generic mechanism for adding common restriction on the area of random generation -}
-class AreaHasExactOption a where
-    restrictAreaToExact :: a -> a
-class AreaHasConsistentOption a where
-    restrictAreaToConsistent :: a -> a
-class AreaHasAntiConsistentOption a where
-    restrictAreaToAntiConsistent :: a -> a
 
 {-| type for randomly generating single elements using the distribution of the 'ArbitraryOrderedTuple' instance -}
 newtype UniformlyOrderedSingleton t = UniformlyOrderedSingleton t deriving (Show)

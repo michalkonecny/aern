@@ -58,6 +58,7 @@ Library
     
   Other-modules:
                 Numeric.AERN.NumericOrder.Arbitrary,
+                Numeric.AERN.NumericOrder.Arbitrary.Linear,
                 Numeric.AERN.NumericOrder.Extrema,
                 Numeric.AERN.NumericOrder.InPlace.RefinementRoundedLattice,
                 Numeric.AERN.NumericOrder.InPlace.RoundedLattice,
