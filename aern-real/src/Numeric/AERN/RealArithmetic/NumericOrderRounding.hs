@@ -55,7 +55,7 @@ import Numeric.AERN.Basics.Effort
 class 
     (HasZero t, HasOne t, HasInfinities t, Neg t,
      NumOrd.PartialComparison t, NumOrd.RoundedLattice t,
-     HasDistance t,
+     HasDistance t, NumOrd.PartialComparison (Distance t),
      Convertible Int t, Convertible t Int,  
      Convertible Integer t, Convertible t Integer,  
      Convertible Double t, Convertible t Double,  
