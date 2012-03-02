@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
@@ -68,9 +69,15 @@ instance (HasSizeLimits (IntPoly var cf))
     type (SizeLimits (IntPoly var cf)) = IntPolyCfg var cf
     defaultSizeLimits = getSizeLimits 
     getSizeLimits (IntPoly cfg _) = cfg
-    changeSizeLimits cfg (IntPoly _ terms) = IntPoly cfg terms
---        error $ "changeSizeLimits not implemented for IntPoly"
-
+    changeSizeLimits cfg (IntPoly _ terms) 
+        | sameVarDoms = 
+            IntPoly cfg termsReduced
+        | otherwise =
+            error $ "attempted to reassign the domain of a polynomial, which is currently impossible"
+        where
+        sameVarDoms = True -- TODO
+        termsReduced = terms -- TODO
+         
 instance 
     (Ord var, ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf) => 
@@ -78,6 +85,7 @@ instance
     where
     newConstFn cfg _ value = IntPoly cfg $ mkConstTerms value $ ipolycfg_vars cfg
 
+mkConstTerms :: cf -> [var] -> IntPolyTerms var cf
 mkConstTerms value vars = aux vars
     where
     aux [] = IntPolyC value
@@ -111,12 +119,20 @@ instance
      RefOrd.IntervalLike cf) => 
     (HasProjections (IntPoly var cf))
     where
-    newProjection cfg dombox var =
+    newProjection cfg _dombox var =
         IntPoly cfg $ mkProjTerms cfg var vars domsLE
         where
         vars = ipolycfg_vars cfg
         domsLE = ipolycfg_domsLE cfg
         
+mkProjTerms :: 
+    (Eq var, Show var, HasOne cf) 
+    =>
+    IntPolyCfg _var cf -> 
+    var -> 
+    [var] -> 
+    [cf] -> 
+    IntPolyTerms var cf
 mkProjTerms cfg var vars domsLE = aux vars domsLE
     where
     aux [] [] = 
@@ -135,6 +151,7 @@ mkProjTerms cfg var vars domsLE = aux vars domsLE
         o = one sampleCf
 --        z = zero sampleCf
         sampleCf = ipolycfg_sample_cf cfg 
+    aux _ _ = error "aern-intpoly internal error in New.mkProjTerms"
             
             
 

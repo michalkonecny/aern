@@ -37,11 +37,11 @@ polyAddMainVar ::
     =>
     RefOrd.GetEndpointsEffortIndicator cf -> 
     (ArithInOut.RoundedRealEffortIndicator cf) -> 
-    var -> 
+    var ->
     cf -> 
     IntPoly var cf -> 
     IntPoly var cf
-polyAddMainVar effGetE effCF var dom p@(IntPoly cfg terms) =
+polyAddMainVar effGetE effCF var dom _p@(IntPoly cfg terms) =
     IntPoly cfgNew termsNew
     where
     termsNew = IntPolyV var $ IntMap.singleton 0 terms
@@ -52,13 +52,13 @@ polyAddMainVar effGetE effCF var dom p@(IntPoly cfg terms) =
             ipolycfg_domsLE = domLE : ipolycfg_domsLE cfg 
         }
     (domLZ, domLE) = domToDomLZLE effGetE effCF dom
-    sampleCf = ipolycfg_sample_cf cfg
-    _ = [sampleCf, dom]
+--    sampleCf = ipolycfg_sample_cf cfg
+--    _ = [sampleCf, dom]
 
 
 
 polyRenameMainVar :: var -> IntPoly var cf -> IntPoly var cf
-polyRenameMainVar newVarName p@(IntPoly cfg (IntPolyV _ coeffs)) =
+polyRenameMainVar newVarName _p@(IntPoly cfg (IntPolyV _ coeffs)) =
     IntPoly cfgNew termsNew
     where
     termsNew = IntPolyV newVarName coeffs
@@ -66,6 +66,8 @@ polyRenameMainVar newVarName p@(IntPoly cfg (IntPolyV _ coeffs)) =
         { 
             ipolycfg_vars = newVarName : (tail $ ipolycfg_vars cfg) 
         }
+polyRenameMainVar _ _ =
+    error "aern-intpoly: DomBoxChanges.polyRenameMainVar called with a zero-variate polynomial"
 
 polySwapFirstTwoVars :: IntPoly var cf -> IntPoly var cf
 polySwapFirstTwoVars (IntPoly cfg terms) =
@@ -84,6 +86,7 @@ polySwapFirstTwoVars (IntPoly cfg terms) =
             }
     swapFirstTwo :: [a] -> [a]
     swapFirstTwo (e1 : e2 : rest) = e2 : e1 : rest
+    swapFirstTwo _ = error "aern-intpoly: internal error in DomBoxChanges.polySwapFirstTwoVars"
 
 termsSwapFirstTwoVars :: [var] -> IntPolyTerms var cf -> IntPolyTerms var cf
 termsSwapFirstTwoVars (var1 : var2 : _) (IntPolyV _ polys) = 
@@ -101,14 +104,16 @@ termsSwapFirstTwoVars (var1 : var2 : _) (IntPolyV _ polys) =
     powerAssocs = 
         map (\(n1, IntPolyV _ polys2) -> (n1, IntMap.toAscList polys2)) $ 
             IntMap.toAscList polys
+termsSwapFirstTwoVars _ _ =
+    error "aern-intpoly internal error: DomBoxChanges.termsSwapFirstTwoVars called with less than two variables"
 
 groupByFst :: (Eq a) => [(a,b)] -> [(a,[b])]
 groupByFst [] = []
 groupByFst ((key, val) : assocs) = aux key [val] assocs
     where
     aux prevKey prevVals [] = [(prevKey, reverse prevVals)]
-    aux prevKey prevVals ((key, val) : rest)
-        | key == prevKey = aux prevKey (val : prevVals) rest
-        | otherwise = (prevKey, reverse prevVals) : (aux key [val] rest)
+    aux prevKey prevVals ((key2, val2) : rest)
+        | key2 == prevKey = aux prevKey (val2 : prevVals) rest
+        | otherwise = (prevKey, reverse prevVals) : (aux key2 [val2] rest)
 
             
