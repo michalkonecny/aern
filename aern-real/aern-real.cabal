@@ -52,42 +52,41 @@ Library
         criterion >= 0.5 && < 0.6,
         aern-order == 0.5.*
   Exposed-modules:
-    Numeric.AERN.RealArithmetic.ExactOps 
-    Numeric.AERN.RealArithmetic.NumericOrderRounding 
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsDefaultEffort
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.OpsDefaultEffort
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.OpsImplicitEffort
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort 
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort 
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsImplicitEffort 
-    Numeric.AERN.RealArithmetic.Measures 
-    Numeric.AERN.RealArithmetic.Laws 
-    Numeric.AERN.RealArithmetic.Bench 
---    Numeric.AERN.NumericOrder.FromInOutRingOps.RefinementRoundedLattice 
-    Numeric.AERN.Misc.IntegerArithmetic
-    Numeric.AERN.RealArithmetic.Auxiliary
+                  Numeric.AERN.Misc.IntegerArithmetic,
+                  Numeric.AERN.RealArithmetic.Auxiliary,
+                  Numeric.AERN.RealArithmetic.Bench,
+                  Numeric.AERN.RealArithmetic.ExactOps,
+                  Numeric.AERN.RealArithmetic.Laws,
+                  Numeric.AERN.RealArithmetic.Measures,
+                  Numeric.AERN.RealArithmetic.NumericOrderRounding,
+                  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace,
+                  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.OpsDefaultEffort,
+                  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.OpsImplicitEffort,
+                  Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsDefaultEffort,
+                  Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort,
+                  Numeric.AERN.RealArithmetic.RefinementOrderRounding,
+                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation,
+                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace,
+                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort,
+                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsImplicitEffort,
+                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort,
+                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
     
   Other-modules:
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.SpecialConst
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Elementary
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion,
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary,
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps,
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Elementary,
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps,
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps,
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps,
+    Numeric.AERN.RealArithmetic.NumericOrderRounding.SpecialConst,
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion,
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary,
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps,
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.Elementary,
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.FieldOps,
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.MixedFieldOps,
+    Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps,
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.SpecialConst
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.FieldOps
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.MixedFieldOps
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.Elementary
 
