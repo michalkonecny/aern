@@ -134,13 +134,13 @@ benchInOutExp (name, sample) areas =
 
 benchExpAreasReal =
     [
-        ("near 0", NumOrd.AreaLinear (Just $ -1/2) True (Just $ 1/2) True [])
+        ("near 0", NumOrd.AreaLinear (Just $ -1/2) True (Just $ 1/2) True [] (const False) [])
     ,
-        ("near -10", NumOrd.AreaLinear (Just $ -10.5) True (Just $ -9.5) True [])
+        ("near -10", NumOrd.AreaLinear (Just $ -10.5) True (Just $ -9.5) True [] (const False) [])
     ,
-        ("near 10", NumOrd.AreaLinear (Just $ 9.5) True (Just $ 10.5) True [])
+        ("near 10", NumOrd.AreaLinear (Just $ 9.5) True (Just $ 10.5) True [] (const False) [])
     ,
-        ("near 20", NumOrd.AreaLinear (Just $ 19.5) True (Just $ 20.5) True [])
+        ("near 20", NumOrd.AreaLinear (Just $ 19.5) True (Just $ 20.5) True [] (const False) [])
     ]
 
 class
@@ -156,7 +156,7 @@ class (RoundedSquareRootEffort t) => RoundedSquareRoot t where
     sqrtOutEff :: (SqrtEffortIndicator t) -> t -> t
 
 propSqrtSquare ::
-    (RefOrd.PartialComparison t, 
+    (RefOrd.PartialComparison t,
      RoundedSquareRoot t, RoundedMultiply t, HasZero t,
      UpDnConversion.Convertible t Double,
      RoundedMixedAdd t Double,
