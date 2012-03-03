@@ -50,7 +50,7 @@ instance (NumOrd.PartialComparison e) => HasConsistency (Interval e)
         NumOrd.pCompareDefaultEffort l
     getConsistencyEff effort (Interval l r) =
         case (NumOrd.pLeqEff effort l r, NumOrd.pGeqEff effort l r) of
-            (Just True, Just True) -> Just Thin
+            (Just True, Just True) -> Just Exact
             (Just True, _) -> Just Consistent
             (_, Just True) -> Just Anticonsistent
             (Just False, Just False) -> Just Inconsistent
