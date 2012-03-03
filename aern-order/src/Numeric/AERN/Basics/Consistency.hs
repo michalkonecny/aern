@@ -30,7 +30,7 @@ data ConsistencyStatus =
     Inconsistent -- ie neither Consistent nor Anticonsistent
     | Consistent 
     | Anticonsistent 
-    | Thin -- ie both Consistent and Anticonsistent
+    | Exact -- ie both Consistent and Anticonsistent
     
 class
     (EffortIndicator (ConsistencyEffortIndicator t))
@@ -44,7 +44,7 @@ class
     isConsistentEff eff e = 
         case getConsistencyEff eff e of
             Just Consistent -> Just True
-            Just Thin -> Just True
+            Just Exact -> Just True
             Just _ -> Just False
             _ -> Nothing
     
@@ -53,7 +53,7 @@ class (HasConsistency t) => HasAntiConsistency t where
     isAntiConsistentEff eff e = 
         case getConsistencyEff eff e of
             Just Anticonsistent -> Just True
-            Just Thin -> Just True
+            Just Exact -> Just True
             Just _ -> Just False
             _ -> Nothing
     flipConsistency :: t -> t
