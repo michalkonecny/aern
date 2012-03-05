@@ -41,6 +41,10 @@ import Numeric.AERN.Misc.List
 import qualified Data.List as List
 import System.IO.Unsafe
 
+class AreaHasBoundsConstraints t where
+    areaSetLowerBound :: (t, Bool) -> (Area t) -> (Area t)  
+    areaSetUpperBound :: (t, Bool) -> (Area t) -> (Area t)  
+
 {-|
     Comparison with the ability to randomly generate
     pairs and triples of its own elements that are in 
