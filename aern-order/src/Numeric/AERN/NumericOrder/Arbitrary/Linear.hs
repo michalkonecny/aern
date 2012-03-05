@@ -23,6 +23,7 @@ import Prelude hiding (EQ, LT, GT)
 import Numeric.AERN.NumericOrder.Arbitrary
 
 import Numeric.AERN.Basics.PartialOrdering
+import Numeric.AERN.Basics.Arbitrary
 
 import Numeric.AERN.Misc.Debug
 
@@ -49,13 +50,12 @@ data AreaLinear t =
         areaLinLowerBoundStrict :: Bool,
         areaLinUpperBound :: Maybe t,
         areaLinUpperBoundStrict :: Bool,
-        areaLinForbiddenValues :: [t],
-        areaLinIsValueForbidden :: t -> Bool,
-        areaLinSpecialValues :: [t]
+        areaLinWhole :: AreaWholeOnly t
     } 
 
 areaLinearWhole :: [t] -> AreaLinear t
-areaLinearWhole specialValues = AreaLinear Nothing True Nothing True [] (const False) specialValues
+areaLinearWhole specialValues = 
+    AreaLinear Nothing True Nothing True $ areaWholeOnlyWhole specialValues
 
 linearAreaRestrictToNonNeg ::
     (Ord t) =>
@@ -68,26 +68,24 @@ linearAreaRestrictToNonNeg z area =
             areaLinLowerBound = 
                 fmap (max z) $ areaLinLowerBound area
             ,
-            areaLinSpecialValues =
-                filter (>= z) $ areaLinSpecialValues area
+            areaLinWhole =
+                (areaLinWhole area)
+                    {
+                        areaWholeSpecialValues =
+                            filter (>= z) $ areaWholeSpecialValues $ areaLinWhole area
+                    }
         }
 
-linearAreaAddForbiddenValues ::
+areaLinearAddForbiddenValues ::
     (Ord t) =>
     [t] {-^ newly forbidden values -} ->
     (AreaLinear t) ->
     (AreaLinear t)
-linearAreaAddForbiddenValues values area =
+areaLinearAddForbiddenValues values area =
     area
         {
-            areaLinIsValueForbidden = 
-                \value ->
-                    (value `elem` values)
-                    ||
-                    (areaLinIsValueForbidden area value)
-            ,
-            areaLinForbiddenValues =
-                areaLinForbiddenValues area ++ values
+            areaLinWhole =
+                areaWholeOnlyAddForbiddenValues values (areaLinWhole area)
         }
 
 arbitraryLinear ::
@@ -99,7 +97,7 @@ arbitraryLinear ::
     AreaLinear t ->
     Gen t
 arbitraryLinear (least, greatest) succ pred choose 
-        (AreaLinear mlb lbStrict mub ubStrict _ isForbidden specialValues) =
+        (AreaLinear mlb lbStrict mub ubStrict areaWhole@(AreaWholeOnly _ isForbidden specialValues)) =
     incrSize $ -- at size 0 we get only 0s...
     do
     useSpecial <-
@@ -132,27 +130,33 @@ arbitraryLinear (least, greatest) succ pred choose
             (Just ub, False) -> pred ub
 
 
-instance ArbitraryOrderedTuple Int where
+instance ArbitraryWithArea Int where
     type (Area Int) = AreaWholeOnly Int
-    areaWhole _ = AreaWholeOnly [-1,0,1]
+    areaWhole _ = areaWholeOnlyWhole [-1,0,1]
+    arbitraryInArea = arbitraryWhole
+
+instance ArbitraryOrderedTuple Int where
     arbitraryTupleInAreaRelatedBy area = 
         linearArbitraryTupleRelatedBy $ arbitraryWhole area
     arbitraryTupleRelatedBy =
         linearArbitraryTupleRelatedBy $ incrSize arbitrary
+
+instance ArbitraryWithArea Integer where
+    type (Area Integer) = AreaWholeOnly Integer
+    areaWhole _ = areaWholeOnlyWhole [-1,0,1]
+    arbitraryInArea = arbitraryWhole
 
 instance ArbitraryOrderedTuple Integer where
-    type (Area Integer) = AreaWholeOnly Integer
-    areaWhole _ = AreaWholeOnly [-1,0,1]
     arbitraryTupleInAreaRelatedBy area = 
         linearArbitraryTupleRelatedBy $ arbitraryWhole area
     arbitraryTupleRelatedBy =
         linearArbitraryTupleRelatedBy $ incrSize arbitrary
 
-instance ArbitraryOrderedTuple Rational where
+instance ArbitraryWithArea Rational where
     type (Area Rational) = (AreaLinear Int, AreaLinear Int)
     areaWhole _ = (areaLinearWhole [-1,0,1], areaLinearWhole [0])
-    arbitraryTupleInAreaRelatedBy (numeratorArea, preDenominatorArea) = 
-        linearArbitraryTupleRelatedBy chooseRational
+    arbitraryInArea (numeratorArea, preDenominatorArea) =
+        chooseRational
         where
         chooseRational = 
             do
@@ -162,19 +166,22 @@ instance ArbitraryOrderedTuple Rational where
         arbitraryIntInArea = arbitraryLinear (minInt, maxInt) succ pred choose  
         maxInt = maxBound
         minInt = minBound
+
+instance ArbitraryOrderedTuple Rational where
+    arbitraryTupleInAreaRelatedBy area = 
+        linearArbitraryTupleRelatedBy $ arbitraryInArea area
     arbitraryTupleRelatedBy =
         linearArbitraryTupleRelatedBy $ incrSize arbitrary
 
 areaDoubleSmall :: AreaLinear Double
 areaDoubleSmall =
-    AreaLinear (Just $ -256) False (Just 256) False [] (const False) [0,-1,1]
+    AreaLinear (Just $ -256) False (Just 256) False $ areaWholeOnlyWhole [0,-1,1]
 
-instance ArbitraryOrderedTuple Double where
+instance ArbitraryWithArea Double where
     type (Area Double) = AreaLinear Double
     areaWhole _ = areaLinearWhole [-1/0,-1,0,1,1/0]
-    arbitraryTupleInAreaRelatedBy area = 
-        linearArbitraryTupleRelatedBy 
-                (arbitraryLinear (-maxDbl, maxDbl) id id chooseDbl area)
+    arbitraryInArea area =
+        arbitraryLinear (-maxDbl, maxDbl) id id chooseDbl area
         where
         maxDbl = encodeFloat 1 (maxExp - 1)
         chooseDbl (lb, ub) =
@@ -222,6 +229,10 @@ instance ArbitraryOrderedTuple Double where
                 where
                 valid d = lb <= d && d <= ub
         (minExp, maxExp) = floatRange (0 :: Double)
+    
+instance ArbitraryOrderedTuple Double where
+    arbitraryTupleInAreaRelatedBy area = 
+        linearArbitraryTupleRelatedBy $ arbitraryInArea area
     arbitraryTupleRelatedBy =
         arbitraryTupleInAreaRelatedBy areaDoubleSmall
        -- When generating Double numbers for testing, try to avoid overflows
@@ -229,41 +240,6 @@ instance ArbitraryOrderedTuple Double where
        -- the granularity (aka precision) of the floating point type.
        -- Exp overflows at around 700.
 
---        where
---        AreaLinear mmin minStrict mmax maxStrict = bounds
---        min = 
---            case mmin of 
---                Nothing -> 
---                Just m -> 
---                    case expMinStrict of
---                        True -> m+1
---                        False -> m
---        expMax = 
---            case mexpMax of 
---                Nothing -> 480; -- encourage infinity 
---                Just m -> 
---                    case expMaxStrict of
---                        True -> m-1
---                        False -> m
---        arbitaryBoundedDouble =
---           do
---           d <- arbitrary
---           e <- case (expMin < 0 && expMax > 0) of
---               True -> 
---                   do 
---                   e1 <- choose (0,expMax)
---                   e2 <- choose (-380,-1)
---                   elements [e1,e2]
---               False -> choose (expMin, expMax)
---           s <- elements $ case (encourage [1,1,1,1,0]
---           a <- elements $ case (encourageZero, encourageOne) [-1,0,1]
---           return (buildDouble d e s a)
---        buildDouble d e s a =
---           (s * dE + a)
---           where
---           dE = encodeFloat m (e - 53)
---           (m,_) = decodeFloat (d :: Double)
---           
 
 instance (AreaHasNonNegativeOption Double)
     where
@@ -272,8 +248,8 @@ instance (AreaHasNonNegativeOption Double)
 
 instance (AreaHasForbiddenValues Double)
     where
-    areaGetForbiddenValues = areaLinForbiddenValues
-    areaAddForbiddenValues = linearAreaAddForbiddenValues
+    areaGetForbiddenValues = areaWholeForbiddenValues . areaLinWhole
+    areaAddForbiddenValues = areaLinearAddForbiddenValues
 
 {-| Default implementation of linearArbitraryTupleRelatedBy for Ord instances -}   
 linearArbitraryTupleRelatedBy ::

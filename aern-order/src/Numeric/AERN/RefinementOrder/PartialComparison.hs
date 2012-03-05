@@ -23,6 +23,7 @@ import Prelude hiding (EQ, LT, GT)
 import Numeric.AERN.RefinementOrder.Extrema
 import Numeric.AERN.RefinementOrder.Arbitrary
 
+import Numeric.AERN.Basics.Arbitrary
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Misc.Maybe
 import Numeric.AERN.Basics.PartialOrdering

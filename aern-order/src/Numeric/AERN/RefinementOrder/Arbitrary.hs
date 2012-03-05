@@ -21,6 +21,7 @@ module Numeric.AERN.RefinementOrder.Arbitrary where
 import Prelude hiding (EQ, LT, GT)
 
 import Numeric.AERN.Basics.PartialOrdering
+import Numeric.AERN.Basics.Arbitrary
 
 import Data.Maybe
 import qualified Data.Map as Map 
@@ -42,11 +43,7 @@ import System.IO.Unsafe
     make sense only for pairs in a certain relation
     where such pairs are rare.
 -}
-class ArbitraryOrderedTuple t where
-    {-| a type of meaningful constraints to place on generation of arbitrary values -}
-    type Area t
-    {-| a special area that puts no constaints on the values -}
-    areaWhole :: t -> Area t
+class (ArbitraryWithArea t) => ArbitraryOrderedTuple t where
     {-| generator of tuples that satisfy the given relation requirements
         and area restriction, 
         nothing if in this structure there are no tuples satisfying these requirements -}
@@ -71,13 +68,6 @@ class ArbitraryOrderedTuple t where
         Int {-^ how many elements should be generated -} -> 
         Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}
     arbitraryTuple n = arbitraryTupleRelatedBy [1..n] [] 
-
-{-| generic mechanism for adding common restriction on the area of random generation -}
-class AreaHasConsistencyConstraint t where
-    areaSetConsistencyConstraint :: AreaConsistencyConstraint -> (Area t) -> (Area t)
-
-data AreaConsistencyConstraint =
-    AreaAnyConsistency | AreaOnlyConsistent | AreaOnlyAnticonsistent | AreaOnlyExact
 
 arbitraryPairRelatedBy ::
     (ArbitraryOrderedTuple t) => PartialOrdering -> Maybe (Gen (t,t))

@@ -40,7 +40,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.Exception
 import Control.Exception
 
-roundedRefinementMonotone1 ::
+roundedRefinementIsotone1 ::
     (RefOrd.PartialComparison t, 
      RefOrd.ArbitraryOrderedTuple t, 
      Show t, HasLegalValues t) =>
@@ -51,16 +51,16 @@ roundedRefinementMonotone1 ::
     ei -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
-roundedRefinementMonotone1 contextDescription exprUp exprDn (RefOrd.LEPair (e1L, e1H)) effort effortComp =
+roundedRefinementIsotone1 contextDescription exprUp exprDn (RefOrd.LEPair (e1L, e1H)) effort effortComp =
     case RefOrd.pLeqEff effortComp resDn resUp of
         Just b -> b
         _ -> True
     where
     resUp = check $ exprUp effort e1H
     resDn = check $ exprDn effort e1L
-    check = detectIllegalValues $ contextDescription ++ " monotone"
+    check = detectIllegalValues $ contextDescription ++ " refinement isotone"
 
-roundedRefinementMonotone2 ::
+roundedRefinementIsotone2 ::
     (RefOrd.PartialComparison t, 
      RefOrd.ArbitraryOrderedTuple t, 
      Show t, HasLegalValues t) =>
@@ -71,13 +71,13 @@ roundedRefinementMonotone2 ::
     ei -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
-roundedRefinementMonotone2 
+roundedRefinementIsotone2 
         contextDescription exprUp exprDn 
         (RefOrd.TwoLEPairs ((e1L, e1H), (e2L, e2H))) 
         effort 
         effortComp 
         =
---    unsafePrint ("\nroundedRefinementMonotone2: " 
+--    unsafePrint ("\nroundedRefinementIsotone2: " 
 --      ++ "\n Up: op(" ++ show e1H ++ ", " ++ show e2H ++ ") = " ++ show resUp 
 --      ++ "\n Dn: op(" ++ show e1L ++ ", " ++ show e2L ++ ") = " ++ show resDn
 --      ++ "\n" 
@@ -88,7 +88,7 @@ roundedRefinementMonotone2
     where
     resUp = check $ exprUp effort e1H e2H
     resDn = check $ exprDn effort e1L e2L
-    check = detectIllegalValues $ contextDescription ++ " monotone"
+    check = detectIllegalValues $ contextDescription ++ " refinement isotone"
 
 roundedUnit ::
     (EffortIndicator eiRel, Show eiRel, 

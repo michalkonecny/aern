@@ -19,6 +19,8 @@ module Numeric.AERN.Basics.Interval.RefinementOrder where
 
 import Prelude hiding (EQ, LT, GT)
 
+import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.Arbitrary
 import Numeric.AERN.Basics.Effort 
 import Numeric.AERN.Basics.PartialOrdering
 
@@ -35,8 +37,7 @@ import Numeric.AERN.RefinementOrder
                 FromEndpointsEffortIndicator,
                 PartialCompareEffortIndicator,
                 PartialJoinEffortIndicator,
-                JoinMeetEffortIndicator,
-                Area
+                JoinMeetEffortIndicator
         )
 
 import Numeric.AERN.Basics.Mutable
@@ -263,18 +264,18 @@ instance
 
 instance 
     (NumOrd.ArbitraryOrderedTuple e,
-     NumOrd.AreaHasForbiddenValues e,
+     NumOrd.RoundedLattice e,
+     AreaHasForbiddenValues e,
      NumOrd.PartialComparison e) 
     => 
-    RefOrd.ArbitraryOrderedTuple (Interval e) where
-    type Area (Interval e) = (NumOrd.Area e, RefOrd.AreaConsistencyConstraint)
-    areaWhole (Interval l r) = (NumOrd.areaWhole l, RefOrd.AreaAnyConsistency)
+    RefOrd.ArbitraryOrderedTuple (Interval e) 
+    where
     arbitraryTupleInAreaRelatedBy area = 
         arbitraryIntervalTupleInAreaRefinementRelatedBy (Just area)
     arbitraryTupleRelatedBy = 
         arbitraryIntervalTupleInAreaRefinementRelatedBy Nothing
 
-instance RefOrd.AreaHasConsistencyConstraint (Interval e)
+instance AreaHasConsistencyConstraint (Interval e)
     where
     areaSetConsistencyConstraint constraint (areaEndpt, _) = (areaEndpt, constraint)
 
@@ -301,7 +302,7 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices constraints =
             Just (areaEndpt, _) ->
                 and $ map (nothingForbiddenInsideInterval areaEndpt) intervals
     nothingForbiddenInsideInterval areaEndpt interval =
-        and $ map (notInside interval) $ NumOrd.areaGetForbiddenValues areaEndpt
+        and $ map (notInside interval) $ areaGetForbiddenValues areaEndpt
         where
         notInside (Interval l r) value = 
             ((value <? l) == Just True)
@@ -344,9 +345,9 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices constraints =
         endpoints2Comparable = [(((ix2,-1),(ix2, 1)), allowedEndpointRelations)]
         allowedEndpointRelations =
             case maybeArea of
-                Just (_, RefOrd.AreaOnlyConsistent) -> [EQ,LT]
-                Just (_, RefOrd.AreaOnlyAnticonsistent) -> [EQ,GT]
-                Just (_, RefOrd.AreaOnlyExact) -> [EQ]
+                Just (_, AreaMaybeAllowOnlyWithConsistencyStatus (Just Consistent)) -> [EQ,LT]
+                Just (_, AreaMaybeAllowOnlyWithConsistencyStatus (Just Anticonsistent)) -> [EQ,GT]
+                Just (_, AreaMaybeAllowOnlyWithConsistencyStatus (Just Exact)) -> [EQ]
                 _ -> [EQ,LT,GT]
         endpointsComparable = endpoints1Comparable ++ endpoints2Comparable
         forEachRel EQ = -- both endpoints agree 

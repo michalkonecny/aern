@@ -20,6 +20,7 @@ import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
 import Numeric.AERN.Basics.Interval
 
 import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.Arbitrary (areaWhole)
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
@@ -38,8 +39,8 @@ tests = testsMPFR ++ testsMI
 testsMPFR =
     [
 --       NumOrd.testsArbitraryTuple ("MPFR", sampleM, NumOrd.compare),
-       NumOrd.testsPartialComparison ("MPFR", sampleM) areaN,
-       NumOrd.testsRoundedLatticeDistributive ("MPFR", sampleM) areaN,
+       NumOrd.testsPartialComparison ("MPFR", sampleM) areaM,
+       NumOrd.testsRoundedLatticeDistributive ("MPFR", sampleM) areaM,
        testsDistance ("MPFR", sampleM),
        ArithUpDn.testsConvert ("MPFR", sampleM, "Integer", sampleI),
        ArithUpDn.testsConvert ("Integer", sampleI, "MPFR", sampleM),
@@ -66,27 +67,27 @@ testsMPFR =
 testsMI =
     [
        testsConsistency ("MI", sampleMI),
-       NumOrd.testsPartialComparison ("MI", sampleMI) areaNInterval,
-       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone ("MI", sampleMI) areaNInterval areaR,
+       NumOrd.testsPartialComparison ("MI", sampleMI) areaMI,
+       NumOrd.testsRefinementRoundedLatticeDistributiveMonotone ("MI", sampleMI) areaMI,
        NumOrd.testsRefinementRoundedLatticeInPlace ("MI", sampleMI),
-       RefOrd.testsPartialComparison  ("MI", sampleMI) areaR, 
+       RefOrd.testsPartialComparison  ("MI", sampleMI) areaMI, 
        RefOrd.testsRoundedBasis ("MI", sampleMI),
-       RefOrd.testsRoundedLatticeDistributive ("MI", sampleMI) areaR,
+       RefOrd.testsRoundedLatticeDistributive ("MI", sampleMI) areaMI,
        testsDistance ("MI", sampleMI),
        testsImprecision ("MI", sampleMI),
        ArithInOut.testsConvertNumOrd ("Integer", sampleI, "MI", sampleMI),
        ArithInOut.testsConvertNumOrd ("Double", sampleD, "MI", sampleMI),
        ArithInOut.testsConvertNumOrd ("Rational", sampleR, "MI", sampleMI),
-       ArithInOut.testsInOutAdd ("MI", sampleMI) areaR,
-       ArithInOut.testsInOutSubtr ("MI", sampleMI) areaR,
-       ArithInOut.testsInOutAbs ("MI", sampleMI) areaR,
-       ArithInOut.testsInOutMult ("MI", sampleMI) areaR,
-       ArithInOut.testsInOutIntPower ("MI", sampleMI) areaR,
-       ArithInOut.testsInOutDiv ("MI", sampleMI) areaR,
+       ArithInOut.testsInOutAdd ("MI", sampleMI) areaMI,
+       ArithInOut.testsInOutSubtr ("MI", sampleMI) areaMI,
+       ArithInOut.testsInOutAbs ("MI", sampleMI) areaMI,
+       ArithInOut.testsInOutMult ("MI", sampleMI) areaMI,
+       ArithInOut.testsInOutIntPower ("MI", sampleMI) areaMI,
+       ArithInOut.testsInOutDiv ("MI", sampleMI) areaMI,
        ArithInOut.testsInOutFieldOpsInPlace ("MI", sampleMI),
-       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Integer", sampleI) areaR,
-       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Rational", sampleR) areaR,
-       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Double", sampleD) areaR,
+       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Integer", sampleI) areaMI,
+       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Rational", sampleR) areaMI,
+       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Double", sampleD) areaMI,
        ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Integer", sampleI),
        ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Rational", sampleR),
        ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Double", sampleD)
@@ -95,9 +96,8 @@ testsMI =
        ArithInOut.testsInOutSqrt ("MI", sampleMI) unPositiveMI
     ]
 
-areaN = NumOrd.areaWhole sampleM
-areaNInterval = NumOrd.areaWhole sampleMI
-areaR = RefOrd.areaWhole sampleMI
+areaM = areaWhole sampleM
+areaMI = areaWhole sampleMI
 
 sampleD = 1 :: Double
 sampleI = 1 :: Integer

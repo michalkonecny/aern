@@ -26,6 +26,7 @@ where
 
 import Prelude hiding ((<=))
 
+import Numeric.AERN.Basics.Arbitrary
 import Numeric.AERN.Basics.Exception 
 
 import Numeric.AERN.Basics.Effort
@@ -236,10 +237,9 @@ testsRefinementRoundedLattice ::
      ) =>
     (String, t) -> 
     Area t -> 
-    RefOrd.Area t -> 
     Test
-testsRefinementRoundedLattice (name, sample) areaN areaR =
-    mkTestGroupLattice name (testsRefinementRoundedLatticeL areaN areaR sample)
+testsRefinementRoundedLattice (name, sample) area =
+    mkTestGroupLattice name (testsRefinementRoundedLatticeL area sample)
 
 testsRefinementRoundedLatticeDistributive :: 
     (RefOrd.PartialComparison t,
@@ -251,10 +251,9 @@ testsRefinementRoundedLatticeDistributive ::
      ) => 
     (String, t) -> 
     Area t -> 
-    RefOrd.Area t -> 
     Test
-testsRefinementRoundedLatticeDistributive (name, sample) areaN areaR =
-    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveL areaN areaR sample)
+testsRefinementRoundedLatticeDistributive (name, sample) area =
+    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveL area sample)
 
 testsRefinementRoundedLatticeDistributiveMonotone :: 
     (RefOrd.PartialComparison t,
@@ -266,37 +265,36 @@ testsRefinementRoundedLatticeDistributiveMonotone ::
      ) => 
     (String, t) -> 
     Area t -> 
-    RefOrd.Area t -> 
     Test
-testsRefinementRoundedLatticeDistributiveMonotone (name, sample) areaN areaR =
-    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveMonotoneL areaN areaR sample)
+testsRefinementRoundedLatticeDistributiveMonotone (name, sample) area =
+    mkTestGroupLattice name (testsRefinementRoundedLatticeDistributiveMonotoneL area sample)
 
-testsRefinementRoundedLatticeL areaN areaR sample =    
+testsRefinementRoundedLatticeL area sample =    
         [
-         testProperty "join idempotent" (areaN, propRefinementRoundedLatticeJoinIdempotent sample)
+         testProperty "join idempotent" (area, propRefinementRoundedLatticeJoinIdempotent sample)
         ,
-         testProperty "join commutative" (areaN, propRefinementRoundedLatticeJoinCommutative sample)
+         testProperty "join commutative" (area, propRefinementRoundedLatticeJoinCommutative sample)
         ,
-         testProperty "join associative" (areaN, propRefinementRoundedLatticeJoinAssocative sample)
+         testProperty "join associative" (area, propRefinementRoundedLatticeJoinAssocative sample)
         ,
-         testProperty "meet idempotent" (areaN, propRefinementRoundedLatticeMeetIdempotent sample)
+         testProperty "meet idempotent" (area, propRefinementRoundedLatticeMeetIdempotent sample)
         ,
-         testProperty "meet commutative" (areaN, propRefinementRoundedLatticeMeetCommutative sample)
+         testProperty "meet commutative" (area, propRefinementRoundedLatticeMeetCommutative sample)
         ,
-         testProperty "meet associative" (areaN, propRefinementRoundedLatticeMeetAssocative sample)
+         testProperty "meet associative" (area, propRefinementRoundedLatticeMeetAssocative sample)
         ]
         
-testsRefinementRoundedLatticeDistributiveL areaN areaR sample =
-    testsRefinementRoundedLatticeL areaN areaR sample ++
+testsRefinementRoundedLatticeDistributiveL area sample =
+    testsRefinementRoundedLatticeL area sample ++
         [    
-         testProperty "distributive" (areaN, propRefinementRoundedLatticeDistributive sample)
+         testProperty "distributive" (area, propRefinementRoundedLatticeDistributive sample)
         ]
         
-testsRefinementRoundedLatticeDistributiveMonotoneL areaN areaR sample =
-    testsRefinementRoundedLatticeDistributiveL areaN areaR sample ++
+testsRefinementRoundedLatticeDistributiveMonotoneL area sample =
+    testsRefinementRoundedLatticeDistributiveL area sample ++
         [    
-         testProperty "join monotone" (areaR, propRefinementRoundedLatticeJoinMonotone sample)
+         testProperty "join monotone" (area, propRefinementRoundedLatticeJoinMonotone sample)
         ,
-         testProperty "meet monotone" (areaR, propRefinementRoundedLatticeMeetMonotone sample)
+         testProperty "meet monotone" (area, propRefinementRoundedLatticeMeetMonotone sample)
         ]
     
