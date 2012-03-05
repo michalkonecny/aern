@@ -52,6 +52,7 @@ Library
         aern-real == 0.5.*
   Exposed-modules:
     Numeric.AERN.Basics.Interval,
+    Numeric.AERN.Basics.Interval.Arbitrary,
     Numeric.AERN.Basics.Interval.Basics,
     Numeric.AERN.Basics.Interval.Consistency,
     Numeric.AERN.Basics.Interval.Mutable,
@@ -73,4 +74,5 @@ Library
     Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps,
     Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps,
     Numeric.AERN.RealArithmetic.Interval.SpecialConst
+  ghc-options:    -Wall
 

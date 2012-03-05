@@ -22,6 +22,7 @@ import Prelude hiding ((<=))
 
 import Numeric.AERN.Basics.Exception
 
+import Numeric.AERN.Basics.Arbitrary
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.NumericOrder.Arbitrary 

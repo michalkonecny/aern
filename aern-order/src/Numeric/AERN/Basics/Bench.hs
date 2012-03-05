@@ -14,6 +14,7 @@ module Numeric.AERN.Basics.Bench where
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
+import Numeric.AERN.Basics.Arbitrary
 import Numeric.AERN.Basics.Effort 
 
 import Control.DeepSeq
@@ -44,7 +45,7 @@ mkBenchAreasSequences1 ::
     (RefOrd.ArbitraryOrderedTuple t, EffortIndicator ei, NFData t) =>
     (ei -> t -> String) {-^ function constructing benchmark names -} ->
     (ei -> t -> t) {-^ function to benchmark -} ->
-    [(String, RefOrd.Area t)] {-^ areas in the input space and their descriptions; empty means whole space only -} ->
+    [(String, Area t)] {-^ areas in the input space and their descriptions; empty means whole space only -} ->
     Int {-^ how many benchmarks to generate -} ->
     ei -> t -> [Benchmark]
 mkBenchAreasSequences1 mkComment fnEff [] n initEffort sample =
@@ -59,7 +60,7 @@ mkBenchSequence1 ::
     (RefOrd.ArbitraryOrderedTuple t, EffortIndicator ei, NFData t) =>
     (ei -> t -> String) {-^ function constructing benchmark names -} ->
     (ei -> t -> t) {-^ function to benchmark -} ->
-    (Maybe (RefOrd.Area t))  {-^ area in the input space; Nothing means whole space only -} ->
+    (Maybe (Area t))  {-^ area in the input space; Nothing means whole space only -} ->
     Int {-^ how many benchmarks to generate -} ->
     ei -> t -> [Benchmark]
 mkBenchSequence1 mkComment fnEff maybeArea n initEffort sample =

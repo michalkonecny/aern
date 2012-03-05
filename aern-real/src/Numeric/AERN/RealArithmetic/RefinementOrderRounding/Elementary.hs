@@ -23,6 +23,8 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion as UpDnConversion
 
+import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.Arbitrary
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.ShowInternals
@@ -144,7 +146,8 @@ benchExpAreasReal =
     ]
     where
     areaWithBounds l r =
-         (NumOrd.AreaLinear (Just l) True (Just r) True [] (const False) [], RefOrd.AreaOnlyExact)
+         (NumOrd.AreaLinear (Just l) True (Just r) True $ areaWholeOnlyWhole [], 
+          AreaMaybeAllowOnlyWithConsistencyStatus $ Just Consistent)
 
 class
     (EffortIndicator (SqrtEffortIndicator t))

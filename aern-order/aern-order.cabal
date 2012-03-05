@@ -74,6 +74,7 @@ Library
                 Numeric.AERN.RefinementOrder.RoundedBasis,
                 Numeric.AERN.RefinementOrder.RoundedLattice
   exposed-modules:
+                  Numeric.AERN.Basics.Arbitrary,
                   Numeric.AERN.Basics.Bench,
                   Numeric.AERN.Basics.Consistency,
                   Numeric.AERN.Basics.Effort,

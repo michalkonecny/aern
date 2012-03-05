@@ -19,6 +19,9 @@ module Numeric.AERN.Basics.Interval.NumericOrder where
 
 import Prelude hiding (EQ, LT, GT)
 
+import Numeric.AERN.Basics.Interval.Arbitrary
+
+import Numeric.AERN.Basics.Arbitrary
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.PartialOrdering
 
@@ -31,8 +34,7 @@ import Numeric.AERN.Misc.List
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder 
         (PartialCompareEffortIndicator,
-         MinmaxInOutEffortIndicator,
-         Area)
+         MinmaxInOutEffortIndicator)
 import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import Test.QuickCheck
@@ -144,14 +146,15 @@ instance (NumOrd.HasGreatest e) => (NumOrd.HasGreatest (Interval e))
     
 instance (NumOrd.HasExtrema e) => (NumOrd.HasExtrema (Interval e))
 
+    
 instance 
     (NumOrd.ArbitraryOrderedTuple e,
-     NumOrd.AreaHasForbiddenValues e,
+     NumOrd.RoundedLattice e,
+     AreaHasForbiddenValues e,
      NumOrd.PartialComparison e) 
     => 
-    NumOrd.ArbitraryOrderedTuple (Interval e) where
-    type Area (Interval e) = Area e
-    areaWhole (Interval l r) = NumOrd.areaWhole l
+    NumOrd.ArbitraryOrderedTuple (Interval e) 
+    where
     arbitraryTupleInAreaRelatedBy area = 
         arbitraryIntervalTupleInAreaNumericallyRelatedBy (Just area)
     arbitraryTupleRelatedBy =
@@ -177,21 +180,13 @@ arbitraryIntervalTupleInAreaNumericallyRelatedBy maybeArea indices constraints =
     nothingForbiddenInsideIntervals intervals =
         case maybeArea of
             Nothing -> True
-            Just area ->
-                and $ map (nothingForbiddenInsideInterval area) intervals
-    nothingForbiddenInsideInterval area interval =
-        and $ map (notInside interval) $ NumOrd.areaGetForbiddenValues area
-        where
-        notInside (Interval l r) value = 
-            ((value <? l) == Just True)
-            ||
-            ((value >? r) == Just True)  
-
+            Just (areaEndpt, _) ->
+                and $ map (nothingForbiddenInsideInterval areaEndpt) intervals
     endpointGens =
         case maybeArea of
-            Just area ->
+            (Just (areaEndpt, _areaConsistency)) ->
                 catMaybes $
-                   map (NumOrd.arbitraryTupleInAreaRelatedBy area endpointIndices) 
+                   map (NumOrd.arbitraryTupleInAreaRelatedBy areaEndpt endpointIndices)
                        endpointConstraintsVersions
             Nothing -> 
                 catMaybes $
@@ -216,8 +211,14 @@ arbitraryIntervalTupleInAreaNumericallyRelatedBy maybeArea indices constraints =
     intervalConstraintsToEndpointConstraints ((ix1, ix2),rels) =
         concat $ map forEachRel rels
         where
-        endpoints1Comparable = [(((ix1,-1),(ix1, 1)), [EQ,LT,GT])]
-        endpoints2Comparable = [(((ix2,-1),(ix2, 1)), [EQ,LT,GT])]
+        endpoints1Comparable = [(((ix1,-1),(ix1, 1)), allowedEndpointRelations)]
+        endpoints2Comparable = [(((ix2,-1),(ix2, 1)), allowedEndpointRelations)]
+        allowedEndpointRelations =
+            case maybeArea of
+                Just (_, AreaMaybeAllowOnlyWithConsistencyStatus (Just Consistent)) -> [EQ,LT]
+                Just (_, AreaMaybeAllowOnlyWithConsistencyStatus (Just Anticonsistent)) -> [EQ,GT]
+                Just (_, AreaMaybeAllowOnlyWithConsistencyStatus (Just Exact)) -> [EQ]
+                _ -> [EQ,LT,GT]
         endpointsComparable = endpoints1Comparable ++ endpoints2Comparable
         forEachRel EQ = -- both must be thin and equal 
             [[(((ix1,-1),(ix1,1)), [EQ]), (((ix1,1),(ix2,1)), [EQ]), (((ix2,-1),(ix2,1)), [EQ])]]

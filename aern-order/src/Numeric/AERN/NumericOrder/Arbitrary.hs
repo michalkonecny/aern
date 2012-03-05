@@ -21,6 +21,7 @@ module Numeric.AERN.NumericOrder.Arbitrary where
 import Prelude hiding (EQ, LT, GT)
 
 import Numeric.AERN.Basics.PartialOrdering
+import Numeric.AERN.Basics.Arbitrary
 
 import Numeric.AERN.Misc.Debug
 
@@ -49,11 +50,7 @@ import System.IO.Unsafe
     make sense only for pairs in a certain relation
     where such pairs are rare.
 -}
-class ArbitraryOrderedTuple t where
-    {-| a type of meaningful constraints to place on generation of arbitrary values -}
-    type Area t
-    {-| a special area that puts no constaints on the values -}
-    areaWhole :: t -> Area t
+class (ArbitraryWithArea t) => ArbitraryOrderedTuple t where
     {-| generator of tuples that satisfy the given relation requirements
         and area restriction, 
         nothing if in this structure there are no tuples satisfying these requirements -}
@@ -77,33 +74,6 @@ class ArbitraryOrderedTuple t where
         Maybe (Gen [t]) {-^ generator for tuples if the requirements make sense -}
     arbitraryTuple n = arbitraryTupleRelatedBy [1..n] [] 
 
-
-{-| generic mechanism for adding common restriction on the area of random generation -}
-class AreaHasForbiddenValues t where
-    areaAddForbiddenValues :: [t] -> Area t -> Area t
-    areaGetForbiddenValues :: Area t -> [t]
-class AreaHasNonNegativeOption t where
-    areaRestrictToNonNeg :: t -> Area t -> Area t
-
-data AreaWholeOnly t =
-    AreaWholeOnly 
-    {
-        areaWholeSpecialValues :: [t]
-    }
-
-arbitraryWhole ::
-    (Arbitrary t) =>
-    AreaWholeOnly t ->
-    Gen t
-arbitraryWhole (AreaWholeOnly []) = incrSize arbitrary
-arbitraryWhole (AreaWholeOnly specialValues) =
-    incrSize $ -- at size 0 we get only 0s...
-    do
-    useSpecial <- elements [False, True, False, False] 
-                        -- 1 in 4 values should be special
-    case useSpecial of
-        True -> elements specialValues
-        False -> arbitrary
 
 arbitraryPairRelatedBy ::
     (ArbitraryOrderedTuple t) => 

@@ -18,6 +18,7 @@ where
 
 import Prelude hiding (EQ,LT,GT)
 
+import Numeric.AERN.Basics.Arbitrary
 import Numeric.AERN.Basics.Exception
 import Control.Exception
 
@@ -25,8 +26,7 @@ import Numeric.AERN.Basics.PartialOrdering
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder 
         (PartialCompareEffortIndicator,
-         MinmaxEffortIndicator,
-         Area)
+         MinmaxEffortIndicator)
 
 import qualified Data.Number.MPFR as M
 import Data.Number.MPFR (MPFR)
@@ -116,14 +116,30 @@ instance Arbitrary MPFR where
                 | otherwise = fromInteger significandI 
             exp = fromInteger expI 
 
-instance NumOrd.ArbitraryOrderedTuple MPFR where
+instance ArbitraryWithArea MPFR where
     type (Area MPFR) = NumOrd.AreaLinear MPFR
     areaWhole _ = NumOrd.areaLinearWhole [-1/0,-1,0,1,1/0]
-    arbitraryTupleInAreaRelatedBy area = 
-        NumOrd.linearArbitraryTupleRelatedBy 
-                (NumOrd.arbitraryLinear (-1/0, 1/0) id id chooseNearerZero area)
+    arbitraryInArea =
+        NumOrd.arbitraryLinear (-1/0, 1/0) id id chooseNearerZero
         where
-        chooseMPFR (lb, ub) 
+        chooseNearerZero (lo, hi) =
+--                unsafePrint ("chooseNearerZero: "
+--                    ++ "\n loT = " ++ show loT
+--                    ++ "\n hiT = " ++ show hiT
+--                ) $
+            do
+            eT <- chooseMPFR (loT, hiT)
+            return $ transform eT 
+            where
+            loT = transformInv lo
+            hiT = transformInv hi
+            transform :: MPFR -> MPFR
+            transform x = x*x*x/1000000 -- 100^3 = 1000000
+            transformInv x 
+                | x > 0 = 100 * exp ((log x)/3)
+                | x < 0 = - (transformInv (-x))
+                | otherwise = 0
+        chooseMPFR (lb, ub)
             | lbBounded && ubBounded =
                 do
                 precI <- choose (100,10000)
@@ -142,34 +158,22 @@ instance NumOrd.ArbitraryOrderedTuple MPFR where
             lbBounded = -1/0 < lb
             ubBounded = ub < 1/0 
             xUniform = M.urandomb M.newRandomStatePointer  
-        chooseNearerZero (lo, hi) =
---                unsafePrint ("chooseNearerZero: "
---                    ++ "\n loT = " ++ show loT
---                    ++ "\n hiT = " ++ show hiT
---                ) $
-            do
-            eT <- chooseMPFR (loT, hiT)
-            return $ transform eT 
-            where
-            loT = transformInv lo
-            hiT = transformInv hi
-            transform :: MPFR -> MPFR
-            transform x = x*x*x/1000000 -- 100^3 = 1000000
-            transformInv x 
-                | x > 0 = 100 * exp ((log x)/3)
-                | x < 0 = - (transformInv (-x))
-                | otherwise = 0
+
+instance NumOrd.ArbitraryOrderedTuple MPFR where
+    arbitraryTupleInAreaRelatedBy area = 
+        NumOrd.linearArbitraryTupleRelatedBy 
+                (arbitraryInArea area)
     arbitraryTupleRelatedBy =
-        NumOrd.arbitraryTupleInAreaRelatedBy (NumOrd.areaWhole (0::MPFR))
+        NumOrd.arbitraryTupleInAreaRelatedBy (areaWhole (0::MPFR))
     
-instance (NumOrd.AreaHasNonNegativeOption MPFR)
+instance (AreaHasNonNegativeOption MPFR)
     where
     areaRestrictToNonNeg _ =
         NumOrd.linearAreaRestrictToNonNeg 0
 
-instance (NumOrd.AreaHasForbiddenValues MPFR)
+instance (AreaHasForbiddenValues MPFR)
     where
-    areaGetForbiddenValues = NumOrd.areaLinForbiddenValues
-    areaAddForbiddenValues = NumOrd.linearAreaAddForbiddenValues
+    areaGetForbiddenValues = areaWholeForbiddenValues . NumOrd.areaLinWhole
+    areaAddForbiddenValues = NumOrd.areaLinearAddForbiddenValues
 
     
