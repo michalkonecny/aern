@@ -32,7 +32,7 @@ instance
      NumOrd.RoundedLattice e,
      AreaHasForbiddenValues e,
      NumOrd.PartialComparison e) 
-    => 
+    =>
     ArbitraryWithArea (Interval e)
     where
     type Area (Interval e) = (Area e, AreaConsistencyConstraint)
@@ -69,3 +69,4 @@ nothingForbiddenInsideInterval area interval =
         ||
         ((value >? r) == Just True)  
         
+

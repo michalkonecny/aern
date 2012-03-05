@@ -44,8 +44,6 @@ class AreaHasConsistencyConstraint t where
 data AreaConsistencyConstraint =
     AreaMaybeAllowOnlyWithConsistencyStatus (Maybe ConsistencyStatus) 
 
-
-
 {-| an almost void, simple concrete area specification -}
 data AreaWholeOnly t =
     AreaWholeOnly 

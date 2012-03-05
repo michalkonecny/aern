@@ -34,6 +34,11 @@ import Numeric.AERN.Misc.QuickCheck
 
 import System.IO.Unsafe
 
+class AreaHasBoundsConstraints t where
+    areaSetOuterBound :: t -> (Area t) -> (Area t)  
+    areaSetInnerBound :: t -> (Area t) -> (Area t)  
+
+
 {-|
     Comparison with the ability to randomly generate
     pairs and triples of its own elements that are in 

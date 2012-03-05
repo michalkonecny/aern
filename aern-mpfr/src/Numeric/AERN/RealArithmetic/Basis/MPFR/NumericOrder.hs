@@ -159,6 +159,12 @@ instance ArbitraryWithArea MPFR where
             ubBounded = ub < 1/0 
             xUniform = M.urandomb M.newRandomStatePointer  
 
+instance (NumOrd.AreaHasBoundsConstraints MPFR)
+    where
+    areaSetLowerBound = NumOrd.areaLinearAddLowerBound
+    areaSetUpperBound = NumOrd.areaLinearAddUpperBound
+
+
 instance NumOrd.ArbitraryOrderedTuple MPFR where
     arbitraryTupleInAreaRelatedBy area = 
         NumOrd.linearArbitraryTupleRelatedBy 
@@ -169,7 +175,7 @@ instance NumOrd.ArbitraryOrderedTuple MPFR where
 instance (AreaHasNonNegativeOption MPFR)
     where
     areaRestrictToNonNeg _ =
-        NumOrd.linearAreaRestrictToNonNeg 0
+        NumOrd.areaLinearRestrictToNonNeg 0
 
 instance (AreaHasForbiddenValues MPFR)
     where

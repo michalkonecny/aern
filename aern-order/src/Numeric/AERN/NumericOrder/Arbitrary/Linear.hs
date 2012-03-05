@@ -57,24 +57,78 @@ areaLinearWhole :: [t] -> AreaLinear t
 areaLinearWhole specialValues = 
     AreaLinear Nothing True Nothing True $ areaWholeOnlyWhole specialValues
 
-linearAreaRestrictToNonNeg ::
+areaLinearRestrictToNonNeg ::
     (Ord t) =>
     t {-^ the zero -} ->
     (AreaLinear t) ->
     (AreaLinear t)
-linearAreaRestrictToNonNeg z area = 
+areaLinearRestrictToNonNeg z =
+    areaLinearAddLowerBound (z, False)
+
+areaLinearAddLowerBound ::
+    (Ord t) =>
+    (t, Bool) {-^ the lower bound, whether strict -} ->
+    (AreaLinear t) ->
+    (AreaLinear t)
+areaLinearAddLowerBound (lowerBound, isStrict) area = 
     area
         {
-            areaLinLowerBound = 
-                fmap (max z) $ areaLinLowerBound area
+            areaLinLowerBound = Just newLowerBound
+            ,
+            areaLinLowerBoundStrict = newLowerBoundStrict
             ,
             areaLinWhole =
                 (areaLinWhole area)
                     {
                         areaWholeSpecialValues =
-                            filter (>= z) $ areaWholeSpecialValues $ areaLinWhole area
+                            filter valueOK $ areaWholeSpecialValues $ areaLinWhole area
                     }
         }
+    where
+    (newLowerBound, newLowerBoundStrict) =
+        case maybeOldLowerBound of
+            Just oldLowerBound  
+                | lowerBound < oldLowerBound -> (lowerBound, isStrict)
+                | oldLowerBound < lowerBound -> (oldLowerBound, oldLowerBoundStrict)
+                | otherwise -> (oldLowerBound, isStrict || oldLowerBoundStrict)
+    maybeOldLowerBound = areaLinLowerBound area
+    oldLowerBoundStrict = areaLinLowerBoundStrict area
+    valueOK value 
+        | isStrict = lowerBound < value
+        | otherwise = lowerBound <= value
+        
+areaLinearAddUpperBound ::
+    (Ord t) =>
+    (t, Bool) {-^ the upper bound, whether strict -} ->
+    (AreaLinear t) ->
+    (AreaLinear t)
+areaLinearAddUpperBound (upperBound, isStrict) area = 
+    area
+        {
+            areaLinLowerBound = Just newUpperBound
+            ,
+            areaLinLowerBoundStrict = newUpperBoundStrict
+            ,
+            areaLinWhole =
+                (areaLinWhole area)
+                    {
+                        areaWholeSpecialValues =
+                            filter valueOK $ areaWholeSpecialValues $ areaLinWhole area
+                    }
+        }
+    where
+    (newUpperBound, newUpperBoundStrict) =
+        case maybeOldUpperBound of
+            Just oldUpperBound  
+                | upperBound > oldUpperBound -> (upperBound, isStrict)
+                | oldUpperBound > upperBound -> (oldUpperBound, oldUpperBoundStrict)
+                | otherwise -> (oldUpperBound, isStrict || oldUpperBoundStrict)
+    maybeOldUpperBound = areaLinUpperBound area
+    oldUpperBoundStrict = areaLinUpperBoundStrict area
+    valueOK value 
+        | isStrict = value < upperBound
+        | otherwise = value <= upperBound
+        
 
 areaLinearAddForbiddenValues ::
     (Ord t) =>
@@ -130,10 +184,16 @@ arbitraryLinear (least, greatest) succ pred choose
             (Just ub, False) -> pred ub
 
 
-instance ArbitraryWithArea Int where
+instance ArbitraryWithArea Int 
+    where
     type (Area Int) = AreaWholeOnly Int
     areaWhole _ = areaWholeOnlyWhole [-1,0,1]
     arbitraryInArea = arbitraryWhole
+
+instance AreaHasForbiddenValues Int 
+    where
+    areaGetForbiddenValues = areaWholeForbiddenValues
+    areaAddForbiddenValues = areaWholeOnlyAddForbiddenValues
 
 instance ArbitraryOrderedTuple Int where
     arbitraryTupleInAreaRelatedBy area = 
@@ -145,6 +205,11 @@ instance ArbitraryWithArea Integer where
     type (Area Integer) = AreaWholeOnly Integer
     areaWhole _ = areaWholeOnlyWhole [-1,0,1]
     arbitraryInArea = arbitraryWhole
+
+instance AreaHasForbiddenValues Integer 
+    where
+    areaGetForbiddenValues = areaWholeForbiddenValues
+    areaAddForbiddenValues = areaWholeOnlyAddForbiddenValues
 
 instance ArbitraryOrderedTuple Integer where
     arbitraryTupleInAreaRelatedBy area = 
@@ -244,12 +309,17 @@ instance ArbitraryOrderedTuple Double where
 instance (AreaHasNonNegativeOption Double)
     where
     areaRestrictToNonNeg _ =
-        linearAreaRestrictToNonNeg 0
+        areaLinearRestrictToNonNeg 0
 
 instance (AreaHasForbiddenValues Double)
     where
     areaGetForbiddenValues = areaWholeForbiddenValues . areaLinWhole
     areaAddForbiddenValues = areaLinearAddForbiddenValues
+
+instance (AreaHasBoundsConstraints Double)
+    where
+    areaSetLowerBound = areaLinearAddLowerBound
+    areaSetUpperBound = areaLinearAddUpperBound
 
 {-| Default implementation of linearArbitraryTupleRelatedBy for Ord instances -}   
 linearArbitraryTupleRelatedBy ::

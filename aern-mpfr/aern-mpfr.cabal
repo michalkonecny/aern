@@ -30,7 +30,7 @@ Description:
     .
     In future we may add further API modules analogous to those available in aern-double.  
     .
-    /Since MPFR uses GMP, this library features infrequent but serious errors/
+    /Since MPFR uses GMP, this library s infrequent but serious errors/
     /with a ghc that has been compiled with the default integer-gmp./  
     /When using ghc, it is recommended to use one compiled with a modified integer-gmp,/
     /as described at/ 

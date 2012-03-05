@@ -262,6 +262,16 @@ instance
         NumOrd.minUpInPlaceEff effort resLM l1M l2M
         NumOrd.maxDnInPlaceEff effort resRM r1M r2M
 
+instance
+    (NumOrd.AreaHasBoundsConstraints e)
+    =>
+    (RefOrd.AreaHasBoundsConstraints (Interval e))
+    where
+    areaSetOuterBound (Interval l r) (areaEndpt, consistency) =
+        (NumOrd.areaSetUpperBound (r, False) $ NumOrd.areaSetLowerBound (l, False) areaEndpt, 
+         consistency)
+      
+
 instance 
     (NumOrd.ArbitraryOrderedTuple e,
      NumOrd.RoundedLattice e,
