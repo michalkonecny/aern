@@ -71,7 +71,7 @@ class (RoundedAddEffort t) => RoundedAdd t where
     addInEff :: AddEffortIndicator t -> t -> t -> t
     addOutEff :: AddEffortIndicator t -> t -> t -> t
 
---propAddMonotone _ effortDist
+--propAddRefIsotone _ effortDist
 
 propInOutAddZero ::
     (RefOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -109,7 +109,7 @@ propInOutAddAssociative ::
 propInOutAddAssociative _ (RefOrd.UniformlyOrderedTriple (e1,e2,e3)) effort =
     roundedAssociative RefOrd.pLeqEff addInEff addOutEff effort e1 e2 e3
 
-propInOutAddMonotone ::
+propInOutAddRefIsotone ::
     (RefOrd.PartialComparison t, RoundedAdd t, 
      Show t, HasLegalValues t,
      RefOrd.ArbitraryOrderedTuple t)
@@ -119,8 +119,8 @@ propInOutAddMonotone ::
     (AddEffortIndicator t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
-propInOutAddMonotone _ =
-    roundedRefinementMonotone2 "addition" addInEff addOutEff
+propInOutAddRefIsotone _ =
+    roundedRefinementIsotone2 "addition" addInEff addOutEff
 
 testsInOutAdd (name, sample) area =
     testGroup (name ++ " >+< <+>") $
@@ -131,7 +131,7 @@ testsInOutAdd (name, sample) area =
         ,
             testProperty "associative" (area, propInOutAddAssociative sample)
         ,
-            testProperty "refinement monotone" (area, propInOutAddMonotone sample)
+            testProperty "refinement isotone" (area, propInOutAddRefIsotone sample)
         ]
 
 
@@ -176,7 +176,7 @@ propInOutSubtrNegAdd _ (RefOrd.UniformlyOrderedPair (e1, e2)) initEffort =
     expr2Dn eff =
         let (<+>) = addOutEff eff in e1 <+> e2
 
-propInOutSubtrMonotone ::
+propInOutSubtrRefIsotone ::
     (RefOrd.PartialComparison t, RoundedSubtr t, 
      Show t, HasLegalValues t,
      RefOrd.ArbitraryOrderedTuple t) 
@@ -186,8 +186,8 @@ propInOutSubtrMonotone ::
     (AddEffortIndicator t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
-propInOutSubtrMonotone _ =
-    roundedRefinementMonotone2 "subtraction" subtrInEff subtrOutEff
+propInOutSubtrRefIsotone _ =
+    roundedRefinementIsotone2 "subtraction" subtrInEff subtrOutEff
 
 testsInOutSubtr (name, sample) area =
     testGroup (name ++ " >-< <->") $
@@ -196,7 +196,7 @@ testsInOutSubtr (name, sample) area =
 --            ,
             testProperty "a+b=a-(-b)" (area, propInOutSubtrNegAdd sample)
             ,
-            testProperty "refinement monotone" (area, propInOutSubtrMonotone sample)
+            testProperty "refinement isotone" (area, propInOutSubtrRefIsotone sample)
         ]
 
 
@@ -271,7 +271,7 @@ propInOutAbsIdempotent ::
 propInOutAbsIdempotent _ (RefOrd.UniformlyOrderedSingleton e) effort =
     roundedIdempotent RefOrd.pLeqEff absInEff absOutEff effort e
 
-propInOutAbsMonotone ::
+propInOutAbsRefIsotone ::
     (RefOrd.PartialComparison t, RoundedAbs t,
      RefOrd.ArbitraryOrderedTuple t,  
      Show t, HasLegalValues t) 
@@ -281,8 +281,8 @@ propInOutAbsMonotone ::
     (AbsEffortIndicator t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
-propInOutAbsMonotone _ =
-    roundedRefinementMonotone1 "abs" absInEff absOutEff
+propInOutAbsRefIsotone _ =
+    roundedRefinementIsotone1 "abs" absInEff absOutEff
 
 testsInOutAbs (name, sample) area =
     testGroup (name ++ " in/out rounded abs") $
@@ -291,7 +291,7 @@ testsInOutAbs (name, sample) area =
         ,
             testProperty "idempotent" (area, propInOutAbsIdempotent sample)
         ,
-            testProperty "refinement monotone" (area, propInOutAbsMonotone sample)
+            testProperty "refinement monotone" (area, propInOutAbsRefIsotone sample)
         ]
 
 
@@ -307,7 +307,7 @@ class (RoundedMultiplyEffort t) => RoundedMultiply t where
     multInEff :: MultEffortIndicator t -> t -> t -> t
     multOutEff :: MultEffortIndicator t -> t -> t -> t
 
-propInOutMultMonotone ::
+propInOutMultRefIsotone ::
     (RefOrd.PartialComparison t, RoundedMultiply t, 
      Show t, HasLegalValues t,
      RefOrd.ArbitraryOrderedTuple t) 
@@ -317,8 +317,8 @@ propInOutMultMonotone ::
     (MultEffortIndicator t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
-propInOutMultMonotone _ =
-    roundedRefinementMonotone2 "multiplication" multInEff multOutEff
+propInOutMultRefIsotone _ =
+    roundedRefinementIsotone2 "multiplication" multInEff multOutEff
 
 propInOutMultOne ::
     (RefOrd.PartialComparison t, RoundedMultiply t, HasOne t,
@@ -386,7 +386,7 @@ testsInOutMult (name, sample) area =
         ,
             testProperty "weakly distributes over +" (area, propInOutMultDistributesOverAdd sample)
         ,
-            testProperty "refinement monotone" (area, propInOutMultMonotone sample)
+            testProperty "refinement monotone" (area, propInOutMultRefIsotone sample)
         ]
 
 class
@@ -432,7 +432,7 @@ powerToNonnegIntOutEffFromMult ::
 powerToNonnegIntOutEffFromMult effMult e n =
     powerFromMult (one e) (multOutEff effMult) e n
 
-propInOutPowerMonotone ::
+propInOutPowerRefIsotone ::
     (RefOrd.PartialComparison t, RoundedPowerToNonnegInt t,
      RefOrd.ArbitraryOrderedTuple t,  
      Show t, HasLegalValues t) 
@@ -443,8 +443,8 @@ propInOutPowerMonotone ::
     (PowerToNonnegIntEffortIndicator t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
-propInOutPowerMonotone _ pair nR =
-    roundedRefinementMonotone1 "non-neg integer power" powerNInEff powerNOutEff pair
+propInOutPowerRefIsotone _ pair nR =
+    roundedRefinementIsotone1 "non-neg integer power" powerNInEff powerNOutEff pair
     where
     n = nR `mod` 10
     powerNInEff eff x = powerToNonnegIntInEff eff x n
@@ -494,7 +494,7 @@ testsInOutIntPower (name, sample) area =
         [
             testProperty "a^n * a^m ⊑/⊒ a^(n+m)" (area, propInOutPowerSumExponents sample)
             ,
-            testProperty "refinement monotone" (area, propInOutPowerMonotone sample)
+            testProperty "refinement monotone" (area, propInOutPowerRefIsotone sample)
 --            ,
 --            testProperty "a/b=a*(1/b)" (propUpDnDivRecipMult sample)
         ]
@@ -516,7 +516,7 @@ class (HasOne t, RoundedDivideEffort t) => RoundedDivide t where
     recipOutEff eff a = divOutEff eff (one a) a
 
 
-propInOutDivMonotone ::
+propInOutDivRefIsotone ::
     (RefOrd.PartialComparison t, RoundedDivide t, 
      Show t, HasLegalValues t,
      RefOrd.ArbitraryOrderedTuple t) 
@@ -526,8 +526,8 @@ propInOutDivMonotone ::
     (DivEffortIndicator t) -> 
     (RefOrd.PartialCompareEffortIndicator t) ->
     Bool
-propInOutDivMonotone _ =
-    roundedRefinementMonotone2 "division" divInEff divOutEff
+propInOutDivRefIsotone _ =
+    roundedRefinementIsotone2 "division" divInEff divOutEff
 
 propInOutDivElim ::
     (RefOrd.PartialComparison t, RoundedDivide t, HasOne t, HasZero t,
@@ -580,7 +580,7 @@ testsInOutDiv (name, sample) area =
 --            ,
             testProperty "a/b=a*(1/b)" (area, propInOutDivRecipMult sample)
         ,
-            testProperty "refinement monotone" (area, propInOutDivMonotone sample)
+            testProperty "refinement monotone" (area, propInOutDivRefIsotone sample)
         ]
 
 class 
