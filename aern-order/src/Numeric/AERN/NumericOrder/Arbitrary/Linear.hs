@@ -51,7 +51,8 @@ data AreaLinear t =
         areaLinUpperBound :: Maybe t,
         areaLinUpperBoundStrict :: Bool,
         areaLinWhole :: AreaWholeOnly t
-    } 
+    }
+    deriving Show 
 
 areaLinearWhole :: [t] -> AreaLinear t
 areaLinearWhole specialValues = 
@@ -87,6 +88,7 @@ areaLinearAddLowerBound (lowerBound, isStrict) area =
     where
     (newLowerBound, newLowerBoundStrict) =
         case maybeOldLowerBound of
+            Nothing -> (lowerBound, isStrict)
             Just oldLowerBound  
                 | lowerBound < oldLowerBound -> (lowerBound, isStrict)
                 | oldLowerBound < lowerBound -> (oldLowerBound, oldLowerBoundStrict)
@@ -105,9 +107,9 @@ areaLinearAddUpperBound ::
 areaLinearAddUpperBound (upperBound, isStrict) area = 
     area
         {
-            areaLinLowerBound = Just newUpperBound
+            areaLinUpperBound = Just newUpperBound
             ,
-            areaLinLowerBoundStrict = newUpperBoundStrict
+            areaLinUpperBoundStrict = newUpperBoundStrict
             ,
             areaLinWhole =
                 (areaLinWhole area)
@@ -119,6 +121,7 @@ areaLinearAddUpperBound (upperBound, isStrict) area =
     where
     (newUpperBound, newUpperBoundStrict) =
         case maybeOldUpperBound of
+            Nothing -> (upperBound, isStrict)
             Just oldUpperBound  
                 | upperBound > oldUpperBound -> (upperBound, isStrict)
                 | oldUpperBound > upperBound -> (oldUpperBound, oldUpperBoundStrict)
