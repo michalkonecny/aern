@@ -287,7 +287,7 @@ instance
 
 instance AreaHasConsistencyConstraint (Interval e)
     where
-    areaSetConsistencyConstraint constraint (areaEndpt, _) = (areaEndpt, constraint)
+    areaSetConsistencyConstraint _ constraint (areaEndpt, _) = (areaEndpt, constraint)
 
 arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices constraints =
     case endpointGens of
