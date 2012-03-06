@@ -2,7 +2,7 @@
 {-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison
-    Description :  approximation of min and max using ring operations
+    Description :  partial comparison of functions
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -10,13 +10,14 @@
     Stability   :  experimental
     Portability :  portable
 
-    Approximation of min and max using ring operations.
-    .
-    The motivating use case for this module is where we compute min or max for a 
-    /function/ pointwise over its domain.
+    Partial comparison of functions.
 -}
 
-module Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison where
+module Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison 
+(
+    pCompareFunFromRingOps
+)
+where
 
 import Numeric.AERN.RmToRn.Domain
 --import Numeric.AERN.RmToRn.New
@@ -106,4 +107,3 @@ hasFalse :: [(Maybe Bool)] -> Bool
 hasFalse (Just False : _) = True
 hasFalse (_ : rest) = hasFalse rest
 hasFalse [] = False
-    
