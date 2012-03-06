@@ -346,6 +346,12 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices constraints =
 --        map ((++ thinnessConstraints) . concat) $ 
             combinations $ map intervalConstraintsToEndpointConstraints constraints
 --    thinnessConstraints = map (\ix -> (((ix,-1),(ix,1)),[EQ])) thinIndices
+    allowedEndpointRelations =
+        case maybeArea of
+            Just (_, AreaMaybeAllowOnlyWithConsistencyStatus (Just Consistent)) -> [EQ,LT]
+            Just (_, AreaMaybeAllowOnlyWithConsistencyStatus (Just Anticonsistent)) -> [EQ,GT]
+            Just (_, AreaMaybeAllowOnlyWithConsistencyStatus (Just Exact)) -> [EQ]
+            _ -> [EQ,LT,GT]
     intervalConstraintsToEndpointConstraints :: 
         ((ix, ix), [PartialOrdering]) -> [[(((ix,Int), (ix,Int)), [PartialOrdering])]]
     intervalConstraintsToEndpointConstraints ((ix1, ix2),rels) =
@@ -353,15 +359,12 @@ arbitraryIntervalTupleInAreaRefinementRelatedBy maybeArea indices constraints =
         where
         endpoints1Comparable = [(((ix1,-1),(ix1, 1)), allowedEndpointRelations)]
         endpoints2Comparable = [(((ix2,-1),(ix2, 1)), allowedEndpointRelations)]
-        allowedEndpointRelations =
-            case maybeArea of
-                Just (_, AreaMaybeAllowOnlyWithConsistencyStatus (Just Consistent)) -> [EQ,LT]
-                Just (_, AreaMaybeAllowOnlyWithConsistencyStatus (Just Anticonsistent)) -> [EQ,GT]
-                Just (_, AreaMaybeAllowOnlyWithConsistencyStatus (Just Exact)) -> [EQ]
-                _ -> [EQ,LT,GT]
         endpointsComparable = endpoints1Comparable ++ endpoints2Comparable
         forEachRel EQ = -- both endpoints agree 
-            [[(((ix1,-1),(ix2,-1)), [EQ]), (((ix1,1),(ix2,1)), [EQ])]]
+            [
+                endpointsComparable ++
+                [(((ix1,-1),(ix2,-1)), [EQ]), (((ix1,1),(ix2,1)), [EQ])]
+            ]
         forEachRel GT =
             -- the interval ix1 is indide ix2, but not equal
             [
