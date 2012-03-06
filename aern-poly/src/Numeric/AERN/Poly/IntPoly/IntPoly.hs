@@ -326,12 +326,19 @@ maybeGetProblemForTerms cfg terms
 
 {-- Order-related ops --}
 
---flipConsistencyPoly :: 
---    HasAntiConsistency cf 
---    =>
---    IntPoly var cf -> IntPoly var cf
---flipConsistencyPoly (IntPoly cfg terms) =
---    IntPoly cfg $ termsMapCoeffs flipConsistency terms 
+{-| 
+    Swaps the consistency of all coefficients.
+    BEWARE: This function typically invalidates the assumption that all coefficients are consistent.
+    
+    This operations is currently used only to define inner-rounded evaluation
+    of an IntPoly over a point or interval. 
+-}
+flipConsistencyPoly :: 
+    HasAntiConsistency cf 
+    =>
+    IntPoly var cf -> IntPoly var cf
+flipConsistencyPoly (IntPoly cfg terms) =
+    IntPoly cfg $ termsMapCoeffs flipConsistency terms 
     
 polyIsExactEff ::
     (HasImprecision cf)
