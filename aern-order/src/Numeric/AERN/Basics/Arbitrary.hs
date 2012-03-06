@@ -39,7 +39,7 @@ class AreaHasNonNegativeOption t where
     areaRestrictToNonNeg :: t -> Area t -> Area t
 
 class AreaHasConsistencyConstraint t where
-    areaSetConsistencyConstraint :: AreaConsistencyConstraint -> (Area t) -> (Area t)
+    areaSetConsistencyConstraint :: t -> AreaConsistencyConstraint -> (Area t) -> (Area t)
 
 data AreaConsistencyConstraint =
     AreaMaybeAllowOnlyWithConsistencyStatus (Maybe ConsistencyStatus) 
