@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Domain
     Description :  operations focusing on function domains  
@@ -19,7 +20,9 @@
 
 module Numeric.AERN.RmToRn.Domain where
 
---import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.Arbitrary
+
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
@@ -28,6 +31,7 @@ import Numeric.AERN.Misc.Debug
 --import qualified Data.Set as Set
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
+import Data.List (transpose)
 
 type DomainBox f = VarBox f (Domain f)
 
@@ -224,6 +228,148 @@ instance (Ord var) => HasVarValue (Map.Map var val) var val
     splitOffVar = Map.minViewWithKey
     insertVar = Map.insert
      
+instance
+    (ArbitraryWithArea val,
+     Show val,
+     AreaHasConsistencyConstraint val,
+     Show (Area val),
+     RefOrd.AreaHasBoundsConstraints val)
+    => 
+    ArbitraryWithArea (IntMap.IntMap val)
+    where
+    type Area (IntMap.IntMap val) = IntMap.IntMap val
+    areaWhole box = box
+    arbitraryInArea box =
+        do
+        newKeyValuePairs <- mapM generateNewValue keyValuePairs  
+        return $ IntMap.fromAscList newKeyValuePairs
+        where
+        keyValuePairs = IntMap.toAscList box
+        generateNewValue (key, value) =
+            do
+            newValue <- arbitraryInArea areaRefineValue
+            return (key, newValue)
+            where
+            areaRefineValue =
+--                unsafePrint
+--                (
+--                    "Map's arbitraryInArea.generateNewValue:"
+--                    ++ "\n key = " ++ show key
+--                    ++ "\n value = " ++ show value
+--                    ++ "\n areaRefineValue = " ++ show areaRefineValue
+--                ) $
+                areaSetConsistencyConstraint value (AreaMaybeAllowOnlyWithConsistencyStatus $ Just Consistent) $
+                    RefOrd.areaSetOuterBound value $
+                        areaWhole value
+
+instance
+    (Ord var, Show var,
+     Show val,
+     ArbitraryWithArea val,
+     Show (Area val),
+     AreaHasConsistencyConstraint val,
+     RefOrd.AreaHasBoundsConstraints val)
+    => 
+    ArbitraryWithArea (Map.Map var val)
+    where
+    type Area (Map.Map var val) = Map.Map var val
+    areaWhole box = box
+    arbitraryInArea box =
+        do
+        newKeyValuePairs <- mapM generateNewValue keyValuePairs
+        return $ Map.fromAscList newKeyValuePairs
+        where
+        keyValuePairs = Map.toAscList box
+        generateNewValue (key, value) =
+            do
+            newValue <- arbitraryInArea areaRefineValue
+            return (key, newValue)
+            where
+            areaRefineValue =
+--                unsafePrint
+--                (
+--                    "Map's arbitraryInArea.generateNewValue:"
+--                    ++ "\n key = " ++ show key
+--                    ++ "\n value = " ++ show value
+--                    ++ "\n areaRefineValue = " ++ show areaRefineValue
+--                ) $
+                areaSetConsistencyConstraint value (AreaMaybeAllowOnlyWithConsistencyStatus $ Just Consistent) $
+                    RefOrd.areaSetOuterBound value $
+                        areaWhole value
+
+instance
+    (RefOrd.ArbitraryOrderedTuple val,
+     Show val, Show (Area val),
+     AreaHasConsistencyConstraint val,
+     RefOrd.AreaHasBoundsConstraints val)
+    => 
+    RefOrd.ArbitraryOrderedTuple (IntMap.IntMap val)
+    where
+    arbitraryTupleInAreaRelatedBy box indices rels =
+        case maybeGenerators of
+            Nothing -> Nothing
+            Just generators ->
+                Just $
+                    do
+                    valueTuples <- sequence generators
+                    return $ map IntMap.fromAscList $ map (zip keys) $ transpose $ valueTuples
+        where
+        (keys, values) = unzip $ IntMap.toAscList box
+        maybeGenerators =
+            sequence $ map maybeGen values
+        maybeGen value =
+            unsafePrint
+            (
+                "IntMap's arbitraryTupleInAreaRelatedBy.maybeGen:"
+                ++ "\n value = " ++ show value
+                ++ "\n areaRefineValue = " ++ show areaRefineValue
+            ) $
+            RefOrd.arbitraryTupleInAreaRelatedBy areaRefineValue indices rels
+            where
+            areaRefineValue =
+                areaSetConsistencyConstraint value (AreaMaybeAllowOnlyWithConsistencyStatus $ Just Consistent) $
+                    RefOrd.areaSetOuterBound value $
+                        areaWhole value
+    arbitraryTupleRelatedBy =
+        error "arbitraryTupleRelatedBy not defined for IntMap"
+           
+instance
+    (Ord var, Show var,
+     Show val,
+     RefOrd.ArbitraryOrderedTuple val,
+     Show (Area val),
+     AreaHasConsistencyConstraint val,
+     RefOrd.AreaHasBoundsConstraints val)
+    => 
+    RefOrd.ArbitraryOrderedTuple (Map.Map var val)
+    where
+    arbitraryTupleInAreaRelatedBy box indices rels =
+        case maybeGenerators of
+            Nothing -> Nothing
+            Just generators ->
+                Just $
+                    do
+                    valueTuples <- sequence generators
+                    return $ map Map.fromAscList $ map (zip keys) $ transpose $ valueTuples
+        where
+        (keys, values) = unzip $ Map.toAscList box
+        maybeGenerators =
+            sequence $ map maybeGen values
+        maybeGen value =
+--            unsafePrint
+--            (
+--                "Map's arbitraryTupleInAreaRelatedBy.maybeGen:"
+--                ++ "\n value = " ++ show value
+--                ++ "\n areaRefineValue = " ++ show areaRefineValue
+--            ) $
+            RefOrd.arbitraryTupleInAreaRelatedBy areaRefineValue indices rels
+            where
+            areaRefineValue =
+                areaSetConsistencyConstraint value (AreaMaybeAllowOnlyWithConsistencyStatus $ Just Consistent) $
+                    RefOrd.areaSetOuterBound value $
+                        areaWhole value
+    arbitraryTupleRelatedBy =
+        error "arbitraryTupleRelatedBy not defined for Map"
            
 class GeneratableVariables var 
     where

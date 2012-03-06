@@ -62,6 +62,70 @@ areaWhole4FunFromRingOps sampleFn =
     (sampleFn, Nothing)
 
 {-|
+   An arbitraryInArea implementation for almost any function type.  
+   
+   LIMITATION 1:
+   Currently this function produces only elements
+   that are consistent and close to thin.  The generated
+   elements need to be further processed to get examples
+   of thick, anticonsistent or inconsistent elements.
+   
+   LIMITATION 2:
+   With requests for more than 2 elements, 
+   this function currently always
+   produces lists of elements that are linearly orderable
+   and refuses requests to generate incomparable elements.
+-}    
+arbitraryInArea4FunFromRingOps ::
+    (HasDomainBox fn,  HasConstFns fn, HasProjections fn, 
+     ArithInOut.RoundedAdd fn,
+     ArithInOut.RoundedMultiply fn,
+     HasEvalOps fn (Domain fn),
+     Show (Domain fn), IntervalLike (Domain fn),
+     ArithInOut.RoundedReal (Domain fn),
+     RefOrd.ArbitraryOrderedTuple (Domain fn),
+     ArithInOut.RoundedMixedAdd fn (Domain fn),
+     ArithInOut.RoundedMixedMultiply fn (Domain fn)
+    )
+    =>
+    ((ArithInOut.RoundedRealEffortIndicator (Domain fn),
+      GetEndpointsEffortIndicator (Domain fn),
+      EvalOpsEffortIndicator fn (Domain fn)
+     ),
+     (ArithInOut.AddEffortIndicator fn,
+      ArithInOut.MultEffortIndicator fn
+     ),
+     (ArithInOut.MixedAddEffortIndicator fn (Domain fn),
+      ArithInOut.MixedMultEffortIndicator fn (Domain fn)
+     )
+    ) ->
+    [fn] ->
+    (Int -> Int) ->
+    (Area4FunFromRingOps fn) ->
+    (Gen fn)
+arbitraryInArea4FunFromRingOps 
+        ((effDom, effGetEndptsDom, effEval), 
+         (effAddFn, effMultFn), 
+         (effAddFnDFn, effMultFnDFn))
+        fnSequence
+        fixedRandSeqQuantityOfSize
+        area@(sampleFn, maybeRange)
+    =
+    arbitraryFnFromSequence
+    where
+    arbitraryFnFromSequence =
+        arbitraryFromSequence fnSequence 
+    arbitraryFromSequence seq 
+        =
+        sized $ \size ->
+        do
+        ix <- choose (0, fixedRandSeqQuantityOfSize size - 1)
+        return $ 
+--            unsafePrint ("arbitraryTupleInAreaRelatedBy4FunFromRingOps: size = " ++ show size ++ ", ix = " ++ show ix) $ 
+                seq !! ix
+    
+    
+{-|
    An arbitraryTupleInAreaRelatedBy implementation
    for almost any function type.  
    
@@ -146,6 +210,12 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
                 pickAndShiftGetSorted
                 indices rels
     where
+    arbitraryFnFromSequence =
+        arbitraryInArea4FunFromRingOps 
+            ((effDom, effGetEndptsDom, effEval), 
+             (effAddFn, effMultFn), 
+             (effAddFnDFn, effMultFnDFn))
+            fnSequence fixedRandSeqQuantityOfSize area
     sampleDom = getSampleDomValue sampleFn
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effMulDom = ArithInOut.fldEffortMult sampleDom $ ArithInOut.rrEffortField sampleDom effDom
@@ -153,16 +223,6 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
     effRefComp = ArithInOut.rrEffortRefComp sampleDom effDom
     effJoin = ArithInOut.rrEffortJoinMeet sampleDom effDom
     
-    arbitraryFnFromSequence =
-        arbitraryFromSequence fnSequence 
-    arbitraryFromSequence seq 
-        =
-        sized $ \size ->
-        do
-        ix <- choose (0, fixedRandSeqQuantityOfSize size - 1)
-        return $ 
---            unsafePrint ("arbitraryTupleInAreaRelatedBy4FunFromRingOps: size = " ++ show size ++ ", ix = " ++ show ix) $ 
-                seq !! ix
     ensureOverlap fns@[fn1,fn2] = [fn1,fn2Shifted]
         where
         fn2Shifted = fn2 <+>| ((evalAtPt fn1) <-> (evalAtPt fn2))
