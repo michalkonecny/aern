@@ -51,7 +51,9 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
---import Numeric.AERN.Misc.Debug
+import Numeric.AERN.Basics.Consistency
+
+import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
 
@@ -89,6 +91,7 @@ valsMapToValues cfg valsMap =
 instance
     (Ord var, Show var, Show cf,
      ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf, 
      RefOrd.IntervalLike cf)
     =>
     CanEvaluate (IntPoly var cf)
@@ -98,25 +101,25 @@ instance
     evaluationDefaultEffort (IntPoly cfg _) =
         ArithInOut.roundedRealDefaultEffort (ipolycfg_sample_cf cfg)
     evalAtPointOutEff eff valsMap p@(IntPoly cfg _) 
-        | valuesAreThin values =
+        | valuesAreExact values =
             evalPolyAtPointOut eff values p
         | otherwise =
             evalPolyOnIntervalOut eff values p
         where
         values = valsMapToValues cfg valsMap
     evalAtPointInEff eff valsMap p@(IntPoly cfg _) 
-        | valuesAreThin values =
+        | valuesAreExact values =
             evalPolyAtPointIn eff values p
         | otherwise =
             evalPolyOnIntervalIn eff values p
         where
         values = valsMapToValues cfg valsMap
     
-valuesAreThin :: 
+valuesAreExact :: 
     HasImprecision t 
     => 
     [t] -> Bool
-valuesAreThin values =
+valuesAreExact values =
     and $ map isCertainlyExact values
     where
     isCertainlyExact val = 
@@ -132,7 +135,7 @@ instance
     type EvalOpsEffortIndicator (IntPoly var cf) cf = ArithInOut.RoundedRealEffortIndicator cf
     evalOpsDefaultEffort _ sampleCf = ArithInOut.roundedRealDefaultEffort sampleCf 
     evalOpsIn eff _sampleP sampleCf =
-        coeffPolyEvalOpsIn eff sampleCf
+        error "aern-poly: IntPoly operators for evaluation at a subdomain: inner rounding not available"
     evalOpsOut eff _sampleP sampleCf =
         coeffPolyEvalOpsOut eff sampleCf
 
@@ -158,31 +161,6 @@ data PolyEvalMonoOps cf val =
         polyEvalMonoCfEffortIndicator :: ArithInOut.RoundedRealEffortIndicator cf
     }
 
-coeffPolyEvalOpsIn ::
-    (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf)
-    =>
-   (ArithInOut.RoundedRealEffortIndicator cf) ->
-   cf ->
-   PolyEvalOps var cf cf
-coeffPolyEvalOpsIn eff sample =
-    let ?multInOutEffort = effMult in
-    let ?intPowerInOutEffort = effPwr in
-    let ?addInOutEffort = effAdd in
-    let ?pCompareEffort = effComp in
-    PolyEvalOps (zero sample) (>+<) (>*<) (>^<) id (const Nothing) (<=?) $
-        Just $ PolyEvalMonoOps
-            RefOrd.getEndpointsOutWithDefaultEffort
-            RefOrd.fromEndpointsOutWithDefaultEffort
-            isDefinitelyExact
-            eff
-    where
-    isDefinitelyExact a =
-        (isExactEff $ ArithInOut.rrEffortImprecision a eff) a == Just True
-    effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
-    effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
-    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
-    effComp = ArithInOut.rrEffortNumComp sample eff
---    effJoin = ArithInOut.rrEffortJoinMeet sample eff
 
 coeffPolyEvalOpsOut ::
     (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf)
@@ -240,7 +218,9 @@ instance
 
 evalPolyAtPointOut, evalPolyAtPointIn ::
     (Ord var, Show var, 
-     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf, Show cf) 
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+     HasAntiConsistency cf, 
+     Show cf) 
     => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
     [cf] {- values for each variable respectively -} -> 
@@ -252,13 +232,16 @@ evalPolyAtPointOut eff values p@(IntPoly cfg _)
     sample = ipolycfg_sample_cf cfg
 evalPolyAtPointIn eff values p@(IntPoly cfg _)
     = 
-    evalPolyDirect (coeffPolyEvalOpsIn eff sample) values p
+    flipConsistency $
+        evalPolyDirect (coeffPolyEvalOpsOut eff sample) values $ 
+            flipConsistencyPoly p
     where
     sample = ipolycfg_sample_cf cfg
 
 evalPolyOnIntervalOut, evalPolyOnIntervalIn ::
     (Ord var, Show var, 
      ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf, 
+     HasAntiConsistency cf, 
      Show cf) 
     => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
@@ -271,7 +254,9 @@ evalPolyOnIntervalOut eff values p@(IntPoly cfg _)
     sample = ipolycfg_sample_cf cfg
 evalPolyOnIntervalIn eff values p@(IntPoly cfg _)
     = 
-    evalPolyMono (coeffPolyEvalOpsIn eff sample) values p
+    flipConsistency $
+        evalPolyMono (coeffPolyEvalOpsOut eff sample) values $ 
+            flipConsistencyPoly p
     where
     sample = ipolycfg_sample_cf cfg
 
@@ -348,6 +333,9 @@ evalPolyMono opsV values p@(IntPoly cfg _)
 --            ++ "\n values = " ++ show values
 --            ++ "\n valuesL = " ++ show valuesL
 --            ++ "\n valuesR = " ++ show valuesR
+--            ++ "\n left = " ++ show left
+--            ++ "\n right = " ++ show right
+--            ++ "\n direct = " ++ show direct
 --        ) $ 
         fromEndPtsV (left, right)
     where
@@ -365,7 +353,7 @@ evalPolyMono opsV values p@(IntPoly cfg _)
             Just monoOpsV_2 -> (False, monoOpsV_2)
     fromEndPtsV = polyEvalMonoFromEndpoints monoOpsV
     getEndPtsV = polyEvalMonoGetEndpoints monoOpsV
-    isThin = polyEvalMonoIsThin monoOpsV
+    isExact = polyEvalMonoIsThin monoOpsV
     eff= polyEvalMonoCfEffortIndicator monoOpsV
     left = evalPolyDirect opsV valuesL p
     right = evalPolyDirect opsV valuesR p
@@ -389,7 +377,7 @@ evalPolyMono opsV values p@(IntPoly cfg _)
             | varNonDecr = (valL, valR) -- non-decreasing on the whole domain - can use endpoints
             | otherwise = (valR, valL) -- non-increasing on the whole domain - can use swapped endpoints
         (varNonDecr, varNotMono) =
-            case (valIsThin, zV `leqV` deriv, deriv `leqV` zV) of
+            case (valIsExact, zV `leqV` deriv, deriv `leqV` zV) of
                 (True, _, _) -> (undefined, True) -- when a variable has a thin domain, do not bother separating endpoints 
                 (_, Just True, _) -> (True, False) 
                 (_, _, Just True) -> (False, False)
@@ -398,7 +386,7 @@ evalPolyMono opsV values p@(IntPoly cfg _)
             evalPolyDirect opsV values $ 
                 diffPolyOut eff var p -- range of (d p)/(d var)    
         (valL, valR) = getEndPtsV val
-        valIsThin = isThin val
+        valIsExact = isExact val
     effMult = ArithInOut.mxfldEffortMult sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf eff
     sampleCf = ipolycfg_sample_cf cfg
         

@@ -350,8 +350,15 @@ instance
                 Just $
                     do
                     valueTuples <- sequence generators
-                    return $ map Map.fromAscList $ map (zip keys) $ transpose $ valueTuples
+                    return $ makeResultTuple valueTuples
         where
+        makeResultTuple valueTuples =
+--            unsafePrint
+--            (
+--                "Map's arbitraryTupleInAreaRelatedBy.makeResultTuple:"
+--                ++ "\n zip values valueTuples = " ++ show (zip values valueTuples)
+--            ) $
+            map Map.fromAscList $ map (zip keys) $ transpose $ valueTuples
         (keys, values) = unzip $ Map.toAscList box
         maybeGenerators =
             sequence $ map maybeGen values
