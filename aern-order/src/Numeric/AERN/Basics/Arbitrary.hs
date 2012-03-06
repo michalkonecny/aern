@@ -56,7 +56,8 @@ class AreaHasConsistencyConstraint t where
     areaSetConsistencyConstraint :: t -> AreaConsistencyConstraint -> (Area t) -> (Area t)
 
 data AreaConsistencyConstraint =
-    AreaMaybeAllowOnlyWithConsistencyStatus (Maybe ConsistencyStatus) 
+    AreaMaybeAllowOnlyWithConsistencyStatus (Maybe ConsistencyStatus)
+    deriving Show
 
 {-| an almost void, simple concrete area specification -}
 data AreaWholeOnly t =
@@ -66,6 +67,12 @@ data AreaWholeOnly t =
         areaWholeIsValueForbidden :: t -> Bool,
         areaWholeSpecialValues :: [t]
     }
+
+instance (Show t) => Show (AreaWholeOnly t)
+    where
+    show (AreaWholeOnly forbidden _ special) =
+        "AreaWholeOnly { forbidden = " ++ show forbidden
+        ++ ", special = " ++ show special ++ "}"
 
 areaWholeOnlyWhole specialValues =
     AreaWholeOnly [] (const False) specialValues

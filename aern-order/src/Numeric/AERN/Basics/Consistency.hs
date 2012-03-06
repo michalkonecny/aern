@@ -31,6 +31,7 @@ data ConsistencyStatus =
     | Consistent 
     | Anticonsistent 
     | Exact -- ie both Consistent and Anticonsistent
+    deriving (Eq, Show)
     
 class
     (EffortIndicator (ConsistencyEffortIndicator t))
