@@ -1,5 +1,8 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-|
     Module      :  Numeric.AERN.Basics.Arbitrary
     Description :  random generation over specific areas
@@ -30,6 +33,17 @@ class ArbitraryWithArea t
     {-| a special area that puts no constaints on the values -}
     areaWhole :: t -> Area t
     arbitraryInArea :: Area t -> Gen t
+    
+newtype SingletonInArea t = SingletonInArea t deriving Show
+instance
+    (ArbitraryWithArea t, Area t ~ a)
+    => 
+    (ArbitraryWithParam (SingletonInArea t) a)
+    where
+    arbitraryWithParam area =
+        do
+        e <- arbitraryInArea area
+        return $ SingletonInArea e
     
 {-| generic mechanism for adding common restriction on the area of random generation -}
 class AreaHasForbiddenValues t where
