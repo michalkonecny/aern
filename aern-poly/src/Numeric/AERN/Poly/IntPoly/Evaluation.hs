@@ -53,7 +53,7 @@ import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 
-import Numeric.AERN.Misc.Debug
+--import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
 
@@ -134,7 +134,7 @@ instance
     where
     type EvalOpsEffortIndicator (IntPoly var cf) cf = ArithInOut.RoundedRealEffortIndicator cf
     evalOpsDefaultEffort _ sampleCf = ArithInOut.roundedRealDefaultEffort sampleCf 
-    evalOpsIn eff _sampleP sampleCf =
+    evalOpsIn _eff _sampleP _sampleCf =
         error "aern-poly: IntPoly operators for evaluation at a subdomain: inner rounding not available"
     evalOpsOut eff _sampleP sampleCf =
         coeffPolyEvalOpsOut eff sampleCf

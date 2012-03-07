@@ -17,7 +17,6 @@
 module Numeric.AERN.RmToRn.Evaluation where
 
 import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.Laws
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
@@ -25,9 +24,6 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Arbitrary
 
 import Numeric.AERN.Misc.Debug
-
-import Test.Framework (Test, testGroup)
-import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 class (HasDomainBox f) => CanEvaluateOtherType f
     where
@@ -65,41 +61,12 @@ class
         EvaluationEffortIndicator f -> 
         (VarBox f (Domain f)) -> f -> (Domain f)
     
-propEvalRefIsotone ::
-    (CanEvaluate f,
-     RefOrd.PartialComparison (Domain f),
-     RefOrd.ArbitraryOrderedTuple (VarBox f (Domain f)), 
-     Area (VarBox f (Domain f)) ~ VarBox f (Domain  f),
-     Show f,
-     Show (Domain f),
-     Show (DomainBox f))
-    =>
-    f ->
-    (SingletonInArea f) -> 
-    (Area (DomainBox f),
-        (RefOrd.LEPair (DomainBox f)) -> 
-        EvaluationEffortIndicator f ->
-        (RefOrd.PartialCompareEffortIndicator (Domain f)) ->
-        Bool)
-propEvalRefIsotone _
-        (SingletonInArea fn)
-    =
---    unsafePrint
---    (
---       "propEvalRefIsotone: "
---       ++ "\n fn = " ++ show fn
---    ) $
-    (sampleDomBox, roundedRefinementIsotoneDom fn "function evaluation" evalIn evalOut) 
-    where
-    sampleDomBox = getDomainBox fn
-    evalIn eff d = evalAtPointInEff eff d fn
-    evalOut eff d = evalAtPointOutEff eff d fn
-
-testsEval (name, sample) area =
-    testGroup (name ++ " evaluation") $
-        [
-            testProperty "refinement isotone" (area, propEvalRefIsotone sample)
-        ]
+{-
+    Properties and tests of CanEvaluate are in the Laws module
+    to avoid a circular dependency on that module.
+    Laws requires Evaluation and the property requires
+    a function defined in Laws.
+-}
     
 class (HasDomainBox f) => CanSubstitute f
     where

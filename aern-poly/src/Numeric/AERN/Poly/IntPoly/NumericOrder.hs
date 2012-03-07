@@ -1,8 +1,10 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ImplicitParams #-}
-{-# LANGUAGE MultiParamTypeClasses, UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.NumericOrder
     Description :  pointwise up/down comparison
@@ -19,24 +21,24 @@
 module Numeric.AERN.Poly.IntPoly.NumericOrder
 where
     
---import Numeric.AERN.Poly.IntPoly.Config
+import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Evaluation ()
 --import Numeric.AERN.Poly.IntPoly.Addition 
 import Numeric.AERN.Poly.IntPoly.Multiplication ()
 
---import Numeric.AERN.RmToRn.New
---import Numeric.AERN.RmToRn.Domain
+import Numeric.AERN.RmToRn.New
+import Numeric.AERN.RmToRn.Domain
 --import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison
 import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Arbitrary
-import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Minmax
+--import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Minmax
 
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+--import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 --import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
@@ -53,6 +55,73 @@ import Numeric.AERN.Basics.Arbitrary
 --import Numeric.AERN.Misc.Debug
 
 import Test.QuickCheck
+
+instance
+    (Ord var, Show var, 
+     Show cf, 
+     ArithInOut.RoundedReal cf,
+     HasAntiConsistency cf,
+     NumOrd.PartialComparison (Imprecision cf), 
+     RefOrd.IntervalLike cf) 
+    => 
+    NumOrd.PartialComparison (IntPoly var cf) 
+    where
+    type NumOrd.PartialCompareEffortIndicator (IntPoly var cf) =
+        (Int1To1000, ArithInOut.RoundedRealEffortIndicator cf) 
+    pCompareDefaultEffort (IntPoly cfg _) = 
+        (Int1To1000 $ 4 * varsN, ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg)
+        where
+        varsN = length vars
+        vars = ipolycfg_vars cfg
+    pCompareEff eff p1 p2 =
+        case partialInfo2PartialOrdering $ NumOrd.pCompareInFullEff eff p1 p2 of
+            [rel] -> Just rel
+            _ -> Nothing
+    pCompareInFullEff (Int1To1000 n, effDom) p1 p2 = 
+        pCompareFunFromRingOps (n, effDom, effCompDom, effDom) p1 p2 
+        where
+        effCompDom = ArithInOut.rrEffortNumComp sampleDom effDom
+        sampleDom = getSampleDomValue p1
+        
+instance
+    (Ord var,
+     NumOrd.HasGreatest cf,
+     HasConsistency cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf
+    )
+    =>
+    NumOrd.HasGreatest (IntPoly var cf)
+    where
+    greatest sampleF = 
+        newConstFnFromSample sampleF (NumOrd.greatest sampleDom)
+        where
+        sampleDom = getSampleDomValue sampleF
+        
+instance
+    (Ord var,
+     NumOrd.HasLeast cf,
+     HasConsistency cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf
+    )
+    =>
+    NumOrd.HasLeast (IntPoly var cf)
+    where
+    least sampleF = 
+        newConstFnFromSample sampleF (NumOrd.least sampleDom)
+        where
+        sampleDom = getSampleDomValue sampleF
+        
+instance
+    (Ord var,
+     NumOrd.HasExtrema cf,
+     HasConsistency cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf
+    )
+    =>
+    NumOrd.HasExtrema (IntPoly var cf)
 
         
 instance
@@ -140,4 +209,5 @@ instance
             )
         e :: t
         e = error "AERN internal error: arbitraryTupleInAreaRelatedBy4FunFromRingOps: dummyEff should not be used"
+
         
