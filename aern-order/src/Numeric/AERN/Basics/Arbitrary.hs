@@ -45,6 +45,31 @@ instance
         e <- arbitraryInArea area
         return $ SingletonInArea e
     
+newtype PairInArea t = PairInArea (t,t) deriving Show
+instance
+    (ArbitraryWithArea t, Area t ~ a)
+    => 
+    (ArbitraryWithParam (PairInArea t) a)
+    where
+    arbitraryWithParam area =
+        do
+        e1 <- arbitraryInArea area
+        e2 <- arbitraryInArea area
+        return $ PairInArea (e1, e2)
+    
+newtype TripleInArea t = TripleInArea (t,t,t) deriving Show
+instance
+    (ArbitraryWithArea t, Area t ~ a)
+    => 
+    (ArbitraryWithParam (TripleInArea t) a)
+    where
+    arbitraryWithParam area =
+        do
+        e1 <- arbitraryInArea area
+        e2 <- arbitraryInArea area
+        e3 <- arbitraryInArea area
+        return $ TripleInArea (e1, e2, e3)
+    
 {-| generic mechanism for adding common restriction on the area of random generation -}
 class AreaHasForbiddenValues t where
     areaAddForbiddenValues :: [t] -> Area t -> Area t
