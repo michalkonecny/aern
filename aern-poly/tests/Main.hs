@@ -15,27 +15,28 @@ import Numeric.AERN.Poly.IntPoly
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn.Laws (testsEval, testsFnNumCompare)
+--import Numeric.AERN.RmToRn.Evaluation
 
-import Numeric.AERN.RealArithmetic.Basis.Double
-import Numeric.AERN.RealArithmetic.Basis.MPFR
+import Numeric.AERN.RealArithmetic.Basis.Double ()
+import Numeric.AERN.RealArithmetic.Basis.MPFR ()
 import Numeric.AERN.Basics.Interval
 
-import Numeric.AERN.RealArithmetic.Interval
-import Numeric.AERN.RealArithmetic.Interval.Mutable
+-- import Numeric.AERN.RealArithmetic.Interval
+-- import Numeric.AERN.RealArithmetic.Interval.Mutable
 -- import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
-import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
-import Numeric.AERN.Basics.Interval
+--import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
+--import Numeric.AERN.Basics.Interval
 
-import Numeric.AERN.Basics.Consistency
+--import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Arbitrary
-import qualified Numeric.AERN.NumericOrder as NumOrd
-import qualified Numeric.AERN.RefinementOrder as RefOrd
+--import qualified Numeric.AERN.NumericOrder as NumOrd
+--import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
-import Numeric.AERN.RealArithmetic.Measures
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+--import Numeric.AERN.RealArithmetic.Measures
+--import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+--import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
 import Test.Framework (defaultMain, Test)
@@ -61,6 +62,8 @@ testsPoly :: [Test]
 testsPoly =
     [
         testsEval ("IntPoly-DI", samplePoly) areaPoly
+        ,
+        testsFnNumCompare ("IntPoly-DI", samplePoly) areaPoly
     ]
 
 areaPoly :: Area Poly

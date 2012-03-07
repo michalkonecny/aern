@@ -45,3 +45,4 @@ Library
                   Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison,
                   Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Minmax,
                   Numeric.AERN.RmToRn.RefinementOrderRounding.BernsteinPoly
+  ghc-options:    -Wall
