@@ -1,8 +1,10 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
+    Module      :  Numeric.AERN.Poly.IntPoly.Integration
     Description :  integration of interval polynomials  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -14,23 +16,24 @@
     Integration of interval polynomials.
 -}
 
-module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Integrate
+module Numeric.AERN.Poly.IntPoly.Integration
     (
-        integratePolyMainVar
+        primitiveFnOutPoly
     )
 where
     
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.RingOps
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Substitution
+import Numeric.AERN.Poly.IntPoly.Config
+import Numeric.AERN.Poly.IntPoly.IntPoly
+import Numeric.AERN.Poly.IntPoly.Addition ()
+import Numeric.AERN.Poly.IntPoly.Multiplication ()
 
-import Numeric.AERN.RmToRn.New
+import Numeric.AERN.RmToRn.Integration
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
-import Numeric.AERN.RealArithmetic.ExactOps
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+--import Numeric.AERN.RealArithmetic.ExactOps
 
---import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsImplicitEffort
@@ -41,51 +44,67 @@ import Numeric.AERN.Basics.Consistency
 
 import qualified Data.IntMap as IntMap
 
-integratePolyMainVar ::
+instance 
     (Ord var, Show var, 
      ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
      HasAntiConsistency cf,
      NumOrd.PartialComparison (Imprecision cf), 
-     Show cf) => 
-    (ArithInOut.RoundedRealEffortIndicator cf) ->
-    cf {- zero coefficient -} ->
-    IntPoly var cf {- initial value at point domLE -} ->
-    IntPoly var cf {- polynomial to integrate in its main variable -} ->
-    IntPoly var cf
-integratePolyMainVar eff z initPoly p@(IntPoly cfg poly) =
---    let ?addInOutEffort = effAdd in
-    initPoly <+> (IntPoly cfg $ ip poly)
---    (initPoly <+> (neg projectionAtDomLE)) <+> (IntPoly cfg $ ip poly) 
+     Show cf) 
+    => 
+    RoundedIntegration (IntPoly var cf)
     where
-    (<+>) = ArithInOut.addOutEff eff
-    effDiv = ArithInOut.mxfldEffortDiv sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
-    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
-    sample = ipolycfg_sample_cf cfg
-    
---    projectionAtDomLE =
---        substPolyMainVar eff z domLEPoly p
---    domLEPoly =
---        newConstFnFromSample p domLE
---    (domLE, _) = RefOrd.getEndpointsOutWithDefaultEffort $ head doms
---    doms = ipolycfg_doms cfg
-    
-    ip p@(IntPolyV x polys) =
---    unsafePrint
---    (
---        "integratePoly:"
---        ++ "\n initPoly = " ++ showPoly initPoly
---        ++ "\n p = " ++ showPoly p
---        ++ "\n result = " ++ showPoly result
---    )
-        result
+    type IntegrationEffortIndicator (IntPoly var cf) =
+         ArithInOut.RoundedRealEffortIndicator cf
+    integrationDefaultEffort (IntPoly cfg _) =
+        ArithInOut.roundedRealDefaultEffort sampleCf
         where
-        result = IntPolyV x $ polysFractions 
+        sampleCf = ipolycfg_sample_cf cfg
+    primitiveFunctionOutEff = primitiveFnOutPoly
+    primitiveFunctionInEff =
+        error "inner rounded integration not defined for IntPoly"
+
+primitiveFnOutPoly ::
+    (Ord var, Show var, 
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
+     HasAntiConsistency cf,
+     NumOrd.PartialComparison (Imprecision cf), 
+     Show cf) 
+    => 
+    (ArithInOut.RoundedRealEffortIndicator cf) ->
+    IntPoly var cf {- polynomial to integrate in its main variable -} ->
+    var {- variable to integrate in -} ->
+    IntPoly var cf
+primitiveFnOutPoly eff _p@(IntPoly cfg terms) var =
+    IntPoly cfg $ primitiveFnOutTerms terms
+    where
+    primitiveFnOutTerms (IntPolyV var2 powers) 
+        | var == var2 =
+        --    unsafePrint
+        --    (
+        --        "integratePoly:"
+        --        ++ "\n initPoly = " ++ showPoly initPoly
+        --        ++ "\n p = " ++ showPoly p
+        --        ++ "\n result = " ++ showPoly result
+        --    )
+                result
+        | otherwise =
+            (IntPolyV var2 $ IntMap.map primitiveFnOutTerms powers)
+        where
+        result = IntPolyV var2 $ powersFractions 
         cfgR = cfgRemVar cfg
-        polysFractions =
+        powersFractions =
             IntMap.fromDistinctAscList $
-            map integrateTerm
-            $ IntMap.toAscList polys
+                map integrateTerms $
+                    IntMap.toAscList powers
             where
-            integrateTerm (n,p) =
-                (n+1, intpoly_terms $ (IntPoly cfgR p) </>| (n+1))
+            integrateTerms (n,t) =
+                (n+1, intpoly_terms $ (IntPoly cfgR t) </>| (n+1))
             (</>|) = ArithInOut.mixedDivOutEff effDiv
+        effDiv = ArithInOut.mxfldEffortDiv sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
+    --    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+        sample = ipolycfg_sample_cf cfg
+    primitiveFnOutTerms _ = 
+        error "aern-poly: primitiveFnOutPoly: integrating by a variable not present in the domain"        
+

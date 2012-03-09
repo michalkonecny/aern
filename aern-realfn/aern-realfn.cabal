@@ -39,6 +39,7 @@ Library
   exposed-modules:
                   Numeric.AERN.RmToRn.Domain,
                   Numeric.AERN.RmToRn.Evaluation,
+                  Numeric.AERN.RmToRn.Integration,
                   Numeric.AERN.RmToRn.Laws,
                   Numeric.AERN.RmToRn.New,
                   Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Arbitrary,

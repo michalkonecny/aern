@@ -16,9 +16,6 @@ module Numeric.AERN.RmToRn.New where
 
 import Numeric.AERN.RmToRn.Domain
 
-import Numeric.AERN.Basics.Mutable
-import Control.Monad.ST (ST)
-
 class HasSizeLimits f where
     type SizeLimits f
     getSizeLimits :: f -> SizeLimits f

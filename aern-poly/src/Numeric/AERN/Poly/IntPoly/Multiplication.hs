@@ -295,3 +295,33 @@ scaleTerms ::
 scaleTerms (*|) factor terms =
     termsMapCoeffs (*| factor) terms
         
+
+instance
+    (ArithInOut.RoundedMixedDivideEffort cf other) => 
+    ArithInOut.RoundedMixedDivideEffort (IntPoly var cf) other 
+    where
+#if (__GLASGOW_HASKELL__ >= 704)
+    type MixedDivEffortIndicator (IntPoly var cf) other = 
+        ArithInOut.MixedDivEffortIndicator cf other  
+#else
+    type ArithInOut.MixedDivEffortIndicator (IntPoly var cf) other = 
+        ArithInOut.MixedDivEffortIndicator cf other  
+#endif
+    mixedDivDefaultEffort (IntPoly cfg _) c = 
+        ArithInOut.mixedDivDefaultEffort (ipolycfg_sample_cf cfg) c
+
+instance
+    (ArithInOut.RoundedMixedDivide cf other,  Ord var, 
+     ArithInOut.RoundedReal cf, 
+     HasConsistency cf, 
+     RefOrd.IntervalLike cf) 
+    =>
+    ArithInOut.RoundedMixedDivide (IntPoly var cf) other 
+    where
+    mixedDivOutEff eff (IntPoly cfg terms) a = 
+        IntPoly cfg $ scaleTerms (/|) a terms
+        where
+        (/|) = ArithInOut.mixedDivOutEff eff
+    mixedDivInEff =
+        error "aern-poly: IntPoly does not support inwards-rounded mixed multiplication" 
+        
