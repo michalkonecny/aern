@@ -1,6 +1,6 @@
-Name:           AERN-Picard
-Version:        2011.2.0.0
-Cabal-Version:  >= 1.2
+Name:           aern-picard
+Version:        0.5.0
+Cabal-Version:  >= 1.8
 Build-Type:     Simple
 License:        BSD3
 License-File:   LICENCE
@@ -11,58 +11,52 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       support for solving ODE IVPs using the interval polynomial Picard operator
-Tested-with:    GHC ==6.12.3
+Tested-with:    GHC==6.12.3,
+                GHC==7.2.2,
+                GHC==7.4.1
 Description:
     Support for solving ODE IVPs using the interval polynomial Picard operator.
     .
     Includes several example solvers.
 
---Extra-Source-Files:
---    CHANGES
-
 Library
   hs-source-dirs: src
-  ghc-options:     -O2
+  ghc-options:     -Wall
   Build-Depends:
-        base >= 4 && < 5, 
-        containers >= 0.3 && < 0.4,
-        random >= 1.0 && < 2.0,
+        base == 4.2.* || == 4.4.* || == 4.5.*,
+        containers >= 0.3 && < 0.5,
+        random >= 1.0 && < 1.1,
         gtk >= 0.12.0 && < 0.13,
         cairo >= 0.12.0 && < 0.13,
         glade >= 0.12.0 && < 0.13,
-        stm >= 2 && < 3,
-        filepath >= 1.1.0.4 && < 2,
-        directory >= 1.0.1.1 && < 2,
-        AERN-Basics == 2011.2.0.0,
-        AERN-Real == 2011.2.0.0, 
-        AERN-Real-Interval == 2011.2.0.0, 
-        AERN-RmToRn == 2011.2.0.0
+        stm >= 2.1.2.1 && < 2.4,
+        filepath >= 1.1.0.4 && < 1.3,
+        directory >= 1.0.1.1 && < 1.2,
+        aern-order == 0.5.*,
+        aern-real == 0.5.*,
+        aern-realfn == 0.5.*
   exposed-modules:       
-        Numeric.AERN.RmToRn.Plot.PicardView
-        Numeric.AERN.RmToRn.Plot.PicardView.IVP
-        Numeric.AERN.RmToRn.Plot.PicardView.Layout
-        Numeric.AERN.RmToRn.Plot.PicardView.State
 
-Executable demoPicardView
-  hs-source-dirs: src, demos
---  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
---  ghc-options:  -O2
-  main-is: demoPicardView.hs
-  Build-Depends:
-        base >= 4 && < 5,
-        containers >= 0.3 && < 0.4,
-        gtk >= 0.12.0 && < 0.13,
-        cairo >= 0.12.0 && < 0.13,
-        glade >= 0.12.0 && < 0.13,
-        stm >= 2 && < 3,
-        filepath >= 1.1.0.4 && < 2,
-        directory >= 1.0.1.1 && < 2,
-        AERN-Basics == 2011.2.0.0, 
-        AERN-Real == 2011.2.0.0, 
-        AERN-Real-Interval == 2011.2.0.0, 
-        AERN-Real-Double == 2011.2.0.0, 
-        AERN-RmToRn == 2011.2.0.0,
-        AERN-RmToRn-IntPoly == 2011.2.0.0 
+--Executable demoPicardView
+--  hs-source-dirs: src, demos
+----  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
+--  ghc-options:    -Wall
+--  main-is: demoPicardView.hs
+--  Build-Depends:
+--        base >= 4 && < 5,
+--        containers >= 0.3 && < 0.4,
+--        gtk >= 0.12.0 && < 0.13,
+--        cairo >= 0.12.0 && < 0.13,
+--        glade >= 0.12.0 && < 0.13,
+--        stm >= 2 && < 3,
+--        filepath >= 1.1.0.4 && < 2,
+--        directory >= 1.0.1.1 && < 2,
+--        AERN-Basics == 2011.2.0.0, 
+--        AERN-Real == 2011.2.0.0, 
+--        AERN-Real-Interval == 2011.2.0.0, 
+--        AERN-Real-Double == 2011.2.0.0, 
+--        AERN-RmToRn == 2011.2.0.0,
+--        AERN-RmToRn-IntPoly == 2011.2.0.0 
 
 -- Executable ivpSpringMass
 --   hs-source-dirs: src, demos
