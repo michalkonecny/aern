@@ -15,7 +15,7 @@
 
 module Numeric.AERN.RmToRn.RefinementOrderRounding.BernsteinPoly where
 
-import Numeric.AERN.RmToRn.Domain
+--import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 
 import Numeric.AERN.RealArithmetic.ExactOps
@@ -45,7 +45,7 @@ bernsteinOut (effRing, effIntOps) x n p =
     where
     sampleF = x
     c1 = (one sampleF)
-    sampleCf = getSampleDomValue sampleF
+--    sampleCf = getSampleDomValue sampleF
     effAdd = ArithInOut.ringEffortAdd sampleF effRing
     effMult = ArithInOut.ringEffortMult sampleF effRing
     effPow = ArithInOut.ringEffortPow sampleF effRing

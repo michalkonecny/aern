@@ -18,12 +18,12 @@ module Numeric.AERN.RmToRn.Evaluation where
 
 import Numeric.AERN.RmToRn.Domain
 
-import qualified Numeric.AERN.RefinementOrder as RefOrd
+--import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Basics.Arbitrary
+--import Numeric.AERN.Basics.Arbitrary
 
-import Numeric.AERN.Misc.Debug
+--import Numeric.AERN.Misc.Debug
 
 class (HasDomainBox f) => CanEvaluateOtherType f
     where

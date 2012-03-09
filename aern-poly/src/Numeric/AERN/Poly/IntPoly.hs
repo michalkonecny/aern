@@ -27,8 +27,7 @@ module Numeric.AERN.Poly.IntPoly
         module Numeric.AERN.Poly.IntPoly.Multiplication,
 --        module Numeric.AERN.Poly.IntPoly.NumericOrder,
 --        ,
---        module Numeric.AERN.Poly.IntPoly.RingOps,
---        module Numeric.AERN.Poly.IntPoly.Integrate,
+        module Numeric.AERN.Poly.IntPoly.Integration,
 --        module Numeric.AERN.Poly.IntPoly.RefinementOrder,
 --        module Numeric.AERN.Poly.IntPoly.Substitution,
 --        module Numeric.AERN.Poly.IntPoly.Minmax
@@ -46,7 +45,7 @@ import Numeric.AERN.Poly.IntPoly.Addition
 import Numeric.AERN.Poly.IntPoly.Multiplication
 import Numeric.AERN.Poly.IntPoly.NumericOrder
 --import Numeric.AERN.Poly.IntPoly.RingOps
---import Numeric.AERN.Poly.IntPoly.Integrate
+import Numeric.AERN.Poly.IntPoly.Integration
 --import Numeric.AERN.Poly.IntPoly.RefinementOrder
 --import Numeric.AERN.Poly.IntPoly.Substitution
 --import Numeric.AERN.Poly.IntPoly.Minmax
