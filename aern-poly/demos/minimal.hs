@@ -94,7 +94,8 @@ main =
 --    putStrLn $ "x - 1/16 `minOut` 0 = " ++ (showP $ NumOrd.minOutEff minmaxInOutEff (x <-> cOneOver16) c0)
 --    putStrLn $ "x - 1/16 `minIn` 0 = " ++ (showP $ NumOrd.minInEff minmaxInOutEff (x <-> cOneOver16) c0)
     putStrLn "integration:"
-    putStrLn $ "1 + int (2(x + y + 2)) dx = " ++ (showP integTwoBxPyP2)
+    putStrLn $ "1 + int (2(x + y + 2)) dx = " ++ (showP integxTwoBxPyP2)
+    putStrLn $ "1 + int (2(x + y + 2)) dy = " ++ (showP integyTwoBxPyP2)
 --    putStrLn "*** ops not using generic interfaces (yet): ***"
 --    putStrLn "differentiation:"
 --    putStrLn $ "d (2(x + y + 2))/dx = " ++ (showP $ diffPolyOut eff "x" twoBxPyP2)
@@ -173,8 +174,12 @@ xPyBTxMyB = xPy <*> xMy
 twoBxPyP2 :: Poly
 twoBxPyP2 = (2::Int) |<*> xPyP1P1
 
-integTwoBxPyP2 :: Poly
-integTwoBxPyP2 = c1 <+> primitiveFunctionOutEff eff twoBxPyP2 "x"
+integxTwoBxPyP2 :: Poly
+integxTwoBxPyP2 = c1 <+> primitiveFunctionOutEff eff twoBxPyP2 "x"
+
+integyTwoBxPyP2 :: Poly
+integyTwoBxPyP2 = c1 <+> primitiveFunctionOutEff eff twoBxPyP2 "y"
+
 --expBxPyP2 = exp xPyP1P1
 
 eff :: ArithInOut.RoundedRealEffortIndicator CF
@@ -242,8 +247,8 @@ vars :: [Var Poly]
 vars = ["x", "y"]
 
 doms :: [CF]
-doms = [(0 </\> 1), 0 </\> 1]
+doms = [((-1)</\> 1), (-1) </\> 1]
 
 domsXTiny :: [CF]
-domsXTiny = [(0 </\> 0.0625), (0 </\> 1)]
+domsXTiny = [(0 </\> 0.0625), ((-1) </\> 1)]
 
