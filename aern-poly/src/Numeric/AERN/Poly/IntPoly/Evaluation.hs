@@ -68,22 +68,28 @@ instance
     type EvalOps (IntPoly var cf) =  PolyEvalOps var cf
     evalOtherType ops valsMap p@(IntPoly cfg _) =
         case polyEvalMonoOps ops of
-            Nothing -> evalPolyDirect ops vals p
-            _ -> evalPolyMono ops vals p 
+            Nothing -> evalPolyDirect ops valsLZ p
+            _ -> evalPolyMono ops valsLZ p 
         where
-        vals = valsMapToValues cfg valsMap
+        valsLZ = valsMapToValuesLZ subtrCf cfg valsMap
+        subtrCf val domLE =
+             addV val (cfV $ neg domLE)
+        addV = polyEvalAdd ops
+        cfV = polyEvalCoeff ops
 
-valsMapToValues :: 
+valsMapToValuesLZ :: 
     (Ord var) 
      =>
+     (t -> cf -> t) ->
      IntPolyCfg var cf -> 
      (VarBox (IntPoly var cf) t) -> 
      [t]
-valsMapToValues cfg valsMap =
-    vals
+valsMapToValuesLZ subtractCf cfg valsMap =
+    zipWith subtractCf vals domsLE
     where
     vals = map getValue vars
     vars = ipolycfg_vars cfg
+    domsLE = ipolycfg_domsLE cfg
     getValue var = 
         case lookupVar valsMap var of 
             Just val -> val
@@ -102,19 +108,28 @@ instance
     evaluationDefaultEffort (IntPoly cfg _) =
         ArithInOut.roundedRealDefaultEffort (ipolycfg_sample_cf cfg)
     evalAtPointOutEff eff valsMap p@(IntPoly cfg _) 
-        | valuesAreExact values =
-            evalPolyAtPointOut eff values p
+        | valuesAreExact valsLZ =
+            evalPolyAtPointOut eff valsLZ p
         | otherwise =
-            evalPolyOnIntervalOut eff values p
+            evalPolyOnIntervalOut eff valsLZ p
         where
-        values = valsMapToValues cfg valsMap
+        valsLZ =
+            let ?addInOutEffort = effAdd in 
+            valsMapToValuesLZ (<->) cfg valsMap
+        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+        sample = ipolycfg_sample_cf cfg
+        
     evalAtPointInEff eff valsMap p@(IntPoly cfg _) 
-        | valuesAreExact values =
-            evalPolyAtPointIn eff values p
+        | valuesAreExact valsLZ =
+            evalPolyAtPointIn eff valsLZ p
         | otherwise =
-            evalPolyOnIntervalIn eff values p
+            evalPolyOnIntervalIn eff valsLZ p
         where
-        values = valsMapToValues cfg valsMap
+        valsLZ = 
+            let ?addInOutEffort = effAdd in 
+            valsMapToValuesLZ (>-<) cfg valsMap
+        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+        sample = ipolycfg_sample_cf cfg
     
 instance
     (Ord var, Show var, Show cf,
@@ -293,7 +308,7 @@ evalPolyDirect opsV values _p@(IntPoly cfg terms)
     ev values domsLE terms
     where
     zV = polyEvalZero opsV
-    addV = polyEvalAdd opsV 
+    addV = polyEvalAdd opsV
     multV = polyEvalMult opsV
     powV = polyEvalPow opsV
     cfV = polyEvalCoeff opsV
@@ -407,7 +422,7 @@ evalPolyMono opsV values p@(IntPoly cfg _)
     effMult = ArithInOut.mxfldEffortMult sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf eff
     sampleCf = ipolycfg_sample_cf cfg
     
-partiallyEvalPolyAtPointOut :: 
+partiallyEvalPolyAtPointOut ::
     (Ord var, ArithInOut.RoundedReal cf) 
     =>
     ArithInOut.RoundedRealEffortIndicator cf -> 
@@ -415,7 +430,7 @@ partiallyEvalPolyAtPointOut ::
     IntPoly var cf -> 
     IntPoly var cf
 partiallyEvalPolyAtPointOut effCf valsMap _p@(IntPoly cfg terms) =
-    IntPoly cfgVarsRemoved $ pev terms
+    IntPoly cfgVarsRemoved $ pev domsLE terms
     where
     cfgVarsRemoved =
         cfg
@@ -429,21 +444,22 @@ partiallyEvalPolyAtPointOut effCf valsMap _p@(IntPoly cfg terms) =
             = unzip3 $ filter notSubstituted $ zip3 vars domsLE domsLZ
             where
             vars = ipolycfg_vars cfg
-            domsLE = ipolycfg_domsLE cfg
             domsLZ = ipolycfg_domsLZ cfg
             notSubstituted (var, _, _) =
                 var `Map.notMember` valsMap
-    pev t@(IntPolyC _) = t
-    pev (IntPolyV var powers) =
+    domsLE = ipolycfg_domsLE cfg
+    pev _ t@(IntPolyC _) = t
+    pev (domLE : restDomsLE) (IntPolyV var powers) =
         case Map.lookup var valsMap of
             Just value ->
+                let ?addInOutEffort = effAdd in
                 -- evaluate evaluatedPowers using the Horner scheme: 
-                foldl (addAndScale value highestExponent) heTerms lowerPowers
+                foldl (addAndScale (value <-> domLE) highestExponent) heTerms lowerPowers
             _ ->
                 IntPolyV var evaluatedPowers
         where
         evaluatedPowers =
-            IntMap.map pev powers
+            IntMap.map (pev restDomsLE) powers
         ((highestExponent, heTerms) : lowerPowers) =  
             reverse $ IntMap.toAscList evaluatedPowers
         addAndScale value prevExponent termsSoFar (currExponent, currTerms) =
@@ -453,12 +469,13 @@ partiallyEvalPolyAtPointOut effCf valsMap _p@(IntPoly cfg terms) =
             valuePower = 
                 let ?intPowerInOutEffort = effPow in
                 value <^> (prevExponent - currExponent)  
-            effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-            effMult = ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-            effPow = ArithInOut.fldEffortPow sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-            sampleCf = value
             addTermsAux (IntPolyV v powers1) (IntPolyV _ powers2) =
                 IntPolyV v $ IntMap.unionWith addTermsAux powers1 powers2
             addTermsAux (IntPolyC val1) (IntPolyC val2) = 
                 let ?addInOutEffort = effAdd in
                 IntPolyC $ val1 <+> val2 
+        effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+        effMult = ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+        effPow = ArithInOut.fldEffortPow sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+        sampleCf = domLE
+                
