@@ -26,8 +26,7 @@ Description:    Multi-variate polynomials with in-out-rounded point-wise arithme
 Library
   hs-source-dirs:   src
   ghc-options:      -Wall -rtsopts
-  Build-Depends:    
-        base == 4.2.* || == 4.4.* || == 4.5.*,
+  Build-Depends:    base == 4.2.* || == 4.4.* || == 4.5.*,
         containers >= 0.3 && < 0.5,
         QuickCheck >= 2.4 && < 2.5,
         aern-order == 0.5.*,
@@ -35,8 +34,7 @@ Library
         aern-interval == 0.5.*,
         aern-realfn == 0.5.*
   exposed-modules:  Numeric.AERN.Poly.IntPoly
-  other-modules:    
-                    Numeric.AERN.Poly.IntPoly.Addition,
+  other-modules:    Numeric.AERN.Poly.IntPoly.Addition,
                     Numeric.AERN.Poly.IntPoly.Config,
                     Numeric.AERN.Poly.IntPoly.Differentiation,
                     Numeric.AERN.Poly.IntPoly.Evaluation,
@@ -48,11 +46,10 @@ Library
                     Numeric.AERN.Poly.IntPoly.Reduction
 
 executable testAERN-Poly
-  Build-Depends:    
-        base == 4.2.* || == 4.4.* || == 4.5.*,
+  Build-Depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
         containers >= 0.3 && < 0.5,
         QuickCheck >= 2.4 && < 2.5,
-        test-framework >= 0.3.3 && < 0.6, 
+        test-framework >= 0.3.3 && < 0.6,
         test-framework-quickcheck2 >= 0.2 && < 0.3,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
@@ -61,8 +58,21 @@ executable testAERN-Poly
         aern-mpfr == 0.5.*,
         aern-realfn == 0.5.*,
         aern-poly == 0.5.*
-  hs-source-dirs:  
-                   tests
+  hs-source-dirs:  tests
   ghc-options:     -Wall -rtsopts
   main-is:         Main.hs
+
+executable minimal
+  build-depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
+        containers >= 0.3 && < 0.5,
+        aern-order == 0.5.*,
+        aern-real == 0.5.*,
+        aern-interval == 0.5.*,
+        aern-double == 0.5.*,
+        aern-realfn == 0.5.*,
+        aern-poly == 0.5.*
+  hs-source-dirs:  
+                   demos
+  ghc-options:     -Wall -rtsopts
+  main-is:         minimal.hs
 
