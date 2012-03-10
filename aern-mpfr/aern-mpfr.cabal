@@ -55,26 +55,26 @@ Library
         aern-real == 0.5.*,
         aern-interval == 0.5.*
   Exposed-modules:
-    Numeric.AERN.MPFRBasis.Interval
-    Numeric.AERN.RealArithmetic.Basis.MPFR
-    Numeric.AERN.RealArithmetic.Interval.MPFR
+                  Numeric.AERN.MPFRBasis.Interval,
+                  Numeric.AERN.RealArithmetic.Basis.MPFR,
+                  Numeric.AERN.RealArithmetic.Interval.MPFR
 
   Other-modules:
-    Numeric.AERN.RealArithmetic.Basis.MPFR.Effort
-    Numeric.AERN.RealArithmetic.Basis.MPFR.Mutable
-    Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps
-    Numeric.AERN.RealArithmetic.Basis.MPFR.Conversion
-    Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder
-    Numeric.AERN.RealArithmetic.Basis.MPFR.FieldOps
-    Numeric.AERN.RealArithmetic.Basis.MPFR.MixedFieldOps
-    Numeric.AERN.RealArithmetic.Basis.MPFR.SpecialConst
-    Numeric.AERN.RealArithmetic.Basis.MPFR.Elementary
+    Numeric.AERN.RealArithmetic.Basis.MPFR.Conversion,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.Effort,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.Elementary,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.FieldOps,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.Basics,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.FieldOps,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.MixedFieldOps,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.Measures,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.MixedFieldOps,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.Mutable,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.NumericOrder,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.ShowInternals,
+    Numeric.AERN.RealArithmetic.Basis.MPFR.SpecialConst,
     Numeric.AERN.RealArithmetic.Basis.MPFR.Utilities
-    Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.Basics
-    Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.FieldOps
-    Numeric.AERN.RealArithmetic.Basis.MPFR.InPlace.MixedFieldOps
-    Numeric.AERN.RealArithmetic.Basis.MPFR.Measures
-    Numeric.AERN.RealArithmetic.Basis.MPFR.ShowInternals
 
 Executable testAERN-Real-MPFR
   hs-source-dirs: src, tests
