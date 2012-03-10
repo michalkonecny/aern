@@ -118,8 +118,8 @@ instance
         
 instance
     (Ord var,
-     ArithInOut.RoundedReal cf,
      HasConsistency cf,
+     ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf)
     =>
     HasOne (IntPoly var cf)
@@ -128,10 +128,68 @@ instance
         where
         sampleCf = getSampleDomValue sampleP
         
+instance
+    (Ord var, Show var,
+     HasConsistency cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf)
+    =>        
+    CanAddVariables (IntPoly var cf)
+    where
+    addVariablesFront varDoms (IntPoly cfg terms)
+        =
+        IntPoly cfgWithNewVars termsWithNewVars
+        where
+        (vars, doms) = unzip varDoms
+        cfgWithNewVars =
+            cfg
+            {
+                ipolycfg_vars = newVars,
+                ipolycfg_domsLE = newDomsLE,
+                ipolycfg_domsLZ = newDomsLZ
+            }
+            where
+            newVars = vars ++ (ipolycfg_vars cfg)
+            newDomsLE = domsLE ++ (ipolycfg_domsLE cfg)
+            newDomsLZ = domsLZ ++ (ipolycfg_domsLZ cfg)
+            domsLE = map (fst . RefOrd.getEndpointsOutWithDefaultEffort) doms
+            domsLZ = zipWith (<->) doms domsLE
+        termsWithNewVars = addVars vars
+            where
+            addVars [] = terms
+            addVars (var : rest) =
+                IntPolyV var $ IntMap.singleton 0 $ addVars rest
+    addVariablesBack varDoms (IntPoly cfg terms)
+        =
+        IntPoly cfgWithNewVars termsWithNewVars
+        where
+        (vars, doms) = unzip varDoms
+        cfgWithNewVars =
+            cfg
+            {
+                ipolycfg_vars = newVars,
+                ipolycfg_domsLE = newDomsLE,
+                ipolycfg_domsLZ = newDomsLZ
+            }
+            where
+            newVars = (ipolycfg_vars cfg) ++ vars
+            newDomsLE = (ipolycfg_domsLE cfg) ++ domsLE
+            newDomsLZ = (ipolycfg_domsLZ cfg) ++ domsLZ
+            domsLE = map (fst . RefOrd.getEndpointsOutWithDefaultEffort) doms
+            domsLZ = zipWith (<->) doms domsLE
+        termsWithNewVars = addVarsToAllTerms terms
+            where
+            addVarsToAllTerms (IntPolyC value) =
+                mkConstTerms value vars
+            addVarsToAllTerms (IntPolyV var powers) =
+                IntPolyV var $ IntMap.map addVarsToAllTerms powers
+             
+            
+        
 instance 
     (Ord var, Show var, 
-     ArithInOut.RoundedReal cf,
      HasConsistency cf,
+     ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf) => 
     (HasProjections (IntPoly var cf))
     where

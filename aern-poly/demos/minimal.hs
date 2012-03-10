@@ -1,7 +1,8 @@
 module Main where
 
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
+import Numeric.AERN.Poly.IntPoly
 
+import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
 
@@ -22,6 +23,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.ShowInternals
 
 import Numeric.AERN.Misc.Debug
@@ -31,12 +33,11 @@ import System.IO
 import qualified Data.Map as Map
 import qualified Data.List as List
 
-import Test.QuickCheck
-
 --type CF = Interval MPFR
 type CF = Interval Double
 type Poly = IntPoly String CF
 
+main :: IO ()
 main =
     do
     putStrLn "basic arithmetic:"
@@ -47,8 +48,13 @@ main =
     putStrLn $ "x + y = " ++ (showP $ xPy)
     putStrLn $ "x + y + 1 + 1 = " ++ (showP $ xPyP1P1)
     putStrLn $ "(x + y)*(x - y) = " ++ (showP $ xPyBTxMyB)
---    putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
---    putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
+    putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
+    putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
+    putStrLn "structure changes:"
+    putStrLn $ "2(x + y + 2) [new vars z1,z2 at the front] = " 
+                    ++ (showP $ addVariablesFront (zip ["z1","z2"] doms) twoBxPyP2)
+    putStrLn $ "2(x + y + 2) [new vars z1,z2 at the back] = " 
+                    ++ (showP $ addVariablesBack (zip ["z1","z2"] doms) twoBxPyP2)
 --    putStrLn "endpoints (ie boundaries):"
 --    putStrLn $ "getEndpoints([0,1]x^2+[-1,0]) = " ++ (showPPair $ RefOrd.getEndpointsOutWithDefaultEffort $ c01 <*> (x <*> x <-> c1))
 --    putStrLn $ "fromEndpoints(x^2-1, 0) = " ++ (showP $ RefOrd.fromEndpointsOutWithDefaultEffort ((x <*> x <-> c1), c0))
@@ -127,7 +133,14 @@ main =
 --    where
 --    mOneToZ = (-1) </\> 0
 
+showP ::
+    Poly -> 
+    String
 showP p = showPoly id show p -- ++ " [" ++ show p ++ "]"
+
+showPPair ::
+    (Poly, Poly) -> 
+    String
 showPPair (p1,p2) = "(" ++ showP p1 ++ "," ++ showP p2 ++ ")" 
 
 c1,c0,x,y,c01 :: Poly
@@ -139,15 +152,26 @@ c1 = newConstFn cfg dombox 1
 --cOneOver16 = newConstFn cfg dombox $ 0.5^4
 c01 = newConstFn cfg dombox $ 0 </\> 1
 
+xPy :: Poly
 xPy = x <+> y
+
+xMy :: Poly
 xMy = x <-> y
+
+xPyP1P1 :: Poly
 xPyP1P1 = xPy <+> c1 <+> c1
-xPyBTxMyB = xPy <*!> xMy
---twoBxPyP2 = (2::Int) |<*!> xPyP1P1
+
+xPyBTxMyB :: Poly
+xPyBTxMyB = xPy <*> xMy
+
+twoBxPyP2 :: Poly
+twoBxPyP2 = (2::Int) |<*> xPyP1P1
+
 --integTwoBxPyP2 = integratePolyMainVar eff 0 c1 twoBxPyP2
 --expBxPyP2 = exp xPyP1P1
 
---eff = (100, (100,())) -- MPFR
+eff :: ArithInOut.RoundedRealEffortIndicator CF
+--eff = (100, (100,())) -- MPFR with explicit precision
 eff = ArithInOut.roundedRealDefaultEffort (0:: CF)
 --minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 x
 --minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 x
@@ -156,15 +180,19 @@ reduceDeg, reduceCount :: Poly -> Poly
 reduceDeg = reducePolyDegreeOut eff
 reduceCount = reducePolyTermCountOut eff
 
+evalOpsOutCf :: PolyEvalOps String CF CF
 evalOpsOutCf = evalOpsOut eff x (0::CF)
 
-p1 <*!> p2 =
-    case (IntPolyWithConsistentCoeffs p1) <*> (IntPolyWithConsistentCoeffs p2) of
-        IntPolyWithConsistentCoeffs res -> res
-
+numCompare :: 
+     NumOrd.PartialComparison t 
+     =>
+     t -> 
+     t -> 
+     PartialOrderingPartialInfo
 numCompare a b =
     NumOrd.pCompareInFullEff (NumOrd.pCompareDefaultEffort a) a b
 
+cfg :: IntPolyCfg String CF
 cfg =
     IntPolyCfg
         {
@@ -176,20 +204,34 @@ cfg =
             ipolycfg_maxsize = 30
         }
 
+cfgDeg0 :: IntPolyCfg String CF
 cfgDeg0 = cfg { ipolycfg_maxdeg = 0 }
+
+cfgDeg1 :: IntPolyCfg String CF
 cfgDeg1 = cfg { ipolycfg_maxdeg = 1 }
 
+cfgSize1 :: IntPolyCfg String CF
 cfgSize1 = cfg { ipolycfg_maxsize = 1 }
+
+cfgSize2 :: IntPolyCfg String CF
 cfgSize2 = cfg { ipolycfg_maxsize = 2 }
+
+cfgSize3 :: IntPolyCfg String CF
 cfgSize3 = cfg { ipolycfg_maxsize = 3 }
 
+cfgXTiny :: IntPolyCfg String CF
 cfgXTiny = cfg { ipolycfg_domsLZ = domsXTiny }
 
+cfgXTinySize1 :: IntPolyCfg String CF
 cfgXTinySize1 = cfgXTiny { ipolycfg_maxsize = 1 }
+
+cfgXTinySize2 :: IntPolyCfg String CF
 cfgXTinySize2 = cfgXTiny { ipolycfg_maxsize = 2 }
 
+dombox :: DomainBox Poly
 dombox = Map.fromList $ zip vars doms
 
+vars :: [Var Poly]
 vars = ["x", "y"]
 
 doms :: [CF]
