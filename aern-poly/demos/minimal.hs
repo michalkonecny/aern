@@ -5,6 +5,7 @@ import Numeric.AERN.Poly.IntPoly
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn.Integration
 
 import Numeric.AERN.RealArithmetic.Basis.Double
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
@@ -49,8 +50,9 @@ main =
     putStrLn $ "x + y + 1 + 1 = " ++ (showP $ xPyP1P1)
     putStrLn $ "(x + y)*(x - y) = " ++ (showP $ xPyBTxMyB)
     putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
-    putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
     putStrLn "structure changes:"
+    putStrLn $ "2(x + y + 2)[size 1] = " 
+                    ++ (showP $ reduceCount $ changeSizeLimits cfgSize1 $ twoBxPyP2)
     putStrLn $ "2(x + y + 2) [new vars z1,z2 at the front] = " 
                     ++ (showP $ addVariablesFront (zip ["z1","z2"] doms) twoBxPyP2)
     putStrLn $ "2(x + y + 2) [new vars z1,z2 at the back] = " 
@@ -67,12 +69,12 @@ main =
 --    randomPolysThin <- sample' (case NumOrd.arbitraryTupleInAreaRelatedBy (x, Just (0 </\> 1)) [1] [] of Just gen -> gen)
 --    let _ = [x] : randomPolysThin
 --    putStr $ "random 10 polynomials:\n" ++ (unlines $ map (showP . head) $ randomPolysThin)
---    putStrLn "numerical comparison:"
---    putStrLn $ "(x^2-1 `comp` 1) = " ++ (show $ numCompare (x <*> x <-> c1) c1)
---    putStrLn $ "(x^2-1 `comp` 0) = " ++ (show $ numCompare (x <*> x <-> c1) c0)
---    putStrLn $ "(x^2-1 `comp` -0.5) = " ++ (show $ numCompare (x <*> x <-> c1) (neg (cHalf)))
---    putStrLn $ "(x^2-1 `comp` -1) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> c1))
---    putStrLn $ "(x^2-1 `comp` -2) = " ++ (show $ numCompare (x <*> x <-> c1) ((c0 <-> c1) <-> c1))
+    putStrLn "numerical comparison:"
+    putStrLn $ "(x^2-1 `comp` 1) = " ++ (show $ numCompare (x <*> x <-> c1) c1)
+    putStrLn $ "(x^2-1 `comp` 0) = " ++ (show $ numCompare (x <*> x <-> c1) c0)
+    putStrLn $ "(x^2-1 `comp` -0.5) = " ++ (show $ numCompare (x <*> x <-> c1) (neg (cHalf)))
+    putStrLn $ "(x^2-1 `comp` -1) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> c1))
+    putStrLn $ "(x^2-1 `comp` -2) = " ++ (show $ numCompare (x <*> x <-> c1) ((c0 <-> c1) <-> c1))
 --    putStrLn "min/max up/dn:"
 --    putStrLn $ "x - 0.5 `maxUp` 0 = " ++ (showP $ NumOrd.maxUpEff minmaxUpDnEff (x <-> cHalf) c0)
 --    putStrLn $ "x - 0.5 `maxDn` 0 = " ++ (showP $ NumOrd.maxDnEff minmaxUpDnEff (x <-> cHalf) c0)
@@ -91,14 +93,14 @@ main =
 --    putStrLn $ "x - 1/16 `maxIn` 0 = " ++ (showP $ NumOrd.maxInEff minmaxInOutEff (x <-> cOneOver16) c0)
 --    putStrLn $ "x - 1/16 `minOut` 0 = " ++ (showP $ NumOrd.minOutEff minmaxInOutEff (x <-> cOneOver16) c0)
 --    putStrLn $ "x - 1/16 `minIn` 0 = " ++ (showP $ NumOrd.minInEff minmaxInOutEff (x <-> cOneOver16) c0)
-    putStrLn "*** ops not using generic interfaces (yet): ***"
+    putStrLn "integration:"
+    putStrLn $ "1 + int (2(x + y + 2)) dx = " ++ (showP integTwoBxPyP2)
+--    putStrLn "*** ops not using generic interfaces (yet): ***"
 --    putStrLn "differentiation:"
 --    putStrLn $ "d (2(x + y + 2))/dx = " ++ (showP $ diffPolyOut eff "x" twoBxPyP2)
 --    putStrLn $ "d (2(x + y + 2))/dy = " ++ (showP $ diffPolyOut eff "y" twoBxPyP2) 
 --    putStrLn $ "d (x^2 + 2xy + 4x + 1)/dx = " ++ (showP $ diffPolyOut eff "x" integTwoBxPyP2)
 --    putStrLn $ "d (x^2 + 2xy + 4x + 1)/dy = " ++ (showP $ diffPolyOut eff "y" integTwoBxPyP2)
---    putStrLn "integration:"
---    putStrLn $ "1 + int (2(x + y + 2)) dx = " ++ (showP integTwoBxPyP2)
 --    putStrLn "(ad hoc) evaluation and substitution:"
 --    putStrLn $ "(x + y + 2)drct[x=-1,y=-1] = " ++ (show $ evalPolyAtPoint eff [-1, -1] xPyP1P1)
 --    putStrLn $ "(x + y + 2)drct[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyAtPoint eff [mOneToZ,mOneToZ] xPyP1P1)
@@ -114,8 +116,7 @@ main =
 --    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[x^2-1,0]] = " ++ (showP $ substPolyMainVar eff 0 (RefOrd.fromEndpointsOutWithDefaultEffort ((x <*> x <-> c1), c0)) integTwoBxPyP2)
 --    putStrLn $ "(x^2 + 2xy + 4x + 1)substElim[x=[2,2]] = " ++ (showP $ substPolyMainVarElim eff 0 2 integTwoBxPyP2)
 --    putStrLn $ "(x^2 + 2xy + 4x + 1)substElim[x=[0,2]] = " ++ (showP $ substPolyMainVarElim eff 0 (0 </\> 2) integTwoBxPyP2)
-    putStrLn "structural ops:"
-    putStrLn $ "(x + 1)[size 1] = " ++ (showP $ reduceCount $ changeSizeLimits cfgSize1 $ x <+> c1)
+--    putStrLn "structural ops:"
 --    putStrLn $ "(x^2 + 2xy + 4x + 1)[swap order of x,y] = " ++ (showP $ polySwapFirstTwoVars integTwoBxPyP2)
 --    putStrLn $ "(x^2 + 2xy + 4x + 1)[x->z] = " ++ (showP $ polyRenameMainVar "z" integTwoBxPyP2)
 --    putStrLn $ "(x^2 + 2xy + 4x + 1)[add z] = " ++ (showP $ polyAddMainVar () eff "z" (0 </\> 2) integTwoBxPyP2)
@@ -143,13 +144,18 @@ showPPair ::
     String
 showPPair (p1,p2) = "(" ++ showP p1 ++ "," ++ showP p2 ++ ")" 
 
-c1,c0,x,y,c01 :: Poly
+x :: Poly
 x = newProjection cfg dombox "x"
+y :: Poly
 y = newProjection cfg dombox "y"
+c0 :: Poly
 c0 = newConstFn cfg dombox 0
+c1 :: Poly
 c1 = newConstFn cfg dombox 1
---cHalf = newConstFn cfg dombox 0.5
+cHalf :: Poly
+cHalf = newConstFn cfg dombox 0.5
 --cOneOver16 = newConstFn cfg dombox $ 0.5^4
+c01 :: Poly
 c01 = newConstFn cfg dombox $ 0 </\> 1
 
 xPy :: Poly
@@ -167,7 +173,8 @@ xPyBTxMyB = xPy <*> xMy
 twoBxPyP2 :: Poly
 twoBxPyP2 = (2::Int) |<*> xPyP1P1
 
---integTwoBxPyP2 = integratePolyMainVar eff 0 c1 twoBxPyP2
+integTwoBxPyP2 :: Poly
+integTwoBxPyP2 = c1 <+> primitiveFunctionOutEff eff twoBxPyP2 "x"
 --expBxPyP2 = exp xPyP1P1
 
 eff :: ArithInOut.RoundedRealEffortIndicator CF
