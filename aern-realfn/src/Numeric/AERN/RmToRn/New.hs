@@ -45,6 +45,16 @@ class (HasDomainBox f, HasSizeLimits f) => HasConstFns f where
         (Domain f) {-^ the value @v@ of the constant function -} -> 
         f {-^ @ \box -> v @ -}
 
+class (HasDomainBox f) => CanAddVariables f where
+    addVariablesFront ::
+        [(Var f, Domain f)] ->
+        f ->
+        f
+    addVariablesBack ::
+        [(Var f, Domain f)] ->
+        f ->
+        f
+
 newConstFnFromSample ::
     (HasConstFns f) =>
     f -> (Domain f) -> f
@@ -53,3 +63,4 @@ newConstFnFromSample sampleF value =
     where
     sizeLimits = getSizeLimits sampleF
     domBox = getDomainBox sampleF
+    

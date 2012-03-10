@@ -43,7 +43,7 @@ import Numeric.AERN.Poly.IntPoly.Evaluation
 import Numeric.AERN.Poly.IntPoly.Reduction
 import Numeric.AERN.Poly.IntPoly.Addition
 import Numeric.AERN.Poly.IntPoly.Multiplication
-import Numeric.AERN.Poly.IntPoly.NumericOrder
+import Numeric.AERN.Poly.IntPoly.NumericOrder ()
 --import Numeric.AERN.Poly.IntPoly.RingOps
 import Numeric.AERN.Poly.IntPoly.Integration
 --import Numeric.AERN.Poly.IntPoly.RefinementOrder

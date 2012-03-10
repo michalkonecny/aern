@@ -90,18 +90,9 @@ instance
     ArithUpDn.RoundedAdd (IntPoly var cf) 
     where
     addUpEff (effOut, effGetE) p1 p2 =
-        snd $ polyGetEndpointsOut effGetE $ ArithInOut.addOutEff effOut p1 p2
+        snd $ polyGetEndpointsOutEff effGetE $ ArithInOut.addOutEff effOut p1 p2
     addDnEff (effOut, effGetE) p1 p2 =
-        fst $ polyGetEndpointsOut effGetE $ ArithInOut.addOutEff effOut p1 p2
-
-polyGetEndpointsOut ::
-    RefOrd.IntervalLike cf 
-    =>
-    RefOrd.GetEndpointsEffortIndicator cf -> 
-    IntPoly var cf -> 
-    (IntPoly var cf, IntPoly var cf)
-polyGetEndpointsOut effGetE p =
-    polySplitWith (RefOrd.getEndpointsOutEff effGetE) p
+        fst $ polyGetEndpointsOutEff effGetE $ ArithInOut.addOutEff effOut p1 p2
 
 instance
     (ArithInOut.RoundedReal cf) => 
@@ -260,9 +251,9 @@ instance
     ArithUpDn.RoundedMixedAdd (IntPoly var cf) Int 
     where
     mixedAddUpEff (effOut, effGetE) p1 other =
-        snd $ polyGetEndpointsOut effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
+        snd $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
     mixedAddDnEff (effOut, effGetE) p1 other =
-        fst $ polyGetEndpointsOut effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
+        fst $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
     
 instance
     (ArithInOut.RoundedMixedAddEffort cf other) => 
