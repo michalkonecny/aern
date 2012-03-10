@@ -81,16 +81,21 @@ instance
         case partialInfo2PartialOrdering $ RefOrd.pCompareInFullEff effort i1 i2 of
             [ord] -> Just ord
             _ -> Nothing
-    pCompareInFullEff effort (Interval l1 r1) (Interval l2 r2) = 
-        PartialOrderingPartialInfo
-        {
-            pOrdInfEQ = fromD (eqD, neqD),
-            pOrdInfLT = fromD (ltD, nltD),
-            pOrdInfLEQ = fromD (leqD, nleqD),
-            pOrdInfGT = fromD (gtD, ngtD),
-            pOrdInfGEQ = fromD (geqD, ngeqD),
-            pOrdInfNC = fromD (nleqD && ngeqD, leqD || geqD)
-        }
+    pCompareInFullEff effort (Interval l1 r1) (Interval l2 r2)
+        =
+        refordPCompareInFullIntervalsEff effort (l1, r1) (l2, r2)  
+    
+refordPCompareInFullIntervalsEff effort (l1, r1) (l2, r2)
+    = 
+    PartialOrderingPartialInfo
+    {
+        pOrdInfEQ = fromD (eqD, neqD),
+        pOrdInfLT = fromD (ltD, nltD),
+        pOrdInfLEQ = fromD (leqD, nleqD),
+        pOrdInfGT = fromD (gtD, ngtD),
+        pOrdInfGEQ = fromD (geqD, ngeqD),
+        pOrdInfNC = fromD (nleqD && ngeqD, leqD || geqD)
+    }
 --        case (c l1 l2, c r1 r2) of
 --            (Just EQ, Just EQ) -> Just EQ
 --            (Just LT, Just GT) -> Just LT  
@@ -101,37 +106,37 @@ instance
 --            (Just EQ, Just LT) -> Just GT  
 --            (Just _, Just _) -> Just NC  
 --            _ -> Nothing
-        where
-        fromD (definitelyTrue, definitelyFalse) =
-            case (definitelyTrue, definitelyFalse) of
-                (True, _) -> Just True
-                (_, True) -> Just False
-                _ -> Nothing
-        eqD = leftEQ == jt && rightEQ == jt
-        neqD = leftEQ == jf || rightEQ == jf
-        leqD = leftLEQ == jt && rightGEQ == jt
-        nleqD = leftLEQ == jf || rightGEQ == jf
-        ltD = leqD && neqD
-        nltD = nleqD || eqD
-        gtD = geqD && neqD
-        ngtD = ngeqD || eqD
-        geqD = leftGEQ == jt && rightLEQ == jt
-        ngeqD = leftGEQ == jf || rightLEQ == jf
-        
-        leftEQ = pOrdInfEQ leftInfo
-        leftLT = pOrdInfLT leftInfo
-        leftLEQ = pOrdInfLEQ leftInfo
-        leftGT = pOrdInfGT leftInfo
-        leftGEQ = pOrdInfGEQ leftInfo
-        leftInfo = NumOrd.pCompareInFullEff effort l1 l2 
-        rightEQ = pOrdInfEQ rightInfo
-        rightLT = pOrdInfLT rightInfo
-        rightLEQ = pOrdInfLEQ rightInfo
-        rightGT = pOrdInfGT rightInfo
-        rightGEQ = pOrdInfGEQ rightInfo
-        rightInfo = NumOrd.pCompareInFullEff effort r1 r2 
-        jt = Just True
-        jf = Just False
+    where
+    fromD (definitelyTrue, definitelyFalse) =
+        case (definitelyTrue, definitelyFalse) of
+            (True, _) -> Just True
+            (_, True) -> Just False
+            _ -> Nothing
+    eqD = leftEQ == jt && rightEQ == jt
+    neqD = leftEQ == jf || rightEQ == jf
+    leqD = leftLEQ == jt && rightGEQ == jt
+    nleqD = leftLEQ == jf || rightGEQ == jf
+    ltD = leqD && neqD
+    nltD = nleqD || eqD
+    gtD = geqD && neqD
+    ngtD = ngeqD || eqD
+    geqD = leftGEQ == jt && rightLEQ == jt
+    ngeqD = leftGEQ == jf || rightLEQ == jf
+    
+    leftEQ = pOrdInfEQ leftInfo
+--    leftLT = pOrdInfLT leftInfo
+    leftLEQ = pOrdInfLEQ leftInfo
+--    leftGT = pOrdInfGT leftInfo
+    leftGEQ = pOrdInfGEQ leftInfo
+    leftInfo = NumOrd.pCompareInFullEff effort l1 l2 
+    rightEQ = pOrdInfEQ rightInfo
+--    rightLT = pOrdInfLT rightInfo
+    rightLEQ = pOrdInfLEQ rightInfo
+--    rightGT = pOrdInfGT rightInfo
+    rightGEQ = pOrdInfGEQ rightInfo
+    rightInfo = NumOrd.pCompareInFullEff effort r1 r2 
+    jt = Just True
+    jf = Just False
         
 
 instance (NumOrd.HasExtrema e) => (RefOrd.HasTop (Interval e))

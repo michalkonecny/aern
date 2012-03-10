@@ -253,6 +253,14 @@ termsJoinWith z joinCf (tL, tR) =
     aux _ = 
         error $ "aern-intpoly internal error: Poly: termsJoinWith used with illegal values"
 
+polyGetEndpointsOutEff ::
+    RefOrd.IntervalLike cf 
+    =>
+    RefOrd.GetEndpointsEffortIndicator cf -> 
+    IntPoly var cf -> 
+    (IntPoly var cf, IntPoly var cf)
+polyGetEndpointsOutEff effGetE p =
+    polySplitWith (RefOrd.getEndpointsOutEff effGetE) p
 
 {-- Internal checks and normalisation --}
 polyNormalise ::

@@ -19,6 +19,7 @@ module Numeric.AERN.RmToRn.Evaluation where
 import Numeric.AERN.RmToRn.Domain
 
 --import qualified Numeric.AERN.RefinementOrder as RefOrd
+--import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.Arbitrary
@@ -56,10 +57,33 @@ class
     evaluationDefaultEffort :: f -> EvaluationEffortIndicator f
     evalAtPointOutEff :: 
         EvaluationEffortIndicator f -> 
-        (VarBox f (Domain f)) -> f -> (Domain f)
+        (DomainBox f) {-^ a sub-domain @A@ where to evaluate -} -> 
+        f {-^ function @f@ -} -> 
+        (Domain f) {-^ approximated range of @f@ over @A@ -}
     evalAtPointInEff ::
         EvaluationEffortIndicator f -> 
-        (VarBox f (Domain f)) -> f -> (Domain f)
+        (DomainBox f) {-^ a sub-domain @A@ where to evaluate -} -> 
+        f {-^ function @f@ -} -> 
+        (Domain f) {-^ approximated range of @f@ over @A@ -}
+    
+class 
+    (HasDomainBox f,
+     EffortIndicator (EvaluationEffortIndicator f)) 
+    => 
+    CanPartiallyEvaluate f
+    where
+    type PartialEvaluationEffortIndicator f
+    partialEvaluationDefaultEffort :: f -> PartialEvaluationEffortIndicator f
+    pEvalAtPointOutEff :: 
+        PartialEvaluationEffortIndicator f -> 
+        (DomainBox f) {-^ values for some of the variables in @f@ -} -> 
+        f {-^ function @f@ -} -> 
+        f {-^ approximation of the specialised function in the remaning, unevaluated, variables -}
+    pEvalAtPointInEff ::
+        PartialEvaluationEffortIndicator f -> 
+        (DomainBox f) {-^ values for some of the variables in @f@ -} -> 
+        f {-^ function @f@ -} -> 
+        f {-^ approximation of the specialised function in the remaning, unevaluated, variables -}
     
 {-
     Properties and tests of CanEvaluate are in the Laws module
@@ -74,8 +98,10 @@ class (HasDomainBox f) => CanSubstitute f
     substitutionDefaultEffort :: f -> SubstitutionEffortIndicator f
     substituteOut ::
         SubstitutionEffortIndicator f -> 
-        (VarBox f (Domain f)) -> f -> f
+        (VarBox f f) {-^ for each variable, a function with domain @D'@  -} -> 
+        f {-^ a function @f@ with domain @D@ -} -> 
+        f {-^ an approximation of the composition of function @f@ with the given functions -}
     substituteIn ::
         SubstitutionEffortIndicator f -> 
-        (VarBox f (Domain f)) -> f -> f
+        (VarBox f f) -> f -> f
 
