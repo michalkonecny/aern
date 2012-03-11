@@ -54,7 +54,7 @@ import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 
---import Numeric.AERN.Misc.Debug
+import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
 import qualified Data.Map as Map
@@ -131,22 +131,6 @@ instance
             valsMapToValuesLZ (>-<) cfg valsMap
         effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
         sample = ipolycfg_sample_cf cfg
-    
-instance
-    (Ord var, Show var, Show cf,
-     ArithInOut.RoundedReal cf, 
-     HasAntiConsistency cf, 
-     RefOrd.IntervalLike cf)
-    =>
-    CanPartiallyEvaluate (IntPoly var cf)
-    where
-    type (PartialEvaluationEffortIndicator (IntPoly var cf)) = 
-        ArithInOut.RoundedRealEffortIndicator cf
-    partialEvaluationDefaultEffort (IntPoly cfg _) =
-        ArithInOut.roundedRealDefaultEffort (ipolycfg_sample_cf cfg)
-    pEvalAtPointOutEff = partiallyEvalPolyAtPointOut
-    pEvalAtPointInEff =
-        error "aern-poly: no inwards-rounded partial evaluation for IntPoly" 
     
 valuesAreExact :: 
     HasImprecision t 
@@ -358,7 +342,7 @@ evalPolyMono opsV values p@(IntPoly cfg _)
 --        unsafePrint
 --        (
 --            "evalPolyMono: "
---            ++ "\n p = " ++ show p
+----            ++ "\n p = " ++ show p
 --            ++ "\n values = " ++ show values
 --            ++ "\n valuesL = " ++ show valuesL
 --            ++ "\n valuesR = " ++ show valuesR
@@ -420,6 +404,22 @@ evalPolyMono opsV values p@(IntPoly cfg _)
     sampleCf = ipolycfg_sample_cf cfg
     
 
+instance
+    (Ord var, Show var, Show cf,
+     ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf, 
+     RefOrd.IntervalLike cf)
+    =>
+    CanPartiallyEvaluate (IntPoly var cf)
+    where
+    type (PartialEvaluationEffortIndicator (IntPoly var cf)) = 
+        ArithInOut.RoundedRealEffortIndicator cf
+    partialEvaluationDefaultEffort (IntPoly cfg _) =
+        ArithInOut.roundedRealDefaultEffort (ipolycfg_sample_cf cfg)
+    pEvalAtPointOutEff = partiallyEvalPolyAtPointOut
+    pEvalAtPointInEff =
+        error "aern-poly: no inwards-rounded partial evaluation for IntPoly" 
+    
 partiallyEvalPolyAtPointOut ::
     (Ord var, ArithInOut.RoundedReal cf) 
     =>
@@ -429,7 +429,8 @@ partiallyEvalPolyAtPointOut ::
     IntPoly var cf
 partiallyEvalPolyAtPointOut effCf valsMap _p@(IntPoly cfg terms) =
     {- TODO: currently there is massive dependency effect here,
-        we should use monotonicity whenever possible
+        move this to Composition and deal with it as a special case
+        of composition
     -}
     IntPoly cfgVarsRemoved $ pev domsLE terms
     where
