@@ -43,38 +43,61 @@ shouldPrintPrecision = False
 main :: IO ()
 main =
     do
+    putStrLn "-------------------------------------------------"
     putStrLn "demo of aern-picard using simple examples"
+    putStrLn "-------------------------------------------------"
+    solveExpDecay
+
+solveExpDecay :: IO ()
+solveExpDecay =
+    do
+    putStrLn $ "solving: x' = -x; x(" ++ show timeStart ++ ") = " ++ show initialValues
+    putStrLn "-------------------------------------------------"
+    putStrLn $ "maxdeg = " ++ show maxdeg
+    putStrLn $ "maxsize = " ++ show maxsize
+    putStrLn $ "delta = " ++ show delta
+    putStrLn $ "x(" ++ show timeEnd ++ ") = ?"
+    putStrLn "-------------------------------------------------"
     putEnclosureEndpoints "t" $
-        take 10 $
-            enclosuresExpDecayUnitInitialValueTimeZero 
-                effCf maxdeg maxsize delta timeDomain
+        take 20 $
+            enclosuresOfIVPWithUncertainValue 
+                effCf maxdeg maxsize delta 
+                    tVar timeDomain componentNames field initialValues
     where
-    maxdeg = 1
-    maxsize = 100
+    timeStart = 0
+    initialValues = [(-1) DI.</\> 1]
     delta = 1
-    timeDomain = 0 DI.</\> 1
+    maxdeg = 10
+    maxsize = 100
+    timeEnd = 1
+    
+    field [x] = [neg x]
+    timeDomain = timeStart DI.</\> timeEnd
+    componentNames = ["x"]
+    tVar = "t"
     effCf = ArithInOut.roundedRealDefaultEffort (0:: CF)
 --    effCf = (100, (100,())) -- MPFR
 
     
-enclosuresExpDecayUnitInitialValueTimeZero :: 
+enclosuresOfIVPWithUncertainValue :: 
     PartialEvaluationEffortIndicator Poly -> 
     Int -> Int -> 
-    CF -> 
-    CF -> 
+    CF ->
+    Var Poly ->
+    CF ->
+    [Var Poly] ->
+    ([Poly] -> [Poly]) ->
+    [CF] ->
     [[Poly]]
-enclosuresExpDecayUnitInitialValueTimeZero 
-        effCf maxdeg maxsize delta timeDomain 
+enclosuresOfIVPWithUncertainValue 
+        effCf maxdeg maxsize delta 
+            tVar timeDomain componentNames field initialValues
     =
 --    map (map substituteInitialValueUncertainty) $
         solveUncertainValueExactTime
             effInteg effInclFn effAddFn effAddFnDom effJoinDom
             tVar timeDomain initialValuesFns field delta
     where
-    field [x] = [neg x]
-    componentNames = ["x"]
-    initialValues = [(-1) DI.</\> 1]
-    tVar = "t"
 
     initialValuesFns =
         map initialValueFn componentNames
@@ -93,7 +116,7 @@ enclosuresExpDecayUnitInitialValueTimeZero
     sampleCf = 
         getSampleDomValue sampleFnWithoutT
     
-    effEval = effCf
+--    effEval = effCf
     effInteg = effCf
     effAddFn = effCf
     effAddFnDom =
@@ -153,5 +176,5 @@ putEnclosureEndpoints tVar fnVectors =
         do
         putStrLn $ "---------- enclosure " ++ show (n :: Int) ++ ":"
         putStrLn $ "at end time: " ++ (show $ evalAtEndTimeVec tVar fns)
-        putStrLn $ "in full: " ++ (show fns)
+--        putStrLn $ "in full: " ++ (show fns)
         
