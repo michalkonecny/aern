@@ -96,32 +96,23 @@ class (HasDomainBox f) => CanCompose f
     where
     type CompositionEffortIndicator f
     compositionDefaultEffort :: f -> CompositionEffortIndicator f
-    composeAllVarsOutEff ::
+    composeVarsOutEff ::
         CompositionEffortIndicator f -> 
         (VarBox f f) {-^ for each variable, a function with domain @D'@  -} -> 
         f {-^ a function @f@ with domain @D@ -} -> 
         f {-^ an approximation of the composition of function @f@ with the given functions -}
-    composeAllVarsInEff ::
+    composeVarsInEff ::
         CompositionEffortIndicator f -> 
         (VarBox f f) -> f -> f
-    composeMainVarElimOutEff ::
+    composeVarOutEff ::
+        CompositionEffortIndicator f ->
+        (Var f) {-^ variable @v@ -} -> 
+        f {-^ a function with domain @D'@ to substitute for variable @v@  -} -> 
+        f {-^ a function @f@ with domain @D@ -} -> 
+        f {-^ an approximation of the composition of function @f@ with the given functions -}
+    composeVarInEff ::
         CompositionEffortIndicator f -> 
+        (Var f) {-^ variable @v@ -} -> 
         f {-^ a function with domain @D@ to substitute for variable @v@  -} -> 
         f {-^ a function @f@ with domain @(v:V) x D@ -} -> 
         f {-^ an approximation of the composition of function @f@ with the given functions -}
-    composeMainVarElimInEff ::
-        CompositionEffortIndicator f -> 
-        f {-^ a function with domain @D@ to substitute for variable @v@  -} -> 
-        f {-^ a function @f@ with domain @(v:V) x D@ -} -> 
-        f {-^ an approximation of the composition of function @f@ with the given functions -}
-    composeMainVarKeepOutEff ::
-        CompositionEffortIndicator f -> 
-        f {-^ a function with domain @V x D@ to substitute for variable @v@  -} -> 
-        f {-^ a function @f@ with domain @(v:V) x D@ -} -> 
-        f {-^ an approximation of the composition of function @f@ with the given functions -}
-    composeMainVarKeepInEff ::
-        CompositionEffortIndicator f -> 
-        f {-^ a function with domain @V x D@ to substitute for variable @v@  -} -> 
-        f {-^ a function @f@ with domain @(v:V) x D@ -} -> 
-        f {-^ an approximation of the composition of function @f@ with the given functions -}
-

@@ -46,17 +46,25 @@ main =
     putStrLn $ "1 = " ++ showP c1
     putStrLn $ "x = " ++ showP x
     putStrLn $ "y = " ++ showP y
+    putStrLn $ "yNoX = " ++ showP yNoX
+    putStrLn $ "[0,1]*y = " ++ (showP $ c01 <*> y)
     putStrLn $ "x + y = " ++ (showP $ xPy)
     putStrLn $ "x + y + 1 + 1 = " ++ (showP $ xPyP1P1)
     putStrLn $ "(x + y)*(x - y) = " ++ (showP $ xPyBTxMyB)
     putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
-    putStrLn "structure changes:"
+    putStrLn "reductions (TODO):"
     putStrLn $ "2(x + y + 2)[size 1] = " 
                     ++ (showP $ reduceCount $ changeSizeLimits cfgSize1 $ twoBxPyP2)
+    putStrLn "structure changes:"
     putStrLn $ "2(x + y + 2) [new vars z1,z2 at the front] = " 
                     ++ (showP $ addVariablesFront (zip ["z1","z2"] doms) twoBxPyP2)
     putStrLn $ "2(x + y + 2) [new vars z1,z2 at the back] = " 
                     ++ (showP $ addVariablesBack (zip ["z1","z2"] doms) twoBxPyP2)
+--    putStrLn "evaluation:"
+--    putStrLn "partial evaluation:"
+    putStrLn "composition:"
+    putStrLn $ "(x^2+y+1)subst[x=[y,y]] = " ++ (showP $ composeVarOutEff eff "x" y $ x <*> x <+> y <+> c1)
+    putStrLn $ "(x^2+y+1)substElim[x=[y,y]] = " ++ (showP $ composeVarOutEff eff "x" yNoX $ x <*> x <+> y <+> c1)
 --    putStrLn "endpoints (ie boundaries):"
 --    putStrLn $ "getEndpoints([0,1]x^2+[-1,0]) = " ++ (showPPair $ RefOrd.getEndpointsOutWithDefaultEffort $ c01 <*> (x <*> x <-> c1))
 --    putStrLn $ "fromEndpoints(x^2-1, 0) = " ++ (showP $ RefOrd.fromEndpointsOutWithDefaultEffort ((x <*> x <-> c1), c0))
@@ -138,7 +146,7 @@ main =
 showP ::
     Poly -> 
     String
-showP p = showPoly id show p -- ++ " [" ++ show p ++ "]"
+showP p = showPoly id show p ++ " [" ++ show p ++ "]"
 
 showPPair ::
     (Poly, Poly) -> 
@@ -149,8 +157,16 @@ x :: Poly
 x = newProjection cfg dombox "x"
 y :: Poly
 y = newProjection cfg dombox "y"
+
+yNoX :: Poly
+yNoX = newProjection (cfgRemVar cfg) dombox "y"
+
 c0 :: Poly
 c0 = newConstFn cfg dombox 0
+
+c0NoX :: Poly
+c0NoX = newConstFnFromSample yNoX 0
+
 c1 :: Poly
 c1 = newConstFn cfg dombox 1
 cHalf :: Poly
