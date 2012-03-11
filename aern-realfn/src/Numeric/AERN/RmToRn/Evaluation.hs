@@ -92,16 +92,36 @@ class
     a function defined in Laws.
 -}
     
-class (HasDomainBox f) => CanSubstitute f
+class (HasDomainBox f) => CanCompose f
     where
-    type SubstitutionEffortIndicator f
-    substitutionDefaultEffort :: f -> SubstitutionEffortIndicator f
-    substituteOut ::
-        SubstitutionEffortIndicator f -> 
+    type CompositionEffortIndicator f
+    compositionDefaultEffort :: f -> CompositionEffortIndicator f
+    composeAllVarsOutEff ::
+        CompositionEffortIndicator f -> 
         (VarBox f f) {-^ for each variable, a function with domain @D'@  -} -> 
         f {-^ a function @f@ with domain @D@ -} -> 
         f {-^ an approximation of the composition of function @f@ with the given functions -}
-    substituteIn ::
-        SubstitutionEffortIndicator f -> 
+    composeAllVarsInEff ::
+        CompositionEffortIndicator f -> 
         (VarBox f f) -> f -> f
+    composeMainVarElimOutEff ::
+        CompositionEffortIndicator f -> 
+        f {-^ a function with domain @D@ to substitute for variable @v@  -} -> 
+        f {-^ a function @f@ with domain @(v:V) x D@ -} -> 
+        f {-^ an approximation of the composition of function @f@ with the given functions -}
+    composeMainVarElimInEff ::
+        CompositionEffortIndicator f -> 
+        f {-^ a function with domain @D@ to substitute for variable @v@  -} -> 
+        f {-^ a function @f@ with domain @(v:V) x D@ -} -> 
+        f {-^ an approximation of the composition of function @f@ with the given functions -}
+    composeMainVarKeepOutEff ::
+        CompositionEffortIndicator f -> 
+        f {-^ a function with domain @V x D@ to substitute for variable @v@  -} -> 
+        f {-^ a function @f@ with domain @(v:V) x D@ -} -> 
+        f {-^ an approximation of the composition of function @f@ with the given functions -}
+    composeMainVarKeepInEff ::
+        CompositionEffortIndicator f -> 
+        f {-^ a function with domain @V x D@ to substitute for variable @v@  -} -> 
+        f {-^ a function @f@ with domain @(v:V) x D@ -} -> 
+        f {-^ an approximation of the composition of function @f@ with the given functions -}
 
