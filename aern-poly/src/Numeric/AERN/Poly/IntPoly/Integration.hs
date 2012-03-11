@@ -24,6 +24,7 @@ where
     
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
+import Numeric.AERN.Poly.IntPoly.Reduction
 import Numeric.AERN.Poly.IntPoly.Addition ()
 import Numeric.AERN.Poly.IntPoly.Multiplication ()
 
@@ -77,6 +78,7 @@ primitiveFnOutPoly ::
     var {- variable to integrate in -} ->
     IntPoly var cf
 primitiveFnOutPoly eff _p@(IntPoly cfg terms) var =
+    reducePolyDegreeOut eff $
     IntPoly cfg $ primitiveFnOutTerms terms
     where
     primitiveFnOutTerms (IntPolyV var2 powers) 
