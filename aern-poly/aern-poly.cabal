@@ -34,7 +34,9 @@ Library
         aern-interval == 0.5.*,
         aern-realfn == 0.5.*
   exposed-modules:  Numeric.AERN.Poly.IntPoly
-  other-modules:    Numeric.AERN.Poly.IntPoly.Addition,
+  other-modules:    
+                    Numeric.AERN.Poly.IntPoly.Addition,
+                    Numeric.AERN.Poly.IntPoly.Composition,
                     Numeric.AERN.Poly.IntPoly.Config,
                     Numeric.AERN.Poly.IntPoly.Differentiation,
                     Numeric.AERN.Poly.IntPoly.Evaluation,
@@ -43,7 +45,9 @@ Library
                     Numeric.AERN.Poly.IntPoly.Multiplication,
                     Numeric.AERN.Poly.IntPoly.New,
                     Numeric.AERN.Poly.IntPoly.NumericOrder,
-                    Numeric.AERN.Poly.IntPoly.Reduction
+                    Numeric.AERN.Poly.IntPoly.Reduction,
+                    Numeric.AERN.Poly.IntPoly.RefinementOrder,
+                    Numeric.AERN.Poly.IntPoly.Show
 
 executable testAERN-Poly
   Build-Depends:   base == 4.2.* || == 4.4.* || == 4.5.*,

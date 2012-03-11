@@ -22,11 +22,12 @@
 module Numeric.AERN.Poly.IntPoly.Evaluation
     (
         PolyEvalOps(..),
-        PolyEvalMonoOps(..),
-        evalPolyAtPointOut,
-        evalPolyAtPointIn,
-        evalPolyOnIntervalOut,
-        evalPolyOnIntervalIn
+        PolyEvalMonoOps(..)
+--        ,
+--        evalPolyAtPointOut,
+--        evalPolyAtPointIn,
+--        evalPolyOnIntervalOut,
+--        evalPolyOnIntervalIn
     )
 where
 
@@ -297,7 +298,7 @@ evalPolyDirect ::
     (PolyEvalOps var cf val) ->
     [val] ->
     IntPoly var cf -> val
-evalPolyDirect opsV values _p@(IntPoly cfg terms)
+evalPolyDirect opsV valuesLZ _p@(IntPoly _cfg terms)
     = 
 --    unsafePrint
 --    (
@@ -305,7 +306,7 @@ evalPolyDirect opsV values _p@(IntPoly cfg terms)
 --        ++ "\n  values = " ++ show values
 --        ++ "\n  p = " ++ show p
 --    ) $
-    ev values domsLE terms
+    ev valuesLZ terms
     where
     zV = polyEvalZero opsV
     addV = polyEvalAdd opsV
@@ -313,17 +314,14 @@ evalPolyDirect opsV values _p@(IntPoly cfg terms)
     powV = polyEvalPow opsV
     cfV = polyEvalCoeff opsV
     polyV = polyEvalMaybePoly opsV
-    domsLE = ipolycfg_domsLE cfg
-    ev [] [] (IntPolyC cf) = cfV cf
-    ev (varValue : restVars) (domLE : restDoms) (IntPolyV _ powers)
+    ev [] (IntPolyC cf) = cfV cf
+    ev (varValueLZ : restValues) (IntPolyV _ powers)
         | IntMap.null powers = zV
         | lowestExponent == 0 = 
             resultMaybeWithoutConstantTerm
         | otherwise =
             (varValueLZ `powV` lowestExponent) `multV` resultMaybeWithoutConstantTerm 
         where
-        varValueLZ =
-            addV varValue (cfV $ neg domLE)
         (lowestExponent, resultMaybeWithoutConstantTerm) 
             = IntMap.foldWithKey addTerm (highestExponent, zV) powers 
         (highestExponent, _) = IntMap.findMax powers
@@ -336,12 +334,11 @@ evalPolyDirect opsV values _p@(IntPoly cfg terms)
             polyValue =
                 case polyV poly of
                     Just value -> value
-                    Nothing -> ev restVars restDoms poly  
-    ev varVals domsLE_2 terms_2 =
+                    Nothing -> ev restValues poly  
+    ev varVals terms_2 =
         error $ 
             "evalPolyDirect: illegal case:" 
             ++ "\n varVals = " ++ show varVals 
-            ++ "\n domsLE = " ++ show domsLE_2 
             ++ "\n terms = " ++ show terms_2
 
 -- TODO: make the following function generic for any function representation with nominal derivatives    
@@ -422,6 +419,7 @@ evalPolyMono opsV values p@(IntPoly cfg _)
     effMult = ArithInOut.mxfldEffortMult sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf eff
     sampleCf = ipolycfg_sample_cf cfg
     
+
 partiallyEvalPolyAtPointOut ::
     (Ord var, ArithInOut.RoundedReal cf) 
     =>
@@ -430,6 +428,9 @@ partiallyEvalPolyAtPointOut ::
     IntPoly var cf -> 
     IntPoly var cf
 partiallyEvalPolyAtPointOut effCf valsMap _p@(IntPoly cfg terms) =
+    {- TODO: currently there is massive dependency effect here,
+        we should use monotonicity whenever possible
+    -}
     IntPoly cfgVarsRemoved $ pev domsLE terms
     where
     cfgVarsRemoved =

@@ -209,8 +209,8 @@ cfg =
     IntPolyCfg
         {
             ipolycfg_vars = vars,
-            ipolycfg_domsLZ = doms,
-            ipolycfg_domsLE = replicate (length vars) (0 :: CF),
+            ipolycfg_domsLZ = domsLZ ,
+            ipolycfg_domsLE = domsLE,
             ipolycfg_sample_cf = 0 :: CF,
             ipolycfg_maxdeg = 4,
             ipolycfg_maxsize = 30
@@ -247,7 +247,13 @@ vars :: [Var Poly]
 vars = ["x", "y"]
 
 doms :: [CF]
-doms = [((-1)</\> 1), (-1) </\> 1]
+doms = zipWith (<+>) domsLE domsLZ
+
+domsLZ :: [CF]
+domsLZ = [0 </\> 2, 0 </\> 2]
+
+domsLE :: [CF]
+domsLE = [-1, -1]
 
 domsXTiny :: [CF]
 domsXTiny = [(0 </\> 0.0625), ((-1) </\> 1)]

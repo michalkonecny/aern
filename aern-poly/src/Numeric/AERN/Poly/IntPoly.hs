@@ -19,15 +19,15 @@ module Numeric.AERN.Poly.IntPoly
         module Numeric.AERN.Poly.IntPoly.Config,
         module Numeric.AERN.Poly.IntPoly.IntPoly,
         module Numeric.AERN.Poly.IntPoly.New,
---        module Numeric.AERN.Poly.IntPoly.DomBoxChanges,
---        module Numeric.AERN.Poly.IntPoly.Differentiation,
+        module Numeric.AERN.Poly.IntPoly.Integration,
         module Numeric.AERN.Poly.IntPoly.Evaluation,
+        module Numeric.AERN.Poly.IntPoly.Show,
+--        module Numeric.AERN.Poly.IntPoly.NumericOrder, -- nothing to reexport
         module Numeric.AERN.Poly.IntPoly.Reduction,
         module Numeric.AERN.Poly.IntPoly.Addition,
         module Numeric.AERN.Poly.IntPoly.Multiplication,
---        module Numeric.AERN.Poly.IntPoly.NumericOrder,
+        module Numeric.AERN.Poly.IntPoly.Composition
 --        ,
-        module Numeric.AERN.Poly.IntPoly.Integration,
 --        module Numeric.AERN.Poly.IntPoly.RefinementOrder,
 --        module Numeric.AERN.Poly.IntPoly.Substitution,
 --        module Numeric.AERN.Poly.IntPoly.Minmax
@@ -37,17 +37,15 @@ where
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
 import Numeric.AERN.Poly.IntPoly.New
---import Numeric.AERN.Poly.IntPoly.DomBoxChanges
---import Numeric.AERN.Poly.IntPoly.Differentiation -- deliberately hidden
+import Numeric.AERN.Poly.IntPoly.Integration
 import Numeric.AERN.Poly.IntPoly.Evaluation
 import Numeric.AERN.Poly.IntPoly.Reduction
 import Numeric.AERN.Poly.IntPoly.Addition
 import Numeric.AERN.Poly.IntPoly.Multiplication
+import Numeric.AERN.Poly.IntPoly.Composition
+import Numeric.AERN.Poly.IntPoly.Show
 import Numeric.AERN.Poly.IntPoly.NumericOrder ()
---import Numeric.AERN.Poly.IntPoly.RingOps
-import Numeric.AERN.Poly.IntPoly.Integration
 --import Numeric.AERN.Poly.IntPoly.RefinementOrder
---import Numeric.AERN.Poly.IntPoly.Substitution
 --import Numeric.AERN.Poly.IntPoly.Minmax
 
 
