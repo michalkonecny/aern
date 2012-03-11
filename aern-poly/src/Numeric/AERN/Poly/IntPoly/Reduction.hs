@@ -17,7 +17,9 @@
 module Numeric.AERN.Poly.IntPoly.Reduction
     (
         reducePolyDegreeOut,
-        reducePolyTermCountOut
+        reduceTermsDegreeOut,
+        reducePolyTermCountOut,
+        reduceTermsTermCountOut
     )
 where
     
@@ -58,17 +60,33 @@ reducePolyTermCountOut ::
     ArithInOut.RoundedRealEffortIndicator cf -> 
     IntPoly var cf -> 
     IntPoly var cf
-reducePolyTermCountOut effCf p =
+reducePolyTermCountOut effCf (IntPoly cfg terms) =
+    IntPoly cfg $ reduceTermsTermCountOut effCf cfg terms
+
+reduceTermsTermCountOut ::
+    (Show var,
+     Show cf,
+     HasDomainBox (IntPoly var cf),
+     ArithInOut.RoundedReal cf,
+     HasAntiConsistency cf) 
+    =>
+    ArithInOut.RoundedRealEffortIndicator cf -> 
+    IntPolyCfg var cf -> 
+    IntPolyTerms var cf -> 
+    IntPolyTerms var cf
+reduceTermsTermCountOut effCf cfg terms =
     let ?addInOutEffort = effAdd in
     let ?multInOutEffort = effMult in
     let ?intPowerInOutEffort = effPow in
-    reducePolyTermCountWithOps (<+>) (<*>) (<^>) (imprecisionOfEff effImpr) p
+    reduceTermsCountWithOps (<+>) (<*>) (<^>) (imprecisionOfEff effImpr) varDoms maxSize terms
     where
     effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effMult = ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effPow = ArithInOut.fldEffortPow sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effImpr = ArithInOut.rrEffortImprecision sampleCf effCf
-    sampleCf = getSampleDomValue p
+    sampleCf = ipolycfg_sample_cf cfg
+    maxSize = ipolycfg_maxsize cfg
+    varDoms = ipolycfg_domsLZ cfg
 
 reducePolyDegreeOut ::
     (Show var,
@@ -80,47 +98,33 @@ reducePolyDegreeOut ::
     ArithInOut.RoundedRealEffortIndicator cf -> 
     IntPoly var cf -> 
     IntPoly var cf
-reducePolyDegreeOut effCf p =
+reducePolyDegreeOut effCf (IntPoly cfg terms) =
+    IntPoly cfg $ reduceTermsDegreeOut effCf cfg terms
+
+reduceTermsDegreeOut ::
+    (Show var,
+     Show cf,
+     HasDomainBox (IntPoly var cf),
+     ArithInOut.RoundedReal cf,
+     HasAntiConsistency cf) 
+    =>
+    ArithInOut.RoundedRealEffortIndicator cf -> 
+    IntPolyCfg var cf -> 
+    IntPolyTerms var cf -> 
+    IntPolyTerms var cf
+reduceTermsDegreeOut effCf cfg terms =
     let ?addInOutEffort = effAdd in
     let ?multInOutEffort = effMult in
     let ?intPowerInOutEffort = effPow in
-    reducePolyDegreeWithOps (<+>) (<*>) (<^>) p
+    reduceTermsDegreeWithOps (<+>) (<*>) (<^>) varDoms maxDeg terms
     where
     effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effMult = ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effPow = ArithInOut.fldEffortPow sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-    sampleCf = getSampleDomValue p
-
-reducePolyDegreeWithOps ::
-    (Show var, Show cf, HasAntiConsistency cf) 
-    =>
-    (cf -> cf -> cf) -> 
-    (cf -> cf -> cf) -> 
-    (cf -> Int -> cf) -> 
-    (IntPoly var cf) ->
-    (IntPoly var cf)
-reducePolyDegreeWithOps (+) (*) (^) (IntPoly cfg terms) =
-    IntPoly cfg $ reduceTermsDegreeWithOps (+) (*) (^) varDoms maxDeg terms
-    where
+    sampleCf = ipolycfg_sample_cf cfg
     maxDeg = ipolycfg_maxdeg cfg
     varDoms = ipolycfg_domsLZ cfg
-    
-reducePolyTermCountWithOps ::
-    (Show var, Show cf, 
-     HasOne cf, HasAntiConsistency cf, 
-     NumOrd.PartialComparison imprecision) =>
-    (cf -> cf -> cf) -> 
-    (cf -> cf -> cf) -> 
-    (cf -> Int -> cf) -> 
-    (cf -> imprecision) -> 
-    (IntPoly var cf) ->
-    (IntPoly var cf)
-reducePolyTermCountWithOps (+) (*) (^) getImpr (IntPoly cfg terms) =
-    IntPoly cfg $ reduceTermsCountWithOps (+) (*) (^) getImpr varDoms maxSize terms
-    where
-    maxSize = ipolycfg_maxsize cfg
-    varDoms = ipolycfg_domsLZ cfg
-    
+
 reduceTermsDegreeWithOps ::
     (Show var, Show cf) 
     =>

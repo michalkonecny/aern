@@ -14,16 +14,14 @@ Synopsis:       support for solving ODE IVPs using the interval polynomial Picar
 Tested-with:    GHC==6.12.3,
                 GHC==7.2.2,
                 GHC==7.4.1
-Description:
-    Support for solving ODE IVPs using the interval polynomial Picard operator.
+Description:    Support for solving ODE IVPs using the interval polynomial Picard operator.
     .
     Includes several example solvers.
 
 Library
-  hs-source-dirs: src
-  ghc-options:     -Wall
-  Build-Depends:
-        base == 4.2.* || == 4.4.* || == 4.5.*,
+  hs-source-dirs:   src
+  ghc-options:      -Wall
+  Build-Depends:    base == 4.2.* || == 4.4.* || == 4.5.*,
         containers >= 0.3 && < 0.5,
         random >= 1.0 && < 1.1,
         gtk >= 0.12.0 && < 0.13,
@@ -35,83 +33,19 @@ Library
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-realfn == 0.5.*
-  exposed-modules:       
+  exposed-modules:  Numeric.AERN.RmToRn.Picard
 
---Executable demoPicardView
---  hs-source-dirs: src, demos
-----  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
---  ghc-options:    -Wall
---  main-is: demoPicardView.hs
---  Build-Depends:
---        base >= 4 && < 5,
---        containers >= 0.3 && < 0.4,
---        gtk >= 0.12.0 && < 0.13,
---        cairo >= 0.12.0 && < 0.13,
---        glade >= 0.12.0 && < 0.13,
---        stm >= 2 && < 3,
---        filepath >= 1.1.0.4 && < 2,
---        directory >= 1.0.1.1 && < 2,
---        AERN-Basics == 2011.2.0.0, 
---        AERN-Real == 2011.2.0.0, 
---        AERN-Real-Interval == 2011.2.0.0, 
---        AERN-Real-Double == 2011.2.0.0, 
---        AERN-RmToRn == 2011.2.0.0,
---        AERN-RmToRn-IntPoly == 2011.2.0.0 
-
--- Executable ivpSpringMass
---   hs-source-dirs: src, demos
--- --  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
---   ghc-options:  -O2
---   main-is: ivpSpringMass.hs
---   Build-Depends:
---         base >= 4 && < 5,
---         containers >= 0.3 && < 0.4,
---         QuickCheck >= 2.1 && < 3,
---         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
---         criterion >= 0.5 && < 0.6,
---         random >= 1.0 && < 2.0,
---         AERN-Basics == 2011.2.0.0, 
---         AERN-Real == 2011.2.0.0, 
---         AERN-Real-Interval == 2011.2.0.0, 
---         AERN-Real-MPFR == 2011.2.0.0, 
---         AERN-RmToRn == 2011.2.0.0,
---         AERN-RmToRn-IntPoly == 2011.2.0.0 
-
--- Executable ivpPendulum
---   hs-source-dirs: src, demos
--- --  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
---   ghc-options:  -O2
---   main-is: ivpPendulum.hs
---   Build-Depends:
---         base >= 4 && < 5,
---         containers >= 0.3 && < 0.4,
---         QuickCheck >= 2.1 && < 3,
---         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
---         criterion >= 0.5 && < 0.6,
---         random >= 1.0 && < 2.0,
---         AERN-Basics == 2011.2.0.0, 
---         AERN-Real == 2011.2.0.0, 
---         AERN-Real-Interval == 2011.2.0.0, 
---         AERN-Real-MPFR == 2011.2.0.0, 
---         AERN-RmToRn == 2011.2.0.0,
---         AERN-RmToRn-IntPoly == 2011.2.0.0 
-
--- Executable ivpBouncingBall
---   hs-source-dirs: src, demos
--- --  ghc-options:    -Wall -fno-warn-orphans -fno-warn-name-shadowing -O2
---   ghc-options:  -O2
---   main-is: ivpBouncingBall.hs
---   Build-Depends:
---         base >= 4 && < 5,
---         containers >= 0.3 && < 0.4,
---         QuickCheck >= 2.1 && < 3,
---         test-framework >= 0.2 && < 0.4, test-framework-quickcheck2 >= 0.2 && < 0.4,
---         criterion >= 0.5 && < 0.6,
---         random >= 1.0 && < 2.0,
---         AERN-Basics == 2011.2.0.0, 
---         AERN-Real == 2011.2.0.0, 
---         AERN-Real-Interval == 2011.2.0.0, 
---         AERN-Real-MPFR == 2011.2.0.0, 
---         AERN-RmToRn == 2011.2.0.0,
---         AERN-RmToRn-IntPoly == 2011.2.0.0
+executable simple
+  build-depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
+        containers >= 0.3 && < 0.5,
+        aern-order == 0.5.*,
+        aern-real == 0.5.*,
+        aern-double == 0.5.*,
+        aern-mpfr == 0.5.*,
+        aern-realfn == 0.5.*,
+        aern-poly == 0.5.*,
+        aern-picard == 0.5.*
+  ghc-options:     -Wall -rtsopts
+  hs-source-dirs:  demos
+  main-is:         simple.hs
 

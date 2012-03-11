@@ -28,7 +28,6 @@ import Numeric.AERN.RealArithmetic.Measures (HasImprecision(..))
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort ((|==?))
 
-import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.Consistency
 
@@ -67,16 +66,6 @@ data IntPolyTerms var cf =
 type IntPolyPowers var cf = 
     IntMap.IntMap (IntPolyTerms var cf) 
 
-
-{-- formatting --}
-
-instance 
-    (Show var, Show cf, ArithInOut.RoundedReal cf) => 
-    Show (IntPoly var cf)
-    where
-    show p@(IntPoly cfg terms)
-        = "IntPoly{" ++ showPoly show show p ++ "; " ++ show cfg ++ "; " ++ show terms ++ "}" 
-
 instance 
     (Show var, Show cf) 
     => 
@@ -98,50 +87,6 @@ showTerms showCoeff (IntPolyV x powers)
         intercalate ", " $ map showPower $ IntMap.toAscList powers
     showPower (n, terms) =
         "^" ++ show n ++ "->" ++ showTerms showCoeff terms 
-    
-instance
-    (Show var, Show cf, ShowInternals cf, 
-     HasZero cf, RefOrd.PartialComparison cf) 
-    =>
-    (ShowInternals (IntPoly var cf))
-    where
-    type ShowInternalsIndicator (IntPoly var cf) 
-        = (ShowInternalsIndicator cf, Bool)
-    defaultShowIndicator (IntPoly cfg _) 
-        = (defaultShowIndicator $ ipolycfg_sample_cf cfg, False)
-    showInternals (cfIndicator, shouldShowTerms) p@(IntPoly _cfg terms)
-        | shouldShowTerms =
-            showPoly show showCf p ++ "[" ++ showTerms showCf terms ++ "]"
-        | otherwise = 
-            showPoly show showCf p
-        where
-        showCf = showInternals cfIndicator
-    
-showPoly ::
-    (HasZero cf, RefOrd.PartialComparison cf)
-    =>
-    (var -> String) -> 
-    (cf -> String) -> 
-    (IntPoly var cf -> String)
-showPoly showVar showCoeff (IntPoly cfg terms) =
-    sp "" domsLE terms
-    where
-    domsLE = ipolycfg_domsLE cfg
-    sp vars _ (IntPolyC value) 
-        = (showCoeff value) ++ vars
-    sp otherVars (domLE : restDomsLE) (IntPolyV var powers)
-        = intercalate " + " $ map showTerm $ reverse $ IntMap.toAscList $ powers
-        where
-        showTerm (n,p) = sp (otherVars ++ showVarPower n) restDomsLE p
-        showVarPower 0 = ""
-        showVarPower 1 = showVarShift
-        showVarPower n = showVarShift ++ "^" ++ show n
-        showVarShift =
-            case domLE |==? zero domLE of
-                Just True -> showVar var
-                _ -> "(" ++ showVar var ++ ")"
-    sp _ _ _ =
-        error $ "aern-poly: internal error in IntPoly.showPoly" 
     
 {-- simple spine-crawling operations --}
 
@@ -252,6 +197,8 @@ termsJoinWith z joinCf (tL, tR) =
         addNothing t = (Just t, Nothing)
     aux _ = 
         error $ "aern-intpoly internal error: Poly: termsJoinWith used with illegal values"
+
+
 
 polyGetEndpointsOutEff ::
     RefOrd.IntervalLike cf 

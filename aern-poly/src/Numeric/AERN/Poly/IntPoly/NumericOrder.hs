@@ -86,33 +86,6 @@ instance
         sampleDom = getSampleDomValue p1
 
 instance
-    (Ord var, Show var, 
-     Show cf, 
-     ArithInOut.RoundedReal cf,
-     HasAntiConsistency cf,
-     NumOrd.PartialComparison (Imprecision cf), 
-     RefOrd.IntervalLike cf) 
-    => 
-    RefOrd.PartialComparison (IntPoly var cf) 
-    where
-    type RefOrd.PartialCompareEffortIndicator (IntPoly var cf) =
-        (NumOrd.PartialCompareEffortIndicator (IntPoly var cf),
-         RefOrd.GetEndpointsEffortIndicator cf) 
-    pCompareDefaultEffort p =
-        (NumOrd.pCompareDefaultEffort p, RefOrd.getEndpointsDefaultEffort sampleCf)
-        where
-        sampleCf = getSampleDomValue p 
-    pCompareEff eff p1 p2 =
-        case partialInfo2PartialOrdering $ RefOrd.pCompareInFullEff eff p1 p2 of
-            [rel] -> Just rel
-            _ -> Nothing
-    pCompareInFullEff (effNumComp, effGetE) p1 p2 = 
-        refordPCompareInFullIntervalsEff effNumComp p1Endpoints p2Endpoints  
-        where
-        p1Endpoints = polyGetEndpointsOutEff effGetE p1
-        p2Endpoints = polyGetEndpointsOutEff effGetE p2
-        
-instance
     (Ord var,
      NumOrd.HasGreatest cf,
      HasConsistency cf,

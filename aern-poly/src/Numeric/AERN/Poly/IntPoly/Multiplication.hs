@@ -30,6 +30,7 @@ import qualified Prelude
     
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
+import Numeric.AERN.Poly.IntPoly.New
 import Numeric.AERN.Poly.IntPoly.Reduction
 import Numeric.AERN.Poly.IntPoly.Addition
 
@@ -42,11 +43,11 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
---import Numeric.AERN.RealArithmetic.ExactOps
---import Numeric.AERN.RealArithmetic.Measures
---import Numeric.AERN.RealArithmetic.Auxiliary
+import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Measures
+import Numeric.AERN.RealArithmetic.Auxiliary
 
---import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsImplicitEffort
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
@@ -165,6 +166,65 @@ multTerms _ _ terms1 terms2
         ++ "\n terms2 = " ++ show terms2
 
 
+instance
+    (ArithInOut.RoundedReal cf) => 
+    ArithInOut.RoundedPowerToNonnegIntEffort (IntPoly var cf)
+    where
+    type (ArithInOut.PowerToNonnegIntEffortIndicator (IntPoly var cf)) =
+         ArithInOut.PowerToNonnegIntEffortIndicatorFromMult (IntPoly var cf)
+    powerToNonnegIntDefaultEffort = ArithInOut.powerToNonnegIntDefaultEffortFromMult
+
+instance
+    (ArithInOut.RoundedReal cf, 
+     RefOrd.IntervalLike cf, 
+     HasAntiConsistency cf,
+--     NumOrd.PartialComparison (Imprecision cf), 
+--     Show (Imprecision cf),
+     Show var, Show cf, Ord var) 
+    =>
+    ArithInOut.RoundedPowerToNonnegInt (IntPoly var cf) 
+    where
+    powerToNonnegIntInEff eff p n =
+        flipConsistencyPoly $ 
+            ArithInOut.powerToNonnegIntOutEff eff (flipConsistencyPoly p) n
+    powerToNonnegIntOutEff eff (IntPoly cfg terms) n = 
+        IntPoly cfg $ 
+            powTerms
+                eff
+                sample cfg
+                (ArithInOut.addOutEff effAdd) 
+                (ArithInOut.multOutEff effMult) 
+                terms n
+        where
+        sample = ipolycfg_sample_cf cfg
+        effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
+--        effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
+        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+--        effImpr = ArithInOut.rrEffortImprecision sample eff
+        
+powTerms ::
+    (Ord var, Show var, Show cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf, 
+     HasAntiConsistency cf) 
+    =>
+    (ArithInOut.RoundedRealEffortIndicator cf) ->
+    cf ->
+    (IntPolyCfg var cf) ->
+    (cf -> cf -> cf) ->
+    (cf -> cf -> cf) ->
+    IntPolyTerms var cf -> Int -> IntPolyTerms var cf
+powTerms eff sample cfg (+) (*) = 
+    powerFromMult 
+        (mkConstTerms (one sample) vars) 
+        multTermsReduce
+        where
+        vars = ipolycfg_vars cfg
+        multTermsReduce t1 t2 =
+            reduceTermsTermCountOut eff cfg $ 
+                reduceTermsDegreeOut eff cfg $ 
+                    termsNormalise $ multTerms (+) (*) t1 t2
+    
     
 {----- mixed addition up/dn via out -----}    
 
