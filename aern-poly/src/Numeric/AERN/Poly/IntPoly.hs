@@ -26,11 +26,9 @@ module Numeric.AERN.Poly.IntPoly
         module Numeric.AERN.Poly.IntPoly.Reduction,
         module Numeric.AERN.Poly.IntPoly.Addition,
         module Numeric.AERN.Poly.IntPoly.Multiplication,
-        module Numeric.AERN.Poly.IntPoly.Composition
---        ,
---        module Numeric.AERN.Poly.IntPoly.RefinementOrder,
---        module Numeric.AERN.Poly.IntPoly.Substitution,
---        module Numeric.AERN.Poly.IntPoly.Minmax
+        module Numeric.AERN.Poly.IntPoly.Composition,
+--        module Numeric.AERN.Poly.IntPoly.RefinementOrder, -- nothing to reexport
+        module Numeric.AERN.Poly.IntPoly.Minmax
     )
 where
 
@@ -45,8 +43,8 @@ import Numeric.AERN.Poly.IntPoly.Multiplication
 import Numeric.AERN.Poly.IntPoly.Composition
 import Numeric.AERN.Poly.IntPoly.Show
 import Numeric.AERN.Poly.IntPoly.NumericOrder ()
---import Numeric.AERN.Poly.IntPoly.RefinementOrder
---import Numeric.AERN.Poly.IntPoly.Minmax
+import Numeric.AERN.Poly.IntPoly.RefinementOrder ()
+import Numeric.AERN.Poly.IntPoly.Minmax
 
 
 

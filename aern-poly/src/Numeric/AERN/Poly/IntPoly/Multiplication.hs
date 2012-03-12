@@ -21,6 +21,7 @@
 module Numeric.AERN.Poly.IntPoly.Multiplication
     (
         multTerms,
+        powTerms,
         scaleTerms
     )
 where
@@ -348,6 +349,54 @@ scaleTerms (*|) factor terms =
         
 
 instance
+    (ArithInOut.RoundedReal cf) 
+    => 
+    ArithInOut.RoundedRingEffort (IntPoly var cf)
+    where
+    type ArithInOut.RingOpsEffortIndicator (IntPoly var cf) =
+        (ArithInOut.RoundedRealEffortIndicator cf)
+    ringOpsDefaultEffort (IntPoly cfg _) = 
+        ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg
+    ringEffortAdd _ eff = eff  
+    ringEffortMult _ eff = eff
+    ringEffortPow _ eff = eff  
+
+instance 
+    (ArithInOut.RoundedReal cf,
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithInOut.RoundedRing (IntPoly var cf)
+
+instance
+    (ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedRingEffort cf other) 
+    => 
+    ArithInOut.RoundedMixedRingEffort (IntPoly var cf) other
+    where
+    type ArithInOut.MixedRingOpsEffortIndicator (IntPoly var cf) other =
+        ArithInOut.MixedRingOpsEffortIndicator cf other
+    mixedRingOpsDefaultEffort (IntPoly cfg _) other = 
+        ArithInOut.mixedRingOpsDefaultEffort (ipolycfg_sample_cf cfg) other
+    mxringEffortAdd  (IntPoly cfg _) eff = 
+        ArithInOut.mxringEffortAdd (ipolycfg_sample_cf cfg) eff  
+    mxringEffortMult  (IntPoly cfg _) eff = 
+        ArithInOut.mxringEffortMult (ipolycfg_sample_cf cfg) eff  
+
+instance 
+    (ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedRing cf other,
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithInOut.RoundedMixedRing (IntPoly var cf) other
+
+
+instance
     (ArithInOut.RoundedMixedDivideEffort cf other) => 
     ArithInOut.RoundedMixedDivideEffort (IntPoly var cf) other 
     where
@@ -375,4 +424,31 @@ instance
         (/|) = ArithInOut.mixedDivOutEff eff
     mixedDivInEff =
         error "aern-poly: IntPoly does not support inwards-rounded mixed multiplication" 
+        
+instance
+    (ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedFieldEffort cf other) 
+    => 
+    ArithInOut.RoundedMixedFieldEffort (IntPoly var cf) other
+    where
+    type ArithInOut.MixedFieldOpsEffortIndicator (IntPoly var cf) other =
+        ArithInOut.MixedFieldOpsEffortIndicator cf other
+    mixedFieldOpsDefaultEffort (IntPoly cfg _) other = 
+        ArithInOut.mixedFieldOpsDefaultEffort (ipolycfg_sample_cf cfg) other
+    mxfldEffortAdd  (IntPoly cfg _) eff = 
+        ArithInOut.mxfldEffortAdd (ipolycfg_sample_cf cfg) eff  
+    mxfldEffortMult  (IntPoly cfg _) eff = 
+        ArithInOut.mxfldEffortMult (ipolycfg_sample_cf cfg) eff  
+    mxfldEffortDiv  (IntPoly cfg _) eff = 
+        ArithInOut.mxfldEffortDiv (ipolycfg_sample_cf cfg) eff  
+
+instance 
+    (ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedField cf other,
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithInOut.RoundedMixedField (IntPoly var cf) other
         

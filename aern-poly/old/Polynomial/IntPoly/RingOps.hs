@@ -205,7 +205,7 @@ instance
         (ArithInOut.RoundedRealEffortIndicator cf)
     ringOpsDefaultEffort (IntPoly cfg _) = 
         ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg
-    ringEffortAdd (IntPoly cfg _) eff = eff  
+    ringEffortAdd (IntPoly cfg _) eff = eff
     ringEffortMult (IntPoly cfg _) eff = eff
     ringEffortPow (IntPoly cfg _) eff = eff  
 

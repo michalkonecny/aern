@@ -108,15 +108,32 @@ termsCollectCoeffsWith fn terms = aux [] terms
 --countTermsCoeffsSatisfying cond (IntPolyV x polys) = 
 --    IntMap.fold (+) 0 $ IntMap.map (countTermsCoeffsSatisfying cond) polys
 
-powersMapCoeffs :: (cf -> cf) -> IntPolyPowers var cf -> IntPolyPowers var cf
-powersMapCoeffs f pwrCoeffs = IntMap.map (termsMapCoeffs f) pwrCoeffs
+polyMapCoeffs :: (cf -> cf) -> IntPoly var cf -> IntPoly var cf
+polyMapCoeffs f (IntPoly cfg terms) = IntPoly cfg $ termsMapCoeffs f terms
 
 termsMapCoeffs :: (cf -> cf) -> IntPolyTerms var cf -> IntPolyTerms var cf
 termsMapCoeffs f (IntPolyC val) = IntPolyC $ f val
 termsMapCoeffs f (IntPolyV var polys) = IntPolyV var $ powersMapCoeffs f polys
 
-polyMapCoeffs :: (cf -> cf) -> IntPoly var cf -> IntPoly var cf
-polyMapCoeffs f (IntPoly cfg terms) = IntPoly cfg $ termsMapCoeffs f terms
+powersMapCoeffs :: (cf -> cf) -> IntPolyPowers var cf -> IntPolyPowers var cf
+powersMapCoeffs f pwrCoeffs = IntMap.map (termsMapCoeffs f) pwrCoeffs
+
+polyMapVars :: (var -> var) -> IntPoly var cf -> IntPoly var cf
+polyMapVars f (IntPoly cfg terms) = 
+    IntPoly cfgNew $ termsMapVars f terms
+    where
+    cfgNew =
+        cfg
+            {
+                ipolycfg_vars = map f $ ipolycfg_vars cfg
+            }
+
+termsMapVars :: (var -> var) -> IntPolyTerms var cf -> IntPolyTerms var cf
+termsMapVars f (IntPolyV var polys) = IntPolyV (f var) $ powersMapVars f polys
+termsMapVars _ p@(IntPolyC _) = p
+
+powersMapVars :: (var -> var) -> IntPolyPowers var cf -> IntPolyPowers var cf
+powersMapVars f pwrCoeffs = IntMap.map (termsMapVars f) pwrCoeffs
 
 termsMapCoeffsWithDegrees ::
     ([Int] -> cf1 -> cf2) {-^ mapping function whose first argument is the list of degrees for each variable in _reverse_ order -} ->
