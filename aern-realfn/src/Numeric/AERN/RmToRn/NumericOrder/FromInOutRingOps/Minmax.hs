@@ -152,13 +152,23 @@ maxUpEffFromRingOps ::
     (SizeLimits f -> f) ->
     MinmaxEffortIndicatorFromRingOps f t ->
     Int {- ^ degree of Bernstein approximations (must be > 1) -} ->
-    t -> t -> t
-maxUpEffFromRingOps _ getX eff@(_, _, _, (effRing, _)) degree a b =
-    let ?addInOutEffort = effAdd in
-    a <+> (snd $ maxZeroDnUp getX eff degree $ b <-> a)
+    t -> t -> (t, t)
+maxUpEffFromRingOps _ getX eff@(_, _, _, (effRing, effFieldTDF)) degree a b =
+    (upper, upperShiftedBelow)
     where
+    upperShiftedBelow =
+        let ?mixedAddInOutEffort = effAddTDF in
+        upper <+>| (neg errUp)
+    upper =
+        let ?addInOutEffort = effAdd in
+        a <+> maxBMinusAUp 
+    ((_, maxBMinusAUp), errUp) = 
+        let ?addInOutEffort = effAdd in
+        maxZeroDnUp getX eff degree $ b <-> a
     effAdd = ArithInOut.ringEffortAdd sampleT $ effRing
+    effAddTDF = ArithInOut.mxfldEffortAdd sampleT sampleDF $ effFieldTDF
     sampleT = a
+    sampleDF = errUp
 
 maxDnEffFromRingOps :: 
     (
@@ -185,7 +195,7 @@ maxDnEffFromRingOps ::
     t -> t -> t
 maxDnEffFromRingOps _ getX eff@(_, _, _, (effRing, _)) degree a b =
     let ?addInOutEffort = effAdd in
-    a <+> (fst $ maxZeroDnUp getX eff degree $ b <-> a)
+    a <+> (fst $ fst $ maxZeroDnUp getX eff degree $ b <-> a)
     where
     effAdd = ArithInOut.ringEffortAdd sampleT $ effRing
     sampleT = a
@@ -238,9 +248,12 @@ minDnEffFromRingOps ::
     (SizeLimits f -> f) ->
     MinmaxEffortIndicatorFromRingOps f t -> 
     Int {- ^ degree of Bernstein approximations (must be > 1) -} ->
-    t -> t -> t
+    t -> t -> (t, t)
 minDnEffFromRingOps sampleF getX eff degree a b =
-    neg $ maxUpEffFromRingOps sampleF getX eff degree (neg a) (neg b)
+    (neg resNeg, neg resShiftedNeg)
+    where
+    (resNeg, resShiftedNeg) =
+        maxUpEffFromRingOps sampleF getX eff degree (neg a) (neg b) 
 
 maxZeroDnUp ::    
     (
@@ -264,7 +277,7 @@ maxZeroDnUp ::
     MinmaxEffortIndicatorFromRingOps f t ->
     Int {- ^ degree of Bernstein approximations (must be > 1) -} ->
     t -> 
-    (t,t)
+    ((t,t), Domain f)
 {-
     overview of the algorithm:
     
@@ -292,10 +305,10 @@ maxZeroDnUp
         (False,_,_,_,_) -> error "maxZeroDnUp called for an unbounded value"
         (_,_, Just True, _, _) ->
 --            unsafePrint ("maxZeroDnUp: positive") $ 
-            (a, a)
+            ((a, a), zero sampleDF)
         (_,_,_,_, Just True) -> 
 --            unsafePrint ("maxZeroDnUp: negative") $ 
-            (zero a, zero a)
+            ((zero a, zero a), zero sampleDF)
         _ -> 
 --            unsafePrint ("maxZeroDnUp: mixed"
 --                ++ "\n maxCUp = " ++ show maxCUp
@@ -304,7 +317,7 @@ maxZeroDnUp
 --                ++ show (evalOtherType (evalOpsOut effEvalOpsT sampleF sampleT) (fromAscList [(var, translateToUnit a)]) maxZeroUp)
 --                ++ "\n maxCDn = " ++ show maxCDn
 --            ) $ 
-            (viaBernsteinDn, viaBernsteinUp)
+            ((viaBernsteinDn, viaBernsteinUp), errUp)
     where
     sampleT = a
     sampleF = x
@@ -326,7 +339,11 @@ maxZeroDnUp
         where
         varA = fromAscList [(var, translateToUnit a)]
     (var:_) = getVars $ getDomainBox $ x
-    maxCUp = hillbaseApproxUp effCompDF effRingF effIntFldF effRealDF x c degree
+    errUp = 
+        let ?multInOutEffort = effMultDF in
+        errUpUnit <*> aWidth
+    (maxCUp, errUpUnit) = 
+        hillbaseApproxUp effCompDF effRingF effIntFldF effRealDF effEvalOpsDF x c degree
     maxCDn =
         hillbaseApproxDn effGetEDF effCompDF effRingF effIntFldF effRealDF effEvalOpsDF x c dInit degree
         where
@@ -359,6 +376,7 @@ maxZeroDnUp
     
     effCompDF = ArithInOut.rrEffortNumComp c0 effRealDF
     effAddDF = ArithInOut.fldEffortAdd c0 $ ArithInOut.rrEffortField c0 effRealDF
+    effMultDF = ArithInOut.fldEffortMult c0 $ ArithInOut.rrEffortField c0 effRealDF
     effDivDF = ArithInOut.fldEffortDiv c0 $ ArithInOut.rrEffortField c0 effRealDF
     
     effAddTDF = ArithInOut.mxfldEffortAdd a c0 effFldTDF
@@ -373,29 +391,41 @@ hillbaseApproxUp ::
     (HasConstFns f, HasProjections f, HasOne f, ArithInOut.RoundedRing f, 
      ArithInOut.RoundedMixedField f Int,
      ArithInOut.RoundedReal (Domain f),
+     HasEvalOps f (Domain f),
      Show (Domain f), Show f)
     =>
     NumOrd.PartialCompareEffortIndicator (Domain f) -> 
     ArithInOut.RingOpsEffortIndicator f -> 
     ArithInOut.MixedFieldOpsEffortIndicator f Int -> 
     ArithInOut.RoundedRealEffortIndicator (Domain f) -> 
+    EvalOpsEffortIndicator f (Domain f) -> 
     f {-^ the variable @x@ to use in the result uni-variate polynomial -} ->
     Domain f {-^ @c@ the only non-smooth point of the approximated piece-wise linear function -} ->
     Int {-^ @n@ Bernstein approximation degree -} ->
-    f
-hillbaseApproxUp effComp effRingF effIntFldF effRealDF x c n =
-    let ?pCompareEffort = effComp in
-    let ?addInOutEffort = effAddDF in
-    let ?multInOutEffort = effMultF in
-    let ?mixedMultInOutEffort = effMultDFI in
-    let ?mixedDivInOutEffort = effDivDFI in
+    (f, Domain f)
+hillbaseApproxUp effComp effRingF effIntFldF effRealDF effEvalOps x c n =
 --    unsafePrintReturn ( "hillbaseApproxUp:"
 --        ++ "\n c = " ++ show c
 --        ++ "\n result = "
 --    ) $
-    foldl1 (ArithInOut.addOutEff effAddF) $
-        map mkBT [0..n]
+    (result, errUp)
     where
+    result =
+        let ?pCompareEffort = effComp in
+        let ?addInOutEffort = effAddDF in
+        let ?multInOutEffort = effMultF in
+        let ?mixedMultInOutEffort = effMultDFI in
+        let ?mixedDivInOutEffort = effDivDFI in
+        foldl1 (ArithInOut.addOutEff effAddF) $
+            map mkBT [0..n]
+        
+    errUp = 
+        let ?addInOutEffort = effAddDF in
+        valueAtC <-> c
+        where
+        valueAtC =
+            evalOtherType (evalOpsOut effEvalOps sampleF sampleDF) varC result
+        varC = fromAscList [(var, c)]
     mkBT p =
         (newConstFnFromSample x fOfpOverN)
         <*> 
@@ -407,6 +437,8 @@ hillbaseApproxUp effComp effRingF effIntFldF effRealDF x c n =
         pOverN = (c1 <*>| p) </>| n
     c1 = one sampleDF
     sampleDF = getSampleDomValue x
+    sampleF = x
+    (var:_) = getVars $ getDomainBox $ x
     
     effAddF = ArithInOut.ringEffortAdd x effRingF
     effMultF = ArithInOut.ringEffortMult x effRingF

@@ -63,8 +63,16 @@ main =
 --    putStrLn "evaluation:"
 --    putStrLn "partial evaluation:"
     putStrLn "composition:"
-    putStrLn $ "(x^2+y+1)subst[x=[y,y]] = " ++ (showP $ composeVarOutEff eff "x" y $ x <*> x <+> y <+> c1)
-    putStrLn $ "(x^2+y+1)substElim[x=[y,y]] = " ++ (showP $ composeVarOutEff eff "x" yNoX $ x <*> x <+> y <+> c1)
+    putStrLn $ "(x+y)^2 = " ++ (showP $ (x <+> y) <^> 2)
+    
+    putStrLn $ "((x+y)^2)subst[x=y+1] = " ++ (showP $ composeVarOutEff eff "x" (y <+> c1) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)substE[x=yNoX+1] = " ++ (showP $ composeVarOutEff eff "x" (yNoX <+>| (1::Int)) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[x=[0,1]] = " ++ (showP $ composeVarOutEff eff "x" (c01) $ (x <+> y) <^> 2)
+
+    putStrLn $ "((x+y)^2)subst[y=x+1] = " ++ (showP $ composeVarOutEff eff "y" (x <+>| (1 :: Int)) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[y=xNoY+1] = " ++ (showP $ composeVarOutEff eff "y" (xNoY <+>| (1::Int)) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[y=[0,1]] = " ++ (showP $ composeVarOutEff eff "y" (c01) $ (x <+> y) <^> 2)
+
 --    putStrLn "endpoints (ie boundaries):"
 --    putStrLn $ "getEndpoints([0,1]x^2+[-1,0]) = " ++ (showPPair $ RefOrd.getEndpointsOutWithDefaultEffort $ c01 <*> (x <*> x <-> c1))
 --    putStrLn $ "fromEndpoints(x^2-1, 0) = " ++ (showP $ RefOrd.fromEndpointsOutWithDefaultEffort ((x <*> x <-> c1), c0))
@@ -77,54 +85,37 @@ main =
 --    randomPolysThin <- sample' (case NumOrd.arbitraryTupleInAreaRelatedBy (x, Just (0 </\> 1)) [1] [] of Just gen -> gen)
 --    let _ = [x] : randomPolysThin
 --    putStr $ "random 10 polynomials:\n" ++ (unlines $ map (showP . head) $ randomPolysThin)
-    putStrLn "numerical comparison:"
-    putStrLn $ "(x^2-1 `comp` 1) = " ++ (show $ numCompare (x <*> x <-> c1) c1)
-    putStrLn $ "(x^2-1 `comp` 0) = " ++ (show $ numCompare (x <*> x <-> c1) c0)
-    putStrLn $ "(x^2-1 `comp` -0.5) = " ++ (show $ numCompare (x <*> x <-> c1) (neg (cHalf)))
-    putStrLn $ "(x^2-1 `comp` -1) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> c1))
-    putStrLn $ "(x^2-1 `comp` -2) = " ++ (show $ numCompare (x <*> x <-> c1) ((c0 <-> c1) <-> c1))
+
+--    putStrLn "numerical comparison:"
+--    putStrLn $ "(x^2-1 `comp` 1) = " ++ (show $ numCompare (x <*> x <-> c1) c1)
+--    putStrLn $ "(x^2-1 `comp` 0) = " ++ (show $ numCompare (x <*> x <-> c1) c0)
+--    putStrLn $ "(x^2-1 `comp` -0.5) = " ++ (show $ numCompare (x <*> x <-> c1) (neg (cHalf)))
+--    putStrLn $ "(x^2-1 `comp` -1) = " ++ (show $ numCompare (x <*> x <-> c1) (c0 <-> c1))
+--    putStrLn $ "(x^2-1 `comp` -2) = " ++ (show $ numCompare (x <*> x <-> c1) ((c0 <-> c1) <-> c1))
 --    putStrLn "min/max up/dn:"
---    putStrLn $ "x - 0.5 `maxUp` 0 = " ++ (showP $ NumOrd.maxUpEff minmaxUpDnEff (x <-> cHalf) c0)
---    putStrLn $ "x - 0.5 `maxDn` 0 = " ++ (showP $ NumOrd.maxDnEff minmaxUpDnEff (x <-> cHalf) c0)
---    putStrLn $ "x - 0.5 `minUp` 0 = " ++ (showP $ NumOrd.minUpEff minmaxUpDnEff (x <-> cHalf) c0)
---    putStrLn $ "x - 0.5 `minDn` 0 = " ++ (showP $ NumOrd.minDnEff minmaxUpDnEff (x <-> cHalf) c0)
---    putStrLn $ "x - 1/16 `maxUp` 0 = " ++ (showP $ NumOrd.maxUpEff minmaxUpDnEff (x <-> cOneOver16) c0)
---    putStrLn $ "x - 1/16 `maxDn` 0 = " ++ (showP $ NumOrd.maxDnEff minmaxUpDnEff (x <-> cOneOver16) c0)
---    putStrLn $ "x - 1/16 `minUp` 0 = " ++ (showP $ NumOrd.minUpEff minmaxUpDnEff (x <-> cOneOver16) c0)
---    putStrLn $ "x - 1/16 `minDn` 0 = " ++ (showP $ NumOrd.minDnEff minmaxUpDnEff (x <-> cOneOver16) c0)
---    putStrLn "min/max in/out:"
---    putStrLn $ "x - 0.5 `maxOut` 0 = " ++ (showP $ NumOrd.maxOutEff minmaxInOutEff (x <-> cHalf) c0)
---    putStrLn $ "x - 0.5 `maxIn` 0 = " ++ (showP $ NumOrd.maxInEff minmaxInOutEff (x <-> cHalf) c0)
---    putStrLn $ "x - 0.5 `minOut` 0 = " ++ (showP $ NumOrd.minOutEff minmaxInOutEff (x <-> cHalf) c0)
---    putStrLn $ "x - 0.5 `minIn` 0 = " ++ (showP $ NumOrd.minInEff minmaxInOutEff (x <-> cHalf) c0)
---    putStrLn $ "x - 1/16 `maxOut` 0 = " ++ (showP $ NumOrd.maxOutEff minmaxInOutEff (x <-> cOneOver16) c0)
---    putStrLn $ "x - 1/16 `maxIn` 0 = " ++ (showP $ NumOrd.maxInEff minmaxInOutEff (x <-> cOneOver16) c0)
---    putStrLn $ "x - 1/16 `minOut` 0 = " ++ (showP $ NumOrd.minOutEff minmaxInOutEff (x <-> cOneOver16) c0)
---    putStrLn $ "x - 1/16 `minIn` 0 = " ++ (showP $ NumOrd.minInEff minmaxInOutEff (x <-> cOneOver16) c0)
-    putStrLn "integration:"
-    putStrLn $ "1 + int (2(x + y + 2)) dx = " ++ (showP integxTwoBxPyP2)
-    putStrLn $ "1 + int (2(x + y + 2)) dy = " ++ (showP integyTwoBxPyP2)
---    putStrLn "*** ops not using generic interfaces (yet): ***"
+--    putStrLn $ "x `maxUp` 0 = " ++ (showP $ NumOrd.maxUpEff minmaxUpDnEff (x) c0)
+--    putStrLn $ "x `maxDn` 0 = " ++ (showP $ NumOrd.maxDnEff minmaxUpDnEff (x) c0)
+--    putStrLn $ "x `minUp` 0 = " ++ (showP $ NumOrd.minUpEff minmaxUpDnEff (x) c0)
+--    putStrLn $ "x `minDn` 0 = " ++ (showP $ NumOrd.minDnEff minmaxUpDnEff (x) c0)
+--    putStrLn $ "x - 15/16 `maxUp` 0 = " ++ (showP $ NumOrd.maxUpEff minmaxUpDnEff (x <-> c15Over16) c0)
+--    putStrLn $ "x - 15/16 `maxDn` 0 = " ++ (showP $ NumOrd.maxDnEff minmaxUpDnEff (x <-> c15Over16) c0)
+--    putStrLn $ "x - 15/16 `minUp` 0 = " ++ (showP $ NumOrd.minUpEff minmaxUpDnEff (x <-> c15Over16) c0)
+--    putStrLn $ "x - 15/16 `minDn` 0 = " ++ (showP $ NumOrd.minDnEff minmaxUpDnEff (x <-> c15Over16) c0)
+--    putStrLn "min/max out:"
+--    putStrLn $ "x `maxOut` 0 = " ++ (showP $ NumOrd.maxOutEff minmaxInOutEff (x) c0)
+--    putStrLn $ "x `minOut` 0 = " ++ (showP $ NumOrd.minOutEff minmaxInOutEff (x) c0)
+--    putStrLn $ "x - 15/16 `maxOut` 0 = " ++ (showP $ NumOrd.maxOutEff minmaxInOutEff (x <-> c15Over16) c0)
+--    putStrLn $ "x - 15/16 `minOut` 0 = " ++ (showP $ NumOrd.minOutEff minmaxInOutEff (x <-> c15Over16) c0)
+--    putStrLn "integration:"
+--    putStrLn $ "1 + int (2(x + y + 2)) dx = " ++ (showP integxTwoBxPyP2)
+--    putStrLn $ "1 + int (2(x + y + 2)) dy = " ++ (showP integyTwoBxPyP2)
+
+--    putStrLn "*** ops not using generic interfaces: ***"
 --    putStrLn "differentiation:"
 --    putStrLn $ "d (2(x + y + 2))/dx = " ++ (showP $ diffPolyOut eff "x" twoBxPyP2)
 --    putStrLn $ "d (2(x + y + 2))/dy = " ++ (showP $ diffPolyOut eff "y" twoBxPyP2) 
 --    putStrLn $ "d (x^2 + 2xy + 4x + 1)/dx = " ++ (showP $ diffPolyOut eff "x" integTwoBxPyP2)
 --    putStrLn $ "d (x^2 + 2xy + 4x + 1)/dy = " ++ (showP $ diffPolyOut eff "y" integTwoBxPyP2)
---    putStrLn "(ad hoc) evaluation and substitution:"
---    putStrLn $ "(x + y + 2)drct[x=-1,y=-1] = " ++ (show $ evalPolyAtPoint eff [-1, -1] xPyP1P1)
---    putStrLn $ "(x + y + 2)drct[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyAtPoint eff [mOneToZ,mOneToZ] xPyP1P1)
---    putStrLn $ "(x^2 + 2xy + 4x + 1)drct[x=-1,y=-1] = " ++ (show $ evalPolyAtPoint eff [-1,-1] integTwoBxPyP2)
---    putStrLn $ "(x^2 + 2xy + 4x + 1)drct[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyAtPoint eff [mOneToZ,mOneToZ] integTwoBxPyP2)
---    putStrLn $ "(x + y + 2)mono[x=-1,y=-1] = " ++ (show $ evalPolyOnInterval eff [(-1),(-1)] xPyP1P1)
---    putStrLn $ "(x + y + 2)mono[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyOnInterval eff [(-1) </\> 0,(-1) </\> 0] xPyP1P1)
---    putStrLn $ "(x^2 + 2xy + 4x + 1)mono[x=-1,y=-1] = " ++ (show $ evalPolyOnInterval eff [(-1),(-1)] integTwoBxPyP2)
---    putStrLn $ "(x^2 + 2xy + 4x + 1)mono[x=[-1,0],y=[-1,0]] = " ++ (show $ evalPolyOnInterval eff [(-1) </\> 0,(-1) </\> 0] integTwoBxPyP2)
---    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[y,y]] = " ++ (showP $ substPolyMainVar eff 0 y integTwoBxPyP2)
---    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[0,y]] = " ++ (showP $ substPolyMainVar eff 0 (c01 <*> y) integTwoBxPyP2)
---    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[0,x]] = " ++ (showP $ substPolyMainVar eff 0 (c01 <*> x) integTwoBxPyP2)
---    putStrLn $ "(x^2 + 2xy + 4x + 1)subst[x=[x^2-1,0]] = " ++ (showP $ substPolyMainVar eff 0 (RefOrd.fromEndpointsOutWithDefaultEffort ((x <*> x <-> c1), c0)) integTwoBxPyP2)
---    putStrLn $ "(x^2 + 2xy + 4x + 1)substElim[x=[2,2]] = " ++ (showP $ substPolyMainVarElim eff 0 2 integTwoBxPyP2)
---    putStrLn $ "(x^2 + 2xy + 4x + 1)substElim[x=[0,2]] = " ++ (showP $ substPolyMainVarElim eff 0 (0 </\> 2) integTwoBxPyP2)
 --    putStrLn "structural ops:"
 --    putStrLn $ "(x^2 + 2xy + 4x + 1)[swap order of x,y] = " ++ (showP $ polySwapFirstTwoVars integTwoBxPyP2)
 --    putStrLn $ "(x^2 + 2xy + 4x + 1)[x->z] = " ++ (showP $ polyRenameMainVar "z" integTwoBxPyP2)
@@ -159,18 +150,23 @@ y :: Poly
 y = newProjection cfg dombox "y"
 
 yNoX :: Poly
-yNoX = newProjection (cfgRemVar cfg) dombox "y"
+yNoX = newProjection cfgNoX dombox "y"
+
+xNoY :: Poly
+xNoY = newProjection cfgNoY dombox "x"
 
 c0 :: Poly
 c0 = newConstFn cfg dombox 0
 
-c0NoX :: Poly
-c0NoX = newConstFnFromSample yNoX 0
-
 c1 :: Poly
 c1 = newConstFn cfg dombox 1
+
 cHalf :: Poly
 cHalf = newConstFn cfg dombox 0.5
+
+c15Over16 :: Poly
+c15Over16 = newConstFn cfg dombox $ 15/16
+
 --cOneOver16 = newConstFn cfg dombox $ 0.5^4
 c01 :: Poly
 c01 = newConstFn cfg dombox $ 0 </\> 1
@@ -201,8 +197,10 @@ integyTwoBxPyP2 = c1 <+> primitiveFunctionOutEff eff twoBxPyP2 "y"
 eff :: ArithInOut.RoundedRealEffortIndicator CF
 --eff = (100, (100,())) -- MPFR with explicit precision
 eff = ArithInOut.roundedRealDefaultEffort (0:: CF)
---minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 x
---minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 x
+
+minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 x
+
+minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 x
 
 reduceDeg, reduceCount :: Poly -> Poly 
 reduceDeg = reducePolyDegreeOut eff
@@ -230,6 +228,18 @@ cfg =
             ipolycfg_sample_cf = 0 :: CF,
             ipolycfg_maxdeg = 4,
             ipolycfg_maxsize = 30
+        }
+
+cfgNoX :: IntPolyCfg String CF
+cfgNoX = cfgRemVar cfg
+
+cfgNoY :: IntPolyCfg String CF
+cfgNoY = 
+    cfg
+        {
+            ipolycfg_vars = take 1 vars,
+            ipolycfg_domsLZ = take 1 domsLZ,
+            ipolycfg_domsLE = take 1 domsLE
         }
 
 cfgDeg0 :: IntPolyCfg String CF

@@ -42,6 +42,7 @@ Library
                     Numeric.AERN.Poly.IntPoly.Evaluation,
                     Numeric.AERN.Poly.IntPoly.IntPoly,
                     Numeric.AERN.Poly.IntPoly.Integration,
+                    Numeric.AERN.Poly.IntPoly.Minmax,
                     Numeric.AERN.Poly.IntPoly.Multiplication,
                     Numeric.AERN.Poly.IntPoly.New,
                     Numeric.AERN.Poly.IntPoly.NumericOrder,
