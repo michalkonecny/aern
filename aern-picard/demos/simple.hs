@@ -46,29 +46,35 @@ main =
     putStrLn "-------------------------------------------------"
     putStrLn "demo of aern-picard using simple examples"
     putStrLn "-------------------------------------------------"
-    solveExpDecay
+    solveExpDecayVt
+--    solveExpDecayVT
 
-solveExpDecay :: IO ()
-solveExpDecay =
+solveExpDecayVt :: IO ()
+solveExpDecayVt =
     do
-    putStrLn $ "solving: x' = -x; x(" ++ show timeStart ++ ") = " ++ show initialValues
+    putStrLn $ "solving: x' = -x; x(" ++ show timeStart ++ ") \\in " ++ show initialValues
     putStrLn "-------------------------------------------------"
     putStrLn $ "maxdeg = " ++ show maxdeg
     putStrLn $ "maxsize = " ++ show maxsize
     putStrLn $ "delta = " ++ show delta
+    putStrLn $ "m = " ++ show m
+    putStrLn $ "stepSize = " ++ show stepSize
+    putStrLn $ "epsilon = " ++ show epsilon
     putStrLn $ "x(" ++ show timeEnd ++ ") = ?"
     putStrLn "-------------------------------------------------"
-    putEnclosureEndpoints "t" $
-        take 20 $
-            enclosuresOfIVPWithUncertainValue 
-                effCf maxdeg maxsize delta 
-                    tVar timeDomain componentNames field initialValues
+    putStrLn $ show $
+        enclosuresOfIVPWithUncertainValue
+            effCf maxdeg maxsize delta m stepSize epsilon
+                tVar timeStart timeEnd componentNames field initialValues
     where
     timeStart = 0
     initialValues = [(-1) DI.</\> 1]
     delta = 1
-    maxdeg = 10
+    maxdeg = 3
     maxsize = 100
+    m = 20
+    stepSize = 0.5
+    epsilon = 1 </> 2^10
     timeEnd = 1
     
     field [x] = [neg x]
@@ -78,31 +84,76 @@ solveExpDecay =
     effCf = ArithInOut.roundedRealDefaultEffort (0:: CF)
 --    effCf = (100, (100,())) -- MPFR
 
-    
-enclosuresOfIVPWithUncertainValue :: 
-    PartialEvaluationEffortIndicator Poly -> 
-    Int -> Int -> 
-    CF ->
-    Var Poly ->
-    CF ->
-    [Var Poly] ->
-    ([Poly] -> [Poly]) ->
-    [CF] ->
-    [[Poly]]
-enclosuresOfIVPWithUncertainValue 
-        effCf maxdeg maxsize delta 
-            tVar timeDomain componentNames field initialValues
-    =
---    map (map substituteInitialValueUncertainty) $
-        solveUncertainValueExactTime
-            effInteg effInclFn effAddFn effAddFnDom effJoinDom
-            tVar timeDomain initialValuesFns field delta
+solveExpDecayVT :: IO ()
+solveExpDecayVT =
+    do
+    putStrLn $ "solving: x' = -x; " 
+                ++ show timeStart ++ " < t_0 < " ++ show t0End 
+                ++ "; x(t_0) \\in " ++ show initialValueFns
+    putStrLn "-------------------------------------------------"
+    putStrLn $ "maxdeg = " ++ show maxdeg
+    putStrLn $ "maxsize = " ++ show maxsize
+    putStrLn $ "delta = " ++ show delta
+    putStrLn $ "x(" ++ show timeEnd ++ ") = ?"
+    putStrLn "-------------------------------------------------"
+    putEnclosureEndpoints "t" timeEnd $
+        take 20 $
+            enclosuresOfIVPWithUncertainTime
+                effCf delta 
+                tVar timeStart timeEnd t0Var t0End 
+                field initialValueFns
     where
+    timeStart = -0.125
+    t0End = 0.125
+    initialValueFns = 
+        [ (1 :: Int) |<+> t0VarFn]
+--        [t0VarFn <+> (xUnitFn </>| (8::Int))]
+    delta = 1
+    maxdeg = 20
+    maxsize = 400
+    timeEnd = 1
+    
+    field [x] = [neg x]
+--    timeDomain = timeStart DI.</\> timeEnd
+    t0Domain = timeStart DI.</\> t0End
+    componentNames = ["x"]
+    tVar = "t"
+    t0Var = "t0"
 
-    initialValuesFns =
-        map initialValueFn componentNames
-    initialValueFn var =
-        newProjectionFromSample sampleFnWithoutT var 
+    t0VarFn = newProjectionFromSample sampleFnWithoutT t0Var
+    [xUnitFn] = map (newProjectionFromSample sampleFnWithoutT) componentNames
+    sampleFnWithoutT =
+        makeSampleWithVarsDoms maxdeg maxsize (t0Var : componentNames) (t0Domain : componentUncertaintyDomains)
+    componentUncertaintyDomains =
+        map snd $ zip componentNames $ repeat unitDom
+    unitDom = 0 DI.</\> 1 
+
+    effCf = ArithInOut.roundedRealDefaultEffort (0:: CF)
+--    effCf = (100, (100,())) -- MPFR
+
+    
+--enclosuresOfIVPWithUncertainValue :: 
+--    ArithInOut.RoundedRealEffortIndicator CF -> 
+--    Int -> Int -> 
+--    CF ->
+--    Var Poly ->
+--    CF ->
+--    CF ->
+--    [Var Poly] ->
+--    ([Poly] -> [Poly]) ->
+--    [CF] ->
+--    [[Poly]]
+enclosuresOfIVPWithUncertainValue 
+        effCf maxdeg maxsize delta m stepSize epsilon 
+            tVar tStart tEnd componentNames field initialValues
+    =
+--    undefined
+    solveUncertainValueExactTimeSplit
+        sampleFnWithoutT componentNames
+        effInteg effInclFn effAddFn effAddFnDom effCf
+        tVar tStart tEnd initialValues field delta
+        m stepSize epsilon
+    where
 
 --    substituteInitialValueUncertainty fn =
 --        pEvalAtPointOutEff effEval initValDomBox fn
@@ -124,6 +175,57 @@ enclosuresOfIVPWithUncertainValue
     effInclFn = ((Int1To1000 0, effCf), ())
     effJoinDom =
         ArithInOut.rrEffortJoinMeet sampleCf effCf
+
+enclosuresOfIVPWithUncertainTime :: 
+    ArithInOut.RoundedRealEffortIndicator CF -> 
+    CF ->
+    Var Poly ->
+    CF ->
+    CF ->
+    Var Poly ->
+    CF ->
+    ([Poly] -> [Poly]) ->
+    [Poly] ->
+    [[Poly]]
+enclosuresOfIVPWithUncertainTime 
+        effCf delta 
+        tVar tStart tEnd t0Var t0End 
+        field initialValueFns
+    =
+    result
+    where
+    (Just result) =
+        solveUncertainValueUncertainTime
+            effCompose effInteg effInclFn effMinmax effAddFn effAddFnDom effCf
+            sampleFnWithT tVar tStart tEnd t0Var t0End 
+            initialValueFns field delta
+
+--    substituteInitialValueUncertainty fn =
+--        pEvalAtPointOutEff effEval initValDomBox fn
+--        where
+--        initValDomBox =
+--            fromList $ zip componentNames initialValues
+--        
+    (sampleFnWithoutT : _) =  initialValueFns -- domain @T0 x D@
+    sampleFnWithT = 
+        polyMapVars t02t sampleFnWithoutT
+        where
+        t02t var 
+            | var == t0Var = tVar
+            | otherwise = var 
+    sampleCf = 
+        getSampleDomValue sampleFnWithoutT
+    
+    effCompose = effCf
+    effInteg = effCf
+    effMinmax = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 sampleFnWithoutT
+    effAddFn = effCf
+    effAddFnDom =
+        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effInclFn = ((Int1To1000 0, effCf), ())
+--    effJoinDom =
+--        ArithInOut.rrEffortJoinMeet sampleCf effCf
+
 
 makeSampleWithVarsDoms :: 
      Int -> Int -> [Var Poly] -> [DI.DI] -> Poly
@@ -148,33 +250,36 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
 evalAtEndTimeVec :: 
     (RefOrd.IntervalLike (Domain f), CanEvaluate f) 
     =>
-    Var f -> [f] -> [Domain f]
-evalAtEndTimeVec tVar fnVec =
-    map (evalAtEndTimeFn tVar) fnVec
+    Var f -> Domain f -> [f] -> [Domain f]
+evalAtEndTimeVec tVar tEnd fnVec =
+    map (evalAtEndTimeFn tVar tEnd) fnVec
 
 evalAtEndTimeFn ::
     (HasDomainBox f, CanEvaluate f, RefOrd.IntervalLike (Domain f))
     =>
-    Var f -> f -> (Domain f)
-evalAtEndTimeFn tVar fn =
+    Var f -> Domain f -> f -> (Domain f)
+evalAtEndTimeFn tVar tEnd fn =
     evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fn
     where
-    endTimeArea = insertVar tVar timeDomainR $ getDomainBox fn
-    (_, timeDomainR) = RefOrd.getEndpointsOutWithDefaultEffort timeDomain
-    Just timeDomain = lookupVar (getDomainBox fn) tVar 
+    endTimeArea = insertVar tVar tEnd $ getDomainBox fn
      
 putEnclosureEndpoints :: 
     (Show f, Show (Domain f),
      RefOrd.IntervalLike (Domain f),
      CanEvaluate f) 
     =>
-    Var f -> [[f]] -> IO ()
-putEnclosureEndpoints tVar fnVectors =
+    Var f -> Domain f -> [[f]] -> IO ()
+putEnclosureEndpoints tVar tEnd fnVectors =
     mapM_ putEndpt $ zip [1..] fnVectors
     where
     putEndpt (n, fns) =
         do
         putStrLn $ "---------- enclosure " ++ show (n :: Int) ++ ":"
-        putStrLn $ "at end time: " ++ (show $ evalAtEndTimeVec tVar fns)
+        putStrLn $ "at end time: " ++ (show $ evalAtEndTimeVec tVar tEnd fns)
 --        putStrLn $ "in full: " ++ (show fns)
+        
+        
+putVals tVar tEnd vector =
+    do
+    putStrLn $ "at end time: " ++ (show $ evalAtEndTimeVec tVar tEnd vector)
         

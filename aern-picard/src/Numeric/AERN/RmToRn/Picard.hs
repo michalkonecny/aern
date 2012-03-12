@@ -17,7 +17,9 @@
 
 module Numeric.AERN.RmToRn.Picard 
 (
-    solveUncertainValueExactTime
+    solveUncertainValueExactTime,
+    solveUncertainValueExactTimeSplit,
+    solveUncertainValueUncertainTime
 )
 where
 
@@ -29,6 +31,9 @@ import Numeric.AERN.RmToRn.Integration
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
+
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
@@ -42,8 +47,7 @@ solveUncertainValueExactTime ::
      RoundedIntegration f,
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedMixedAdd f (Domain f),
-     Neg (Domain f), 
-     RefOrd.RoundedLattice(Domain f), 
+     ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike(Domain f), 
      fvec ~ [f],
      Show f, Show (Domain f))
@@ -52,23 +56,33 @@ solveUncertainValueExactTime ::
     RefOrd.PartialCompareEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
-    RefOrd.JoinMeetEffortIndicator (Domain f) ->
+    ArithInOut.RoundedRealEffortIndicator (Domain f) ->
     Var f {-^ @t@ - the time variable -} ->
-    Domain f {-^ @T@ - bounded time interval of interest -} ->
+    Domain f {-^ @TL@ - initial time -} ->
+    Domain f {-^ @TR@ - end of the time interval of interest -} ->
     fvec {-^ @a@ - functions giving the initial value parametrised by domain @D@ -}  ->
     (fvec -> fvec) {-^ the approximate vector field, transforming vectors of functions, all functions have the same domain -} ->
     Domain f {-^ initial widening @delta@ -}  ->
-    [fvec] {-^ sequence of enclosures with domain @T x D@ produced by the Picard operator -}
+    Maybe [fvec] {-^ sequence of enclosures with domain @T x D@ produced by the Picard operator -}
 solveUncertainValueExactTime
-        effInteg effInclFn effAddFn effAddFnDom effJoinDom
-        tVar timeDomain (initialValuesFns :: [f]) field delta
+        effInteg effInclFn effAddFn effAddFnDom effDom
+        tVar tStart tEnd (initialValuesFns :: [f]) field delta
     =
-    iterate picard firstEnclosure
+    case findEnclosure (40 :: Int) $ iterate picard initialAttemptFns of
+        Just firstEnclosure ->
+            Just $ iterate picard firstEnclosure
+        Nothing -> Nothing
     where
+    timeDomain =
+        RefOrd.fromEndpointsOutWithDefaultEffort (tStart, tEnd)
+
+    effJoinDom = ArithInOut.rrEffortJoinMeet sampleDom effDom
+    sampleDom = tStart
+    
     firstEnclosure =
-        findEnclosure (10 :: Int) $ iterate picard initialAttemptFns
+        findEnclosure (40 :: Int) $ iterate picard initialAttemptFns
     initialValuesFnsWithT =
-        map (addVariablesFront [(tVar, timeDomain)]) initialValuesFns 
+        map (addVariablesFront [(tVar, timeDomain)]) initialValuesFns
     initialAttemptFns =
         map widenFn initialValuesFnsWithT
         where
@@ -81,7 +95,7 @@ solveUncertainValueExactTime
     findEnclosure maxIter (fn1Vec : fn2Vec : rest)
         | maxIter > 0 =
             case fn2RefinesFn1 of
-                True -> fn2Vec
+                True -> Just fn2Vec
                 _ ->
 --                    unsafePrint
 --                    (
@@ -97,14 +111,17 @@ solveUncertainValueExactTime
             let ?pCompareEffort = effInclFn in
             null $ filter (/= (Just True)) $ zipWith (|<=?) fn1Vec fn2Vec
     findEnclosure _ _  =
-        error "aern-picard: solveUncertainValueExactTime failed to find enclosure"
+        Nothing
+--        error "aern-picard: solveUncertainValueExactTime failed to find enclosure"
     picard xvec = 
 --        unsafePrint
 --        (
 --            "solveUncertainValueExactTime: picard:"
---            ++ "\n xvec = " ++ (show xvec)
---            ++ "\n xdvec = " ++ (show xdvec)
---            ++ "\n result = " ++ (show result)
+--            ++ "\n tEnd = " ++ (show timeDomainR)
+--            ++ "\n initialValuesFnsWithT = " ++ (show initialValuesFnsWithT)
+----            ++ "\n xvec = " ++ (show xvec)
+----            ++ "\n xdvec = " ++ (show xdvec)
+----            ++ "\n result = " ++ (show result)
 --            ++ "\n xvec at end time = " ++ (show $ evalAtEndTimeVec xvec)
 --            ++ "\n xdvec at end time = " ++ (show $ evalAtEndTimeVec xdvec)
 --            ++ "\n result at end time = " ++ (show $ evalAtEndTimeVec result)
@@ -126,6 +143,232 @@ solveUncertainValueExactTime
         where
         endTimeArea :: DomainBox f
         endTimeArea = insertVar tVar timeDomainR $ getDomainBox fn
-        (_, timeDomainR) = RefOrd.getEndpointsOutWithDefaultEffort timeDomain 
+    (_, timeDomainR) = RefOrd.getEndpointsOutWithDefaultEffort timeDomain 
         
+        
+solveUncertainValueExactTimeSplit ::
+    (CanAddVariables f,
+     CanEvaluate f,
+     HasProjections f,
+     RefOrd.PartialComparison f,
+     RoundedIntegration f,
+     ArithInOut.RoundedAdd f,
+     ArithInOut.RoundedMixedAdd f (Domain f),
+     ArithInOut.RoundedReal (Domain f), 
+     RefOrd.IntervalLike(Domain f), 
+     fvec ~ [f],
+     Show f, Show (Domain f))
+    =>
+    f {-^ sample function with domain @D@ for parametrising the inital values -} ->
+    [Var f] ->
+    IntegrationEffortIndicator f ->
+    RefOrd.PartialCompareEffortIndicator f ->
+    ArithInOut.AddEffortIndicator f ->
+    ArithInOut.MixedAddEffortIndicator f (Domain f) ->
+    ArithInOut.RoundedRealEffortIndicator (Domain f) ->
+    Var f {-^ @t@ - the time variable -} ->
+    Domain f {-^ @TL@ - initial time -} ->
+    Domain f {-^ @TR@ - end of the time interval of interest -} ->
+    [Domain f] {-^ @A@ - uncertain values at time tStart -}  ->
+    (fvec -> fvec) {-^ the approximate vector field, transforming vectors of functions, all functions have the same domain -} ->
+    Domain f {-^ initial widening @delta@ -}  ->
+    Int -> 
+    Domain f {-^ step size @s@ -}  ->
+    Domain f {-^ width tolerance @epsilon@ -}  ->
+    Maybe [Domain f] {-^ value approximations at time tEnd -}
+solveUncertainValueExactTimeSplit
+        (sampleF :: f) componentNames
+        effInteg effInclFn effAddFn effAddFnDom effDom
+        tVar tStartG tEndG initialValuesG field delta
+        m stepSize epsilonG
+    =
+    solve tStartG tEndG epsilonG initialValuesG
+    where
+    effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+    effDivDomInt = 
+        ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
+            ArithInOut.rrEffortIntMixedField sampleDom effDom
+    sampleDom = tStartG
+
+    solve tStart tEnd epsilon initialValues
+        | belowStepSize = directComputation
+        | resultGoodEnough = directComputation
+        | otherwise = splitComputation
+        where
+        belowStepSize =
+            let ?addInOutEffort = effAddDom in
+            ((tEnd <-> tStart) >? stepSize) /= Just True
+            
+        directComputation =
+            case maybeIterations of
+                Just iterations -> Just $ evalAtEndTimeVec $ iterations !! m
+                Nothing -> Nothing
+            where
+            maybeIterations =
+                solveUncertainValueExactTime
+                        effInteg effInclFn effAddFn effAddFnDom effDom
+                        tVar tStart tEnd initialValuesFns field delta
+        initialValuesFns =
+            map initialValueFn componentNames
+        initialValueFn var =
+            newProjectionFromSample sampleF var 
+        
+        splitComputation =
+            leftComputation
+--            case (leftComputation, rightComputation) of
+--                (Just _, Just _) -> 
+            where
+            leftComputation = solve tStart tMid epsilon initialValues
+            rightComputation =
+                case leftComputation of
+                    Just midValues -> 
+                        solve tMid tStart epsilon midValues
+                    Nothing -> Nothing
+            tMid = 
+                let ?addInOutEffort = effAddDom in
+                let ?mixedDivInOutEffort = effDivDomInt in
+                (tStart <+> tEnd) </>| (2 :: Int)
+        
+        (Just directResult) = directComputation
+        resultGoodEnough =
+            case directComputation of
+                Just directResult ->
+                    allBelowEpsilon directResult
+                Nothing -> False
+            where
+            allBelowEpsilon numbers =
+                and $ map belowEpsilon numbers
+            belowEpsilon number =
+                (number <=? epsilon) == Just True 
+                -- TODO: this does not make sense - find a useful termination criterion
     
+        evalAtEndTimeVec fnVec =
+            map evalAtEndTimeFn fnVec
+        evalAtEndTimeFn :: f -> Domain f
+        evalAtEndTimeFn fn =
+            evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fn
+            where
+            endTimeArea :: DomainBox f
+            endTimeArea = insertVar tVar tEnd $ getDomainBox fn
+    
+    
+solveUncertainValueUncertainTime ::
+    (CanAddVariables f,
+     CanEvaluate f,
+     CanCompose f,
+     HasProjections f,
+     HasConstFns f,
+     RefOrd.PartialComparison f,
+     RefOrd.IntervalLike f,
+     NumOrd.RefinementRoundedLattice f,
+     RoundedIntegration f,
+     ArithInOut.RoundedAdd f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMixedAdd f (Domain f),
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike(Domain f), 
+     fvec ~ [f],
+     Show f, Show (Domain f))
+    =>
+    CompositionEffortIndicator f ->
+    IntegrationEffortIndicator f ->
+    RefOrd.PartialCompareEffortIndicator f ->
+    NumOrd.MinmaxInOutEffortIndicator f ->
+    ArithInOut.AddEffortIndicator f ->
+    ArithInOut.MixedAddEffortIndicator f (Domain f) ->
+    ArithInOut.RoundedRealEffortIndicator (Domain f) ->
+    f {-^ sample function without variable @t0@ -} ->
+    Var f {-^ @t@ - the time variable -} ->
+    Domain f {-^ @TL@ - initial time -} ->
+    Domain f {-^ @TR@ - end of the time interval of interest -} ->
+    Var f {-^ @t0@ - the initial time variable -} ->
+    Domain f {-^ @T0R@ - end of the domain of the initial time variable -} ->
+    fvec {-^ @g@ - functions giving the initial value parametrised by domain @T0 x D@ -}  ->
+    (fvec -> fvec) {-^ the approximate vector field, transforming vectors of functions, all functions have the same domain -} ->
+    Domain f {-^ initial widening @delta@ -}  ->
+    Maybe [fvec] {-^ sequence of enclosures with domain @T x D@ produced by the Picard operator -}
+solveUncertainValueUncertainTime
+        effCompose effInteg effInclFn effMinmax effAddFn effAddFnDom effDom
+        sampleFnWithoutT0
+        tVar tStart tEnd t0Var t0End 
+        (initialValuesFns :: [f]) field delta
+    =
+    case solveWithExactTime of
+        Just _ ->
+--            unsafePrint
+--            (
+--                "solveUncertainValueUncertainTime: "
+--                ++ "\n t0DomainFnBelowT = " ++ show t0DomainFnBelowT
+--                ++ "\n at time " ++ show tEnd ++ ":"
+--                ++ "\n enclosuresWithTT0 = " ++ (show $ take 3 $ map evalAtEndTimeVec enclosuresWithTT0) 
+--                ++ "\n enclosuresShifted = " ++ (show $ take 3 $ map evalAtEndTimeVec enclosuresShifted) 
+--                ++ "\n enclosuresWithoutT0 = " ++ (show $ take 3 $ map evalAtEndTimeVec enclosuresWithoutT0) 
+--            )
+            Just enclosuresWithoutT0
+        Nothing -> Nothing
+    where
+    -- perform eliminating substitution: t0 |-> min (T0 , t):
+    enclosuresWithoutT0 =
+        map (map (composeVarOutEff effCompose t0Var t0DomainFnBelowT)) $
+        enclosuresShifted
+    -- perform non-eliminating substitution: t |-> t - t0 + initialTime:
+    enclosuresShifted =
+        map (map (composeVarOutEff effCompose tVar tShifted)) enclosuresWithTT0
+    (Just enclosuresWithTT0) = solveWithExactTime
+    -- compute the enclosure parameterised by t and t0:
+    solveWithExactTime =
+        solveUncertainValueExactTime
+            effInteg effInclFn effAddFn effAddFnDom effDom
+            tVar tStart tEndAdj initialValuesFns
+            field delta
+    timeDomain =
+        RefOrd.fromEndpointsOutWithDefaultEffort (tStart, tEndAdj)
+    tEndAdj =
+        let ?addInOutEffort = effAddDom in 
+        tEnd <+> t0End <-> tStart
+    t0Domain = RefOrd.fromEndpointsOutWithDefaultEffort (tStart, t0End)
+    t0DomainFnBelowT =
+--        NumOrd.minOutEff effMinmax t0DomainFn tFn
+        RefOrd.fromEndpointsOutWithDefaultEffort (tStartFn, tFn) 
+            -- WARNING: assuming T = T_0!
+            -- HACK to make event detection work while min is broken; 
+        where
+        tStartFn =
+            newConstFnFromSample sampleFnWithoutT0 tStart
+        t0DomainFn =
+            newConstFnFromSample sampleFnWithoutT0 t0Domain
+        tFn = 
+            newProjectionFromSample sampleFnWithoutT0 tVar
+
+    tShifted =
+        let ?addInOutEffort = effAddFn in
+        (tFn <-> t0Fn) <+> initialTimeFn
+        where
+        tFn = 
+            newProjectionFromSample sampleFnWithTT0 tVar
+        t0Fn =
+            newProjectionFromSample sampleFnWithTT0 t0Var
+        initialTimeFn =
+            newConstFnFromSample sampleFnWithTT0 tStart
+    (sampleFnWithTT0 : _) = head enclosuresWithTT0
+            
+    effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+    sampleDom = tStart
+
+    evalAtEndTimeVec fnVec =
+        map evalAtEndTimeFn fnVec
+        
+    evalAtEndTimeFn :: f -> Domain f
+    evalAtEndTimeFn fn =
+        evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fn
+        where
+        endTimeArea :: DomainBox f
+        endTimeArea = insertVar tVar tEnd $ getDomainBox fn
+    
+solveUncertainValueUncertainTimeSplit 
+        effCompose effInteg effInclFn effMinmax effAddFn effAddFnDom effDom
+        sampleFnWithoutT0
+        tVar tStart tEnd t0Var t0End 
+        (initialValuesFns :: [f]) field delta
+    =
+    undefined
