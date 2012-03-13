@@ -53,35 +53,39 @@ solveExpDecayVt :: IO ()
 solveExpDecayVt =
     do
     putStrLn $ "solving: x' = -x; x(" ++ show timeStart ++ ") \\in " ++ show initialValues
-    putStrLn "-------------------------------------------------"
+    putStrLn "----------  parameters: -------------------------"
     putStrLn $ "maxdeg = " ++ show maxdeg
     putStrLn $ "maxsize = " ++ show maxsize
     putStrLn $ "delta = " ++ show delta
     putStrLn $ "m = " ++ show m
-    putStrLn $ "stepSize = " ++ show stepSize
-    putStrLn $ "epsilon = " ++ show epsilon
-    putStrLn $ "x(" ++ show timeEnd ++ ") = ?"
+    putStrLn $ "minimum stepSize = " ++ show stepSize
+    putStrLn "----------  result: -----------------------------"
+    putStrLn $ "x(" ++ show timeEnd ++ ") = " ++ show endValues
+    putStrLn "----------  steps: ------------------------------"
+    putStr $ unlines $ map showStep stepValues
     putStrLn "-------------------------------------------------"
-    putStrLn $ show $
-        enclosuresOfIVPWithUncertainValue
-            effCf maxdeg maxsize delta m stepSize epsilon
-                tVar timeStart timeEnd componentNames field initialValues
     where
+    (endValues, stepValues) =
+        enclosuresOfIVPWithUncertainValue
+            effCf maxdeg maxsize delta m stepSize
+                tVar timeStart timeEnd componentNames field initialValues
     timeStart = 0
     initialValues = [(-1) DI.</\> 1]
     delta = 1
-    maxdeg = 3
+    maxdeg = 10
     maxsize = 100
     m = 20
-    stepSize = 0.5
-    epsilon = 1 </> 2^10
+    stepSize = 1
     timeEnd = 1
+    -- TODO: reintroduce epsilon - threshold for improvement by further splitting
     
     field [x] = [neg x]
     timeDomain = timeStart DI.</\> timeEnd
     componentNames = ["x"]
     tVar = "t"
     effCf = ArithInOut.roundedRealDefaultEffort (0:: CF)
+    showStep (t, values) =
+        "x(" ++ show t ++ ") = " ++ show values
 --    effCf = (100, (100,())) -- MPFR
 
 solveExpDecayVT :: IO ()
@@ -144,7 +148,7 @@ solveExpDecayVT =
 --    [CF] ->
 --    [[Poly]]
 enclosuresOfIVPWithUncertainValue 
-        effCf maxdeg maxsize delta m stepSize epsilon 
+        effCf maxdeg maxsize delta m stepSize
             tVar tStart tEnd componentNames field initialValues
     =
 --    undefined
@@ -152,7 +156,7 @@ enclosuresOfIVPWithUncertainValue
         sampleFnWithoutT componentNames
         effInteg effInclFn effAddFn effAddFnDom effCf
         tVar tStart tEnd initialValues field delta
-        m stepSize epsilon
+        m stepSize
     where
 
 --    substituteInitialValueUncertainty fn =

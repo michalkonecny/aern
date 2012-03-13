@@ -173,36 +173,44 @@ solveUncertainValueExactTimeSplit ::
     (fvec -> fvec) {-^ the approximate vector field, transforming vectors of functions, all functions have the same domain -} ->
     Domain f {-^ initial widening @delta@ -}  ->
     Int -> 
-    Domain f {-^ step size @s@ -}  ->
-    Domain f {-^ width tolerance @epsilon@ -}  ->
-    Maybe [Domain f] {-^ value approximations at time tEnd -}
+    Domain f {-^ step size @s@ -}  
+    ->
+    (
+        Maybe [Domain f] 
+    ,
+        [(Domain f, [Domain f])]
+    ) {-^ value approximations at time tEnd and intermediate values at various time points -}
 solveUncertainValueExactTimeSplit
         (sampleF :: f) componentNames
         effInteg effInclFn effAddFn effAddFnDom effDom
         tVar tStartG tEndG initialValuesG field delta
-        m stepSize epsilonG
+        m stepSize
     =
-    solve tStartG tEndG epsilonG initialValuesG
+    solve tStartG tEndG initialValuesG
     where
+    effRefComp = ArithInOut.rrEffortRefComp sampleDom effDom
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDivDomInt = 
         ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
             ArithInOut.rrEffortIntMixedField sampleDom effDom
     sampleDom = tStartG
 
-    solve tStart tEnd epsilon initialValues
+    solve tStart tEnd initialValues
         | belowStepSize = directComputation
-        | resultGoodEnough = directComputation
+        | not splitImproves = directComputation
         | otherwise = splitComputation
         where
         belowStepSize =
+--            unsafePrintReturn ("belowStepSize = ") $
             let ?addInOutEffort = effAddDom in
             ((tEnd <-> tStart) >? stepSize) /= Just True
             
         directComputation =
             case maybeIterations of
-                Just iterations -> Just $ evalAtEndTimeVec $ iterations !! m
-                Nothing -> Nothing
+                Just iterations ->
+                    let valuesAtEnd = evalAtEndTimeVec $ iterations !! m in
+                    (Just valuesAtEnd, [(tEnd, valuesAtEnd)])
+                Nothing -> (Nothing, [])
             where
             maybeIterations =
                 solveUncertainValueExactTime
@@ -211,36 +219,48 @@ solveUncertainValueExactTimeSplit
         initialValuesFns =
             map initialValueFn componentNames
         initialValueFn var =
-            newProjectionFromSample sampleF var 
+            newProjection sizeLimits dombox var
+        dombox =
+            fromList $ zip vars initialValues
+        sizeLimits = getSizeLimits sampleF
+        vars = getVars $ getDomainBox sampleF
         
         splitComputation =
-            leftComputation
---            case (leftComputation, rightComputation) of
---                (Just _, Just _) -> 
+            case solve tStart tMid initialValues of
+                (Just midValues, intermediateValuesL) -> 
+                    case solve tMid tEnd midValues of
+                        (Just endValues, intermediateValuesR) ->
+                            (Just endValues, intermediateValuesL ++ intermediateValuesR)
+                        (Nothing, intermediateValuesR) ->
+                            (Nothing, intermediateValuesL ++ intermediateValuesR)
+                failedLeftComputation -> failedLeftComputation
             where
-            leftComputation = solve tStart tMid epsilon initialValues
-            rightComputation =
-                case leftComputation of
-                    Just midValues -> 
-                        solve tMid tStart epsilon midValues
-                    Nothing -> Nothing
             tMid = 
                 let ?addInOutEffort = effAddDom in
                 let ?mixedDivInOutEffort = effDivDomInt in
                 (tStart <+> tEnd) </>| (2 :: Int)
         
-        (Just directResult) = directComputation
-        resultGoodEnough =
-            case directComputation of
-                Just directResult ->
-                    allBelowEpsilon directResult
-                Nothing -> False
+        splitImproves =
+            case directComputation  of
+                (Just directResult, _) ->
+                    case splitComputation of
+                        (Just splitResult, _) ->
+                            directResult `oneWorseThan` splitResult
+                        _ -> False
+                _ -> False
             where
-            allBelowEpsilon numbers =
-                and $ map belowEpsilon numbers
-            belowEpsilon number =
-                (number <=? epsilon) == Just True 
-                -- TODO: this does not make sense - find a useful termination criterion
+            oneWorseThan vec1 vec2 =
+                or $ zipWith worseThan vec1 vec2
+            worseThan encl1 encl2 =
+--                unsafePrintReturn
+--                (
+--                    "worseThan: "
+--                    ++ "\n encl1 = " ++ show encl1
+--                    ++ "\n encl2 = " ++ show encl2
+--                    ++ "\n encl1 |<? encl2 = "
+--                ) $
+                let ?pCompareEffort = effRefComp in
+                (encl1 |<? encl2) == Just True 
     
         evalAtEndTimeVec fnVec =
             map evalAtEndTimeFn fnVec
