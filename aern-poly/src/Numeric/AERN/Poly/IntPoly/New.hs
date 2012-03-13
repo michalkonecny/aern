@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.New
     Description :  creating constant and single-variable polynomials  
@@ -86,8 +87,16 @@ instance
      RefOrd.IntervalLike cf) => 
     (HasConstFns (IntPoly var cf))
     where
-    newConstFn cfg _ value = 
-        IntPoly cfg $ mkConstTerms value $ ipolycfg_vars cfg
+    newConstFn cfg dombox value = 
+        IntPoly cfgD $ mkConstTerms value vars
+        where
+        cfgD = cfgAdjustDomains domains cfg
+        domains = 
+            case (sequence $ map (lookupVar dombox) vars) of
+                Just ds -> ds
+                Nothing ->
+                    error "aern-poly: IntPoly newProjection: incompatible domain box"
+        vars = ipolycfg_vars cfg
 
 mkConstTerms ::
     (HasConsistency cf)
@@ -193,11 +202,17 @@ instance
      RefOrd.IntervalLike cf) => 
     (HasProjections (IntPoly var cf))
     where
-    newProjection cfg _dombox var =
-        IntPoly cfg $ mkProjTerms cfg var vars domsLE
+    newProjection cfg dombox var =
+        IntPoly cfgD $ mkProjTerms cfgD var vars domsLE
         where
+        domsLE = ipolycfg_domsLE cfgD
+        cfgD = cfgAdjustDomains domains cfg
+        domains = 
+            case sequence $ map (lookupVar dombox) vars of
+                Just ds -> ds
+                Nothing ->
+                    error "aern-poly: IntPoly newProjection: incompatible domain box"
         vars = ipolycfg_vars cfg
-        domsLE = ipolycfg_domsLE cfg
         
 mkProjTerms :: 
     (Eq var, Show var, HasOne cf, 
