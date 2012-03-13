@@ -33,7 +33,9 @@ Library
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-realfn == 0.5.*
-  exposed-modules:  Numeric.AERN.RmToRn.Picard
+  exposed-modules:  
+                    Numeric.AERN.RmToRn.Picard.UncertainTime,
+                    Numeric.AERN.RmToRn.Picard.UncertainValue
 
 executable simple
   build-depends:   base == 4.2.* || == 4.4.* || == 4.5.*,

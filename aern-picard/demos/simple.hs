@@ -3,13 +3,14 @@ module Main where
 
 import Numeric.AERN.Poly.IntPoly
 
-import Numeric.AERN.RmToRn.Picard
+import Numeric.AERN.RmToRn.Picard.UncertainValue
+import Numeric.AERN.RmToRn.Picard.UncertainTime
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
 
-import Numeric.AERN.RealArithmetic.Basis.Double
+import Numeric.AERN.RealArithmetic.Basis.Double ()
 import qualified Numeric.AERN.DoubleBasis.Interval as DI
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
 --import qualified Numeric.AERN.MPFRBasis.Interval as MI
@@ -21,7 +22,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Basics.ShowInternals
+--import Numeric.AERN.Basics.ShowInternals
 
 import Numeric.AERN.Misc.Debug
 
@@ -58,7 +59,8 @@ solveExpDecayVt =
     putStrLn $ "maxsize = " ++ show maxsize
     putStrLn $ "delta = " ++ show delta
     putStrLn $ "m = " ++ show m
-    putStrLn $ "minimum stepSize = " ++ show stepSize
+    putStrLn $ "minimum step size = " ++ show minStepSize
+    putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
     putStrLn "----------  result: -----------------------------"
     putStrLn $ "x(" ++ show timeEnd ++ ") = " ++ show endValues
     putStrLn "----------  steps: ------------------------------"
@@ -67,20 +69,20 @@ solveExpDecayVt =
     where
     (endValues, stepValues) =
         enclosuresOfIVPWithUncertainValue
-            effCf maxdeg maxsize delta m stepSize
+            effCf maxdeg maxsize delta m minStepSize splitImprovementThreshold
                 tVar timeStart timeEnd componentNames field initialValues
     timeStart = 0
     initialValues = [(-1) DI.</\> 1]
     delta = 1
-    maxdeg = 10
+    maxdeg = 12
     maxsize = 100
     m = 20
-    stepSize = 1
+    minStepSize = 2^^(-6 :: Int)
+    splitImprovementThreshold = 2^^(-50 :: Int)
     timeEnd = 1
     -- TODO: reintroduce epsilon - threshold for improvement by further splitting
     
     field [x] = [neg x]
-    timeDomain = timeStart DI.</\> timeEnd
     componentNames = ["x"]
     tVar = "t"
     effCf = ArithInOut.roundedRealDefaultEffort (0:: CF)
@@ -98,12 +100,14 @@ solveExpDecayVT =
     putStrLn $ "maxdeg = " ++ show maxdeg
     putStrLn $ "maxsize = " ++ show maxsize
     putStrLn $ "delta = " ++ show delta
+    putStrLn $ "m = " ++ show m
+    putStrLn $ "minimum stepSize = " ++ show stepSize
     putStrLn $ "x(" ++ show timeEnd ++ ") = ?"
     putStrLn "-------------------------------------------------"
     putEnclosureEndpoints "t" timeEnd $
         take 20 $
             enclosuresOfIVPWithUncertainTime
-                effCf delta 
+                effCf delta m stepSize splitImprovementThreshold
                 tVar timeStart timeEnd t0Var t0End 
                 field initialValueFns
     where
@@ -115,6 +119,10 @@ solveExpDecayVT =
     delta = 1
     maxdeg = 20
     maxsize = 400
+    m = 20
+    stepSize = 1
+    splitImprovementThreshold :: CF
+    splitImprovementThreshold = 2^^(-20)
     timeEnd = 1
     
     field [x] = [neg x]
@@ -125,7 +133,6 @@ solveExpDecayVT =
     t0Var = "t0"
 
     t0VarFn = newProjectionFromSample sampleFnWithoutT t0Var
-    [xUnitFn] = map (newProjectionFromSample sampleFnWithoutT) componentNames
     sampleFnWithoutT =
         makeSampleWithVarsDoms maxdeg maxsize (t0Var : componentNames) (t0Domain : componentUncertaintyDomains)
     componentUncertaintyDomains =
@@ -136,19 +143,28 @@ solveExpDecayVT =
 --    effCf = (100, (100,())) -- MPFR
 
     
---enclosuresOfIVPWithUncertainValue :: 
---    ArithInOut.RoundedRealEffortIndicator CF -> 
---    Int -> Int -> 
---    CF ->
---    Var Poly ->
---    CF ->
---    CF ->
---    [Var Poly] ->
---    ([Poly] -> [Poly]) ->
---    [CF] ->
---    [[Poly]]
+enclosuresOfIVPWithUncertainValue :: 
+    ArithInOut.RoundedRealEffortIndicator CF
+    -> Int
+    -> Int
+    -> CF
+    -> Int
+    -> CF
+    -> CF
+    -> Var Poly
+    -> CF
+    -> CF
+    -> [Var Poly]
+    -> ([Poly] -> [Poly])
+    -> [CF]
+    -> 
+    (
+     Maybe [CF]
+    ,
+     [(CF, [CF])]
+    )
 enclosuresOfIVPWithUncertainValue 
-        effCf maxdeg maxsize delta m stepSize
+        effCf maxdeg maxsize delta m stepSize splitImprovementThreshold
             tVar tStart tEnd componentNames field initialValues
     =
 --    undefined
@@ -156,7 +172,7 @@ enclosuresOfIVPWithUncertainValue
         sampleFnWithoutT componentNames
         effInteg effInclFn effAddFn effAddFnDom effCf
         tVar tStart tEnd initialValues field delta
-        m stepSize
+        m stepSize splitImprovementThreshold
     where
 
 --    substituteInitialValueUncertainty fn =
@@ -177,11 +193,12 @@ enclosuresOfIVPWithUncertainValue
     effAddFnDom =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effInclFn = ((Int1To1000 0, effCf), ())
-    effJoinDom =
-        ArithInOut.rrEffortJoinMeet sampleCf effCf
 
 enclosuresOfIVPWithUncertainTime :: 
     ArithInOut.RoundedRealEffortIndicator CF -> 
+    CF ->
+    Int ->
+    CF ->
     CF ->
     Var Poly ->
     CF ->
@@ -192,17 +209,17 @@ enclosuresOfIVPWithUncertainTime ::
     [Poly] ->
     [[Poly]]
 enclosuresOfIVPWithUncertainTime 
-        effCf delta 
-        tVar tStart tEnd t0Var t0End 
+        effCf delta m stepSize epsilon
+        tVar tStart tEnd t0Var t0End
         field initialValueFns
     =
     result
     where
     (Just result) =
-        solveUncertainValueUncertainTime
-            effCompose effInteg effInclFn effMinmax effAddFn effAddFnDom effCf
-            sampleFnWithT tVar tStart tEnd t0Var t0End 
-            initialValueFns field delta
+        solveUncertainValueUncertainTimeSplit
+            effCompose effInteg effInclFn effAddFn effAddFnDom effCf
+            sampleFnWithT tVar tStart tEnd t0Var t0End
+            initialValueFns field delta m stepSize epsilon
 
 --    substituteInitialValueUncertainty fn =
 --        pEvalAtPointOutEff effEval initValDomBox fn
@@ -210,7 +227,7 @@ enclosuresOfIVPWithUncertainTime
 --        initValDomBox =
 --            fromList $ zip componentNames initialValues
 --        
-    (sampleFnWithoutT : _) =  initialValueFns -- domain @T0 x D@
+    (sampleFnWithoutT : _) =  initialValueFns -- domain @T x D@
     sampleFnWithT = 
         polyMapVars t02t sampleFnWithoutT
         where
@@ -222,7 +239,6 @@ enclosuresOfIVPWithUncertainTime
     
     effCompose = effCf
     effInteg = effCf
-    effMinmax = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 sampleFnWithoutT
     effAddFn = effCf
     effAddFnDom =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
@@ -232,7 +248,7 @@ enclosuresOfIVPWithUncertainTime
 
 
 makeSampleWithVarsDoms :: 
-     Int -> Int -> [Var Poly] -> [DI.DI] -> Poly
+     Int -> Int -> [Var Poly] -> [CF] -> Poly
 makeSampleWithVarsDoms maxdeg maxsize vars doms =
     newConstFn cfg dombox sampleCf
     where
@@ -283,6 +299,14 @@ putEnclosureEndpoints tVar tEnd fnVectors =
 --        putStrLn $ "in full: " ++ (show fns)
         
         
+putVals ::
+    (Show (Domain f), 
+     CanEvaluate f, 
+     RefOrd.IntervalLike (Domain f)) 
+    =>
+    Var f -> Domain f -> [f] 
+    -> 
+    IO ()
 putVals tVar tEnd vector =
     do
     putStrLn $ "at end time: " ++ (show $ evalAtEndTimeVec tVar tEnd vector)
