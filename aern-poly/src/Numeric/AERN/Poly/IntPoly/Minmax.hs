@@ -259,12 +259,13 @@ instance
         error "aern-poly: inner-rounded meet not defined for IntPoly"
 
 getX sizeLimits@(IntPolyCfg vars _ _ sample md ms) =
-    newProjection cfg undefined var
+    newProjection cfg dombox var
     where
     _ = [sizeLimits, cfg] -- , getSizeLimits sampleT]
     var = head vars
     cfg =
         IntPolyCfg [var] [unit] [zero sample] sample md ms
+    dombox = fromList $ cfg2vardomains cfg
     unit =
         RefOrd.fromEndpointsOutWithDefaultEffort (zero sample, one sample)
     

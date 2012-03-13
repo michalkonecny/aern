@@ -64,6 +64,18 @@ domToDomLZLE effGetE effCF dom =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCF
     sampleCf = dom
 
+domToDomLZLEWithDefaultEffort ::
+    (ArithInOut.RoundedReal cf, 
+     RefOrd.IntervalLike cf)
+    =>
+    cf -> 
+    (cf, cf)
+domToDomLZLEWithDefaultEffort dom =
+    domToDomLZLE effGetE effCF dom
+    where
+    effCF = ArithInOut.roundedRealDefaultEffort dom
+    effGetE = RefOrd.getEndpointsDefaultEffort dom 
+
 domLZLEToDom ::
     (ArithInOut.RoundedReal cf)
     =>
@@ -80,16 +92,58 @@ domLZLEToDom effCF domLZ domLE =
     effAdd = 
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCF
     sampleCf = dom
+
+domLZLEToDomWithDefaultEffort ::
+    (ArithInOut.RoundedReal cf)
+    =>
+    cf -> 
+    cf ->
+    cf
+domLZLEToDomWithDefaultEffort domLZ domLE =
+    domLZLEToDom effCF domLZ domLE
+    where
+    effCF = ArithInOut.roundedRealDefaultEffort domLZ
      
      
 cfgRemVar :: IntPolyCfg var a -> IntPolyCfg var a
-cfgRemVar cfg = cfg
-        { 
-            ipolycfg_vars = tail $ ipolycfg_vars cfg, 
-            ipolycfg_domsLZ = tail $ ipolycfg_domsLZ cfg, 
-            ipolycfg_domsLE = tail $ ipolycfg_domsLE cfg 
-        }
+cfgRemVar cfg = 
+    cfg
+    { 
+        ipolycfg_vars = tail $ ipolycfg_vars cfg, 
+        ipolycfg_domsLZ = tail $ ipolycfg_domsLZ cfg, 
+        ipolycfg_domsLE = tail $ ipolycfg_domsLE cfg 
+    }
 
+cfgAdjustDomains ::
+    (ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf)
+    =>
+    [cf] -> IntPolyCfg var cf -> IntPolyCfg var cf
+cfgAdjustDomains newDomains cfg = 
+    cfg
+    { 
+        ipolycfg_domsLZ = newDomsLZ, 
+        ipolycfg_domsLE = newDomsLE 
+    }
+    where
+    (newDomsLZ, newDomsLE)
+        = unzip $ map domToDomLZLEWithDefaultEffort newDomains
+    
+cfg2vardomains :: 
+     ArithInOut.RoundedReal cf 
+     =>
+     IntPolyCfg var cf 
+     -> 
+     [(var, cf)]
+cfg2vardomains cfg =
+    zip vars domains
+    where
+    vars = ipolycfg_vars cfg
+    domsLZ = ipolycfg_domsLZ cfg
+    domsLE = ipolycfg_domsLE cfg
+    domains =
+        zipWith domLZLEToDomWithDefaultEffort domsLZ domsLE
+    
 instance 
     (Show var, Show cf, ArithInOut.RoundedReal cf) 
     =>
