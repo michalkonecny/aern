@@ -22,6 +22,7 @@ module Numeric.AERN.IVP.Solver.Picard.UncertainTime
 )
 where
 
+import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Solver.Picard.UncertainValue
 
 import Numeric.AERN.RmToRn.Domain
@@ -74,34 +75,39 @@ solveUncertainValueUncertainTime ::
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
     f {-^ sample function without variable @t0@ -} ->
-    Var f {-^ @t@ - the time variable -} ->
-    Domain f {-^ @TL@ - initial time -} ->
-    Domain f {-^ @TR@ - end of the time interval of interest -} ->
     Var f {-^ @t0@ - the initial time variable -} ->
-    [f] {-^ @g@ - functions giving the initial value parametrised by domain @T0 x D@ -}  ->
-    ([f] -> [f]) {-^ the approximate vector field, transforming vectors of functions, all functions have the same domain -} ->
     Domain f {-^ initial widening @delta@ -}  ->
+    ODEIVP f ->
     Maybe [[f]] {-^ sequence of enclosures with domain @T x D@ produced by the Picard operator -}
 solveUncertainValueUncertainTime
         effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-        sampleFnWithoutT0
-        tVar tStart tEnd t0Var 
-        (initialValuesFns :: [f]) field delta
-    =
-    case solveWithExactTime of
-        Just _ ->
---            unsafePrint
---            (
---                "solveUncertainValueUncertainTime: "
---                ++ "\n t0DomainFnBelowT = " ++ show t0DomainFnBelowT
---                ++ "\n at time " ++ show tEnd ++ ":"
---                ++ "\n enclosuresWithTT0 = " ++ (show $ take 3 $ map evalAtEndTimeVec enclosuresWithTT0) 
---                ++ "\n enclosuresShifted = " ++ (show $ take 3 $ map evalAtEndTimeVec enclosuresShifted) 
---                ++ "\n enclosuresWithoutT0 = " ++ (show $ take 3 $ map evalAtEndTimeVec enclosuresWithoutT0) 
---            )
-            Just enclosuresWithoutT0
-        Nothing -> Nothing
+        (sampleFnWithoutT0 :: f) t0Var
+        delta
+        odeivp  
+    | (t0End <? tEnd) == Just True =
+        error "aern-ivp: solveUncertainValueUncertainTime called with t0End < tEnd"
+    | otherwise =
+        case solveWithExactTime of
+            Just _ ->
+--                unsafePrint
+--                (
+--                    "solveUncertainValueUncertainTime: "
+--                    ++ "\n t0DomainFnBelowT = " ++ show t0DomainFnBelowT
+--                    ++ "\n at time " ++ show tEnd ++ ":"
+--                    ++ "\n enclosuresWithTT0 = " ++ (show $ take 3 $ map evalAtEndTimeVec enclosuresWithTT0) 
+--                    ++ "\n enclosuresShifted = " ++ (show $ take 3 $ map evalAtEndTimeVec enclosuresShifted) 
+--                    ++ "\n enclosuresWithoutT0 = " ++ (show $ take 3 $ map evalAtEndTimeVec enclosuresWithoutT0) 
+--                ) $
+                Just enclosuresWithoutT0
+            Nothing -> Nothing
     where
+    tVar = odeivp_tVar odeivp
+    tStart = odeivp_tStart odeivp
+    tEnd = odeivp_tEnd odeivp
+    timeDomain =
+        RefOrd.fromEndpointsOutWithDefaultEffort (tStart, tEnd)
+    t0End = odeivp_t0End odeivp
+
     -- perform eliminating substitution: t0 |-> min (T0 , t):
     enclosuresWithoutT0 =
         map (map (composeVarOutEff effCompose t0Var t0DomainFnBelowT)) $
@@ -113,9 +119,20 @@ solveUncertainValueUncertainTime
     -- compute the enclosure parameterised by t and t0:
     solveWithExactTime =
         solveUncertainValueExactTime
-            effInteg effInclFn effAddFn effAddFnDom effDom
-            tVar tStart tEndAdj initialValuesFns
-            field delta
+            effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+            delta
+            odeivpExactTime
+        where
+        odeivpExactTime =
+            odeivp
+            {
+                odeivp_makeInitialValueFnVec = makeInitialValuesFnVecExactTime,
+                odeivp_t0End = tStart,
+                odeivp_tEnd = tEndAdj 
+            }
+        makeInitialValuesFnVecExactTime t0Var2 t0Domain2 =
+            map (addVariablesFront [(t0Var2, t0Domain2)]) $
+                odeivp_makeInitialValueFnVec odeivp t0Var timeDomain
     tEndAdj =
         let ?addInOutEffort = effAddDom in 
         tEnd <+> tEnd <-> tStart

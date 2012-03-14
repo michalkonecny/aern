@@ -22,6 +22,8 @@ module Numeric.AERN.IVP.Solver.Picard.UncertainValue
 )
 where
 
+import Numeric.AERN.IVP.Specification.ODE
+
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
@@ -43,7 +45,9 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 solveUncertainValueExactTimeSplit ::
     (CanAddVariables f,
      CanEvaluate f,
+     CanCompose f,
      HasProjections f,
+     HasConstFns f,
      RefOrd.PartialComparison f,
      RoundedIntegration f,
      ArithInOut.RoundedAdd f,
@@ -52,20 +56,16 @@ solveUncertainValueExactTimeSplit ::
      RefOrd.IntervalLike(Domain f), 
      Show f, Show (Domain f))
     =>
-    f {-^ sample function with domain @D@ for parametrising the inital values -} ->
-    [Var f] ->
+    f {-^ sample function used only to carry size limits, its domain is irrelevant -} ->
+    CompositionEffortIndicator f ->
     IntegrationEffortIndicator f ->
     RefOrd.PartialCompareEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
-    Var f {-^ @t@ - the time variable -} ->
-    Domain f {-^ @TL@ - initial time -} ->
-    Domain f {-^ @TR@ - end of the time interval of interest -} ->
-    [Domain f] {-^ @A@ - uncertain values at time tStart -}  ->
-    ([f] -> [f]) {-^ the approximate vector field, transforming vectors of functions, all functions have the same domain -} ->
+    ODEIVP f ->
     Domain f {-^ initial widening @delta@ -}  ->
-    Int -> 
+    Int {-^ @m@ -} -> 
     Domain f {-^ step size @s@ -} -> 
     Imprecision (Domain f) {-^ split improvement threshold @eps@ -}
     ->
@@ -75,12 +75,14 @@ solveUncertainValueExactTimeSplit ::
         [(Domain f, [Domain f])]
     ) {-^ value approximations at time tEnd and intermediate values at various time points -}
 solveUncertainValueExactTimeSplit
-        (sampleF :: f) componentNames
-        effInteg effInclFn effAddFn effAddFnDom effDom
-        tVar tStartG tEndG initialValuesG field delta
-        m stepSize splitImprovementThreshold
-    =
-    solve tStartG tEndG initialValuesG
+        (sampleF :: f)
+        effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+        odeivpG 
+        delta m stepSize splitImprovementThreshold
+    | (odeivp_tStart odeivpG <? odeivp_t0End odeivpG) == Just True =
+        error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
+    | otherwise =
+        solve odeivpG
     where
     effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
     effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
@@ -90,13 +92,19 @@ solveUncertainValueExactTimeSplit
     effDivDomInt = 
         ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
             ArithInOut.rrEffortIntMixedField sampleDom effDom
-    sampleDom = tStartG
+    sampleDom = odeivp_tStart odeivpG
+    
+    tVar = odeivp_tVar odeivpG
+    componentNames = odeivp_componentNames odeivpG
 
-    solve tStart tEnd initialValues
+    solve odeivp
         | belowStepSize = directComputation
         | not splitImproves = directComputation
         | otherwise = splitComputation
         where
+        tStart = odeivp_tStart odeivp
+        tEnd = odeivp_tEnd odeivp
+        
         belowStepSize =
 --            unsafePrintReturn ("belowStepSize = ") $
             let ?addInOutEffort = effAddDom in
@@ -111,27 +119,35 @@ solveUncertainValueExactTimeSplit
             where
             maybeIterations =
                 solveUncertainValueExactTime
-                        effInteg effInclFn effAddFn effAddFnDom effDom
-                        tVar tStart tEnd initialValuesFns field delta
-        initialValuesFns =
-            map initialValueFn componentNames
-        initialValueFn var =
-            newProjection sizeLimits dombox var
-        dombox =
-            fromList $ zip vars initialValues
-        sizeLimits = getSizeLimits sampleF
-        vars = getVars $ getDomainBox sampleF
-        
+                        effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+                        delta
+                        odeivp
+
         splitComputation =
-            case solve tStart tMid initialValues of
+            case solve odeivpL of
                 (Just midValues, intermediateValuesL) -> 
-                    case solve tMid tEnd midValues of
+                    case solve odeivpR of
                         (Just endValues, intermediateValuesR) ->
                             (Just endValues, intermediateValuesL ++ intermediateValuesR)
                         (Nothing, intermediateValuesR) ->
                             (Nothing, intermediateValuesL ++ intermediateValuesR)
+                    where
+                    odeivpR =
+                        odeivp
+                        {
+                            odeivp_tStart = tMid,
+                            odeivp_t0End = tMid, -- exact initial time
+                            odeivp_makeInitialValueFnVec = makeMidValuesFnVec
+                        }
+                    makeMidValuesFnVec =
+                        makeFnVecFromInitialValues sampleF componentNames midValues
                 failedLeftComputation -> failedLeftComputation
             where
+            odeivpL =
+                odeivp
+                {
+                    odeivp_tEnd = tMid
+                }
             tMid = 
                 let ?addInOutEffort = effAddDom in
                 let ?mixedDivInOutEffort = effDivDomInt in
@@ -171,6 +187,8 @@ solveUncertainValueExactTimeSplit
 solveUncertainValueExactTime ::
     (CanAddVariables f,
      CanEvaluate f,
+     CanCompose f,
+     HasConstFns f,
      RefOrd.PartialComparison f,
      RoundedIntegration f,
      ArithInOut.RoundedAdd f,
@@ -179,37 +197,49 @@ solveUncertainValueExactTime ::
      RefOrd.IntervalLike(Domain f), 
      Show f, Show (Domain f))
     =>
+    CompositionEffortIndicator f ->
     IntegrationEffortIndicator f ->
     RefOrd.PartialCompareEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
-    Var f {-^ @t@ - the time variable -} ->
-    Domain f {-^ @TL@ - initial time -} ->
-    Domain f {-^ @TR@ - end of the time interval of interest -} ->
-    [f] {-^ @a@ - functions giving the initial value parametrised by domain @D@ -}  ->
-    ([f] -> [f]) {-^ the approximate vector field, transforming vectors of functions, all functions have the same domain -} ->
     Domain f {-^ initial widening @delta@ -}  ->
+    ODEIVP f ->
     Maybe [[f]] {-^ sequence of enclosures with domain @T x D@ produced by the Picard operator -}
 solveUncertainValueExactTime
-        effInteg effInclFn effAddFn effAddFnDom effDom
-        tVar tStart tEnd (initialValuesFns :: [f]) field delta
-    =
-    case findEnclosure (40 :: Int) $ iterate picard initialAttemptFns of
-        Just firstEnclosure ->
-            Just $ iterate picard firstEnclosure
-        Nothing -> Nothing
+        effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+        delta
+        odeivp
+    | (tStart <? t0End) == Just True =
+        error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
+    | otherwise =
+        case findEnclosure (40 :: Int) $ iterate picard initialAttemptFns of
+            Just firstEnclosure ->
+                Just $ iterate picard firstEnclosure
+            Nothing -> Nothing
     where
+    field = odeivp_field odeivp
+    tVar = odeivp_tVar odeivp
+    tStart = odeivp_tStart odeivp
+    tEnd = odeivp_tEnd odeivp
+    t0End = odeivp_t0End odeivp
+    initialValuesFnVec =
+        map (composeVarOutEff effCompose tVar tStartFn) initialValuesFnVecWithT
+        where
+        tStartFn = newConstFnFromSample sampleFn tStart
+        (sampleFn : _) = initialValuesFnVecWithT 
+    initialValuesFnVecWithT =
+        odeivp_makeInitialValueFnVec odeivp tVar timeDomain
+    
     timeDomain =
         RefOrd.fromEndpointsOutWithDefaultEffort (tStart, tEnd)
 
     effJoinDom = ArithInOut.rrEffortJoinMeet sampleDom effDom
     sampleDom = tStart
     
-    initialValuesFnsWithT =
-        map (addVariablesFront [(tVar, timeDomain)]) initialValuesFns
+        
     initialAttemptFns =
-        map widenFn initialValuesFnsWithT
+        map widenFn initialValuesFnVec
         where
         widenFn fn =
             let ?mixedAddInOutEffort = effAddFnDom in
@@ -255,7 +285,7 @@ solveUncertainValueExactTime
         where
         result =
             let ?addInOutEffort = effAddFn in 
-            zipWith (<+>) primitFn initialValuesFnsWithT
+            zipWith (<+>) primitFn initialValuesFnVec
         primitFn = map picardFn xdvec
         xdvec = field xvec
         picardFn xdi =
