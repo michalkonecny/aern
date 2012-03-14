@@ -3,7 +3,7 @@
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-    Module      :  Numeric.AERN.RmToRn.Picard.UncertainTime
+    Module      :  Numeric.AERN.IVP.Solver.Picard.UncertainTime
     Description :  uncertain initial value ODE solvers
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -15,14 +15,14 @@
     Uncertain initial value ODE solvers using interval Piracd methods.
 -}
 
-module Numeric.AERN.RmToRn.Picard.UncertainTime
+module Numeric.AERN.IVP.Solver.Picard.UncertainTime
 (
     solveUncertainValueUncertainTime,
     solveUncertainValueUncertainTimeSplit
 )
 where
 
-import Numeric.AERN.RmToRn.Picard.UncertainValue
+import Numeric.AERN.IVP.Solver.Picard.UncertainValue
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New

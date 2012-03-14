@@ -34,8 +34,8 @@ Library
         aern-real == 0.5.*,
         aern-realfn == 0.5.*
   exposed-modules:  
-                    Numeric.AERN.RmToRn.Picard.UncertainTime,
-                    Numeric.AERN.RmToRn.Picard.UncertainValue
+                    Numeric.AERN.IVP.Solver.Picard.UncertainTime,
+                    Numeric.AERN.IVP.Solver.Picard.UncertainValue
 
 executable simple
   build-depends:   base == 4.2.* || == 4.4.* || == 4.5.*,

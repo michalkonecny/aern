@@ -3,15 +3,15 @@ module Main where
 
 import Numeric.AERN.Poly.IntPoly
 
-import Numeric.AERN.RmToRn.Picard.UncertainValue
-import Numeric.AERN.RmToRn.Picard.UncertainTime
+import Numeric.AERN.IVP.Solver.Picard.UncertainValue
+import Numeric.AERN.IVP.Solver.Picard.UncertainTime
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
-import qualified Numeric.AERN.DoubleBasis.Interval as DI
+import qualified Numeric.AERN.DoubleBasis.Interval as CF
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
 --import qualified Numeric.AERN.MPFRBasis.Interval as MI
 
@@ -31,7 +31,7 @@ import System.IO
 --import qualified Data.Map as Map
 --import qualified Data.List as List
 
-type CF = DI.DI
+type CF = CF.DI
 type Poly = IntPoly String CF
 type PolyVec = [Poly]
 
@@ -72,7 +72,7 @@ solveExpDecayVt =
             effCf maxdeg maxsize delta m minStepSize splitImprovementThreshold
                 tVar timeStart timeEnd componentNames field initialValues
     timeStart = 0
-    initialValues = [(-1) DI.</\> 1]
+    initialValues = [(-1) CF.</\> 1]
     delta = 1
     maxdeg = 12
     maxsize = 100
@@ -126,8 +126,8 @@ solveExpDecayVT =
     timeEnd = 1
     
     field [x] = [neg x]
---    timeDomain = timeStart DI.</\> timeEnd
-    t0Domain = timeStart DI.</\> t0End
+--    timeDomain = timeStart CF.</\> timeEnd
+    t0Domain = timeStart CF.</\> t0End
     componentNames = ["x"]
     tVar = "t"
     t0Var = "t0"
@@ -137,7 +137,7 @@ solveExpDecayVT =
         makeSampleWithVarsDoms maxdeg maxsize (t0Var : componentNames) (t0Domain : componentUncertaintyDomains)
     componentUncertaintyDomains =
         map snd $ zip componentNames $ repeat unitDom
-    unitDom = 0 DI.</\> 1 
+    unitDom = 0 CF.</\> 1 
 
     effCf = ArithInOut.roundedRealDefaultEffort (0:: CF)
 --    effCf = (100, (100,())) -- MPFR
@@ -260,7 +260,7 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
         IntPolyCfg
         {
             ipolycfg_vars = vars,
-            ipolycfg_domsLZ = zipWith (DI.<->) doms domsLE,
+            ipolycfg_domsLZ = zipWith (CF.<->) doms domsLE,
             ipolycfg_domsLE = domsLE,
             ipolycfg_sample_cf = sampleCf,
             ipolycfg_maxdeg = maxdeg,
