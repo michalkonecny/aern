@@ -46,7 +46,7 @@ executable simple
         aern-mpfr == 0.5.*,
         aern-realfn == 0.5.*,
         aern-poly == 0.5.*,
-        aern-picard == 0.5.*
+        aern-ivp == 0.5.*
   ghc-options:     -Wall -rtsopts
   hs-source-dirs:  demos
   main-is:         simple.hs
