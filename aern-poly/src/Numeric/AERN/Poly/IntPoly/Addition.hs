@@ -270,7 +270,8 @@ instance
         ArithInOut.mixedAddDefaultEffort (ipolycfg_sample_cf cfg) c
 
 instance
-    (ArithInOut.RoundedMixedAdd cf other,  Ord var, 
+    (Ord var, Show var,
+     ArithInOut.RoundedMixedAdd cf other,   
      ArithInOut.RoundedReal cf, 
      HasConsistency cf, 
      RefOrd.IntervalLike cf) 
@@ -285,7 +286,8 @@ instance
         error "aern-poly: IntPoly does not support inwards-rounded mixed addition" 
 
 addTermsConst :: 
-    (Ord var, RefOrd.IntervalLike cf,
+    (Ord var, Show var, 
+     RefOrd.IntervalLike cf,
      HasConsistency cf, 
     ArithInOut.RoundedReal cf) 
     =>

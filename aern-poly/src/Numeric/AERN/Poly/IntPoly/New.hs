@@ -67,23 +67,28 @@ instance
         where
         sampleDom = ipolycfg_sample_cf cfg
 
-instance (HasSizeLimits (IntPoly var cf))
+instance
+    (Ord var, Show var,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf)
+    => 
+    (HasSizeLimits (IntPoly var cf))
     where
     type (SizeLimits (IntPoly var cf)) = IntPolyCfg var cf
     defaultSizeLimits = getSizeLimits 
     getSizeLimits (IntPoly cfg _) = cfg
---    adjustSizeLimitsToDombox _ vars dombox cfg =
---        cfgAdjustDomains vars domains cfg
---        where
---        domains =
---            map getDomain vars
---        getDomain var =
---            case lookup var dombox of
---                Just dom -> dom
---                Nothing ->
---                    error $ 
---                        "aern-poly: IntPoly adjustSizeLimitsToDombox: variable "
---                        ++ show var ++ " not in the given domain box"
+    adjustSizeLimitsToVarsAndDombox _ vars dombox cfg =
+        cfgAdjustDomains vars domains cfg
+        where
+        domains =
+            map getDomain vars
+        getDomain var =
+            case lookupVar dombox var of
+                Just dom -> dom
+                Nothing ->
+                    error $ 
+                        "aern-poly: IntPoly adjustSizeLimitsToVarsAndDombox: variable "
+                        ++ show var ++ " not in the given domain box"
          
     changeSizeLimits cfg (IntPoly _ terms) 
         | sameVarDoms = 
@@ -95,7 +100,8 @@ instance (HasSizeLimits (IntPoly var cf))
         termsReduced = terms -- TODO
          
 instance 
-    (Ord var, ArithInOut.RoundedReal cf,
+    (Ord var, Show var, 
+     ArithInOut.RoundedReal cf,
      HasConsistency cf,
      RefOrd.IntervalLike cf) => 
     (HasConstFns (IntPoly var cf))
@@ -127,7 +133,7 @@ mkConstTerms value vars
         (isConsistentEff (consistencyDefaultEffort value) value) == Just False
 
 instance
-    (Ord var,
+    (Ord var, Show var,
      ArithInOut.RoundedReal cf,
      HasConsistency cf,
      RefOrd.IntervalLike cf)
@@ -139,7 +145,7 @@ instance
         sampleCf = getSampleDomValue sampleP
         
 instance
-    (Ord var,
+    (Ord var, Show var,
      HasConsistency cf,
      ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf)

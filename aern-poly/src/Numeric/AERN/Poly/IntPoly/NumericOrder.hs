@@ -86,7 +86,7 @@ instance
         sampleDom = getSampleDomValue p1
 
 instance
-    (Ord var,
+    (Ord var, Show var,
      NumOrd.HasGreatest cf,
      HasConsistency cf,
      ArithInOut.RoundedReal cf,
@@ -101,7 +101,7 @@ instance
         sampleDom = getSampleDomValue sampleF
         
 instance
-    (Ord var,
+    (Ord var, Show var,
      NumOrd.HasLeast cf,
      HasConsistency cf,
      ArithInOut.RoundedReal cf,
@@ -116,7 +116,7 @@ instance
         sampleDom = getSampleDomValue sampleF
         
 instance
-    (Ord var,
+    (Ord var, Show var,
      NumOrd.HasExtrema cf,
      HasConsistency cf,
      ArithInOut.RoundedReal cf,
