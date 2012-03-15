@@ -53,7 +53,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 
---import Numeric.AERN.Misc.Debug
+import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
 --import qualified Data.Map as Map
@@ -125,13 +125,39 @@ instance
     compositionDefaultEffort (IntPoly cfg _) =
         ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg
 --    composeVarsOutEff = polyComposeAllVarsOutEff
-    composeVarOutEff = polyComposeVarOutEff
+    composeVarOutEff eff substVar substPoly = 
+--        performEndpointWiseWithDefaultEffort $
+            polyComposeVarOutEff eff substVar substPoly 
+
+-- TODO: move this function to aern-order
+performEndpointWiseWithDefaultEffort ::
+   (RefOrd.IntervalLike t1,
+    RefOrd.IntervalLike t2) 
+    =>
+   (t1 -> t2) 
+   -> 
+   (t1 -> t2)
+performEndpointWiseWithDefaultEffort fn p =
+    RefOrd.fromEndpointsOutWithDefaultEffort (resL, resR)
+    where
+    resL = fn pL
+    resR = fn pR
+    (pL, pR) = RefOrd.getEndpointsOutWithDefaultEffort p
+     
         
-polyComposeVarOutEff eff substVar substPoly p@(IntPoly cfg _) =
+-- TODO: this function should be moved to aern-realfn        
+polyComposeVarOutEff eff substVar substPoly p =
     result
     where
-    vars = ipolycfg_vars cfg
+    vars = getVars $ getDomainBox p -- ipolycfg_vars cfg
     result =
+--        unsafePrintReturn
+--        (
+--            "polyComposeVarOutEff:"
+--            ++ "\n varSubstBox = " ++ show varSubstBox
+--            ++ "\n p = " ++ show p
+--            ++ "\n result = "
+--        ) $
         evalOtherType ops varSubstBox p
         where
         varSubstBox =
@@ -168,7 +194,7 @@ polyComposeMainVarKeepOutEff ::
 polyComposeMainVarKeepOutEff eff substPoly p@(IntPoly cfg _) =
 --    unsafePrint
 --    (
---        "substPolyMainVar: "
+--        "polyComposeMainVarKeepOutEff: "
 --        ++ "\n p = " ++ showP p
 --        ++ "\n substPoly = " ++ showP substPoly
 --        ++ "\n result = " ++ showP result

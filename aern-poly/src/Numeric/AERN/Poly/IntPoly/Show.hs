@@ -43,7 +43,9 @@ instance
     Show (IntPoly var cf)
     where
     show p@(IntPoly cfg terms)
-        = "IntPoly{" ++ showPoly show show p ++ "; " ++ show cfg ++ "; " ++ show terms ++ "}" 
+        = 
+        showPolyInternals show False p
+--        "IntPoly{" ++ showPoly show show p ++ "; " ++ show cfg ++ "; " ++ show terms ++ "}" 
 
 instance
     (Show var, Show cf, ShowInternals cf, 
@@ -55,13 +57,20 @@ instance
         = (ShowInternalsIndicator cf, Bool)
     defaultShowIndicator (IntPoly cfg _) 
         = (defaultShowIndicator $ ipolycfg_sample_cf cfg, False)
-    showInternals (cfIndicator, shouldShowTerms) p@(IntPoly _cfg terms)
-        | shouldShowTerms =
-            showPoly show showCf p ++ "[" ++ showTerms showCf terms ++ "]"
-        | otherwise = 
-            showPoly show showCf p
+    showInternals (cfIndicator, shouldShowTerms) p =
+        showPolyInternals showCf shouldShowTerms p 
         where
         showCf = showInternals cfIndicator
+    
+showPolyInternals showCf shouldShowTerms p@(IntPoly _cfg terms) =
+        "IntPoly{" ++ showValue ++ "}"
+        where
+        showValue
+            | shouldShowTerms =
+                showPoly show showCf p ++ "[" ++ showTerms showCf terms ++ "]"
+            | otherwise = 
+                showPoly show showCf p
+        
     
 showPoly ::
     (HasZero cf, 
