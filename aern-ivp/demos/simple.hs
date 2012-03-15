@@ -48,13 +48,45 @@ main =
     putStrLn "-------------------------------------------------"
     putStrLn "demo of aern-picard using simple examples"
     putStrLn "-------------------------------------------------"
---    solveExpDecayVt
-    solveExpDecayVT
+    solveVt ivpExpDecayVt
+--    solveVT ivpExpDecayVT
 
-solveExpDecayVt :: IO ()
-solveExpDecayVt =
+ivpExpDecayVt :: ODEIVP Poly
+ivpExpDecayVt =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x' = -x; x(" ++ show tStart ++ ") \\in " ++ show initialValues,
+            odeivp_field = \ [x] -> [neg x],
+            odeivp_componentNames = ["x"],
+            odeivp_tVar = "t",
+            odeivp_tStart = 0,
+            odeivp_t0End = 0, 
+            odeivp_tEnd = 1,
+            odeivp_makeInitialValueFnVec = makeIV 
+        }
+    initialValues = [(1 CF.<-> 0.125 ) CF.</\> (1 CF.<+> 0.125)]
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
+    
+--    sampleFn :: Poly
+--    sampleFn = 
+--        makeSampleWithVarsDoms maxdeg maxsize 
+--            (tVar : componentNames) 
+--            (replicate (dimension + 1) sampleCf) -- these values are irrelevant
+--    sampleCf = 0 :: CF
+--    tVar = odeivp_tVar ivp
+--    dimension = length componentNames
+    
+
+solveVt :: ODEIVP Poly -> IO ()
+solveVt ivp =
     do
-    putStrLn $ "solving: x' = -x; x(" ++ show tStart ++ ") \\in " ++ show initialValues
+    putStrLn $ "solving: " ++ description
     putStrLn "----------  parameters: -------------------------"
     putStrLn $ "maxdeg = " ++ show maxdeg
     putStrLn $ "maxsize = " ++ show maxsize
@@ -71,39 +103,19 @@ solveExpDecayVt =
     -- solver call:
     (endValues, stepValues) =
         enclosuresOfIVPWithUncertainValue
-            sampleFn effCf delta m 
+            sizeLimits effCf delta m 
                 minStepSize splitImprovementThreshold
                     ivp
-    -- the IVP:
-    ivp =
-        ODEIVP
-        {
-            odeivp_field = \ [x] -> [neg x],
-            odeivp_componentNames = ["x"],
-            odeivp_tVar = "t",
-            odeivp_tStart = 0,
-            odeivp_t0End = 0, 
-            odeivp_tEnd = 1,
-            odeivp_makeInitialValueFnVec = makeIV 
-        }
-    initialValues = [(-1) CF.</\> 1]
-
-    -- the parameters:
+    -- parameters:
     delta = 1
     maxdeg = 12
     maxsize = 100
     m = 20
     minStepSize = 2^^(-6 :: Int)
-    splitImprovementThreshold = 2^^(-50 :: Int)
+    splitImprovementThreshold = -10 -- 2^^(-50 :: Int)
     
     -- auxiliary:
-    makeIV =
-        makeFnVecFromInitialValues sampleFn componentNames initialValues
-    sampleFn :: Poly
-    sampleFn = 
-        makeSampleWithVarsDoms maxdeg maxsize 
-            (tVar : componentNames) 
-            (replicate (dimension + 1) delta) -- these values are irrelevant
+    description = odeivp_description ivp
     tStart = odeivp_tStart ivp
     tEnd = odeivp_tEnd ivp
     tVar = odeivp_tVar ivp
@@ -115,13 +127,55 @@ solveExpDecayVt =
         "x(" ++ show t ++ ") = " ++ show values
 --    effCf = (100, (100,())) -- MPFR
     effCf = ArithInOut.roundedRealDefaultEffort sampleCf
+    sizeLimits =
+        getSizeLimits $
+            makeSampleWithVarsDoms maxdeg maxsize [] []
 
-solveExpDecayVT :: IO ()
-solveExpDecayVT =
+ivpExpDecayVT =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = description,
+            odeivp_field = \ [x] -> [neg x],
+            odeivp_componentNames = ["x"],
+            odeivp_tVar = "t",
+            odeivp_tStart = -0.125,
+            odeivp_t0End = 0.125, 
+            odeivp_tEnd = 0.125,
+            odeivp_makeInitialValueFnVec = makeIV 
+        }
+    description =
+        "x' = -x; " 
+        ++ show tStart ++ " < t_0 < " ++ show t0End
+        ++ "; x(t_0) \\in " ++ (show $ makeIV dummySizeLimits "t_0" tStart)
+    tStart = odeivp_tStart ivp
+    t0End = odeivp_t0End ivp
+    componentNames = odeivp_componentNames ivp
+    dummySizeLimits =
+        getSizeLimits $
+            makeSampleWithVarsDoms 0 0 [] []
+    makeIV sizeLimits t0Var t0Dom =
+        [ (1 :: Int) |<+> t0VarFn]
+--        [t0VarFn <+> (xUnitFn </>| (8::Int))]
+        where
+        t0VarFn = newProjectionFromSample sampleInitialValueFn t0Var
+        sampleInitialValueFn =
+            makeSampleWithVarsDoms 
+                maxdeg maxsize 
+                (t0Var : componentNames) (t0Dom : componentUncertaintyDomains)
+            where
+            componentUncertaintyDomains =
+                map snd $ zip componentNames $ repeat unitDom
+            unitDom = 0 CF.</\> 1 
+        maxdeg = ipolycfg_maxdeg sizeLimits
+        maxsize = ipolycfg_maxsize sizeLimits
+
+solveVT :: ODEIVP Poly -> IO ()
+solveVT ivp =
     do
-    putStrLn $ "solving: x' = -x; " 
-                ++ show tStart ++ " < t_0 < " ++ show t0End
-                ++ "; x(t_0) \\in " ++ show initialValueFns
+    putStrLn $ "solving: " ++ description 
     putStrLn "-------------------------------------------------"
     putStrLn $ "maxdeg = " ++ show maxdeg
     putStrLn $ "maxsize = " ++ show maxsize
@@ -132,29 +186,14 @@ solveExpDecayVT =
     putStrLn "-------------------------------------------------"
     putEnclosureEndpoints "t" tEnd $
         take 20 $
+    -- solver call:
             enclosuresOfIVPWithUncertainTime
+                sizeLimits
                 effCf delta m stepSize splitImprovementThreshold
                 ivp
                 "t0"
     where
-    ivp =
-        ODEIVP
-        {
-            odeivp_field = \ [x] -> [neg x],
-            odeivp_componentNames = ["x"],
-            odeivp_tVar = "t",
-            odeivp_tStart = -0.125,
-            odeivp_t0End = 0.125, 
-            odeivp_tEnd = 0.125,
-            odeivp_makeInitialValueFnVec = makeIV 
-        }
-    makeIV t0Var t0Dom =
-        [ (1 :: Int) |<+> t0VarFn]
---        [t0VarFn <+> (xUnitFn </>| (8::Int))]
-        where
-        t0VarFn = newProjectionFromSample sampleFn t0Var
-        sampleFn = sampleInitialValueFn t0Var t0Dom
-
+    -- parameters:
     delta = 1
     maxdeg = 10
     maxsize = 400
@@ -162,32 +201,29 @@ solveExpDecayVT =
     stepSize = 1
     splitImprovementThreshold = 2^^(-20 :: Int) :: CF
     
+    -- auxiliary:
 --    timeDomain = timeStart CF.</\> timeEnd
 
     initialValueFns =
-        makeIV "t0" (tStart CF.</\> t0End) 
+        odeivp_makeInitialValueFnVec ivp sizeLimits "t0" (tStart CF.</\> t0End) 
     tStart = odeivp_tStart ivp
     tEnd = odeivp_tEnd ivp
     t0End = odeivp_t0End ivp
+    description = odeivp_description ivp
 --    tVar = odeivp_tVar ivp
 --    dimension = length componentNames
     componentNames = odeivp_componentNames ivp
 
-    sampleInitialValueFn t0Var t0Dom =
-        makeSampleWithVarsDoms 
-            maxdeg maxsize 
-            (t0Var : componentNames) (t0Dom : componentUncertaintyDomains)
-        where
-        componentUncertaintyDomains =
-            map snd $ zip componentNames $ repeat unitDom
-        unitDom = 0 CF.</\> 1 
 
     effCf = ArithInOut.roundedRealDefaultEffort (0:: CF)
 --    effCf = (100, (100,())) -- MPFR
+    sizeLimits =
+        getSizeLimits $
+            makeSampleWithVarsDoms maxdeg maxsize [] []
 
     
 enclosuresOfIVPWithUncertainValue ::
-    Poly 
+    SizeLimits Poly 
     -> ArithInOut.RoundedRealEffortIndicator CF
     -> CF
     -> Int
@@ -201,13 +237,13 @@ enclosuresOfIVPWithUncertainValue ::
      [(CF, [CF])]
     )
 enclosuresOfIVPWithUncertainValue
-        sampleFn 
+        sizeLimits 
             effCf delta m stepSize splitImprovementThreshold
                 odeivp
     =
 --    undefined
     solveUncertainValueExactTimeSplit
-        sampleFn
+        sizeLimits
         effCompose effInteg effInclFn effAddFn effAddFnDom effCf
         odeivp 
         delta m stepSize splitImprovementThreshold
@@ -228,7 +264,8 @@ enclosuresOfIVPWithUncertainValue
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effInclFn = ((Int1To1000 0, effCf), ())
 
-enclosuresOfIVPWithUncertainTime :: 
+enclosuresOfIVPWithUncertainTime ::
+    SizeLimits Poly -> 
     ArithInOut.RoundedRealEffortIndicator CF -> 
     CF ->
     Int ->
@@ -238,7 +275,7 @@ enclosuresOfIVPWithUncertainTime ::
     Var Poly ->
     [[Poly]]
 enclosuresOfIVPWithUncertainTime 
-        effCf delta m stepSize epsilon 
+        sizeLimits effCf delta m stepSize epsilon 
         odeivp
         t0Var
     =
@@ -246,7 +283,7 @@ enclosuresOfIVPWithUncertainTime
     where
     (Just result) =
         solveUncertainValueUncertainTimeSplit
-            effCompose effInteg effInclFn effAddFn effAddFnDom effCf
+            sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effCf
             odeivp
             t0Var
             delta m stepSize epsilon

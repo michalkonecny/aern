@@ -43,17 +43,22 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 import Numeric.AERN.Misc.Debug
         
 solveUncertainValueUncertainTimeSplit
-        effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+        sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
         odeivpG 
         t0Var
         delta 
         m stepSize epsilon
     =
     solveUncertainValueUncertainTime
-        effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+        sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
         odeivpG 
         t0Var
         delta
+    -- TODO
+    -- split T0 and for each segment T0i, solve 2 problems:
+    --  one with uncertain initial time T = T0i
+    --  one with exact initial time from T0i until the end of T
+    -- take the union of the solutions for all segments
         
 solveUncertainValueUncertainTime ::
     (CanAddVariables f,
@@ -73,6 +78,7 @@ solveUncertainValueUncertainTime ::
      Show f, Show (Domain f)
      )
     =>
+    SizeLimits f ->
     CompositionEffortIndicator f ->
     IntegrationEffortIndicator f ->
     RefOrd.PartialCompareEffortIndicator f ->
@@ -84,7 +90,7 @@ solveUncertainValueUncertainTime ::
     Domain f {-^ initial widening @delta@ -}  ->
     Maybe [[f]] {-^ sequence of enclosures with domain @T x D@ produced by the Picard operator -}
 solveUncertainValueUncertainTime
-        effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+        sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
         odeivp
         t0Var
         delta
@@ -127,7 +133,7 @@ solveUncertainValueUncertainTime
     -- compute the enclosures parameterised by t and t0:
     solveWithExactTime =
         solveUncertainValueExactTime
-            effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+            sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
             delta
             odeivpExactTime
         where
@@ -138,9 +144,9 @@ solveUncertainValueUncertainTime
                 odeivp_t0End = tStart,
                 odeivp_tEnd = tEndAdj 
             }
-        makeInitialValuesFnVecExactTime t0Var2 t0Domain2 =
+        makeInitialValuesFnVecExactTime sizeLimits t0Var2 t0Domain2 =
             map (addVariablesFront [(t0Var2, t0Domain2)]) $
-                odeivp_makeInitialValueFnVec odeivp t0Var timeDomain
+                odeivp_makeInitialValueFnVec odeivp sizeLimits t0Var timeDomain
     tEndAdj =
         let ?addInOutEffort = effAddDom in 
         tEnd <+> tEnd <-> tStart
@@ -152,7 +158,7 @@ solveUncertainValueUncertainTime
         tFn = 
             newProjectionFromSample sampleFnWithoutT0 tVar
     (sampleFnWithoutT0 : _) =
-        odeivp_makeInitialValueFnVec odeivp tVar timeDomain
+        odeivp_makeInitialValueFnVec odeivp sizeLimits tVar timeDomain
     tShifted =
         let ?addInOutEffort = effAddFn in
         (tFn <-> t0Fn) <+> initialTimeFn

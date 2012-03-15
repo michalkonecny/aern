@@ -57,7 +57,7 @@ solveUncertainValueExactTimeSplit ::
      RefOrd.IntervalLike(Domain f), 
      Show f, Show (Domain f))
     =>
-    f {-^ sample function used only to carry size limits, its domain is irrelevant -} ->
+    SizeLimits f {-^ size limits for all function -} ->
     CompositionEffortIndicator f ->
     IntegrationEffortIndicator f ->
     RefOrd.PartialCompareEffortIndicator f ->
@@ -76,7 +76,7 @@ solveUncertainValueExactTimeSplit ::
         [(Domain f, [Domain f])]
     ) {-^ value approximations at time tEnd and intermediate values at various time points -}
 solveUncertainValueExactTimeSplit
-        sampleF effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+        sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
             odeivpG
                 delta m stepSize splitImprovementThreshold
     | (odeivp_tStart odeivpG <? odeivp_t0End odeivpG) == Just True =
@@ -119,9 +119,9 @@ solveUncertainValueExactTimeSplit
             where
             maybeIterations =
                 solveUncertainValueExactTime
-                        effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+                    sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
                         delta
-                        odeivp
+                            odeivp
 
         splitComputation =
             case solve odeivpL of
@@ -140,7 +140,7 @@ solveUncertainValueExactTimeSplit
                             odeivp_makeInitialValueFnVec = makeMidValuesFnVec
                         }
                     makeMidValuesFnVec =
-                        makeFnVecFromInitialValues sampleF componentNames midValues
+                        makeFnVecFromInitialValues componentNames midValues
                 failedLeftComputation -> failedLeftComputation
             where
             odeivpL =
@@ -197,6 +197,7 @@ solveUncertainValueExactTime ::
      RefOrd.IntervalLike(Domain f), 
      Show f, Show (Domain f))
     =>
+    SizeLimits f ->
     CompositionEffortIndicator f ->
     IntegrationEffortIndicator f ->
     RefOrd.PartialCompareEffortIndicator f ->
@@ -207,7 +208,7 @@ solveUncertainValueExactTime ::
     ODEIVP f ->
     Maybe [[f]] {-^ sequence of enclosures with domain @T x D@ produced by the Picard operator -}
 solveUncertainValueExactTime
-        effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+        sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
         delta
         odeivp
     | (tStart <? t0End) == Just True =
@@ -227,9 +228,9 @@ solveUncertainValueExactTime
         map (composeVarOutEff effCompose tVar tStartFn) initialValuesFnVecWithT
         where
         tStartFn = newConstFnFromSample sampleFn tStart
-        (sampleFn : _) = initialValuesFnVecWithT 
+        (sampleFn : _) = initialValuesFnVecWithT
     initialValuesFnVecWithT =
-        odeivp_makeInitialValueFnVec odeivp tVar timeDomain
+        odeivp_makeInitialValueFnVec odeivp sizeLimits tVar timeDomain
     
     timeDomain =
         RefOrd.fromEndpointsOutWithDefaultEffort (tStart, tEnd)
