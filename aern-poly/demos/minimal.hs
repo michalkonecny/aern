@@ -73,6 +73,15 @@ main =
     putStrLn $ "((x+y)^2)subst[y=xNoY+1] = " ++ (showP $ composeVarOutEff eff "y" (xNoY <+>| (1::Int)) $ (x <+> y) <^> 2)
     putStrLn $ "((x+y)^2)subst[y=[0,1]] = " ++ (showP $ composeVarOutEff eff "y" (c01) $ (x <+> y) <^> 2)
 
+    putStrLn $ "((x+y)^2)subst[x=x-y] = " ++ (showP $ composeVarOutEff eff "x" (x <-> y) $ (x <+> y) <^> 2)
+    putStrLn $ "-- thick coeffs:"
+    putStrLn $ "([0,1](x+1)+y+1) = " ++ (showP $ ((c01 <*> (x <+> c1)) <+> y <+> c1))
+    putStrLn $ "([0,1](x+1)+y+1)^2 = " ++ (showP $ ((c01 <*> (x <+> c1)) <+> y <+> c1) <^> 2)
+
+    putStrLn $ "(([0,1](x+1)+y+1)^2)subst[x=x-y-1] = " 
+                    ++ (showP $ composeVarOutEff eff "x" (x <-> y <-> c1) $ ((c01 <*> (x <+> c1)) <+> y <+> c1) <^> 2)
+
+
 --    putStrLn "endpoints (ie boundaries):"
 --    putStrLn $ "getEndpoints([0,1]x^2+[-1,0]) = " ++ (showPPair $ RefOrd.getEndpointsOutWithDefaultEffort $ c01 <*> (x <*> x <-> c1))
 --    putStrLn $ "fromEndpoints(x^2-1, 0) = " ++ (showP $ RefOrd.fromEndpointsOutWithDefaultEffort ((x <*> x <-> c1), c0))
@@ -137,7 +146,10 @@ main =
 showP ::
     Poly -> 
     String
-showP p = showPoly id show p ++ " [" ++ show p ++ "]"
+showP p = 
+    showInternals (False, shouldShowTerms) p
+    where
+    shouldShowTerms = False
 
 showPPair ::
     (Poly, Poly) -> 
