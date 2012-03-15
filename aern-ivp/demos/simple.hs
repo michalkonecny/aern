@@ -48,8 +48,8 @@ main =
     putStrLn "-------------------------------------------------"
     putStrLn "demo of aern-picard using simple examples"
     putStrLn "-------------------------------------------------"
-    solveExpDecayVt
---    solveExpDecayVT
+--    solveExpDecayVt
+    solveExpDecayVT
 
 solveExpDecayVt :: IO ()
 solveExpDecayVt =
@@ -71,8 +71,8 @@ solveExpDecayVt =
     -- solver call:
     (endValues, stepValues) =
         enclosuresOfIVPWithUncertainValue
-            sampleFn
-                effCf maxdeg maxsize delta m minStepSize splitImprovementThreshold
+            sampleFn effCf delta m 
+                minStepSize splitImprovementThreshold
                     ivp
     -- the IVP:
     ivp =
@@ -120,7 +120,7 @@ solveExpDecayVT :: IO ()
 solveExpDecayVT =
     do
     putStrLn $ "solving: x' = -x; " 
-                ++ show timeStart ++ " < t_0 < " ++ show t0End 
+                ++ show tStart ++ " < t_0 < " ++ show t0End
                 ++ "; x(t_0) \\in " ++ show initialValueFns
     putStrLn "-------------------------------------------------"
     putStrLn $ "maxdeg = " ++ show maxdeg
@@ -128,42 +128,59 @@ solveExpDecayVT =
     putStrLn $ "delta = " ++ show delta
     putStrLn $ "m = " ++ show m
     putStrLn $ "minimum stepSize = " ++ show stepSize
-    putStrLn $ "x(" ++ show timeEnd ++ ") = ?"
+    putStrLn $ "x(" ++ show tEnd ++ ") = ?"
     putStrLn "-------------------------------------------------"
-    putEnclosureEndpoints "t" timeEnd $
+    putEnclosureEndpoints "t" tEnd $
         take 20 $
             enclosuresOfIVPWithUncertainTime
                 effCf delta m stepSize splitImprovementThreshold
-                tVar timeStart timeEnd t0Var t0End 
-                field initialValueFns
+                ivp
+                "t0"
     where
-    timeStart = -0.125
-    t0End = 0.125
-    initialValueFns = 
+    ivp =
+        ODEIVP
+        {
+            odeivp_field = \ [x] -> [neg x],
+            odeivp_componentNames = ["x"],
+            odeivp_tVar = "t",
+            odeivp_tStart = -0.125,
+            odeivp_t0End = 0.125, 
+            odeivp_tEnd = 0.125,
+            odeivp_makeInitialValueFnVec = makeIV 
+        }
+    makeIV t0Var t0Dom =
         [ (1 :: Int) |<+> t0VarFn]
 --        [t0VarFn <+> (xUnitFn </>| (8::Int))]
+        where
+        t0VarFn = newProjectionFromSample sampleFn t0Var
+        sampleFn = sampleInitialValueFn t0Var t0Dom
+
     delta = 1
-    maxdeg = 20
+    maxdeg = 10
     maxsize = 400
     m = 20
     stepSize = 1
-    splitImprovementThreshold :: CF
-    splitImprovementThreshold = 2^^(-20)
-    timeEnd = 1
+    splitImprovementThreshold = 2^^(-20 :: Int) :: CF
     
-    field [x] = [neg x]
 --    timeDomain = timeStart CF.</\> timeEnd
-    t0Domain = timeStart CF.</\> t0End
-    componentNames = ["x"]
-    tVar = "t"
-    t0Var = "t0"
 
-    t0VarFn = newProjectionFromSample sampleFnWithoutT t0Var
-    sampleFnWithoutT =
-        makeSampleWithVarsDoms maxdeg maxsize (t0Var : componentNames) (t0Domain : componentUncertaintyDomains)
-    componentUncertaintyDomains =
-        map snd $ zip componentNames $ repeat unitDom
-    unitDom = 0 CF.</\> 1 
+    initialValueFns =
+        makeIV "t0" (tStart CF.</\> t0End) 
+    tStart = odeivp_tStart ivp
+    tEnd = odeivp_tEnd ivp
+    t0End = odeivp_t0End ivp
+--    tVar = odeivp_tVar ivp
+--    dimension = length componentNames
+    componentNames = odeivp_componentNames ivp
+
+    sampleInitialValueFn t0Var t0Dom =
+        makeSampleWithVarsDoms 
+            maxdeg maxsize 
+            (t0Var : componentNames) (t0Dom : componentUncertaintyDomains)
+        where
+        componentUncertaintyDomains =
+            map snd $ zip componentNames $ repeat unitDom
+        unitDom = 0 CF.</\> 1 
 
     effCf = ArithInOut.roundedRealDefaultEffort (0:: CF)
 --    effCf = (100, (100,())) -- MPFR
@@ -172,8 +189,6 @@ solveExpDecayVT =
 enclosuresOfIVPWithUncertainValue ::
     Poly 
     -> ArithInOut.RoundedRealEffortIndicator CF
-    -> Int
-    -> Int
     -> CF
     -> Int
     -> CF
@@ -187,7 +202,7 @@ enclosuresOfIVPWithUncertainValue ::
     )
 enclosuresOfIVPWithUncertainValue
         sampleFn 
-            effCf maxdeg maxsize delta m stepSize splitImprovementThreshold
+            effCf delta m stepSize splitImprovementThreshold
                 odeivp
     =
 --    undefined
@@ -219,26 +234,22 @@ enclosuresOfIVPWithUncertainTime ::
     Int ->
     CF ->
     CF ->
+    ODEIVP Poly ->
     Var Poly ->
-    CF ->
-    CF ->
-    Var Poly ->
-    CF ->
-    ([Poly] -> [Poly]) ->
-    [Poly] ->
     [[Poly]]
 enclosuresOfIVPWithUncertainTime 
-        effCf delta m stepSize epsilon
-        tVar tStart tEnd t0Var t0End
-        field initialValueFns
+        effCf delta m stepSize epsilon 
+        odeivp
+        t0Var
     =
     result
     where
     (Just result) =
         solveUncertainValueUncertainTimeSplit
             effCompose effInteg effInclFn effAddFn effAddFnDom effCf
-            sampleFnWithT tVar tStart tEnd t0Var t0End
-            initialValueFns field delta m stepSize epsilon
+            odeivp
+            t0Var
+            delta m stepSize epsilon
 
 --    substituteInitialValueUncertainty fn =
 --        pEvalAtPointOutEff effEval initValDomBox fn
@@ -246,15 +257,7 @@ enclosuresOfIVPWithUncertainTime
 --        initValDomBox =
 --            fromList $ zip componentNames initialValues
 --        
-    (sampleFnWithoutT : _) =  initialValueFns -- domain @T x D@
-    sampleFnWithT = 
-        polyMapVars t02t sampleFnWithoutT
-        where
-        t02t var 
-            | var == t0Var = tVar
-            | otherwise = var 
-    sampleCf = 
-        getSampleDomValue sampleFnWithoutT
+    sampleCf = delta 
     
     effCompose = effCf
     effInteg = effCf
@@ -285,22 +288,6 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
             ipolycfg_maxdeg = maxdeg,
             ipolycfg_maxsize = maxsize
         }
-     
-evalAtEndTimeVec :: 
-    (RefOrd.IntervalLike (Domain f), CanEvaluate f) 
-    =>
-    Var f -> Domain f -> [f] -> [Domain f]
-evalAtEndTimeVec tVar tEnd fnVec =
-    map (evalAtEndTimeFn tVar tEnd) fnVec
-
-evalAtEndTimeFn ::
-    (HasDomainBox f, CanEvaluate f, RefOrd.IntervalLike (Domain f))
-    =>
-    Var f -> Domain f -> f -> (Domain f)
-evalAtEndTimeFn tVar tEnd fn =
-    evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fn
-    where
-    endTimeArea = insertVar tVar tEnd $ getDomainBox fn
      
 putEnclosureEndpoints :: 
     (Show f, Show (Domain f),

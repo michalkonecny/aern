@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+--{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.IVP.Solver.Picard.UncertainValue
     Description :  uncertain initial value ODE solvers
@@ -18,7 +18,8 @@
 module Numeric.AERN.IVP.Solver.Picard.UncertainValue
 (
     solveUncertainValueExactTime,
-    solveUncertainValueExactTimeSplit
+    solveUncertainValueExactTimeSplit,
+    evalAtEndTimeVec
 )
 where
 
@@ -75,10 +76,9 @@ solveUncertainValueExactTimeSplit ::
         [(Domain f, [Domain f])]
     ) {-^ value approximations at time tEnd and intermediate values at various time points -}
 solveUncertainValueExactTimeSplit
-        (sampleF :: f)
-        effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-        odeivpG 
-        delta m stepSize splitImprovementThreshold
+        sampleF effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+            odeivpG
+                delta m stepSize splitImprovementThreshold
     | (odeivp_tStart odeivpG <? odeivp_t0End odeivpG) == Just True =
         error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
     | otherwise =

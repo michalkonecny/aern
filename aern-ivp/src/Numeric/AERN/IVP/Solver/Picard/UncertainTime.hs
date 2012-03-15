@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+--{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.IVP.Solver.Picard.UncertainTime
     Description :  uncertain initial value ODE solvers
@@ -40,16 +40,20 @@ import Numeric.AERN.NumericOrder.OpsDefaultEffort
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
---import Numeric.AERN.Misc.Debug
+import Numeric.AERN.Misc.Debug
         
 solveUncertainValueUncertainTimeSplit
         effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-        sampleFnWithoutT0
-        tVar tStartG tEndG t0Var t0End 
-        (initialValuesFnsG :: [f]) field delta
-        m stepSize
+        odeivpG 
+        t0Var
+        delta 
+        m stepSize epsilon
     =
-    undefined   
+    solveUncertainValueUncertainTime
+        effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+        odeivpG 
+        t0Var
+        delta
         
 solveUncertainValueUncertainTime ::
     (CanAddVariables f,
@@ -65,8 +69,9 @@ solveUncertainValueUncertainTime ::
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedReal (Domain f),
-     RefOrd.IntervalLike(Domain f), 
-     Show f, Show (Domain f))
+     RefOrd.IntervalLike (Domain f), 
+     Show f, Show (Domain f)
+     )
     =>
     CompositionEffortIndicator f ->
     IntegrationEffortIndicator f ->
@@ -74,30 +79,33 @@ solveUncertainValueUncertainTime ::
     ArithInOut.AddEffortIndicator f ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
-    f {-^ sample function without variable @t0@ -} ->
+    ODEIVP f ->
     Var f {-^ @t0@ - the initial time variable -} ->
     Domain f {-^ initial widening @delta@ -}  ->
-    ODEIVP f ->
     Maybe [[f]] {-^ sequence of enclosures with domain @T x D@ produced by the Picard operator -}
 solveUncertainValueUncertainTime
         effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-        (sampleFnWithoutT0 :: f) t0Var
+        odeivp
+        t0Var
         delta
-        odeivp  
     | (t0End <? tEnd) == Just True =
         error "aern-ivp: solveUncertainValueUncertainTime called with t0End < tEnd"
     | otherwise =
         case solveWithExactTime of
             Just _ ->
---                unsafePrint
---                (
---                    "solveUncertainValueUncertainTime: "
---                    ++ "\n t0DomainFnBelowT = " ++ show t0DomainFnBelowT
---                    ++ "\n at time " ++ show tEnd ++ ":"
---                    ++ "\n enclosuresWithTT0 = " ++ (show $ take 3 $ map evalAtEndTimeVec enclosuresWithTT0) 
---                    ++ "\n enclosuresShifted = " ++ (show $ take 3 $ map evalAtEndTimeVec enclosuresShifted) 
---                    ++ "\n enclosuresWithoutT0 = " ++ (show $ take 3 $ map evalAtEndTimeVec enclosuresWithoutT0) 
---                ) $
+                unsafePrint
+                (
+                    "solveUncertainValueUncertainTime: "
+                    ++ "\n tShifted = " ++ show tShifted
+                    ++ "\n t0DomainFnBelowT = " ++ show t0DomainFnBelowT
+                    ++ "\n tEnd = " ++ show tEnd
+                    ++ "\n enclosuresWithTT0[0][tEnd] = " ++ (show $ head $ map (evalAtEndTimeVec tVar tEnd) enclosuresWithTT0) 
+                    ++ "\n enclosuresWithTT0[0] = " ++ (show $ head $ enclosuresWithTT0) 
+                    ++ "\n enclosuresShifted[0][tEnd] = " ++ (show $ head $ map (evalAtEndTimeVec tVar tEnd) enclosuresShifted) 
+                    ++ "\n enclosuresShifted[0] = " ++ (show $ head $ enclosuresShifted) 
+                    ++ "\n enclosuresWithoutT0[0][tEnd] = " ++ (show $ head $ map (evalAtEndTimeVec tVar tEnd) enclosuresWithoutT0) 
+                    ++ "\n enclosuresWithoutT0[0] = " ++ (show $ head $ enclosuresWithoutT0) 
+                ) $
                 Just enclosuresWithoutT0
             Nothing -> Nothing
     where
@@ -116,7 +124,7 @@ solveUncertainValueUncertainTime
     enclosuresShifted =
         map (map (composeVarOutEff effCompose tVar tShifted)) enclosuresWithTT0
     (Just enclosuresWithTT0) = solveWithExactTime
-    -- compute the enclosure parameterised by t and t0:
+    -- compute the enclosures parameterised by t and t0:
     solveWithExactTime =
         solveUncertainValueExactTime
             effCompose effInteg effInclFn effAddFn effAddFnDom effDom
@@ -143,7 +151,8 @@ solveUncertainValueUncertainTime
             newConstFnFromSample sampleFnWithoutT0 tStart
         tFn = 
             newProjectionFromSample sampleFnWithoutT0 tVar
-
+    (sampleFnWithoutT0 : _) =
+        odeivp_makeInitialValueFnVec odeivp tVar timeDomain
     tShifted =
         let ?addInOutEffort = effAddFn in
         (tFn <-> t0Fn) <+> initialTimeFn
