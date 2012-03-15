@@ -40,6 +40,8 @@ import Numeric.AERN.RmToRn.New
 data ODEIVP f =
     ODEIVP
     {
+        odeivp_description :: String
+    ,
         odeivp_field :: [f] -> [f]
     ,
         odeivp_componentNames :: [Var f]
@@ -50,8 +52,11 @@ data ODEIVP f =
     ,
         odeivp_tEnd :: Domain f -- ^ @tEnd@
     ,
-        odeivp_makeInitialValueFnVec :: Var f -> Domain f -> [f] 
-        {-^ the parameters are an initial time variable @t0@ a time domain @T0@, 
+        odeivp_makeInitialValueFnVec :: SizeLimits f -> Var f -> Domain f -> [f] 
+        {-^ the parameters are:
+            * size limits for the function
+            * initial time variable @t0@ 
+            * time domain @T0@ 
             the result are functions whose first variable is @t0 : T0@ 
             - the initial value may depend on initial time
         -} 
@@ -68,23 +73,26 @@ makeFnVecFromInitialValues ::
      (HasSizeLimits f,
       HasProjections f) 
       =>
-     f {-^ a sample function, only its size limits matter -} ->
      [Var f] {-^ names for solution vector components -} -> 
      [Domain f] {-^ initial values, one for each component -}
      ->
+     SizeLimits f {-^ a sample function, only its size limits matter -} ->
      Var f {-^ @tVar@ - time variable -} -> 
      Domain f {-^ time domain  -} 
      -> 
      [f]
-makeFnVecFromInitialValues sampleF componentNames initialValues tVar timeDomain =
+makeFnVecFromInitialValues componentNames initialValues sizeLimits tVar timeDomain =
     initialValuesFnVec
     where    
     initialValuesFnVec =
         map initialValueFn componentNames
     initialValueFn var =
-        newProjection sizeLimits dombox var
+        newProjection sizeLimitsAdjusted dombox var
+    sizeLimitsAdjusted =
+        adjustSizeLimitsToVarsAndDombox sampleF vars dombox sizeLimits
+    sampleF = initialValueFn tVar 
+    vars = tVar : componentNames
     dombox =
         fromList $ (tVar, timeDomain) : (zip componentNames initialValues)
-    sizeLimits = getSizeLimits sampleF
         
     
