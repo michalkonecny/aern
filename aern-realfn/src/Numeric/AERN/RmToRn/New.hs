@@ -20,6 +20,7 @@ class HasSizeLimits f where
     type SizeLimits f
     getSizeLimits :: f -> SizeLimits f
     defaultSizeLimits :: f -> SizeLimits f
+--    adjustSizeLimitsToVarsAndDombox :: f -> [Var f] -> DomainBox f -> SizeLimits f -> SizeLimits f
     changeSizeLimits :: SizeLimits f -> f -> f
 
 class (HasDomainBox f, HasSizeLimits f) => HasProjections f where
