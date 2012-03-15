@@ -118,10 +118,11 @@ cfgAdjustDomains ::
     (ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf)
     =>
-    [cf] -> IntPolyCfg var cf -> IntPolyCfg var cf
-cfgAdjustDomains newDomains cfg = 
+    [var] -> [cf] -> IntPolyCfg var cf -> IntPolyCfg var cf
+cfgAdjustDomains vars newDomains cfg = 
     cfg
     { 
+        ipolycfg_vars = vars,
         ipolycfg_domsLZ = newDomsLZ, 
         ipolycfg_domsLE = newDomsLE 
     }

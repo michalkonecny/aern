@@ -72,6 +72,19 @@ instance (HasSizeLimits (IntPoly var cf))
     type (SizeLimits (IntPoly var cf)) = IntPolyCfg var cf
     defaultSizeLimits = getSizeLimits 
     getSizeLimits (IntPoly cfg _) = cfg
+--    adjustSizeLimitsToDombox _ vars dombox cfg =
+--        cfgAdjustDomains vars domains cfg
+--        where
+--        domains =
+--            map getDomain vars
+--        getDomain var =
+--            case lookup var dombox of
+--                Just dom -> dom
+--                Nothing ->
+--                    error $ 
+--                        "aern-poly: IntPoly adjustSizeLimitsToDombox: variable "
+--                        ++ show var ++ " not in the given domain box"
+         
     changeSizeLimits cfg (IntPoly _ terms) 
         | sameVarDoms = 
             IntPoly cfg termsReduced
@@ -90,7 +103,7 @@ instance
     newConstFn cfg dombox value = 
         IntPoly cfgD $ mkConstTerms value vars
         where
-        cfgD = cfgAdjustDomains domains cfg
+        cfgD = cfgAdjustDomains vars domains cfg
         domains = 
             case (sequence $ map (lookupVar dombox) vars) of
                 Just ds -> ds
@@ -206,7 +219,7 @@ instance
         IntPoly cfgD $ mkProjTerms cfgD var vars domsLE
         where
         domsLE = ipolycfg_domsLE cfgD
-        cfgD = cfgAdjustDomains domains cfg
+        cfgD = cfgAdjustDomains vars domains cfg
         domains = 
             case sequence $ map (lookupVar dombox) vars of
                 Just ds -> ds
