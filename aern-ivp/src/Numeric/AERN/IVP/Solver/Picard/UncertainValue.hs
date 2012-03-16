@@ -24,6 +24,7 @@ module Numeric.AERN.IVP.Solver.Picard.UncertainValue
 where
 
 import Numeric.AERN.IVP.Specification.ODE
+import Numeric.AERN.IVP.Solver.Splitting
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
@@ -54,7 +55,9 @@ solveUncertainValueExactTimeSplit ::
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedReal (Domain f), 
-     RefOrd.IntervalLike(Domain f), 
+     RefOrd.IntervalLike(Domain f),
+     Domain f ~ Imprecision (Domain f),
+     solvingInfo ~ Maybe (Domain f, [Domain f]), 
      Show f, Show (Domain f))
     =>
     SizeLimits f {-^ size limits for all function -} ->
@@ -73,117 +76,44 @@ solveUncertainValueExactTimeSplit ::
     (
         Maybe [Domain f] 
     ,
-        [(Domain f, [Domain f])]
+        SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+--        [(Domain f, [Domain f])]
     ) {-^ value approximations at time tEnd and intermediate values at various time points -}
 solveUncertainValueExactTimeSplit
         sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
             odeivpG
-                delta m stepSize splitImprovementThreshold
+                delta m minStepSize splitImprovementThreshold
     | (odeivp_tStart odeivpG <? odeivp_t0End odeivpG) == Just True =
         error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
     | otherwise =
         solve odeivpG
     where
-    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
-    effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
-    sampleImpr = imprecisionOfEff effImpr sampleDom
-    effRefComp = ArithInOut.rrEffortRefComp sampleDom effDom
-    effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
-    effDivDomInt = 
-        ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
-            ArithInOut.rrEffortIntMixedField sampleDom effDom
-    sampleDom = odeivp_tStart odeivpG
-    
     tVar = odeivp_tVar odeivpG
     componentNames = odeivp_componentNames odeivpG
 
-    solve odeivp
-        | belowStepSize = directComputation
-        | not splitImproves = directComputation
-        | otherwise = splitComputation
-        where
-        tStart = odeivp_tStart odeivp
-        tEnd = odeivp_tEnd odeivp
-        
-        belowStepSize =
---            unsafePrintReturn ("belowStepSize = ") $
-            let ?addInOutEffort = effAddDom in
-            ((tEnd <-> tStart) >? stepSize) /= Just True
-            
-        directComputation =
-            case maybeIterations of
-                Just iterations ->
-                    let valuesAtEnd = evalAtEndTimeVec tVar tEnd $ iterations !! m in
-                    (Just valuesAtEnd, [(tEnd, valuesAtEnd)])
-                Nothing -> (Nothing, [])
-            where
-            maybeIterations =
-                solveUncertainValueExactTime
-                    sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-                        delta
-                            odeivp
+    solve odeivp =
+        solveBySplitting
+            directSolver makeMakeInitValFnVec
+                effDom splitImprovementThreshold minStepSize
+                    odeivp
 
-        splitComputation =
-            case solve odeivpL of
-                (Just midValues, intermediateValuesL) -> 
-                    case solve odeivpR of
-                        (Just endValues, intermediateValuesR) ->
-                            (Just endValues, intermediateValuesL ++ intermediateValuesR)
-                        (Nothing, intermediateValuesR) ->
-                            (Nothing, intermediateValuesL ++ intermediateValuesR)
-                    where
-                    odeivpR =
+    directSolver odeivp =
+        case maybeIterations of
+            Just iterations ->
+                let valuesAtEnd = evalAtEndTimeVec tVar tEnd $ iterations !! m in
+                (Just valuesAtEnd, Just (tEnd, valuesAtEnd))
+            Nothing -> (Nothing, Nothing)
+        where
+        maybeIterations =
+            solveUncertainValueExactTime
+                sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+                    delta
                         odeivp
-                        {
-                            odeivp_tStart = tMid,
-                            odeivp_t0End = tMid, -- exact initial time
-                            odeivp_makeInitialValueFnVec = makeMidValuesFnVec
-                        }
-                    makeMidValuesFnVec =
-                        makeFnVecFromInitialValues componentNames midValues
-                failedLeftComputation -> failedLeftComputation
-            where
-            odeivpL =
-                odeivp
-                {
-                    odeivp_tEnd = tMid
-                }
-            tMid = 
-                let ?addInOutEffort = effAddDom in
-                let ?mixedDivInOutEffort = effDivDomInt in
-                (tStart <+> tEnd) </>| (2 :: Int)
-        
-        splitImproves =
-            case directComputation  of
-                (Just directResult, _) ->
-                    case splitComputation of
-                        (Just splitResult, _) ->
-                            directResult `allWorseThan` splitResult
-                        _ -> False
-                _ -> False
-            where
-            allWorseThan vec1 vec2 =
-                and $ zipWith worseThan vec1 vec2
-            worseThan encl1 encl2 =
---                unsafePrintReturn
---                (
---                    "worseThan: "
---                    ++ "\n encl1 = " ++ show encl1
---                    ++ "\n encl2 = " ++ show encl2
---                    ++ "\n encl1 |<? encl2 = "
---                ) $
-                let ?pCompareEffort = effRefComp in
-                ((encl1 |<? encl2) == Just True)
-                &&
-                (improvementAboveThreshold encl1 encl2)
-            improvementAboveThreshold encl1 encl2 =
-                let ?addInOutEffort = effAddImpr in
-                ((imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
-                >?
-                splitImprovementThreshold)
-                == Just True
+        tEnd = odeivp_tEnd odeivp
+
+    makeMakeInitValFnVec initValues =
+        makeFnVecFromInitialValues componentNames initValues
                 
-    
 solveUncertainValueExactTime ::
     (CanAddVariables f,
      CanEvaluate f,
@@ -292,27 +222,3 @@ solveUncertainValueExactTime
         picardFn xdi =
             primitiveFunctionOutEff effInteg xdi tVar
 
-evalAtEndTimeVec ::
-    (CanEvaluate f)
-    =>
-    (Var f) -> 
-    (Domain f) -> 
-    [f] 
-    -> 
-    [Domain f]
-evalAtEndTimeVec tVar tEnd fnVec =
-    map (evalAtEndTimeFn tVar tEnd) fnVec
-    
-evalAtEndTimeFn ::
-    (CanEvaluate f)
-    =>
-    (Var f) -> 
-    (Domain f) -> 
-    f 
-    -> 
-    Domain f
-evalAtEndTimeFn tVar tEnd fn =
-    evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fn
-    where
---    endTimeArea :: DomainBox f
-    endTimeArea = insertVar tVar tEnd $ getDomainBox fn
