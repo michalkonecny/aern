@@ -57,7 +57,7 @@ solveUncertainValueExactTimeSplit ::
      ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike(Domain f),
      Domain f ~ Imprecision (Domain f),
-     solvingInfo ~ Maybe (Domain f, [Domain f]), 
+     solvingInfo ~ (Domain f, Maybe [Domain f]), 
      Show f, Show (Domain f))
     =>
     SizeLimits f {-^ size limits for all function -} ->
@@ -101,8 +101,8 @@ solveUncertainValueExactTimeSplit
         case maybeIterations of
             Just iterations ->
                 let valuesAtEnd = evalAtEndTimeVec tVar tEnd $ iterations !! m in
-                (Just valuesAtEnd, Just (tEnd, valuesAtEnd))
-            Nothing -> (Nothing, Nothing)
+                (Just valuesAtEnd, (tEnd, Just valuesAtEnd))
+            Nothing -> (Nothing, (tEnd, Nothing))
         where
         maybeIterations =
             solveUncertainValueExactTime

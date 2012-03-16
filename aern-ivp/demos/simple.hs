@@ -30,6 +30,7 @@ import Numeric.AERN.Basics.Effort
 import System.IO
 
 import Numeric.AERN.Misc.Debug (unsafePrint)
+import Data.List (intercalate)
 _ = unsafePrint -- stop the unused warning
 
 --import qualified Data.Map as Map
@@ -61,7 +62,7 @@ ivpExpDecayVt =
     ivp =
         ODEIVP
         {
-            odeivp_description = "x' = -x; x(" ++ show tStart ++ ") \\in " ++ show initialValues,
+            odeivp_description = "x' = -x; x(" ++ show tStart ++ ") ∊ " ++ show initialValues,
             odeivp_field = \ [x] -> [neg x],
             odeivp_componentNames = ["x"],
             odeivp_tVar = "t",
@@ -98,7 +99,7 @@ solveVt ivp =
     putStrLn $ "minimum step size = " ++ show minStepSize
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
     putStrLn "----------  result: -----------------------------"
-    putStrLn $ "x(" ++ show tEnd ++ ") = " ++ show endValues
+    putStrLn $ "x(" ++ show tEnd ++ ") ∊ " ++ show endValues
     putStrLn "----------  steps: ------------------------------"
     putStrLn $ showSplittingInfo showSegInfo showSplitReason splittingInfo
     putStrLn "-------------------------------------------------"
@@ -115,11 +116,12 @@ solveVt ivp =
     maxsize = 100
     m = 20
     minStepSize = 2^^(-6 :: Int)
-    splitImprovementThreshold = -10 -- 2^^(-50 :: Int)
+    splitImprovementThreshold = 2^^(-50 :: Int)
     
     -- auxiliary:
     description = odeivp_description ivp
     tEnd = odeivp_tEnd ivp
+    componentNames = odeivp_componentNames ivp
     
     sampleCf = 0 :: CF
     effCf = ArithInOut.roundedRealDefaultEffort sampleCf
@@ -127,8 +129,18 @@ solveVt ivp =
         getSizeLimits $
             makeSampleWithVarsDoms maxdeg maxsize [] []
             
-    showSegInfo = show
-    showSplitReason = show
+    showSegInfo (t, maybeValues) =
+        showVec componentNames ++ "(" ++ show t ++ ") ∊ " ++ valuesS
+        where
+        showVec [e] = e
+        showVec list = "(" ++ (intercalate "," list) ++ ")"
+        valuesS =
+            case maybeValues of
+                Just values -> showVec $ map show values
+                _ -> "<no result computed>"                
+    showSplitReason (segInfo, (Just improvement)) =
+        showSegInfo segInfo ++ 
+        "; but splitting improves by " ++ show improvement ++ ":"
 
 ivpExpDecayVT :: ODEIVP Poly
 ivpExpDecayVT =
@@ -149,7 +161,7 @@ ivpExpDecayVT =
     description =
         "x' = -x; " 
         ++ show tStart ++ " < t_0 < " ++ show t0End
-        ++ "; x(t_0) \\in " ++ (show $ makeIV dummySizeLimits "t_0" tStart)
+        ++ "; x(t_0) ∊ " ++ (show $ makeIV dummySizeLimits "t_0" tStart)
     tStart = odeivp_tStart ivp
     t0End = odeivp_t0End ivp
     componentNames = odeivp_componentNames ivp
@@ -214,7 +226,7 @@ solveVT ivp =
 
     
 enclosuresOfIVPWithUncertainValue ::
-    (solvingInfo ~ Maybe (CF, [CF]))
+    (solvingInfo ~ (CF, Maybe [CF]))
     =>
     SizeLimits Poly 
     -> ArithInOut.RoundedRealEffortIndicator CF
