@@ -1,9 +1,11 @@
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 module Main where
 
 import Numeric.AERN.Poly.IntPoly
 
 import Numeric.AERN.IVP.Specification.ODE
+import Numeric.AERN.IVP.Solver.Splitting
 import Numeric.AERN.IVP.Solver.Picard.UncertainValue
 import Numeric.AERN.IVP.Solver.Picard.UncertainTime
 
@@ -25,9 +27,10 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.ShowInternals
 
-import Numeric.AERN.Misc.Debug
-
 import System.IO
+
+import Numeric.AERN.Misc.Debug (unsafePrint)
+_ = unsafePrint -- stop the unused warning
 
 --import qualified Data.Map as Map
 --import qualified Data.List as List
@@ -97,11 +100,11 @@ solveVt ivp =
     putStrLn "----------  result: -----------------------------"
     putStrLn $ "x(" ++ show tEnd ++ ") = " ++ show endValues
     putStrLn "----------  steps: ------------------------------"
-    putStr $ unlines $ map showStep stepValues
+    putStrLn $ showSplittingInfo showSegInfo showSplitReason splittingInfo
     putStrLn "-------------------------------------------------"
     where
     -- solver call:
-    (endValues, stepValues) =
+    (endValues, splittingInfo) =
         enclosuresOfIVPWithUncertainValue
             sizeLimits effCf delta m 
                 minStepSize splitImprovementThreshold
@@ -116,21 +119,18 @@ solveVt ivp =
     
     -- auxiliary:
     description = odeivp_description ivp
-    tStart = odeivp_tStart ivp
     tEnd = odeivp_tEnd ivp
-    tVar = odeivp_tVar ivp
-    dimension = length componentNames
-    componentNames = odeivp_componentNames ivp
     
     sampleCf = 0 :: CF
-    showStep (t, values) =
-        "x(" ++ show t ++ ") = " ++ show values
---    effCf = (100, (100,())) -- MPFR
     effCf = ArithInOut.roundedRealDefaultEffort sampleCf
     sizeLimits =
         getSizeLimits $
             makeSampleWithVarsDoms maxdeg maxsize [] []
+            
+    showSegInfo = show
+    showSplitReason = show
 
+ivpExpDecayVT :: ODEIVP Poly
 ivpExpDecayVT =
     ivp
     where
@@ -202,17 +202,8 @@ solveVT ivp =
     splitImprovementThreshold = 2^^(-20 :: Int) :: CF
     
     -- auxiliary:
---    timeDomain = timeStart CF.</\> timeEnd
-
-    initialValueFns =
-        odeivp_makeInitialValueFnVec ivp sizeLimits "t0" (tStart CF.</\> t0End) 
-    tStart = odeivp_tStart ivp
     tEnd = odeivp_tEnd ivp
-    t0End = odeivp_t0End ivp
     description = odeivp_description ivp
---    tVar = odeivp_tVar ivp
---    dimension = length componentNames
-    componentNames = odeivp_componentNames ivp
 
 
     effCf = ArithInOut.roundedRealDefaultEffort (0:: CF)
@@ -223,6 +214,8 @@ solveVT ivp =
 
     
 enclosuresOfIVPWithUncertainValue ::
+    (solvingInfo ~ Maybe (CF, [CF]))
+    =>
     SizeLimits Poly 
     -> ArithInOut.RoundedRealEffortIndicator CF
     -> CF
@@ -234,7 +227,7 @@ enclosuresOfIVPWithUncertainValue ::
     (
      Maybe [CF]
     ,
-     [(CF, [CF])]
+     SplittingInfo solvingInfo (solvingInfo, Maybe CF)
     )
 enclosuresOfIVPWithUncertainValue
         sizeLimits 

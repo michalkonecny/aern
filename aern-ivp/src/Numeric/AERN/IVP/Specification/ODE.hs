@@ -22,7 +22,7 @@ where
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
---import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn.Evaluation
 --import Numeric.AERN.RmToRn.Integration
 --
 --import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
@@ -52,7 +52,7 @@ data ODEIVP f =
     ,
         odeivp_tEnd :: Domain f -- ^ @tEnd@
     ,
-        odeivp_makeInitialValueFnVec :: SizeLimits f -> Var f -> Domain f -> [f] 
+        odeivp_makeInitialValueFnVec :: ODEInitialValues f 
         {-^ the parameters are:
             * size limits for the function
             * initial time variable @t0@ 
@@ -68,6 +68,9 @@ data ODEIVP f =
             with exact initial time, we have @t0End = tStart@
         -}
     }
+
+type ODEInitialValues f =
+    SizeLimits f -> Var f -> Domain f -> [f]
 
 makeFnVecFromInitialValues ::
      (HasSizeLimits f,
@@ -95,4 +98,28 @@ makeFnVecFromInitialValues componentNames initialValues sizeLimits tVar timeDoma
     dombox =
         fromList $ (tVar, timeDomain) : (zip componentNames initialValues)
         
+evalAtEndTimeVec ::
+    (CanEvaluate f)
+    =>
+    (Var f) -> 
+    (Domain f) -> 
+    [f] 
+    -> 
+    [Domain f]
+evalAtEndTimeVec tVar tEnd fnVec =
+    map (evalAtEndTimeFn tVar tEnd) fnVec
+    
+evalAtEndTimeFn ::
+    (CanEvaluate f)
+    =>
+    (Var f) -> 
+    (Domain f) -> 
+    f 
+    -> 
+    Domain f
+evalAtEndTimeFn tVar tEnd fn =
+    evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fn
+    where
+--    endTimeArea :: DomainBox f
+    endTimeArea = insertVar tVar tEnd $ getDomainBox fn
     
