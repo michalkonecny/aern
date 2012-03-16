@@ -77,11 +77,11 @@ primitiveFnOutPoly ::
     IntPoly var cf {- polynomial to integrate in its main variable -} ->
     var {- variable to integrate in -} ->
     IntPoly var cf
-primitiveFnOutPoly eff _p@(IntPoly cfg terms) var =
+primitiveFnOutPoly eff _p@(IntPoly cfgTop terms) var =
     reducePolyDegreeOut eff $
-    IntPoly cfg $ primitiveFnOutTerms terms
+    IntPoly cfgTop $ primitiveFnOutTerms cfgTop terms
     where
-    primitiveFnOutTerms (IntPolyV var2 powers) 
+    primitiveFnOutTerms cfg (IntPolyV var2 powers) 
         | var == var2 =
         --    unsafePrint
         --    (
@@ -92,7 +92,7 @@ primitiveFnOutPoly eff _p@(IntPoly cfg terms) var =
         --    )
                 result
         | otherwise =
-            (IntPolyV var2 $ IntMap.map primitiveFnOutTerms powers)
+            (IntPolyV var2 $ IntMap.map (primitiveFnOutTerms cfgR) powers)
         where
         result = IntPolyV var2 $ powersFractions 
         cfgR = cfgRemVar cfg
@@ -107,6 +107,6 @@ primitiveFnOutPoly eff _p@(IntPoly cfg terms) var =
         effDiv = ArithInOut.mxfldEffortDiv sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
     --    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
         sample = ipolycfg_sample_cf cfg
-    primitiveFnOutTerms _ = 
+    primitiveFnOutTerms _ _ = 
         error "aern-poly: primitiveFnOutPoly: integrating by a variable not present in the domain"        
 
