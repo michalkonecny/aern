@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-module Main(main) where
+module Main where
 
 import Numeric.AERN.Poly.IntPoly
 
