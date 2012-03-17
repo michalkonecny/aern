@@ -42,6 +42,8 @@ import Data.List (intercalate)
     is called the main variable. The polynomial is represented
     as a uni-variate polynomial in the main variable whose
     coefficients are polynomials in the remaining variables.
+    
+    Invariant: each IntPoly has to have a constant term.
 -}
 data IntPoly var cf =
     IntPoly
