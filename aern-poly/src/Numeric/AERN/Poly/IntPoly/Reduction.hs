@@ -45,10 +45,12 @@ import qualified Numeric.AERN.NumericOrder.OpsDefaultEffort as NumOrdDefEffort
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.PartialOrdering as PartialOrdering
 
---import Numeric.AERN.Misc.Debug
-
 import qualified Data.IntMap as IntMap
 import qualified Data.List as List
+
+import Numeric.AERN.Misc.Debug (unsafePrintReturn, unsafePrint)
+_ = unsafePrint
+_ = unsafePrintReturn "" ""
 
 reducePolyTermCountOut ::
     (Show var,

@@ -24,6 +24,7 @@ where
     
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
+import Numeric.AERN.Poly.IntPoly.New
 import Numeric.AERN.Poly.IntPoly.Reduction
 import Numeric.AERN.Poly.IntPoly.Addition ()
 import Numeric.AERN.Poly.IntPoly.Multiplication ()
@@ -32,7 +33,7 @@ import Numeric.AERN.RmToRn.Integration
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
---import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
@@ -77,12 +78,12 @@ primitiveFnOutPoly ::
     IntPoly var cf {- polynomial to integrate in its main variable -} ->
     var {- variable to integrate in -} ->
     IntPoly var cf
-primitiveFnOutPoly eff _p@(IntPoly cfgTop terms) var =
+primitiveFnOutPoly eff _p@(IntPoly cfgTop terms) integVar =
     reducePolyDegreeOut eff $
     IntPoly cfgTop $ primitiveFnOutTerms cfgTop terms
     where
-    primitiveFnOutTerms cfg (IntPolyV var2 powers) 
-        | var == var2 =
+    primitiveFnOutTerms cfg (IntPolyV var powers) 
+        | integVar == var =
         --    unsafePrint
         --    (
         --        "integratePoly:"
@@ -92,10 +93,11 @@ primitiveFnOutPoly eff _p@(IntPoly cfgTop terms) var =
         --    )
                 result
         | otherwise =
-            (IntPolyV var2 $ IntMap.map (primitiveFnOutTerms cfgR) powers)
+            (IntPolyV var $ IntMap.map (primitiveFnOutTerms cfgR) powers)
         where
-        result = IntPolyV var2 $ powersFractions 
+        result = IntPolyV var $ IntMap.insert 0 zP powersFractions 
         cfgR = cfgRemVar cfg
+        zP = mkConstTerms (zero sample) $ ipolycfg_vars cfgR
         powersFractions =
             IntMap.fromDistinctAscList $
                 map integrateTerms $
