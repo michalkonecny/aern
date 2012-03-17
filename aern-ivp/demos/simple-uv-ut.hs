@@ -10,7 +10,7 @@ import Numeric.AERN.IVP.Solver.Picard.UncertainTime
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.Evaluation
+--import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 import qualified Numeric.AERN.DoubleBasis.Interval as CF
@@ -62,7 +62,7 @@ ivpExpDecayVT =
             odeivp_tVar = "t",
             odeivp_tStart = -0.125,
             odeivp_t0End = 0.125, 
-            odeivp_tEnd = 0.125,
+            odeivp_tEnd = 1,
             odeivp_makeInitialValueFnVec = makeIV 
         }
     description =
