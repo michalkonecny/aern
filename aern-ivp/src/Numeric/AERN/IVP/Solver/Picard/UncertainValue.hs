@@ -42,7 +42,8 @@ import Numeric.AERN.NumericOrder.OpsDefaultEffort
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
---import Numeric.AERN.Misc.Debug
+import Numeric.AERN.Misc.Debug
+_ = unsafePrint
         
 solveUncertainValueExactTimeSplit ::
     (CanAddVariables f,
@@ -67,11 +68,11 @@ solveUncertainValueExactTimeSplit ::
     ArithInOut.AddEffortIndicator f ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
-    ODEIVP f ->
     Domain f {-^ initial widening @delta@ -}  ->
     Int {-^ @m@ -} -> 
     Domain f {-^ step size @s@ -} -> 
-    Imprecision (Domain f) {-^ split improvement threshold @eps@ -}
+    Imprecision (Domain f) {-^ split improvement threshold @eps@ -} ->
+    ODEIVP f
     ->
     (
         Maybe [Domain f] 
@@ -81,8 +82,8 @@ solveUncertainValueExactTimeSplit ::
     ) {-^ value approximations at time tEnd and intermediate values at various time points -}
 solveUncertainValueExactTimeSplit
         sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-            odeivpG
-                delta m minStepSize splitImprovementThreshold
+            delta m minStepSize splitImprovementThreshold
+                odeivpG
     | (odeivp_tStart odeivpG <? odeivp_t0End odeivpG) == Just True =
         error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
     | otherwise =
@@ -92,8 +93,8 @@ solveUncertainValueExactTimeSplit
     componentNames = odeivp_componentNames odeivpG
 
     solve odeivp =
-        solveBySplitting
-            directSolver makeMakeInitValFnVec
+        solveBySplittingT
+            directSolver (makeFnVecFromInitialValues componentNames)
                 effDom splitImprovementThreshold minStepSize
                     odeivp
 
@@ -111,8 +112,6 @@ solveUncertainValueExactTimeSplit
                         odeivp
         tEnd = odeivp_tEnd odeivp
 
-    makeMakeInitValFnVec initValues =
-        makeFnVecFromInitialValues componentNames initValues
                 
 solveUncertainValueExactTime ::
     (CanAddVariables f,
@@ -203,14 +202,14 @@ solveUncertainValueExactTime
 --        unsafePrint
 --        (
 --            "solveUncertainValueExactTime: picard:"
---            ++ "\n tEnd = " ++ (show timeDomainR)
---            ++ "\n initialValuesFnsWithT = " ++ (show initialValuesFnsWithT)
+--            ++ "\n tEnd = " ++ (show tEnd)
+--            ++ "\n initialValuesFnVec = " ++ (show initialValuesFnVec)
 ----            ++ "\n xvec = " ++ (show xvec)
 ----            ++ "\n xdvec = " ++ (show xdvec)
 ----            ++ "\n result = " ++ (show result)
---            ++ "\n xvec at end time = " ++ (show $ evalAtEndTimeVec xvec)
---            ++ "\n xdvec at end time = " ++ (show $ evalAtEndTimeVec xdvec)
---            ++ "\n result at end time = " ++ (show $ evalAtEndTimeVec result)
+--            ++ "\n xvec at end time = " ++ (show $ evalAtEndTimeVec tVar tEnd xvec)
+--            ++ "\n xdvec at end time = " ++ (show $ evalAtEndTimeVec tVar tEnd xdvec)
+--            ++ "\n result at end time = " ++ (show $ evalAtEndTimeVec tVar tEnd result)
 --        ) $
         result
         where
