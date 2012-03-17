@@ -23,6 +23,7 @@ module Numeric.AERN.IVP.Solver.Picard.UncertainTime
 where
 
 import Numeric.AERN.IVP.Specification.ODE
+import Numeric.AERN.IVP.Solver.Splitting
 import Numeric.AERN.IVP.Solver.Picard.UncertainValue
 
 import Numeric.AERN.RmToRn.Domain
@@ -44,22 +45,47 @@ import Numeric.AERN.Misc.Debug
         
 solveUncertainValueUncertainTimeSplit
         sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-        odeivpG 
-        t0Var
-        delta 
-        m stepSize epsilon
+            delta m minStepSize splitImprovementThreshold
+                t0Var
+                    odeivpG 
     =
+    solverSplittingT0 odeivpG
+    where
+    componentNames = odeivp_componentNames odeivpG
+    tEnd = odeivp_tEnd odeivpG
+    tVar = odeivp_tVar odeivpG
     
-    solveUncertainValueUncertainTime
-        sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-        odeivpG 
-        t0Var
-        delta
-    -- TODO
-    -- split T0 and for each segment T0i, solve 2 problems:
-    --  one with uncertain initial time T = T0i
-    --  one with exact initial time from T0i until the end of T
-    -- take the union of the solutions for all segments
+    solverSplittingT0 odeivp =
+        solveBySplittingT0
+            solverSplittingAtT0End
+                effDom splitImprovementThreshold minStepSize 
+                    odeivp
+
+    solverSplittingAtT0End odeivp =
+        solveBySplittingAtT0End
+            solverVT (makeFnVecFromInitialValues componentNames) 
+                solverVt 
+                    odeivp
+    
+    solverVT odeivp =
+        case maybeIterations of
+            Just iterations -> 
+                let valuesAtEnd = evalAtEndTimeVec tVar tEnd $ iterations !! m in
+                (Just valuesAtEnd, (tEnd, Just valuesAtEnd))
+            _ -> (Nothing, (tEnd, Nothing))
+        where
+        maybeIterations =
+            solveUncertainValueUncertainTime
+                sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+                    delta
+                        t0Var
+                            odeivp 
+
+    solverVt odeivp =
+        solveUncertainValueExactTimeSplit
+                sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+                    delta m minStepSize splitImprovementThreshold
+                        odeivp
         
 solveUncertainValueUncertainTime ::
     (CanAddVariables f,
@@ -79,22 +105,32 @@ solveUncertainValueUncertainTime ::
      Show f, Show (Domain f)
      )
     =>
-    SizeLimits f ->
-    CompositionEffortIndicator f ->
-    IntegrationEffortIndicator f ->
-    RefOrd.PartialCompareEffortIndicator f ->
-    ArithInOut.AddEffortIndicator f ->
-    ArithInOut.MixedAddEffortIndicator f (Domain f) ->
-    ArithInOut.RoundedRealEffortIndicator (Domain f) ->
-    ODEIVP f ->
-    Var f {-^ @t0@ - the initial time variable -} ->
-    Domain f {-^ initial widening @delta@ -}  ->
+    SizeLimits f 
+    ->
+    CompositionEffortIndicator f 
+    ->
+    IntegrationEffortIndicator f 
+    ->
+    RefOrd.PartialCompareEffortIndicator f 
+    ->
+    ArithInOut.AddEffortIndicator f 
+    ->
+    ArithInOut.MixedAddEffortIndicator f (Domain f) 
+    ->
+    ArithInOut.RoundedRealEffortIndicator (Domain f) 
+    ->
+    Domain f {-^ initial widening @delta@ -}  
+    ->
+    Var f {-^ @t0@ - the initial time variable -} 
+    ->
+    ODEIVP f 
+    ->
     Maybe [[f]] {-^ sequence of enclosures with domain @T x D@ produced by the Picard operator -}
 solveUncertainValueUncertainTime
         sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-        odeivp
-        t0Var
-        delta
+            delta
+                t0Var
+                    odeivp
     | (t0End <? tEnd) == Just True =
         error "aern-ivp: solveUncertainValueUncertainTime called with t0End < tEnd"
     | otherwise =

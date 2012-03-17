@@ -67,6 +67,8 @@ data ODEIVP f =
             must satisfy @tStart <= t0End <= tEnd@;
             with exact initial time, we have @t0End = tStart@
         -}
+    ,
+        odeivp_exactValuesAtTEnd :: [Domain f]
     }
 
 type ODEInitialValues f =

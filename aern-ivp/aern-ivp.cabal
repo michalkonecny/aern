@@ -33,23 +33,40 @@ Library
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-realfn == 0.5.*
-  exposed-modules:  
-                    Numeric.AERN.IVP.Solver.Picard.UncertainTime,
+  exposed-modules:  Numeric.AERN.IVP.Solver.Picard.UncertainTime,
                     Numeric.AERN.IVP.Solver.Picard.UncertainValue,
                     Numeric.AERN.IVP.Solver.Splitting,
                     Numeric.AERN.IVP.Specification.ODE
 
-executable simple
-  build-depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
+executable simpleVt
+  build-depends:   
+        base == 4.2.* || == 4.4.* || == 4.5.*,
         containers >= 0.3 && < 0.5,
+        random >= 1.0 && < 1.1,
+        directory >= 1.0 && < 1.2,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-double == 0.5.*,
-        aern-mpfr == 0.5.*,
         aern-realfn == 0.5.*,
         aern-poly == 0.5.*,
         aern-ivp == 0.5.*
   ghc-options:     -Wall -rtsopts
   hs-source-dirs:  demos
-  main-is:         simple.hs
+  main-is:         simpleVt.hs
+
+executable simpleVT
+  build-depends:
+        base == 4.2.* || == 4.4.* || == 4.5.*,
+        containers >= 0.3 && < 0.5,
+        random >= 1.0 && < 1.1,
+        directory >= 1.0 && < 1.2,
+        aern-order == 0.5.*,
+        aern-real == 0.5.*,
+        aern-double == 0.5.*,
+        aern-realfn == 0.5.*,
+        aern-poly == 0.5.*,
+        aern-ivp == 0.5.*
+  ghc-options:     -Wall -rtsopts
+  hs-source-dirs:  demos
+  main-is:         simpleVT.hs
 
