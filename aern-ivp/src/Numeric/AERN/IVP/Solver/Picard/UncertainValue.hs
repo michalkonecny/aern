@@ -143,7 +143,7 @@ solveUncertainValueExactTime
         sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
         delta
         odeivp
-    | (tStart <? t0End) == Just True =
+    | (tStart <? t0End) == Just True = 
         error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
     | otherwise =
         case findEnclosure (40 :: Int) $ iterate picard initialAttemptFns of

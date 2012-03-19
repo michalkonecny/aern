@@ -63,7 +63,8 @@ ivpExpDecayVT =
             odeivp_tStart = -0.125,
             odeivp_t0End = 0.125, 
             odeivp_tEnd = 1,
-            odeivp_makeInitialValueFnVec = makeIV 
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing
         }
     description =
         "x' = -x; " 

@@ -70,7 +70,7 @@ data ODEIVP f =
             with exact initial time, we have @t0End = tStart@
         -}
     ,
-        odeivp_exactValuesAtTEnd :: [Domain f]
+        odeivp_maybeExactValuesAtTEnd :: Maybe [Domain f]
     }
 
 type ODEInitialValues f =

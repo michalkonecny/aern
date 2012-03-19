@@ -42,14 +42,14 @@ type CF = CF.DI
 type Poly = IntPoly String CF
 
 main :: IO ()
-main = mainCmdLine ivpExpDecayvt
---main = mainCSV ivpExpDecayvt
---main = mainCSV ivpExpDecayVt
---main = mainCSV ivpSpringMassvt
---main = mainCSV ivpSpringMassVt
+main = mainCmdLine ivpExpDecay_ev_et
+--main = mainCSV ivpExpDecay_ev_et
+--main = mainCSV ivpExpDecay_uv_et
+--main = mainCSV ivpSpringMass_ev_et
+--main = mainCSV ivpSpringMass_uv_et
 
-ivpExpDecayvt :: ODEIVP Poly
-ivpExpDecayvt =
+ivpExpDecay_ev_et :: ODEIVP Poly
+ivpExpDecay_ev_et =
     ivp
     where
     ivp =
@@ -63,7 +63,7 @@ ivpExpDecayvt =
             odeivp_t0End = 0, 
             odeivp_tEnd = 1,
             odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_exactValuesAtTEnd = [1 CF.<*>| expMOne]
+            odeivp_maybeExactValuesAtTEnd = Just [1 CF.<*>| expMOne]
         }
     initialValues = [1]
     expMOne = exp (-1) :: Double
@@ -72,8 +72,8 @@ ivpExpDecayvt =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
 
-ivpExpDecayVt :: ODEIVP Poly
-ivpExpDecayVt =
+ivpExpDecay_uv_et :: ODEIVP Poly
+ivpExpDecay_uv_et =
     ivp
     where
     ivp =
@@ -87,7 +87,7 @@ ivpExpDecayVt =
             odeivp_t0End = 0, 
             odeivp_tEnd = 1,
             odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_exactValuesAtTEnd = [(0.875 CF.<*>| expMOne) CF.</\> (1.125 CF.<*>| expMOne)]
+            odeivp_maybeExactValuesAtTEnd = Just [(0.875 CF.<*>| expMOne) CF.</\> (1.125 CF.<*>| expMOne)]
         }
     initialValues = [(1 CF.<-> 0.125 ) CF.</\> (1 CF.<+> 0.125)]
     expMOne = exp (-1) :: Double
@@ -97,8 +97,8 @@ ivpExpDecayVt =
     tStart = odeivp_tStart ivp
 
 
-ivpSpringMassvt :: ODEIVP Poly
-ivpSpringMassvt =
+ivpSpringMass_ev_et :: ODEIVP Poly
+ivpSpringMass_ev_et =
     ivp
     where
     ivp =
@@ -112,7 +112,7 @@ ivpSpringMassvt =
             odeivp_t0End = 0,
             odeivp_tEnd = 1,
             odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_exactValuesAtTEnd = [cosOne, -sinOne]
+            odeivp_maybeExactValuesAtTEnd = Just [cosOne, -sinOne]
         }
     initialValues = [1,0]
     cosOne = 1 CF.<*>| (cos 1 :: Double)
@@ -122,8 +122,8 @@ ivpSpringMassvt =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
 
-ivpSpringMassVt :: ODEIVP Poly
-ivpSpringMassVt =
+ivpSpringMass_uv_et :: ODEIVP Poly
+ivpSpringMass_uv_et =
     ivp
     where
     ivp =
@@ -137,7 +137,7 @@ ivpSpringMassVt =
             odeivp_t0End = 0,
             odeivp_tEnd = 1,
             odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_exactValuesAtTEnd = 
+            odeivp_maybeExactValuesAtTEnd = Just $ 
                 [
                     (0.875 * cosOne - 0.125 * sinOne) CF.</\> (1.125 * cosOne + 0.125 * sinOne)  
                 , 
@@ -208,24 +208,33 @@ mainCSV ivp =
         [
             "ivp: " ++ description
         ,
-            "polynomial degree, min step size (2^(-n)), error upper bound at t=1, time (microseconds)"
+            "polynomial degree, min step size (2^(-n)), time (microseconds), error upper bound at t=1, error at t = 1"
         ]
         ++
         (map makeCSVLine $ zip results paramCombinations) 
     description = odeivp_description ivp
---    vecExact = odeivp_exactValuesAtTEnd ivp
+    maybeVecExact = odeivp_maybeExactValuesAtTEnd ivp
     makeCSVLine (((maybeVec, _), execTimeMS), (maxDegree, depth)) =
-        show maxDegree ++ "," ++ show depth ++ ","
-        ++ enclosureErrorS ++ "," ++ show execTimeMS
+        show maxDegree ++ "," 
+        ++ show depth ++ ","
+        ++ show execTimeMS ++ ","
+        ++ enclosureErrorBoundS ++ ","
+        ++ enclosureErrorS
         where
-        enclosureErrorS =
+        (enclosureErrorBoundS, enclosureErrorS) =
             case maybeVec of
-                Nothing -> show "no solution"
+                Nothing -> (show "no solution", show "no solution")
                 Just (vecOut, vecIn) ->
+                    (computeMaxDiff vecOut vecIn, 
+                        case maybeVecExact of
+                            Just vecExact -> computeMaxDiff vecOut vecExact
+                            _ -> show "exact solution not known")
+                where
+                computeMaxDiff vecOut vecOther = 
                     removeBracks $
                     show $ 
                         snd $ RefOrd.getEndpointsOutWithDefaultEffort $ 
-                            foldl1 max $ zipWith (CF.<->) (map CF.width vecOut) (map CF.width vecIn)
+                            foldl1 max $ zipWith (CF.<->) (map CF.width vecOut) (map CF.width vecOther)
         removeBracks ('<': rest1 ) =
             reverse $ removeR $ reverse rest1
             where
