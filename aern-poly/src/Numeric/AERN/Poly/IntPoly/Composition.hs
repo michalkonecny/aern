@@ -93,17 +93,20 @@ polyPolyEvalOpsOut ::
    cf ->
    PolyEvalOps var cf (IntPoly var cf)
 polyPolyEvalOpsOut effCmp@(_,effCf) sampleP sampleCf =
-    let (<+>) = ArithInOut.addOutEff effCf in
-    let (<*>) = ArithInOut.multOutEff effCf in
-    let (<^>) = ArithInOut.powerToNonnegIntOutEff effCf in
-    let (<=?) = NumOrd.pLeqEff effCmp in
-    PolyEvalOps (zero sampleP) (<+>) (<*>) (<^>) (newConstFnFromSample sampleP) (const Nothing) (<=?) $
-        Just $ PolyEvalMonoOps
-            RefOrd.getEndpointsOutWithDefaultEffort
-            RefOrd.fromEndpointsOutWithDefaultEffort
-            isDefinitelyExact
-            effCf
+    result
     where
+    result =
+        let (<+>) = ArithInOut.addOutEff effCf in
+        let (<*>) = ArithInOut.multOutEff effCf in
+        let (<^>) = ArithInOut.powerToNonnegIntOutEff effCf in
+        let (<=?) = NumOrd.pLeqEff effCmp in
+        PolyEvalOps (zero sampleP) (<+>) (<*>) (<^>) (newConstFnFromSample sampleP) (const Nothing) (<=?) $
+            Just $ PolyEvalMonoOps
+                result
+                RefOrd.getEndpointsOutWithDefaultEffort
+                RefOrd.fromEndpointsOutWithDefaultEffort
+                isDefinitelyExact
+                effCf
     isDefinitelyExact p = 
         polyIsExactEff effImpr p == Just True
     effImpr = ArithInOut.rrEffortImprecision sampleCf effCf
