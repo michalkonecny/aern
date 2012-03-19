@@ -71,8 +71,8 @@ main =
 
     putStrLn $ "((x+y)^2)subst[y=x+1] = " ++ (showP $ composeVarOutEff eff "y" (x <+>| (1 :: Int)) $ (x <+> y) <^> 2)
     putStrLn $ "((x+y)^2)subst[y=xNoY+1] = " ++ (showP $ composeVarOutEff eff "y" (xNoY <+>| (1::Int)) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)subst[y=[0,1]] = " ++ (showP $ composeVarOutEff eff "y" (c01) $ (x <+> y) <^> 2)
-
+    putStrLn $ "((x+y)^2)substOut[y=[0,1]] = " ++ (showP $ composeVarOutEff eff "y" (c01) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)substIn[y=[0,1]] = " ++ (showP $ composeVarInEff eff "y" (c01) $ (x <+> y) <^> 2)
     putStrLn $ "((x+y)^2)subst[x=x-y] = " ++ (showP $ composeVarOutEff eff "x" (x <-> y) $ (x <+> y) <^> 2)
     putStrLn $ "-- thick coeffs:"
     putStrLn $ "([0,1](x+1)+y+1) = " ++ (showP $ ((c01 <*> (x <+> c1)) <+> y <+> c1))
