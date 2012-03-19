@@ -42,6 +42,8 @@ import Numeric.AERN.NumericOrder.OpsDefaultEffort
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
+import Numeric.AERN.Basics.Consistency
+
 import Numeric.AERN.Misc.Debug
         
 solveBySplittingAtT0End ::
@@ -102,6 +104,7 @@ solveBySplittingT ::
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike(Domain f),
+     HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
      Show f, Show (Domain f))
     =>
@@ -130,9 +133,9 @@ solveBySplittingT
     (valuesAtTEnd, info)
     where
     (valuesAtTEnd, info) = 
-        case (splitSolve False odeivpG, splitSolve True odeivpG) of
-            ((Just valuesOut, info), (Just valuesIn, _)) -> (Just (valuesOut, valuesIn), info)
-            ((_, info), _) -> (Nothing, info)
+        case (splitSolve (repeat False) odeivpG, splitSolve (repeat True) odeivpG) of
+            ((Just valuesOut, info2), (Just valuesIn, _)) -> (Just (valuesOut, valuesIn), info2)
+            ((_, info2), _) -> (Nothing, info2)
             
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDivDomInt = 
@@ -146,7 +149,14 @@ solveBySplittingT
 --    sampleImpr = imprecisionOfEff effImpr sampleDom
 --    effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
     
-    splitSolve shouldRoundInwards odeivp =
+    mergeOutIn :: [Bool] -> [a] -> [a] -> [a]
+    mergeOutIn shouldRoundInwardsVec vecOut vecIn =
+        map pick $ zip3 shouldRoundInwardsVec vecOut vecIn
+        where
+        pick (True, _, valueIn) = valueIn
+        pick (False, valueOut, _) = valueOut
+    
+    splitSolve shouldRoundInwardsVec odeivp =
 --        unsafePrint
 --        (
 --            "solveBySplittingT: splitSolve: "
@@ -175,9 +185,9 @@ solveBySplittingT
 
         directComputation =
             case maybeDirectResult of
-                Just (resultOut, resultIn) 
-                    | shouldRoundInwards -> (Just resultIn, SegNoSplit directInfo)
-                    | otherwise -> (Just resultOut, SegNoSplit directInfo)
+                Just (resultOut, resultIn) ->
+                    (Just $ mergeOutIn shouldRoundInwardsVec resultOut resultIn, 
+                     SegNoSplit directInfo)
                 _ -> (Nothing, SegNoSplit directInfo) 
         (maybeDirectResult, directInfo) = solver odeivp
         directComputationFailed =
@@ -187,14 +197,12 @@ solveBySplittingT
             case solver odeivpL of
                 (Just (midValuesOut, midValuesIn), _) ->
                     case solver odeivpR of
-                        (Just (endValuesOut, endValuesIn), _) 
-                            | shouldRoundInwards -> Just endValuesIn
-                            | otherwise -> Just endValuesOut
+                        (Just (endValuesOut, endValuesIn), _) ->
+                            Just $ mergeOutIn shouldRoundInwardsVec endValuesOut endValuesIn 
                         _ -> Nothing
                     where
-                    midValues 
-                        | shouldRoundInwards = midValuesIn
-                        | otherwise = midValuesOut
+                    midValues =
+                        mergeOutIn shouldRoundInwardsVec midValuesOut midValuesIn
                     odeivpR =
                         odeivp
                         {
@@ -206,25 +214,37 @@ solveBySplittingT
                 _ -> Nothing
                 
         splitComputation =
-            case splitSolve shouldRoundInwards odeivpL of
+            case splitSolve shouldRoundInwardsVec odeivpL of
                 (Just midValues, infoL) -> 
-                    case splitSolve shouldRoundInwards odeivpR of
+                    case splitSolve shouldRoundInwardsVecConsistent odeivpR of
                         (Nothing, infoR) ->
                             (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
                         (Just endValues, infoR) ->
                             (
-                                Just endValues
+                                Just $ mapInconsistentOnes flipConsistency endValues
                             , 
                                 SegSplit (directInfo, maybeSplitImprovement) infoL infoR
                             )
                     where
+                    mapInconsistentOnes :: (a -> a) -> [a] -> [a]
+                    mapInconsistentOnes f vec =
+                        map fOnConsistent $ zip whichMidValuesConsistent vec
+                        where
+                        fOnConsistent (thisOneIsConsistent, value) 
+                            | thisOneIsConsistent = value
+                            | otherwise = f value
+                        whichMidValuesConsistent =
+                            map (/= Just False) $
+                                map (isConsistentEff $ consistencyDefaultEffort sampleDom) midValues
+                    shouldRoundInwardsVecConsistent =
+                        mapInconsistentOnes not shouldRoundInwardsVec
                     odeivpR =
                         odeivp
                         {
                             odeivp_tStart = tMid,
                             odeivp_t0End = tMid, -- exact initial time
                             odeivp_makeInitialValueFnVec =
-                                makeMakeInitValFnVec midValues
+                                makeMakeInitValFnVec $ mapInconsistentOnes flipConsistency midValues
                         }
                 failedLeftComputation -> failedLeftComputation
         odeivpL =
@@ -239,17 +259,19 @@ solveBySplittingT
         
         maybeSplitImprovement =
             case (directComputation, splitOnceComputation) of
-                ((Just directResult, _), Just splitOnceResult) 
-                    | shouldRoundInwards ->
-                        measureImprovementVec splitOnceResult directResult -- the larger the better
-                    | otherwise ->
-                        measureImprovementVec directResult splitOnceResult -- the smaller the better
+                ((Just directResult, _), Just splitOnceResult) -> 
+                    measureImprovementVec directResult splitOnceResult
                 _ -> Nothing
         measureImprovementVec vec1 vec2 =
             do
-            improvements <- sequence $ zipWith measureImprovement vec1 vec2
+            improvements <- sequence $ 
+                                map measureImprovement $ 
+                                    zipWith switchDirIfInwards shouldRoundInwardsVec $ 
+                                        zip vec1 vec2
             Just $ foldl1 (NumOrd.minOutEff effMinmax) improvements
-        measureImprovement encl1 encl2 =
+        switchDirIfInwards True (a,b) = (b,a)
+        switchDirIfInwards False pair = pair
+        measureImprovement (encl1, encl2) =
             let ?addInOutEffort = effAddDom in
             let ?pCompareEffort = effRefComp in
             do

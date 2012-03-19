@@ -37,7 +37,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Consistency
 
---import Numeric.AERN.Misc.Debug
+import Numeric.AERN.Misc.Debug
 
 data ODEIVP f =
     ODEIVP
@@ -77,7 +77,8 @@ type ODEInitialValues f =
     SizeLimits f -> Var f -> Domain f -> [f]
 
 makeFnVecFromInitialValues ::
-     (HasSizeLimits f,
+     (Show f, Show (Domain f), Show (Var f),
+      HasSizeLimits f,
       HasProjections f) 
       =>
      [Var f] {-^ names for solution vector components -} -> 
@@ -89,6 +90,16 @@ makeFnVecFromInitialValues ::
      -> 
      [f]
 makeFnVecFromInitialValues componentNames initialValues sizeLimits tVar timeDomain =
+--    unsafePrint
+--    (
+--        "makeFnVecFromInitialValues:"
+--        ++ "\n componentNames = " ++ show componentNames
+--        ++ "\n initialValues = " ++ show initialValues
+----        ++ "\n sizeLimits = " ++ show sizeLimits
+--        ++ "\n tVar = " ++ show tVar
+--        ++ "\n timeDomain = " ++ show timeDomain
+--        ++ "\n result = " ++ show initialValuesFnVec
+--    ) $
     initialValuesFnVec
     where    
     initialValuesFnVec =
@@ -103,7 +114,8 @@ makeFnVecFromInitialValues componentNames initialValues sizeLimits tVar timeDoma
         fromList $ (tVar, timeDomain) : (zip componentNames initialValues)
         
 evalAtEndTimeVec ::
-    (CanEvaluate f,
+    (Show (Domain f), Show f,
+     CanEvaluate f,
      RefOrd.IntervalLike f,
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
@@ -117,7 +129,8 @@ evalAtEndTimeVec tVar tEnd fnVec =
     unzip $ map (evalAtEndTimeFn tVar tEnd) fnVec
     
 evalAtEndTimeFn ::
-    (CanEvaluate f,
+    (Show (Domain f), Show f,
+     CanEvaluate f,
      RefOrd.IntervalLike f,
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
@@ -128,18 +141,29 @@ evalAtEndTimeFn ::
     -> 
     (Domain f, Domain f)
 evalAtEndTimeFn tVar tEnd fn =
+--    unsafePrint
+--    (
+--        "evalAtEndTimeFn:"
+--        ++ "\n fn = " ++ show fn
+--        ++ "\n valueOut = " ++ show valueOut
+--        ++ "\n valueL = " ++ show valueL
+--        ++ "\n valueR = " ++ show valueR
+--        ++ "\n valueIn = " ++ show valueIn
+--    ) $
     (valueOut, valueIn)
     where
     valueOut =
         evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fn
     valueIn =
-        RefOrd.fromEndpointsOutWithDefaultEffort 
-            (flipConsistency valueL, flipConsistency valueR)
+        RefOrd.fromEndpointsOutWithDefaultEffort (valueRL, valueLR)
+    (_, valueLR) =
+        RefOrd.getEndpointsOutWithDefaultEffort valueL
+    (valueRL, _) =
+        RefOrd.getEndpointsOutWithDefaultEffort valueR
     valueL =
-        evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fnFlippedL
+        evalAtPointInEff (evaluationDefaultEffort fn) endTimeArea fnL
     valueR =
-        evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fnFlippedR
-    (fnFlippedR, fnFlippedL) = (fnL, fnR)
+        evalAtPointInEff (evaluationDefaultEffort fn) endTimeArea fnR
     (fnL, fnR) = RefOrd.getEndpointsOutWithDefaultEffort fn
 --    endTimeArea :: DomainBox f
     endTimeArea = insertVar tVar tEnd $ getDomainBox fn

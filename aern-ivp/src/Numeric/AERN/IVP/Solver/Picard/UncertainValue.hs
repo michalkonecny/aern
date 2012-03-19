@@ -18,8 +18,7 @@
 module Numeric.AERN.IVP.Solver.Picard.UncertainValue
 (
     solveUncertainValueExactTime,
-    solveUncertainValueExactTimeSplit,
-    evalAtEndTimeVec
+    solveUncertainValueExactTimeSplit
 )
 where
 
@@ -63,7 +62,7 @@ solveUncertainValueExactTimeSplit ::
      HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
      solvingInfo ~ (Domain f, Maybe ([Domain f], [Domain f])), 
-     Show f, Show (Domain f))
+     Show f, Show (Domain f), Show (Var f))
     =>
     SizeLimits f {-^ size limits for all function -} ->
     CompositionEffortIndicator f ->
@@ -207,12 +206,12 @@ solveUncertainValueExactTime
 --            "solveUncertainValueExactTime: picard:"
 --            ++ "\n tEnd = " ++ (show tEnd)
 --            ++ "\n initialValuesFnVec = " ++ (show initialValuesFnVec)
-----            ++ "\n xvec = " ++ (show xvec)
-----            ++ "\n xdvec = " ++ (show xdvec)
-----            ++ "\n result = " ++ (show result)
---            ++ "\n xvec at end time = " ++ (show $ evalAtEndTimeVec tVar tEnd xvec)
---            ++ "\n xdvec at end time = " ++ (show $ evalAtEndTimeVec tVar tEnd xdvec)
---            ++ "\n result at end time = " ++ (show $ evalAtEndTimeVec tVar tEnd result)
+--            ++ "\n xvec = " ++ (show xvec)
+--            ++ "\n xdvec = " ++ (show xdvec)
+--            ++ "\n result = " ++ (show result)
+----            ++ "\n xvec at end time = " ++ (show $ evalAtEndTimeVec tVar tEnd xvec)
+----            ++ "\n xdvec at end time = " ++ (show $ evalAtEndTimeVec tVar tEnd xdvec)
+----            ++ "\n result at end time = " ++ (show $ evalAtEndTimeVec tVar tEnd result)
 --        ) $
         result
         where
