@@ -219,7 +219,7 @@ reduceDeg = reducePolyDegreeOut eff
 reduceCount = reducePolyTermCountOut eff
 
 evalOpsOutCf :: PolyEvalOps String CF CF
-evalOpsOutCf = evalOpsOut eff x (0::CF)
+evalOpsOutCf = evalOpsEff eff x (0::CF)
 
 numCompare :: 
      NumOrd.PartialComparison t 

@@ -218,7 +218,7 @@ updateValueDisplay effFromDouble effEval widgets dynWidgetsRef state (fndata, _)
             where
 --            getDimValueTexts :: (FA.ERFnApprox box varid domra ranra fa) => fa -> [ra]
             getDimValue fn =
-                evalOtherType (evalOpsOut effEval fn sampleDom) evalPt fn
+                evalOtherType (evalOpsEff effEval fn sampleDom) evalPt fn
                 where
                 evalPt =
                     unaryVarBox var $

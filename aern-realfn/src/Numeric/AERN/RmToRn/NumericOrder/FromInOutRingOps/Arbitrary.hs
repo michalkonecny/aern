@@ -230,11 +230,11 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
         sampleDom = getSampleDomValue fn1
         domainBox = getDomainBox fn1
         evalAtPt fn =
-            evalOtherType (evalOpsOut effEval fn sampleDom) pt fn 
+            evalOtherType (evalOpsEff effEval fn sampleDom) pt fn 
     addBounds fn = (fn, lower, upper)
         where
         (lower, upper) = getEndpointsOutEff effGetEndptsDom range
-        range = evalOtherType (evalOpsOut effEval fn sampleDom) domainbox fn
+        range = evalOtherType (evalOpsEff effEval fn sampleDom) domainbox fn
         domainbox = getDomainBox fn
         sampleDom = getSampleDomValue fn
     pickAndShiftGetSorted seed n list 
