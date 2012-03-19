@@ -130,7 +130,8 @@ instance
 --        performEndpointWiseWithDefaultEffort $
             polyComposeVarOutEff eff substVar substPoly 
     composeVarInEff eff substVar substPoly = 
-        polyComposeVarInEff eff substVar substPoly
+        performEndpointWiseWithDefaultEffort $
+            polyComposeVarInEff eff substVar substPoly
 
 -- TODO: move this function to aern-order
 performEndpointWiseWithDefaultEffort ::
