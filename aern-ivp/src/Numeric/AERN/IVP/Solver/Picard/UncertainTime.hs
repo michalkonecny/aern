@@ -46,8 +46,8 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Misc.Debug
         
 solveUncertainValueUncertainTimeSplit
-        sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-            delta m minStepSize splitImprovementThreshold
+        sizeLimits t0SizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+            delta m minStepSize minT0StepSize splitImprovementThreshold
                 t0Var
                     odeivpG 
     =
@@ -60,7 +60,7 @@ solveUncertainValueUncertainTimeSplit
     solverSplittingT0 odeivp =
         solveBySplittingT0
             solverSplittingAtT0End
-                effDom splitImprovementThreshold minStepSize 
+                effDom splitImprovementThreshold minT0StepSize 
                     odeivp
 
     solverSplittingAtT0End odeivp =
@@ -79,7 +79,7 @@ solveUncertainValueUncertainTimeSplit
         t0End = odeivp_t0End odeivp
         maybeIterations =
             solveUncertainValueUncertainTime
-                sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+                t0SizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
                     delta
                         t0Var
                             odeivp 
