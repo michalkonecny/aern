@@ -54,7 +54,7 @@ solveUncertainValueUncertainTimeSplit
     solverSplittingT0 odeivpG
     where
     componentNames = odeivp_componentNames odeivpG
-    tEndG = odeivp_tEnd odeivpG
+--    tEndG = odeivp_tEnd odeivpG
     tVar = odeivp_tVar odeivpG
     
     solverSplittingT0 odeivp =
@@ -72,7 +72,7 @@ solveUncertainValueUncertainTimeSplit
     solverVT odeivp =
         case maybeIterations of
             Just iterations -> 
-                let valuesAtEnd = evalAtEndTimeVec tVar t0End $ iterations !! m in
+                let valuesAtEnd = evalAtEndTimeOutInVec tVar t0End $ iterations !! m in
                 (Just valuesAtEnd, (t0End, Just valuesAtEnd))
             _ -> (Nothing, (t0End, Nothing))
         where
@@ -129,7 +129,7 @@ solveUncertainValueUncertainTime ::
     ->
     ODEIVP f 
     ->
-    Maybe [[f]] {-^ sequence of enclosures with domain @T x D@ produced by the Picard operator -}
+    Maybe [[(f,f)]] {-^ sequence of outer and inner enclosures with domain @T x D@ produced by the Picard operator -}
 solveUncertainValueUncertainTime
         sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
             delta
@@ -165,11 +165,18 @@ solveUncertainValueUncertainTime
 
     -- perform eliminating substitution: t0 |-> min (T0 , t):
     enclosuresWithoutT0 =
-        map (map (composeVarOutEff effCompose t0Var t0DomainFnBelowT)) $
-        enclosuresShifted
+        map (map (removeT0)) enclosuresShifted
+        where
+        removeT0 (enclOut, enclIn) =
+            (composeVarOutEff effCompose t0Var t0DomainFnBelowT enclOut,
+             composeVarInEff effCompose t0Var t0DomainFnBelowT enclIn)
     -- perform non-eliminating substitution: t |-> t - t0 + initialTime:
     enclosuresShifted =
-        map (map (composeVarOutEff effCompose tVar tShifted)) enclosuresWithTT0
+        map (map shiftTByT0) enclosuresWithTT0
+        where
+        shiftTByT0 enclosure = 
+            (composeVarOutEff effCompose tVar tShifted enclosure,
+             composeVarInEff effCompose tVar tShifted enclosure) 
     (Just enclosuresWithTT0) = solveWithExactTime
     -- compute the enclosures parameterised by t and t0:
     solveWithExactTime =

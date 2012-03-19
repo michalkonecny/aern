@@ -42,8 +42,9 @@ type CF = CF.DI
 type Poly = IntPoly String CF
 
 main :: IO ()
-main = mainCmdLine True ivpExpDecay_ev_et
---main = mainCSV ivpExpDecay_ev_et
+--main = mainCmdLine True ivpExpDecay_uv_et
+--main = mainCmdLine True ivpSpringMass_uv_et
+main = mainCSV ivpExpDecay_ev_et
 --main = mainCSV ivpExpDecay_uv_et
 --main = mainCSV ivpSpringMass_ev_et
 --main = mainCSV ivpSpringMass_uv_et
@@ -262,12 +263,12 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
     putStrLn $ "minimum step size = 2^{" ++ show minStepSizeExp ++ "}"
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
     putStrLn "----------  result: -----------------------------"
-    putStrLn $ showSegInfo (tEnd, endValues)
+    putStrLn $ showSegInfo ">>> " (tEnd, endValues)
     case shouldShowSteps of
         True ->
             do
             putStrLn "----------  steps: ------------------------------"
-            putStrLn $ showSplittingInfo showSegInfo showSplitReason splittingInfo
+            putStrLn $ showSplittingInfo showSegInfo showSplitReason "" splittingInfo
         False -> return ()
     putStrLn "-------------------------------------------------"
     return (endValues, splittingInfo)
@@ -299,8 +300,8 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
         getSizeLimits $
             makeSampleWithVarsDoms maxdeg maxsize [] []
             
-    showSegInfo (t, maybeValues) =
-        showVec componentNames ++ "(" ++ show t ++ ") ∊ " ++ valuesS 
+    showSegInfo indent (t, maybeValues) =
+        indent ++ showVec componentNames ++ "(" ++ show t ++ ") ∊ " ++ valuesS 
         where
         showVec [e] = e
         showVec list = "(" ++ (intercalate "," list) ++ ")"
@@ -316,11 +317,11 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
             err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
             wOut = CF.width valueOut     
             wIn = CF.width valueIn     
-    showSplitReason (segInfo, (Just improvement)) =
-        showSegInfo segInfo ++ 
+    showSplitReason indent (segInfo, (Just improvement)) =
+        showSegInfo indent segInfo ++ 
         "; but splitting improves by " ++ show improvement ++ ":"
-    showSplitReason (segInfo, Nothing) =
-        showSegInfo segInfo ++ 
+    showSplitReason indent (segInfo, Nothing) =
+        showSegInfo indent segInfo ++ 
         " - thus splitting"
 
 

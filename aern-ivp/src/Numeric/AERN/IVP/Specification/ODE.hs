@@ -112,6 +112,63 @@ makeFnVecFromInitialValues componentNames initialValues sizeLimits tVar timeDoma
     vars = tVar : componentNames
     dombox =
         fromList $ (tVar, timeDomain) : (zip componentNames initialValues)
+
+evalAtEndTimeOutInVec ::
+    (Show (Domain f), Show f,
+     CanEvaluate f,
+     RefOrd.IntervalLike f,
+     RefOrd.IntervalLike (Domain f),
+     HasAntiConsistency (Domain f))
+    =>
+    (Var f) -> 
+    (Domain f) -> 
+    [(f,f)] 
+    -> 
+    ([Domain f], [Domain f])
+evalAtEndTimeOutInVec tVar tEnd fnVec =
+    unzip $ map (evalAtEndTimeOutInFn tVar tEnd) fnVec
+    
+evalAtEndTimeOutInFn ::
+    (Show (Domain f), Show f,
+     CanEvaluate f,
+     RefOrd.IntervalLike f,
+     RefOrd.IntervalLike (Domain f),
+     HasAntiConsistency (Domain f))
+    =>
+    (Var f) -> 
+    (Domain f) -> 
+    (f, f)
+    -> 
+    (Domain f, Domain f)
+evalAtEndTimeOutInFn tVar tEnd (fnOut, fnIn) =
+--    unsafePrint
+--    (
+--        "evalAtEndTimeFn:"
+--        ++ "\n fnOut = " ++ show fnOut
+--        ++ "\n fnIn = " ++ show fnIn
+--        ++ "\n valueOut = " ++ show valueOut
+--        ++ "\n valueIn = " ++ show valueIn
+--        ++ "\n valueL = " ++ show valueL
+--        ++ "\n valueR = " ++ show valueR
+--    ) $
+    (valueOut, valueIn)
+    where
+    valueOut =
+        evalAtPointOutEff (evaluationDefaultEffort fnOut) endTimeArea fnOut
+    valueIn =
+        RefOrd.fromEndpointsOutWithDefaultEffort (valueRL, valueLR)
+    (_, valueLR) =
+        RefOrd.getEndpointsOutWithDefaultEffort valueL
+    (valueRL, _) =
+        RefOrd.getEndpointsOutWithDefaultEffort valueR
+    valueL =
+        evalAtPointInEff (evaluationDefaultEffort fnIn) endTimeArea fnL
+    valueR =
+        evalAtPointInEff (evaluationDefaultEffort fnIn) endTimeArea fnR
+    (fnL, fnR) = RefOrd.getEndpointsOutWithDefaultEffort fnIn
+--    endTimeArea :: DomainBox f
+    endTimeArea = insertVar tVar tEnd $ getDomainBox fnOut
+    
         
 evalAtEndTimeVec ::
     (Show (Domain f), Show f,
@@ -141,30 +198,5 @@ evalAtEndTimeFn ::
     -> 
     (Domain f, Domain f)
 evalAtEndTimeFn tVar tEnd fn =
---    unsafePrint
---    (
---        "evalAtEndTimeFn:"
---        ++ "\n fn = " ++ show fn
---        ++ "\n valueOut = " ++ show valueOut
---        ++ "\n valueL = " ++ show valueL
---        ++ "\n valueR = " ++ show valueR
---        ++ "\n valueIn = " ++ show valueIn
---    ) $
-    (valueOut, valueIn)
-    where
-    valueOut =
-        evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fn
-    valueIn =
-        RefOrd.fromEndpointsOutWithDefaultEffort (valueRL, valueLR)
-    (_, valueLR) =
-        RefOrd.getEndpointsOutWithDefaultEffort valueL
-    (valueRL, _) =
-        RefOrd.getEndpointsOutWithDefaultEffort valueR
-    valueL =
-        evalAtPointInEff (evaluationDefaultEffort fn) endTimeArea fnL
-    valueR =
-        evalAtPointInEff (evaluationDefaultEffort fn) endTimeArea fnR
-    (fnL, fnR) = RefOrd.getEndpointsOutWithDefaultEffort fn
---    endTimeArea :: DomainBox f
-    endTimeArea = insertVar tVar tEnd $ getDomainBox fn
-    
+    evalAtEndTimeOutInFn tVar tEnd (fn,fn)
+
