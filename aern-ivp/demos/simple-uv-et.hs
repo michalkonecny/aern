@@ -42,8 +42,8 @@ type CF = CF.DI
 type Poly = IntPoly String CF
 
 main :: IO ()
---main = mainCmdLine False ivpExpDecay_ev_et
-main = mainCSV ivpExpDecay_ev_et
+main = mainCmdLine True ivpExpDecay_ev_et
+--main = mainCSV ivpExpDecay_ev_et
 --main = mainCSV ivpExpDecay_uv_et
 --main = mainCSV ivpSpringMass_ev_et
 --main = mainCSV ivpSpringMass_uv_et
@@ -309,7 +309,9 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
                 Just (valuesOut, valuesIn) -> showVec $ map showValue $ zip valuesOut valuesIn
                 _ -> "<no result computed>"
         showValue (valueOut, valueIn) =
-            show valueOut ++ "(err<=" ++ show err ++ ")"
+            show valueOut ++ "(err<=" ++ show err ++ ")" 
+--            ++ "[ wOut = " ++ show wOut ++ "; wIn = " ++ show wIn ++ "]" 
+            ++ "; valueIn = " ++ show valueIn
             where
             err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
             wOut = CF.width valueOut     

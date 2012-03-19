@@ -54,7 +54,7 @@ solveUncertainValueUncertainTimeSplit
     solverSplittingT0 odeivpG
     where
     componentNames = odeivp_componentNames odeivpG
-    tEnd = odeivp_tEnd odeivpG
+    tEndG = odeivp_tEnd odeivpG
     tVar = odeivp_tVar odeivpG
     
     solverSplittingT0 odeivp =
@@ -72,10 +72,11 @@ solveUncertainValueUncertainTimeSplit
     solverVT odeivp =
         case maybeIterations of
             Just iterations -> 
-                let valuesAtEnd = evalAtEndTimeVec tVar tEnd $ iterations !! m in
-                (Just valuesAtEnd, (tEnd, Just valuesAtEnd))
-            _ -> (Nothing, (tEnd, Nothing))
+                let valuesAtEnd = evalAtEndTimeVec tVar t0End $ iterations !! m in
+                (Just valuesAtEnd, (t0End, Just valuesAtEnd))
+            _ -> (Nothing, (t0End, Nothing))
         where
+        t0End = odeivp_t0End odeivp
         maybeIterations =
             solveUncertainValueUncertainTime
                 sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom

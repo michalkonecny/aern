@@ -134,22 +134,14 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
     putStrLn "----------  result: -----------------------------"
     putStrLn $ showSegInfo1 (tEnd, endValues)
---    case shouldShowSteps of
---        True ->
---            do
---            putStrLn "----------  steps: ------------------------------"
---            putStrLn $ showSplittingInfo showSegInfo3 showSplitReason splittingInfo
---        False -> return ()
+    case shouldShowSteps of
+        True ->
+            do
+            putStrLn "----------  steps: ------------------------------"
+            putStrLn $ showSplittingInfo showSegInfo3 showSplitReason3 splittingInfo
+        False -> return ()
     putStrLn "-------------------------------------------------"
     return (endValues, splittingInfo)
---    putEnclosureEndpoints "t" tEnd $
---        take 20 $
---    -- solver call:
---            enclosuresOfIVPWithUncertainTime
---                sizeLimits
---                effCf delta m stepSize splitImprovementThreshold
---                ivp
---                "t0"
     where
     (endValues, splittingInfo) =
         solveIVPWithUncertainTime
@@ -193,14 +185,24 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
             err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
             wOut = CF.width valueOut     
             wIn = CF.width valueIn     
---    showSegInfo3 (segInfoT0,  splittingInfo) =
---        
---    showSplitReason ((segInfo, _), (Just improvement)) =
---        showSegInfo1 segInfo ++ 
---        "; but splitting improves by " ++ show improvement ++ ":"
---    showSplitReason ((segInfo, _), Nothing) =
---        showSegInfo1 segInfo ++ 
---        " - thus splitting"
+    showSegInfo2 splittingInfo2 =
+        showSplittingInfo showSegInfo1 showSplitReason2 splittingInfo2
+    showSegInfo3 (segInfoT0,  Just segInfo2) =
+        "at T0: " ++ showSegInfo1 segInfoT0 
+        ++ "\n" 
+        ++ showSegInfo2 segInfo2
+    showSplitReason2 (segInfo, (Just improvement)) =
+        showSegInfo1 segInfo ++ 
+        "; but splitting improves by " ++ show improvement ++ ":"
+    showSplitReason2 (segInfo, Nothing) =
+        showSegInfo1 segInfo ++ 
+        " - thus splitting"
+    showSplitReason3 ((segInfo, _), (Just improvement)) =
+        showSegInfo1 segInfo ++ 
+        "; but splitting improves by " ++ show improvement ++ ":"
+    showSplitReason3 ((segInfo, _), Nothing) =
+        showSegInfo1 segInfo ++ 
+        " - thus splitting"
 
 solveIVPWithUncertainTime ::
     (solvingInfo1 ~ (CF, Maybe ([CF],[CF])),
