@@ -108,7 +108,7 @@ mainCmdLine ivp =
 --    solveVT ivpExpDecayVT
 
 solveVTPrintSteps :: 
-    (solvingInfo1 ~ (CF, Maybe [CF]),
+    (solvingInfo1 ~ (CF, Maybe ([CF],[CF])),
      solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe CF),
      solvingInfo3 ~ (solvingInfo1, Maybe solvingInfo2)
     )
@@ -119,7 +119,7 @@ solveVTPrintSteps ::
     -> 
     (Int, Int) 
     -> 
-    IO (Maybe [CF], SplittingInfo solvingInfo3 (solvingInfo3, Maybe CF))
+    IO (Maybe ([CF],[CF]), SplittingInfo solvingInfo3 (solvingInfo3, Maybe CF))
 solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
     do
     putStrLn $ "solving: " ++ description 
@@ -184,12 +184,14 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
         showVec list = "(" ++ (intercalate "," list) ++ ")"
         valuesS =
             case maybeValues of
-                Just values -> showVec $ map showValue values
+                Just (valuesOut, valuesIn) -> showVec $ map showValue $ zip valuesOut valuesIn
                 _ -> "<no result computed>"
-        showValue value =
-            show value ++ "(w=" ++ show w ++ ")"
+        showValue (valueOut, valueIn) =
+            show valueOut ++ "(err<=" ++ show err ++ ")"
             where
-            w = CF.width value     
+            err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
+            wOut = CF.width valueOut     
+            wIn = CF.width valueIn     
 --    showSegInfo3 (segInfoT0,  splittingInfo) =
 --        
 --    showSplitReason ((segInfo, _), (Just improvement)) =
@@ -200,7 +202,7 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
 --        " - thus splitting"
 
 solveIVPWithUncertainTime ::
-    (solvingInfo1 ~ (CF, Maybe [CF]),
+    (solvingInfo1 ~ (CF, Maybe ([CF],[CF])),
      solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe CF),
      solvingInfo3 ~ (solvingInfo1, Maybe solvingInfo2)
     )
@@ -214,7 +216,7 @@ solveIVPWithUncertainTime ::
     Var Poly ->
     ODEIVP Poly ->
     (
-     Maybe [CF]
+     Maybe ([CF], [CF])
     ,
      SplittingInfo solvingInfo3 (solvingInfo3, Maybe CF)
     )

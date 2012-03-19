@@ -42,11 +42,11 @@ type CF = CF.DI
 type Poly = IntPoly String CF
 
 main :: IO ()
---main = mainCmdLine ivpExpDecayvt
+main = mainCmdLine ivpExpDecayvt
 --main = mainCSV ivpExpDecayvt
 --main = mainCSV ivpExpDecayVt
 --main = mainCSV ivpSpringMassvt
-main = mainCSV ivpSpringMassVt
+--main = mainCSV ivpSpringMassVt
 
 ivpExpDecayvt :: ODEIVP Poly
 ivpExpDecayvt =
@@ -208,12 +208,12 @@ mainCSV ivp =
         [
             "ivp: " ++ description
         ,
-            "polynomial degree, min step size (2^(-n)), error at t=1, time (microseconds)"
+            "polynomial degree, min step size (2^(-n)), error upper bound at t=1, time (microseconds)"
         ]
         ++
         (map makeCSVLine $ zip results paramCombinations) 
     description = odeivp_description ivp
-    vecExact = odeivp_exactValuesAtTEnd ivp
+--    vecExact = odeivp_exactValuesAtTEnd ivp
     makeCSVLine (((maybeVec, _), execTimeMS), (maxDegree, depth)) =
         show maxDegree ++ "," ++ show depth ++ ","
         ++ enclosureErrorS ++ "," ++ show execTimeMS
@@ -221,11 +221,11 @@ mainCSV ivp =
         enclosureErrorS =
             case maybeVec of
                 Nothing -> show "no solution"
-                Just vec ->
+                Just (vecOut, vecIn) ->
                     removeBracks $
                     show $ 
                         snd $ RefOrd.getEndpointsOutWithDefaultEffort $ 
-                            foldl1 max $ zipWith (CF.<->) (map CF.width vec) (map CF.width vecExact)
+                            foldl1 max $ zipWith (CF.<->) (map CF.width vecOut) (map CF.width vecIn)
         removeBracks ('<': rest1 ) =
             reverse $ removeR $ reverse rest1
             where
@@ -233,7 +233,7 @@ mainCSV ivp =
 
    
 solveVtPrintSteps ::
-    (solvingInfo ~ (CF, Maybe [CF]))
+    (solvingInfo ~ (CF, Maybe ([CF],[CF])))
     => 
     Bool
     ->
@@ -241,7 +241,7 @@ solveVtPrintSteps ::
     -> 
     (Int, Int) 
     -> 
-    IO (Maybe [CF], SplittingInfo solvingInfo (solvingInfo, Maybe CF))
+    IO (Maybe ([CF],[CF]), SplittingInfo solvingInfo (solvingInfo, Maybe CF))
 solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
     do
     putStrLn $ "solving: " ++ description
@@ -297,12 +297,14 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
         showVec list = "(" ++ (intercalate "," list) ++ ")"
         valuesS =
             case maybeValues of
-                Just values -> showVec $ map showValue values
+                Just (valuesOut, valuesIn) -> showVec $ map showValue $ zip valuesOut valuesIn
                 _ -> "<no result computed>"
-        showValue value =
-            show value ++ "(w=" ++ show w ++ ")"
+        showValue (valueOut, valueIn) =
+            show valueOut ++ "(err<=" ++ show err ++ ")"
             where
-            w = CF.width value     
+            err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
+            wOut = CF.width valueOut     
+            wIn = CF.width valueIn     
     showSplitReason (segInfo, (Just improvement)) =
         showSegInfo segInfo ++ 
         "; but splitting improves by " ++ show improvement ++ ":"
@@ -312,7 +314,7 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
 
 
 solveIVPWithUncertainValue ::
-    (solvingInfo ~ (CF, Maybe [CF]))
+    (solvingInfo ~ (CF, Maybe ([CF],[CF])))
     =>
     SizeLimits Poly 
     -> ArithInOut.RoundedRealEffortIndicator CF
@@ -323,7 +325,7 @@ solveIVPWithUncertainValue ::
     -> ODEIVP Poly
     -> 
     (
-     Maybe [CF]
+     Maybe ([CF],[CF])
     ,
      SplittingInfo solvingInfo (solvingInfo, Maybe CF)
     )
@@ -332,7 +334,6 @@ solveIVPWithUncertainValue
             delta m minStepSize splitImprovementThreshold
                 odeivp
     =
---    undefined
     solveUncertainValueExactTimeSplit
         sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effCf
             delta m minStepSize splitImprovementThreshold

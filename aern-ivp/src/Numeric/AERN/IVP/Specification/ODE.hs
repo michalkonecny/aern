@@ -32,8 +32,10 @@ import Numeric.AERN.RmToRn.Evaluation
 --import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
 --
---import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+
+import Numeric.AERN.Basics.Consistency
 
 --import Numeric.AERN.Misc.Debug
 
@@ -101,27 +103,44 @@ makeFnVecFromInitialValues componentNames initialValues sizeLimits tVar timeDoma
         fromList $ (tVar, timeDomain) : (zip componentNames initialValues)
         
 evalAtEndTimeVec ::
-    (CanEvaluate f)
+    (CanEvaluate f,
+     RefOrd.IntervalLike f,
+     RefOrd.IntervalLike (Domain f),
+     HasAntiConsistency (Domain f))
     =>
     (Var f) -> 
     (Domain f) -> 
     [f] 
     -> 
-    [Domain f]
+    ([Domain f], [Domain f])
 evalAtEndTimeVec tVar tEnd fnVec =
-    map (evalAtEndTimeFn tVar tEnd) fnVec
+    unzip $ map (evalAtEndTimeFn tVar tEnd) fnVec
     
 evalAtEndTimeFn ::
-    (CanEvaluate f)
+    (CanEvaluate f,
+     RefOrd.IntervalLike f,
+     RefOrd.IntervalLike (Domain f),
+     HasAntiConsistency (Domain f))
     =>
     (Var f) -> 
     (Domain f) -> 
-    f 
+    f
     -> 
-    Domain f
+    (Domain f, Domain f)
 evalAtEndTimeFn tVar tEnd fn =
-    evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fn
+    (valueOut, valueIn)
     where
+    valueOut =
+        evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fn
+    valueIn =
+        RefOrd.fromEndpointsOutWithDefaultEffort 
+            (flipConsistency valueL, flipConsistency valueR)
+    valueL =
+        evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fnFlippedL
+    valueR =
+        evalAtPointOutEff (evaluationDefaultEffort fn) endTimeArea fnFlippedR
+    (fnFlippedR, fnFlippedL) = (fnL, fnR)
+    (fnL, fnR) = RefOrd.getEndpointsOutWithDefaultEffort fn
 --    endTimeArea :: DomainBox f
     endTimeArea = insertVar tVar tEnd $ getDomainBox fn
     

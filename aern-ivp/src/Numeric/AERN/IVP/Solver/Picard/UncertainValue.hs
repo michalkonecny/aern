@@ -42,6 +42,8 @@ import Numeric.AERN.NumericOrder.OpsDefaultEffort
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
+import Numeric.AERN.Basics.Consistency
+
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
         
@@ -51,14 +53,16 @@ solveUncertainValueExactTimeSplit ::
      CanCompose f,
      HasProjections f,
      HasConstFns f,
+     RefOrd.IntervalLike f,
      RefOrd.PartialComparison f,
      RoundedIntegration f,
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedReal (Domain f), 
-     RefOrd.IntervalLike(Domain f),
+     RefOrd.IntervalLike (Domain f),
+     HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
-     solvingInfo ~ (Domain f, Maybe [Domain f]), 
+     solvingInfo ~ (Domain f, Maybe ([Domain f], [Domain f])), 
      Show f, Show (Domain f))
     =>
     SizeLimits f {-^ size limits for all function -} ->
@@ -75,11 +79,10 @@ solveUncertainValueExactTimeSplit ::
     ODEIVP f
     ->
     (
-        Maybe [Domain f] 
+        Maybe ([Domain f], [Domain f])
     ,
         SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
---        [(Domain f, [Domain f])]
-    ) {-^ value approximations at time tEnd and intermediate values at various time points -}
+    )
 solveUncertainValueExactTimeSplit
         sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
             delta m minStepSize splitImprovementThreshold
