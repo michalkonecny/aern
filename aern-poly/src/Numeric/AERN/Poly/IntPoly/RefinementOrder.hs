@@ -121,4 +121,27 @@ instance
         where 
         z = zero $ ipolycfg_sample_cf cfg 
 
-        
+
+instance 
+    (RefOrd.IntervalLike cf, HasZero cf, 
+     NumOrd.PartialComparison (IntPoly var cf)
+    )
+    => 
+    (HasConsistency (IntPoly var cf))
+    where
+    type ConsistencyEffortIndicator (IntPoly var cf) =
+        (RefOrd.GetEndpointsEffortIndicator cf,
+         RefOrd.FromEndpointsEffortIndicator cf,
+         NumOrd.PartialCompareEffortIndicator (IntPoly var cf))
+    -- TODO
+    
+instance 
+    (HasAntiConsistency cf,
+     RefOrd.IntervalLike cf, HasZero cf, 
+     NumOrd.PartialComparison (IntPoly var cf)
+    )
+    => 
+    (HasAntiConsistency (IntPoly var cf))
+    where
+    flipConsistency = flipConsistencyPoly
+    

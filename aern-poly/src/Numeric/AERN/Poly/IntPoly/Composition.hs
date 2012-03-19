@@ -73,12 +73,10 @@ instance
         (Int1To1000, ArithInOut.RoundedRealEffortIndicator cf)
     evalOpsDefaultEffort _ sampleP = 
         NumOrd.pCompareDefaultEffort sampleP
-    evalOpsOut eff _ sampleP =
+    evalOpsEff eff _ sampleP =
         polyPolyEvalOpsOut eff sampleP sampleCf
         where
         sampleCf = getSampleDomValue sampleP
-    evalOpsIn =
-        error "aern-poly: inner-roudned composition not supported for IntPoly"
 
 polyPolyEvalOpsOut ::
     (Ord var, Show var, Show cf,
@@ -131,6 +129,8 @@ instance
     composeVarOutEff eff substVar substPoly = 
 --        performEndpointWiseWithDefaultEffort $
             polyComposeVarOutEff eff substVar substPoly 
+    composeVarInEff eff substVar substPoly = 
+        polyComposeVarInEff eff substVar substPoly
 
 -- TODO: move this function to aern-order
 performEndpointWiseWithDefaultEffort ::
@@ -162,6 +162,26 @@ polyComposeVarOutEff eff substVar substPoly p =
 --            ++ "\n result = "
 --        ) $
         evalOtherType ops varSubstBox p
+        where
+        varSubstBox =
+            fromList $ map makeVarSubst vars
+        makeVarSubst var
+            | var == substVar = (var, substPoly)
+            | otherwise = (var,  proj)
+            where
+            proj =
+                newProjectionFromSample substPoly var
+    ops =
+        polyPolyEvalOpsOut (Int1To1000 0, eff) sampleP sampleCf
+    sampleP = substPoly
+    sampleCf = getSampleDomValue substPoly
+
+polyComposeVarInEff eff substVar substPoly p =
+    result
+    where
+    vars = getVars $ getDomainBox p -- ipolycfg_vars cfg
+    result =
+        evalOtherTypeInner ops varSubstBox p
         where
         varSubstBox =
             fromList $ map makeVarSubst vars

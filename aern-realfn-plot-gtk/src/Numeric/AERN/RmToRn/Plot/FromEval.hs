@@ -155,7 +155,7 @@ cairoDrawFnFromEval
             mkPt d =
                 mapVarBox (const d) dombox
             evalPt pt =
-                evalOtherType (evalOpsOut effEval sampleF sampleDF) pt fn
+                evalOtherType (evalOpsEff effEval sampleF sampleDF) pt fn
             partition =
                 [domLO] ++ (map ithPt [1..(segCnt -1)]) ++ [domHI]
                 where

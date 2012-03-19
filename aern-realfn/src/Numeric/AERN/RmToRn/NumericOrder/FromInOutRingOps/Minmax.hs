@@ -335,7 +335,7 @@ maxZeroDnUp
         doSubst $ maxCDn
     doSubst p =  
         translateFromUnit $
-        evalOtherType (evalOpsOut effEvalOpsT sampleF sampleT) varA p
+        evalOtherType (evalOpsEff effEvalOpsT sampleF sampleT) varA p
         where
         varA = fromAscList [(var, translateToUnit a)]
     (var:_) = getVars $ getDomainBox $ x
@@ -355,7 +355,7 @@ maxZeroDnUp
                   <*>| (2 :: Int)
 --                  </>| (2 :: Int)
         maxCUpAtC =
-            evalOtherType (evalOpsOut effEvalOpsDF sampleF sampleDF) varC maxCUp
+            evalOtherType (evalOpsEff effEvalOpsDF sampleF sampleDF) varC maxCUp
         varC = fromAscList [(var, c)]
     c = 
         let (</>) = ArithInOut.divOutEff effDivDF in
@@ -424,7 +424,7 @@ hillbaseApproxUp effComp effRingF effIntFldF effRealDF effEvalOps x c n =
         valueAtC <-> c
         where
         valueAtC =
-            evalOtherType (evalOpsOut effEvalOps sampleF sampleDF) varC result
+            evalOtherType (evalOpsEff effEvalOps sampleF sampleDF) varC result
         varC = fromAscList [(var, c)]
     mkBT p =
         (newConstFnFromSample x fOfpOverN)
@@ -488,7 +488,7 @@ hillbaseApproxDn effGetE effComp effRingF effIntFldF effRealDF effEvalOps x c dI
         where
         (_, fnAtCRE) =
             RefOrd.getEndpointsOutEff effGetE fnAtC
-        fnAtC = evalOtherType (evalOpsOut effEvalOps sampleF sampleDF) varC fn
+        fnAtC = evalOtherType (evalOpsEff effEvalOps sampleF sampleDF) varC fn
             where
             varC = fromAscList [(var, c)]
         fn = hillDnD d
@@ -505,7 +505,7 @@ hillbaseApproxDn effGetE effComp effRingF effIntFldF effRealDF effEvalOps x c dI
         where
         (fnAtCLE,_) =
             RefOrd.getEndpointsOutEff effGetE fnAtC
-        fnAtC = evalOtherType (evalOpsOut effEvalOps sampleF sampleDF) varC fn
+        fnAtC = evalOtherType (evalOpsEff effEvalOps sampleF sampleDF) varC fn
             where
             varC = fromAscList [(var, c)]
         fn = hillDnD d

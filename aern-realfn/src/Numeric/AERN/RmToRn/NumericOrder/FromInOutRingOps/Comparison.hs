@@ -67,7 +67,7 @@ pCompareFunFromRingOps (n, effAdd, effCompDom, effEval) f1 f2 =
     sampleF = f1
     dombox = getDomainBox sampleF 
     sampleDom = getSampleDomValue sampleF
-    evalOps = evalOpsOut effEval sampleF sampleDom
+    evalOps = evalOpsEff effEval sampleF sampleDom
     
     infoRanges = compareOver dombox
     compareOver db =

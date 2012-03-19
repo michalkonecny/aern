@@ -79,6 +79,30 @@ instance
         addV = polyEvalAdd ops
         cfV = polyEvalCoeff ops
 
+instance 
+    (Ord var, Show var, Show cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
+     HasAntiConsistency cf)
+    =>
+    CanEvaluateOtherTypeInner (IntPoly var cf)
+    where
+    evalOtherTypeInner ops valsMap p@(IntPoly cfg _) =
+        case polyEvalMonoOps ops of
+            Nothing -> evalDirect valsLZ p
+            _ -> evalPolyMono evalDirect ops valsLZ p 
+        where
+        evalDirect vals p = 
+            flipConsistency $
+                evalPolyDirect ops vals $ 
+                    flipConsistencyPoly p
+        valsLZ = valsMapToValuesLZ subtrCf cfg valsMap
+        subtrCf val domLE =
+             addV val (cfV $ neg domLE)
+        addV = polyEvalAdd ops
+        cfV = polyEvalCoeff ops
+    
+
 valsMapToValuesLZ :: 
     (Ord var) 
      =>
@@ -152,9 +176,7 @@ instance
     where
     type EvalOpsEffortIndicator (IntPoly var cf) cf = ArithInOut.RoundedRealEffortIndicator cf
     evalOpsDefaultEffort _ sampleCf = ArithInOut.roundedRealDefaultEffort sampleCf 
-    evalOpsIn _eff _sampleP _sampleCf =
-        error "aern-poly: IntPoly operators for evaluation at a subdomain: inner rounding not available"
-    evalOpsOut eff _sampleP sampleCf =
+    evalOpsEff eff _sampleP sampleCf =
         coeffPolyEvalOpsOut eff sampleCf
 
 data PolyEvalOps var cf val =
@@ -224,14 +246,14 @@ instance
     convertUpEff (effCf, effGetEndpts) p =
         Just $ snd $ RefOrd.getEndpointsOutEff effGetEndpts range
         where
-        range = evalOtherType (evalOpsOut effCf sampleP sampleCf) varDoms p 
+        range = evalOtherType (evalOpsEff effCf sampleP sampleCf) varDoms p 
         sampleP = p
         sampleCf = getSampleDomValue sampleP
         varDoms = getDomainBox p
     convertDnEff (effCf, effGetEndpts) p =
         Just $ fst $ RefOrd.getEndpointsOutEff effGetEndpts range
         where
-        range = evalOtherType (evalOpsOut effCf sampleP sampleCf) varDoms p 
+        range = evalOtherType (evalOpsEff effCf sampleP sampleCf) varDoms p 
         sampleP = p
         
         sampleCf = getSampleDomValue sampleP

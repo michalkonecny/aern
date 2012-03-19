@@ -22,7 +22,7 @@ import Numeric.AERN.RmToRn.Domain
 --import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.Effort
---import Numeric.AERN.Basics.Arbitrary
+import Numeric.AERN.Basics.Consistency
 
 --import Numeric.AERN.Misc.Debug
 
@@ -30,6 +30,13 @@ class (HasDomainBox f) => CanEvaluateOtherType f
     where
     type EvalOps f :: * -> *
     evalOtherType :: (Show t) => (EvalOps f t) -> (VarBox f t) -> f -> t
+
+class (CanEvaluateOtherType f) => CanEvaluateOtherTypeInner f
+    where
+    evalOtherTypeInner :: 
+        (Show t, HasAntiConsistency t) 
+        => 
+        (EvalOps f t) -> (VarBox f t) -> f -> t
 
 class 
     (CanEvaluateOtherType f,
@@ -39,8 +46,7 @@ class
     where
     type EvalOpsEffortIndicator f t
     evalOpsDefaultEffort :: f -> t -> EvalOpsEffortIndicator f t
-    evalOpsOut :: EvalOpsEffortIndicator f t -> f -> t -> EvalOps f t 
-    evalOpsIn :: EvalOpsEffortIndicator f t -> f -> t -> EvalOps f t 
+    evalOpsEff :: EvalOpsEffortIndicator f t -> f -> t -> EvalOps f t 
 
 {-
     The following are special cases of the above, which
