@@ -47,6 +47,8 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Misc.Debug
         
 solveBySplittingAtT0End ::
+    (HasAntiConsistency (Domain f), Show (Domain f))
+    =>
     (ODEIVP f -> (Maybe ([Domain f], [Domain f]), solvingInfoL))
     -> 
     ([Domain f] -> ODEInitialValues f)
@@ -55,7 +57,7 @@ solveBySplittingAtT0End ::
     -> 
     ODEIVP f
     -> 
-    (Maybe ([Domain f], [Domain f]), (solvingInfoL, Maybe solvingInfoR))
+    (Maybe ([Domain f], [Domain f]), (solvingInfoL, Maybe (Maybe ([Domain f], [Domain f]), solvingInfoR)))
 solveBySplittingAtT0End
         solverVT makeMakeInitValFnVec solverVt 
             odeivpG 
@@ -66,15 +68,33 @@ solveBySplittingAtT0End
         case maybeResultL of
             Just (valuesLOut, valuesLIn) ->
                 case (maybeResultROut, maybeResultRIn) of
-                    (Just (resultOut, _), Just (_, resultIn)) ->
-                        (Just (resultOut, resultIn), Just infoROut)
-                    (Nothing, _) -> (Nothing, Just infoROut)
-                    (_, Nothing) -> (Nothing, Just infoRIn)
+                    (Just (resultOut, _), Just (resultInOut, resultInIn)) ->
+                        (Just result, Just (Just result, infoROut))
+                        where
+                        result = (resultOut, makeResultsIn resultInOut resultInIn)
+                    (Nothing, _) -> (Nothing, Just (Nothing, infoROut))
+                    (_, Nothing) -> (Nothing, Just (Nothing, infoRIn))
                 where
                 (maybeResultROut, infoROut) = solverVt odeivpROut
                 (maybeResultRIn, infoRIn) = solverVt odeivpRIn
                 odeivpROut = odeivpR valuesLOut
-                odeivpRIn = odeivpR valuesLIn
+                odeivpRIn = odeivpR $ mapInconsistentOnes flipConsistency valuesLIn
+                makeResultsIn resultInOut resultInIn =
+                    map pick $ zip3 whichLValuesConsistent resultInOut resultInIn
+                    where
+                    pick (True, _, valueIn) = valueIn
+                    pick (False, valueOut, _) = flipConsistency valueOut
+                mapInconsistentOnes :: (a -> a) -> [a] -> [a]
+                mapInconsistentOnes f vec =
+                    map fOnConsistent $ zip whichLValuesConsistent vec
+                    where
+                    fOnConsistent (thisOneIsConsistent, value) 
+                        | thisOneIsConsistent = value
+                        | otherwise = f value
+                whichLValuesConsistent =
+                    map (/= Just False) $
+                        map (isConsistentEff $ consistencyDefaultEffort sampleDom) valuesLIn
+                (sampleDom : _) = valuesLIn
                 odeivpR valuesL =
                     odeivpG
                         {
@@ -133,10 +153,10 @@ solveBySplittingT
     (valuesAtTEnd, info)
     where
     (valuesAtTEnd, info) = 
-        case (splitSolve (repeat False) odeivpG, splitSolve (repeat True) odeivpG) of
+        case (splitSolve (replicate dimension False) odeivpG, splitSolve (replicate dimension True) odeivpG) of
             ((Just valuesOut, info2), (Just valuesIn, _)) -> (Just (valuesOut, valuesIn), info2)
             ((_, info2), _) -> (Nothing, info2)
-            
+    dimension = length $ odeivp_componentNames odeivpG
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDivDomInt = 
         ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
@@ -160,7 +180,7 @@ solveBySplittingT
 --        unsafePrint
 --        (
 --            "solveBySplittingT: splitSolve: "
---            ++ "shouldRoundInwards = " ++ show shouldRoundInwards
+--            ++ "shouldRoundInwardsVec = " ++ show shouldRoundInwardsVec
 --            ++ "tStart = " ++ show tStart
 --            ++ "tEnd = " ++ show tEnd
 --        ) $
@@ -436,19 +456,19 @@ data SplittingInfo segInfo splitReason
     | SegSplit splitReason (SplittingInfo segInfo splitReason) (SplittingInfo segInfo splitReason)
 
 showSplittingInfo :: 
-    (segInfo -> String) 
+    (String -> segInfo -> String) 
     -> 
-    (splitReason -> String) 
+    (String -> splitReason -> String) 
     -> 
-    SplittingInfo segInfo splitReason -> String
-showSplittingInfo showSegInfo showSplitReason splittingInfoG =
-    shLevel "" splittingInfoG
+    String -> SplittingInfo segInfo splitReason -> String
+showSplittingInfo showSegInfo showSplitReason indentG splittingInfoG =
+    shLevel indentG splittingInfoG
     where
     shLevel indent splittingInfo =
         case splittingInfo of
-            SegNoSplit segInfo -> indent ++ showSegInfo segInfo
+            SegNoSplit segInfo -> showSegInfo indent segInfo
             SegSplit reason infoL infoR ->
-                (indent ++ showSplitReason reason)
+                (showSplitReason indent reason)
                 ++ "\n" ++
                 (shLevel (indent ++ "| ") infoL)
                 ++ "\n" ++

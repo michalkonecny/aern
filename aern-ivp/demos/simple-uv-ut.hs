@@ -43,14 +43,14 @@ type CF = CF.DI
 type Poly = IntPoly String CF
 
 main :: IO ()
-main = mainCmdLine ivpExpDecayVT
+--main = mainCmdLine False ivpExpDecay_ev_ut
 --main = mainCSV ivpExpDecayvT
---main = mainCSV ivpExpDecayVT
+main = mainCSV ivpExpDecay_ev_ut
 --main = mainCSV ivpSpringMassvT
 --main = mainCSV ivpSpringMassVT
 
-ivpExpDecayVT :: ODEIVP Poly
-ivpExpDecayVT =
+ivpExpDecay_ev_ut :: ODEIVP Poly
+ivpExpDecay_ev_ut =
     ivp
     where
     ivp =
@@ -64,8 +64,11 @@ ivpExpDecayVT =
             odeivp_t0End = 0.125, 
             odeivp_tEnd = 1,
             odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_maybeExactValuesAtTEnd = Nothing
+            odeivp_maybeExactValuesAtTEnd = Just $
+                [(0.875 * expMOnePlusEps) CF.</\> (1.125 * expMOneMinusEps)]
         }
+    expMOnePlusEps = 1 CF.<*>| (exp (-1.125) :: Double)
+    expMOneMinusEps = 1 CF.<*>| (exp (-0.875) :: Double)
     description =
         "x' = -x; " 
         ++ show tStart ++ " < t_0 < " ++ show t0End
@@ -92,8 +95,8 @@ ivpExpDecayVT =
         maxdeg = ipolycfg_maxdeg sizeLimits
         maxsize = ipolycfg_maxsize sizeLimits
 
-mainCmdLine :: ODEIVP Poly -> IO ()
-mainCmdLine ivp =
+mainCmdLine :: Bool -> ODEIVP Poly -> IO ()
+mainCmdLine shouldShowSteps ivp =
     do
     args <- getArgs
     let [maxDegS, depthS] = args
@@ -102,16 +105,83 @@ mainCmdLine ivp =
     putStrLn "--------------------------------------------------"
     putStrLn "demo of solve-VT from (Konecny, Taha, Duracz 2012)"
     putStrLn "--------------------------------------------------"
-    _ <- solveVTPrintSteps True ivp (maxDeg, depth)
+    _ <- solveVTPrintSteps shouldShowSteps ivp (maxDeg, depth)
     return ()
---    putStrLn "-------------------------------------------------"
---    putStrLn "-------------------------------------------------"
---    solveVT ivpExpDecayVT
+
+mainCSV :: ODEIVP Poly -> IO ()
+mainCSV ivp =
+    do
+    args <- getArgs
+    let [outputFileName] = args
+    isClash <- doesFileExist outputFileName
+    case isClash of
+        True -> putStrLn $ "file " ++ outputFileName ++ " exists"
+        False ->
+            do
+            results <- mapM runSolverMeasureTimeMS paramCombinations 
+            writeFile outputFileName $ unlines $ csvLines results
+    where
+    paramCombinations = 
+        [(maxDegree, depth) | 
+            maxDegree <- [0..20], depth <- [0..10]]
+--            maxDegree <- [0..10], depth <- [0..5]]
+    runSolverMeasureTimeMS (maxDegree, depth) =
+        do
+        resultsAndTimes <- mapM solveAndMeasure ([1..10] :: [Int])
+        let ((result, _) : _)  = resultsAndTimes
+        let averageTime = average $ map snd resultsAndTimes
+        return (result, averageTime)
+        where
+        average list = (2 * (sum list) + n) `div` (2 * n)
+            where
+            n = fromIntegral $ length list
+        solveAndMeasure _ =
+            do
+            starttime <- getCPUTime
+            solverResult <- solveVTPrintSteps False ivp (maxDegree, depth)
+            endtime <- getCPUTime
+            return $ (solverResult, (endtime - starttime) `div` 1000000000)
+        
+    csvLines results =
+        [
+            "ivp: " ++ description
+        ,
+            "polynomial degree, min step size (2^(-n)), time (microseconds), error upper bound at t=1, error at t = 1"
+        ]
+        ++
+        (map makeCSVLine $ zip results paramCombinations) 
+    description = odeivp_description ivp
+    maybeVecExact = odeivp_maybeExactValuesAtTEnd ivp
+    makeCSVLine (((maybeVec, _), execTimeMS), (maxDegree, depth)) =
+        show maxDegree ++ "," 
+        ++ show depth ++ ","
+        ++ show execTimeMS ++ ","
+        ++ enclosureErrorBoundS ++ ","
+        ++ enclosureErrorS
+        where
+        (enclosureErrorBoundS, enclosureErrorS) =
+            case maybeVec of
+                Nothing -> (show "no solution", show "no solution")
+                Just (vecOut, vecIn) ->
+                    (computeMaxDiff vecOut vecIn, 
+                        case maybeVecExact of
+                            Just vecExact -> computeMaxDiff vecOut vecExact
+                            _ -> show "exact solution not known")
+                where
+                computeMaxDiff vecOut vecOther = 
+                    removeBracks $
+                    show $ 
+                        snd $ RefOrd.getEndpointsOutWithDefaultEffort $ 
+                            foldl1 max $ zipWith (CF.<->) (map CF.width vecOut) (map CF.width vecOther)
+        removeBracks ('<': rest1 ) =
+            reverse $ removeR $ reverse rest1
+            where
+            removeR ('>' : rest2 ) = rest2
 
 solveVTPrintSteps :: 
     (solvingInfo1 ~ (CF, Maybe ([CF],[CF])),
      solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe CF),
-     solvingInfo3 ~ (solvingInfo1, Maybe solvingInfo2)
+     solvingInfo3 ~ (solvingInfo1, Maybe (Maybe ([CF],[CF]), solvingInfo2))
     )
     =>
     Bool
@@ -129,16 +199,15 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
     putStrLn $ "maxsize = " ++ show maxsize
     putStrLn $ "delta = " ++ show delta
     putStrLn $ "m = " ++ show m
-    putStrLn $ "minimum stepSize = " ++ show minStepSize
     putStrLn $ "minimum step size = 2^{" ++ show minStepSizeExp ++ "}"
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
     putStrLn "----------  result: -----------------------------"
-    putStrLn $ showSegInfo1 (tEnd, endValues)
+    putStrLn $ showSegInfo1 ">>> " (tEnd, endValues)
     case shouldShowSteps of
         True ->
             do
             putStrLn "----------  steps: ------------------------------"
-            putStrLn $ showSplittingInfo showSegInfo3 showSplitReason3 splittingInfo
+            putStrLn $ showSplittingInfo showSegInfo3 showSplitReason3 "" splittingInfo
         False -> return ()
     putStrLn "-------------------------------------------------"
     return (endValues, splittingInfo)
@@ -170,8 +239,8 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
         getSizeLimits $
             makeSampleWithVarsDoms maxdeg maxsize [] []
             
-    showSegInfo1 (t, maybeValues) =
-        showVec componentNames ++ "(" ++ show t ++ ") ∊ " ++ valuesS 
+    showSegInfo1 indent (t, maybeValues) =
+        indent ++ showVec componentNames ++ "(" ++ show t ++ ") ∊ " ++ valuesS 
         where
         showVec [e] = e
         showVec list = "(" ++ (intercalate "," list) ++ ")"
@@ -185,29 +254,29 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
             err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
             wOut = CF.width valueOut     
             wIn = CF.width valueIn     
-    showSegInfo2 splittingInfo2 =
-        showSplittingInfo showSegInfo1 showSplitReason2 splittingInfo2
-    showSegInfo3 (segInfoT0,  Just segInfo2) =
-        "at T0: " ++ showSegInfo1 segInfoT0 
-        ++ "\n" 
-        ++ showSegInfo2 segInfo2
-    showSplitReason2 (segInfo, (Just improvement)) =
-        showSegInfo1 segInfo ++ 
+    showSegInfo2 indent splittingInfo2 =
+        showSplittingInfo showSegInfo1 showSplitReason2 indent splittingInfo2
+    showSegInfo3 indent (segInfoT0,  Just (maybeTEndResult, segInfo2)) =
+        indent ++ "at t0End: " ++ showSegInfo1 "" segInfoT0 ++ "\n" ++
+        indent ++ "at tEnd: " ++ showSegInfo1 "" (tEnd, maybeTEndResult) ++ "\n" ++
+        showSegInfo2 (indent ++ ": ") segInfo2
+    showSplitReason2 indent (segInfo, (Just improvement)) =
+        showSegInfo1 indent segInfo ++ 
         "; but splitting improves by " ++ show improvement ++ ":"
-    showSplitReason2 (segInfo, Nothing) =
-        showSegInfo1 segInfo ++ 
+    showSplitReason2 indent (segInfo, Nothing) =
+        showSegInfo1 indent segInfo ++ 
         " - thus splitting"
-    showSplitReason3 ((segInfo, _), (Just improvement)) =
-        showSegInfo1 segInfo ++ 
+    showSplitReason3 indent ((segInfo, _), (Just improvement)) =
+        showSegInfo1 indent segInfo ++ 
         "; but splitting improves by " ++ show improvement ++ ":"
-    showSplitReason3 ((segInfo, _), Nothing) =
-        showSegInfo1 segInfo ++ 
+    showSplitReason3 indent ((segInfo, _), Nothing) =
+        showSegInfo1 indent segInfo ++ 
         " - thus splitting"
 
 solveIVPWithUncertainTime ::
     (solvingInfo1 ~ (CF, Maybe ([CF],[CF])),
      solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe CF),
-     solvingInfo3 ~ (solvingInfo1, Maybe solvingInfo2)
+     solvingInfo3 ~ (solvingInfo1, Maybe (Maybe ([CF],[CF]), solvingInfo2))
     )
     =>
     SizeLimits Poly -> 
