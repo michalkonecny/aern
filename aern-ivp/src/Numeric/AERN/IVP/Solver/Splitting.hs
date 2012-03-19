@@ -28,9 +28,9 @@ where
 import Numeric.AERN.IVP.Specification.ODE
 
 import Numeric.AERN.RmToRn.Domain
---import Numeric.AERN.RmToRn.New
---import Numeric.AERN.RmToRn.Evaluation
---import Numeric.AERN.RmToRn.Integration
+import Numeric.AERN.RmToRn.New
+import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn.Integration
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
@@ -45,15 +45,15 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 --import Numeric.AERN.Misc.Debug
         
 solveBySplittingAtT0End ::
-    (ODEIVP f -> (Maybe [Domain f], solvingInfoL))
+    (ODEIVP f -> (Maybe ([Domain f], [Domain f]), solvingInfoL))
     -> 
     ([Domain f] -> ODEInitialValues f)
     -> 
-    (ODEIVP f -> (Maybe [Domain f], solvingInfoR))
+    (ODEIVP f -> (Maybe ([Domain f], [Domain f]), solvingInfoR))
     -> 
     ODEIVP f
     -> 
-    (Maybe [Domain f], (solvingInfoL, Maybe solvingInfoR))
+    (Maybe ([Domain f], [Domain f]), (solvingInfoL, Maybe solvingInfoR))
 solveBySplittingAtT0End
         solverVT makeMakeInitValFnVec solverVt 
             odeivpG 
@@ -62,17 +62,24 @@ solveBySplittingAtT0End
     where
     (maybeResult, maybeInfoR) =
         case maybeResultL of
-            Just resultL ->
-                (maybeResultR, Just infoR)
+            Just (valuesLOut, valuesLIn) ->
+                case (maybeResultROut, maybeResultRIn) of
+                    (Just (resultOut, _), Just (_, resultIn)) ->
+                        (Just (resultOut, resultIn), Just infoROut)
+                    (Nothing, _) -> (Nothing, Just infoROut)
+                    (_, Nothing) -> (Nothing, Just infoRIn)
                 where
-                (maybeResultR, infoR) = solverVt odeivpR
-                odeivpR =
+                (maybeResultROut, infoROut) = solverVt odeivpROut
+                (maybeResultRIn, infoRIn) = solverVt odeivpRIn
+                odeivpROut = odeivpR valuesLOut
+                odeivpRIn = odeivpR valuesLIn
+                odeivpR valuesL =
                     odeivpG
                         {
                             odeivp_tStart = odeivp_t0End odeivpG
                         ,
                             odeivp_makeInitialValueFnVec =
-                                makeMakeInitValFnVec resultL 
+                                makeMakeInitValFnVec valuesL
                         }
             _ -> 
                 (Nothing, Nothing)
@@ -83,40 +90,38 @@ solveBySplittingAtT0End
                 odeivp_tEnd = odeivp_t0End odeivpG
             }
     
-        
-
---solveBySplittingT ::
---    (CanAddVariables f,
---     CanEvaluate f,
---     CanCompose f,
---     HasProjections f,
---     HasConstFns f,
---     RefOrd.PartialComparison f,
---     RoundedIntegration f,
---     ArithInOut.RoundedAdd f,
---     ArithInOut.RoundedMixedAdd f (Domain f),
---     ArithInOut.RoundedReal (Domain f), 
---     RefOrd.IntervalLike(Domain f),
---     Domain f ~ Imprecision (Domain f),
---     Show f, Show (Domain f))
---    =>
---    (ODEIVP f -> (Maybe [Domain f], solvingInfo)) -- ^ solver to use for segments  
---    ->
---    ([Domain f] -> ODEInitialValues f) -- ^ how to change initial conditions
---    ->
---    ArithInOut.RoundedRealEffortIndicator (Domain f) 
---    ->
---    Imprecision (Domain f) -- ^ splitting improvement threshold
---    ->
---    Domain f -- ^ minimum segment length  
---    ->
---    (ODEIVP f)  -- ^ problem to solve
---    ->
---    (
---        Maybe [Domain f]
---    , 
---        SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
---    )
+solveBySplittingT ::
+    (CanAddVariables f,
+     CanEvaluate f,
+     CanCompose f,
+     HasProjections f,
+     HasConstFns f,
+     RefOrd.PartialComparison f,
+     RoundedIntegration f,
+     ArithInOut.RoundedAdd f,
+     ArithInOut.RoundedMixedAdd f (Domain f),
+     ArithInOut.RoundedReal (Domain f), 
+     RefOrd.IntervalLike(Domain f),
+     Domain f ~ Imprecision (Domain f),
+     Show f, Show (Domain f))
+    =>
+    (ODEIVP f -> (Maybe ([Domain f],[Domain f]), solvingInfo)) -- ^ solver to use for segments  
+    ->
+    ([Domain f] -> ODEInitialValues f) -- ^ how to change initial conditions
+    ->
+    ArithInOut.RoundedRealEffortIndicator (Domain f) 
+    ->
+    Imprecision (Domain f) -- ^ splitting improvement threshold
+    ->
+    Domain f -- ^ minimum segment length  
+    ->
+    (ODEIVP f)  -- ^ problem to solve
+    ->
+    (
+        Maybe ([Domain f], [Domain f])
+    , 
+        SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+    )
 solveBySplittingT
         solver makeMakeInitValFnVec
             effDom splitImprovementThreshold minStepSize 
@@ -162,14 +167,18 @@ solveBySplittingT
         
         splitComputation =
             case ssolve odeivpL of
-                (Just midValues, infoL) -> 
-                    case ssolve odeivpR of
-                        (Just endValues, infoR) ->
-                            (Just endValues, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
-                        (Nothing, infoR) ->
+                (Just (midValuesOut, midValuesIn), infoL) -> 
+                    case (ssolve odeivpROut, ssolve odeivpRIn) of
+                        ((Just (endValuesOut, _), infoROut), (Just (_, endValuesIn), _)) ->
+                            (Just (endValuesOut, endValuesIn), SegSplit (directInfo, maybeSplitImprovement) infoL infoROut)
+                        ((Nothing, infoR), _) ->
+                            (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
+                        (_, (Nothing, infoR)) ->
                             (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
                     where
-                    odeivpR =
+                    odeivpROut = odeivpR midValuesOut
+                    odeivpRIn = odeivpR midValuesIn
+                    odeivpR midValues =
                         odeivp
                         {
                             odeivp_tStart = tMid,
@@ -191,7 +200,7 @@ solveBySplittingT
         
         maybeSplitImprovement =
             case (directComputation, splitComputation) of
-                ((Just directResult, _), (Just splitResult, _)) ->
+                ((Just (directResult, _), _), (Just (splitResult, _), _)) ->
                     measureImprovementVec directResult splitResult
                 _ -> Nothing
         measureImprovementVec vec1 vec2 =
@@ -208,36 +217,36 @@ solveBySplittingT
                     Just $ (imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
                 False -> Nothing 
                 
---solveBySplittingT0 ::
---    (CanAddVariables f,
---     CanEvaluate f,
---     CanCompose f,
---     HasProjections f,
---     HasConstFns f,
---     RefOrd.PartialComparison f,
---     RoundedIntegration f,
---     ArithInOut.RoundedAdd f,
---     ArithInOut.RoundedMixedAdd f (Domain f),
---     ArithInOut.RoundedReal (Domain f), 
---     RefOrd.IntervalLike(Domain f),
---     Domain f ~ Imprecision (Domain f),
---     Show f, Show (Domain f))
---    =>
---    (ODEIVP f -> (Maybe [Domain f], solvingInfo)) -- ^ solver to use for segments  
---    ->
---    ArithInOut.RoundedRealEffortIndicator (Domain f) 
---    ->
---    Imprecision (Domain f) -- ^ splitting improvement threshold
---    ->
---    Domain f -- ^ minimum segment length  
---    ->
---    (ODEIVP f)  -- ^ problem to solve
---    ->
---    (
---        Maybe [Domain f]
---    , 
---        SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
---    )
+solveBySplittingT0 ::
+    (CanAddVariables f,
+     CanEvaluate f,
+     CanCompose f,
+     HasProjections f,
+     HasConstFns f,
+     RefOrd.PartialComparison f,
+     RoundedIntegration f,
+     ArithInOut.RoundedAdd f,
+     ArithInOut.RoundedMixedAdd f (Domain f),
+     ArithInOut.RoundedReal (Domain f), 
+     RefOrd.IntervalLike(Domain f),
+     Domain f ~ Imprecision (Domain f),
+     Show f, Show (Domain f))
+    =>
+    (ODEIVP f -> (Maybe ([Domain f], [Domain f]), solvingInfo)) -- ^ solver to use for segments  
+    ->
+    ArithInOut.RoundedRealEffortIndicator (Domain f) 
+    ->
+    Imprecision (Domain f) -- ^ splitting improvement threshold
+    ->
+    Domain f -- ^ minimum segment length  
+    ->
+    (ODEIVP f)  -- ^ problem to solve
+    ->
+    (
+        Maybe ([Domain f], [Domain f])
+    , 
+        SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+    )
 solveBySplittingT0
         solver
             effDom splitImprovementThreshold minStepSize 
@@ -284,14 +293,18 @@ solveBySplittingT0
         
         splitComputation =
             case ssolve odeivpL of
-                (Just endValuesL, infoL) -> 
+                (Just (endValuesLOut, endValuesLIn), infoL) -> 
                     case ssolve odeivpR of
-                        (Just endValuesR, infoR) ->
+                        (Just (endValuesROut, endValuesRIn), infoR) ->
                             (Just endValues, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
                             where
-                            endValues =
+                            endValues = (endValuesOut, endValuesIn)
+                            endValuesOut =
                                 let ?joinmeetEffort = effJoinDom in
-                                zipWith (</\>) endValuesL endValuesR
+                                zipWith (</\>) endValuesLOut endValuesROut
+                            endValuesIn =
+                                let ?joinmeetEffort = effJoinDom in
+                                zipWith (>/\<) endValuesLIn endValuesRIn
                         (Nothing, infoR) ->
                             (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
                     where
@@ -314,7 +327,7 @@ solveBySplittingT0
         
         maybeSplitImprovement =
             case (directComputation, splitComputation) of
-                ((Just directResult, _), (Just splitResult, _)) ->
+                ((Just (directResult, _), _), (Just (splitResult, _), _)) ->
                     measureImprovementVec directResult splitResult
                 _ -> Nothing
         measureImprovementVec vec1 vec2 =

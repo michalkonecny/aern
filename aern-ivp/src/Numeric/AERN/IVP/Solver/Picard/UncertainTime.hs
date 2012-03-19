@@ -41,6 +41,8 @@ import Numeric.AERN.NumericOrder.OpsDefaultEffort
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
+import Numeric.AERN.Basics.Consistency
+
 import Numeric.AERN.Misc.Debug
         
 solveUncertainValueUncertainTimeSplit
@@ -102,6 +104,7 @@ solveUncertainValueUncertainTime ::
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f), 
+     HasAntiConsistency (Domain f), 
      Show f, Show (Domain f)
      )
     =>
@@ -136,19 +139,19 @@ solveUncertainValueUncertainTime
     | otherwise =
         case solveWithExactTime of
             Just _ ->
-                unsafePrint
-                (
-                    "solveUncertainValueUncertainTime: "
-                    ++ "\n tShifted = " ++ show tShifted
-                    ++ "\n t0DomainFnBelowT = " ++ show t0DomainFnBelowT
-                    ++ "\n tEnd = " ++ show tEnd
-                    ++ "\n enclosuresWithTT0[0][tEnd] = " ++ (show $ head $ map (evalAtEndTimeVec tVar tEnd) enclosuresWithTT0) 
-                    ++ "\n enclosuresWithTT0[0] = " ++ (show $ head $ enclosuresWithTT0) 
-                    ++ "\n enclosuresShifted[0][tEnd] = " ++ (show $ head $ map (evalAtEndTimeVec tVar tEnd) enclosuresShifted) 
-                    ++ "\n enclosuresShifted[0] = " ++ (show $ head $ enclosuresShifted) 
-                    ++ "\n enclosuresWithoutT0[0][tEnd] = " ++ (show $ head $ map (evalAtEndTimeVec tVar tEnd) enclosuresWithoutT0) 
-                    ++ "\n enclosuresWithoutT0[0] = " ++ (show $ head $ enclosuresWithoutT0) 
-                ) $
+--                unsafePrint
+--                (
+--                    "solveUncertainValueUncertainTime: "
+--                    ++ "\n tShifted = " ++ show tShifted
+--                    ++ "\n t0DomainFnBelowT = " ++ show t0DomainFnBelowT
+--                    ++ "\n tEnd = " ++ show tEnd
+--                    ++ "\n enclosuresWithTT0[0][tEnd] = " ++ (show $ head $ map (evalAtEndTimeVec tVar tEnd) enclosuresWithTT0) 
+--                    ++ "\n enclosuresWithTT0[0] = " ++ (show $ head $ enclosuresWithTT0) 
+--                    ++ "\n enclosuresShifted[0][tEnd] = " ++ (show $ head $ map (evalAtEndTimeVec tVar tEnd) enclosuresShifted) 
+--                    ++ "\n enclosuresShifted[0] = " ++ (show $ head $ enclosuresShifted) 
+--                    ++ "\n enclosuresWithoutT0[0][tEnd] = " ++ (show $ head $ map (evalAtEndTimeVec tVar tEnd) enclosuresWithoutT0) 
+--                    ++ "\n enclosuresWithoutT0[0] = " ++ (show $ head $ enclosuresWithoutT0) 
+--                ) $
                 Just enclosuresWithoutT0
             Nothing -> Nothing
     where
