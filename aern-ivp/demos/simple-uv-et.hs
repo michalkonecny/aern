@@ -42,8 +42,8 @@ type CF = CF.DI
 type Poly = IntPoly String CF
 
 main :: IO ()
-main = mainCmdLine ivpExpDecay_ev_et
---main = mainCSV ivpExpDecay_ev_et
+--main = mainCmdLine False ivpExpDecay_ev_et
+main = mainCSV ivpExpDecay_ev_et
 --main = mainCSV ivpExpDecay_uv_et
 --main = mainCSV ivpSpringMass_ev_et
 --main = mainCSV ivpSpringMass_uv_et
@@ -157,8 +157,8 @@ ivpSpringMass_uv_et =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
 
-mainCmdLine :: ODEIVP Poly -> IO ()
-mainCmdLine ivp =
+mainCmdLine :: Bool -> ODEIVP Poly -> IO ()
+mainCmdLine shouldShowSteps ivp =
     do
     args <- getArgs
     let [maxDegS, depthS] = args
@@ -167,7 +167,7 @@ mainCmdLine ivp =
     putStrLn "--------------------------------------------------"
     putStrLn "demo of solve-Vt from (Konecny, Taha, Duracz 2012)"
     putStrLn "--------------------------------------------------"
-    _ <- solveVtPrintSteps True ivp (maxDeg, depth)
+    _ <- solveVtPrintSteps shouldShowSteps ivp (maxDeg, depth)
     return ()
 
 mainCSV :: ODEIVP Poly -> IO ()

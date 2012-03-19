@@ -42,7 +42,7 @@ import Numeric.AERN.NumericOrder.OpsDefaultEffort
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
---import Numeric.AERN.Misc.Debug
+import Numeric.AERN.Misc.Debug
         
 solveBySplittingAtT0End ::
     (ODEIVP f -> (Maybe ([Domain f], [Domain f]), solvingInfoL))
@@ -129,7 +129,11 @@ solveBySplittingT
     =
     (valuesAtTEnd, info)
     where
-    (valuesAtTEnd, info) = splitSolve odeivpG
+    (valuesAtTEnd, info) = 
+        case (splitSolve False odeivpG, splitSolve True odeivpG) of
+            ((Just valuesOut, info), (Just valuesIn, _)) -> (Just (valuesOut, valuesIn), info)
+            ((_, info), _) -> (Nothing, info)
+            
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDivDomInt = 
         ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
@@ -142,16 +146,25 @@ solveBySplittingT
 --    sampleImpr = imprecisionOfEff effImpr sampleDom
 --    effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
     
-    splitSolve odeivp
-        | belowStepSize = directComputation
-        | directComputationFailed = splitComputation
-        | otherwise = 
-            case maybeSplitImprovement of
-                Just improvementBy 
-                    | (improvementBy >? splitImprovementThreshold) == Just True -> 
-                        splitComputation
-                _ -> directComputation
+    splitSolve shouldRoundInwards odeivp =
+--        unsafePrint
+--        (
+--            "solveBySplittingT: splitSolve: "
+--            ++ "shouldRoundInwards = " ++ show shouldRoundInwards
+--            ++ "tStart = " ++ show tStart
+--            ++ "tEnd = " ++ show tEnd
+--        ) $
+        result
         where
+        result
+            | belowStepSize = directComputation
+            | directComputationFailed = splitComputation
+            | otherwise = 
+                case maybeSplitImprovement of
+                    Just improvementBy 
+                        | (improvementBy >? splitImprovementThreshold) == Just True -> 
+                            splitComputation
+                    _ -> directComputation
         tStart = odeivp_tStart odeivp
         tEnd = odeivp_tEnd odeivp
         
@@ -161,7 +174,11 @@ solveBySplittingT
             ((tEnd <-> tStart) >? minStepSize) /= Just True
 
         directComputation =
-            (maybeDirectResult, SegNoSplit directInfo)
+            case maybeDirectResult of
+                Just (resultOut, resultIn) 
+                    | shouldRoundInwards -> (Just resultIn, SegNoSplit directInfo)
+                    | otherwise -> (Just resultOut, SegNoSplit directInfo)
+                _ -> (Nothing, SegNoSplit directInfo) 
         (maybeDirectResult, directInfo) = solver odeivp
         directComputationFailed =
             case maybeDirectResult of Just _ -> False; _ -> True
@@ -169,14 +186,16 @@ solveBySplittingT
         splitOnceComputation = -- needed only to decide whether splitting is benefitial, the result is then discarded
             case solver odeivpL of
                 (Just (midValuesOut, midValuesIn), _) ->
-                    case (solver odeivpROut, solver odeivpRIn) of
-                        ((Just (endValuesOut, _), _), (Just (_, endValuesIn), _)) ->
-                            Just (endValuesOut, endValuesIn)
+                    case solver odeivpR of
+                        (Just (endValuesOut, endValuesIn), _) 
+                            | shouldRoundInwards -> Just endValuesIn
+                            | otherwise -> Just endValuesOut
                         _ -> Nothing
                     where
-                    odeivpROut = odeivpR midValuesOut
-                    odeivpRIn = odeivpR midValuesIn
-                    odeivpR midValues =
+                    midValues 
+                        | shouldRoundInwards = midValuesIn
+                        | otherwise = midValuesOut
+                    odeivpR =
                         odeivp
                         {
                             odeivp_tStart = tMid,
@@ -187,29 +206,25 @@ solveBySplittingT
                 _ -> Nothing
                 
         splitComputation =
-            case splitSolve odeivpL of
-                (Just (midValuesOut, midValuesIn), infoL) -> 
-                    case (splitSolve odeivpROut, splitSolve odeivpRIn) of
-                        ((Just (endValuesOut, _), infoROut), (Just (_, endValuesIn), _)) ->
+            case splitSolve shouldRoundInwards odeivpL of
+                (Just midValues, infoL) -> 
+                    case splitSolve shouldRoundInwards odeivpR of
+                        (Nothing, infoR) ->
+                            (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
+                        (Just endValues, infoR) ->
                             (
-                                Just (endValuesOut, endValuesIn)
+                                Just endValues
                             , 
-                                SegSplit (directInfo, maybeSplitImprovement) infoL infoROut
+                                SegSplit (directInfo, maybeSplitImprovement) infoL infoR
                             )
-                        ((Nothing, infoR), _) ->
-                            (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
-                        (_, (Nothing, infoR)) ->
-                            (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
                     where
-                    odeivpROut = odeivpR midValuesOut
-                    odeivpRIn = odeivpR midValuesIn
-                    odeivpR midValues =
+                    odeivpR =
                         odeivp
                         {
                             odeivp_tStart = tMid,
                             odeivp_t0End = tMid, -- exact initial time
                             odeivp_makeInitialValueFnVec =
-                                makeMakeInitValFnVec midValues 
+                                makeMakeInitValFnVec midValues
                         }
                 failedLeftComputation -> failedLeftComputation
         odeivpL =
@@ -224,8 +239,11 @@ solveBySplittingT
         
         maybeSplitImprovement =
             case (directComputation, splitOnceComputation) of
-                ((Just (directResult, _), _), Just (splitOnceResult, _)) ->
-                    measureImprovementVec directResult splitOnceResult
+                ((Just directResult, _), Just splitOnceResult) 
+                    | shouldRoundInwards ->
+                        measureImprovementVec splitOnceResult directResult -- the larger the better
+                    | otherwise ->
+                        measureImprovementVec directResult splitOnceResult -- the smaller the better
                 _ -> Nothing
         measureImprovementVec vec1 vec2 =
             do
