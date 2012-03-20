@@ -197,6 +197,11 @@ reduceTermsCountWithOps (+) (*) (^) getImpr varDoms maxSize terms
     allTermRangesList = 
         termsCollectCoeffsWith evalTermRangeWidth terms
     evalTermRangeWidth varDegrees coeff =
+--        unsafePrint 
+--        (
+--            "reduceTermsCountWithOps: evalTermRangeWidth: varDegrees = "
+--            ++ (show varDegrees) ++ "; maxSize = " ++ show maxSize
+--        ) $
         getImpr $ foldl (*) coeff $ zipWith (!!) varDomsPowers varDegrees
     tresholdSmallestAllowed = allTermRangesListSortedDescending !! (maxSize-1)
     allTermRangesListSortedDescending = List.sortBy compareCf allTermRangesList
