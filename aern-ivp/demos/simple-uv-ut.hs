@@ -43,12 +43,25 @@ type CF = CF.DI
 type Poly = IntPoly String CF
 
 main :: IO ()
---main = mainCmdLine False $ ivpExpDecay_ut True -- -uv
---main = mainCmdLine False $ ivpExpDecay_ut False -- -ev
-main = mainCSV $ ivpExpDecay_ut True -- -uv
---main = mainCSV $ ivpExpDecay_ut False -- -ev
---main = mainCSV ivpExpDecay_uv_ut
---main = mainCSV ivpSpringMassVT
+main =
+    do
+    args <- getArgs
+    case length args of
+        2 -> writeCSV args
+        6 -> runOnce args
+        _ -> usage
+        
+usage :: IO ()
+usage =
+    do
+    putStrLn "Usage A: simple-uv-ut <ivp name> <output file name>"
+    putStrLn "Usage B: simple-uv-ut <ivp name> <maxDeg> <minStepSize> <True|False-print steps?> <t0maxDeg> <minT0StepSize>"
+
+ivpByName :: String -> ODEIVP Poly
+ivpByName "ivpExpDecay-ev-ut" = ivpExpDecay_ut False     
+ivpByName "ivpExpDecay-uv-ut" = ivpExpDecay_ut True     
+ivpByName "ivpSpringMass-ev-ut" = ivpSpringMass_ut False     
+ivpByName "ivpSpringMass-uv-ut" = ivpSpringMass_ut True     
 
 ivpExpDecay_ut :: Bool -> ODEIVP Poly
 ivpExpDecay_ut withInitialValueUncertainty =
@@ -100,31 +113,111 @@ ivpExpDecay_ut withInitialValueUncertainty =
             where
             componentUncertaintyDomains =
                 map snd $ zip componentNames $ repeat unitDom
-            unitDom = 0 CF.</\> 1 
+            unitDom = (-1) CF.</\> 1 
+        maxdeg = ipolycfg_maxdeg sizeLimits
+        maxsize = ipolycfg_maxsize sizeLimits
+
+ivpSpringMass_ut :: Bool -> ODEIVP Poly
+ivpSpringMass_ut withInitialValueUncertainty =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = description,
+            odeivp_field = \ [x,x'] -> [x',neg x],
+            odeivp_componentNames = ["x","x'"],
+            odeivp_tVar = "t",
+            odeivp_tStart = -0.125,
+            odeivp_t0End = 0.125,
+            odeivp_tEnd = 1,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Just $
+                case withInitialValueUncertainty of
+                    True ->
+                        [
+                            ((0.75 * cosOnePlusEps) - 0.125 * sinOnePlusEps)  
+                            CF.</\>
+                            ((1.25 * cosOneMinusEps) + 0.125 * sinOneMinusEps)
+                        ,
+                            (-(sinOnePlusEps) - 0.125 * cosOnePlusEps)  
+                            CF.</\>
+                            (-(sinOneMinusEps) + 0.125 * cosOneMinusEps)
+                        ]
+                    False ->
+                        [
+                            ((0.875 * cosOnePlusEps) - 0.125 * sinOnePlusEps)  
+                            CF.</\>
+                            ((1.125 * cosOneMinusEps) + 0.125 * sinOneMinusEps)
+                        ,
+                            (-(0.875 * sinOnePlusEps) - 0.125 * cosOnePlusEps)  
+                            CF.</\>
+                            (-(1.125 * sinOneMinusEps) + 0.125 * cosOneMinusEps)
+                        ]
+        }
+    cosOnePlusEps = 1 CF.<*>| (cos 1.125 :: Double)
+    cosOneMinusEps = 1 CF.<*>| (cos 0.875 :: Double)
+    sinOnePlusEps = 1 CF.<*>| (sin 1.125 :: Double)
+    sinOneMinusEps = 1 CF.<*>| (sin 0.875 :: Double)
+    description =
+        "x'' = -x; " 
+        ++ show tStart ++ " < t_0 < " ++ show t0End
+        ++ "; (x,x')(t_0) ∊ " ++ (show $ makeIV dummySizeLimits "t_0" tStart)
+    tStart = odeivp_tStart ivp
+    t0End = odeivp_t0End ivp
+    componentNames = odeivp_componentNames ivp
+    dummySizeLimits =
+        getSizeLimits $
+            makeSampleWithVarsDoms 10 10 [] []
+    makeIV sizeLimits t0Var t0Dom =
+        case withInitialValueUncertainty of
+            True ->
+                [
+                    ((1 :: Int) |<+> t0VarFn) <+> (xUnitFn </>| (8::Int))
+                ,
+                    (xdUnitFn </>| (8::Int))
+                ]
+            False ->
+                [
+                    (1 :: Int) |<+> t0VarFn
+                ,
+                    (0 :: Int) |<*> t0VarFn
+                ]
+        where
+        t0VarFn = newProjectionFromSample sampleInitialValueFn t0Var
+        xUnitFn = newProjectionFromSample sampleInitialValueFn "x"
+        xdUnitFn = newProjectionFromSample sampleInitialValueFn "x'"
+        sampleInitialValueFn =
+            makeSampleWithVarsDoms 
+                maxdeg maxsize 
+                (t0Var : componentNames) (t0Dom : componentUncertaintyDomains)
+            where
+            componentUncertaintyDomains =
+                map snd $ zip componentNames $ repeat unitDom
+            unitDom = (-1) CF.</\> 1 
         maxdeg = ipolycfg_maxdeg sizeLimits
         maxsize = ipolycfg_maxsize sizeLimits
 
 
-mainCmdLine :: Bool -> ODEIVP Poly -> IO ()
-mainCmdLine shouldShowSteps ivp =
+runOnce :: [String] -> IO ()
+runOnce [ivpName, maxDegS, depthS, shouldShowStepsS, t0MaxDegS, t0DepthS] =
     do
-    args <- getArgs
-    let [maxDegS, depthS, t0MaxDegS, t0DepthS] = args
     let maxDeg = read maxDegS :: Int
     let depth = read depthS :: Int
     let t0MaxDeg = read t0MaxDegS :: Int
     let t0depth = read t0DepthS :: Int
+    let shouldShowSteps = read shouldShowStepsS :: Bool
     putStrLn "--------------------------------------------------"
     putStrLn "demo of solve-VT from (Konecny, Taha, Duracz 2012)"
     putStrLn "--------------------------------------------------"
     _ <- solveVTPrintSteps shouldShowSteps ivp (maxDeg, depth, t0MaxDeg, t0depth)
     return ()
+    where
+    ivp = ivpByName ivpName
 
-mainCSV :: ODEIVP Poly -> IO ()
-mainCSV ivp =
+writeCSV :: [String] -> IO ()
+writeCSV [ivpName, outputFileName] =
     do
-    args <- getArgs
-    let [outputFileName] = args
     isClash <- doesFileExist outputFileName
     case isClash of
         True -> putStrLn $ "file " ++ outputFileName ++ " exists"
@@ -133,6 +226,7 @@ mainCSV ivp =
             results <- mapM runSolverMeasureTimeMS paramCombinations 
             writeFile outputFileName $ unlines $ csvLines results
     where
+    ivp = ivpByName ivpName
     paramCombinations = 
         [(maxDegree, depth) | 
             maxDegree <- [0..15], depth <- [0..12]]

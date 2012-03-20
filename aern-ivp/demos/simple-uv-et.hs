@@ -42,12 +42,25 @@ type CF = CF.DI
 type Poly = IntPoly String CF
 
 main :: IO ()
---main = mainCmdLine True ivpExpDecay_uv_et
---main = mainCmdLine True ivpSpringMass_uv_et
-main = mainCSV ivpExpDecay_ev_et
---main = mainCSV ivpExpDecay_uv_et
---main = mainCSV ivpSpringMass_ev_et
---main = mainCSV ivpSpringMass_uv_et
+main =
+    do
+    args <- getArgs
+    case length args of
+        2 -> writeCSV args
+        4 -> runOnce args
+        _ -> usage
+        
+usage :: IO ()
+usage =
+    do
+    putStrLn "Usage A: simple-uv-et <ivp name> <output file name>"
+    putStrLn "Usage B: simple-uv-et <ivp name> <True|False-print steps?> <maxDeg> <minStepSize>"
+
+ivpByName :: String -> ODEIVP Poly
+ivpByName "ivpExpDecay-ev-et" = ivpExpDecay_ev_et     
+ivpByName "ivpExpDecay-uv-et" = ivpExpDecay_uv_et     
+ivpByName "ivpSpringMass-ev-et" = ivpSpringMass_ev_et     
+ivpByName "ivpSpringMass-uv-et" = ivpSpringMass_uv_et     
 
 ivpExpDecay_ev_et :: ODEIVP Poly
 ivpExpDecay_ev_et =
@@ -158,11 +171,10 @@ ivpSpringMass_uv_et =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
 
-mainCmdLine :: Bool -> ODEIVP Poly -> IO ()
-mainCmdLine shouldShowSteps ivp =
+runOnce :: [String] -> IO ()
+runOnce [ivpName, shouldShowStepsS, maxDegS, depthS] =
     do
-    args <- getArgs
-    let [maxDegS, depthS] = args
+    let shouldShowSteps = read shouldShowStepsS :: Bool
     let maxDeg = read maxDegS :: Int
     let depth = read depthS :: Int
     putStrLn "--------------------------------------------------"
@@ -170,12 +182,12 @@ mainCmdLine shouldShowSteps ivp =
     putStrLn "--------------------------------------------------"
     _ <- solveVtPrintSteps shouldShowSteps ivp (maxDeg, depth)
     return ()
+    where
+    ivp = ivpByName ivpName
 
-mainCSV :: ODEIVP Poly -> IO ()
-mainCSV ivp =
+writeCSV :: [String] -> IO ()
+writeCSV [ivpName, outputFileName] =
     do
-    args <- getArgs
-    let [outputFileName] = args
     isClash <- doesFileExist outputFileName
     case isClash of
         True -> putStrLn $ "file " ++ outputFileName ++ " exists"
@@ -184,6 +196,7 @@ mainCSV ivp =
             results <- mapM runSolverMeasureTimeMS paramCombinations 
             writeFile outputFileName $ unlines $ csvLines results
     where
+    ivp = ivpByName ivpName
     paramCombinations = 
         [(maxDegree, depth) | 
             maxDegree <- [0..20], depth <- [0..10]]
