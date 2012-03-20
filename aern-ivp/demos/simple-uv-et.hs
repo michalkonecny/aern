@@ -61,6 +61,7 @@ ivpByName "ivpExpDecay-ev-et" = ivpExpDecay_ev_et
 ivpByName "ivpExpDecay-uv-et" = ivpExpDecay_uv_et     
 ivpByName "ivpSpringMass-ev-et" = ivpSpringMass_ev_et     
 ivpByName "ivpSpringMass-uv-et" = ivpSpringMass_uv_et     
+ivpByName "ivpSpringMassAir-ev-et" = ivpSpringMassAir_ev_et     
 
 ivpExpDecay_ev_et :: ODEIVP Poly
 ivpExpDecay_ev_et =
@@ -171,35 +172,33 @@ ivpSpringMass_uv_et =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
 
---ivpSpringMassAir_ev_et :: ODEIVP Poly
---ivpSpringMassAir_ev_et =
---    ivp
---    where
---    ivp =
---        ODEIVP
---        {
---            odeivp_description = "x'' = -x - x'*|x'|; (x,x')(" ++ show tStart ++ ") = " ++ show initialValues,
---            odeivp_field = \ [x,x'] -> [x',neg (x <+> (x' <*> (myAbs x')))],
---            odeivp_componentNames = ["x", "x'"],
---            odeivp_tVar = "t",
---            odeivp_tStart = 0,
---            odeivp_t0End = 0,
---            odeivp_tEnd = 1,
---            odeivp_makeInitialValueFnVec = makeIV,
---            odeivp_maybeExactValuesAtTEnd = Just [cosOne, -sinOne]
---        }
---    initialValues = [1,0]
---    cosOne = 1 CF.<*>| (cos 1 :: Double)
---    sinOne = 1 CF.<*>| (sin 1 :: Double)
---    myAbs fn =
---        ArithInOut.absOutEff effAbsFn fn
---        where
---        effAbsFn = ArithInOut.absDefaultEffort fn
---        
---    makeIV =
---        makeFnVecFromInitialValues componentNames initialValues
---    componentNames = odeivp_componentNames ivp
---    tStart = odeivp_tStart ivp
+ivpSpringMassAir_ev_et :: ODEIVP Poly
+ivpSpringMassAir_ev_et =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x'' = -x - x'*|x'|; (x,x')(" ++ show tStart ++ ") = " ++ show initialValues,
+            odeivp_field = \ [x,x'] -> [x',neg (x <+> (x' <*> (myAbs x')))],
+            odeivp_componentNames = ["x", "x'"],
+            odeivp_tVar = "t",
+            odeivp_tStart = 0,
+            odeivp_t0End = 0,
+            odeivp_tEnd = 1,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing -- Just [cosOne, -sinOne]
+        }
+    initialValues = [1,0]
+    myAbs fn =
+        ArithInOut.absOutEff effAbsFn fn
+        where
+        effAbsFn = ArithInOut.absDefaultEffort fn
+        
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
 
 
 
@@ -235,7 +234,7 @@ writeCSV [ivpName, outputFileName] =
 --            maxDegree <- [0..10], depth <- [0..5]]
     runSolverMeasureTimeMS (maxDegree, depth) =
         do
-        resultsAndTimes <- mapM solveAndMeasure ([1..10] :: [Int])
+        resultsAndTimes <- mapM solveAndMeasure ([1..1] :: [Int])
         let ((result, _) : _)  = resultsAndTimes
         let averageTime = average $ map snd resultsAndTimes
         return (result, averageTime)
@@ -308,7 +307,7 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
     putStrLn $ "minimum step size = 2^{" ++ show minStepSizeExp ++ "}"
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
     putStrLn "----------  result: -----------------------------"
-    putStrLn $ showSegInfo ">>> " (tEnd, endValues)
+    putStr $ showSegInfo ">>> " (tEnd, endValues)
     case shouldShowSteps of
         True ->
             do
@@ -346,14 +345,17 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
             makeSampleWithVarsDoms maxdeg maxsize [] []
             
     showSegInfo indent (t, maybeValues) =
-        indent ++ showVec componentNames ++ "(" ++ show t ++ ") ∊ " ++ valuesS 
+        
+        unlines $ map showComponent $ zip componentNames valueSs
         where
-        showVec [e] = e
-        showVec list = "(" ++ (intercalate "," list) ++ ")"
-        valuesS =
+        showComponent (name, valueS) =
+            indent ++ name ++ "("  ++ show t ++ ") ∊ " ++ valueS
+--        showVec [e] = e
+--        showVec list = "(" ++ (intercalate "," list) ++ ")"
+        valueSs =
             case maybeValues of
-                Just (valuesOut, valuesIn) -> showVec $ map showValue $ zip valuesOut valuesIn
-                _ -> "<no result computed>"
+                Just (valuesOut, valuesIn) -> map showValue $ zip valuesOut valuesIn
+                _ -> replicate (length componentNames) "<no result computed>"
         showValue (valueOut, valueIn) =
             show valueOut ++ "(err<=" ++ show err ++ ")" 
 --            ++ "[ wOut = " ++ show wOut ++ "; wIn = " ++ show wIn ++ "]" 
