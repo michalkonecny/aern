@@ -43,14 +43,15 @@ type CF = CF.DI
 type Poly = IntPoly String CF
 
 main :: IO ()
---main = mainCmdLine False ivpExpDecay_ev_ut
---main = mainCmdLine False ivpExpDecay_uv_ut
---main = mainCSV ivpExpDecay_ev_ut
-main = mainCSV ivpExpDecay_uv_ut
+--main = mainCmdLine False $ ivpExpDecay_ut True -- -uv
+--main = mainCmdLine False $ ivpExpDecay_ut False -- -ev
+main = mainCSV $ ivpExpDecay_ut True -- -uv
+--main = mainCSV $ ivpExpDecay_ut False -- -ev
+--main = mainCSV ivpExpDecay_uv_ut
 --main = mainCSV ivpSpringMassVT
 
-ivpExpDecay_ev_ut :: ODEIVP Poly
-ivpExpDecay_ev_ut =
+ivpExpDecay_ut :: Bool -> ODEIVP Poly
+ivpExpDecay_ut withInitialValueUncertainty =
     ivp
     where
     ivp =
@@ -65,7 +66,11 @@ ivpExpDecay_ev_ut =
             odeivp_tEnd = 1,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_maybeExactValuesAtTEnd = Just $
-                [(0.875 * expMOnePlusEps) CF.</\> (1.125 * expMOneMinusEps)]
+                case withInitialValueUncertainty of
+                    True ->
+                        [(0.750 * expMOnePlusEps) CF.</\> (1.25 * expMOneMinusEps)]
+                    False ->
+                        [(0.875 * expMOnePlusEps) CF.</\> (1.125 * expMOneMinusEps)]
         }
     expMOnePlusEps = 1 CF.<*>| (exp (-1.125) :: Double)
     expMOneMinusEps = 1 CF.<*>| (exp (-0.875) :: Double)
@@ -80,10 +85,14 @@ ivpExpDecay_ev_ut =
         getSizeLimits $
             makeSampleWithVarsDoms 10 10 [] []
     makeIV sizeLimits t0Var t0Dom =
-        [ (1 :: Int) |<+> t0VarFn]
---        [t0VarFn <+> (xUnitFn </>| (8::Int))]
+        case withInitialValueUncertainty of
+            True ->
+                [((1 :: Int) |<+> t0VarFn) <+> (xUnitFn </>| (8::Int))]
+            False ->
+                [ (1 :: Int) |<+> t0VarFn]
         where
         t0VarFn = newProjectionFromSample sampleInitialValueFn t0Var
+        xUnitFn = newProjectionFromSample sampleInitialValueFn "x"
         sampleInitialValueFn =
             makeSampleWithVarsDoms 
                 maxdeg maxsize 
@@ -95,51 +104,6 @@ ivpExpDecay_ev_ut =
         maxdeg = ipolycfg_maxdeg sizeLimits
         maxsize = ipolycfg_maxsize sizeLimits
 
-ivpExpDecay_uv_ut :: ODEIVP Poly
-ivpExpDecay_uv_ut =
-    ivp
-    where
-    ivp =
-        ODEIVP
-        {
-            odeivp_description = description,
-            odeivp_field = \ [x] -> [neg x],
-            odeivp_componentNames = ["x"],
-            odeivp_tVar = "t",
-            odeivp_tStart = -0.125,
-            odeivp_t0End = 0.125, 
-            odeivp_tEnd = 1,
-            odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_maybeExactValuesAtTEnd = Just $
-                [(0.750 * expMOnePlusEps) CF.</\> (1.25 * expMOneMinusEps)]
-        }
-    expMOnePlusEps = 1 CF.<*>| (exp (-1.125) :: Double)
-    expMOneMinusEps = 1 CF.<*>| (exp (-0.875) :: Double)
-    description =
-        "x' = -x; " 
-        ++ show tStart ++ " < t_0 < " ++ show t0End
-        ++ "; x(t_0) ∊ " ++ (show $ makeIV dummySizeLimits "t_0" tStart)
-    tStart = odeivp_tStart ivp
-    t0End = odeivp_t0End ivp
-    componentNames = odeivp_componentNames ivp
-    dummySizeLimits =
-        getSizeLimits $
-            makeSampleWithVarsDoms 10 10 [] []
-    makeIV sizeLimits t0Var t0Dom =
-        [((1 :: Int) |<+> t0VarFn) <+> (xUnitFn </>| (8::Int))]
-        where
-        t0VarFn = newProjectionFromSample sampleInitialValueFn t0Var
-        xUnitFn = newProjectionFromSample sampleInitialValueFn "x"
-        sampleInitialValueFn =
-            makeSampleWithVarsDoms 
-                maxdeg maxsize 
-                (t0Var : componentNames) (t0Dom : componentUncertaintyDomains)
-            where
-            componentUncertaintyDomains =
-                map snd $ zip componentNames $ repeat unitDom
-            unitDom = (-1) CF.</\> 1 
-        maxdeg = ipolycfg_maxdeg sizeLimits
-        maxsize = ipolycfg_maxsize sizeLimits
 
 mainCmdLine :: Bool -> ODEIVP Poly -> IO ()
 mainCmdLine shouldShowSteps ivp =
