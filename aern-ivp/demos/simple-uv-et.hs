@@ -225,6 +225,7 @@ writeCSV [ivpName, outputFileName] =
         False ->
             withFile outputFileName WriteMode $ \ handle ->
                 do
+                hSetBuffering handle LineBuffering
                 writeCSVheader handle
                 mapM_ (runSolverMeasureTimeMSwriteLine handle) paramCombinations
     where

@@ -17,9 +17,9 @@
 
 module Numeric.AERN.IVP.Solver.Splitting
 (
-    solveBySplittingAtT0End,
-    solveBySplittingT,
-    solveBySplittingT0,
+    solveODEIVPBySplittingAtT0End,
+    solveODEIVPBySplittingT,
+    solveODEIVPBySplittingT0,
     SplittingInfo(..),
     showSplittingInfo
 )
@@ -45,8 +45,9 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 import Numeric.AERN.Basics.Consistency
 
 import Numeric.AERN.Misc.Debug
+_ = unsafePrint
         
-solveBySplittingAtT0End ::
+solveODEIVPBySplittingAtT0End ::
     (HasAntiConsistency (Domain f), Show (Domain f))
     =>
     (ODEIVP f -> (Maybe ([Domain f], [Domain f]), solvingInfoL))
@@ -58,7 +59,7 @@ solveBySplittingAtT0End ::
     ODEIVP f
     -> 
     (Maybe ([Domain f], [Domain f]), (solvingInfoL, Maybe (Maybe ([Domain f], [Domain f]), solvingInfoR)))
-solveBySplittingAtT0End
+solveODEIVPBySplittingAtT0End
         solverVT makeMakeInitValFnVec solverVt 
             odeivpG 
     =
@@ -112,7 +113,7 @@ solveBySplittingAtT0End
                 odeivp_tEnd = odeivp_t0End odeivpG
             }
     
-solveBySplittingT ::
+solveODEIVPBySplittingT ::
     (CanAddVariables f,
      CanEvaluate f,
      CanCompose f,
@@ -145,7 +146,7 @@ solveBySplittingT ::
     , 
         SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
     )
-solveBySplittingT
+solveODEIVPBySplittingT
         solver makeMakeInitValFnVec
             effDom splitImprovementThreshold minStepSize 
                 odeivpG 
@@ -179,7 +180,7 @@ solveBySplittingT
     splitSolve shouldRoundInwardsVec odeivp =
 --        unsafePrint
 --        (
---            "solveBySplittingT: splitSolve: "
+--            "solveODEIVPBySplittingT: splitSolve: "
 --            ++ "shouldRoundInwardsVec = " ++ show shouldRoundInwardsVec
 --            ++ "tStart = " ++ show tStart
 --            ++ "tEnd = " ++ show tEnd
@@ -301,7 +302,7 @@ solveBySplittingT
                     Just $ (imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
                 False -> Nothing 
                 
-solveBySplittingT0 ::
+solveODEIVPBySplittingT0 ::
     (CanAddVariables f,
      CanEvaluate f,
      CanCompose f,
@@ -331,7 +332,7 @@ solveBySplittingT0 ::
     , 
         SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
     )
-solveBySplittingT0
+solveODEIVPBySplittingT0
         solver
             effDom splitImprovementThreshold minStepSize 
                 odeivpG 
