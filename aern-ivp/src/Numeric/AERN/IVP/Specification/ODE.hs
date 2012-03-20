@@ -165,7 +165,7 @@ evalAtEndTimeOutInFn tVar tEnd (fnOut, fnIn) =
         evalAtPointInEff (evaluationDefaultEffort fnIn) endTimeArea fnL
     valueR =
         evalAtPointInEff (evaluationDefaultEffort fnIn) endTimeArea fnR
-    (fnL, fnR) = RefOrd.getEndpointsOutWithDefaultEffort fnIn
+    (fnR, fnL) = RefOrd.getEndpointsOutWithDefaultEffort fnIn
 --    endTimeArea :: DomainBox f
     endTimeArea = insertVar tVar tEnd $ getDomainBox fnOut
     
@@ -174,6 +174,7 @@ evalAtEndTimeVec ::
     (Show (Domain f), Show f,
      CanEvaluate f,
      RefOrd.IntervalLike f,
+     HasAntiConsistency f,
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
     =>
@@ -189,6 +190,7 @@ evalAtEndTimeFn ::
     (Show (Domain f), Show f,
      CanEvaluate f,
      RefOrd.IntervalLike f,
+     HasAntiConsistency f,
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
     =>
@@ -198,5 +200,5 @@ evalAtEndTimeFn ::
     -> 
     (Domain f, Domain f)
 evalAtEndTimeFn tVar tEnd fn =
-    evalAtEndTimeOutInFn tVar tEnd (fn,fn)
+    evalAtEndTimeOutInFn tVar tEnd (fn, flipConsistency fn)
 
