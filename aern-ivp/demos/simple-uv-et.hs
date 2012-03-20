@@ -17,7 +17,7 @@ import qualified Numeric.AERN.DoubleBasis.Interval as CF
 --import qualified Numeric.AERN.MPFRBasis.Interval as MI
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
---import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
@@ -170,6 +170,38 @@ ivpSpringMass_uv_et =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
+
+--ivpSpringMassAir_ev_et :: ODEIVP Poly
+--ivpSpringMassAir_ev_et =
+--    ivp
+--    where
+--    ivp =
+--        ODEIVP
+--        {
+--            odeivp_description = "x'' = -x - x'*|x'|; (x,x')(" ++ show tStart ++ ") = " ++ show initialValues,
+--            odeivp_field = \ [x,x'] -> [x',neg (x <+> (x' <*> (myAbs x')))],
+--            odeivp_componentNames = ["x", "x'"],
+--            odeivp_tVar = "t",
+--            odeivp_tStart = 0,
+--            odeivp_t0End = 0,
+--            odeivp_tEnd = 1,
+--            odeivp_makeInitialValueFnVec = makeIV,
+--            odeivp_maybeExactValuesAtTEnd = Just [cosOne, -sinOne]
+--        }
+--    initialValues = [1,0]
+--    cosOne = 1 CF.<*>| (cos 1 :: Double)
+--    sinOne = 1 CF.<*>| (sin 1 :: Double)
+--    myAbs fn =
+--        ArithInOut.absOutEff effAbsFn fn
+--        where
+--        effAbsFn = ArithInOut.absDefaultEffort fn
+--        
+--    makeIV =
+--        makeFnVecFromInitialValues componentNames initialValues
+--    componentNames = odeivp_componentNames ivp
+--    tStart = odeivp_tStart ivp
+
+
 
 runOnce :: [String] -> IO ()
 runOnce [ivpName, shouldShowStepsS, maxDegS, depthS] =

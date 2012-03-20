@@ -98,6 +98,7 @@ solveUncertainValueUncertainTime ::
      HasConstFns f,
      RefOrd.PartialComparison f,
      RefOrd.IntervalLike f,
+     HasAntiConsistency f,
      NumOrd.RefinementRoundedLattice f,
      RoundedIntegration f,
      ArithInOut.RoundedAdd f,
@@ -176,7 +177,7 @@ solveUncertainValueUncertainTime
         where
         shiftTByT0 enclosure = 
             (composeVarOutEff effCompose tVar tShifted enclosure,
-             composeVarInEff effCompose tVar tShifted enclosure) 
+             composeVarInEff effCompose tVar tShifted $ flipConsistency enclosure) 
     (Just enclosuresWithTT0) = solveWithExactTime
     -- compute the enclosures parameterised by t and t0:
     solveWithExactTime =

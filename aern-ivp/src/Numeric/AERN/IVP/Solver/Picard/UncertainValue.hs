@@ -53,6 +53,7 @@ solveUncertainValueExactTimeSplit ::
      HasProjections f,
      HasConstFns f,
      RefOrd.IntervalLike f,
+     HasAntiConsistency f,
      RefOrd.PartialComparison f,
      RoundedIntegration f,
      ArithInOut.RoundedAdd f,
