@@ -222,21 +222,26 @@ writeCSV [ivpName, outputFileName] =
     case isClash of
         True -> putStrLn $ "file " ++ outputFileName ++ " exists"
         False ->
-            do
-            results <- mapM runSolverMeasureTimeMS paramCombinations 
-            writeFile outputFileName $ unlines $ csvLines results
+            withFile outputFileName WriteMode $ \ handle ->
+                do
+                writeCSVheader handle
+                mapM_ (runSolverMeasureTimeMSwriteLine handle) paramCombinations
     where
     ivp = ivpByName ivpName
     paramCombinations = 
         [(maxDegree, depth) | 
             maxDegree <- [0..15], depth <- [0..12]]
 --            maxDegree <- [0..10], depth <- [0..5]]
-    runSolverMeasureTimeMS (maxDegree, depth) =
+    writeCSVheader handle =
+        do
+        hPutStrLn handle $ "ivp: " ++ description
+        hPutStrLn handle $ "polynomial degree, min step size (2^(-n)), time (microseconds), error upper bound at t=1, error at t = 1"
+    runSolverMeasureTimeMSwriteLine handle (maxDegree, depth) =
         do
         resultsAndTimes <- mapM solveAndMeasure ([1..1] :: [Int])
         let ((result, _) : _)  = resultsAndTimes
         let averageTime = average $ map snd resultsAndTimes
-        return (result, averageTime)
+        hPutStrLn handle $ makeCSVLine ((result, averageTime), (maxDegree, depth))
         where
         average list = (2 * (sum list) + n) `div` (2 * n)
             where
@@ -248,14 +253,6 @@ writeCSV [ivpName, outputFileName] =
             endtime <- getCPUTime
             return $ (solverResult, (endtime - starttime) `div` 1000000000)
         
-    csvLines results =
-        [
-            "ivp: " ++ description
-        ,
-            "polynomial degree, min step size (2^(-n)), time (microseconds), error upper bound at t=1, error at t = 1"
-        ]
-        ++
-        (map makeCSVLine $ zip results paramCombinations) 
     description = odeivp_description ivp
     maybeVecExact = odeivp_maybeExactValuesAtTEnd ivp
     makeCSVLine (((maybeVec, _), execTimeMS), (maxDegree, depth)) =
