@@ -34,24 +34,26 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+--import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 ----import Numeric.AERN.RefinementOrder.InPlace.OpsImplicitEffort
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
-import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Basics.Mutable
-import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.Basics.Exception
+import Control.Exception
+--import Numeric.AERN.Basics.Effort
+--import Numeric.AERN.Basics.Mutable
+--import Numeric.AERN.RealArithmetic.ExactOps
 
-import Numeric.AERN.Misc.Debug
-
-import Test.QuickCheck
+--import Test.QuickCheck
 
 --import qualified Data.List as List
 
-import Control.Monad.ST (ST)
+--import Control.Monad.ST (ST)
 
+import Numeric.AERN.Misc.Debug
+_ = unsafePrint
 
 type MinmaxEffortIndicatorFromRingOps f t =
         ((ArithUpDn.ConvertEffortIndicator t (Domain f), -- finding the range of a function of type t
@@ -300,9 +302,12 @@ maxZeroDnUp
         a =
     let ?pCompareEffort = effCompDF in
     case (bounded, maybeaDn, c0 <=? aDn, maybeaUp, aUp <=? c0) of
-        (_,Nothing, _,_,_) -> error "maxZeroDnUp called for an unbounded value"
-        (_,_,_,Nothing,_) -> error "maxZeroDnUp called for an unbounded value"
-        (False,_,_,_,_) -> error "maxZeroDnUp called for an unbounded value"
+        (_,Nothing, _,_,_) -> 
+            throw $ AERNException $ "maxZeroDnUp called for an unbounded value: " ++ show a
+        (_,_,_,Nothing,_) -> 
+            throw $ AERNException $ "maxZeroDnUp called for an unbounded value: " ++ show a
+        (False,_,_,_,_) -> 
+            throw $ AERNException $ "maxZeroDnUp called for an unbounded value: " ++ show a
         (_,_, Just True, _, _) ->
 --            unsafePrint ("maxZeroDnUp: positive") $ 
             ((a, a), zero sampleDF)
