@@ -130,7 +130,7 @@ ivpSpringMass_uv_et =
     ivp =
         ODEIVP
         {
-            odeivp_description = "x'' = -x; (x,x')(" ++ show tStart ++ ") = " ++ show initialValues,
+            odeivp_description = "x'' = -x; (x,x')(" ++ show tStart ++ ") ∊ " ++ show initialValues,
             odeivp_field = \ [x,x'] -> [x',neg x],
             odeivp_componentNames = ["x", "x'"],
             odeivp_tVar = "t",
