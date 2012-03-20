@@ -58,13 +58,13 @@ solveUncertainValueUncertainTimeSplit
     tVar = odeivp_tVar odeivpG
     
     solverSplittingT0 odeivp =
-        solveBySplittingT0
+        solveODEIVPBySplittingT0
             solverSplittingAtT0End
                 effDom splitImprovementThreshold minT0StepSize 
                     odeivp
 
     solverSplittingAtT0End odeivp =
-        solveBySplittingAtT0End
+        solveODEIVPBySplittingAtT0End
             solverVT (makeFnVecFromInitialValues componentNames) 
                 solverVt 
                     odeivp

@@ -97,7 +97,7 @@ solveUncertainValueExactTimeSplit
     componentNames = odeivp_componentNames odeivpG
 
     solve odeivp =
-        solveBySplittingT
+        solveODEIVPBySplittingT
             directSolver (makeFnVecFromInitialValues componentNames)
                 effDom splitImprovementThreshold minStepSize
                     odeivp
