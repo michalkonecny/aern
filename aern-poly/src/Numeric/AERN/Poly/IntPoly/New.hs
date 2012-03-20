@@ -100,7 +100,7 @@ instance
         termsReduced = terms -- TODO
          
 instance 
-    (Ord var, Show var, 
+    (Ord var, Show var, Show cf, 
      ArithInOut.RoundedReal cf,
      HasConsistency cf,
      RefOrd.IntervalLike cf) => 
@@ -118,12 +118,12 @@ instance
         vars = ipolycfg_vars cfg
 
 mkConstTerms ::
-    (HasConsistency cf)
+    (HasConsistency cf, Show cf)
     => 
     cf -> [var] -> IntPolyTerms var cf
 mkConstTerms value vars 
-    | valueInConsistent = 
-        error $ "aern-poly: mkConstTerms: inconsistent coefficient"
+--    | valueInConsistent = 
+--        error $ "aern-poly: mkConstTerms: inconsistent coefficient" ++ show value
     | otherwise = 
         aux vars
     where
@@ -133,7 +133,7 @@ mkConstTerms value vars
         (isConsistentEff (consistencyDefaultEffort value) value) == Just False
 
 instance
-    (Ord var, Show var,
+    (Ord var, Show var, Show cf,
      ArithInOut.RoundedReal cf,
      HasConsistency cf,
      RefOrd.IntervalLike cf)
@@ -145,7 +145,7 @@ instance
         sampleCf = getSampleDomValue sampleP
         
 instance
-    (Ord var, Show var,
+    (Ord var, Show var, Show cf,
      HasConsistency cf,
      ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf)
@@ -157,7 +157,7 @@ instance
         sampleCf = getSampleDomValue sampleP
         
 instance
-    (Ord var, Show var,
+    (Ord var, Show var, Show cf,
      HasConsistency cf,
      ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf)
@@ -215,7 +215,7 @@ instance
             
         
 instance 
-    (Ord var, Show var, 
+    (Ord var, Show var,  Show cf,
      HasConsistency cf,
      ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf) => 
@@ -234,7 +234,7 @@ instance
         vars = ipolycfg_vars cfg
         
 mkProjTerms :: 
-    (Eq var, Show var, HasOne cf, 
+    (Eq var, Show var, Show cf, HasOne cf, 
      HasConsistency cf)
     =>
     IntPolyCfg _var cf -> 

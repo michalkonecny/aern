@@ -120,6 +120,17 @@ termsMapCoeffs f (IntPolyV var polys) = IntPolyV var $ powersMapCoeffs f polys
 powersMapCoeffs :: (cf -> cf) -> IntPolyPowers var cf -> IntPolyPowers var cf
 powersMapCoeffs f pwrCoeffs = IntMap.map (termsMapCoeffs f) pwrCoeffs
 
+polyMapConstCoeff :: (cf -> cf) -> IntPoly var cf -> IntPoly var cf
+polyMapConstCoeff f (IntPoly cfg terms) = IntPoly cfg $ termsMapConstCoeff f terms
+
+termsMapConstCoeff :: (cf -> cf) -> IntPolyTerms var cf -> IntPolyTerms var cf
+termsMapConstCoeff f (IntPolyC val) = IntPolyC $ f val
+termsMapConstCoeff f (IntPolyV var powers) = IntPolyV var $ powersMapCoeffs f powers
+
+powersMapConstCoeff :: (cf -> cf) -> IntPolyPowers var cf -> IntPolyPowers var cf
+powersMapConstCoeff f pwrCoeffs = 
+    IntMap.adjust (termsMapConstCoeff f) 0 pwrCoeffs
+
 polyMapVars :: (var -> var) -> IntPoly var cf -> IntPoly var cf
 polyMapVars f (IntPoly cfg terms) = 
     IntPoly cfgNew $ termsMapVars f terms
@@ -334,6 +345,19 @@ termsAreExactEff effImpr (IntPolyV _var polys) =
     results <- mapM (termsAreExactEff effImpr) $ IntMap.elems polys
     return $ and results
 
+getConstantIfPolyConstant ::
+    IntPoly var cf -> Maybe cf
+getConstantIfPolyConstant (IntPoly _ terms) =
+    getConstantIfTermsConstant terms
+
+getConstantIfTermsConstant ::
+    IntPolyTerms var cf -> Maybe cf
+getConstantIfTermsConstant (IntPolyC c) = Just c
+getConstantIfTermsConstant (IntPolyV _ powers) =
+    case IntMap.toList powers of
+        [(n,subterms)] | n == 0 -> getConstantIfTermsConstant subterms
+        _ -> Nothing
+
 polyIsZero ::
     (ArithInOut.RoundedReal cf) 
     => 
@@ -345,9 +369,7 @@ termsIsZero ::
     (ArithInOut.RoundedReal cf) 
     => 
     IntPolyTerms var cf -> Bool
-termsIsZero (IntPolyC val) = (val |==? (zero val)) == Just True
-termsIsZero (IntPolyV _var polys) = 
-    case IntMap.toAscList polys of
-        [] -> True
-        [(0,p)] -> termsIsZero p
+termsIsZero terms =
+    case getConstantIfTermsConstant terms of
+        Just val -> (val |==? (zero val)) == Just True
         _ -> False
