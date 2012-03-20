@@ -44,7 +44,7 @@ type Poly = IntPoly String CF
 
 main :: IO ()
 --main = mainCmdLine False ivpExpDecay_ev_ut
---main = mainCmdLine True ivpExpDecay_uv_ut
+--main = mainCmdLine False ivpExpDecay_uv_ut
 --main = mainCSV ivpExpDecay_ev_ut
 main = mainCSV ivpExpDecay_uv_ut
 --main = mainCSV ivpSpringMassVT
@@ -78,7 +78,7 @@ ivpExpDecay_ev_ut =
     componentNames = odeivp_componentNames ivp
     dummySizeLimits =
         getSizeLimits $
-            makeSampleWithVarsDoms 0 0 [] []
+            makeSampleWithVarsDoms 10 10 [] []
     makeIV sizeLimits t0Var t0Dom =
         [ (1 :: Int) |<+> t0VarFn]
 --        [t0VarFn <+> (xUnitFn </>| (8::Int))]
@@ -124,12 +124,12 @@ ivpExpDecay_uv_ut =
     componentNames = odeivp_componentNames ivp
     dummySizeLimits =
         getSizeLimits $
-            makeSampleWithVarsDoms 0 0 [] []
+            makeSampleWithVarsDoms 10 10 [] []
     makeIV sizeLimits t0Var t0Dom =
-        [ ((-0.125) CF.</\> 0.125) |<+> ((1 :: Int) |<+> t0VarFn)]
---        [t0VarFn <+> (xUnitFn </>| (8::Int))]
+        [((1 :: Int) |<+> t0VarFn) <+> (xUnitFn </>| (8::Int))]
         where
         t0VarFn = newProjectionFromSample sampleInitialValueFn t0Var
+        xUnitFn = newProjectionFromSample sampleInitialValueFn "x"
         sampleInitialValueFn =
             makeSampleWithVarsDoms 
                 maxdeg maxsize 
@@ -137,7 +137,7 @@ ivpExpDecay_uv_ut =
             where
             componentUncertaintyDomains =
                 map snd $ zip componentNames $ repeat unitDom
-            unitDom = 0 CF.</\> 1 
+            unitDom = (-1) CF.</\> 1 
         maxdeg = ipolycfg_maxdeg sizeLimits
         maxsize = ipolycfg_maxsize sizeLimits
 
@@ -171,11 +171,11 @@ mainCSV ivp =
     where
     paramCombinations = 
         [(maxDegree, depth) | 
-            maxDegree <- [1..5], depth <- [0..14]]
+            maxDegree <- [0..15], depth <- [0..12]]
 --            maxDegree <- [0..10], depth <- [0..5]]
     runSolverMeasureTimeMS (maxDegree, depth) =
         do
-        resultsAndTimes <- mapM solveAndMeasure ([1..10] :: [Int])
+        resultsAndTimes <- mapM solveAndMeasure ([1..1] :: [Int])
         let ((result, _) : _)  = resultsAndTimes
         let averageTime = average $ map snd resultsAndTimes
         return (result, averageTime)
