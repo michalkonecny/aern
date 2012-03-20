@@ -42,6 +42,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.Exception
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -146,11 +147,15 @@ solveUncertainValueExactTime
     | (tStart <? t0End) == Just True = 
         error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
     | otherwise =
+        case evalCatchAERNExceptions "solveUncertainValueExactTime" result of
+            Right res -> res
+            _ -> Nothing
+    where
+    result =
         case findEnclosure (40 :: Int) $ iterate picard initialAttemptFns of
             Just firstEnclosure ->
                 Just $ iterate picard firstEnclosure
             Nothing -> Nothing
-    where
     field = odeivp_field odeivp
     tVar = odeivp_tVar odeivp
     tStart = odeivp_tStart odeivp
