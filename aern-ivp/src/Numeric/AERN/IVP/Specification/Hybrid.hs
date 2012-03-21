@@ -54,9 +54,9 @@ data HybridIVP f =
     ,
         hybivp_tEnd :: Domain f -- ^ @tEnd@
     ,
-        hybivp_makeInitialValueFnVec :: HybridSystemUncertainState f 
-        {-^ 
-        -} 
+        hybivp_initialStateEnclosure :: HybridSystemUncertainState f 
+        {-^
+        -}
     }
 
 data HybridSystem f =
@@ -79,5 +79,5 @@ data HybridSystemUncertainState f =
     {
         hybstate_mode :: Set.Set HybSysMode
     ,
-        hybstate_values :: [f]
+        hybstate_values :: [Domain f]
     }

@@ -38,6 +38,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.Consistency
 
 import Numeric.AERN.Misc.Debug
+_ = unsafePrint
 
 data ODEIVP f =
     ODEIVP
@@ -158,17 +159,36 @@ evalAtEndTimeOutInFn tVar tEnd (fnOut, fnIn) =
     valueIn =
         RefOrd.fromEndpointsOutWithDefaultEffort (valueRL, valueLR)
     (_, valueLR) =
-        RefOrd.getEndpointsOutWithDefaultEffort valueL
+        RefOrd.getEndpointsOutWithDefaultEffort valueBelowR
     (valueRL, _) =
-        RefOrd.getEndpointsOutWithDefaultEffort valueR
-    valueL =
-        evalAtPointInEff (evaluationDefaultEffort fnIn) endTimeArea fnL
-    valueR =
-        evalAtPointInEff (evaluationDefaultEffort fnIn) endTimeArea fnR
-    (fnR, fnL) = RefOrd.getEndpointsOutWithDefaultEffort fnIn
+        RefOrd.getEndpointsOutWithDefaultEffort valueAboveL
+    valueBelowR =
+        evalAtPointInEff (evaluationDefaultEffort fnIn) endTimeArea fnBelowR
+    valueAboveL =
+        evalAtPointInEff (evaluationDefaultEffort fnIn) endTimeArea fnAboveL
+    (fnAboveL, fnBelowR) = RefOrd.getEndpointsOutWithDefaultEffort fnIn
 --    endTimeArea :: DomainBox f
     endTimeArea = insertVar tVar tEnd $ getDomainBox fnOut
-    
+
+-----------------------------------------------------
+----solving: x'' = -x; (x,x')(<0.0>) ∊ [[_0.875,1.125^],[_-0.125,0.125^]]
+--------------  parameters: -------------------------
+----maxdeg = 2
+----maxsize = 100
+----delta = <1.0>
+----m = 20
+----minimum step size = 2^{-1}
+----split improvement threshold = <8.881784197001252e-16>
+----(almost) exact result = x(<1.0>) ∊ [_0.3675806445336352,0.7130239672026444^](err<=<0.0>); valueIn = [_0.3675806445336352,0.7130239672026444^]
+----(almost) exact result = x'(<1.0>) ∊ [_-1.0141926461424013,-0.668749323473392^](err<=<0.0>); valueIn = [_-1.0141926461424013,-0.668749323473392^]
+--------------  result: -----------------------------
+---- >>> x(<1.0>) ∊ [_0.18211986400462954,0.8829619482220938^](err<=<0.2652861669720941>); valueIn = [_0.31411856192129634,0.7496744791666665^]
+---- >>> x'(<1.0>) ∊ [_-1.2113534432870372,-0.4971501856674382^](err<=<0.2887836974344141>); valueIn = [_-1.0673828124999998,-0.6419632523148149^]
+-----------------------------------------------------
+----simple-uv-et: enclosure error:
+---- vecOut = [[_0.18211986400462954,0.8829619482220938^],[_-1.2113534432870372,-0.4971501856674382^]]
+---- vecExact = [[_0.3675806445336352,0.7130239672026444^],[_-1.0141926461424013,-0.668749323473392^]]
+---- vecIn = [[_0.31411856192129634,0.7496744791666665^],[_-1.0673828124999998,-0.6419632523148149^]]
         
 evalAtEndTimeVec ::
     (Show (Domain f), Show f,
