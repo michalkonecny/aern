@@ -92,10 +92,10 @@ instance
             Nothing -> evalDirect valsLZ p
             _ -> evalPolyMono evalDirect ops valsLZ p 
         where
-        evalDirect vals p = 
+        evalDirect vals p2 = 
             flipConsistency $
                 evalPolyDirect ops vals $ 
-                    flipConsistencyPoly p
+                    flipConsistencyPoly p2
         valsLZ = valsMapToValuesLZ subtrCf cfg valsMap
         subtrCf val domLE =
              addV val (cfV $ neg domLE)
