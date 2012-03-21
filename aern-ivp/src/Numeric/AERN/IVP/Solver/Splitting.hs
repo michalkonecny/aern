@@ -44,6 +44,9 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 
+import Numeric.AERN.Basics.Exception
+import Control.Exception (throw)
+
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
         
@@ -70,16 +73,30 @@ solveODEIVPBySplittingAtT0End
             Just (valuesLOut, valuesLIn) ->
                 case (maybeResultROut, maybeResultRIn) of
                     (Just (resultOut, _), Just (resultInOut, resultInIn)) ->
+--                        unsafePrint
+--                        (
+--                            "solveODEIVPBySplittingAtT0End:"
+--                            ++ "\n t0End = " ++ show t0End
+--                            ++ "\n valuesLOut = " ++ show valuesLOut
+--                            ++ "\n valuesLIn = " ++ show valuesLIn
+--                            ++ "\n valuesLInUsed = " ++ show valuesLInUsed
+--                            ++ "\n resultOut = " ++ show resultOut
+--                            ++ "\n resultInOut = " ++ show resultInOut
+--                            ++ "\n resultInIn = " ++ show resultInIn
+--                            ++ "\n resultInUsed = " ++ show resultInUsed
+--                        ) $
                         (Just result, Just (Just result, infoROut))
                         where
-                        result = (resultOut, makeResultsIn resultInOut resultInIn)
+                        result = (resultOut, resultInUsed)
+                        resultInUsed = makeResultsIn resultInOut resultInIn
                     (Nothing, _) -> (Nothing, Just (Nothing, infoROut))
                     (_, Nothing) -> (Nothing, Just (Nothing, infoRIn))
                 where
                 (maybeResultROut, infoROut) = solverVt odeivpROut
                 (maybeResultRIn, infoRIn) = solverVt odeivpRIn
                 odeivpROut = odeivpR valuesLOut
-                odeivpRIn = odeivpR $ mapInconsistentOnes flipConsistency valuesLIn
+                odeivpRIn = odeivpR valuesLInUsed 
+                valuesLInUsed = mapInconsistentOnes flipConsistency valuesLIn
                 makeResultsIn resultInOut resultInIn =
                     map pick $ zip3 whichLValuesConsistent resultInOut resultInIn
                     where
@@ -87,19 +104,25 @@ solveODEIVPBySplittingAtT0End
                     pick (False, valueOut, _) = flipConsistency valueOut
                 mapInconsistentOnes :: (a -> a) -> [a] -> [a]
                 mapInconsistentOnes f vec =
-                    map fOnConsistent $ zip whichLValuesConsistent vec
+                    map fOnInconsistent $ zip whichLValuesConsistent vec
                     where
-                    fOnConsistent (thisOneIsConsistent, value) 
+                    fOnInconsistent (thisOneIsConsistent, value) 
                         | thisOneIsConsistent = value
                         | otherwise = f value
-                whichLValuesConsistent =
-                    map (/= Just False) $
-                        map (isConsistentEff $ consistencyDefaultEffort sampleDom) valuesLIn
+                whichLValuesConsistent 
+                    | and result2 = result2
+                    | and $ map not result2 = result2
+                    | otherwise = 
+                        throw $ AERNException "aern-ivp: Splitting: solveODEIVPBySplittingAtT0End: currently cannot deal with intermediate results of mixed consistency"
+                    where
+                    result2 =
+                        map (/= Just False) $
+                            map (isConsistentEff $ consistencyDefaultEffort sampleDom) valuesLIn
                 (sampleDom : _) = valuesLIn
                 odeivpR valuesL =
                     odeivpG
                         {
-                            odeivp_tStart = odeivp_t0End odeivpG
+                            odeivp_tStart = t0End
                         ,
                             odeivp_makeInitialValueFnVec =
                                 makeMakeInitValFnVec valuesL
@@ -110,8 +133,9 @@ solveODEIVPBySplittingAtT0End
     odeivpL =
         odeivpG
             {
-                odeivp_tEnd = odeivp_t0End odeivpG
+                odeivp_tEnd = t0End
             }
+    t0End = odeivp_t0End odeivpG
     
 solveODEIVPBySplittingT ::
     (CanAddVariables f,
@@ -143,21 +167,26 @@ solveODEIVPBySplittingT ::
     ->
     (
         Maybe ([Domain f], [Domain f])
-    , 
-        SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+    ,
+        (
+            SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+        ,
+            SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+        )
     )
 solveODEIVPBySplittingT
         solver makeMakeInitValFnVec
             effDom splitImprovementThreshold minStepSize 
                 odeivpG 
     =
-    (valuesAtTEnd, info)
+    result
     where
-    (valuesAtTEnd, info) = 
-        case (splitSolve (replicate dimension False) odeivpG, splitSolve (replicate dimension True) odeivpG) of
-            ((Just valuesOut, info2), (Just valuesIn, _)) -> (Just (valuesOut, valuesIn), info2)
-            ((_, info2), _) -> (Nothing, info2)
-    dimension = length $ odeivp_componentNames odeivpG
+    result = 
+        case (splitSolve False odeivpG, splitSolve True odeivpG) of
+            ((Just valuesOut, infoOut), (Just valuesIn, infoIn)) -> 
+                (Just (valuesOut, valuesIn), (infoOut, infoIn))
+            ((_, infoOut), (_, infoIn)) -> 
+                (Nothing, (infoOut, infoIn))
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDivDomInt = 
         ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
@@ -170,24 +199,17 @@ solveODEIVPBySplittingT
 --    sampleImpr = imprecisionOfEff effImpr sampleDom
 --    effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
     
-    mergeOutIn :: [Bool] -> [a] -> [a] -> [a]
-    mergeOutIn shouldRoundInwardsVec vecOut vecIn =
-        map pick $ zip3 shouldRoundInwardsVec vecOut vecIn
-        where
-        pick (True, _, valueIn) = valueIn
-        pick (False, valueOut, _) = valueOut
-    
-    splitSolve shouldRoundInwardsVec odeivp =
+    splitSolve shouldRoundInwards odeivp =
 --        unsafePrint
 --        (
 --            "solveODEIVPBySplittingT: splitSolve: "
---            ++ "shouldRoundInwardsVec = " ++ show shouldRoundInwardsVec
+--            ++ "shouldRoundInwards = " ++ show shouldRoundInwards
 --            ++ "tStart = " ++ show tStart
 --            ++ "tEnd = " ++ show tEnd
 --        ) $
-        result
+        results
         where
-        result
+        results
             | belowStepSize = directComputation
             | directComputationFailed = splitComputation
             | otherwise = 
@@ -206,9 +228,9 @@ solveODEIVPBySplittingT
 
         directComputation =
             case maybeDirectResult of
-                Just (resultOut, resultIn) ->
-                    (Just $ mergeOutIn shouldRoundInwardsVec resultOut resultIn, 
-                     SegNoSplit directInfo)
+                Just (resultOut, resultIn) 
+                    | shouldRoundInwards -> (Just resultIn, SegNoSplit directInfo)
+                    | otherwise -> (Just resultOut, SegNoSplit directInfo)
                 _ -> (Nothing, SegNoSplit directInfo) 
         (maybeDirectResult, directInfo) = solver odeivp
         directComputationFailed =
@@ -218,12 +240,14 @@ solveODEIVPBySplittingT
             case solver odeivpL of
                 (Just (midValuesOut, midValuesIn), _) ->
                     case solver odeivpR of
-                        (Just (endValuesOut, endValuesIn), _) ->
-                            Just $ mergeOutIn shouldRoundInwardsVec endValuesOut endValuesIn 
+                        (Just (endValuesOut, endValuesIn), _) 
+                            | shouldRoundInwards -> Just endValuesIn
+                            | otherwise -> Just endValuesOut 
                         _ -> Nothing
                     where
-                    midValues =
-                        mergeOutIn shouldRoundInwardsVec midValuesOut midValuesIn
+                    midValues 
+                        | shouldRoundInwards = midValuesIn
+                        | otherwise = midValuesOut
                     odeivpR =
                         odeivp
                         {
@@ -235,37 +259,39 @@ solveODEIVPBySplittingT
                 _ -> Nothing
                 
         splitComputation =
-            case splitSolve shouldRoundInwardsVec odeivpL of
+            case splitSolve shouldRoundInwards odeivpL of
                 (Just midValues, infoL) -> 
-                    case splitSolve shouldRoundInwardsVecConsistent odeivpR of
+                    case splitSolve shouldRoundInwardsR odeivpR of
                         (Nothing, infoR) ->
                             (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
                         (Just endValues, infoR) ->
                             (
-                                Just $ mapInconsistentOnes flipConsistency endValues
+                                Just $ maybeFlip endValues
                             , 
                                 SegSplit (directInfo, maybeSplitImprovement) infoL infoR
                             )
                     where
-                    mapInconsistentOnes :: (a -> a) -> [a] -> [a]
-                    mapInconsistentOnes f vec =
-                        map fOnConsistent $ zip whichMidValuesConsistent vec
+                    maybeFlip 
+                        | not midValuesAreConsistent = map flipConsistency
+                        | otherwise = id
+                    shouldRoundInwardsR =
+                        shouldRoundInwards && midValuesAreConsistent
+                    midValuesAreConsistent
+                        | and result2 = True
+                        | not (or result2) = False
+                        | otherwise =
+                            throw $ AERNException "aern-ivp: Splitting: solveODEIVPBySplittingT: currently cannot deal with intermediate results of mixed consistency"
                         where
-                        fOnConsistent (thisOneIsConsistent, value) 
-                            | thisOneIsConsistent = value
-                            | otherwise = f value
-                        whichMidValuesConsistent =
+                        result2 =
                             map (/= Just False) $
                                 map (isConsistentEff $ consistencyDefaultEffort sampleDom) midValues
-                    shouldRoundInwardsVecConsistent =
-                        mapInconsistentOnes not shouldRoundInwardsVec
                     odeivpR =
                         odeivp
                         {
                             odeivp_tStart = tMid,
                             odeivp_t0End = tMid, -- exact initial time
                             odeivp_makeInitialValueFnVec =
-                                makeMakeInitValFnVec $ mapInconsistentOnes flipConsistency midValues
+                                makeMakeInitValFnVec $ maybeFlip midValues
                         }
                 failedLeftComputation -> failedLeftComputation
         odeivpL =
@@ -280,18 +306,18 @@ solveODEIVPBySplittingT
         
         maybeSplitImprovement =
             case (directComputation, splitOnceComputation) of
-                ((Just directResult, _), Just splitOnceResult) -> 
-                    measureImprovementVec directResult splitOnceResult
+                ((Just directResult, _), Just splitOnceResult) 
+                    | shouldRoundInwards -> 
+                        measureImprovementVec splitOnceResult directResult
+                    | otherwise ->
+                        measureImprovementVec directResult splitOnceResult
                 _ -> Nothing
-        measureImprovementVec vec1 vec2 =
+        measureImprovementVec vec1 vec2 = 
             do
             improvements <- sequence $ 
                                 map measureImprovement $ 
-                                    zipWith switchDirIfInwards shouldRoundInwardsVec $ 
-                                        zip vec1 vec2
+                                    zip vec1 vec2
             Just $ foldl1 (NumOrd.minOutEff effMinmax) improvements
-        switchDirIfInwards True (a,b) = (b,a)
-        switchDirIfInwards False pair = pair
         measureImprovement (encl1, encl2) =
             let ?addInOutEffort = effAddDom in
             let ?pCompareEffort = effRefComp in

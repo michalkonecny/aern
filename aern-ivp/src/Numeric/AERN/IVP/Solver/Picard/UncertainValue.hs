@@ -82,7 +82,11 @@ solveUncertainValueExactTimeSplit ::
     (
         Maybe ([Domain f], [Domain f])
     ,
-        SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+        (
+            SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+        ,
+            SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+        )
     )
 solveUncertainValueExactTimeSplit
         sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
