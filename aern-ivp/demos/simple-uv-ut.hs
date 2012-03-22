@@ -146,13 +146,13 @@ ivpSpringMass_ut withInitialValueUncertainty =
                         ]
                     False ->
                         [
-                            ((0.875 * cosOnePlusEps) - 0.125 * sinOnePlusEps)  
+                            ((0.875 * cosOnePlusEps))  
                             CF.</\>
-                            ((1.125 * cosOneMinusEps) + 0.125 * sinOneMinusEps)
+                            ((1.125 * cosOneMinusEps))
                         ,
-                            (-(0.875 * sinOnePlusEps) - 0.125 * cosOnePlusEps)  
+                            (-(0.875 * sinOnePlusEps))  
                             CF.</\>
-                            (-(1.125 * sinOneMinusEps) + 0.125 * cosOneMinusEps)
+                            (-(1.125 * sinOneMinusEps))
                         ]
         }
     cosOnePlusEps = 1 CF.<*>| (cos 1.125 :: Double)
