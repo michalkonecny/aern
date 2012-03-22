@@ -307,6 +307,8 @@ solveODEIVPBySplittingT
         maybeSplitImprovement =
             case (directComputation, splitOnceComputation) of
                 ((Just directResult, _), Just splitOnceResult) 
+--            case (directComputation, splitComputation) of
+--                ((Just directResult, _), (Just splitOnceResult, _)) 
                     | shouldRoundInwards -> 
                         measureImprovementVec splitOnceResult directResult
                     | otherwise ->
@@ -322,11 +324,11 @@ solveODEIVPBySplittingT
             let ?addInOutEffort = effAddDom in
             let ?pCompareEffort = effRefComp in
             do
-            refines <- encl1 |<=? encl2
-            case refines of
-                True -> 
+--            refines <- encl1 |<=? encl2
+--            case refines of
+--                True -> 
                     Just $ (imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
-                False -> Nothing 
+--                False -> Nothing 
                 
 solveODEIVPBySplittingT0 ::
     (CanAddVariables f,
@@ -462,6 +464,8 @@ solveODEIVPBySplittingT0
         maybeSplitImprovement =
             case (directComputation, splitOnceComputation) of
                 ((Just (directResult, _), _), Just (splitOnceResult, _)) ->
+--            case (directComputation, splitComputation) of
+--                ((Just (directResult, _), _), (Just (splitOnceResult, _), _)) ->
                     measureImprovementVec directResult splitOnceResult
                 _ -> Nothing
         measureImprovementVec vec1 vec2 =
@@ -472,11 +476,11 @@ solveODEIVPBySplittingT0
             let ?addInOutEffort = effAddDom in
             let ?pCompareEffort = effRefComp in
             do
-            refines <- encl1 |<=? encl2
-            case refines of
-                True -> 
+--            refines <- encl1 |<=? encl2
+--            case refines of
+--                True -> 
                     Just $ (imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
-                False -> Nothing 
+--                False -> Nothing 
 
 data SplittingInfo segInfo splitReason
     = SegNoSplit segInfo

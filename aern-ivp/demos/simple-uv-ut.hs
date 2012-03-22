@@ -26,7 +26,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.ShowInternals
 
-import Data.List (intercalate)
+--import Data.List (intercalate)
 
 import System.IO
 import System.Environment
@@ -231,7 +231,7 @@ writeCSV [ivpName, outputFileName] =
     ivp = ivpByName ivpName
     paramCombinations = 
         [(maxDegree, depth) | 
-            maxDegree <- [0..15], depth <- [0..12]]
+            maxDegree <- [0..15], depth <- [0..10]]
 --            maxDegree <- [0..10], depth <- [0..5]]
     writeCSVheader handle =
         do
