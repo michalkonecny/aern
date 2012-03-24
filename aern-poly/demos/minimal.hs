@@ -7,37 +7,39 @@ import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RmToRn.Integration
 
-import Numeric.AERN.RealArithmetic.Basis.Double
+import Numeric.AERN.RealArithmetic.Basis.Double ()
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
 import Numeric.AERN.Basics.Interval
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
-import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Measures 
+--import Numeric.AERN.RealArithmetic.ExactOps
+--import Numeric.AERN.RealArithmetic.Measures 
 
-import qualified Numeric.AERN.RefinementOrder as RefOrd
+--import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+--import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Basics.Consistency
+--import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.ShowInternals
-
-import Numeric.AERN.Misc.Debug
 
 import System.IO
 
 import qualified Data.Map as Map
-import qualified Data.List as List
+--import qualified Data.List as List
+
+import Numeric.AERN.Misc.Debug
+_ = unsafePrint
 
 --type CF = Interval MPFR
 type CF = Interval Double
 type Poly = IntPoly String CF
+
 
 main :: IO ()
 main =
@@ -73,7 +75,11 @@ main =
     putStrLn $ "((x+y)^2)evalOut9[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 9) dombox $ (x <+> y) <^> 2)
     putStrLn $ "((x+y)^2)evalOut10[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 10) dombox $ (x <+> y) <^> 2)
 --    putStrLn $ "((x+y)^2)evalIn[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointInEff eff dombox $ (x <+> y) <^> 2)
---    putStrLn "partial evaluation:"
+    putStrLn "partial evaluation:"
+    putStrLn $ "((x+y)^2)evalOut[x=1] = " ++ (show $ pEvalAtPointOutEff effComp (fromList [("x",1)]) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut[y=1] = " ++ (show $ pEvalAtPointOutEff effComp (fromList [("y",1)]) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut[x=[-1,1]] = " ++ (show $ pEvalAtPointOutEff effComp domboxNoY $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut[y=[-1,1]] = " ++ (show $ pEvalAtPointOutEff effComp domboxNoX $ (x <+> y) <^> 2)
     putStrLn "composition:"
     putStrLn $ "(x+y)^2 = " ++ (showP $ (x <+> y) <^> 2)
     
@@ -297,6 +303,12 @@ cfgXTinySize2 = cfgXTiny { ipolycfg_maxsize = 2 }
 
 dombox :: DomainBox Poly
 dombox = Map.fromList $ zip vars doms
+
+domboxNoX :: DomainBox Poly
+domboxNoX = Map.fromList $ drop 1 $ zip vars doms
+
+domboxNoY :: DomainBox Poly
+domboxNoY = Map.fromList $ take 1 $ zip vars doms
 
 vars :: [Var Poly]
 vars = ["x", "y"]

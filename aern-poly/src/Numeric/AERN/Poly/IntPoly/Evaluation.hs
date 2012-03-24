@@ -586,22 +586,6 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
     sampleCf = ipolycfg_sample_cf cfg
     
 
-instance
-    (Ord var, Show var, Show cf,
-     ArithInOut.RoundedReal cf, 
-     HasAntiConsistency cf, 
-     RefOrd.IntervalLike cf)
-    =>
-    CanPartiallyEvaluate (IntPoly var cf)
-    where
-    type (PartialEvaluationEffortIndicator (IntPoly var cf)) = 
-        ArithInOut.RoundedRealEffortIndicator cf
-    partialEvaluationDefaultEffort (IntPoly cfg _) =
-        ArithInOut.roundedRealDefaultEffort (ipolycfg_sample_cf cfg)
-    pEvalAtPointOutEff = partiallyEvalPolyAtPointOut
-    pEvalAtPointInEff =
-        error "aern-poly: no inwards-rounded partial evaluation for IntPoly" 
-    
 partiallyEvalPolyAtPointOut ::
     (Ord var, ArithInOut.RoundedReal cf) 
     =>

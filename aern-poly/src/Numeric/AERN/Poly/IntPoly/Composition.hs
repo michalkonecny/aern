@@ -23,7 +23,7 @@
 module Numeric.AERN.Poly.IntPoly.Composition
 where
 
-import Numeric.AERN.Poly.IntPoly.Config
+--import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
 import Numeric.AERN.Poly.IntPoly.New ()
 import Numeric.AERN.Poly.IntPoly.Evaluation
@@ -38,7 +38,7 @@ import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort ((<+>|))
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort ((<+>|))
 --import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import Numeric.AERN.RealArithmetic.ExactOps
@@ -54,8 +54,9 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 
 import Numeric.AERN.Misc.Debug
+_ = unsafePrint
 
-import qualified Data.IntMap as IntMap
+--import qualified Data.IntMap as IntMap
 --import qualified Data.Map as Map
 
 instance
@@ -74,11 +75,11 @@ instance
     evalOpsDefaultEffort _ sampleP = 
         NumOrd.pCompareDefaultEffort sampleP
     evalOpsEff eff _ sampleP =
-        polyPolyEvalOpsOut eff sampleP sampleCf
+        polyPolyEvalOps eff sampleP sampleCf
         where
         sampleCf = getSampleDomValue sampleP
 
-polyPolyEvalOpsOut ::
+polyPolyEvalOps ::
     (Ord var, Show var, Show cf,
      RefOrd.IntervalLike cf, 
      ArithInOut.RoundedReal cf,
@@ -90,7 +91,7 @@ polyPolyEvalOpsOut ::
    (IntPoly var cf) ->
    cf ->
    PolyEvalOps var cf (IntPoly var cf)
-polyPolyEvalOpsOut effCmp@(_,(effCf, Int1To10 maxSplitDepth)) sampleP sampleCf =
+polyPolyEvalOps effCmp@(_,(effCf, Int1To10 maxSplitDepth)) sampleP sampleCf =
     result
     where
     result =
@@ -140,13 +141,52 @@ instance
     type CompositionEffortIndicator (IntPoly var cf) = 
         (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)
     compositionDefaultEffort p = evaluationDefaultEffort p
---    composeVarsOutEff = polyComposeAllVarsOutEff
+    composeVarsOutEff = 
+        polyComposeVarsOutEff
+    composeVarsInEff = 
+        polyComposeVarsInEff
     composeVarOutEff eff substVar substPoly = 
 --        performEndpointWiseWithDefaultEffort $
             polyComposeVarOutEff eff substVar substPoly 
     composeVarInEff eff substVar substPoly = 
         performEndpointWiseWithDefaultEffort $
             polyComposeVarInEff eff substVar substPoly
+
+instance
+    (Ord var, Show var, 
+     Show cf,
+     ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf,
+     Show (Imprecision cf),
+     NumOrd.PartialComparison (Imprecision cf),
+     RefOrd.IntervalLike cf)
+    => 
+    CanPartiallyEvaluate (IntPoly var cf)
+    where
+    type PartialEvaluationEffortIndicator (IntPoly var cf) = 
+        CompositionEffortIndicator (IntPoly var cf)
+    partialEvaluationDefaultEffort p =
+        compositionDefaultEffort p
+    pEvalAtPointOutEff effComp evalValuesBox p = 
+        composeVarsOutEff effComp composeBox p
+        where
+        composeBox =
+            fromAscList $ 
+                map getVarComposeValue $
+                    toAscList evalValuesBox
+        getVarComposeValue (var,value) =
+            (var, newConstFnFromSample p value)
+    pEvalAtPointInEff effComp evalValuesBox p =
+        composeVarsInEff effComp composeBox p
+        where
+        composeBox =
+            fromAscList $ 
+                map getVarComposeValue $
+                    toAscList evalValuesBox
+        getVarComposeValue (var,value) =
+            (var, newConstFnFromSample p value)
+    
+
 
 -- TODO: move this function to aern-order
 performEndpointWiseWithDefaultEffort ::
@@ -164,15 +204,47 @@ performEndpointWiseWithDefaultEffort fn p =
     (pL, pR) = RefOrd.getEndpointsOutWithDefaultEffort p
      
         
--- TODO: this function should be moved to aern-realfn        
+-- TODO: the following functions should be made independent of IntPoly and moved to aern-realfn        
+polyComposeVarOutEff ::
+    (Ord var, Show var, 
+     Show cf,
+     ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf,
+     Show (Imprecision cf),
+     NumOrd.PartialComparison (Imprecision cf),
+     RefOrd.IntervalLike cf,
+     f ~ (IntPoly var cf))
+    =>
+    CompositionEffortIndicator f ->
+    Var f ->
+    f ->
+    f ->
+    f 
 polyComposeVarOutEff eff substVar substPoly p =
+    polyComposeVarsOutEff eff (fromList [(substVar, substPoly)]) p
+
+polyComposeVarsOutEff ::
+    (Ord var, Show var, 
+     Show cf,
+     ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf,
+     Show (Imprecision cf),
+     NumOrd.PartialComparison (Imprecision cf),
+     RefOrd.IntervalLike cf,
+     f ~ (IntPoly var cf))
+    =>
+    CompositionEffortIndicator f ->
+    VarBox f f ->
+    f ->
+    f 
+polyComposeVarsOutEff eff substBox p =
     result
     where
     vars = getVars $ getDomainBox p -- ipolycfg_vars cfg
     result =
 --        unsafePrintReturn
 --        (
---            "polyComposeVarOutEff:"
+--            "polyComposeVarsOutEff:"
 --            ++ "\n varSubstBox = " ++ show varSubstBox
 --            ++ "\n p = " ++ show p
 --            ++ "\n result = "
@@ -181,36 +253,78 @@ polyComposeVarOutEff eff substVar substPoly p =
         where
         varSubstBox =
             fromList $ map makeVarSubst vars
-        makeVarSubst var
-            | var == substVar = (var, substPoly)
-            | otherwise = (var,  proj)
+        makeVarSubst var = 
+            case lookupVar substBox var of
+                Just substPoly -> (var, substPoly)
+                _ -> (var,  proj)
             where
             proj =
-                newProjectionFromSample substPoly var
+                newProjectionFromSample sampleP var
     ops =
-        polyPolyEvalOpsOut (Int1To1000 0, eff) sampleP sampleCf
-    sampleP = substPoly
-    sampleCf = getSampleDomValue substPoly
+        polyPolyEvalOps (Int1To1000 0, eff) sampleP sampleCf
+    ((_,sampleP) : _) = toAscList substBox
+    sampleCf = getSampleDomValue sampleP
 
+polyComposeVarInEff ::
+    (Ord var, Show var, 
+     Show cf,
+     ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf,
+     Show (Imprecision cf),
+     NumOrd.PartialComparison (Imprecision cf),
+     RefOrd.IntervalLike cf,
+     f ~ (IntPoly var cf))
+    =>
+    CompositionEffortIndicator f ->
+    Var f ->
+    f ->
+    f ->
+    f 
 polyComposeVarInEff eff substVar substPoly p =
+    polyComposeVarsInEff eff (fromList [(substVar, substPoly)]) p
+
+polyComposeVarsInEff ::
+    (Ord var, Show var, 
+     Show cf,
+     ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf,
+     Show (Imprecision cf),
+     NumOrd.PartialComparison (Imprecision cf),
+     RefOrd.IntervalLike cf,
+     f ~ (IntPoly var cf))
+    =>
+    CompositionEffortIndicator f ->
+    VarBox f f ->
+    f ->
+    f 
+polyComposeVarsInEff eff substBox p =
     result
     where
     vars = getVars $ getDomainBox p -- ipolycfg_vars cfg
     result =
+--        unsafePrintReturn
+--        (
+--            "polyComposeVarsOutEff:"
+--            ++ "\n varSubstBox = " ++ show varSubstBox
+--            ++ "\n p = " ++ show p
+--            ++ "\n result = "
+--        ) $
         evalOtherTypeInner ops varSubstBox p
         where
         varSubstBox =
             fromList $ map makeVarSubst vars
-        makeVarSubst var
-            | var == substVar = (var, substPoly)
-            | otherwise = (var,  proj)
+        makeVarSubst var = 
+            case lookupVar substBox var of
+                Just substPoly -> (var, substPoly)
+                _ -> (var,  proj)
             where
             proj =
-                newProjectionFromSample substPoly var
+                newProjectionFromSample sampleP var
     ops =
-        polyPolyEvalOpsOut (Int1To1000 0, eff) sampleP sampleCf
-    sampleP = substPoly
-    sampleCf = getSampleDomValue substPoly
+        polyPolyEvalOps (Int1To1000 0, eff) sampleP sampleCf
+    ((_,sampleP) : _) = toAscList substBox
+    sampleCf = getSampleDomValue sampleP
+
     
 {- 
     the following are optimized versions of the above; 
@@ -254,7 +368,7 @@ polyComposeVarInEff eff substVar substPoly p =
 --            proj =
 --                newProjectionFromSample p var
 --    opsMainVarOnly =
---        (polyPolyEvalOpsOut (Int1To1000 0, eff) sampleP sampleCf)
+--        (polyPolyEvalOps (Int1To1000 0, eff) sampleP sampleCf)
 --            {
 --                polyEvalMaybePoly = polyEvalCopySubPolynomials
 --            }
@@ -307,7 +421,7 @@ polyComposeVarInEff eff substVar substPoly p =
 --        makeVarSubst var =
 --            (var, newProjectionFromSample sampleP var)
 --    opsMainVarOnly =
---        (polyPolyEvalOpsOut (Int1To1000 0, eff) sampleP sampleCf)
+--        (polyPolyEvalOps (Int1To1000 0, eff) sampleP sampleCf)
 --            {
 --                polyEvalMaybePoly = polyEvalCopySubPolynomials
 --            }
