@@ -104,12 +104,26 @@ class (HasDomainBox f) => CanCompose f
     compositionDefaultEffort :: f -> CompositionEffortIndicator f
     composeVarsOutEff ::
         CompositionEffortIndicator f -> 
-        (VarBox f f) {-^ for each variable, a function with domain @D'@  -} -> 
+        (VarBox f f) 
+            {-^ 
+                For some variables, a function with domain @D'@.
+                The domain @D'@ must include the dimensions of @D@ that
+                are not to be substituted by another value according to this box.  
+            -} 
+        -> 
         f {-^ a function @f@ with domain @D@ -} -> 
         f {-^ an approximation of the composition of function @f@ with the given functions -}
     composeVarsInEff ::
         CompositionEffortIndicator f -> 
-        (VarBox f f) -> f -> f
+        (VarBox f f) 
+            {-^ 
+                For some variables, a function with domain @D'@.
+                The domain @D'@ must include the dimensions of @D@ that
+                are not to be substituted by another value according to this box.  
+            -} 
+        -> 
+        f {-^ a function @f@ with domain @D@ -} -> 
+        f {-^ an approximation of the composition of function @f@ with the given functions -}
     composeVarOutEff ::
         CompositionEffortIndicator f ->
         (Var f) {-^ variable @v@ -} -> 
