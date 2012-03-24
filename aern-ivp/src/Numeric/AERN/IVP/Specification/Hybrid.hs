@@ -36,8 +36,8 @@ import qualified Data.Map as Map
 --import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
 --
---import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 --import Numeric.AERN.Misc.Debug
 
@@ -77,7 +77,32 @@ newtype HybSysEventKind = HybSysEventKind String deriving (Eq, Ord, Show)
 data HybridSystemUncertainState f =
     HybridSystemUncertainState
     {
-        hybstate_mode :: Set.Set HybSysMode
+        hybstate_modes :: Set.Set HybSysMode
     ,
         hybstate_values :: [Domain f]
     }
+    
+mergeHybridStates ::
+    (RefOrd.RoundedLattice (Domain f))
+    =>
+    RefOrd.JoinMeetEffortIndicator (Domain f) ->
+    HybridSystemUncertainState f ->
+    HybridSystemUncertainState f ->
+    HybridSystemUncertainState f
+mergeHybridStates effJoin state1 state2 =
+    HybridSystemUncertainState
+    {
+        hybstate_modes = Set.union modes1 modes2
+    ,
+        hybstate_values = 
+            let ?joinmeetEffort = effJoin in
+            zipWith (</\>) values1 values2
+    }
+    where
+    modes1 = hybstate_modes state1
+    modes2 = hybstate_modes state2
+    values1 = hybstate_values state1
+    values2 = hybstate_values state2
+    
+    
+    

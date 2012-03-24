@@ -23,6 +23,7 @@ import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
+import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.ShowInternals
@@ -60,26 +61,37 @@ main =
                     ++ (showP $ addVariablesFront (zip ["z1","z2"] doms) twoBxPyP2)
     putStrLn $ "2(x + y + 2) [new vars z1,z2 at the back] = " 
                     ++ (showP $ addVariablesBack (zip ["z1","z2"] doms) twoBxPyP2)
---    putStrLn "evaluation:"
+    putStrLn "evaluation:"
+    putStrLn $ "((x+y)^2)evalOut1[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 1) dombox $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut2[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 2) dombox $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut3[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 3) dombox $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut4[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 4) dombox $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut5[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 5) dombox $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut6[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 6) dombox $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut7[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 7) dombox $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut8[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 8) dombox $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut9[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 9) dombox $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut10[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 10) dombox $ (x <+> y) <^> 2)
+--    putStrLn $ "((x+y)^2)evalIn[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointInEff eff dombox $ (x <+> y) <^> 2)
 --    putStrLn "partial evaluation:"
     putStrLn "composition:"
     putStrLn $ "(x+y)^2 = " ++ (showP $ (x <+> y) <^> 2)
     
-    putStrLn $ "((x+y)^2)subst[x=y+1] = " ++ (showP $ composeVarOutEff eff "x" (y <+> c1) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)substE[x=yNoX+1] = " ++ (showP $ composeVarOutEff eff "x" (yNoX <+>| (1::Int)) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)subst[x=[0,1]] = " ++ (showP $ composeVarOutEff eff "x" (c01) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[x=y+1] = " ++ (showP $ composeVarOutEff effComp "x" (y <+> c1) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)substE[x=yNoX+1] = " ++ (showP $ composeVarOutEff effComp "x" (yNoX <+>| (1::Int)) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[x=[0,1]] = " ++ (showP $ composeVarOutEff effComp "x" (c01) $ (x <+> y) <^> 2)
 
-    putStrLn $ "((x+y)^2)subst[y=x+1] = " ++ (showP $ composeVarOutEff eff "y" (x <+>| (1 :: Int)) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)subst[y=xNoY+1] = " ++ (showP $ composeVarOutEff eff "y" (xNoY <+>| (1::Int)) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)substOut[y=[0,1]] = " ++ (showP $ composeVarOutEff eff "y" (c01) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)substIn[y=[0,1]] = " ++ (showP $ composeVarInEff eff "y" (c01) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)subst[x=x-y] = " ++ (showP $ composeVarOutEff eff "x" (x <-> y) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[y=x+1] = " ++ (showP $ composeVarOutEff effComp "y" (x <+>| (1 :: Int)) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[y=xNoY+1] = " ++ (showP $ composeVarOutEff effComp "y" (xNoY <+>| (1::Int)) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)substOut[y=[0,1]] = " ++ (showP $ composeVarOutEff effComp "y" (c01) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)substIn[y=[0,1]] = " ++ (showP $ composeVarInEff effComp "y" (c01) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[x=x-y] = " ++ (showP $ composeVarOutEff effComp "x" (x <-> y) $ (x <+> y) <^> 2)
     putStrLn $ "-- thick coeffs:"
     putStrLn $ "([0,1](x+1)+y+1) = " ++ (showP $ ((c01 <*> (x <+> c1)) <+> y <+> c1))
     putStrLn $ "([0,1](x+1)+y+1)^2 = " ++ (showP $ ((c01 <*> (x <+> c1)) <+> y <+> c1) <^> 2)
 
     putStrLn $ "(([0,1](x+1)+y+1)^2)subst[x=x-y-1] = " 
-                    ++ (showP $ composeVarOutEff eff "x" (x <-> y <-> c1) $ ((c01 <*> (x <+> c1)) <+> y <+> c1) <^> 2)
+                    ++ (showP $ composeVarOutEff effComp "x" (x <-> y <-> c1) $ ((c01 <*> (x <+> c1)) <+> y <+> c1) <^> 2)
 
 
 --    putStrLn "endpoints (ie boundaries):"
@@ -210,8 +222,13 @@ eff :: ArithInOut.RoundedRealEffortIndicator CF
 --eff = (100, (100,())) -- MPFR with explicit precision
 eff = ArithInOut.roundedRealDefaultEffort (0:: CF)
 
+effComp :: EvaluationEffortIndicator Poly
+effComp = (eff, Int1To10 3)
+
+minmaxUpDnEff :: NumOrd.MinmaxEffortIndicator Poly
 minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 x
 
+minmaxInOutEff :: NumOrd.MinmaxInOutEffortIndicator Poly
 minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 x
 
 reduceDeg, reduceCount :: Poly -> Poly 
@@ -219,7 +236,7 @@ reduceDeg = reducePolyDegreeOut eff
 reduceCount = reducePolyTermCountOut eff
 
 evalOpsOutCf :: PolyEvalOps String CF CF
-evalOpsOutCf = evalOpsEff eff x (0::CF)
+evalOpsOutCf = evalOpsEff (eff, Int1To10 4) x (0::CF)
 
 numCompare :: 
      NumOrd.PartialComparison t 
