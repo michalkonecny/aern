@@ -17,11 +17,18 @@ import qualified Numeric.AERN.DoubleBasis.Interval as CF
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
 --import qualified Numeric.AERN.MPFRBasis.Interval as MI
 
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
+import qualified Numeric.AERN.NumericOrder as NumOrd
+--import Numeric.AERN.NumericOrder.OpsDefaultEffort
+
 import qualified Numeric.AERN.RefinementOrder as RefOrd
+--import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+
 
 import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.ShowInternals
@@ -136,35 +143,37 @@ ivpSpringMass_ut withInitialValueUncertainty =
                 case withInitialValueUncertainty of
                     True ->
                         [
-                            ((0.75 * cosOnePlusEps) - 0.125 * sinOnePlusEps)  
+                            ((0.75 * cosTEndPlusEps) - 0.125 * sinTEndPlusEps)  
                             CF.</\>
-                            ((1.25 * cosOneMinusEps) + 0.125 * sinOneMinusEps)
+                            ((1.25 * cosTEndMinusEps) + 0.125 * sinTEndMinusEps)
                         ,
-                            (-(sinOnePlusEps) - 0.125 * cosOnePlusEps)  
+                            (-(sinTEndPlusEps) - 0.125 * cosTEndPlusEps)  
                             CF.</\>
-                            (-(sinOneMinusEps) + 0.125 * cosOneMinusEps)
+                            (-(sinTEndMinusEps) + 0.125 * cosTEndMinusEps)
                         ]
                     False ->
                         [
-                            ((0.875 * cosOnePlusEps))  
+                            ((0.875 * cosTEndPlusEps))  
                             CF.</\>
-                            ((1.125 * cosOneMinusEps))
+                            ((1.125 * cosTEndMinusEps))
                         ,
-                            (-(0.875 * sinOnePlusEps))  
+                            (-(0.875 * sinTEndPlusEps))  
                             CF.</\>
-                            (-(1.125 * sinOneMinusEps))
+                            (-(1.125 * sinTEndMinusEps))
                         ]
         }
-    cosOnePlusEps = 1 CF.<*>| (cos 1.125 :: Double)
-    cosOneMinusEps = 1 CF.<*>| (cos 0.875 :: Double)
-    sinOnePlusEps = 1 CF.<*>| (sin 1.125 :: Double)
-    sinOneMinusEps = 1 CF.<*>| (sin 0.875 :: Double)
+    cosTEndPlusEps = 1 CF.<*>| (cos (tEndDbl + 0.125) :: Double)
+    cosTEndMinusEps = 1 CF.<*>| (cos (tEndDbl - 0.125) :: Double)
+    sinTEndPlusEps = 1 CF.<*>| (sin (tEndDbl + 0.125) :: Double)
+    sinTEndMinusEps = 1 CF.<*>| (sin (tEndDbl - 0.125) :: Double)
     description =
         "x'' = -x; " 
         ++ show tStart ++ " < t_0 < " ++ show t0End
         ++ "; (x,x')(t_0) ∊ " ++ (show $ makeIV dummySizeLimits "t_0" tStart)
     tStart = odeivp_tStart ivp
     t0End = odeivp_t0End ivp
+    tEndDbl :: Double
+    (Just tEndDbl) = ArithUpDn.convertUpEff () $ odeivp_tEnd ivp
     componentNames = odeivp_componentNames ivp
     dummySizeLimits =
         getSizeLimits $
@@ -268,24 +277,26 @@ writeCSV [ivpName, outputFileName] =
             case maybeVec of
                 Nothing -> (show "no solution", show "no solution")
                 Just (vecOut, vecIn) ->
-                    (computeMaxDiff vecOut vecIn, 
+                    (computeDiff vecOut vecIn, 
                         case maybeVecExact of
                             Just vecExact 
-                                | not (refinesVec vecExact vecOut) -> -- && refinesVec vecIn vecExact) ->
-                                    error $ 
-                                        "enclosure error:"
-                                        ++ "\n vecOut = " ++ show vecOut
-                                        ++ "\n vecExact = " ++ show vecExact
---                                        ++ "\n vecIn = " ++ show vecIn
+--                                | not (refinesVec vecExact vecOut) -> -- && refinesVec vecIn vecExact) ->
+--                                    error $ 
+--                                        "enclosure error:"
+--                                        ++ "\n vecOut = " ++ show vecOut
+--                                        ++ "\n vecExact = " ++ show vecExact
+----                                        ++ "\n vecIn = " ++ show vecIn
                                 | otherwise -> 
-                                    computeMaxDiff vecOut vecExact
+                                    computeDiff vecOut vecExact
                             _ -> show "exact solution not known")
                 where
-                computeMaxDiff vecOut vecOther = 
+                computeDiff vecOut vecOther = 
                     removeBracks $
                     show $ 
                         snd $ RefOrd.getEndpointsOutWithDefaultEffort $ 
-                            foldl1 max $ zipWith (CF.<->) (map CF.width vecOut) (map CF.width vecOther)
+                            foldl1 min $ -- assuming that the components are interdependent - some may be bad due to dependency errors in the projection 
+--                            foldl1 max $ 
+                                zipWith (CF.<->) (map CF.width vecOut) (map CF.width vecOther)
         removeBracks ('<': rest1 ) =
             reverse $ removeR $ reverse rest1
             where
@@ -295,12 +306,15 @@ refinesVec :: [CF] -> [CF] -> Bool
 refinesVec vec1 vec2 =
     and $ zipWith refines vec1 vec2
 refines :: CF -> CF -> Bool
-refines a1 a2 = (a2 CF.|<=? a1) == Just True
+refines a1 a2 = 
+    (a2 CF.|<=? a1) == Just True
+    where
+    tolerance = 2 ^^ (-50)
 
 solveVTPrintSteps :: 
     (solvingInfo1 ~ (CF, Maybe ([CF],[CF])),
      solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe CF),
-     solvingInfo3 ~ (solvingInfo1, Maybe (Maybe ([CF],[CF]), (solvingInfo2, solvingInfo2)))
+     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe (Maybe ([CF],[CF]), (solvingInfo2, solvingInfo2))))
     )
     =>
     Bool
@@ -312,7 +326,7 @@ solveVTPrintSteps ::
     IO (Maybe ([CF],[CF]), SplittingInfo solvingInfo3 (solvingInfo3, Maybe CF))
 solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t0depthParam) =
     do
-    putStrLn $ "solving: " ++ description 
+    putStrLn $ "solving: " ++ description
     putStrLn "-------------------------------------------------"
     putStrLn $ "maxdeg = " ++ show maxdeg
     putStrLn $ "t0maxdeg = " ++ show t0maxdeg
@@ -328,6 +342,10 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
         _ -> return ()
     putStrLn "----------  result: -----------------------------"
     putStr $ showSegInfo1 ">>> " (tEnd, endValues)
+    case (maybeExactResult, endValues) of
+        (Just exactResult, Just (resultOut, _)) ->
+            putStrLn $ "error = " ++ show (getErrorVec exactResult resultOut)
+        _ -> return ()
     case shouldShowSteps of
         True ->
             do
@@ -371,6 +389,15 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
         getSizeLimits $
             makeSampleWithVarsDoms t0maxdeg maxsize [] []
             
+    getErrorVec exactVec approxVec =
+        map getError $ zip exactVec approxVec
+        where
+        getError (valueIn, valueOut) =
+            err
+            where
+            err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
+            wOut = CF.width valueOut     
+            wIn = CF.width valueIn     
     showSegInfo1 indent (t, maybeValues) =
         unlines $ map showComponent $ zip componentNames valueSs
         where
@@ -392,9 +419,9 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
 --            wIn = CF.width valueIn     
     showSegInfo2 indent splittingInfo2 =
         showSplittingInfo showSegInfo1 showSplitReason2 indent splittingInfo2
-    showSegInfo3 indent (segInfoT0,  Just (maybeTEndResult, (segInfo2Out, segInfo2In))) =
+    showSegInfo3 indent (segInfoT, (segInfoT0,  Just (_, (segInfo2Out, segInfo2In)))) =
         indent ++ "at t0End:\n" ++ showSegInfo1 (indent ++ "  ") segInfoT0
-        ++ indent ++ "at tEnd:\n" ++ showSegInfo1 (indent ++ "  ") (tEnd, maybeTEndResult)
+        ++ indent ++ "at tEnd:\n" ++ showSegInfo1 (indent ++ "  ") segInfoT
         ++ showSegInfo2 (indent ++ ":<> ") segInfo2Out
         ++ showSegInfo2 (indent ++ ":>< ") segInfo2In
     showSplitReason2 indent (segInfo, (Just improvement)) =
@@ -403,17 +430,17 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
     showSplitReason2 indent (segInfo, Nothing) =
         showSegInfo1 indent segInfo ++ 
         indent ++ " - thus splitting"
-    showSplitReason3 indent ((segInfo, _), (Just improvement)) =
-        showSegInfo1 indent segInfo ++ 
+    showSplitReason3 indent ((segInfoT, (_segInfoT0, _)), (Just improvement)) =
+        showSegInfo1 indent segInfoT ++ 
         indent ++ "; but splitting improves by " ++ show improvement ++ ":"
-    showSplitReason3 indent ((segInfo, _), Nothing) =
-        showSegInfo1 indent segInfo ++ 
+    showSplitReason3 indent ((segInfoT, (_segInfoT0, _)), Nothing) =
+        showSegInfo1 indent segInfoT ++ 
         indent ++ " - thus splitting"
 
 solveIVPWithUncertainTime ::
     (solvingInfo1 ~ (CF, Maybe ([CF],[CF])),
      solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe CF),
-     solvingInfo3 ~ (solvingInfo1, Maybe (Maybe ([CF],[CF]), (solvingInfo2, solvingInfo2)))
+     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe (Maybe ([CF],[CF]), (solvingInfo2, solvingInfo2))))
     )
     =>
     SizeLimits Poly -> 
@@ -448,12 +475,12 @@ solveIVPWithUncertainTime
 
     sampleCf = delta 
     
-    effCompose = effCf
+    effCompose = (effCf, Int1To10 10)
     effInteg = effCf
     effAddFn = effCf
     effAddFnDom =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-    effInclFn = ((Int1To1000 0, effCf), ())
+    effInclFn = ((Int1To1000 0, (effCf, Int1To10 10)), ())
 
 
 makeSampleWithVarsDoms :: 

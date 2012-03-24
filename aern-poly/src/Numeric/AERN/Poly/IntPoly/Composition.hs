@@ -70,7 +70,7 @@ instance
     HasEvalOps (IntPoly var cf) (IntPoly var cf)
     where
     type EvalOpsEffortIndicator (IntPoly var cf) (IntPoly var cf) = 
-        (Int1To1000, ArithInOut.RoundedRealEffortIndicator cf)
+        (Int1To1000, (ArithInOut.RoundedRealEffortIndicator cf, Int1To10))
     evalOpsDefaultEffort _ sampleP = 
         NumOrd.pCompareDefaultEffort sampleP
     evalOpsEff eff _ sampleP =
@@ -86,11 +86,11 @@ polyPolyEvalOpsOut ::
      NumOrd.PartialComparison (Imprecision cf),
      Show (Imprecision cf))
     =>
-   (Int1To1000, ArithInOut.RoundedRealEffortIndicator cf) ->
+   (Int1To1000, (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)) ->
    (IntPoly var cf) ->
    cf ->
    PolyEvalOps var cf (IntPoly var cf)
-polyPolyEvalOpsOut effCmp@(_,effCf) sampleP sampleCf =
+polyPolyEvalOpsOut effCmp@(_,(effCf, Int1To10 maxSplitDepth)) sampleP sampleCf =
     result
     where
     result =
@@ -98,16 +98,32 @@ polyPolyEvalOpsOut effCmp@(_,effCf) sampleP sampleCf =
         let (<*>) = ArithInOut.multOutEff effCf in
         let (<^>) = ArithInOut.powerToNonnegIntOutEff effCf in
         let (<=?) = NumOrd.pLeqEff effCmp in
-        PolyEvalOps (zero sampleP) (<+>) (<*>) (<^>) (newConstFnFromSample sampleP) (const Nothing) (<=?) $
+        let (</\>) = RefOrd.meetOutEff effJoinCf in
+        PolyEvalOps (zero sampleP) (<+>) (<*>) (<^>) (newConstFnFromSample sampleP) (const Nothing) (<=?) maxSplitDepth $
             Just $ PolyEvalMonoOps
                 result
                 RefOrd.getEndpointsOutWithDefaultEffort
                 RefOrd.fromEndpointsOutWithDefaultEffort
                 isDefinitelyExact
+                split
+                (polyJoinWith (zero sampleCf) $ uncurry (</\>))
+                getWidthAsDoubleDummy
                 effCf
+    split val = (val1, val2)
+        where
+        val1 = RefOrd.fromEndpointsOutWithDefaultEffort (valL, valM)
+        val2 = RefOrd.fromEndpointsOutWithDefaultEffort (valM, valR)
+        (valL, valR) = RefOrd.getEndpointsOutWithDefaultEffort val
+        valM =
+            let (<+>) = ArithInOut.addOutEff effCf in
+            let (</>|) = ArithInOut.mixedDivOutEff effDivIntCf in
+            (valL <+> valR) </>| (2 :: Int)
+    getWidthAsDoubleDummy _ = 0 -- no splitting...
     isDefinitelyExact p = 
         polyIsExactEff effImpr p == Just True
     effImpr = ArithInOut.rrEffortImprecision sampleCf effCf
+    effDivIntCf = ArithInOut.mxfldEffortDiv sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
+    effJoinCf = ArithInOut.rrEffortJoinMeet sampleCf effCf
 --    effAddCf = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
         
 instance 
@@ -122,9 +138,8 @@ instance
     (CanCompose (IntPoly var cf))
     where
     type CompositionEffortIndicator (IntPoly var cf) = 
-        ArithInOut.RoundedRealEffortIndicator cf
-    compositionDefaultEffort (IntPoly cfg _) =
-        ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg
+        (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)
+    compositionDefaultEffort p = evaluationDefaultEffort p
 --    composeVarsOutEff = polyComposeAllVarsOutEff
     composeVarOutEff eff substVar substPoly = 
 --        performEndpointWiseWithDefaultEffort $
@@ -202,112 +217,112 @@ polyComposeVarInEff eff substVar substPoly p =
     TODO: let the above detect the special situations and use these optimizations 
 -}
         
-polyComposeMainVarKeepOutEff ::
-    (Ord var, Show var, 
-     Show cf,
-     ArithInOut.RoundedReal cf,
-     HasAntiConsistency cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf),
-     RefOrd.IntervalLike cf)
-    => 
-    (ArithInOut.RoundedRealEffortIndicator cf) ->
-    IntPoly var cf {- polynomial to substitute the main var with -} ->
-    IntPoly var cf -> 
-    IntPoly var cf
-polyComposeMainVarKeepOutEff eff substPoly p@(IntPoly cfg _) =
---    unsafePrint
---    (
---        "polyComposeMainVarKeepOutEff: "
---        ++ "\n p = " ++ showP p
---        ++ "\n substPoly = " ++ showP substPoly
---        ++ "\n result = " ++ showP result
---    ) $
-    result
-    where
-    (mainVar : otherVars) = ipolycfg_vars cfg
-    result =
-        evalOtherType opsMainVarOnly varvaluesBox p
-        where
-        varvaluesBox =
-            fromList $ (mainVar, substPoly) : otherVarsSubsts
-        otherVarsSubsts =
-            map makeVarSubst $ zip otherVars $ tail $ ipolycfg_domsLE cfg
-        makeVarSubst (var, domLE) =
-            (var,  proj)
-            where
-            proj =
-                newProjectionFromSample p var
-    opsMainVarOnly =
-        (polyPolyEvalOpsOut (Int1To1000 0, eff) sampleP sampleCf)
-            {
-                polyEvalMaybePoly = polyEvalCopySubPolynomials
-            }
-    polyEvalCopySubPolynomials subterms 
-        | isMainVar = Nothing
-        | otherwise =
-            Just $
-                IntPoly cfg $ IntPolyV mainVar $ IntMap.singleton 0 subterms
-        where
-        isMainVar =
-            case subterms of
-                (IntPolyV var _) -> var == mainVar
-                _ -> False
-            
-    sampleP = p
-    sampleCf = getSampleDomValue p
-
-
-polyComposeMainVarElimOutEff ::
-    (Ord var, Show var, 
-     Show cf,
-     ArithInOut.RoundedReal cf, 
-     HasAntiConsistency cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf),
-     RefOrd.IntervalLike cf)
-    => 
-    (ArithInOut.RoundedRealEffortIndicator cf) ->
-    IntPoly var cf {- polynomial to substitute the main var with -} ->
-    IntPoly var cf -> 
-    IntPoly var cf
-polyComposeMainVarElimOutEff eff substPoly p@(IntPoly cfg _) =
---    unsafePrint
---    (
---        "substPolyMainVar: "
---        ++ "\n p = " ++ showP p
---        ++ "\n substPoly = " ++ showP substPoly
---        ++ "\n result = " ++ showP result
---    ) $
-    result
-    where
-    (mainVar : otherVars) = ipolycfg_vars cfg
-    result =
-        evalOtherType opsMainVarOnly varvaluesBox p
-        where
-        varvaluesBox =
-            fromList $ (mainVar, substPoly) : otherVarsSubsts
-        otherVarsSubsts =
-            map makeVarSubst otherVars
-        makeVarSubst var =
-            (var, newProjectionFromSample sampleP var)
-    opsMainVarOnly =
-        (polyPolyEvalOpsOut (Int1To1000 0, eff) sampleP sampleCf)
-            {
-                polyEvalMaybePoly = polyEvalCopySubPolynomials
-            }
-    polyEvalCopySubPolynomials subterms 
-        | isMainVar = Nothing
-        | otherwise =
-            Just $ IntPoly cfgR subterms
-        where
-        cfgR = cfgRemVar cfg
-        isMainVar =
-            case subterms of
-                (IntPolyV var _) -> var == mainVar
-                _ -> False
-            
-    sampleP = substPoly
-    sampleCf = getSampleDomValue p
-
-
+--polyComposeMainVarKeepOutEff ::
+--    (Ord var, Show var, 
+--     Show cf,
+--     ArithInOut.RoundedReal cf,
+--     HasAntiConsistency cf,
+--     Show (Imprecision cf),
+--     NumOrd.PartialComparison (Imprecision cf),
+--     RefOrd.IntervalLike cf)
+--    => 
+--    (ArithInOut.RoundedRealEffortIndicator cf) ->
+--    IntPoly var cf {- polynomial to substitute the main var with -} ->
+--    IntPoly var cf -> 
+--    IntPoly var cf
+--polyComposeMainVarKeepOutEff eff substPoly p@(IntPoly cfg _) =
+----    unsafePrint
+----    (
+----        "polyComposeMainVarKeepOutEff: "
+----        ++ "\n p = " ++ showP p
+----        ++ "\n substPoly = " ++ showP substPoly
+----        ++ "\n result = " ++ showP result
+----    ) $
+--    result
+--    where
+--    (mainVar : otherVars) = ipolycfg_vars cfg
+--    result =
+--        evalOtherType opsMainVarOnly varvaluesBox p
+--        where
+--        varvaluesBox =
+--            fromList $ (mainVar, substPoly) : otherVarsSubsts
+--        otherVarsSubsts =
+--            map makeVarSubst $ zip otherVars $ tail $ ipolycfg_domsLE cfg
+--        makeVarSubst (var, domLE) =
+--            (var,  proj)
+--            where
+--            proj =
+--                newProjectionFromSample p var
+--    opsMainVarOnly =
+--        (polyPolyEvalOpsOut (Int1To1000 0, eff) sampleP sampleCf)
+--            {
+--                polyEvalMaybePoly = polyEvalCopySubPolynomials
+--            }
+--    polyEvalCopySubPolynomials subterms 
+--        | isMainVar = Nothing
+--        | otherwise =
+--            Just $
+--                IntPoly cfg $ IntPolyV mainVar $ IntMap.singleton 0 subterms
+--        where
+--        isMainVar =
+--            case subterms of
+--                (IntPolyV var _) -> var == mainVar
+--                _ -> False
+--            
+--    sampleP = p
+--    sampleCf = getSampleDomValue p
+--
+--
+--polyComposeMainVarElimOutEff ::
+--    (Ord var, Show var, 
+--     Show cf,
+--     ArithInOut.RoundedReal cf, 
+--     HasAntiConsistency cf,
+--     Show (Imprecision cf),
+--     NumOrd.PartialComparison (Imprecision cf),
+--     RefOrd.IntervalLike cf)
+--    => 
+--    (ArithInOut.RoundedRealEffortIndicator cf) ->
+--    IntPoly var cf {- polynomial to substitute the main var with -} ->
+--    IntPoly var cf -> 
+--    IntPoly var cf
+--polyComposeMainVarElimOutEff eff substPoly p@(IntPoly cfg _) =
+----    unsafePrint
+----    (
+----        "substPolyMainVar: "
+----        ++ "\n p = " ++ showP p
+----        ++ "\n substPoly = " ++ showP substPoly
+----        ++ "\n result = " ++ showP result
+----    ) $
+--    result
+--    where
+--    (mainVar : otherVars) = ipolycfg_vars cfg
+--    result =
+--        evalOtherType opsMainVarOnly varvaluesBox p
+--        where
+--        varvaluesBox =
+--            fromList $ (mainVar, substPoly) : otherVarsSubsts
+--        otherVarsSubsts =
+--            map makeVarSubst otherVars
+--        makeVarSubst var =
+--            (var, newProjectionFromSample sampleP var)
+--    opsMainVarOnly =
+--        (polyPolyEvalOpsOut (Int1To1000 0, eff) sampleP sampleCf)
+--            {
+--                polyEvalMaybePoly = polyEvalCopySubPolynomials
+--            }
+--    polyEvalCopySubPolynomials subterms 
+--        | isMainVar = Nothing
+--        | otherwise =
+--            Just $ IntPoly cfgR subterms
+--        where
+--        cfgR = cfgRemVar cfg
+--        isMainVar =
+--            case subterms of
+--                (IntPolyV var _) -> var == mainVar
+--                _ -> False
+--            
+--    sampleP = substPoly
+--    sampleCf = getSampleDomValue p
+--
+--

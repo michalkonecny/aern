@@ -47,17 +47,19 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 --import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.Effort
 
 import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
 import qualified Data.Map as Map
+import Data.List (sortBy)
 
 instance 
     (Ord var, Show var, Show cf,
@@ -130,31 +132,35 @@ instance
     CanEvaluate (IntPoly var cf)
     where
     type (EvaluationEffortIndicator (IntPoly var cf)) = 
-        ArithInOut.RoundedRealEffortIndicator cf
+        (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)
     evaluationDefaultEffort (IntPoly cfg _) =
-        ArithInOut.roundedRealDefaultEffort (ipolycfg_sample_cf cfg)
-    evalAtPointOutEff eff valsMap p@(IntPoly cfg _) 
+        (ArithInOut.roundedRealDefaultEffort (ipolycfg_sample_cf cfg),
+         Int1To10 depth)
+        where
+        depth = 1 + (maxDeg `div` 2)
+        maxDeg = ipolycfg_maxdeg cfg
+    evalAtPointOutEff (effCf, Int1To10 maxSplitDepth) valsMap p@(IntPoly cfg _) 
         | valuesAreExact valsLZ =
-            evalPolyAtPointOut eff valsLZ p
+            evalPolyAtPointOut effCf maxSplitDepth valsLZ p
         | otherwise =
-            evalPolyOnIntervalOut eff valsLZ p
+            evalPolyOnIntervalOut effCf maxSplitDepth valsLZ p
         where
         valsLZ =
             let ?addInOutEffort = effAdd in 
             valsMapToValuesLZ (<->) cfg valsMap
-        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample effCf
         sample = ipolycfg_sample_cf cfg
         
-    evalAtPointInEff eff valsMap p@(IntPoly cfg _) 
+    evalAtPointInEff (effCf, Int1To10 maxSplitDepth) valsMap p@(IntPoly cfg _) 
         | valuesAreExact valsLZ =
-            evalPolyAtPointIn eff valsLZ p
+            evalPolyAtPointIn effCf maxSplitDepth valsLZ p
         | otherwise =
-            evalPolyOnIntervalIn eff valsLZ p
+            evalPolyOnIntervalIn effCf maxSplitDepth valsLZ p
         where
         valsLZ = 
             let ?addInOutEffort = effAdd in 
             valsMapToValuesLZ (>-<) cfg valsMap
-        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample effCf
         sample = ipolycfg_sample_cf cfg
     
 valuesAreExact :: 
@@ -174,10 +180,16 @@ instance
     =>
     HasEvalOps (IntPoly var cf) cf
     where
-    type EvalOpsEffortIndicator (IntPoly var cf) cf = ArithInOut.RoundedRealEffortIndicator cf
-    evalOpsDefaultEffort _ sampleCf = ArithInOut.roundedRealDefaultEffort sampleCf 
-    evalOpsEff eff _sampleP sampleCf =
-        coeffPolyEvalOpsOut eff sampleCf
+    type EvalOpsEffortIndicator (IntPoly var cf) cf = 
+        (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)
+    evalOpsDefaultEffort p@(IntPoly cfg _) sampleCf = 
+        (ArithInOut.roundedRealDefaultEffort sampleCf, Int1To10 depth)
+        where
+        depth = 1 + (maxDeg `div` 2)
+        maxDeg = ipolycfg_maxdeg cfg
+         
+    evalOpsEff (eff, Int1To10 depth) _sampleP sampleCf =
+        coeffPolyEvalOpsOut eff depth sampleCf
 
 data PolyEvalOps var cf val =
     PolyEvalOps
@@ -189,6 +201,7 @@ data PolyEvalOps var cf val =
         polyEvalCoeff :: (cf -> val), {-^ coeff conversion -}
         polyEvalMaybePoly :: (IntPolyTerms var cf -> Maybe val), {-^ optional direct poly conversion -}
         polyEvalLeq :: (val -> val -> Maybe Bool),
+        polyEvalSplitDepth :: Int,
         polyEvalMonoOps :: Maybe (PolyEvalMonoOps var cf val)
     }
 
@@ -198,7 +211,10 @@ data PolyEvalMonoOps var cf val =
         polyEvalMonoOuter :: PolyEvalOps var cf val,
         polyEvalMonoGetEndpoints :: val -> (val, val),
         polyEvalMonoFromEndpoints :: (val, val) -> val,
-        polyEvalMonoIsThin :: val -> Bool,
+        polyEvalMonoIsExact :: val -> Bool,
+        polyEvalMonoSplit :: val -> (val, val),
+        polyEvalMonoMerge :: (val, val) -> val,
+        polyEvalMonoGetWidthAsDouble :: val -> Double,
         polyEvalMonoCfEffortIndicator :: ArithInOut.RoundedRealEffortIndicator cf
     }
 
@@ -207,9 +223,10 @@ coeffPolyEvalOpsOut ::
     (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf)
     =>
    (ArithInOut.RoundedRealEffortIndicator cf) ->
+   Int ->
    cf ->
    PolyEvalOps var cf cf
-coeffPolyEvalOpsOut eff sample =
+coeffPolyEvalOpsOut eff depth sample =
     result
     where
     result =
@@ -217,43 +234,69 @@ coeffPolyEvalOpsOut eff sample =
         let ?intPowerInOutEffort = effPwr in
         let ?addInOutEffort = effAdd in
         let ?pCompareEffort = effComp in
-        PolyEvalOps (zero sample) (<+>) (<*>) (<^>) id (const Nothing) (<=?) $
+        let ?joinmeetEffort = effJoin in
+        PolyEvalOps (zero sample) (<+>) (<*>) (<^>) id (const Nothing) (<=?) depth $
             Just $ PolyEvalMonoOps
                 result -- outer rounded ops = itself
                 RefOrd.getEndpointsOutWithDefaultEffort
                 RefOrd.fromEndpointsOutWithDefaultEffort
                 isDefinitelyExact
+                split
+                (uncurry (</\>))
+                getWidthAsDouble
                 eff
     isDefinitelyExact a =
         (isExactEff $ ArithInOut.rrEffortImprecision a eff) a == Just True
+    split val = (val1, val2)
+        where
+        val1 = RefOrd.fromEndpointsOutWithDefaultEffort (valL, valM)
+        val2 = RefOrd.fromEndpointsOutWithDefaultEffort (valM, valR)
+        (valL, valR) = RefOrd.getEndpointsOutWithDefaultEffort val
+        valM =
+            let ?mixedDivInOutEffort = effDivInt in
+            let ?addInOutEffort = effAdd in
+            (valL <+> valR) </>| (2 :: Int)
+    getWidthAsDouble val = wD
+        where
+        Just wD = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort val (0::Double)) w
+        w = 
+            let ?addInOutEffort = effAdd in
+            valR <-> valL
+        (valL, valR) = RefOrd.getEndpointsOutWithDefaultEffort val
+        
     effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
     effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+    effDivInt = ArithInOut.mxfldEffortDiv sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
     effComp = ArithInOut.rrEffortNumComp sample eff
---    effJoin = ArithInOut.rrEffortJoinMeet sample eff
+    effJoin = ArithInOut.rrEffortJoinMeet sample eff
 
 
 instance
     (Ord var, Show var,
-     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf, Show cf)
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+     HasAntiConsistency cf, 
+     Show cf)
     =>
     ArithUpDn.Convertible (IntPoly var cf) cf
     where
     type ArithUpDn.ConvertEffortIndicator (IntPoly var cf) cf = 
-        (ArithInOut.RoundedRealEffortIndicator cf, RefOrd.GetEndpointsEffortIndicator cf)
-    convertDefaultEffort _sampleP sampleCf = 
-        (ArithInOut.roundedRealDefaultEffort sampleCf, RefOrd.getEndpointsDefaultEffort sampleCf)
-    convertUpEff (effCf, effGetEndpts) p =
+        (EvaluationEffortIndicator (IntPoly var cf), 
+         RefOrd.GetEndpointsEffortIndicator cf)
+    convertDefaultEffort sampleP sampleCf = 
+        (evaluationDefaultEffort sampleP, 
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+    convertUpEff (effEval, effGetEndpts) p =
         Just $ snd $ RefOrd.getEndpointsOutEff effGetEndpts range
         where
-        range = evalOtherType (evalOpsEff effCf sampleP sampleCf) varDoms p 
+        range = evalOtherType (evalOpsEff effEval sampleP sampleCf) varDoms p 
         sampleP = p
         sampleCf = getSampleDomValue sampleP
         varDoms = getDomainBox p
-    convertDnEff (effCf, effGetEndpts) p =
+    convertDnEff (effEval, effGetEndpts) p =
         Just $ fst $ RefOrd.getEndpointsOutEff effGetEndpts range
         where
-        range = evalOtherType (evalOpsEff effCf sampleP sampleCf) varDoms p 
+        range = evalOtherType (evalOpsEff effEval sampleP sampleCf) varDoms p 
         sampleP = p
         
         sampleCf = getSampleDomValue sampleP
@@ -267,17 +310,18 @@ evalPolyAtPointOut, evalPolyAtPointIn ::
      Show cf) 
     => 
     (ArithInOut.RoundedRealEffortIndicator cf) ->
+    Int ->
     [cf] {- values for each variable respectively -} -> 
     IntPoly var cf -> cf
-evalPolyAtPointOut eff values p@(IntPoly cfg _)
+evalPolyAtPointOut eff depth values p@(IntPoly cfg _)
     = 
-    evalPolyDirect (coeffPolyEvalOpsOut eff sample) values p
+    evalPolyDirect (coeffPolyEvalOpsOut eff depth sample) values p
     where
     sample = ipolycfg_sample_cf cfg
-evalPolyAtPointIn eff values p@(IntPoly cfg _)
+evalPolyAtPointIn eff depth values p@(IntPoly cfg _)
     = 
     flipConsistency $
-        evalPolyDirect (coeffPolyEvalOpsOut eff sample) values $ 
+        evalPolyDirect (coeffPolyEvalOpsOut eff depth sample) values $ 
             flipConsistencyPoly p
     where
     sample = ipolycfg_sample_cf cfg
@@ -288,17 +332,21 @@ evalPolyOnIntervalOut, evalPolyOnIntervalIn ::
      HasAntiConsistency cf, 
      Show cf) 
     => 
-    (ArithInOut.RoundedRealEffortIndicator cf) ->
-    [cf] {- values for each variable respectively -} -> 
+    ArithInOut.RoundedRealEffortIndicator cf 
+    ->
+    Int
+    ->
+    [cf] {- values for each variable respectively -} 
+    -> 
     IntPoly var cf -> cf
-evalPolyOnIntervalOut eff values p@(IntPoly cfg _)
+evalPolyOnIntervalOut eff maxSplitDepth values p@(IntPoly cfg _)
     = 
     evalPolyMono evalOut ops values p
     where
     evalOut = evalPolyDirect ops
-    ops = coeffPolyEvalOpsOut eff sample 
+    ops = coeffPolyEvalOpsOut eff maxSplitDepth sample 
     sample = ipolycfg_sample_cf cfg
-evalPolyOnIntervalIn eff values p@(IntPoly cfg _)
+evalPolyOnIntervalIn eff maxSplitDepth values p@(IntPoly cfg _)
     = 
     evalPolyMono evalIn ops values p
     where
@@ -306,7 +354,7 @@ evalPolyOnIntervalIn eff values p@(IntPoly cfg _)
         flipConsistency $ 
             evalPolyDirect ops values $ 
                 flipConsistencyPoly p
-    ops = coeffPolyEvalOpsOut eff sample 
+    ops = coeffPolyEvalOpsOut eff maxSplitDepth sample 
     sample = ipolycfg_sample_cf cfg
 
 evalPolyDirect ::
@@ -373,9 +421,9 @@ evalPolyMono ::
     IntPoly var cf 
     -> 
     val
-evalPolyMono evalDirect opsV values p@(IntPoly cfg _)
+evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
     | noMonoOps = direct
-    | noMonotoneVar = direct
+--    | noMonotoneVar = useMonotonicityAndSplit
     | otherwise =
 --        unsafePrint
 --        (
@@ -388,52 +436,149 @@ evalPolyMono evalDirect opsV values p@(IntPoly cfg _)
 --            ++ "\n right = " ++ show right
 --            ++ "\n direct = " ++ show direct
 --        ) $ 
-        fromEndPtsV (left, right)
+        useMonotonicityAndSplit
     where
-    direct = evalDirect values p
-    
-    left = evalDirect valuesL p
-    right = evalDirect valuesR p
-    (noMonotoneVar, valuesL, valuesR) =
-        let ?mixedMultInOutEffort = effMult in
-        detectMono True [] [] $ reverse $ zip vars $ values -- undo reverse due to the accummulators
     vars = ipolycfg_vars cfg
-    detectMono noMonotoneVarPrev valuesLPrev valuesRPrev []
-        = (noMonotoneVarPrev, valuesLPrev, valuesRPrev)
-    detectMono noMonotoneVarPrev valuesLPrev valuesRPrev ((var, val) : rest)
-        =
---        unsafePrint 
---        (
---            "evalPolyMono: detectMono: deriv = " ++ show deriv
---        ) $ 
-        detectMono noMonotoneVarNew (valLNew : valuesLPrev) (valRNew : valuesRPrev) rest
+    
+    direct = evalDirect valuesG p
+    
+    useMonotonicityAndSplit =
+        useMonotonicityAndSplitWith maxSplitDepth $ zip valuesG $ repeat (False, False)
+        
+    useMonotonicityAndSplitWith remainingDepth valuesAndPrevDetectedMonotonicity
+        | remainingDepth > 0 && splitHelps =
+--            unsafePrint
+--            (
+--                "evalPolyMono: useMonotonicityAndSplitWith: SPLIT"
+--                ++ "\n remainingDepth = " ++ show remainingDepth
+--                ++ "\n valuesAndPrevDetectedMonotonicity = " ++ show valuesAndPrevDetectedMonotonicity
+--                ++ "\n valuesAndCurrentDetectedMonotonicity = " ++ show valuesAndCurrentDetectedMonotonicity
+--                ++ "\n nosplitResult = " ++ show nosplitResult
+--                ++ "\n nosplitResultWidth = " ++ show nosplitResultWidth
+--                ++ "\n bestSplit = " ++ show bestSplit
+--                ++ "\n bestSplitResult = " ++ show _bestSplitResult
+--                ++ "\n bestSplitWidth = " ++ show bestSplitWidth
+--            ) $ 
+            computeSplitResultContinueSplitting bestSplit
+        | otherwise = 
+--            unsafePrint
+--            (
+--                "evalPolyMono: useMonotonicityAndSplitWith: DONE"
+--                ++ "\n remainingDepth = " ++ show remainingDepth
+--                ++ "\n valuesAndPrevDetectedMonotonicity = " ++ show valuesAndPrevDetectedMonotonicity
+--                ++ "\n valuesAndCurrentDetectedMonotonicity = " ++ show valuesAndCurrentDetectedMonotonicity
+--                ++ "\n nosplitResult = " ++ show nosplitResult
+--                ++ "\n nosplitResultWidth = " ++ show nosplitResultWidth
+--            ) $ 
+            nosplitResult
         where
-        noMonotoneVarNew = noMonotoneVarPrev && varNotMono
-        (valLNew, valRNew)
-            | varNotMono = (val, val) -- not monotone, we have to be safe
-            | varNonDecr = (valL, valR) -- non-decreasing on the whole domain - can use endpoints
-            | otherwise = (valR, valL) -- non-increasing on the whole domain - can use swapped endpoints
-        (varNonDecr, varNotMono) =
-            case (valIsExact, zV `leqV` deriv, deriv `leqV` zV) of
-                (True, _, _) -> (undefined, True) -- when a variable has a thin domain, do not bother separating endpoints 
-                (_, Just True, _) -> (True, False) 
-                (_, _, Just True) -> (False, False)
-                _ -> (undefined, True)
-        deriv =
-            evalPolyDirect opsVOut values $ -- this evaluation must be outer-rounded!
-                diffPolyOut effCf var p -- range of (d p)/(d var)    
-        (valL, valR) = getEndPtsV val
-        valIsExact = isExact val
+        (nosplitResult, valuesAndCurrentDetectedMonotonicity) = 
+            useMonotonicity valuesAndPrevDetectedMonotonicity
+        nosplitResultWidth = getWidthDblV nosplitResult
+            
+        splitHelps 
+            | null possibleSplits = False
+            | otherwise = bestSplitWidth < nosplitResultWidth
+        (((bestSplitWidth, _bestSplitResult), bestSplit) : _) =
+            sortBy (\ ((a,_),_) ((b,_),_) -> compare a b) $ zip splitWidths possibleSplits
+        splitWidths =
+            map getWidth splitResults
+            where
+            getWidth result = (width :: Double, result)
+                where
+                width = getWidthDblV result 
+        splitResults =
+            map computeSplitResult possibleSplits
+        possibleSplits =
+            getSplits [] [] valuesAndCurrentDetectedMonotonicity
+            where
+            getSplits prevSplits _prevValues [] = prevSplits
+            getSplits prevSplits prevValues (vd@(value, dmAndIncr@(detectedMono, _)) : rest) 
+                | detectedMono =
+                    getSplits prevSplits (vd : prevValues) rest -- do not split value for which p is monotone
+                | otherwise =
+                    getSplits (newSplit : prevSplits) (vd : prevValues) rest
+                where
+                newSplit =
+                    (
+                        prevValuesRev ++ [(valueL, dmAndIncr)] ++ rest
+                    ,
+                        prevValuesRev ++ [(valueR, dmAndIncr)] ++ rest
+                    )
+                prevValuesRev = reverse prevValues
+                (valueL, valueR) = splitV value
+        
+        computeSplitResult (valuesAndDM_L, valuesAndDM_R) =
+            mergeV (resultL, resultR)
+            where
+            (resultL, _) = useMonotonicity valuesAndDM_L
+            (resultR, _) = useMonotonicity valuesAndDM_R
+        
+        computeSplitResultContinueSplitting (valuesAndDM_L, valuesAndDM_R) =
+            mergeV (resultL, resultR)
+            where
+            resultL = useMonotonicityAndSplitWith (remainingDepth - 1) valuesAndDM_L
+            resultR = useMonotonicityAndSplitWith (remainingDepth - 1) valuesAndDM_R
+                    
+        
+    useMonotonicity valuesAndPrevDetectedMonotonicity =
+        (fromEndPtsV (left, right), valuesAndCurrentDetectedMonotonicity)
+        where
+        values = map fst valuesAndPrevDetectedMonotonicity
+        left = evalDirect valuesL p
+        right = evalDirect valuesR p
+        (_noMonotoneVar, valuesL, valuesR, valuesAndCurrentDetectedMonotonicity) =
+            let ?mixedMultInOutEffort = effMult in
+            detectMono True [] [] [] $ 
+                reverse $  -- undo reverse due to the accummulators
+                    zip vars $ valuesAndPrevDetectedMonotonicity
+        detectMono noMonotoneVarPrev valuesLPrev valuesRPrev 
+                valuesAndCurrentDetectedMonotonicityPrev []
+            = (noMonotoneVarPrev, valuesLPrev, valuesRPrev, 
+                    valuesAndCurrentDetectedMonotonicityPrev)
+        detectMono noMonotoneVarPrev valuesLPrev valuesRPrev 
+                valuesAndCurrentDetectedMonotonicityPrev ((var, (val, dmAndIncr@(prevDM, isIncreasing))) : rest)
+            =
+--            unsafePrint 
+--            (
+--                "evalPolyMono: detectMono: deriv = " ++ show deriv
+--            ) $ 
+            detectMono noMonotoneVarNew (valLNew : valuesLPrev) (valRNew : valuesRPrev) 
+                 ((val, newDMAndIncr) : valuesAndCurrentDetectedMonotonicityPrev) rest
+            where
+            noMonotoneVarNew = noMonotoneVarPrev && varNotMono
+            (valLNew, valRNew, newDMAndIncr)
+                | prevDM && isIncreasing = (valL, valR, dmAndIncr)
+                | prevDM = (valR, valL, dmAndIncr)
+                | varNotMono = (val, val, dmAndIncr) -- not monotone, we have to be safe
+                | varNonDecr = (valL, valR, (True, True)) -- non-decreasing on the whole domain - can use endpoints
+                | otherwise = (valR, valL, (True, False)) -- non-increasing on the whole domain - can use swapped endpoints
+            (varNonDecr, varNotMono) =
+                case (valIsExact, zV `leqV` deriv, deriv `leqV` zV) of
+                    (True, _, _) -> (undefined, True) -- when a variable has a thin domain, do not bother separating endpoints 
+                    (_, Just True, _) -> (True, False) 
+                    (_, _, Just True) -> (False, False)
+                    _ -> (undefined, True)
+            deriv =
+                evalPolyDirect opsVOut values $ -- this evaluation must be outer-rounded!
+                    diffPolyOut effCf var p -- range of (d p)/(d var)    
+            (valL, valR) = getEndPtsV val
+            valIsExact = isExactV val
 
     zV = polyEvalZero opsV
     leqV = polyEvalLeq opsV
+    maxSplitDepth = polyEvalSplitDepth opsV 
     (noMonoOps, monoOpsV) = 
         case polyEvalMonoOps opsV of
             Nothing -> (True, error "evalPolyMono: internal error: monoOpsV used when not present")
             Just monoOpsV_2 -> (False, monoOpsV_2)
     fromEndPtsV = polyEvalMonoFromEndpoints monoOpsV
     getEndPtsV = polyEvalMonoGetEndpoints monoOpsV
-    isExact = polyEvalMonoIsThin monoOpsV
+    isExactV = polyEvalMonoIsExact monoOpsV
+    splitV = polyEvalMonoSplit monoOpsV
+    mergeV = polyEvalMonoMerge monoOpsV
+    getWidthDblV = polyEvalMonoGetWidthAsDouble monoOpsV
+    
     effCf = polyEvalMonoCfEffortIndicator monoOpsV
     opsVOut = polyEvalMonoOuter monoOpsV
     

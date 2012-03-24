@@ -13,6 +13,22 @@
     Portability :  portable
     
     Adaptive splitting solver parametrised by a single-step solver.
+    
+    Typically one uses solveODEIVPBySplittingT0 and
+    its subsolver is defined using solveODEIVPBySplittingAtT0End
+    and its subsolver for the right-hand side is 
+    defined using solveODEIVPBySplittingT:
+    
+    solveODEIVPBySplittingT0
+    |
+    |
+    solveODEIVPBySplittingAtT0End
+    |       \
+    |        \
+    solve-VT  solveODEIVPBySplittingT
+              |
+              |
+              solve-Vt
 -}
 
 module Numeric.AERN.IVP.Solver.Splitting
@@ -49,6 +65,8 @@ import Control.Exception (throw)
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
+        
+        
         
 solveODEIVPBySplittingAtT0End ::
     (HasAntiConsistency (Domain f), Show (Domain f))
@@ -343,6 +361,7 @@ solveODEIVPBySplittingT0 ::
      ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike(Domain f),
      Domain f ~ Imprecision (Domain f),
+     solvingInfoSub ~ ((Domain f, Maybe ([Domain f], [Domain f])), solvingInfo),
      Show f, Show (Domain f))
     =>
     (ODEIVP f -> (Maybe ([Domain f], [Domain f]), solvingInfo)) -- ^ solver to use for segments  
@@ -358,7 +377,7 @@ solveODEIVPBySplittingT0 ::
     (
         Maybe ([Domain f], [Domain f])
     , 
-        SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+        SplittingInfo solvingInfoSub (solvingInfoSub, Maybe (Imprecision (Domain f)))
     )
 solveODEIVPBySplittingT0
         solver
@@ -392,6 +411,7 @@ solveODEIVPBySplittingT0
         where
         tStart = odeivp_tStart odeivp
         t0End = odeivp_t0End odeivp
+        tEnd = odeivp_tEnd odeivp
         
         belowStepSize =
 --            unsafePrintReturn ("belowStepSize = ") $
@@ -399,7 +419,7 @@ solveODEIVPBySplittingT0
             ((t0End <-> tStart) >? minStepSize) /= Just True
 
         directComputation =
-            (maybeDirectResult, SegNoSplit directInfo)
+            (maybeDirectResult, SegNoSplit ((tEnd, maybeDirectResult), directInfo))
         (maybeDirectResult, directInfo) = solver odeivp
         directComputationFailed =
             case maybeDirectResult of Just _ -> False; _ -> True
@@ -432,7 +452,7 @@ solveODEIVPBySplittingT0
                 (Just (endValuesLOut, endValuesLIn), infoL) -> 
                     case splitSolve odeivpR of
                         (Just (endValuesROut, endValuesRIn), infoR) ->
-                            (Just endValues, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
+                            (Just endValues, SegSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL infoR)
                             where
                             endValues = (endValuesOut, endValuesIn)
                             endValuesOut =
@@ -442,7 +462,7 @@ solveODEIVPBySplittingT0
                                 let ?joinmeetEffort = effJoinDom in
                                 zipWith (>/\<) endValuesLIn endValuesRIn
                         (Nothing, infoR) ->
-                            (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
+                            (Nothing, SegSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL infoR)
                     where
                     odeivpR =
                         odeivp

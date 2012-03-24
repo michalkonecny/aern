@@ -232,7 +232,7 @@ writeCSV [ivpName, outputFileName] =
     ivp = ivpByName ivpName
     paramCombinations = 
         [(maxDegree, depth) | 
-            maxDegree <- [0..15], depth <- [0..12]]
+            maxDegree <- [0..15], depth <- [0..10]]
 --            maxDegree <- [0..10], depth <- [0..5]]
     writeCSVheader handle =
         do
@@ -438,12 +438,12 @@ solveIVPWithUncertainValue
 --        
     sampleCf = delta
     
-    effCompose = effCf
+    effCompose = (effCf, Int1To10 10)
     effInteg = effCf
     effAddFn = effCf
     effAddFnDom =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-    effInclFn = ((Int1To1000 0, effCf), ())
+    effInclFn = ((Int1To1000 0, (effCf, Int1To10 10)), ())
 
 makeSampleWithVarsDoms :: 
      Int -> Int -> [Var Poly] -> [CF] -> Poly

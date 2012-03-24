@@ -29,7 +29,7 @@ import Numeric.AERN.Poly.IntPoly.Multiplication ()
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
---import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison
 import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Arbitrary
@@ -69,9 +69,10 @@ instance
     NumOrd.PartialComparison (IntPoly var cf) 
     where
     type NumOrd.PartialCompareEffortIndicator (IntPoly var cf) =
-        (Int1To1000, ArithInOut.RoundedRealEffortIndicator cf) 
-    pCompareDefaultEffort (IntPoly cfg _) = 
-        (Int1To1000 $ 4 * varsN, ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg)
+        (Int1To1000, (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)) 
+    pCompareDefaultEffort p@(IntPoly cfg _) = 
+        (Int1To1000 $ 4 * varsN,
+         evaluationDefaultEffort p)  
         where
         varsN = length vars
         vars = ipolycfg_vars cfg
@@ -79,8 +80,8 @@ instance
         case partialInfo2PartialOrdering $ NumOrd.pCompareInFullEff eff p1 p2 of
             [rel] -> Just rel
             _ -> Nothing
-    pCompareInFullEff (Int1To1000 n, effDom) p1 p2 = 
-        pCompareFunFromRingOps (n, effDom, effCompDom, effDom) p1 p2 
+    pCompareInFullEff (Int1To1000 n, effEval@(effDom, _)) p1 p2 = 
+        pCompareFunFromRingOps (n, effDom, effCompDom, effEval) p1 p2 
         where
         effCompDom = ArithInOut.rrEffortNumComp sampleDom effDom
         sampleDom = getSampleDomValue p1
