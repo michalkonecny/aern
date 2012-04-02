@@ -137,6 +137,7 @@ ivpSpringMass_ut withInitialValueUncertainty =
             odeivp_tVar = "t",
             odeivp_tStart = -0.125,
             odeivp_t0End = 0.125,
+--            odeivp_tEnd = 0.125,
             odeivp_tEnd = 1,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_maybeExactValuesAtTEnd = Just $
@@ -314,7 +315,7 @@ refines a1 a2 =
 solveVTPrintSteps :: 
     (solvingInfo1 ~ (CF, Maybe ([CF],[CF])),
      solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe CF),
-     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe (Maybe ([CF],[CF]), (solvingInfo2, solvingInfo2))))
+     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe (solvingInfo2, solvingInfo2)))
     )
     =>
     Bool
@@ -365,7 +366,7 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
     delta = 1
     maxdeg = maxdegParam
     t0maxdeg = t0MaxDegParam
-    maxsize = 100
+    maxsize = 200
     m = 20
 --    minStepSizeExp = -4 :: Int
     minStepSizeExp = - depthParam
@@ -419,7 +420,7 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
 --            wIn = CF.width valueIn     
     showSegInfo2 indent splittingInfo2 =
         showSplittingInfo showSegInfo1 showSplitReason2 indent splittingInfo2
-    showSegInfo3 indent (segInfoT, (segInfoT0,  Just (_, (segInfo2Out, segInfo2In)))) =
+    showSegInfo3 indent (segInfoT, (segInfoT0,  Just (segInfo2Out, segInfo2In))) =
         indent ++ "at t0End:\n" ++ showSegInfo1 (indent ++ "  ") segInfoT0
         ++ indent ++ "at tEnd:\n" ++ showSegInfo1 (indent ++ "  ") segInfoT
         ++ showSegInfo2 (indent ++ ":<> ") segInfo2Out
@@ -440,7 +441,7 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
 solveIVPWithUncertainTime ::
     (solvingInfo1 ~ (CF, Maybe ([CF],[CF])),
      solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe CF),
-     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe (Maybe ([CF],[CF]), (solvingInfo2, solvingInfo2))))
+     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe (solvingInfo2, solvingInfo2)))
     )
     =>
     SizeLimits Poly -> 
@@ -468,13 +469,14 @@ solveIVPWithUncertainTime
     where
     result =
         solveUncertainValueUncertainTimeSplit
-            sizeLimits t0SizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effCf
+            sizeLimits t0SizeLimits effSizeLims effCompose effInteg effInclFn effAddFn effAddFnDom effCf
                 delta m minStepSize minT0StepSize splitImprovementThreshold
                     t0Var
                         odeivp
 
     sampleCf = delta 
     
+    effSizeLims = effCf
     effCompose = (effCf, Int1To10 10)
     effInteg = effCf
     effAddFn = effCf
