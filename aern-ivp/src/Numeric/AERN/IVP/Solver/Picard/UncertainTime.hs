@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 --{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.IVP.Solver.Picard.UncertainTime
@@ -33,27 +34,28 @@ import Numeric.AERN.RmToRn.Integration
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
-import Numeric.AERN.RealArithmetic.ExactOps
+--import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+--import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 
 import Numeric.AERN.Misc.Debug
+_ = unsafePrint
         
 solveUncertainValueUncertainTimeSplit
-        sizeLimits t0SizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+        sizeLimits t0SizeLimits effSizeLims effCompose effInteg effInclFn effAddFn effAddFnDom effDom
             delta m minStepSize minT0StepSize splitImprovementThreshold
                 t0Var
                     odeivpG 
     =
     solverSplittingT0 odeivpG
     where
-    componentNames = odeivp_componentNames odeivpG
+--    componentNames = odeivp_componentNames odeivpG
 --    tEndG = odeivp_tEnd odeivpG
     tVar = odeivp_tVar odeivpG
     
@@ -65,15 +67,17 @@ solveUncertainValueUncertainTimeSplit
 
     solverSplittingAtT0End odeivp =
         solveODEIVPBySplittingAtT0End
-            solverVT (makeFnVecFromInitialValues componentNames) 
+            solverVT (makeFnVecFromParamInitialValues effSizeLims) 
                 solverVt 
                     odeivp
     
     solverVT odeivp =
         case maybeIterations of
             Just iterations -> 
-                let valuesAtEnd = evalAtEndTimeOutInVec tVar t0End $ iterations !! m in
-                (Just valuesAtEnd, (t0End, Just valuesAtEnd))
+                let chosenIteration = iterations !! m in
+                let valuesAtEnd = evalAtEndTimeOutInVec tVar t0End chosenIteration in
+                let paramValuesAtEnd = partiallyEvalAtEndTimeOutInVec tVar t0End chosenIteration in
+                (Just paramValuesAtEnd, (t0End, Just valuesAtEnd))
             _ -> (Nothing, (t0End, Nothing))
         where
         t0End = odeivp_t0End odeivp
@@ -154,7 +158,8 @@ solveUncertainValueUncertainTime
 --                    ++ "\n enclosuresWithoutT0[0][tEnd] = " ++ (show $ head $ map (evalAtEndTimeVec tVar tEnd) enclosuresWithoutT0) 
 --                    ++ "\n enclosuresWithoutT0[0] = " ++ (show $ head $ enclosuresWithoutT0) 
 --                ) $
-                Just enclosuresWithoutT0
+--                Just enclosuresWithoutT0
+                Just enclosuresShifted
             Nothing -> Nothing
     where
     tVar = odeivp_tVar odeivp

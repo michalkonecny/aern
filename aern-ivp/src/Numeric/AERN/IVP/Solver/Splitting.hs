@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 --{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.IVP.Solver.Splitting
@@ -69,81 +70,78 @@ _ = unsafePrint
         
         
 solveODEIVPBySplittingAtT0End ::
-    (HasAntiConsistency (Domain f), Show (Domain f))
+    (HasAntiConsistency (Domain f), 
+     HasAntiConsistency f,
+     Show f, Show (Domain f))
     =>
-    (ODEIVP f -> (Maybe ([Domain f], [Domain f]), solvingInfoL))
+    (ODEIVP f -> (Maybe ([f], [f]), solvingInfoL)) -- ^ uncertain time solver; giving parametrised results
     -> 
-    ([Domain f] -> ODEInitialValues f)
+    ([f] -> ODEInitialValues f) -- ^ make ODE IVP initial value specification from parametrised initial values
     -> 
-    (ODEIVP f -> (Maybe ([Domain f], [Domain f]), solvingInfoR))
+    (ODEIVP f -> (Maybe ([Domain f], [Domain f]), solvingInfoR)) -- ^ exact time solver; giving wrapped results
     -> 
     ODEIVP f
     -> 
-    (Maybe ([Domain f], [Domain f]), (solvingInfoL, Maybe (Maybe ([Domain f], [Domain f]), solvingInfoR)))
+    (
+        Maybe ([Domain f], [Domain f])
+    , 
+        (solvingInfoL, Maybe solvingInfoR)
+    )
 solveODEIVPBySplittingAtT0End
-        solverVT makeMakeInitValFnVec solverVt 
+        solverVT makeMakeParamInitValFnVec solverVt 
             odeivpG 
     =
     (maybeResult, (infoL, maybeInfoR))
     where
     (maybeResult, maybeInfoR) =
         case maybeResultL of
-            Just (valuesLOut, valuesLIn) ->
-                case (maybeResultROut, maybeResultRIn) of
-                    (Just (resultOut, _), Just (resultInOut, resultInIn)) ->
+            Just (fnVecLOut, fnVecLIn) ->
+                case maybeResultROut of
+                    Just (resultOut, _) ->
 --                        unsafePrint
 --                        (
 --                            "solveODEIVPBySplittingAtT0End:"
---                            ++ "\n t0End = " ++ show t0End
---                            ++ "\n valuesLOut = " ++ show valuesLOut
---                            ++ "\n valuesLIn = " ++ show valuesLIn
---                            ++ "\n valuesLInUsed = " ++ show valuesLInUsed
---                            ++ "\n resultOut = " ++ show resultOut
---                            ++ "\n resultInOut = " ++ show resultInOut
---                            ++ "\n resultInIn = " ++ show resultInIn
---                            ++ "\n resultInUsed = " ++ show resultInUsed
---                        ) $
-                        (Just result, Just (Just result, infoROut))
+--                            ++ "\n fnVecLOut = " ++ show fnVecLOut
+--                        )
+                        (Just result, Just infoROut)
                         where
-                        result = (resultOut, resultInUsed)
-                        resultInUsed = makeResultsIn resultInOut resultInIn
-                    (Nothing, _) -> (Nothing, Just (Nothing, infoROut))
-                    (_, Nothing) -> (Nothing, Just (Nothing, infoRIn))
+                        result = (resultOut, resultOut) 
+                        -- cheating - the second component should be inner rounded but
+                        -- implementation of proper inner rounding has been postponed...
+--                        case maybeResultRIn of
+--                            Just (resultInOut, resultInIn) ->
+--                                (Just result, Just infoROut)
+--                            where
+--                            result = (resultOut, resultInUsed)
+--                            resultInUsed 
+--                                | fnVecLInIsConsistent = resultInIn
+--                                | otherwise = map flipConsistency resultInOut
+--                            Nothing -> (Nothing, Just (infoRIn))
+                    Nothing -> (Nothing, Just infoROut)
                 where
                 (maybeResultROut, infoROut) = solverVt odeivpROut
-                (maybeResultRIn, infoRIn) = solverVt odeivpRIn
-                odeivpROut = odeivpR valuesLOut
-                odeivpRIn = odeivpR valuesLInUsed 
-                valuesLInUsed = mapInconsistentOnes flipConsistency valuesLIn
-                makeResultsIn resultInOut resultInIn =
-                    map pick $ zip3 whichLValuesConsistent resultInOut resultInIn
-                    where
-                    pick (True, _, valueIn) = valueIn
-                    pick (False, valueOut, _) = flipConsistency valueOut
-                mapInconsistentOnes :: (a -> a) -> [a] -> [a]
-                mapInconsistentOnes f vec =
-                    map fOnInconsistent $ zip whichLValuesConsistent vec
-                    where
-                    fOnInconsistent (thisOneIsConsistent, value) 
-                        | thisOneIsConsistent = value
-                        | otherwise = f value
-                whichLValuesConsistent 
-                    | and result2 = result2
-                    | and $ map not result2 = result2
-                    | otherwise = 
-                        throw $ AERNException "aern-ivp: Splitting: solveODEIVPBySplittingAtT0End: currently cannot deal with intermediate results of mixed consistency"
-                    where
-                    result2 =
-                        map (/= Just False) $
-                            map (isConsistentEff $ consistencyDefaultEffort sampleDom) valuesLIn
-                (sampleDom : _) = valuesLIn
-                odeivpR valuesL =
+                odeivpROut = odeivpR fnVecLOut
+--                (maybeResultRIn, infoRIn) = solverVt odeivpRIn
+--                odeivpRIn = odeivpR fnVecLInUsed
+--                fnVecLInUsed 
+--                    | fnVecLInIsConsistent = fnVecLIn
+--                    | otherwise = map flipConsistency fnVecLIn
+--                fnVecLInIsConsistent 
+--                    | all (== Just True) result2 = True
+--                    | all (== Just False) result2 = False
+--                    | otherwise = 
+--                        throw $ AERNException "aern-ivp: Splitting: solveODEIVPBySplittingAtT0End: currently cannot deal with intermediate results of mixed consistency"
+--                    where
+--                    result2 =
+--                        map (isConsistentEff $ consistencyDefaultEffort sampleFn) fnVecLIn
+--                (sampleFn : _) = fnVecLIn
+                odeivpR fnVecL =
                     odeivpG
                         {
                             odeivp_tStart = t0End
                         ,
                             odeivp_makeInitialValueFnVec =
-                                makeMakeInitValFnVec valuesL
+                                makeMakeParamInitValFnVec fnVecL
                         }
             _ -> 
                 (Nothing, Nothing)

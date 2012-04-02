@@ -85,7 +85,7 @@ makeFnVecFromInitialValues ::
      [Var f] {-^ names for solution vector components -} -> 
      [Domain f] {-^ initial values, one for each component -}
      ->
-     SizeLimits f {-^ a sample function, only its size limits matter -} ->
+     SizeLimits f {-^ size limits to use in new function -} ->
      Var f {-^ @tVar@ - time variable -} -> 
      Domain f {-^ time domain  -} 
      -> 
@@ -105,14 +105,35 @@ makeFnVecFromInitialValues componentNames initialValues sizeLimits tVar timeDoma
     where    
     initialValuesFnVec =
         map initialValueFn componentNames
-    initialValueFn var =
-        newProjection sizeLimitsAdjusted dombox var
+    initialValueFn = 
+        newProjection sizeLimitsAdjusted dombox
     sizeLimitsAdjusted =
         adjustSizeLimitsToVarsAndDombox sampleF vars dombox sizeLimits
     sampleF = initialValueFn tVar 
     vars = tVar : componentNames
     dombox =
-        fromList $ (tVar, timeDomain) : (zip componentNames initialValues)
+        fromList $ (tVar, timeDomain) : zip componentNames initialValues
+
+makeFnVecFromParamInitialValues ::
+     (Show f, Show (Domain f), Show (Var f),
+      CanAddVariables f, CanChangeSizeLimits f) 
+      =>
+     (SizeLimitsChangeEffort f)
+     ->
+     [f] {-^ parametrised initial values, one for each component -}
+     ->
+     SizeLimits f {-^ size limits to use in new function - ignored here -} ->
+     Var f {-^ @tVar@ - time variable -} -> 
+     Domain f {-^ time domain  -} 
+     -> 
+     [f]
+makeFnVecFromParamInitialValues effSizeLims initialValueFnVec sizeLimits tVar timeDomain =
+    map updateFn initialValueFnVec
+    where
+    updateFn initValFn =
+        changeSizeLimitsOut effSizeLims sizeLimits $
+            addVariablesFront [(tVar, timeDomain)] initValFn
+
 
 evalAtEndTimeOutInVec ::
     (Show (Domain f), Show f,
@@ -121,8 +142,8 @@ evalAtEndTimeOutInVec ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
     =>
-    (Var f) -> 
-    (Domain f) -> 
+    Var f -> 
+    Domain f -> 
     [(f,f)] 
     -> 
     ([Domain f], [Domain f])
@@ -136,21 +157,22 @@ evalAtEndTimeOutInFn ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
     =>
-    (Var f) -> 
-    (Domain f) -> 
+    Var f -> 
+    Domain f -> 
     (f, f)
     -> 
     (Domain f, Domain f)
 evalAtEndTimeOutInFn tVar tEnd (fnOut, fnIn) =
 --    unsafePrint
 --    (
---        "evalAtEndTimeFn:"
+--        "evalAtEndTimeOutInFn:"
 --        ++ "\n fnOut = " ++ show fnOut
 --        ++ "\n fnIn = " ++ show fnIn
+--        ++ "\n at tEnd = " ++ show tEnd
 --        ++ "\n valueOut = " ++ show valueOut
 --        ++ "\n valueIn = " ++ show valueIn
---        ++ "\n valueL = " ++ show valueL
---        ++ "\n valueR = " ++ show valueR
+--        ++ "\n valueLR = " ++ show valueLR
+--        ++ "\n valueRL = " ++ show valueRL
 --    ) $
     (valueOut, valueIn)
     where
@@ -170,25 +192,6 @@ evalAtEndTimeOutInFn tVar tEnd (fnOut, fnIn) =
 --    endTimeArea :: DomainBox f
     endTimeArea = insertVar tVar tEnd $ getDomainBox fnOut
 
------------------------------------------------------
-----solving: x'' = -x; (x,x')(<0.0>) ∊ [[_0.875,1.125^],[_-0.125,0.125^]]
---------------  parameters: -------------------------
-----maxdeg = 2
-----maxsize = 100
-----delta = <1.0>
-----m = 20
-----minimum step size = 2^{-1}
-----split improvement threshold = <8.881784197001252e-16>
-----(almost) exact result = x(<1.0>) ∊ [_0.3675806445336352,0.7130239672026444^](err<=<0.0>); valueIn = [_0.3675806445336352,0.7130239672026444^]
-----(almost) exact result = x'(<1.0>) ∊ [_-1.0141926461424013,-0.668749323473392^](err<=<0.0>); valueIn = [_-1.0141926461424013,-0.668749323473392^]
---------------  result: -----------------------------
----- >>> x(<1.0>) ∊ [_0.18211986400462954,0.8829619482220938^](err<=<0.2652861669720941>); valueIn = [_0.31411856192129634,0.7496744791666665^]
----- >>> x'(<1.0>) ∊ [_-1.2113534432870372,-0.4971501856674382^](err<=<0.2887836974344141>); valueIn = [_-1.0673828124999998,-0.6419632523148149^]
------------------------------------------------------
-----simple-uv-et: enclosure error:
----- vecOut = [[_0.18211986400462954,0.8829619482220938^],[_-1.2113534432870372,-0.4971501856674382^]]
----- vecExact = [[_0.3675806445336352,0.7130239672026444^],[_-1.0141926461424013,-0.668749323473392^]]
----- vecIn = [[_0.31411856192129634,0.7496744791666665^],[_-1.0673828124999998,-0.6419632523148149^]]
         
 evalAtEndTimeVec ::
     (Show (Domain f), Show f,
@@ -198,8 +201,8 @@ evalAtEndTimeVec ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
     =>
-    (Var f) -> 
-    (Domain f) -> 
+    Var f -> 
+    Domain f -> 
     [f] 
     -> 
     ([Domain f], [Domain f])
@@ -214,11 +217,49 @@ evalAtEndTimeFn ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
     =>
-    (Var f) -> 
-    (Domain f) -> 
+    Var f -> 
+    Domain f -> 
     f
     -> 
     (Domain f, Domain f)
 evalAtEndTimeFn tVar tEnd fn =
     evalAtEndTimeOutInFn tVar tEnd (fn, flipConsistency fn)
 
+partiallyEvalAtEndTimeOutInVec ::
+    (Show (Domain f), Show f,
+     CanPartiallyEvaluate f)
+    =>
+    Var f -> 
+    Domain f -> 
+    [(f,f)]
+    -> 
+    ([f],[f])
+partiallyEvalAtEndTimeOutInVec tVar tEnd fnVec =
+    unzip $ map (partiallyEvalAtEndTimeOutInFn tVar tEnd) fnVec
+
+partiallyEvalAtEndTimeOutInFn ::
+    (Show (Domain f), Show f,
+     CanPartiallyEvaluate f)
+    =>
+    Var f -> 
+    Domain f -> 
+    (f, f)
+    -> 
+    (f, f)
+partiallyEvalAtEndTimeOutInFn tVar tEnd (fnOut, fnIn) =
+--    unsafePrint
+--    (
+--        "partiallyEvalAtEndTimeOutInFn:"
+--        ++ "\n fnOut = " ++ show fnOut
+--        ++ "\n fnIn = " ++ show fnIn
+--        ++ "\n at tEnd = " ++ show tEnd
+--        ++ "\n paramValueOut = " ++ show paramValueOut
+--        ++ "\n paramValueIn = " ++ show paramValueIn
+--    ) $
+    (paramValueOut, paramValueIn)
+    where
+    paramValueOut =
+        pEvalAtPointOutEff (partialEvaluationDefaultEffort fnOut) endTimeArea fnOut
+    paramValueIn =
+        pEvalAtPointInEff (partialEvaluationDefaultEffort fnIn) endTimeArea fnIn
+    endTimeArea = fromList [(tVar, tEnd)]
