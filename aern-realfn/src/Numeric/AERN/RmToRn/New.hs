@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.New
     Description :  constructors of basic functions  
@@ -16,12 +17,23 @@ module Numeric.AERN.RmToRn.New where
 
 import Numeric.AERN.RmToRn.Domain
 
+import Numeric.AERN.Basics.Effort
+
 class HasSizeLimits f where
     type SizeLimits f
     getSizeLimits :: f -> SizeLimits f
     defaultSizeLimits :: f -> SizeLimits f
     adjustSizeLimitsToVarsAndDombox :: f -> [Var f] -> DomainBox f -> SizeLimits f -> SizeLimits f
-    changeSizeLimits :: SizeLimits f -> f -> f
+
+class
+    (EffortIndicator (SizeLimitsChangeEffort f)) 
+    => 
+    CanChangeSizeLimits f 
+    where
+    type SizeLimitsChangeEffort f
+    sizeLimitsChangeDefaultEffort :: f -> SizeLimitsChangeEffort f
+    changeSizeLimitsOut :: SizeLimitsChangeEffort f -> SizeLimits f -> f -> f
+    changeSizeLimitsIn :: SizeLimitsChangeEffort f -> SizeLimits f -> f -> f
 
 class (HasDomainBox f, HasSizeLimits f) => HasProjections f where
     newProjection :: 
