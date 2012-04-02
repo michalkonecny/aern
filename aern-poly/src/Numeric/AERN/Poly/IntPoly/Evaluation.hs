@@ -586,64 +586,64 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
     sampleCf = ipolycfg_sample_cf cfg
     
 
-partiallyEvalPolyAtPointOut ::
-    (Ord var, ArithInOut.RoundedReal cf) 
-    =>
-    ArithInOut.RoundedRealEffortIndicator cf -> 
-    Map.Map var cf -> 
-    IntPoly var cf -> 
-    IntPoly var cf
-partiallyEvalPolyAtPointOut effCf valsMap _p@(IntPoly cfg terms) =
-    {- TODO: currently there is massive dependency effect here,
-        move this to Composition and deal with it as a special case
-        of composition
-    -}
-    IntPoly cfgVarsRemoved $ pev domsLE terms
-    where
-    cfgVarsRemoved =
-        cfg
-        {
-            ipolycfg_vars = newVars,
-            ipolycfg_domsLE = newDomsLE,
-            ipolycfg_domsLZ = newDomsLZ
-        }
-        where
-        (newVars, newDomsLE, newDomsLZ)
-            = unzip3 $ filter notSubstituted $ zip3 vars domsLE domsLZ
-            where
-            vars = ipolycfg_vars cfg
-            domsLZ = ipolycfg_domsLZ cfg
-            notSubstituted (var, _, _) =
-                var `Map.notMember` valsMap
-    domsLE = ipolycfg_domsLE cfg
-    pev _ t@(IntPolyC _) = t
-    pev (domLE : restDomsLE) (IntPolyV var powers) =
-        case Map.lookup var valsMap of
-            Just value ->
-                let ?addInOutEffort = effAdd in
-                -- evaluate evaluatedPowers using the Horner scheme: 
-                foldl (addAndScale (value <-> domLE) highestExponent) heTerms lowerPowers
-            _ ->
-                IntPolyV var evaluatedPowers
-        where
-        evaluatedPowers =
-            IntMap.map (pev restDomsLE) powers
-        ((highestExponent, heTerms) : lowerPowers) =  
-            reverse $ IntMap.toAscList evaluatedPowers
-        addAndScale value prevExponent termsSoFar (currExponent, currTerms) =
-            let ?multInOutEffort = effMult in
-            addTermsAux currTerms $ termsMapCoeffs (<*> valuePower) termsSoFar
-            where
-            valuePower = 
-                let ?intPowerInOutEffort = effPow in
-                value <^> (prevExponent - currExponent)  
-            addTermsAux (IntPolyV v powers1) (IntPolyV _ powers2) =
-                IntPolyV v $ IntMap.unionWith addTermsAux powers1 powers2
-            addTermsAux (IntPolyC val1) (IntPolyC val2) = 
-                let ?addInOutEffort = effAdd in
-                IntPolyC $ val1 <+> val2 
-        effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-        effMult = ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-        effPow = ArithInOut.fldEffortPow sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-        sampleCf = domLE
-                
+--partiallyEvalPolyAtPointOut ::
+--    (Ord var, ArithInOut.RoundedReal cf) 
+--    =>
+--    ArithInOut.RoundedRealEffortIndicator cf -> 
+--    Map.Map var cf -> 
+--    IntPoly var cf -> 
+--    IntPoly var cf
+--partiallyEvalPolyAtPointOut effCf valsMap _p@(IntPoly cfg terms) =
+--    {- TODO: currently there is massive dependency effect here,
+--        move this to Composition and deal with it as a special case
+--        of composition
+--    -}
+--    IntPoly cfgVarsRemoved $ pev domsLE terms
+--    where
+--    cfgVarsRemoved =
+--        cfg
+--        {
+--            ipolycfg_vars = newVars,
+--            ipolycfg_domsLE = newDomsLE,
+--            ipolycfg_domsLZ = newDomsLZ
+--        }
+--        where
+--        (newVars, newDomsLE, newDomsLZ)
+--            = unzip3 $ filter notSubstituted $ zip3 vars domsLE domsLZ
+--            where
+--            vars = ipolycfg_vars cfg
+--            domsLZ = ipolycfg_domsLZ cfg
+--            notSubstituted (var, _, _) =
+--                var `Map.notMember` valsMap
+--    domsLE = ipolycfg_domsLE cfg
+--    pev _ t@(IntPolyC _) = t
+--    pev (domLE : restDomsLE) (IntPolyV var powers) =
+--        case Map.lookup var valsMap of
+--            Just value ->
+--                let ?addInOutEffort = effAdd in
+--                -- evaluate evaluatedPowers using the Horner scheme: 
+--                foldl (addAndScale (value <-> domLE) highestExponent) heTerms lowerPowers
+--            _ ->
+--                IntPolyV var evaluatedPowers
+--        where
+--        evaluatedPowers =
+--            IntMap.map (pev restDomsLE) powers
+--        ((highestExponent, heTerms) : lowerPowers) =  
+--            reverse $ IntMap.toAscList evaluatedPowers
+--        addAndScale value prevExponent termsSoFar (currExponent, currTerms) =
+--            let ?multInOutEffort = effMult in
+--            addTermsAux currTerms $ termsMapCoeffs (<*> valuePower) termsSoFar
+--            where
+--            valuePower = 
+--                let ?intPowerInOutEffort = effPow in
+--                value <^> (prevExponent - currExponent)  
+--            addTermsAux (IntPolyV v powers1) (IntPolyV _ powers2) =
+--                IntPolyV v $ IntMap.unionWith addTermsAux powers1 powers2
+--            addTermsAux (IntPolyC val1) (IntPolyC val2) = 
+--                let ?addInOutEffort = effAdd in
+--                IntPolyC $ val1 <+> val2 
+--        effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+--        effMult = ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+--        effPow = ArithInOut.fldEffortPow sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+--        sampleCf = domLE
+--                

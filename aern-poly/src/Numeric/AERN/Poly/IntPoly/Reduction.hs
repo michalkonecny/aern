@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -28,8 +30,10 @@ import Prelude hiding ((+),(*),(^))
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
 import Numeric.AERN.Poly.IntPoly.New ()
+import Numeric.AERN.Poly.IntPoly.Show ()
 
 import Numeric.AERN.RmToRn.Domain
+import Numeric.AERN.RmToRn.New
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
@@ -41,16 +45,56 @@ import Numeric.AERN.Basics.Consistency
 
 import qualified Numeric.AERN.NumericOrder.OpsDefaultEffort as NumOrdDefEffort
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
---import Numeric.AERN.NumericOrder.OpsImplicitEffort
+
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+--import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.PartialOrdering as PartialOrdering
 
 import qualified Data.IntMap as IntMap
 import qualified Data.List as List
 
-import Numeric.AERN.Misc.Debug (unsafePrintReturn, unsafePrint)
+import Numeric.AERN.Misc.Debug
 _ = unsafePrint
-_ = unsafePrintReturn "" ""
+
+instance
+    (Ord var, Show var, Show cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
+     HasAntiConsistency cf)
+    => 
+    (CanChangeSizeLimits (IntPoly var cf))
+    where
+    type SizeLimitsChangeEffort (IntPoly var cf) = 
+        ArithInOut.RoundedRealEffortIndicator cf
+    sizeLimitsChangeDefaultEffort p =
+        ArithInOut.roundedRealDefaultEffort $ getSampleDomValue p
+    changeSizeLimitsOut effCf cfgNew _p@(IntPoly cfgOld terms) =
+--        unsafePrintReturn
+--        (
+--            "IntPoly changeSizeLimitsOut:"
+--            ++ "\n p = " ++ show _p
+--            ++ "\n old cfg = " ++ show _cfgOld
+--            ++ "\n new cfg = " ++ show cfg
+--            ++ "\n result = "
+--        ) $
+        IntPoly cfg termsReduced
+        where
+        cfg =
+            cfgOld
+            {
+                ipolycfg_maxsize = ipolycfg_maxsize cfgNew
+            ,
+                ipolycfg_maxdeg = ipolycfg_maxdeg cfgNew
+            }
+        termsReduced =
+            reduceTermsDegreeOut effCf cfg $
+                reduceTermsTermCountOut effCf cfg $
+                    terms
+    changeSizeLimitsIn =
+        error "aern-poly: changeSizeLimitsIn not available for IntPoly" 
+
 
 reducePolyTermCountOut ::
     (Show var,
@@ -288,4 +332,9 @@ reduceMarkedTerms (+) (*) (^) doms terms =
             to the following subpoly or return it if there is 
             no following subpoly.
         -}
+    aux _ _ =
+        error $ 
+            "reduceMarkedTerms: detected mismatch between doms and terms"
+            ++ "\n doms = " ++ show doms 
+            ++ "\n terms = " ++ show terms 
     

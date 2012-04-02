@@ -96,7 +96,7 @@ primitiveFnOutPoly eff _p@(IntPoly cfgTop terms) integVar =
             (IntPolyV var $ IntMap.map (primitiveFnOutTerms cfgR) powers)
         where
         result = IntPolyV var $ IntMap.insert 0 zP powersFractions 
-        cfgR = cfgRemVar cfg
+        cfgR = cfgRemFirstVar cfg
         zP = mkConstTerms (zero sample) $ ipolycfg_vars cfgR
         powersFractions =
             IntMap.fromDistinctAscList $

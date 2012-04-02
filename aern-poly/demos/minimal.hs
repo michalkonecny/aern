@@ -55,9 +55,13 @@ main =
     putStrLn $ "x + y + 1 + 1 = " ++ (showP $ xPyP1P1)
     putStrLn $ "(x + y)*(x - y) = " ++ (showP $ xPyBTxMyB)
     putStrLn $ "2(x + y + 2) = " ++ (showP $ twoBxPyP2)
-    putStrLn "reductions (TODO):"
+    putStrLn "reductions:"
+    putStrLn $ "(x + y)^2 = " 
+                    ++ (showP $ (x <+> y) <^> 2)
+    putStrLn $ "(x + y)^2[size 1] = " 
+                    ++ (showP $ changeSizeLimitsOut eff cfgSize1 $ (x <+> y) <^> 2)
     putStrLn $ "2(x + y + 2)[size 1] = " 
-                    ++ (showP $ reduceCount $ changeSizeLimits cfgSize1 $ twoBxPyP2)
+                    ++ (showP $ changeSizeLimitsOut eff cfgSize1 $ twoBxPyP2)
     putStrLn "structure changes:"
     putStrLn $ "2(x + y + 2) [new vars z1,z2 at the front] = " 
                     ++ (showP $ addVariablesFront (zip ["z1","z2"] doms) twoBxPyP2)
@@ -165,9 +169,12 @@ showP ::
     Poly -> 
     String
 showP p = 
-    showInternals (False, shouldShowTerms) p
+    showInternals (False, shouldShowCfg, shouldShowTerms) p
     where
     shouldShowTerms = False
+--    shouldShowTerms = True
+--    shouldShowCfg = False
+    shouldShowCfg = True
 
 showPPair ::
     (Poly, Poly) -> 
@@ -237,10 +244,6 @@ minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 x
 minmaxInOutEff :: NumOrd.MinmaxInOutEffortIndicator Poly
 minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 x
 
-reduceDeg, reduceCount :: Poly -> Poly 
-reduceDeg = reducePolyDegreeOut eff
-reduceCount = reducePolyTermCountOut eff
-
 evalOpsOutCf :: PolyEvalOps String CF CF
 evalOpsOutCf = evalOpsEff (eff, Int1To10 4) x (0::CF)
 
@@ -266,7 +269,7 @@ cfg =
         }
 
 cfgNoX :: IntPolyCfg String CF
-cfgNoX = cfgRemVar cfg
+cfgNoX = cfgRemFirstVar cfg
 
 cfgNoY :: IntPolyCfg String CF
 cfgNoY = 

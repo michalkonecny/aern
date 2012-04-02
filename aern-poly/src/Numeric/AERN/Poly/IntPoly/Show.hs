@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
@@ -42,35 +43,43 @@ instance
     (Show var, Show cf, ArithInOut.RoundedReal cf) => 
     Show (IntPoly var cf)
     where
-    show p@(IntPoly cfg terms)
+    show p
         = 
-        showPolyInternals show False p
+        showPolyInternals show False False p
 --        "IntPoly{" ++ showPoly show show p ++ "; " ++ show cfg ++ "; " ++ show terms ++ "}" 
 
 instance
-    (Show var, Show cf, ShowInternals cf, 
+    (Show var, Show cf, ShowInternals cf,
+     ArithInOut.RoundedReal cf,
      HasZero cf, RefOrd.PartialComparison cf) 
     =>
     (ShowInternals (IntPoly var cf))
     where
     type ShowInternalsIndicator (IntPoly var cf) 
-        = (ShowInternalsIndicator cf, Bool)
+        = (ShowInternalsIndicator cf, Bool, Bool)
     defaultShowIndicator (IntPoly cfg _) 
-        = (defaultShowIndicator $ ipolycfg_sample_cf cfg, False)
-    showInternals (cfIndicator, shouldShowTerms) p =
-        showPolyInternals showCf shouldShowTerms p 
+        = (defaultShowIndicator $ ipolycfg_sample_cf cfg, False, False)
+    showInternals (cfIndicator, shouldShowCfg, shouldShowTerms) p =
+        showPolyInternals showCf shouldShowCfg shouldShowTerms p 
         where
         showCf = showInternals cfIndicator
     
-showPolyInternals showCf shouldShowTerms p@(IntPoly _cfg terms) =
-        "IntPoly{" ++ showValue ++ "}"
+showPolyInternals :: 
+    (Show cf, Show var, ArithInOut.RoundedReal cf) 
+    =>
+    (cf -> String) -> Bool -> Bool -> IntPoly var cf 
+    -> 
+    String
+showPolyInternals showCf shouldShowCfg shouldShowTerms p@(IntPoly cfg terms) =
+        "IntPoly{" ++ valueS ++ cfgS ++ termsS ++ "}"
         where
-        showValue
-            | shouldShowTerms =
-                showPoly show showCf p ++ "[" ++ showTerms showCf terms ++ "]"
-            | otherwise = 
-                showPoly show showCf p
-        
+        valueS = showPoly show showCf p
+        cfgS 
+            | shouldShowCfg = "; " ++ show cfg
+            | otherwise = ""
+        termsS
+            | shouldShowTerms = "; [" ++ showTerms showCf terms ++ "]"
+            | otherwise = ""
     
 showPoly ::
     (HasZero cf, 
@@ -79,7 +88,7 @@ showPoly ::
     (var -> String) -> 
     (cf -> String) -> 
     (IntPoly var cf -> String)
-showPoly showVar showCoeff p@(IntPoly cfg terms) =
+showPoly showVar showCoeff (IntPoly cfg terms) =
     usingVariableDifferences
 --    expandedToNormalForm
     where

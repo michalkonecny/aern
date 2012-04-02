@@ -89,16 +89,7 @@ instance
                     error $ 
                         "aern-poly: IntPoly adjustSizeLimitsToVarsAndDombox: variable "
                         ++ show var ++ " not in the given domain box"
-         
-    changeSizeLimits cfg (IntPoly _ terms) 
-        | sameVarDoms = 
-            IntPoly cfg termsReduced
-        | otherwise =
-            error $ "attempted to reassign the domain of a polynomial, which is currently impossible"
-        where
-        sameVarDoms = True -- TODO
-        termsReduced = terms -- TODO
-         
+
 instance 
     (Ord var, Show var, Show cf, 
      ArithInOut.RoundedReal cf,
@@ -129,8 +120,8 @@ mkConstTerms value vars
     where
     aux [] = IntPolyC value
     aux (var:rest) = IntPolyV var $ IntMap.singleton 0 (aux rest)
-    valueInConsistent = 
-        (isConsistentEff (consistencyDefaultEffort value) value) == Just False
+--    valueInConsistent = 
+--        (isConsistentEff (consistencyDefaultEffort value) value) == Just False
 
 instance
     (Ord var, Show var, Show cf,

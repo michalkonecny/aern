@@ -23,7 +23,7 @@
 module Numeric.AERN.Poly.IntPoly.Composition
 where
 
---import Numeric.AERN.Poly.IntPoly.Config
+import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
 import Numeric.AERN.Poly.IntPoly.New ()
 import Numeric.AERN.Poly.IntPoly.Evaluation
@@ -167,26 +167,42 @@ instance
         CompositionEffortIndicator (IntPoly var cf)
     partialEvaluationDefaultEffort p =
         compositionDefaultEffort p
-    pEvalAtPointOutEff effComp evalValuesBox p = 
+    pEvalAtPointOutEff effComp evalValuesBox p@(IntPoly cfg _) = 
         composeVarsOutEff effComp composeBox p
         where
         composeBox =
             fromAscList $ 
                 map getVarComposeValue $
-                    toAscList evalValuesBox
+                    evalValuesBoxAscList
+        evalValuesBoxAscList = 
+            toAscList evalValuesBox
+        (substitutedVars, _) = 
+            unzip evalValuesBoxAscList
         getVarComposeValue (var,value) =
-            (var, newConstFnFromSample p value)
-    pEvalAtPointInEff effComp evalValuesBox p =
+            (var, newConstFn cfgWithoutEvalVars domboxWithoutEvalVars value)
+        cfgWithoutEvalVars =
+            foldl (flip cfgRemVar) cfg substitutedVars
+        domboxWithoutEvalVars =
+            foldl (flip removeVar) dombox substitutedVars
+        dombox = getDomainBox p
+    pEvalAtPointInEff effComp evalValuesBox p@(IntPoly cfg _) =
         composeVarsInEff effComp composeBox p
         where
         composeBox =
             fromAscList $ 
                 map getVarComposeValue $
-                    toAscList evalValuesBox
+                    evalValuesBoxAscList
+        evalValuesBoxAscList = 
+            toAscList evalValuesBox
+        (substitutedVars, _) = 
+            unzip evalValuesBoxAscList
         getVarComposeValue (var,value) =
-            (var, newConstFnFromSample p value)
-    
-
+            (var, newConstFn cfgWithoutEvalVars domboxWithoutEvalVars value)
+        cfgWithoutEvalVars =
+            foldl (flip cfgRemVar) cfg substitutedVars
+        domboxWithoutEvalVars =
+            foldl (flip removeVar) dombox substitutedVars
+        dombox = getDomainBox p
 
 -- TODO: move this function to aern-order
 performEndpointWiseWithDefaultEffort ::
@@ -237,10 +253,10 @@ polyComposeVarsOutEff ::
     VarBox f f ->
     f ->
     f 
-polyComposeVarsOutEff eff substBox p =
+polyComposeVarsOutEff eff substBox p@(IntPoly cfg _) =
     result
     where
-    vars = getVars $ getDomainBox p -- ipolycfg_vars cfg
+    vars = ipolycfg_vars cfg
     result =
 --        unsafePrintReturn
 --        (
@@ -430,7 +446,7 @@ polyComposeVarsInEff eff substBox p =
 --        | otherwise =
 --            Just $ IntPoly cfgR subterms
 --        where
---        cfgR = cfgRemVar cfg
+--        cfgR = cfgRemFirstVar cfg
 --        isMainVar =
 --            case subterms of
 --                (IntPolyV var _) -> var == mainVar

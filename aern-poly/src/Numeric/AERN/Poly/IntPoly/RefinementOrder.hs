@@ -20,6 +20,8 @@
 
 module Numeric.AERN.Poly.IntPoly.RefinementOrder
 where
+
+import Prelude hiding (EQ,LT,GT)
     
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
@@ -45,6 +47,8 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
+--import Numeric.AERN.NumericOrder.OpsImplicitEffort
+
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
@@ -123,7 +127,10 @@ instance
 
 
 instance 
-    (RefOrd.IntervalLike cf, HasZero cf, 
+    (Ord var, Show var, 
+     Show cf, 
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf, HasZero cf, 
      NumOrd.PartialComparison (IntPoly var cf)
     )
     => 
@@ -131,14 +138,29 @@ instance
     where
     type ConsistencyEffortIndicator (IntPoly var cf) =
         (RefOrd.GetEndpointsEffortIndicator cf,
-         RefOrd.FromEndpointsEffortIndicator cf,
          NumOrd.PartialCompareEffortIndicator (IntPoly var cf))
-    -- TODO
+    consistencyDefaultEffort p =
+        (RefOrd.getEndpointsDefaultEffort sampleCf,
+         NumOrd.pCompareDefaultEffort p)
+        where
+        sampleCf = getSampleDomValue p
+    getConsistencyEff (effGetE, effComp) p =
+-- TODO: add detection of inconsistency, needs using pCompareInFullEff instead of pCompareEff
+        case NumOrd.pCompareEff effComp pL pR of
+            Just EQ -> Just Exact
+            Just LT -> Just Consistent
+            Just GT -> Just Anticonsistent
+            _ -> Nothing
+        where
+        (pL, pR) = RefOrd.getEndpointsOutEff effGetE p
     
 instance 
-    (HasAntiConsistency cf,
+    (Ord var, Show var, 
+     Show cf, 
+     ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf, HasZero cf, 
-     NumOrd.PartialComparison (IntPoly var cf)
+     NumOrd.PartialComparison (IntPoly var cf),
+     HasAntiConsistency cf
     )
     => 
     (HasAntiConsistency (IntPoly var cf))
