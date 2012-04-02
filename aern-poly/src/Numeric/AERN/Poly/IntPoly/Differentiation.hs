@@ -67,5 +67,5 @@ diffPolyOut effCf var (IntPoly cfg poly) =
         termsNormalise $ 
             IntPolyV x $ IntMap.map (dp cfgR) polys
         where
-        cfgR = cfgRemVar cfg2 
+        cfgR = cfgRemFirstVar cfg2 
         

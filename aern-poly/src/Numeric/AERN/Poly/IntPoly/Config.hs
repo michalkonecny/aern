@@ -33,6 +33,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Consistency
 
 import Test.QuickCheck (Arbitrary, arbitrary, vectorOf)
+import Data.List (elemIndex)
 
 data IntPolyCfg var cf =
     IntPolyCfg
@@ -105,8 +106,8 @@ domLZLEToDomWithDefaultEffort domLZ domLE =
     effCF = ArithInOut.roundedRealDefaultEffort domLZ
      
      
-cfgRemVar :: IntPolyCfg var a -> IntPolyCfg var a
-cfgRemVar cfg = 
+cfgRemFirstVar :: IntPolyCfg var a -> IntPolyCfg var a
+cfgRemFirstVar cfg = 
     cfg
     { 
         ipolycfg_vars = tail $ ipolycfg_vars cfg, 
@@ -114,6 +115,26 @@ cfgRemVar cfg =
         ipolycfg_domsLE = tail $ ipolycfg_domsLE cfg 
     }
 
+cfgRemVar ::
+    (Eq var)
+    => 
+    var -> IntPolyCfg var a -> IntPolyCfg var a
+cfgRemVar var cfg = 
+    cfg
+    { 
+        ipolycfg_vars = dropAtVarPos $ ipolycfg_vars cfg, 
+        ipolycfg_domsLZ = dropAtVarPos $ ipolycfg_domsLZ cfg, 
+        ipolycfg_domsLE = dropAtVarPos $ ipolycfg_domsLE cfg 
+    }
+    where
+    dropAtVarPos :: [a] -> [a]
+    dropAtVarPos list = 
+        take varPos list ++ drop (varPos + 1) list
+    varPos = 
+        case elemIndex var vars of
+            Just pos -> pos
+            Nothing -> error $ "aern-poly: cfgRemVar: var not in cfg"
+    vars = ipolycfg_vars cfg
 cfgAdjustDomains ::
     (ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf)

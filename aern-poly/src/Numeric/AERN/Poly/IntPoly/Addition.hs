@@ -306,6 +306,6 @@ addTermsConst (+|) cfg (IntPolyV x polys) constant =
             Nothing -> intpoly_terms $ newConstFn cfgR undefined $ zero sampleCf
             Just p -> p
     newConstPoly = addTermsConst (+|) cfgR oldConstPoly constant
-    cfgR = cfgRemVar cfg
+    cfgR = cfgRemFirstVar cfg
     sampleCf = ipolycfg_sample_cf cfg
         
