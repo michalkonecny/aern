@@ -183,7 +183,7 @@ getSampleFromInsideDomainBoxUsingEndpointsEff
             (var, domME)
             where
             (domME, _) = RefOrd.getEndpointsOutEff effGetE domR
-            (domL, domR) = defaultDomSplit sampleF dom
+            (_, domR) = defaultDomSplit sampleF dom
 
 class HasVarValue vbox var val 
     | vbox -> var val
@@ -198,6 +198,7 @@ class HasVarValue vbox var val
     lookupVar :: vbox -> var -> Maybe val
     splitOffVar :: vbox -> Maybe ((var, val), vbox)
     insertVar :: var -> val -> vbox -> vbox
+    removeVar :: var -> vbox -> vbox
     -- TODO add much more (see hsreals DomainBox)
 
 
@@ -213,6 +214,7 @@ instance HasVarValue (IntMap.IntMap val) Int val
     lookupVar map var = IntMap.lookup var map
     splitOffVar = IntMap.minViewWithKey
     insertVar = IntMap.insert
+    removeVar = IntMap.delete
         
 
 instance (Ord var) => HasVarValue (Map.Map var val) var val
@@ -224,9 +226,10 @@ instance (Ord var) => HasVarValue (Map.Map var val) var val
     fromAscList varVals = Map.fromAscList varVals
     toAscList vbox = Map.toAscList vbox
     getVars vbox = Map.keys vbox
-    lookupVar map var = Map.lookup var map 
+    lookupVar map var = Map.lookup var map
     splitOffVar = Map.minViewWithKey
     insertVar = Map.insert
+    removeVar = Map.delete
      
 instance
     (ArbitraryWithArea val,
