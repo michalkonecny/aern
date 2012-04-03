@@ -23,7 +23,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
-import qualified Numeric.AERN.NumericOrder as NumOrd
+--import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
@@ -310,7 +310,7 @@ refines :: CF -> CF -> Bool
 refines a1 a2 = 
     (a2 CF.|<=? a1) == Just True
     where
-    tolerance = 2 ^^ (-50)
+--    tolerance = 2 ^^ (-50)
 
 solveVTPrintSteps :: 
     (solvingInfo1 ~ (CF, Maybe ([CF],[CF])),
@@ -366,7 +366,7 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
     delta = 1
     maxdeg = maxdegParam
     t0maxdeg = t0MaxDegParam
-    maxsize = 200
+    maxsize = 400
     m = 20
 --    minStepSizeExp = -4 :: Int
     minStepSizeExp = - depthParam
@@ -469,7 +469,7 @@ solveIVPWithUncertainTime
     where
     result =
         solveUncertainValueUncertainTimeSplit
-            sizeLimits t0SizeLimits effSizeLims effCompose effInteg effInclFn effAddFn effAddFnDom effCf
+            sizeLimits t0SizeLimits effSizeLims effCompose effInteg effInclFn effAddFn effMultFn effAddFnDom effCf
                 delta m minStepSize minT0StepSize splitImprovementThreshold
                     t0Var
                         odeivp
@@ -480,6 +480,7 @@ solveIVPWithUncertainTime
     effCompose = (effCf, Int1To10 10)
     effInteg = effCf
     effAddFn = effCf
+    effMultFn = effCf
     effAddFnDom =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effInclFn = ((Int1To1000 0, (effCf, Int1To10 10)), ())
