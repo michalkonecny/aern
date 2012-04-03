@@ -25,9 +25,9 @@ import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
 --import Numeric.AERN.RmToRn.Integration
 --
---import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
---import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
---import Numeric.AERN.RealArithmetic.ExactOps
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+import Numeric.AERN.RealArithmetic.ExactOps
 --
 --import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
@@ -114,12 +114,22 @@ makeFnVecFromInitialValues componentNames initialValues sizeLimits tVar timeDoma
     dombox =
         fromList $ (tVar, timeDomain) : zip componentNames initialValues
 
-makeFnVecFromParamInitialValues ::
+makeFnVecFromParamInitialValuesOut ::
      (Show f, Show (Domain f), Show (Var f),
+      ArithInOut.RoundedReal (Domain f),
+      ArithInOut.RoundedAdd f,
+      ArithInOut.RoundedSubtr f,
+      ArithInOut.RoundedMultiply f,
+      RefOrd.IntervalLike f,
+      RefOrd.IntervalLike (Domain f),
+      HasConstFns f,  HasProjections f,
       CanAddVariables f, CanChangeSizeLimits f) 
       =>
+     (ArithInOut.AddEffortIndicator f) ->
+     (ArithInOut.MultEffortIndicator f) ->
      (SizeLimitsChangeEffort f)
      ->
+     [Var f] {-^ names for solution vector components -} -> 
      [f] {-^ parametrised initial values, one for each component -}
      ->
      SizeLimits f {-^ size limits to use in new function - ignored here -} ->
@@ -127,12 +137,48 @@ makeFnVecFromParamInitialValues ::
      Domain f {-^ time domain  -} 
      -> 
      [f]
-makeFnVecFromParamInitialValues effSizeLims initialValueFnVec sizeLimits tVar timeDomain =
-    map updateFn initialValueFnVec
+makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames initialValueFnVec sizeLimits tVar timeDomain =
+--    unsafePrint
+--    (
+--        "makeFnVecFromParamInitialValuesOut:"
+--        ++ "\n initialValueFnVec = " ++ show initialValueFnVec
+--        ++ "\n result = " ++ show result
+--    )
+    result
     where
-    updateFn initValFn =
-        changeSizeLimitsOut effSizeLims sizeLimits $
-            addVariablesFront [(tVar, timeDomain)] initValFn
+    result =
+        map updateFn $ zip componentNames initialValueFnVec
+    updateFn (compName, initValFn) =
+        let ?addInOutEffort = effAddFn in
+        let ?multInOutEffort = effMultFn in
+--        (initValFnL <*> compVar) <+> (initValFnR <*> (c1 <-> compVar))
+        initValFnWithNewVars
+        where
+--        compVar = makeVar compName
+        (initValFnL, initValFnR) = RefOrd.getEndpointsOutWithDefaultEffort initValFnWithNewVars
+        initValFnWithNewVars =
+            changeSizeLimitsOut effSizeLims sizeLimits $
+                addVariablesFront newVarDoms initValFn
+
+--    c1 = 
+--        newConstFn sizeLimitsOutgoing domboxOutgoing (one sampleDom) 
+--    makeVar =
+--        newProjection sizeLimitsOutgoing domboxOutgoing
+
+    sizeLimitsOutgoing =
+        getSizeLimits $ changeSizeLimitsOut effSizeLims sizeLimits sampleFnOutgoing
+
+    domboxOutgoing =
+        getDomainBox sampleFnOutgoing
+    sampleFnOutgoing =
+        addVariablesFront newVarDoms sampleFnIncoming 
+    newVarDoms =
+        (tVar, timeDomain) : (zip componentNames $ repeat unitDom)
+        where
+        unitDom = RefOrd.fromEndpointsOutWithDefaultEffort (zero sampleDom, one sampleDom)
+    
+    sampleFnIncoming : _ = initialValueFnVec
+    sampleDom = getSampleDomValue sampleFnIncoming
 
 
 evalAtEndTimeOutInVec ::

@@ -48,14 +48,14 @@ import Numeric.AERN.Misc.Debug
 _ = unsafePrint
         
 solveUncertainValueUncertainTimeSplit
-        sizeLimits t0SizeLimits effSizeLims effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+        sizeLimits t0SizeLimits effSizeLims effCompose effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
             delta m minStepSize minT0StepSize splitImprovementThreshold
                 t0Var
                     odeivpG 
     =
     solverSplittingT0 odeivpG
     where
---    componentNames = odeivp_componentNames odeivpG
+    componentNames = odeivp_componentNames odeivpG
 --    tEndG = odeivp_tEnd odeivpG
     tVar = odeivp_tVar odeivpG
     
@@ -67,9 +67,12 @@ solveUncertainValueUncertainTimeSplit
 
     solverSplittingAtT0End odeivp =
         solveODEIVPBySplittingAtT0End
-            solverVT (makeFnVecFromParamInitialValues effSizeLims) 
+            solverVT (makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNamesWithT0) 
                 solverVt 
                     odeivp
+        where
+        componentNamesWithT0 =
+            map (flip appendVar t0Var) componentNames
     
     solverVT odeivp =
         case maybeIterations of
