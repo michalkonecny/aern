@@ -46,7 +46,6 @@ class
     type Var f
     type Domain f
     type VarBox f :: * -> *
---    getSampleVar :: f -> Var f
     getSampleDomValue :: f -> Domain f
     defaultDomSplit ::
         f {-^ dummy parameter that aids typechecking -} -> 
@@ -380,6 +379,18 @@ instance
                         areaWhole value
     arbitraryTupleRelatedBy =
         error "arbitraryTupleRelatedBy not defined for Map"
+           
+class AppendableVariables var
+    where
+    appendVar :: var -> var -> var
+
+instance AppendableVariables String
+    where
+    appendVar = (++)
+
+instance AppendableVariables Int
+    where
+    appendVar n m = 1000*n + m -- watch out - can lead to name clashes
            
 class GeneratableVariables var 
     where
