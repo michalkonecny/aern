@@ -425,14 +425,16 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
     | noMonoOps = direct
 --    | noMonotoneVar = useMonotonicityAndSplit
     | otherwise =
---        (case segCount > 1 of
---            False -> id
---            True ->
---                unsafePrint
---                (
---                    "evalPolyMono:"
---                    ++ "\n split into " ++ show segCount ++ " segment(s)"
---                ))
+        (case segCount > 1 of
+            False -> id
+            True ->
+                unsafePrint
+                (
+                    "evalPolyMono:"
+                    ++ "\n split into " ++ show segCount ++ " segment(s)"
+                    ++ " (maxSplitDepth = " ++ show maxSplitDepth ++ ")"
+                    ++ "\n polyTermSize p = " ++ show (polyTermSize p)
+                ))
 --        unsafePrint
 --        (
 --            "evalPolyMono: "
@@ -593,6 +595,11 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
     effMult = ArithInOut.mxfldEffortMult sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
     sampleCf = ipolycfg_sample_cf cfg
     
+data EvalMonoSpliting t =
+    EMSSplit (EvalMonoSpliting t) (EvalMonoSpliting t)
+    | EMSDone t
+    | EMSIgnore
+
 
 --partiallyEvalPolyAtPointOut ::
 --    (Ord var, ArithInOut.RoundedReal cf) 
@@ -602,7 +609,7 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
 --    IntPoly var cf -> 
 --    IntPoly var cf
 --partiallyEvalPolyAtPointOut effCf valsMap _p@(IntPoly cfg terms) =
---    {- TODO: currently there is massive dependency effect here,
+--    {-  currently there is massive dependency effect here,
 --        move this to Composition and deal with it as a special case
 --        of composition
 --    -}

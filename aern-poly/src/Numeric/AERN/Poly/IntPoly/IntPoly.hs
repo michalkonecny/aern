@@ -90,6 +90,13 @@ showTerms showCoeff (IntPolyV x powers)
     showPower (n, terms) =
         "^" ++ show n ++ "->" ++ showTerms showCoeff terms 
     
+polyTermSize :: IntPoly var cf -> Int
+polyTermSize (IntPoly _ terms) = aux terms
+    where
+    aux (IntPolyC _) = 1
+    aux (IntPolyV _ powers) =
+        sum $ map aux $ IntMap.elems powers
+    
 {-- simple spine-crawling operations --}
 
 termsCollectCoeffsWith :: 
