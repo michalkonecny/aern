@@ -58,7 +58,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
-import qualified Data.Map as Map
+--import qualified Data.Map as Map
 import Data.List (sortBy)
 
 instance 
@@ -182,7 +182,7 @@ instance
     where
     type EvalOpsEffortIndicator (IntPoly var cf) cf = 
         (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)
-    evalOpsDefaultEffort p@(IntPoly cfg _) sampleCf = 
+    evalOpsDefaultEffort _p@(IntPoly cfg _) sampleCf = 
         (ArithInOut.roundedRealDefaultEffort sampleCf, Int1To10 depth)
         where
         depth = 1 + (maxDeg `div` 2)
@@ -350,10 +350,10 @@ evalPolyOnIntervalIn eff maxSplitDepth values p@(IntPoly cfg _)
     = 
     evalPolyMono evalIn ops values p
     where
-    evalIn values p = 
+    evalIn values2 p2 = 
         flipConsistency $ 
-            evalPolyDirect ops values $ 
-                flipConsistencyPoly p
+            evalPolyDirect ops values2 $ 
+                flipConsistencyPoly p2
     ops = coeffPolyEvalOpsOut eff maxSplitDepth sample 
     sample = ipolycfg_sample_cf cfg
 
@@ -425,6 +425,14 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
     | noMonoOps = direct
 --    | noMonotoneVar = useMonotonicityAndSplit
     | otherwise =
+--        (case segCount > 1 of
+--            False -> id
+--            True ->
+--                unsafePrint
+--                (
+--                    "evalPolyMono:"
+--                    ++ "\n split into " ++ show segCount ++ " segment(s)"
+--                ))
 --        unsafePrint
 --        (
 --            "evalPolyMono: "
@@ -442,7 +450,7 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
     
     direct = evalDirect valuesG p
     
-    useMonotonicityAndSplit =
+    (useMonotonicityAndSplit, segCount) =
         useMonotonicityAndSplitWith maxSplitDepth $ zip valuesG $ repeat (False, False)
         
     useMonotonicityAndSplitWith remainingDepth valuesAndPrevDetectedMonotonicity
@@ -470,7 +478,7 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
 --                ++ "\n nosplitResult = " ++ show nosplitResult
 --                ++ "\n nosplitResultWidth = " ++ show nosplitResultWidth
 --            ) $ 
-            nosplitResult
+            (nosplitResult, 1 :: Int)
         where
         (nosplitResult, valuesAndCurrentDetectedMonotonicity) = 
             useMonotonicity valuesAndPrevDetectedMonotonicity
@@ -515,10 +523,10 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
             (resultR, _) = useMonotonicity valuesAndDM_R
         
         computeSplitResultContinueSplitting (valuesAndDM_L, valuesAndDM_R) =
-            mergeV (resultL, resultR)
+            (mergeV (resultL, resultR), splitCountL + splitCountR)
             where
-            resultL = useMonotonicityAndSplitWith (remainingDepth - 1) valuesAndDM_L
-            resultR = useMonotonicityAndSplitWith (remainingDepth - 1) valuesAndDM_R
+            (resultL, splitCountL) = useMonotonicityAndSplitWith (remainingDepth - 1) valuesAndDM_L
+            (resultR, splitCountR) = useMonotonicityAndSplitWith (remainingDepth - 1) valuesAndDM_R
                     
         
     useMonotonicity valuesAndPrevDetectedMonotonicity =
