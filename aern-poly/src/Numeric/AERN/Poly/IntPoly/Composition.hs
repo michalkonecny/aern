@@ -99,17 +99,22 @@ polyPolyEvalOps effCmp@(_,(effCf, Int1To10 maxSplitDepth)) sampleP sampleCf =
         let (<*>) = ArithInOut.multOutEff effCf in
         let (<^>) = ArithInOut.powerToNonnegIntOutEff effCf in
         let (<=?) = NumOrd.pLeqEff effCmp in
-        let (</\>) = RefOrd.meetOutEff effJoinCf in
-        PolyEvalOps (zero sampleP) (<+>) (<*>) (<^>) (newConstFnFromSample sampleP) (const Nothing) (<=?) maxSplitDepth $
+        PolyEvalOps (zero sampleP) (<+>) (<*>) (<^>) (newConstFnFromSample sampleP) (const Nothing) maxSplitDepth $
             Just $ PolyEvalMonoOps
                 result
+                (<=?)
                 RefOrd.getEndpointsOutWithDefaultEffort
                 RefOrd.fromEndpointsOutWithDefaultEffort
                 isDefinitelyExact
                 split
-                (polyJoinWith (zero sampleCf) $ uncurry (</\>))
+                join
+                (curry join) -- a very dummy min
+                (curry join) -- a very dummy max
                 getWidthAsDoubleDummy
                 effCf
+    join = 
+        let (</\>) = RefOrd.meetOutEff effJoinCf in
+        polyJoinWith (zero sampleCf) $ uncurry (</\>)
     split val = (val1, val2)
         where
         val1 = RefOrd.fromEndpointsOutWithDefaultEffort (valL, valM)
