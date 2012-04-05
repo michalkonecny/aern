@@ -69,6 +69,7 @@ solveUncertainValueExactTimeSplit ::
     =>
     SizeLimits f {-^ size limits for all function -} ->
     CompositionEffortIndicator f ->
+    EvaluationEffortIndicator f ->
     IntegrationEffortIndicator f ->
     RefOrd.PartialCompareEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
@@ -90,7 +91,7 @@ solveUncertainValueExactTimeSplit ::
         )
     )
 solveUncertainValueExactTimeSplit
-        sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+        sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effDom
             delta m minStepSize splitImprovementThreshold
                 odeivpG
     | (odeivp_tStart odeivpG <? odeivp_t0End odeivpG) == Just True =
@@ -110,7 +111,7 @@ solveUncertainValueExactTimeSplit
     directSolver odeivp =
         case maybeIterations of
             Just iterations ->
-                let valuesAtEnd = evalAtEndTimeVec tVar tEnd $ iterations !! m in
+                let valuesAtEnd = evalAtEndTimeVec effEval tVar tEnd $ iterations !! m in
                 (Just valuesAtEnd, (tEnd, Just valuesAtEnd))
             Nothing -> (Nothing, (tEnd, Nothing))
         where
@@ -207,7 +208,7 @@ solveUncertainValueExactTime
         where
         fn2RefinesFn1 =
             let ?pCompareEffort = effInclFn in
-            null $ filter (/= (Just True)) $ zipWith (|<=?) fn1Vec fn2Vec
+            and $ map (== (Just True)) $ zipWith (|<=?) fn1Vec fn2Vec
     findEnclosure _ _  =
         Nothing
 --        error "aern-picard: solveUncertainValueExactTime failed to find enclosure"

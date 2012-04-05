@@ -35,6 +35,7 @@ import Numeric.AERN.RmToRn.Integration
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 --import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsDefaultEffort
@@ -47,8 +48,62 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
         
+solveUncertainValueUncertainTimeSplit ::        
+    (CanAddVariables f,
+     CanChangeSizeLimits f,
+     CanEvaluate f,
+     CanPartiallyEvaluate f,
+     CanCompose f,
+     HasProjections f,
+     HasConstFns f,
+     RefOrd.PartialComparison f,
+     RefOrd.IntervalLike f,
+     HasAntiConsistency f,
+     NumOrd.RefinementRoundedLattice f,
+     RoundedIntegration f,
+     ArithInOut.RoundedAdd f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMultiply f,
+     ArithInOut.RoundedMixedAdd f (Domain f),
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f), 
+     HasAntiConsistency (Domain f), 
+     Show f, Show (Domain f), Show (Var f),
+     AppendableVariables (Var f),
+     dom ~ Domain f,
+     dom ~ Imprecision dom,
+     solvingInfo1 ~ (dom, Maybe ([dom],[dom])),
+     solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe dom),
+     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe (solvingInfo2, solvingInfo2)))
+    )
+    =>
+    SizeLimits f -> 
+    SizeLimits f ->
+    SizeLimitsChangeEffort f -> 
+    CompositionEffortIndicator f ->
+    EvaluationEffortIndicator f ->
+    IntegrationEffortIndicator f ->
+    RefOrd.PartialCompareEffortIndicator f ->
+    ArithInOut.AddEffortIndicator f ->
+    ArithInOut.MultEffortIndicator f ->
+    ArithInOut.MixedAddEffortIndicator f (Domain f) ->
+    ArithInOut.RoundedRealEffortIndicator (Domain f) 
+    ->
+    dom ->
+    Int ->
+    dom ->
+    dom ->
+    dom ->
+    Var f ->
+    ODEIVP f 
+    ->
+    (
+     Maybe ([dom], [dom])
+    ,
+     SplittingInfo solvingInfo3 (solvingInfo3, Maybe dom)
+    )
 solveUncertainValueUncertainTimeSplit
-        sizeLimits t0SizeLimits effSizeLims effCompose effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
+        sizeLimits t0SizeLimits effSizeLims effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
             delta m minStepSize minT0StepSize splitImprovementThreshold
                 t0Var
                     odeivpG 
@@ -78,7 +133,7 @@ solveUncertainValueUncertainTimeSplit
         case maybeIterations of
             Just iterations -> 
                 let chosenIteration = iterations !! m in
-                let valuesAtEnd = evalAtEndTimeOutInVec tVar t0End chosenIteration in
+                let valuesAtEnd = evalAtEndTimeOutInVec effEval tVar t0End chosenIteration in
                 let paramValuesAtEnd = partiallyEvalAtEndTimeOutInVec tVar t0End chosenIteration in
                 (Just paramValuesAtEnd, (t0End, Just valuesAtEnd))
             _ -> (Nothing, (t0End, Nothing))
@@ -93,7 +148,7 @@ solveUncertainValueUncertainTimeSplit
 
     solverVt odeivp =
         solveUncertainValueExactTimeSplit
-                sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+                sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effDom
                     delta m minStepSize splitImprovementThreshold
                         odeivp
         
