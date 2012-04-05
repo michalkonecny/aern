@@ -68,7 +68,12 @@ data HybridSystem f =
     ,
         hybsys_eventModeSwitchesAndResetFunctions :: Map.Map HybSysEventKind (HybSysMode, [f] -> [f])
     ,
-        hybsys_eventDetector :: HybSysMode -> [f] -> Set.Set HybSysEventKind 
+        hybsys_eventDetector :: 
+            HybSysMode -> 
+            [f] -> 
+            Set.Set 
+                (HybSysEventKind, 
+                 Bool) -- is this event certain unless it is beaten by another event? 
     }
     
 newtype HybSysMode = HybSysMode String deriving (Eq, Ord, Show)

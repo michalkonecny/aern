@@ -32,11 +32,11 @@ import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RmToRn.Integration
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
-import Numeric.AERN.RealArithmetic.Measures
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+--import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+--import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
@@ -45,7 +45,6 @@ import Numeric.AERN.Basics.Consistency
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
-import Data.Maybe (isJust)
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -53,6 +52,7 @@ _ = unsafePrint
 
 solveEvents ::
     (CanAddVariables f,
+     CanRenameVariables f,
      CanEvaluate f,
      CanCompose f,
      HasProjections f,
@@ -75,6 +75,8 @@ solveEvents ::
     ->
     CompositionEffortIndicator f 
     ->
+    EvaluationEffortIndicator f 
+    ->
     IntegrationEffortIndicator f 
     ->
     RefOrd.PartialCompareEffortIndicator f 
@@ -95,7 +97,7 @@ solveEvents ::
     ->
     (Maybe (HybridSystemUncertainState f), Map.Map HybSysMode (EventInfo f))
 solveEvents
-    sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+    sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effDom
         delta m
             t0Var
                 hybivp
@@ -129,23 +131,126 @@ solveEvents
     solveEventsOneMode initialMode =
         (maybeFinalState, eventInfo)
         where
-        maxIndividualEvents = 100
+        maxNodes = 100
         
         maybeFinalState =
-            case eventInfoCollectFinalStates tVar tEnd eventInfo of
+            case eventInfoCollectFinalStates effEval tVar tEnd eventInfo of
                 Just states -> Just $ foldl1 (mergeHybridStates effJoinDom) states
                 _ -> Nothing
             
-        (eventInfo, _nodeCount) =
-            esolve initialMode maybeFnVecNoEvent
+        eventInfo =
+            case maybeFnVecNoEvent of
+                Nothing -> EventGivenUp
+                Just fnVecNoEvent ->
+                    esolve (EventTODO (initialMode, fnVecNoEvent))
         maybeFnVecNoEvent =
             fmap (!! m) $
             solveUncertainValueExactTime
                 sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
                 delta
                 (odeivp initialMode $ makeFnVecFromInitialValues componentNames initialValues)
-        esolve mode fnVec =
-            undefined -- TODO            
+        esolve prevEventInfo =
+            case addOneLayer prevEventInfo of
+                (newEventInfo, Nothing) -> newEventInfo -- ie given up or reached limit
+                (newEventInfo, _) -> esolve newEventInfo
+        addOneLayer prevEventInfo =
+            processNode 0 [] prevEventInfo
+            where
+            processNode nodeCountSoFar previousStates eventInfo2 = 
+                case eventInfo2 of
+                    EventGivenUp -> (eventInfo2, Nothing)
+                    EventNextSure state children ->
+                        (EventNextSure state newChildren, maybeNodeCount)
+                        where
+                        (newChildren, maybeNodeCount) = 
+                            processChildren (nodeCountSoFar + 1) (state : previousStates) $ 
+                                Map.toAscList children
+                    EventNextMaybe state children -> 
+                        (EventNextMaybe state newChildren, maybeNodeCount)
+                        where
+                        (newChildren, maybeNodeCount) = 
+                            processChildren (nodeCountSoFar + 1) (state : previousStates) $ 
+                                Map.toAscList children
+                    EventTODO state -> processState (nodeCountSoFar + 1) previousStates state
+            processChildren nodeCountSoFar _previousStates [] = (Map.empty, Just nodeCountSoFar)
+            processChildren nodeCountSoFar previousStates ((key, child) : rest) =
+                 case processChildren nodeCountSoFar previousStates rest of
+                    (newRest, Nothing) -> 
+                        (Map.insert key child newRest, Nothing)
+                    (newRest, Just nodeCountSoFarWithRest) ->
+                        (Map.insert key newChild newRest, newNodeCountSoFar)
+                        where
+                        (newChild, newNodeCountSoFar) = 
+                            processNode nodeCountSoFarWithRest previousStates child
+            processState nodeCountSoFar previousStates state@(mode, fnVec) 
+                -- first check whether this state is included in a previous state:
+                | stateOccurredEarlier =
+                    (EventFixedPoint state, Just (nodeCountSoFar + 1))
+                | otherwise =
+                -- find which events are not ruled out by fnVec and try to determine whether an event is certain
+                -- for each potential event, compute an enclosure for the state at the event
+                --    then enclosure for the state after that event
+                -- build the event info
+                -- at the same time sum up the overall events 
+                --  (how? need breadth-first with size cut off - need to have partial event info to hold intermediate results;
+                --   could use a zipper...)
+                (constructorForNextEvents state eventTasksMap, maybeNodeCountNew)
+                where
+                stateOccurredEarlier =
+                    or $ map (stateIncludedIn state) previousStates
+                stateIncludedIn (mode1, fnVec1) (mode2, fnVec2) 
+                    | mode1 /= mode2 = False
+                    | otherwise =
+                        let ?pCompareEffort = effInclFn in
+                        and $ map (== Just True) $ zipWith (|<=?) fnVec1 fnVec2 
+                maybeNodeCountNew
+                    | givenUp2 = Nothing
+                    | nodeCountSoFar + eventCount > maxNodes = Nothing
+                    | otherwise = Just $ nodeCountSoFar + eventCount
+                eventCount = 
+                    Set.size possibleOrCertainFirstEventsSet
+                possibleOrCertainFirstEventsSet = 
+                    hybsys_eventDetector hybsys mode fnVec
+
+                constructorForNextEvents 
+                    | someEventCertain = EventNextSure
+                    | otherwise = EventNextMaybe
+                someEventCertain =
+                    or $ map snd $ Set.elems possibleOrCertainFirstEventsSet
+                
+                eventTasksMap =
+                    Map.fromAscList eventTasks
+                givenUp2 = 
+                    or $ map eventInfoIsGivenUp (map snd eventTasks)
+                eventTasks =
+                    map simulateEvent $ eventKindList
+                simulateEvent eventKind =
+                    case maybeFnVecAfterEvent of
+                        Just fnVecOutInAfterEvent ->
+                            (eventKind, EventTODO (modeAfterEvent, fnVecAfterEvent))
+                            where
+                            fnVecAfterEvent = map fst $ fnVecOutInAfterEvent !! m
+                        Nothing ->
+                            (eventKind, EventGivenUp)
+                    where
+                    (modeAfterEvent, eventSwitchingFn) =
+                        case Map.lookup eventKind eventModeSwitchesAndResetFunctions of
+                            Just res -> res
+                            Nothing -> error $ "aern-ivp: hybrid system has no information about event kind " ++ show eventKind
+                    fnVecAtEvent = eventSwitchingFn fnVec
+                    maybeFnVecAfterEvent = 
+                        solveUncertainValueUncertainTime
+                                sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+                                    delta
+                                        t0Var $
+                                            odeivp modeAfterEvent $
+                                                makeInitialValuesFromFnVecAtEvent
+                    makeInitialValuesFromFnVecAtEvent _sizeLimits t0Var2 _t0Domain =
+                        map (renameVar tVar t0Var2) fnVecAtEvent
+                eventModeSwitchesAndResetFunctions = hybsys_eventModeSwitchesAndResetFunctions hybsys
+                eventKindList =
+                    map fst $ Set.elems $ possibleOrCertainFirstEventsSet
+                    
             
 
     odeivp mode makeInitValueFnVec =
@@ -169,7 +274,38 @@ data EventInfo f
     = EventNextSure (HybSysMode, [f]) (Map.Map HybSysEventKind (EventInfo f)) -- at least one
     | EventNextMaybe (HybSysMode, [f]) (Map.Map HybSysEventKind (EventInfo f)) -- possibly none
     | EventFixedPoint (HybSysMode, [f]) -- been there before
-    | EventUnknown -- only used when given up
+    | EventGivenUp -- eg when tree has become too large or the ODE solver gave up
+    | EventTODO (HybSysMode, [f]) -- to capture intermediate states during breadth-first search 
+    
+instance
+    (Show f)
+    => 
+    Show (EventInfo f)
+    where
+    show = showEventInfo "" show
+    
+showEventInfo :: 
+    String -> ((HybSysMode, [f]) -> String) -> EventInfo f -> String
+showEventInfo prefix showState (EventTODO state) =
+    prefix ++ "EventTODO " ++ showState state
+showEventInfo prefix _showState EventGivenUp =
+    prefix ++ "EventGivenUp"
+showEventInfo prefix showState (EventFixedPoint state) =
+    prefix ++ "EventFixedPoint " ++ showState state
+showEventInfo prefix showState (EventNextMaybe state eventsMap) =
+    prefix ++ "EventNextMaybe " ++ showState state 
+    ++ (showEvents $ Map.toAscList eventsMap)
+    where
+    showEvents [] = " []"
+    showEvents events = 
+        "\n" ++ (unlines $ map showEvent events)
+    showEvent (eventKind, eventInfo) =
+        prefix ++ show eventKind ++ " ->\n" 
+        ++ showEventInfo (prefix ++ "| ") showState eventInfo
+            
+eventInfoIsGivenUp :: EventInfo t -> Bool
+eventInfoIsGivenUp EventGivenUp = True
+eventInfoIsGivenUp _ = False
     
 eventInfoCollectFinalStates ::
     (Show (Domain f), Show f,
@@ -179,11 +315,15 @@ eventInfoCollectFinalStates ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
     =>
-    Var f -> Domain f -> EventInfo f -> Maybe [HybridSystemUncertainState f]
-eventInfoCollectFinalStates tVar tEnd eventInfo =
+    EvaluationEffortIndicator f
+    ->
+    Var f -> Domain f -> EventInfo f 
+    -> 
+    Maybe [HybridSystemUncertainState f]
+eventInfoCollectFinalStates effEval tVar tEnd eventInfo =
     aux eventInfo
     where
-    aux EventUnknown = Nothing
+    aux (EventFixedPoint _) = Just [] -- no need to add the state as it refines one that occurred earlier 
     aux (EventNextSure _ furtherInfo) =
         fmap concat $ sequence $ map aux $ Map.elems furtherInfo
     aux (EventNextMaybe (mode, fnVec) furtherInfo) =
@@ -199,5 +339,6 @@ eventInfoCollectFinalStates tVar tEnd eventInfo =
                 hybstate_values = valueVec
             }
         valueVec =
-            fst $ evalAtEndTimeVec tVar tEnd fnVec
+            fst $ evalAtEndTimeVec effEval tVar tEnd fnVec
+    aux _ = Nothing
         
