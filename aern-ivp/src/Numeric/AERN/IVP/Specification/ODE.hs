@@ -26,7 +26,7 @@ import Numeric.AERN.RmToRn.Evaluation
 --import Numeric.AERN.RmToRn.Integration
 --
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 --
 --import qualified Numeric.AERN.NumericOrder as NumOrd
@@ -90,7 +90,7 @@ makeFnVecFromInitialValues ::
      Domain f {-^ time domain  -} 
      -> 
      [f]
-makeFnVecFromInitialValues componentNames initialValues sizeLimits tVar timeDomain =
+makeFnVecFromInitialValues componentNames initialValues sizeLimits t0Var t0Domain =
 --    unsafePrint
 --    (
 --        "makeFnVecFromInitialValues:"
@@ -109,10 +109,10 @@ makeFnVecFromInitialValues componentNames initialValues sizeLimits tVar timeDoma
         newProjection sizeLimitsAdjusted dombox
     sizeLimitsAdjusted =
         adjustSizeLimitsToVarsAndDombox sampleF vars dombox sizeLimits
-    sampleF = initialValueFn tVar 
-    vars = tVar : componentNames
+    sampleF = initialValueFn t0Var 
+    vars = t0Var : componentNames
     dombox =
-        fromList $ (tVar, timeDomain) : zip componentNames initialValues
+        fromList $ (t0Var, t0Domain) : zip componentNames initialValues
 
 makeFnVecFromParamInitialValuesOut ::
      (Show f, Show (Domain f), Show (Var f),
@@ -137,7 +137,7 @@ makeFnVecFromParamInitialValuesOut ::
      Domain f {-^ time domain  -} 
      -> 
      [f]
-makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames initialValueFnVec sizeLimits tVar timeDomain =
+makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames initialValueFnVec sizeLimits t0Var t0Domain =
 --    unsafePrint
 --    (
 --        "makeFnVecFromParamInitialValuesOut:"
@@ -148,14 +148,14 @@ makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames
     where
     result =
         map updateFn $ zip componentNames initialValueFnVec
-    updateFn (compName, initValFn) =
+    updateFn (_compName, initValFn) =
         let ?addInOutEffort = effAddFn in
         let ?multInOutEffort = effMultFn in
---        (initValFnL <*> compVar) <+> (initValFnR <*> (c1 <-> compVar))
-        initValFnWithNewVars
+--        (initValFnL <*> compVar) <+> (initValFnR <*> (c1 <-> compVar)) -- thinning
+        initValFnWithNewVars -- just adding a time variable
         where
 --        compVar = makeVar compName
-        (initValFnL, initValFnR) = RefOrd.getEndpointsOutWithDefaultEffort initValFnWithNewVars
+--        (initValFnL, initValFnR) = RefOrd.getEndpointsOutWithDefaultEffort initValFnWithNewVars
         initValFnWithNewVars =
             changeSizeLimitsOut effSizeLims sizeLimits $
                 addVariablesFront newVarDoms initValFn
@@ -165,15 +165,15 @@ makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames
 --    makeVar =
 --        newProjection sizeLimitsOutgoing domboxOutgoing
 
-    sizeLimitsOutgoing =
-        getSizeLimits $ changeSizeLimitsOut effSizeLims sizeLimits sampleFnOutgoing
-
-    domboxOutgoing =
-        getDomainBox sampleFnOutgoing
-    sampleFnOutgoing =
-        addVariablesFront newVarDoms sampleFnIncoming 
+--    sizeLimitsOutgoing =
+--        getSizeLimits $ changeSizeLimitsOut effSizeLims sizeLimits sampleFnOutgoing
+--
+--    domboxOutgoing =
+--        getDomainBox sampleFnOutgoing
+--    sampleFnOutgoing =
+--        addVariablesFront newVarDoms sampleFnIncoming 
     newVarDoms =
-        (tVar, timeDomain) : (zip componentNames $ repeat unitDom)
+        (t0Var, t0Domain) : (zip componentNames $ repeat unitDom)
         where
         unitDom = RefOrd.fromEndpointsOutWithDefaultEffort (zero sampleDom, one sampleDom)
     
@@ -188,13 +188,14 @@ evalAtEndTimeOutInVec ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
     =>
+    EvaluationEffortIndicator f ->
     Var f -> 
     Domain f -> 
     [(f,f)] 
     -> 
     ([Domain f], [Domain f])
-evalAtEndTimeOutInVec tVar tEnd fnVec =
-    unzip $ map (evalAtEndTimeOutInFn tVar tEnd) fnVec
+evalAtEndTimeOutInVec effEval tVar tEnd fnVec =
+    unzip $ map (evalAtEndTimeOutInFn effEval tVar tEnd) fnVec
     
 evalAtEndTimeOutInFn ::
     (Show (Domain f), Show f,
@@ -203,12 +204,13 @@ evalAtEndTimeOutInFn ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
     =>
+    EvaluationEffortIndicator f ->
     Var f -> 
     Domain f -> 
     (f, f)
     -> 
     (Domain f, Domain f)
-evalAtEndTimeOutInFn tVar tEnd (fnOut, fnIn) =
+evalAtEndTimeOutInFn effEval tVar tEnd (fnOut, fnIn) =
 --    unsafePrint
 --    (
 --        "evalAtEndTimeOutInFn:"
@@ -223,7 +225,7 @@ evalAtEndTimeOutInFn tVar tEnd (fnOut, fnIn) =
     (valueOut, valueIn)
     where
     valueOut =
-        evalAtPointOutEff (evaluationDefaultEffort fnOut) endTimeArea fnOut
+        evalAtPointOutEff effEval endTimeArea fnOut
     valueIn =
         RefOrd.fromEndpointsOutWithDefaultEffort (valueRL, valueLR)
     (_, valueLR) =
@@ -231,9 +233,9 @@ evalAtEndTimeOutInFn tVar tEnd (fnOut, fnIn) =
     (valueRL, _) =
         RefOrd.getEndpointsOutWithDefaultEffort valueAboveL
     valueBelowR =
-        evalAtPointInEff (evaluationDefaultEffort fnIn) endTimeArea fnBelowR
+        evalAtPointInEff effEval endTimeArea fnBelowR
     valueAboveL =
-        evalAtPointInEff (evaluationDefaultEffort fnIn) endTimeArea fnAboveL
+        evalAtPointInEff effEval endTimeArea fnAboveL
     (fnAboveL, fnBelowR) = RefOrd.getEndpointsOutWithDefaultEffort fnIn
 --    endTimeArea :: DomainBox f
     endTimeArea = insertVar tVar tEnd $ getDomainBox fnOut
@@ -247,13 +249,14 @@ evalAtEndTimeVec ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
     =>
+    EvaluationEffortIndicator f ->
     Var f -> 
     Domain f -> 
     [f] 
     -> 
     ([Domain f], [Domain f])
-evalAtEndTimeVec tVar tEnd fnVec =
-    unzip $ map (evalAtEndTimeFn tVar tEnd) fnVec
+evalAtEndTimeVec effEval tVar tEnd fnVec =
+    unzip $ map (evalAtEndTimeFn effEval tVar tEnd) fnVec
     
 evalAtEndTimeFn ::
     (Show (Domain f), Show f,
@@ -263,13 +266,14 @@ evalAtEndTimeFn ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f))
     =>
+    EvaluationEffortIndicator f ->
     Var f -> 
     Domain f -> 
     f
     -> 
     (Domain f, Domain f)
-evalAtEndTimeFn tVar tEnd fn =
-    evalAtEndTimeOutInFn tVar tEnd (fn, flipConsistency fn)
+evalAtEndTimeFn effEval tVar tEnd fn =
+    evalAtEndTimeOutInFn effEval tVar tEnd (fn, flipConsistency fn)
 
 partiallyEvalAtEndTimeOutInVec ::
     (Show (Domain f), Show f,

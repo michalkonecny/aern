@@ -325,6 +325,7 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
     putStrLn $ "maxsize = " ++ show maxsize
     putStrLn $ "delta = " ++ show delta
     putStrLn $ "m = " ++ show m
+    putStrLn $ "substSplitSizeLimit = " ++ show substSplitSizeLimit
     putStrLn $ "minimum step size = 2^{" ++ show minStepSizeExp ++ "}"
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
     case maybeExactResult of
@@ -347,7 +348,7 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
     -- solver call:
     (endValues, splittingInfo@(splittingInfoOut, splittingInfoIn)) =
         solveIVPWithUncertainValue
-            sizeLimits effCf delta m 
+            sizeLimits effCf substSplitSizeLimit delta m 
                 minStepSize splitImprovementThreshold
                     ivp
     -- parameters:
@@ -355,6 +356,7 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
     maxdeg = maxdegParam
     maxsize = 100
     m = 20
+    substSplitSizeLimit = 100
 --    minStepSizeExp = -4 :: Int
     minStepSizeExp = - depthParam
     minStepSize = 2^^minStepSizeExp
@@ -402,13 +404,14 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
 solveIVPWithUncertainValue ::
     (solvingInfo ~ (CF, Maybe ([CF],[CF])))
     =>
-    SizeLimits Poly 
-    -> ArithInOut.RoundedRealEffortIndicator CF
-    -> CF
-    -> Int
-    -> CF
-    -> CF
-    -> ODEIVP Poly
+    SizeLimits Poly -> 
+    ArithInOut.RoundedRealEffortIndicator CF -> 
+    Int -> 
+    CF -> 
+    Int -> 
+    CF -> 
+    CF -> 
+    ODEIVP Poly
     -> 
     (
      Maybe ([CF],[CF])
@@ -420,12 +423,12 @@ solveIVPWithUncertainValue ::
         )
     )
 solveIVPWithUncertainValue
-        sizeLimits effCf 
+        sizeLimits effCf substSplitSizeLimit
             delta m minStepSize splitImprovementThreshold
                 odeivp
     =
     solveUncertainValueExactTimeSplit
-        sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effCf
+        sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effCf
             delta m minStepSize splitImprovementThreshold
                 odeivp 
     where
@@ -438,12 +441,13 @@ solveIVPWithUncertainValue
 --        
     sampleCf = delta
     
-    effCompose = (effCf, Int1To10 10)
+    effCompose = (effCf, Int1To10 substSplitSizeLimit)
+    effEval = (effCf, Int1To10 substSplitSizeLimit)
     effInteg = effCf
     effAddFn = effCf
     effAddFnDom =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-    effInclFn = ((Int1To1000 0, (effCf, Int1To10 10)), ())
+    effInclFn = ((Int1To1000 0, (effCf, Int1To10 100)), ())
 
 makeSampleWithVarsDoms :: 
      Int -> Int -> [Var Poly] -> [CF] -> Poly
