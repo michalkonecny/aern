@@ -34,7 +34,7 @@ where
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
 import Numeric.AERN.Poly.IntPoly.New ()
-import Numeric.AERN.Poly.IntPoly.Show
+import Numeric.AERN.Poly.IntPoly.Show ()
 import Numeric.AERN.Poly.IntPoly.Differentiation
 
 import Numeric.AERN.RmToRn.Domain
@@ -136,9 +136,9 @@ instance
         (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)
     evaluationDefaultEffort (IntPoly cfg _) =
         (ArithInOut.roundedRealDefaultEffort (ipolycfg_sample_cf cfg),
-         Int1To10 depth)
+         Int1To10 maxSplitSize)
         where
-        depth = 1 + (maxDeg `div` 2)
+        maxSplitSize = 2^maxDeg
         maxDeg = ipolycfg_maxdeg cfg
     evalAtPointOutEff (effCf, Int1To10 maxSplitDepth) valsMap p@(IntPoly cfg _) 
         | valuesAreExact valsLZ =
@@ -438,7 +438,8 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
 --                unsafePrint
 --                (
 --                    "evalPolyMono:"
---                    ++ "\n split into " ++ show segCount ++ " segment(s)"
+--                    ++ "\n split into " ++ show segCount ++ " segment(s), " 
+--                    ++ show (emsCountIgnoreNodes resultEMS) ++ " pruned"
 --                    ++ " (maxSplitSize = " ++ show maxSplitSize ++ ")"
 --                    ++ "\n polyTermSize p = " ++ show (polyTermSize p)
 --                ))
@@ -458,13 +459,13 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
     vars = ipolycfg_vars cfg
     
     direct = evalDirect valuesG p
-    
+        
     segCount = emsCountNodes resultEMS
     Just useMonotonicityAndSplit =
         emsCollectResultsSoFar (curry mergeV) resultEMS
     resultEMS =
         useMonotonicityAndSplitting (direct, direct) $ 
-            EMSTODO direct $ zip valuesG $ repeat (False, False)
+            EMSTODO (direct, [direct]) $ zip valuesG $ repeat (False, False)
         
     useMonotonicityAndSplitting (minSoFar, maxSoFar) emsTree =
         case evalNextLevel 0 emsTree of
@@ -473,6 +474,13 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
             (emsTreeNew, _, _) -> 
                 case emsCollectMinMax minV maxV emsTreeNew of
                     Just (minSoFarNew, maxSoFarNew) ->
+--                        unsafePrint
+--                        (
+--                            "evalPolyMono: useMonotonicityAndSplitting: processing next layer:"
+--                            ++ "\n size of emsTreeNew = " ++ show (emsCountNodes emsTreeNew)
+--                            ++ "\n minSoFarNew = " ++ show minSoFarNew
+--                            ++ "\n maxSoFarNew = " ++ show maxSoFarNew
+--                        ) $
                         useMonotonicityAndSplitting (minSoFarNew, maxSoFarNew) emsTreeNew
                     _ ->
                         error $ 
@@ -495,22 +503,62 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
                     Nothing -> 
                         (right, Nothing, False)
         evalNextLevel nodeCountSoFar t@(EMSDone _) = (t, Just (nodeCountSoFar + 1), False)
-        evalNextLevel nodeCountSoFar (EMSTODO nosplitResult valuesAndDetectedMonotonicity)
+        evalNextLevel nodeCountSoFar t@(EMSIgnore _) = (t, Just (nodeCountSoFar + 1), False)
+        evalNextLevel nodeCountSoFar (EMSTODO nosplitResultSamples valuesAndDetectedMonotonicity)
             | insideOthers = 
-                (EMSDone nosplitResult, Just (nodeCountSoFar + 1), False)
+                (EMSIgnore nosplitResultSamples, Just (nodeCountSoFar + 1), False)
             | nodeCountSoFar + 1 >= maxSplitSize = -- node count limit reached 
-                (EMSDone nosplitResult, Nothing, False)
+                (EMSDone nosplitResultSamples, Nothing, False)
             | splitHelps =
-                (EMSSplit (EMSTODO leftRes leftValsEtc) (EMSTODO rightRes rightValsEtc), 
-                 Just $ nodeCountSoFar + 3, True)
+                (EMSSplit (EMSTODO (leftRes, leftSamples) leftValsEtc) (EMSTODO (rightRes, rightSamples) rightValsEtc), 
+                 Just $ nodeCountSoFar + 2, True)
             | otherwise = -- ie splitting further does not help:
-                (EMSDone nosplitResult, Just (nodeCountSoFar + 1), False)
+                (EMSDone nosplitResultSamples, Just (nodeCountSoFar + 1), False)
             where
             insideOthers = 
                 (minSoFar `leqV` nosplitResult == Just True) &&
                 (nosplitResult `leqV` maxSoFar == Just True)
             
             nosplitResultWidth = getWidthDblV nosplitResult
+            nosplitResult = fst nosplitResultSamples
+
+            leftSamples = getSamplesFor leftValsEtc
+            rightSamples = getSamplesFor rightValsEtc
+            getSamplesFor valuesAndDetectedMonotonicity2 =
+--                unsafePrint
+--                (
+--                    "getSamplesFor:"
+--                    ++ "\n valuesAndDetectedMonotonicity2 = " ++ show valuesAndDetectedMonotonicity2
+--                    ++ "\n samplePoints2 = \n" 
+--                    ++ unlines (map show samplePoints2)
+--                ) $
+                map (fst . useMonotonicity) samplePoints
+                where
+                samplePoints = take maxSplitSize samplePoints2
+                samplePoints2 
+                    | someMonotonicityInfo =
+                        interleaveLists
+                        (getPoints True [] valuesAndDetectedMonotonicity2)
+                        (getPoints False [] valuesAndDetectedMonotonicity2)
+                    | otherwise =
+                        getPoints True [] valuesAndDetectedMonotonicity2
+                someMonotonicityInfo =
+                    or $ map (\(_,(isMono, _)) -> isMono) valuesAndDetectedMonotonicity2 
+                getPoints _shouldAimDown prevValues [] = [reverse prevValues]
+                getPoints shouldAimDown prevValues (vdm@(value, dm@(detectedMono, isIncreasing)) : rest)
+                    | isExactV value =
+                        getPoints shouldAimDown (vdm : prevValues) rest
+                    | detectedMono =
+                        getPoints shouldAimDown ((valueEndpt, (True, True)) : prevValues) rest
+                    | otherwise =
+                        interleaveLists
+                        (getPoints shouldAimDown ((valueLE, (True, True)) : prevValues) rest)
+                        (getPoints shouldAimDown ((valueRE, (True, True)) : prevValues) rest)
+                    where
+                    valueEndpt 
+                        | isIncreasing `xor` shouldAimDown = valueLE 
+                        | otherwise = valueRE
+                    (valueLE, valueRE) = getEndPtsV value
 
             splitHelps 
                 | null possibleSplits = False
@@ -692,12 +740,19 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
 --            (resultL, splitCountL) = useMonotonicityAndSplitWith (remainingDepth - 1) valuesAndDM_L
 --            (resultR, splitCountR) = useMonotonicityAndSplitWith (remainingDepth - 1) valuesAndDM_R
                     
+interleaveLists :: [a] -> [a] -> [a]
+interleaveLists (h1 : t1) (h2 : t2) = h1 : h2 : (interleaveLists t1 t2)
+interleaveLists [] list2 = list2
+interleaveLists list1 [] = list1
+    
+xor False b = b
+xor True b = not b 
     
 data EvalMonoSpliting task value =
     EMSSplit (EvalMonoSpliting task value) (EvalMonoSpliting task value)
-    | EMSTODO value task
-    | EMSDone value
---    | EMSIgnore
+    | EMSTODO (value, [value]) task
+    | EMSDone (value, [value])
+    | EMSIgnore (value, [value])
     deriving Show
     
 emsCountNodes ::
@@ -706,6 +761,13 @@ emsCountNodes (EMSSplit left right) =
     (emsCountNodes left) + (emsCountNodes right)
 emsCountNodes _ = 1
 
+emsCountIgnoreNodes ::
+    EvalMonoSpliting task value -> Int
+emsCountIgnoreNodes (EMSSplit left right) =
+    (emsCountIgnoreNodes left) + (emsCountIgnoreNodes right)
+emsCountIgnoreNodes (EMSIgnore _) = 1
+emsCountIgnoreNodes _ = 0
+
 emsCollectResultsSoFar :: 
     (value -> value -> value) ->
     EvalMonoSpliting task value ->
@@ -713,9 +775,9 @@ emsCollectResultsSoFar ::
 emsCollectResultsSoFar mergeV emsTree =
     aux emsTree
     where
---    aux EMSIgnore = Nothing
-    aux (EMSDone val) = Just val
-    aux (EMSTODO val _) = Just val
+    aux (EMSIgnore (val, _)) = Just val
+    aux (EMSDone (val, _)) = Just val
+    aux (EMSTODO (val, _) _) = Just val
     aux (EMSSplit left right) =
         do
         leftVal <- aux left
@@ -730,16 +792,19 @@ emsCollectMinMax ::
 emsCollectMinMax minV maxV emsTree =
     aux emsTree
     where
---    aux EMSIgnore = Nothing
-    aux (EMSDone val) = Just (val, val)
-    aux (EMSTODO val _) = Just (val, val)
+    aux (EMSIgnore (_, samples)) = minmaxFromSamples samples
+    aux (EMSDone (_, samples)) = minmaxFromSamples samples
+    aux (EMSTODO (_, samples) _) = minmaxFromSamples samples
     aux (EMSSplit left right) =
         do
         (leftMin, leftMax) <- aux left
         (rightMin, rightMax) <- aux right
         return $ 
             (leftMin `minV` rightMin, leftMax `maxV` rightMax)
-
+    minmaxFromSamples [] = Nothing
+    minmaxFromSamples samples =
+        Just (foldl1 minV samples, foldl1 maxV samples)
+        
 --partiallyEvalPolyAtPointOut ::
 --    (Ord var, ArithInOut.RoundedReal cf) 
 --    =>
