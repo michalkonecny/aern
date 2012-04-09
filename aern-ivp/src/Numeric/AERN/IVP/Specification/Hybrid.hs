@@ -46,6 +46,8 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 data HybridIVP f =
     HybridIVP
     {
+        hybivp_description :: String
+    ,
         hybivp_system :: HybridSystem f
     , 
         hybivp_tVar :: Var f -- ^ @tVar@
@@ -57,6 +59,8 @@ data HybridIVP f =
         hybivp_initialStateEnclosure :: HybridSystemUncertainState f 
         {-^
         -}
+    ,
+        hybivp_maybeExactStateAtTEnd :: Maybe (HybridSystemUncertainState f)
     }
 
 data HybridSystem f =

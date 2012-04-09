@@ -283,15 +283,17 @@ writeCSV [ivpName, outputFileName] =
 --        ++ enclosureErrorBoundS ++ ","
         ++ enclosureErrorS
         where
-        (_enclosureErrorBoundS, enclosureErrorS) =
+--        (_enclosureErrorBoundS, 
+        enclosureErrorS =
             case maybeVec of
-                Nothing -> (show "no solution", show "no solution")
-                Just (vecOut, vecIn) ->
-                    (computeDiff vecOut vecIn, 
+                Nothing -> show "no solution"
+                Just (vecOut, _vecIn) ->
+--                    (computeDiff vecOut vecIn, 
                         case maybeVecExact of
                             Just vecExact -> 
                                     computeDiff vecOut vecExact
-                            _ -> show "exact solution not known")
+                            _ -> show "exact solution not known"
+--                            )
                 where
                 computeDiff vecOut vecOther = 
                     removeBracks $

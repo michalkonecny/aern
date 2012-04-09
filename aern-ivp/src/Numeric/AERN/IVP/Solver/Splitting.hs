@@ -34,6 +34,7 @@
 
 module Numeric.AERN.IVP.Solver.Splitting
 (
+    solveHybridIVPBySplittingT,
     solveODEIVPBySplittingAtT0End,
     solveODEIVPBySplittingT,
     solveODEIVPBySplittingT0,
@@ -43,6 +44,7 @@ module Numeric.AERN.IVP.Solver.Splitting
 where
 
 import Numeric.AERN.IVP.Specification.ODE
+import Numeric.AERN.IVP.Specification.Hybrid
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
@@ -51,6 +53,7 @@ import Numeric.AERN.RmToRn.Integration
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
@@ -67,7 +70,162 @@ import Control.Exception (throw)
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
         
+solveHybridIVPBySplittingT ::
+    (CanAddVariables f,
+     CanEvaluate f,
+     CanCompose f,
+     HasProjections f,
+     HasConstFns f,
+     RefOrd.PartialComparison f,
+     RoundedIntegration f,
+     ArithInOut.RoundedAdd f,
+     ArithInOut.RoundedMixedAdd f (Domain f),
+     ArithInOut.RoundedReal (Domain f), 
+     RefOrd.IntervalLike(Domain f),
+     HasAntiConsistency (Domain f),
+     Domain f ~ Imprecision (Domain f),
+     Show f, Show (Domain f))
+    =>
+    (HybridIVP f -> (Maybe (HybridSystemUncertainState f), solvingInfo)) -- ^ solver to use for segments  
+    ->
+    ArithInOut.RoundedRealEffortIndicator (Domain f) 
+    ->
+    Imprecision (Domain f) -- ^ splitting improvement threshold
+    ->
+    Domain f -- ^ minimum segment length  
+    ->
+    (HybridIVP f)  -- ^ problem to solve
+    ->
+    (
+        Maybe (HybridSystemUncertainState f)
+    ,
+        (
+            SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+        )
+    )
+solveHybridIVPBySplittingT
+        solver
+            effDom splitImprovementThreshold minStepSize 
+                hybivpG 
+    =
+    result
+    where
+    result = splitSolve hybivpG
+    
+    splitSolve hybivp =
+--        unsafePrint
+--        (
+--            "solveHybridIVPBySplittingT: splitSolve: "
+--            ++ "tStart = " ++ show tStart
+--            ++ "tEnd = " ++ show tEnd
+--        ) $
+        result2
+        where
+        result2
+            | belowStepSize = directComputation
+            | directComputationFailed = splitComputation
+            | otherwise = 
+                case maybeSplitImprovement of
+                    Just improvementBy 
+                        | (improvementBy >? splitImprovementThreshold) == Just True -> 
+                            splitComputation
+                    _ -> directComputation
+        tStart = hybivp_tStart hybivp
+        tEnd = hybivp_tEnd hybivp
         
+        belowStepSize =
+--            unsafePrintReturn ("belowStepSize = ") $
+            let ?addInOutEffort = effAddDom in
+            ((tEnd <-> tStart) >? minStepSize) /= Just True
+
+        directComputation =
+            case maybeDirectResult of
+                Just resultOut 
+                    | otherwise -> (Just resultOut, SegNoSplit directInfo)
+                _ -> (Nothing, SegNoSplit directInfo) 
+        (maybeDirectResult, directInfo) = solver hybivp
+        directComputationFailed =
+            case maybeDirectResult of Just _ -> False; _ -> True
+        
+        splitOnceComputation = -- needed only to decide whether splitting is benefitial, the result is then discarded
+            case solver hybivpL of
+                (Just midState, _) ->
+                    case solver hybivpR of
+                        (Just endStateOut, _) -> Just endStateOut 
+                        _ -> Nothing
+                    where
+                    hybivpR =
+                        hybivp
+                        {
+                            hybivp_tStart = tMid,
+                            hybivp_initialStateEnclosure = midState
+                        }
+                _ -> Nothing
+                
+        splitComputation =
+            case splitSolve hybivpL of
+                (Just midState, infoL) -> 
+                    case splitSolve hybivpR of
+                        (Nothing, infoR) ->
+                            (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
+                        (Just endState, infoR) ->
+                            (
+                                Just endState
+                            , 
+                                SegSplit (directInfo, maybeSplitImprovement) infoL infoR
+                            )
+                    where
+                    hybivpR =
+                        hybivp
+                        {
+                            hybivp_tStart = tMid,
+                            hybivp_initialStateEnclosure = midState
+                        }
+                failedLeftComputation -> failedLeftComputation
+        hybivpL =
+            hybivp
+            {
+                hybivp_tEnd = tMid
+            }
+        tMid = 
+            let ?addInOutEffort = effAddDom in
+            let ?mixedDivInOutEffort = effDivDomInt in
+            (tStart <+> tEnd) </>| (2 :: Int)
+        
+        maybeSplitImprovement =
+            case (directComputation, splitOnceComputation) of
+                ((Just directResult, _), Just splitOnceResult) -> 
+                    Just $ measureImprovementState directResult splitOnceResult
+                _ -> Nothing
+        measureImprovementState state1 state2 = 
+            improvement 
+            where
+            improvement =
+                let ?addInOutEffort = effAddDom in
+                modeImprovement <+> (foldl1 (NumOrd.maxOutEff effMinmax) improvements)
+            improvements = map measureImprovement $ zip vec1 vec2
+            modeImprovement 
+                | modes1 /= modes2 = one sampleDom
+                | otherwise = zero sampleDom
+            vec1 = hybstate_values state1
+            vec2 = hybstate_values state2
+            modes1 = hybstate_modes state1
+            modes2 = hybstate_modes state2
+        measureImprovement (encl1, encl2) =
+            let ?addInOutEffort = effAddDom in
+            (imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
+
+    effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+    effDivDomInt = 
+        ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
+            ArithInOut.rrEffortIntMixedField sampleDom effDom
+--    effRefComp = ArithInOut.rrEffortRefComp sampleDom effDom
+    sampleDom = hybivp_tStart hybivpG
+    effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDom effDom
+    
+    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
+--    sampleImpr = imprecisionOfEff effImpr sampleDom
+--    effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
         
 solveODEIVPBySplittingAtT0End ::
     (HasAntiConsistency (Domain f), 
@@ -95,7 +253,7 @@ solveODEIVPBySplittingAtT0End
     where
     (maybeResult, maybeInfoR) =
         case maybeResultL of
-            Just (fnVecLOut, fnVecLIn) ->
+            Just (fnVecLOut, _fnVecLIn) ->
                 case maybeResultROut of
                     Just (resultOut, _) ->
 --                        unsafePrint
