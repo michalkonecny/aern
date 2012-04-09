@@ -68,6 +68,10 @@ class (HasDomainBox f) => CanAddVariables f where
         f ->
         f
 
+class (HasDomainBox f) => CanRenameVariables f where
+    renameVar :: (Var f) -> (Var f) -> f -> f
+    renameVars :: (Var f -> Var f) -> f -> f
+    
 newConstFnFromSample ::
     (HasConstFns f) =>
     f -> (Domain f) -> f
