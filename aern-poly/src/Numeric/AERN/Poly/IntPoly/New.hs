@@ -22,6 +22,7 @@ where
     
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
+import Numeric.AERN.Poly.IntPoly.Show ()
     
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
@@ -203,8 +204,37 @@ instance
             addVarsToAllTerms (IntPolyV var powers) =
                 IntPolyV var $ IntMap.map addVarsToAllTerms powers
              
-            
-        
+instance
+    (Ord var, Show var, Show cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf)
+    =>        
+    CanRenameVariables (IntPoly var cf)
+    where
+    renameVar oldVar newVar p@(IntPoly cfg terms) 
+        | oldVar == newVar = p
+        | newVar `elem` vars =
+            error $ "variable " ++ show newVar ++ " already in " ++ show p
+        | otherwise = 
+            IntPoly cfgRenamed (renameInTerms terms)
+        where
+        vars = ipolycfg_vars cfg
+        cfgRenamed = cfg
+            {
+                ipolycfg_vars = renameOneOccurrenceInList vars 
+            }
+        renameInTerms t@(IntPolyC _) = t
+        renameInTerms (IntPolyV var powers) 
+            | var == oldVar = (IntPolyV newVar powers)
+            | otherwise =
+                IntPolyV var $ IntMap.map renameInTerms powers
+              
+        renameOneOccurrenceInList (var : rest)
+            | var == oldVar = newVar : rest
+            | otherwise = var : (renameOneOccurrenceInList rest)
+        renameOneOccurrenceInList _ =
+            error $
+                "variable " ++ show oldVar ++ " not in " ++ show p
 instance 
     (Ord var, Show var,  Show cf,
      HasConsistency cf,
