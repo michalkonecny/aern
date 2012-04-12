@@ -13,7 +13,7 @@ import Numeric.AERN.IVP.Solver.Events
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
---import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 import qualified Numeric.AERN.DoubleBasis.Interval as CF
@@ -73,6 +73,7 @@ usage =
 
 ivpByName :: String -> HybridIVP Poly
 ivpByName "ivpExpDecay-resetOnce" = ivpExpDecay_resetTHalf
+ivpByName "ivpExpDecay-resetOn34" = ivpExpDecay_resetOn34
 ----ivpByName "ivpSpringMass-reset" = ivpSpringMass_reset     
 --
 ivpExpDecay_resetTHalf :: HybridIVP Poly
@@ -105,8 +106,6 @@ ivpExpDecay_resetTHalf =
         where
         tEventPoly = newConstFnFromSample time $ 1 <*>| tEventDbl
     tEventDbl = 0.5 :: Double
-
-   
     
     ivp :: HybridIVP Poly
     ivp =
@@ -137,6 +136,71 @@ ivpExpDecay_resetTHalf =
     tStart = hybivp_tStart ivp
     tEnd = hybivp_tEnd ivp
     xEnd = 1 CF.<*>| (exp (-tEndDbl+tEventDbl) :: Double)
+    tEndDbl :: Double
+    (Just tEndDbl) = ArithUpDn.convertUpEff () tEnd
+
+ivpExpDecay_resetOn34 :: HybridIVP Poly
+ivpExpDecay_resetOn34 =
+    ivp
+    where
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x"],
+            hybsys_modeFields = Map.fromList [(modeNormal, odeNormal)],
+            hybsys_eventModeSwitchesAndResetFunctions =
+                Map.fromList [(eventReset, (modeNormal, switchReset))],
+            hybsys_eventDetector = eventDetector
+        }
+    modeNormal = HybSysMode "normal"
+    odeNormal :: [Poly] -> [Poly]
+    odeNormal [x] = [neg x]
+    eventReset = HybSysEventKind "reset"
+    switchReset :: [Poly] -> [Poly]
+    switchReset [x] = [newConstFnFromSample x initValue]
+    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, Bool)
+    eventDetector _mode [x] =
+--        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
+        case (xEventPoly <? x, x `leqT` xEventPoly) of
+            (Just True, _) -> Set.empty -- reset ruled out
+            (_, True) -> Set.singleton (eventReset, True) -- reset inevitable
+            _ -> Set.singleton (eventReset, False)
+        where
+        xEventPoly = newConstFnFromSample x $ 1 <*>| xEventDbl
+        leqT = leqOverSomeT effEval 10 tVar
+        effEval = evaluationDefaultEffort x
+    xEventDbl = 0.75 :: Double
+    
+    ivp :: HybridIVP Poly
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = 0,
+            hybivp_tEnd = 1,
+            hybivp_initialStateEnclosure = 
+                HybridSystemUncertainState 
+                { 
+                    hybstate_modes = Set.singleton modeNormal,
+                    hybstate_values = [initValue]
+                },
+            hybivp_maybeExactStateAtTEnd = Just $
+                HybridSystemUncertainState 
+                {
+                    hybstate_modes = Set.singleton modeNormal,
+                    hybstate_values = [xEnd]
+                }
+        }
+    description =
+        "x' = -x; if x <= " ++ show xEventDbl ++ " then x := " ++ show initValue 
+        ++ "; x(" ++ show tStart ++ ") = " ++ show initValue
+    initValue = 1 :: CF
+    tStart = hybivp_tStart ivp
+    tEnd = hybivp_tEnd ivp
+    tVar = hybivp_tVar ivp
+    xEnd = 1 CF.<*>| (exp (-tEndDbl-3*(log xEventDbl)) :: Double)
     tEndDbl :: Double
     (Just tEndDbl) = ArithUpDn.convertUpEff () tEnd
 
@@ -240,9 +304,6 @@ runOnce [ivpName, maxDegS, depthS, shouldShowStepsS, maxSplitSizeS] =
     let depth = read depthS :: Int
     let maxSplitSize = read maxSplitSizeS :: Int
     let shouldShowSteps = read shouldShowStepsS :: Bool
-    putStrLn "---------------------------------------------------"
-    putStrLn "demo of solve-VtE from (Konecny, Taha, Duracz 2012)"
-    putStrLn "---------------------------------------------------"
     _ <- solveEventsPrintSteps shouldShowSteps ivp (maxDeg, depth, maxSplitSize)
     return ()
     where
@@ -285,11 +346,12 @@ writeCSV [ivpName, outputFileName] =
         solveAndMeasure _ =
             do
             starttime <- getCPUTime
-            maybeSolverResult <- timeout oneHourInMicroS $ solveEventsPrintSteps False ivp (maxDegree, depth, 4*maxDegree*maxDegree)
+            maybeSolverResult <- timeout (10 * oneMinuteInMicroS) $ solveEventsPrintSteps False ivp (maxDegree, depth, 4*maxDegree*maxDegree)
             endtime <- getCPUTime
             let solverResult = (case maybeSolverResult of Just solverResult2 -> solverResult2; Nothing -> (Nothing, undefined)) 
             return $ (solverResult, (endtime - starttime) `div` 1000000000)
-        oneHourInMicroS = 3600 * oneSecondInMicroS
+        oneHourInMicroS = 60 * oneMinuteInMicroS
+        oneMinuteInMicroS = 60 * oneSecondInMicroS
         oneSecondInMicroS = 1000000
         
     description = hybivp_description ivp
@@ -343,6 +405,9 @@ solveEventsPrintSteps ::
     IO (Maybe (HybridSystemUncertainState Poly), SplittingInfo solvingInfo (solvingInfo, Maybe CF))
 solveEventsPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSizeParam) =
     do
+    putStrLn "---------------------------------------------------"
+    putStrLn "demo of solve-VtE from (Konecny, Taha, Duracz 2012)"
+    putStrLn "---------------------------------------------------"
     putStrLn $ "solving: " ++ description
     putStrLn "-------------------------------------------------"
     putStrLn $ "maxdeg = " ++ show maxdeg
@@ -358,18 +423,18 @@ solveEventsPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSize
             putStrLn "(almost) exact result = "
             putStr $ showSegInfo "   " (tEnd, Just exactResult, [])
         _ -> return ()
-    putStrLn "----------  result: -----------------------------"
-    putStr $ showSegInfo ">>> " (tEnd, maybeEndState, [])
-    case (maybeExactResult, maybeEndState) of
-        (Just exactResult, Just resultOut) ->
-            putStrLn $ "error = " ++ show (getErrorState exactResult resultOut)
-        _ -> return ()
     case shouldShowSteps of
         True ->
             do
             putStrLn "----------  steps: ------------------------------"
             putStrLn $ showSplittingInfo showSegInfo showSplitReason "" splittingInfo
         False -> return ()
+    putStrLn "----------  result: -----------------------------"
+    putStr $ showSegInfo ">>> " (tEnd, maybeEndState, [])
+    case (maybeExactResult, maybeEndState) of
+        (Just exactResult, Just resultOut) ->
+            putStrLn $ "error = " ++ show (getErrorState exactResult resultOut)
+        _ -> return ()
     putStrLn "-------------------------------------------------"
     return (maybeEndState, splittingInfo)
     where
