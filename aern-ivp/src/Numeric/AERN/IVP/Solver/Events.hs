@@ -101,7 +101,6 @@ solveEventsTimeSplit
                 hybivpG
     = solve hybivpG
     where
-    tEnd = hybivp_tEnd hybivpG
     solve hybivp =
         solveHybridIVPBySplittingT
             directSolver
@@ -111,6 +110,7 @@ solveEventsTimeSplit
     directSolver hybivp =
         (maybeFinalState, (tEnd, maybeFinalState, modeEventInfoList))
         where
+        tEnd = hybivp_tEnd hybivp
         (maybeFinalState, modeEventInfoList) = 
             solveEvents
                 sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effDom
@@ -432,3 +432,34 @@ eventInfoCollectFinalStates effEval tVar tEnd eventInfo =
         valueVec =
             fst $ evalAtEndTimeVec effEval tVar tEnd fnVec
         
+leqOverSomeT :: 
+    (Show (Domain t),
+    Show t,
+    RefOrd.IntervalLike t,
+    RefOrd.IntervalLike (Domain t),
+    NumOrd.PartialComparison (Domain t),
+    HasAntiConsistency t,
+    HasAntiConsistency (Domain t),
+    CanEvaluate t) 
+    =>
+    EvaluationEffortIndicator t -> Int -> Var t -> t -> t -> Bool
+leqOverSomeT effEval n tVar f1 f2 =
+    or leqResults
+    where
+    _ = [f1,f2]
+    leqResults = map leqOnSample tSamples
+        where
+        leqOnSample tSample =
+            (f1OnT <=? f2OnT) == Just True
+            where
+            [f1OnT] = fst $ evalAtEndTimeVec effEval tVar tSample [f1]
+            [f2OnT] = fst $ evalAtEndTimeVec effEval tVar tSample [f2]
+    tSamples = map getTDom tSampleBoxes
+    tSampleBoxes = getNSamplesFromDomainBox sampleF domboxTOnly n
+    domboxTOnly = fromList [(tVar, tDom)]
+    tDom = getTDom dombox
+    getTDom box = 
+        case lookupVar box tVar of
+            Just tDom2 -> tDom2
+    dombox = getDomainBox sampleF
+    sampleF = f1
