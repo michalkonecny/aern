@@ -74,7 +74,8 @@ usage =
 ivpByName :: String -> HybridIVP Poly
 ivpByName "ivpExpDecay-resetOnce" = ivpExpDecay_resetTHalf
 ivpByName "ivpExpDecay-resetOn34" = ivpExpDecay_resetOn34
-----ivpByName "ivpSpringMass-reset" = ivpSpringMass_reset     
+ivpByName "ivpSpringMass-resetOnce" = ivpSpringMass_resetTHalf
+ivpByName "ivpSpringMass-resetOn34" = ivpSpringMass_resetOn34
 --
 ivpExpDecay_resetTHalf :: HybridIVP Poly
 ivpExpDecay_resetTHalf =
@@ -204,98 +205,139 @@ ivpExpDecay_resetOn34 =
     tEndDbl :: Double
     (Just tEndDbl) = ArithUpDn.convertUpEff () tEnd
 
---ivpSpringMass_ut :: Bool -> ODEIVP Poly
---ivpSpringMass_ut withInitialValueUncertainty =
---    ivp
---    where
---    ivp =
---        ODEIVP
---        {
---            odeivp_description = description,
---            odeivp_field = \ [x,x'] -> [x',neg x],
---            odeivp_componentNames = ["x","x'"],
---            odeivp_tVar = "t",
---            odeivp_tStart = -0.125,
---            odeivp_t0End = 0.125,
-----            odeivp_tEnd = 0.125,
---            odeivp_tEnd = 1,
---            odeivp_makeInitialValueFnVec = makeIV,
---            odeivp_maybeExactValuesAtTEnd = Just $
---                case withInitialValueUncertainty of
---                    True ->
---                        [
---                            ((0.75 * cosTEndPlusEps) - 0.125 * sinTEndPlusEps)  
---                            CF.</\>
---                            ((1.25 * cosTEndMinusEps) + 0.125 * sinTEndMinusEps)
---                        ,
---                            foldl1 (CF.</\>) $
---                                [ 
---                                    (-(sinTEndPlusEps) - 0.125 * cosTEndPlusEps),  
---                                    (-(sinTEndPlusEps) + 0.125 * cosTEndPlusEps),  
---                                    (-0.75*(sinTEndPlusEps) - 0.125 * cosTEndPlusEps),  
---                                    (-0.75*(sinTEndPlusEps) + 0.125 * cosTEndPlusEps),  
---                                    (-(sinTEndMinusEps) + 0.125 * cosTEndMinusEps),
---                                    (-(sinTEndMinusEps) - 0.125 * cosTEndMinusEps),
---                                    (-1.25*(sinTEndMinusEps) + 0.125 * cosTEndMinusEps),
---                                    (-1.25*(sinTEndMinusEps) - 0.125 * cosTEndMinusEps)
---                                ]
---                        ]
---                    False ->
---                        [
---                            ((0.875 * cosTEndPlusEps))  
---                            CF.</\>
---                            ((1.125 * cosTEndMinusEps))
---                        ,
---                            (-(0.875 * sinTEndPlusEps))  
---                            CF.</\>
---                            (-(1.125 * sinTEndMinusEps))
---                        ]
---        }
---    cosTEndPlusEps = 1 CF.<*>| (cos (tEndDbl + 0.125) :: Double)
---    cosTEndMinusEps = 1 CF.<*>| (cos (tEndDbl - 0.125) :: Double)
---    sinTEndPlusEps = 1 CF.<*>| (sin (tEndDbl + 0.125) :: Double)
---    sinTEndMinusEps = 1 CF.<*>| (sin (tEndDbl - 0.125) :: Double)
---    description =
---        "x'' = -x; " 
---        ++ show tStart ++ " < t_0 < " ++ show t0End
---        ++ "; (x,x')(t_0) ∊ " ++ (show $ makeIV dummySizeLimits "t_0" tStart)
---    tStart = odeivp_tStart ivp
---    t0End = odeivp_t0End ivp
---    tEndDbl :: Double
---    (Just tEndDbl) = ArithUpDn.convertUpEff () $ odeivp_tEnd ivp
---    componentNames = odeivp_componentNames ivp
---    dummySizeLimits =
---        getSizeLimits $
---            makeSampleWithVarsDoms 10 10 [] []
---    makeIV sizeLimits t0Var t0Dom =
---        case withInitialValueUncertainty of
---            True ->
---                [
---                    ((1 :: Int) |<+> t0VarFn) <+> (xUnitFn </>| (8::Int))
---                ,
---                    (xdUnitFn </>| (8::Int))
---                ]
---            False ->
---                [
---                    (1 :: Int) |<+> t0VarFn
---                ,
---                    (0 :: Int) |<*> t0VarFn
---                ]
---        where
---        t0VarFn = newProjectionFromSample sampleInitialValueFn t0Var
---        xUnitFn = newProjectionFromSample sampleInitialValueFn "x"
---        xdUnitFn = newProjectionFromSample sampleInitialValueFn "x'"
---        sampleInitialValueFn =
---            makeSampleWithVarsDoms 
---                maxdeg maxsize 
---                (t0Var : componentNames) (t0Dom : componentUncertaintyDomains)
---            where
---            componentUncertaintyDomains =
---                map snd $ zip componentNames $ repeat unitDom
---            unitDom = (-1) CF.</\> 1 
---        maxdeg = ipolycfg_maxdeg sizeLimits
---        maxsize = ipolycfg_maxsize sizeLimits
 
+ivpSpringMass_resetTHalf :: HybridIVP Poly
+ivpSpringMass_resetTHalf =
+    ivp
+    where
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x","x'","time"],
+            hybsys_modeFields = Map.fromList [(modeNormal, odeNormal)],
+            hybsys_eventModeSwitchesAndResetFunctions =
+                Map.fromList [(eventReset, (modeNormal, switchReset))],
+            hybsys_eventDetector = eventDetector
+        }
+    modeNormal = HybSysMode "normal"
+    odeNormal :: [Poly] -> [Poly]
+    odeNormal [x,x',time] = [x', neg x, newConstFnFromSample time (1)]
+    eventReset = HybSysEventKind "reset"
+    switchReset :: [Poly] -> [Poly]
+    switchReset [x,_x',time] = map (newConstFnFromSample x) initValues ++ [time]
+    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, Bool)
+    eventDetector _mode [_x,_x',time] =
+--        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
+        case (time <? tEventPoly, tEventPoly <? time) of
+            (Just True, _) -> Set.empty
+            (_, Just True) -> Set.empty
+            (Just False, Just False) -> Set.singleton (eventReset, True)
+            _ -> Set.singleton (eventReset, False)
+        where
+        tEventPoly = newConstFnFromSample time $ 1 <*>| tEventDbl
+    tEventDbl = 0.5 :: Double
+    
+    ivp :: HybridIVP Poly
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = 0,
+            hybivp_tEnd = 1,
+            hybivp_initialStateEnclosure = 
+                HybridSystemUncertainState 
+                { 
+                    hybstate_modes = Set.singleton modeNormal,
+                    hybstate_values = initValues ++ [tStart]
+                },
+            hybivp_maybeExactStateAtTEnd = Just $
+                HybridSystemUncertainState 
+                {
+                    hybstate_modes = Set.singleton modeNormal,
+                    hybstate_values = [xEnd, xDerEnd, tEnd]
+                }
+        }
+    description =
+        "x'' = -x; if t = " ++ show tEventDbl ++ " then [x,x'] := " ++ show initValues 
+        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
+        ++ ", x'(" ++ show tStart ++ ") = " ++ show initX'
+    initValues@[initX, initX'] = [1,0] :: [CF]
+    tStart = hybivp_tStart ivp
+    tEnd = hybivp_tEnd ivp
+    xEnd = 1 CF.<*>| (cos (tEndDbl - tEventDbl) :: Double)
+    xDerEnd = (-1) CF.<*>| (sin (tEndDbl - tEventDbl) :: Double)
+    tEndDbl :: Double
+    (Just tEndDbl) = ArithUpDn.convertUpEff () tEnd
+
+ivpSpringMass_resetOn34 :: HybridIVP Poly
+ivpSpringMass_resetOn34 =
+    ivp
+    where
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x","x'"],
+            hybsys_modeFields = Map.fromList [(modeNormal, odeNormal)],
+            hybsys_eventModeSwitchesAndResetFunctions =
+                Map.fromList [(eventReset, (modeNormal, switchReset))],
+            hybsys_eventDetector = eventDetector
+        }
+    modeNormal = HybSysMode "normal"
+    odeNormal :: [Poly] -> [Poly]
+    odeNormal [x,x'] = [x', neg x]
+    eventReset = HybSysEventKind "reset"
+    switchReset :: [Poly] -> [Poly]
+    switchReset [x,_x'] = map (newConstFnFromSample x) initValues
+    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, Bool)
+    eventDetector _mode [x,_x'] =
+--        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
+        case (xEventPoly <? x, x `leqT` xEventPoly) of
+            (Just True, _) -> Set.empty -- reset ruled out
+            (_, True) -> Set.singleton (eventReset, True) -- reset inevitable
+            _ -> Set.singleton (eventReset, False)
+        where
+        xEventPoly = newConstFnFromSample x $ 1 <*>| xEventDbl
+        leqT = leqOverSomeT effEval 10 tVar
+        effEval = evaluationDefaultEffort x
+    xEventDbl = 0.75 :: Double
+    tEventDbl = acos xEventDbl -- 0.72273424781341...
+    
+    ivp :: HybridIVP Poly
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = 0,
+            hybivp_tEnd = 1,
+            hybivp_initialStateEnclosure = 
+                HybridSystemUncertainState 
+                { 
+                    hybstate_modes = Set.singleton modeNormal,
+                    hybstate_values = initValues ++ [tStart]
+                },
+            hybivp_maybeExactStateAtTEnd = Just $
+                HybridSystemUncertainState 
+                {
+                    hybstate_modes = Set.singleton modeNormal,
+                    hybstate_values = [xEnd, xDerEnd, tEnd]
+                }
+        }
+    description =
+        "x'' = -x; if x <= " ++ show xEventDbl ++ " then [x,x'] := " ++ show initValues 
+        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
+        ++ ", x'(" ++ show tStart ++ ") = " ++ show initX'
+    initValues@[initX, initX'] = [1,0] :: [CF]
+    tStart = hybivp_tStart ivp
+    tEnd = hybivp_tEnd ivp
+    tVar = hybivp_tVar ivp
+    xEnd = 1 CF.<*>| (cos (tEndDbl - tEventDbl) :: Double)
+    xDerEnd = (-1) CF.<*>| (sin (tEndDbl - tEventDbl) :: Double)
+    tEndDbl :: Double
+    (Just tEndDbl) = ArithUpDn.convertUpEff () tEnd
 
 runOnce :: [String] -> IO ()
 runOnce [ivpName, maxDegS, depthS, shouldShowStepsS, maxSplitSizeS] =
@@ -350,7 +392,7 @@ writeCSV [ivpName, outputFileName] =
             endtime <- getCPUTime
             let solverResult = (case maybeSolverResult of Just solverResult2 -> solverResult2; Nothing -> (Nothing, undefined)) 
             return $ (solverResult, (endtime - starttime) `div` 1000000000)
-        oneHourInMicroS = 60 * oneMinuteInMicroS
+--        oneHourInMicroS = 60 * oneMinuteInMicroS
         oneMinuteInMicroS = 60 * oneSecondInMicroS
         oneSecondInMicroS = 1000000
         
