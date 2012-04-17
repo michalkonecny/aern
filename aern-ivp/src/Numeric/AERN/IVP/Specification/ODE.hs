@@ -26,7 +26,7 @@ import Numeric.AERN.RmToRn.Evaluation
 --import Numeric.AERN.RmToRn.Integration
 --
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
---import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 --
 --import qualified Numeric.AERN.NumericOrder as NumOrd
@@ -147,39 +147,63 @@ makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames
     result
     where
     result =
-        map updateFn $ zip componentNames initialValueFnVec
-    updateFn (_compName, initValFn) =
-        let ?addInOutEffort = effAddFn in
-        let ?multInOutEffort = effMultFn in
---        (initValFnL <*> compVar) <+> (initValFnR <*> (c1 <-> compVar)) -- thinning
+        map updateFn initialValueFnVec
+    updateFn initValFn =
         initValFnWithNewVars -- just adding a time variable
         where
---        compVar = makeVar compName
---        (initValFnL, initValFnR) = RefOrd.getEndpointsOutWithDefaultEffort initValFnWithNewVars
         initValFnWithNewVars =
             changeSizeLimitsOut effSizeLims sizeLimits $
                 addVariablesFront newVarDoms initValFn
-
---    c1 = 
---        newConstFn sizeLimitsOutgoing domboxOutgoing (one sampleDom) 
---    makeVar =
---        newProjection sizeLimitsOutgoing domboxOutgoing
-
---    sizeLimitsOutgoing =
---        getSizeLimits $ changeSizeLimitsOut effSizeLims sizeLimits sampleFnOutgoing
---
---    domboxOutgoing =
---        getDomainBox sampleFnOutgoing
---    sampleFnOutgoing =
---        addVariablesFront newVarDoms sampleFnIncoming 
     newVarDoms =
-        (t0Var, t0Domain) : (zip componentNames $ repeat unitDom)
+        [(t0Var, t0Domain)] -- ++ (zip componentNames $ repeat unitDom)
+    -- get rid of unused  warnings but keep the params in case thinning is needed in future:
+    _ = componentNames
+    _ = effAddFn
+    _ = effMultFn
+
+parametriseThickFunctions ::
+    (RefOrd.IntervalLike f,
+     RefOrd.IntervalLike (Domain f),
+     HasProjections f,
+     HasConstFns f,
+     CanAddVariables f,
+     HasOne (Domain f),
+     HasZero (Domain f),
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMultiply f) 
+    =>
+    ArithInOut.AddEffortIndicator f -> 
+    ArithInOut.MultEffortIndicator f 
+    -> 
+    [Var f] -> [f] -> [f]
+parametriseThickFunctions effAddFn effMultFn componentNames fnVec =
+    map parametriseFn $ zip componentNames fnVec
+    where
+    parametriseFn (compName, fn) =
+        let ?addInOutEffort = effAddFn in
+        let ?multInOutEffort = effMultFn in
+        (fnL <*> compVar) <+> (fnR <*> (c1 <-> compVar)) -- thinning
+        where
+        compVar = makeVar compName
+        (fnL, fnR) = RefOrd.getEndpointsOutWithDefaultEffort fnWithNewVars
+        fnWithNewVars =
+            addVariablesFront newVarDoms fn
+        
+    c1 = 
+        newConstFnFromSample sampleFnOutgoing (one sampleDom) 
+    makeVar =
+        newProjectionFromSample sampleFnOutgoing
+
+    sampleFnOutgoing =
+        addVariablesFront newVarDoms sampleFnIncoming 
+
+    newVarDoms =
+        (zip componentNames $ repeat unitDom)
         where
         unitDom = RefOrd.fromEndpointsOutWithDefaultEffort (zero sampleDom, one sampleDom)
     
-    sampleFnIncoming : _ = initialValueFnVec
+    sampleFnIncoming : _ = fnVec
     sampleDom = getSampleDomValue sampleFnIncoming
-
 
 evalAtEndTimeOutInVec ::
     (Show (Domain f), Show f,

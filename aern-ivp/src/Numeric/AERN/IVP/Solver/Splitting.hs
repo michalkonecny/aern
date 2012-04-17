@@ -86,7 +86,7 @@ solveHybridIVPBySplittingT ::
      Domain f ~ Imprecision (Domain f),
      Show f, Show (Domain f))
     =>
-    (HybridIVP f -> (Maybe (HybridSystemUncertainState f), solvingInfo)) -- ^ solver to use for segments  
+    (Int -> HybridIVP f -> (Maybe (HybridSystemUncertainState f), solvingInfo)) -- ^ solver to use for segments  
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
     ->
@@ -110,9 +110,9 @@ solveHybridIVPBySplittingT
     =
     result
     where
-    result = splitSolve hybivpG
+    result = splitSolve 0 hybivpG
     
-    splitSolve hybivp =
+    splitSolve depth hybivp =
 --        unsafePrint
 --        (
 --            "solveHybridIVPBySplittingT: splitSolve: "
@@ -127,9 +127,11 @@ solveHybridIVPBySplittingT
             | otherwise = 
                 case maybeSplitImprovement of
                     Just improvementBy 
-                        | (improvementBy >? splitImprovementThreshold) == Just True -> 
-                            splitComputation
-                    _ -> directComputation
+                        | (improvementBy >? splitImprovementThreshold) /= Just True -> 
+                            directComputation -- computations succeeded but brought no noticeable improvement
+                    _
+                        | splitComputationFailed -> directComputation
+                        | otherwise -> splitComputation -- splitting either brought noticeable improvement or some computation failed 
         tStart = hybivp_tStart hybivp
         tEnd = hybivp_tEnd hybivp
         
@@ -143,14 +145,14 @@ solveHybridIVPBySplittingT
                 Just resultOut 
                     | otherwise -> (Just resultOut, SegNoSplit directInfo)
                 _ -> (Nothing, SegNoSplit directInfo) 
-        (maybeDirectResult, directInfo) = solver hybivp
+        (maybeDirectResult, directInfo) = solver depth hybivp
         directComputationFailed =
             case maybeDirectResult of Just _ -> False; _ -> True
         
         splitOnceComputation = -- needed only to decide whether splitting is benefitial, the result is then discarded
-            case solver hybivpL of
+            case solver (depth + 1) hybivpL of
                 (Just midState, _) ->
-                    case solver hybivpR of
+                    case solver (depth + 1) hybivpR of
                         (Just endStateOut, _) -> Just endStateOut 
                         _ -> Nothing
                     where
@@ -162,17 +164,21 @@ solveHybridIVPBySplittingT
                         }
                 _ -> Nothing
                 
-        splitComputation =
-            case splitSolve hybivpL of
+        (splitComputation, splitComputationFailed) =
+            case splitSolve (depth + 1) hybivpL of
                 (Just midState, infoL) -> 
-                    case splitSolve hybivpR of
+                    case splitSolve (depth + 1) hybivpR of
                         (Nothing, infoR) ->
-                            (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
+                            (
+                                (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
+                            , 
+                                True
+                            )
                         (Just endState, infoR) ->
                             (
-                                Just endState
-                            , 
-                                SegSplit (directInfo, maybeSplitImprovement) infoL infoR
+                                (Just endState, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
+                            ,
+                                False
                             )
                     where
                     hybivpR =
@@ -181,7 +187,7 @@ solveHybridIVPBySplittingT
                             hybivp_tStart = tMid,
                             hybivp_initialStateEnclosure = midState
                         }
-                failedLeftComputation -> failedLeftComputation
+                failedLeftComputation -> (failedLeftComputation, True)
         hybivpL =
             hybivp
             {
