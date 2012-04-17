@@ -72,11 +72,26 @@ usage =
     putStrLn "Usage B: simple-events <ivp name> <maxDeg> <minStepSize> <True|False-print steps?> <maxEvalSplitSize>"
 
 ivpByName :: String -> HybridIVP Poly
-ivpByName "ivpExpDecay-resetOnce" = ivpExpDecay_resetTHalf
-ivpByName "ivpExpDecay-resetOn34" = ivpExpDecay_resetOn34
-ivpByName "ivpSpringMass-resetOnce" = ivpSpringMass_resetTHalf
-ivpByName "ivpSpringMass-resetOn34" = ivpSpringMass_resetOn34
---
+ivpByName "expDec-resetOnce" = ivpExpDecay_resetTHalf
+ivpByName "expDec-resetOn34" = ivpExpDecay_resetOn34
+ivpByName "springMass-resetOnce" = ivpSpringMass_resetTHalf
+ivpByName "springMass-resetOn34" = ivpSpringMass_resetOn34
+ivpByName "bouncingBall-after1" = ivpBouncingBall_AfterBounce 1 
+ivpByName "bouncingBall-after2" = ivpBouncingBall_AfterBounce 2
+ivpByName "bouncingBall-after3" = ivpBouncingBall_AfterBounce 3
+ivpByName "bouncingBall-after4" = ivpBouncingBall_AfterBounce 4
+ivpByName "bouncingBall-after5" = ivpBouncingBall_AfterBounce 5
+ivpByName "bouncingBall-after6" = ivpBouncingBall_AfterBounce 6
+ivpByName "bouncingBall-after7" = ivpBouncingBall_AfterBounce 7
+ivpByName "bouncingBall-after8" = ivpBouncingBall_AfterBounce 8
+ivpByName "bouncingBall-after9" = ivpBouncingBall_AfterBounce 9
+ivpByName "bouncingBall-after10" = ivpBouncingBall_AfterBounce 10 
+ivpByName "bouncingBall-after20" = ivpBouncingBall_AfterBounce 20 
+ivpByName "bouncingBall-after30" = ivpBouncingBall_AfterBounce 30 
+ivpByName "bouncingBall-after40" = ivpBouncingBall_AfterBounce 40 
+ivpByName "bouncingBall-zeno" = ivpBouncingBall_AfterBounce 1000000 
+
+
 ivpExpDecay_resetTHalf :: HybridIVP Poly
 ivpExpDecay_resetTHalf =
     ivp
@@ -85,19 +100,22 @@ ivpExpDecay_resetTHalf =
         HybridSystem
         {
             hybsys_componentNames = ["x","time"],
-            hybsys_modeFields = Map.fromList [(modeNormal, odeNormal)],
+            hybsys_modeFields = Map.fromList [(modeBefore, odeBefore), (modeAfter, odeAfter)],
             hybsys_eventModeSwitchesAndResetFunctions =
-                Map.fromList [(eventReset, (modeNormal, switchReset))],
+                Map.fromList [(eventReset, (modeAfter, switchReset))],
             hybsys_eventDetector = eventDetector
         }
-    modeNormal = HybSysMode "normal"
-    odeNormal :: [Poly] -> [Poly]
-    odeNormal [x,time] = [neg x, newConstFnFromSample time (1)]
+    modeBefore = HybSysMode "before"
+    modeAfter = HybSysMode "after"
+    odeBefore, odeAfter :: [Poly] -> [Poly]
+    odeBefore [x,time] = [neg x, newConstFnFromSample time (1)]
+    odeAfter = odeBefore
     eventReset = HybSysEventKind "reset"
     switchReset :: [Poly] -> [Poly]
     switchReset [x,time] = [newConstFnFromSample x initValue, time]
     eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, Bool)
-    eventDetector _mode [_x,time] =
+    eventDetector (HybSysMode "after") _ = Set.empty -- reset only once!
+    eventDetector _ [_x,time] =
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         case (time <? tEventPoly, tEventPoly <? time) of
             (Just True, _) -> Set.empty
@@ -120,13 +138,13 @@ ivpExpDecay_resetTHalf =
             hybivp_initialStateEnclosure = 
                 HybridSystemUncertainState 
                 { 
-                    hybstate_modes = Set.singleton modeNormal,
+                    hybstate_modes = Set.singleton modeBefore,
                     hybstate_values = [initValue, tStart]
                 },
             hybivp_maybeExactStateAtTEnd = Just $
                 HybridSystemUncertainState 
                 {
-                    hybstate_modes = Set.singleton modeNormal,
+                    hybstate_modes = Set.singleton modeAfter,
                     hybstate_values = [xEnd, tEnd]
                 }
         }
@@ -214,19 +232,22 @@ ivpSpringMass_resetTHalf =
         HybridSystem
         {
             hybsys_componentNames = ["x","x'","time"],
-            hybsys_modeFields = Map.fromList [(modeNormal, odeNormal)],
+            hybsys_modeFields = Map.fromList [(modeBefore, odeBefore), (modeAfter, odeAfter)],
             hybsys_eventModeSwitchesAndResetFunctions =
-                Map.fromList [(eventReset, (modeNormal, switchReset))],
+                Map.fromList [(eventReset, (modeAfter, switchReset))],
             hybsys_eventDetector = eventDetector
         }
-    modeNormal = HybSysMode "normal"
-    odeNormal :: [Poly] -> [Poly]
-    odeNormal [x,x',time] = [x', neg x, newConstFnFromSample time (1)]
+    modeBefore = HybSysMode "before"
+    modeAfter = HybSysMode "after"
+    odeBefore, odeAfter :: [Poly] -> [Poly]
+    odeBefore [x,x',time] = [x', neg x, newConstFnFromSample time (1)]
+    odeAfter = odeBefore
     eventReset = HybSysEventKind "reset"
     switchReset :: [Poly] -> [Poly]
     switchReset [x,_x',time] = map (newConstFnFromSample x) initValues ++ [time]
     eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, Bool)
-    eventDetector _mode [_x,_x',time] =
+    eventDetector (HybSysMode "after") _ = Set.empty -- reset only once!
+    eventDetector _ [_x,_x',time] =
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         case (time <? tEventPoly, tEventPoly <? time) of
             (Just True, _) -> Set.empty
@@ -249,13 +270,13 @@ ivpSpringMass_resetTHalf =
             hybivp_initialStateEnclosure = 
                 HybridSystemUncertainState 
                 { 
-                    hybstate_modes = Set.singleton modeNormal,
+                    hybstate_modes = Set.singleton modeBefore,
                     hybstate_values = initValues ++ [tStart]
                 },
             hybivp_maybeExactStateAtTEnd = Just $
                 HybridSystemUncertainState 
                 {
-                    hybstate_modes = Set.singleton modeNormal,
+                    hybstate_modes = Set.singleton modeAfter,
                     hybstate_values = [xEnd, xDerEnd, tEnd]
                 }
         }
@@ -339,6 +360,88 @@ ivpSpringMass_resetOn34 =
     tEndDbl :: Double
     (Just tEndDbl) = ArithUpDn.convertUpEff () tEnd
 
+ivpBouncingBall_AfterBounce :: Int -> HybridIVP Poly
+ivpBouncingBall_AfterBounce n =
+    ivp
+    where
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x","x'"],
+            hybsys_modeFields = Map.fromList [(modeFreeFall, odeFreeFall)],
+            hybsys_eventModeSwitchesAndResetFunctions =
+                Map.fromList [(eventBounce, (modeFreeFall, switchBounce))],
+            hybsys_eventDetector = eventDetector
+        }
+    modeFreeFall = HybSysMode "freefall"
+    odeFreeFall :: [Poly] -> [Poly]
+    odeFreeFall [x,x'] = [x', newConstFnFromSample x (-10)]
+    eventBounce = HybSysEventKind "bounce"
+    switchBounce :: [Poly] -> [Poly]
+    switchBounce [_x,x'] = [newConstFnFromSample x' 0, (-0.5 :: Double) |<*> x']
+    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, Bool)
+    eventDetector _mode [x,x'] =
+--        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
+        case (zP <? x, zP <? x', [x,x'] `allLeqT` 0) of
+            (Just True, _, _) -> Set.empty -- ball above ground, bounce ruled out
+            (_, Just True, _) -> Set.empty -- ball rising, bounce ruled out 
+            (_, _, True) -> Set.singleton (eventBounce, True) -- bounce inevitable
+            _ -> Set.singleton (eventBounce, False)
+        where
+        zP = newConstFnFromSample x 0
+        allLeqT fns bound = predOverSomeT bothLeqBound effEval 10 tVar fns
+            where
+            bothLeqBound [a,b]
+--                | result =
+--                    unsafePrint
+--                    (
+--                        "bothLeqBound: result = true:"
+--                        ++ "\n a = " ++ show a
+--                        ++ "\n b = " ++ show b
+--                        ++ "\n bound = " ++ show bound
+--                    ) 
+--                    result
+                | otherwise = result
+                where
+                result =
+                    ((a <=? bound) == Just True)
+                    &&
+                    ((b <=? bound) == Just True)
+        effEval = evaluationDefaultEffort x
+    
+    ivp :: HybridIVP Poly
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = 0,
+            hybivp_tEnd = 1 <*>| (3*(1 - 2^^(-n)) :: Double), -- time exactly between n'th and (n+1)'th bounces
+            hybivp_initialStateEnclosure = 
+                HybridSystemUncertainState 
+                { 
+                    hybstate_modes = Set.singleton modeFreeFall,
+                    hybstate_values = initValues
+                },
+            hybivp_maybeExactStateAtTEnd = Just $
+                HybridSystemUncertainState 
+                {
+                    hybstate_modes = Set.singleton modeFreeFall,
+                    hybstate_values = [xEnd, xDerEnd]
+                }
+        }
+    description =
+        "if x <= 0 && x' <= 0 then post(x) = 0, post(x') = -0.5*pre(x') else x'' = -10" 
+        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
+        ++ ", x'(" ++ show tStart ++ ") = " ++ show initX'
+    initValues@[initX, initX'] = [5,0] :: [CF]
+    tStart = hybivp_tStart ivp
+--    tEnd = hybivp_tEnd ivp
+    tVar = hybivp_tVar ivp
+    xEnd = 1 <*>| (5 * (2^^(-2*n)) :: Double)
+    xDerEnd = 0 -- exactly between two bounces, the ball brieflly stops, ie its speed is zero
+
 runOnce :: [String] -> IO ()
 runOnce [ivpName, maxDegS, depthS, shouldShowStepsS, maxSplitSizeS] =
     do
@@ -367,7 +470,7 @@ writeCSV [ivpName, outputFileName] =
     ivp = ivpByName ivpName
     paramCombinations = 
         [(maxDegree, depth) | 
-            maxDegree <- [0..20], depth <- [0,5..50]]
+            maxDegree <- [0..10], depth <- [0,5..60]]
 --            maxDegree <- [0..10], depth <- [0..5]]
     writeCSVheader handle =
         do
@@ -377,7 +480,6 @@ writeCSV [ivpName, outputFileName] =
     runSolverMeasureTimeMSwriteLine handle (maxDegree, depth) =
         do
         resultsAndTimes <- mapM solveAndMeasure ([1..1] :: [Int])
-        let 
         let ((result, _) : _)  = resultsAndTimes
         let averageTime = average $ map snd resultsAndTimes
         hPutStrLn handle $ makeCSVLine ((result, averageTime), (maxDegree, depth))
@@ -390,12 +492,15 @@ writeCSV [ivpName, outputFileName] =
             starttime <- getCPUTime
             maybeSolverResult <- timeout (10 * oneMinuteInMicroS) $ solveEventsPrintSteps False ivp (maxDegree, depth, 4*maxDegree*maxDegree)
             endtime <- getCPUTime
-            let solverResult = (case maybeSolverResult of Just solverResult2 -> solverResult2; Nothing -> (Nothing, undefined)) 
+            let solverResult = tweakSolverResult maybeSolverResult 
             return $ (solverResult, (endtime - starttime) `div` 1000000000)
---        oneHourInMicroS = 60 * oneMinuteInMicroS
-        oneMinuteInMicroS = 60 * oneSecondInMicroS
-        oneSecondInMicroS = 1000000
-        
+            where
+            tweakSolverResult (Just solverResult2) = solverResult2
+            tweakSolverResult Nothing = (Nothing, undefined)
+--            oneHourInMicroS = 60 * oneMinuteInMicroS
+            oneMinuteInMicroS = 60 * oneSecondInMicroS
+            oneSecondInMicroS = 1000000
+    
     description = hybivp_description ivp
     maybeStateExact = hybivp_maybeExactStateAtTEnd ivp
     makeCSVLine (((maybeState, _), execTimeMS), (maxDegree, depth)) =
@@ -477,6 +582,7 @@ solveEventsPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSize
         (Just exactResult, Just resultOut) ->
             putStrLn $ "error = " ++ show (getErrorState exactResult resultOut)
         _ -> return ()
+    putStrLn $ "event count = " ++ show eventCount
     putStrLn "-------------------------------------------------"
     return (maybeEndState, splittingInfo)
     where
@@ -532,18 +638,32 @@ solveEventsPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSize
             err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
             wOut = CF.width valueOut     
             wIn = CF.width valueIn     
+    
+    eventCount =
+        aux splittingInfo
+        where
+        aux (SegNoSplit (_,_,modeEventInfoList)) =
+            foldl1 (CF.</\>) $ map (eventInfoCountEvents 0 effCf . snd) modeEventInfoList
+        aux (SegSplit _ left right) =
+            (aux left) CF.<+> (aux right)
     showSegInfo indent (t, maybeState, modeEventInfoList) =
+        maybeEventsCountS ++
         indent ++ "mode(" ++ show t ++ ") ∊ " ++ modesS ++ "\n" ++
         (unlines $ map (showComponent indent) $ zip componentNames valueSs)
         ++ (unlines $ map showModeEventInfo modeEventInfoList)
         where
+        maybeEventsCountS =
+            case modeEventInfoList of
+                [] -> ""
+                _ ->  indent ++ "events on this time segment: " ++ eventsS ++ "\n" 
+        eventsS =
+            show $
+            foldl1 (CF.</\>) $ map (eventInfoCountEvents 0 effCf . snd) modeEventInfoList 
         showModeEventInfo (mode, eventInfo) =
             indent ++ "events assuming mode at the start of segment = " ++ show mode ++ ":\n" ++
             showEventInfo (indent ++ "  ") (show . fst) eventInfo
         showComponent indent2 (name, valueS) =
             indent2 ++ name ++ "("  ++ show t ++ ") ∊ " ++ valueS
---        showVec [e] = e
---        showVec list = "(" ++ (intercalate "," list) ++ ")"
         (modesS, valueSs) =
             case maybeState of
                 Just (HybridSystemUncertainState modeSet values) -> 
@@ -564,7 +684,7 @@ solveEventsPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSize
         indent ++ "; but splitting improves by " ++ show improvement ++ ":"
     showSplitReason indent (segInfo, Nothing) =
         showSegInfo indent segInfo ++ 
-        indent ++ "; but splitting helps :"
+        indent ++ "; trying to split:"
 
 solveHybridIVP ::
     (solvingInfo ~ (CF, Maybe (HybridSystemUncertainState Poly), [(HybSysMode, EventInfo Poly)]))
@@ -594,7 +714,7 @@ solveHybridIVP
     where
     result =
         solveEventsTimeSplit
-            sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effCf
+            sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effCf
                 delta m t0Var minStepSize splitImprovementThreshold
                     hybivp
 
@@ -603,8 +723,10 @@ solveHybridIVP
 --    effSizeLims = effCf
     effCompose = (effCf, Int1To10 substSplitSizeLimit)
     effEval = (effCf, Int1To10 substSplitSizeLimit)
+    effPEval = (effCf, Int1To10 substSplitSizeLimit)
     effInteg = effCf
     effAddFn = effCf
+    effMultFn = effCf
 --    effMultFn = effCf
     effAddFnDom =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf

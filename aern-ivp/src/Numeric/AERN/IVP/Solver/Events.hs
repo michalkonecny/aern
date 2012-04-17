@@ -35,6 +35,7 @@ import Numeric.AERN.RmToRn.Integration
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.Measures
+import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsDefaultEffort
@@ -46,7 +47,7 @@ import Numeric.AERN.Basics.Consistency
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
-import qualified Data.List as List
+--import qualified Data.List as List
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -56,6 +57,7 @@ solveEventsTimeSplit ::
      CanRenameVariables f,
      CanEvaluate f,
      CanCompose f,
+     CanPartiallyEvaluate f,
      HasProjections f,
      HasConstFns f,
      RefOrd.IntervalLike f,
@@ -65,6 +67,7 @@ solveEventsTimeSplit ::
      RoundedIntegration f,
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMultiply f,
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike (Domain f),
@@ -74,11 +77,13 @@ solveEventsTimeSplit ::
      Show f, Show (Domain f), Show (Var f), Eq (Var f))
     =>
     SizeLimits f {-^ size limits for all function -} ->
+    PartialEvaluationEffortIndicator f ->
     CompositionEffortIndicator f ->
     EvaluationEffortIndicator f ->
     IntegrationEffortIndicator f ->
     RefOrd.PartialCompareEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
+    ArithInOut.MultEffortIndicator f ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
     Domain f {-^ initial widening @delta@ -}  ->
@@ -96,7 +101,7 @@ solveEventsTimeSplit ::
         )
     )
 solveEventsTimeSplit
-        sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effDom
+        sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
             delta m t0Var minStepSize splitImprovementThreshold
                 hybivpG
     = solve hybivpG
@@ -107,22 +112,24 @@ solveEventsTimeSplit
                 effDom splitImprovementThreshold minStepSize
                     hybivp
 
-    directSolver hybivp =
+    directSolver depth hybivp =
         (maybeFinalState, (tEnd, maybeFinalState, modeEventInfoList))
         where
         tEnd = hybivp_tEnd hybivp
         (maybeFinalState, modeEventInfoList) = 
             solveEvents
-                sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effDom
-                    delta m
-                        t0Var
-                            hybivp
+                sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
+                    (10 + 2 * depth)
+                        delta m
+                            t0Var
+                                hybivp
 
 solveEvents ::
     (CanAddVariables f,
      CanRenameVariables f,
      CanEvaluate f,
      CanCompose f,
+     CanPartiallyEvaluate f,
      HasProjections f,
      HasConstFns f,
      RefOrd.PartialComparison f,
@@ -132,6 +139,7 @@ solveEvents ::
      RoundedIntegration f,
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMultiply f,
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f), 
@@ -140,6 +148,8 @@ solveEvents ::
      )
     =>
     SizeLimits f 
+    ->
+    PartialEvaluationEffortIndicator f 
     ->
     CompositionEffortIndicator f 
     ->
@@ -151,9 +161,13 @@ solveEvents ::
     ->
     ArithInOut.AddEffortIndicator f 
     ->
+    ArithInOut.MultEffortIndicator f 
+    ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) 
     ->
-    ArithInOut.RoundedRealEffortIndicator (Domain f) 
+    ArithInOut.RoundedRealEffortIndicator (Domain f)
+    ->
+    Int {-^ maximum number of potential events to consider -}
     ->
     Domain f {-^ initial widening @delta@ -}
     ->
@@ -165,10 +179,11 @@ solveEvents ::
     ->
     (Maybe (HybridSystemUncertainState f), [(HybSysMode, (EventInfo f))])
 solveEvents
-    sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effDom
-        delta m
-            t0Var
-                hybivp
+        sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
+            maxNodes
+                delta m
+                    t0Var
+                        hybivp
     | givenUp =        
         (Nothing, modeEventInfoList)
     | otherwise =
@@ -199,7 +214,7 @@ solveEvents
     solveEventsOneMode initialMode =
         (maybeFinalState, eventInfo)
         where
-        maxNodes = 100
+--        maxNodes = 100
         
         maybeFinalState =
             case eventInfoCollectFinalStates effEval tVar tEnd eventInfo of
@@ -212,11 +227,22 @@ solveEvents
                 Just fnVecNoEvent ->
                     esolve (EventTODO (initialMode, fnVecNoEvent))
         maybeFnVecNoEvent =
+            fmap (map removeAllVarsButT) $ -- parameters have to be removed so that we can test inclusion
             fmap (!! m) $
             solveUncertainValueExactTime
                 sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
                 delta
-                (odeivp tStart initialMode $ makeFnVecFromInitialValues componentNames initialValues)
+                (odeivp tStart initialMode $ 
+                    makeFnVecFromInitialValues componentNames initialValues)
+        removeAllVarsButT fn =
+            -- substitute domains for all variables except t:
+            pEvalAtPointOutEff effPEval domboxNoT fn
+            where
+            domboxNoT =
+                fromAscList $ filter ((/= tVar) . fst) varDoms
+            varDoms = 
+                toAscList $ getDomainBox fn
+
         esolve prevEventInfo =
             case addOneLayer prevEventInfo of
                 (newEventInfo, _, False) -> newEventInfo -- nothing left to do
@@ -225,8 +251,10 @@ solveEvents
         addOneLayer prevEventInfo =
 --            unsafePrint
 --            (
---                "solveEvents: solveEventsOneMode: " ++
---                "\n prevEventInfo = \n" ++ showEventInfo "   " (show . id) prevEventInfo
+--                "solveEvents: solveEventsOneMode: "
+--                ++ "\n tStart = " ++ show tStart  
+--                ++ "\n tEnd = " ++ show tEnd  
+--                ++ "\n prevEventInfo = \n" ++ showEventInfo "   " (show . id) prevEventInfo
 --            ) $
             processNode 0 [] prevEventInfo
             where
@@ -259,8 +287,10 @@ solveEvents
                             processNode nodeCountSoFarWithRest previousStates child
             processState nodeCountSoFar previousStates state@(mode, fnVec) 
                 -- first check whether this state is included in a previous state:
-                | stateOccurredEarlier =
+                | stateShrinksPreviousOne =
                     (EventFixedPoint state, Just (nodeCountSoFar + 1), True)
+                | stateExpandsPreviousOne =
+                    (EventGivenUp, Nothing, True)
                 | otherwise =
                 -- find which events are not ruled out by fnVec and try to determine whether an event is certain
                 -- for each potential event, compute an enclosure for the state at the event
@@ -271,13 +301,15 @@ solveEvents
                 --   could use a zipper...)
                 (constructorForNextEvents state eventTasksMap, maybeNodeCountNew, True)
                 where
-                stateOccurredEarlier =
+                stateShrinksPreviousOne =
                     or $ map (stateIncludedIn state) previousStates
+                stateExpandsPreviousOne =
+                    or $ map (flip stateIncludedIn state) previousStates
                 stateIncludedIn (mode1, fnVec1) (mode2, fnVec2) 
                     | mode1 /= mode2 = False
                     | otherwise =
                         let ?pCompareEffort = effInclFn in
-                        and $ map (== Just True) $ zipWith (|<=?) fnVec1 fnVec2 
+                        and $ map (== Just True) $ zipWith (|<=?) fnVec2 fnVec1 
                 maybeNodeCountNew
                     | givenUp2 = Nothing
                     | nodeCountSoFar + eventCount > maxNodes = Nothing
@@ -301,12 +333,8 @@ solveEvents
                     map simulateEvent $ eventKindList
                 simulateEvent eventKind =
                     case maybeFnVecAfterEvent of
-                        Just fnVecOutInAfterEvent ->
+                        Just fnVecAfterEvent ->
                             (eventKind, EventTODO (modeAfterEvent, fnVecAfterEvent))
-                            where
-                            fnVecAfterEvent =
-                                map removeT0Var $ 
-                                    map fst $ fnVecOutInAfterEvent !! m
                         Nothing ->
                             (eventKind, EventGivenUp)
                     where
@@ -316,28 +344,22 @@ solveEvents
                             Nothing -> error $ "aern-ivp: hybrid system has no information about event kind " ++ show eventKind
                     fnVecAtEvent = eventSwitchingFn fnVec
                     maybeFnVecAfterEvent = 
+                        fmap (map $ removeAllVarsButT . fst) $
+                        fmap (!! m) $
                         solveUncertainValueUncertainTime
                                 sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
                                     delta
                                         t0Var $
                                             odeivp tEnd modeAfterEvent $
                                                 makeInitialValuesFromFnVecAtEvent
-                    makeInitialValuesFromFnVecAtEvent _sizeLimits t0Var2 _t0Domain =
-                        map (renameVar tVar t0Var2) fnVecAtEvent
-                    removeT0Var fn =
-                        composeVarOutEff effCompose t0Var t0DomFn fn
                         where
-                        t0DomFn =
-                            newConstFnFromSample sampleFnWithoutT0 t0Dom
-                        sampleFnWithoutT0 : _ = fnVecAtEvent
-                        Just (_,t0Dom) =
-                            List.find ((== t0Var) . fst) varDoms
-                        varDoms = toAscList $ getDomainBox fn
+                        makeInitialValuesFromFnVecAtEvent _sizeLimits t0Var2 _t0Domain =
+                            parametriseThickFunctions effAddFn effMultFn componentNames $
+                                map (renameVar tVar t0Var2) fnVecAtEvent
+                    
                 eventModeSwitchesAndResetFunctions = hybsys_eventModeSwitchesAndResetFunctions hybsys
                 eventKindList =
                     map fst $ Set.elems $ possibleOrCertainFirstEventsSet
-                    
-            
 
     odeivp t0End mode makeInitValueFnVec =
         ODEIVP
@@ -386,6 +408,7 @@ showEventInfo prefix showState eventInfo =
         case eventInfo of
             (EventNextMaybe state2 eventsMap2) -> ("EventNextMaybe", state2, eventsMap2)
             (EventNextSure state2 eventsMap2) -> ("EventNextSure", state2, eventsMap2)
+            _ -> error ""
     showEvents [] = " []"
     showEvents events = 
         "\n" ++ (unlines $ map showEvent events)
@@ -432,28 +455,82 @@ eventInfoCollectFinalStates effEval tVar tEnd eventInfo =
         valueVec =
             fst $ evalAtEndTimeVec effEval tVar tEnd fnVec
         
-leqOverSomeT :: 
-    (Show (Domain t),
-    Show t,
-    RefOrd.IntervalLike t,
-    RefOrd.IntervalLike (Domain t),
-    NumOrd.PartialComparison (Domain t),
-    HasAntiConsistency t,
-    HasAntiConsistency (Domain t),
-    CanEvaluate t) 
+eventInfoCountEvents ::
+    (ArithInOut.RoundedReal d)
     =>
-    EvaluationEffortIndicator t -> Int -> Var t -> t -> t -> Bool
-leqOverSomeT effEval n tVar f1 f2 =
-    or leqResults
+    d ->
+    ArithInOut.RoundedRealEffortIndicator d ->
+    EventInfo f ->
+    d
+eventInfoCountEvents sampleD effD eventInfo =
+    aux eventInfo
     where
-    _ = [f1,f2]
-    leqResults = map leqOnSample tSamples
+    aux (EventFixedPoint _) = nonneg 
+    aux (EventNextSure _ furtherInfo) =
+        foldl1 union $ map incr $ map aux $ Map.elems furtherInfo
+    aux (EventNextMaybe _ furtherInfo) =
+        foldl union c0 $ map incr $ map aux $ Map.elems furtherInfo
+    aux _ = nonneg
+    
+    incr = ArithInOut.addOutEff effAdd c1
+    union = RefOrd.meetOutEff effJoinMeet
+    c0 = zero sampleD
+    c1 = one sampleD
+    cInfty = plusInfinity sampleD
+    nonneg = c0 `union` cInfty
+    
+    effJoinMeet =
+        ArithInOut.rrEffortJoinMeet sampleD effD
+    effAdd = 
+        ArithInOut.fldEffortAdd sampleD $ ArithInOut.rrEffortField sampleD effD
+        
+        
+leqOverSomeT ::
+    (Show (Domain f),
+    Show f,
+    RefOrd.IntervalLike f,
+    RefOrd.IntervalLike (Domain f),
+    NumOrd.PartialComparison (Domain f),
+    HasAntiConsistency f,
+    HasAntiConsistency (Domain f),
+    CanEvaluate f) 
+    =>
+    EvaluationEffortIndicator f -> 
+    Int -> 
+    Var f 
+    -> 
+    f -> f -> Bool
+leqOverSomeT effEval n tVar f1 f2 =
+    predOverSomeT (\[e1,e2] -> (e1 <=? e2) == Just True) effEval n tVar [f1, f2]
+        
+predOverSomeT :: 
+    (Show (Domain f),
+    Show f,
+    RefOrd.IntervalLike f,
+    RefOrd.IntervalLike (Domain f),
+    NumOrd.PartialComparison (Domain f),
+    HasAntiConsistency f,
+    HasAntiConsistency (Domain f),
+    CanEvaluate f) 
+    =>
+    ([Domain f] -> Bool)
+    ->
+    EvaluationEffortIndicator f -> 
+    Int -> 
+    Var f 
+    -> 
+    [f] -> Bool
+predOverSomeT predicate effEval n tVar fs =
+    or predResults
+    where
+    predResults = map predOnSample tSamples
         where
-        leqOnSample tSample =
-            (f1OnT <=? f2OnT) == Just True
+        predOnSample tSample = predicate fsOnT
             where
-            [f1OnT] = fst $ evalAtEndTimeVec effEval tVar tSample [f1]
-            [f2OnT] = fst $ evalAtEndTimeVec effEval tVar tSample [f2]
+            fsOnT = map onT fs
+            onT f = res
+                where
+                [res] = fst $ evalAtEndTimeVec effEval tVar tSample [f]
     tSamples = map getTDom tSampleBoxes
     tSampleBoxes = getNSamplesFromDomainBox sampleF domboxTOnly n
     domboxTOnly = fromList [(tVar, tDom)]
@@ -461,5 +538,6 @@ leqOverSomeT effEval n tVar f1 f2 =
     getTDom box = 
         case lookupVar box tVar of
             Just tDom2 -> tDom2
+            _ -> error "aern-ivp: internal error in predOverSomeT"
     dombox = getDomainBox sampleF
-    sampleF = f1
+    (sampleF : _) = fs
