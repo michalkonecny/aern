@@ -39,7 +39,8 @@ module Numeric.AERN.IVP.Solver.Splitting
     solveODEIVPBySplittingT,
     solveODEIVPBySplittingT0,
     SplittingInfo(..),
-    showSplittingInfo
+    showSplittingInfo,
+    splittingInfoCountLeafs
 )
 where
 
@@ -141,6 +142,10 @@ solveHybridIVPBySplittingT
             ((tEnd <-> tStart) >? minStepSize) /= Just True
 
         directComputation =
+--            unsafePrint
+--            (
+--                "solveHybridIVPBySplittingT: completed time " ++ show tEnd
+--            ) $
             case maybeDirectResult of
                 Just resultOut 
                     | otherwise -> (Just resultOut, SegNoSplit directInfo)
@@ -165,29 +170,27 @@ solveHybridIVPBySplittingT
                 _ -> Nothing
                 
         (splitComputation, splitComputationFailed) =
-            case splitSolve (depth + 1) hybivpL of
-                (Just midState, infoL) -> 
-                    case splitSolve (depth + 1) hybivpR of
-                        (Nothing, infoR) ->
-                            (
-                                (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
-                            , 
-                                True
-                            )
-                        (Just endState, infoR) ->
-                            (
-                                (Just endState, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
-                            ,
-                                False
-                            )
-                    where
-                    hybivpR =
-                        hybivp
-                        {
-                            hybivp_tStart = tMid,
-                            hybivp_initialStateEnclosure = midState
-                        }
-                failedLeftComputation -> (failedLeftComputation, True)
+            (
+                (maybeState, SegSplit (directInfo, maybeSplitImprovement) infoL maybeInfoR)
+            , 
+                case maybeState of Just _ -> False; _ -> True
+            )
+            where
+            (maybeMidState, infoL) =
+                splitSolve (depth + 1) hybivpL
+            (maybeState, maybeInfoR) =
+                case maybeMidState of
+                    Just midState ->
+                        case splitSolve (depth + 1) hybivpR of
+                            (maybeState2, infoR) -> (maybeState2, Just infoR)
+                        where
+                        hybivpR =
+                            hybivp
+                            {
+                                hybivp_tStart = tMid,
+                                hybivp_initialStateEnclosure = midState
+                            }
+                    Nothing -> (Nothing, Nothing)
         hybivpL =
             hybivp
             {
@@ -199,8 +202,8 @@ solveHybridIVPBySplittingT
             (tStart <+> tEnd) </>| (2 :: Int)
         
         maybeSplitImprovement =
-            case (directComputation, splitOnceComputation) of
-                ((Just directResult, _), Just splitOnceResult) -> 
+            case (maybeDirectResult, splitOnceComputation) of
+                (Just directResult, Just splitOnceResult) -> 
                     Just $ measureImprovementState directResult splitOnceResult
                 _ -> Nothing
         measureImprovementState state1 state2 = 
@@ -443,12 +446,12 @@ solveODEIVPBySplittingT
                 (Just midValues, infoL) -> 
                     case splitSolve shouldRoundInwardsR odeivpR of
                         (Nothing, infoR) ->
-                            (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL infoR)
+                            (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL (Just infoR))
                         (Just endValues, infoR) ->
                             (
                                 Just $ maybeFlip endValues
                             , 
-                                SegSplit (directInfo, maybeSplitImprovement) infoL infoR
+                                SegSplit (directInfo, maybeSplitImprovement) infoL (Just infoR)
                             )
                     where
                     maybeFlip 
@@ -614,7 +617,7 @@ solveODEIVPBySplittingT0
                 (Just (endValuesLOut, endValuesLIn), infoL) -> 
                     case splitSolve odeivpR of
                         (Just (endValuesROut, endValuesRIn), infoR) ->
-                            (Just endValues, SegSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL infoR)
+                            (Just endValues, SegSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL (Just infoR))
                             where
                             endValues = (endValuesOut, endValuesIn)
                             endValuesOut =
@@ -624,7 +627,7 @@ solveODEIVPBySplittingT0
                                 let ?joinmeetEffort = effJoinDom in
                                 zipWith (>/\<) endValuesLIn endValuesRIn
                         (Nothing, infoR) ->
-                            (Nothing, SegSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL infoR)
+                            (Nothing, SegSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL (Just infoR))
                     where
                     odeivpR =
                         odeivp
@@ -666,7 +669,7 @@ solveODEIVPBySplittingT0
 
 data SplittingInfo segInfo splitReason
     = SegNoSplit segInfo
-    | SegSplit splitReason (SplittingInfo segInfo splitReason) (SplittingInfo segInfo splitReason)
+    | SegSplit splitReason (SplittingInfo segInfo splitReason) (Maybe (SplittingInfo segInfo splitReason))
 
 showSplittingInfo :: 
     (String -> segInfo -> String) 
@@ -680,11 +683,22 @@ showSplittingInfo showSegInfo showSplitReason indentG splittingInfoG =
     shLevel indent splittingInfo =
         case splittingInfo of
             SegNoSplit segInfo -> showSegInfo indent segInfo
-            SegSplit reason infoL infoR ->
+            SegSplit reason infoL Nothing ->
+                (showSplitReason indent reason)
+                ++ "\n" ++
+                (shLevel (indent ++ "| ") infoL)
+            SegSplit reason infoL (Just infoR) ->
                 (showSplitReason indent reason)
                 ++ "\n" ++
                 (shLevel (indent ++ "| ") infoL)
                 ++ "\n" ++
                 (shLevel (indent ++ "  ") infoR)
              
-    
+splittingInfoCountLeafs ::
+    SplittingInfo segInfo splitReason -> Int
+splittingInfoCountLeafs (SegNoSplit _) = 1
+splittingInfoCountLeafs (SegSplit _ left Nothing) =
+    splittingInfoCountLeafs left
+splittingInfoCountLeafs (SegSplit _ left (Just right)) =
+    splittingInfoCountLeafs left + splittingInfoCountLeafs right
+     

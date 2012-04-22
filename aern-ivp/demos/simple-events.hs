@@ -59,6 +59,7 @@ type Poly = IntPoly String CF
 main :: IO ()
 main =
     do
+    hSetBuffering stdout LineBuffering
     args <- getArgs
     case length args of
         2 -> writeCSV args
@@ -89,7 +90,9 @@ ivpByName "bouncingBall-after10" = ivpBouncingBall_AfterBounce 10
 ivpByName "bouncingBall-after20" = ivpBouncingBall_AfterBounce 20 
 ivpByName "bouncingBall-after30" = ivpBouncingBall_AfterBounce 30 
 ivpByName "bouncingBall-after40" = ivpBouncingBall_AfterBounce 40 
-ivpByName "bouncingBall-zeno" = ivpBouncingBall_AfterBounce 1000000 
+ivpByName "bouncingBall-zeno" = ivpBouncingBall_AfterZeno 0 
+ivpByName "bouncingBall-zenoPlus1Over2" = ivpBouncingBall_AfterZeno 0.5 
+ivpByName "bouncingBall-zenoPlus1" = ivpBouncingBall_AfterZeno 1 
 
 
 ivpExpDecay_resetTHalf :: HybridIVP Poly
@@ -362,6 +365,22 @@ ivpSpringMass_resetOn34 =
 
 ivpBouncingBall_AfterBounce :: Int -> HybridIVP Poly
 ivpBouncingBall_AfterBounce n =
+    ivpBouncingBall_AtTime tEnd [xEnd, xDerEnd]
+    where
+    tEnd = 1 <*>| (3*(1 - 2^^(-n)) :: Double)
+    xEnd = 1 <*>| (5 * (2^^(-2*n)) :: Double)
+    xDerEnd = 0 -- exactly between two bounces, the ball brieflly stops, ie its speed is zero
+
+ivpBouncingBall_AfterZeno :: CF -> HybridIVP Poly
+ivpBouncingBall_AfterZeno howLong =
+    ivpBouncingBall_AtTime tEnd [xEnd, xDerEnd]
+    where
+    tEnd = 3 <+> howLong
+    xEnd = 0
+    xDerEnd = 0
+
+ivpBouncingBall_AtTime :: CF -> [CF] -> HybridIVP Poly
+ivpBouncingBall_AtTime tEnd [xEnd, xDerEnd] =
     ivp
     where
     system =
@@ -417,7 +436,7 @@ ivpBouncingBall_AfterBounce n =
             hybivp_system = system,
             hybivp_tVar = "t",
             hybivp_tStart = 0,
-            hybivp_tEnd = 1 <*>| (3*(1 - 2^^(-n)) :: Double), -- time exactly between n'th and (n+1)'th bounces
+            hybivp_tEnd = tEnd, -- time exactly between n'th and (n+1)'th bounces
             hybivp_initialStateEnclosure = 
                 HybridSystemUncertainState 
                 { 
@@ -439,8 +458,6 @@ ivpBouncingBall_AfterBounce n =
     tStart = hybivp_tStart ivp
 --    tEnd = hybivp_tEnd ivp
     tVar = hybivp_tVar ivp
-    xEnd = 1 <*>| (5 * (2^^(-2*n)) :: Double)
-    xDerEnd = 0 -- exactly between two bounces, the ball brieflly stops, ie its speed is zero
 
 runOnce :: [String] -> IO ()
 runOnce [ivpName, maxDegS, depthS, shouldShowStepsS, maxSplitSizeS] =
@@ -570,12 +587,19 @@ solveEventsPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSize
             putStrLn "(almost) exact result = "
             putStr $ showSegInfo "   " (tEnd, Just exactResult, [])
         _ -> return ()
+    putStrLn "----------  steps: ---------------------------"
+    printStepsInfo (1:: Int) splittingInfo
+    putStrLn "----------  step summary: -----------------------"
+    putStrLn $ "number of atomic segments = " ++ (show $ splittingInfoCountLeafs splittingInfo)
+    putStrLn $ "smallest segment size: " ++ (show smallestSegSize)  
     case shouldShowSteps of
         True ->
             do
-            putStrLn "----------  steps: ------------------------------"
+            putStrLn "----------  splitting info: --------------------------"
             putStrLn $ showSplittingInfo showSegInfo showSplitReason "" splittingInfo
-        False -> return ()
+        False ->
+            return ()
+        
     putStrLn "----------  result: -----------------------------"
     putStr $ showSegInfo ">>> " (tEnd, maybeEndState, [])
     case (maybeExactResult, maybeEndState) of
@@ -605,6 +629,7 @@ solveEventsPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSize
     
     -- auxiliary:
     description = hybivp_description ivp
+    tStart = hybivp_tStart ivp
     tEnd = hybivp_tEnd ivp
     maybeExactResult = hybivp_maybeExactStateAtTEnd ivp
     hybsys = hybivp_system ivp
@@ -644,8 +669,35 @@ solveEventsPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSize
         where
         aux (SegNoSplit (_,_,modeEventInfoList)) =
             foldl1 (CF.</\>) $ map (eventInfoCountEvents 0 effCf . snd) modeEventInfoList
-        aux (SegSplit _ left right) =
+        aux (SegSplit _ left Nothing) =
+            aux left
+        aux (SegSplit _ left (Just right)) =
             (aux left) CF.<+> (aux right)
+    (smallestSegSize, _) =
+        aux tStart (tEnd CF.<-> tStart) splittingInfo
+        where
+        aux tPrev tSmallestSoFar (SegNoSplit (tNow,_,_)) =
+            (CF.minOut tSmallestSoFar (tNow CF.<-> tPrev), tNow)
+        aux tPrev tSmallestSoFar (SegSplit _ left Nothing) =
+            aux tPrev tSmallestSoFar left
+        aux tPrev tSmallestSoFar (SegSplit _ left (Just right)) =
+            aux tPrevL tSmallestSoFarL right
+            where
+            (tSmallestSoFarL, tPrevL) =
+                aux tPrev tSmallestSoFar left
+            
+    showStepInfo (n, t) =
+        "step " ++ show n ++ ": t = " ++ show t
+    printStepsInfo n (SegNoSplit (t, _maybeState, _modeEventInfoList)) =
+        do
+        putStrLn $ showStepInfo (n, t)
+        return $ n + 1
+    printStepsInfo n (SegSplit _ left maybeRight) =
+        do
+        n2 <- printStepsInfo n left
+        case maybeRight of
+            Just right -> printStepsInfo n2 right
+            Nothing -> return $ n2 + 1
     showSegInfo indent (t, maybeState, modeEventInfoList) =
         maybeEventsCountS ++
         indent ++ "mode(" ++ show t ++ ") ∊ " ++ modesS ++ "\n" ++
