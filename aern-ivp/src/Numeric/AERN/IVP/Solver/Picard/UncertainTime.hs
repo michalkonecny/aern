@@ -71,10 +71,10 @@ solveUncertainValueUncertainTimeSplit ::
      Show f, Show (Domain f), Show (Var f),
      AppendableVariables (Var f),
      dom ~ Domain f,
-     dom ~ Imprecision dom,
-     solvingInfo1 ~ (dom, Maybe ([dom],[dom])),
+     dom ~ Imprecision dom, 
+     solvingInfo1 ~ (dom, Maybe [dom]),
      solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe dom),
-     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe (solvingInfo2, solvingInfo2)))
+     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe solvingInfo2))
     )
     =>
     SizeLimits f -> 
@@ -98,7 +98,7 @@ solveUncertainValueUncertainTimeSplit ::
     ODEIVP f 
     ->
     (
-     Maybe ([dom], [dom])
+     Maybe [dom]
     ,
      SplittingInfo solvingInfo3 (solvingInfo3, Maybe dom)
     )
@@ -117,7 +117,7 @@ solveUncertainValueUncertainTimeSplit
     solverSplittingT0 odeivp =
         solveODEIVPBySplittingT0
             solverSplittingAtT0End
-                effDom splitImprovementThreshold minT0StepSize 
+                effDom splitImprovementThreshold minT0StepSize
                     odeivp
 
     solverSplittingAtT0End odeivp =
@@ -134,8 +134,8 @@ solveUncertainValueUncertainTimeSplit
             Just iterations -> 
                 let chosenIteration = iterations !! m in
                 let valuesAtEnd = evalAtEndTimeOutInVec effEval tVar t0End chosenIteration in
-                let paramValuesAtEnd = partiallyEvalAtEndTimeOutInVec tVar t0End chosenIteration in
-                (Just paramValuesAtEnd, (t0End, Just valuesAtEnd))
+                let paramValuesAtEnd = partiallyEvalAtEndTimeOutInVec tVar t0End $ unzip chosenIteration in
+                (Just (fst paramValuesAtEnd), (t0End, Just (fst valuesAtEnd)))
             _ -> (Nothing, (t0End, Nothing))
         where
         t0End = odeivp_t0End odeivp
@@ -147,7 +147,7 @@ solveUncertainValueUncertainTimeSplit
                             odeivp 
 
     solverVt odeivp =
-        solveUncertainValueExactTimeSplit
+        solveUncertainValueExactTimeSplitWrap
                 sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effDom
                     delta m minStepSize splitImprovementThreshold
                         odeivp

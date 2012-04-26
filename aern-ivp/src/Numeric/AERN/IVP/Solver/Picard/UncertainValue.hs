@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
---{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.IVP.Solver.Picard.UncertainValue
     Description :  uncertain initial value ODE solvers
@@ -19,7 +19,8 @@
 module Numeric.AERN.IVP.Solver.Picard.UncertainValue
 (
     solveUncertainValueExactTime,
-    solveUncertainValueExactTimeSplit
+    solveUncertainValueExactTimeSplitWrap,
+    solveUncertainValueExactTimeSplitPEval
 )
 where
 
@@ -48,7 +49,7 @@ import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
         
-solveUncertainValueExactTimeSplit ::
+solveUncertainValueExactTimeSplitWrap ::
     (CanAddVariables f,
      CanEvaluate f,
      CanCompose f,
@@ -64,7 +65,7 @@ solveUncertainValueExactTimeSplit ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
-     solvingInfo ~ (Domain f, Maybe ([Domain f], [Domain f])), 
+     solvingInfo ~ (Domain f, Maybe [Domain f]), 
      Show f, Show (Domain f), Show (Var f))
     =>
     SizeLimits f {-^ size limits for all function -} ->
@@ -82,15 +83,13 @@ solveUncertainValueExactTimeSplit ::
     ODEIVP f
     ->
     (
-        Maybe ([Domain f], [Domain f])
+        Maybe [Domain f]
     ,
         (
             SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
-        ,
-            SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
         )
     )
-solveUncertainValueExactTimeSplit
+solveUncertainValueExactTimeSplitWrap
         sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effDom
             delta m minStepSize splitImprovementThreshold
                 odeivpG
@@ -102,17 +101,27 @@ solveUncertainValueExactTimeSplit
     tVar = odeivp_tVar odeivpG
     componentNames = odeivp_componentNames odeivpG
 
+    effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
+    sampleDom = odeivp_tStart odeivpG 
+    
     solve odeivp =
         solveODEIVPBySplittingT
-            directSolver (makeFnVecFromInitialValues componentNames)
+            directSolver measureResultImprecision (makeFnVecFromInitialValues componentNames)
                 effDom splitImprovementThreshold minStepSize
                     odeivp
 
+    measureResultImprecision vec =
+        let ?addInOutEffort = effAddDom in
+        foldl1 (<+>) $ map perComp vec
+        where
+        perComp comp =        
+            imprecisionOfEff effImpr comp
     directSolver odeivp =
         case maybeIterations of
             Just iterations ->
                 let valuesAtEnd = evalAtEndTimeVec effEval tVar tEnd $ iterations !! m in
-                (Just valuesAtEnd, (tEnd, Just valuesAtEnd))
+                (Just (fst valuesAtEnd), (tEnd, Just (fst valuesAtEnd)))
             Nothing -> (Nothing, (tEnd, Nothing))
         where
         maybeIterations =
@@ -122,6 +131,113 @@ solveUncertainValueExactTimeSplit
                         odeivp
         tEnd = odeivp_tEnd odeivp
 
+solveUncertainValueExactTimeSplitPEval ::
+    (CanAddVariables f,
+     CanEvaluate f,
+     CanPartiallyEvaluate f,
+     CanCompose f,
+     CanChangeSizeLimits f,
+     HasProjections f,
+     HasConstFns f,
+     RefOrd.IntervalLike f,
+     HasAntiConsistency f,
+     RefOrd.PartialComparison f,
+     RoundedIntegration f,
+     ArithInOut.RoundedAdd f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMultiply f,
+     ArithInOut.RoundedMixedAdd f (Domain f),
+     ArithInOut.RoundedReal (Domain f), 
+     RefOrd.IntervalLike (Domain f),
+     HasAntiConsistency (Domain f),
+     Domain f ~ Imprecision (Domain f),
+     solvingInfo ~ (Domain f, Maybe [Domain f]), 
+     Show f, Show (Domain f), Show (Var f))
+    =>
+    SizeLimits f {-^ size limits for all function -} ->
+    SizeLimitsChangeEffort f ->
+    CompositionEffortIndicator f ->
+    EvaluationEffortIndicator f ->
+    IntegrationEffortIndicator f ->
+    RefOrd.PartialCompareEffortIndicator f ->
+    ArithInOut.AddEffortIndicator f ->
+    ArithInOut.MultEffortIndicator f ->
+    ArithInOut.MixedAddEffortIndicator f (Domain f) ->
+    ArithInOut.RoundedRealEffortIndicator (Domain f) ->
+    Domain f {-^ initial widening @delta@ -}  ->
+    Int {-^ @m@ -} -> 
+    Domain f {-^ step size @s@ -} -> 
+    Imprecision (Domain f) {-^ split improvement threshold @eps@ -} ->
+    ODEIVP f
+    ->
+    (
+        Maybe [Domain f]
+    ,
+        (
+            SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+        )
+    )
+solveUncertainValueExactTimeSplitPEval
+        sizeLimits effSizeLim effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
+            delta m minStepSize splitImprovementThreshold
+                (odeivpG :: ODEIVP f)
+    | (tStart <? t0End) == Just True =
+        error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
+    | otherwise =
+        case solve odeivpG of
+            (maybeResFnVec, splittingInfo) ->
+                (fmap (map getRange) maybeResFnVec, splittingInfo)
+    where
+    tVar = odeivp_tVar odeivpG
+    tStart, t0End :: Domain f
+    tStart = odeivp_tStart odeivpG
+    t0End = odeivp_t0End odeivpG
+    componentNames = odeivp_componentNames odeivpG
+
+    effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
+    sampleDom :: Domain f
+    sampleDom = tStart
+
+    
+    getRange :: f -> Domain f 
+    getRange fn =
+        evalAtPointOutEff effEval (getDomainBox fn) fn
+
+    solve odeivp =
+        solveODEIVPBySplittingT
+            directSolver measureResultImprecision 
+                (makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLim componentNames)
+                effDom splitImprovementThreshold minStepSize
+                    odeivp
+
+    measureResultImprecision :: [f] -> Domain f
+    measureResultImprecision fnVec =
+        let ?addInOutEffort = effAddDom in
+        foldl1 (<+>) $ map perComp fnVec
+        where
+        perComp fn =
+            let ?addInOutEffort = effAddFn in
+            getRange $ fnR <-> fnL
+            where
+            (fnL, fnR) = RefOrd.getEndpointsOutWithDefaultEffort fn
+            
+    directSolver odeivp =
+        case maybeIterations of
+            Just iterations ->
+                let paramValuesAtEnd = partiallySubst $ iterations !! m in
+                let valuesAtEnd = evalAtEndTimeVec effEval tVar tEnd $ iterations !! m in
+                (Just (fst paramValuesAtEnd), (tEnd, Just (fst valuesAtEnd)))
+            Nothing -> (Nothing, (tEnd, Nothing))
+        where
+        partiallySubst fns = partiallyEvalAtEndTimeOutInVec tVar tEnd (fns, fns)
+        maybeIterations :: Maybe [[f]]
+        maybeIterations =
+            solveUncertainValueExactTime
+                sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+                    delta
+                        odeivp
+        tEnd = odeivp_tEnd odeivp
                 
 solveUncertainValueExactTime ::
     (CanAddVariables f,

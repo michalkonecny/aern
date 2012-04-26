@@ -92,7 +92,8 @@ ivpByName "bouncingBall-after30" = ivpBouncingBall_AfterBounce 30
 ivpByName "bouncingBall-after40" = ivpBouncingBall_AfterBounce 40 
 ivpByName "bouncingBall-zeno" = ivpBouncingBall_AfterZeno 0 
 ivpByName "bouncingBall-zenoPlus1Over2" = ivpBouncingBall_AfterZeno 0.5 
-ivpByName "bouncingBall-zenoPlus1" = ivpBouncingBall_AfterZeno 1 
+ivpByName "bouncingBall-zenoPlus2" = ivpBouncingBall_AfterZeno 2
+ivpByName name = error $ "unknown IVP " ++ name
 
 
 ivpExpDecay_resetTHalf :: HybridIVP Poly

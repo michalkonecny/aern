@@ -44,24 +44,26 @@ type Poly = IntPoly String CF
 main :: IO ()
 main =
     do
+    hSetBuffering stdout LineBuffering
     args <- getArgs
     case length args of
-        2 -> writeCSV args
-        4 -> runOnce args
+        3 -> writeCSV args
+        5 -> runOnce args
         _ -> usage
         
 usage :: IO ()
 usage =
     do
-    putStrLn "Usage A: simple-uv-et <ivp name> <output file name>"
-    putStrLn "Usage B: simple-uv-et <ivp name> <True|False-print steps?> <maxDeg> <minStepSize>"
+    putStrLn "Usage A: simple-uv-et <ivp name> <output file name> <True|False-should wrap?>"
+    putStrLn "Usage B: simple-uv-et <ivp name> <True|False-print steps?> <True|False-should wrap?> <maxDeg> <minStepSize>"
 
 ivpByName :: String -> ODEIVP Poly
 ivpByName "ivpExpDecay-ev-et" = ivpExpDecay_ev_et     
 ivpByName "ivpExpDecay-uv-et" = ivpExpDecay_uv_et     
 ivpByName "ivpSpringMass-ev-et" = ivpSpringMass_ev_et
 ivpByName "ivpSpringMass-uv-et" = ivpSpringMass_uv_et     
-ivpByName "ivpSpringMassAir-ev-et" = ivpSpringMassAir_ev_et     
+ivpByName "ivpSpringMassAir-ev-et" = ivpSpringMassAir_ev_et
+ivpByName "ivpRoessler" = ivpRoessler
 
 ivpExpDecay_ev_et :: ODEIVP Poly
 ivpExpDecay_ev_et =
@@ -172,6 +174,44 @@ ivpSpringMass_uv_et =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
 
+ivpRoessler :: ODEIVP Poly
+ivpRoessler =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = 
+                "Rössler attractor: x' = -y - z; y' = x + 0.2y; z' = 0.2 + z(x-5.7); "
+                ++ "x(0) = 0, y(0) ∊ -8.38095+-0.01, z(0) ∊ 0.0295902+-0.01",
+            odeivp_field = \ [x,y,z] -> 
+                [neg $ y <+> z, 
+                 x <+> ((0.2 :: Double) |<*> y),
+                 (0.2 :: Double) |<+> (z <*> ((-5.7 :: Double) |<+> x))
+                ],
+            odeivp_componentNames = ["x", "y", "z"],
+            odeivp_tVar = "t",
+            odeivp_tStart = 0,
+            odeivp_t0End = 0,
+            odeivp_tEnd = 6,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing 
+        }
+    initialValues = 
+        [
+            0
+        ,
+            (-8.38095 :: Double) |<+> pmDelta
+        ,
+            (0.0295902 :: Double) |<+> pmDelta
+        ]
+        where
+        pmDelta = delta CF.</\> (neg delta)
+        delta = (0.01 :: Double) |<+> 0
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+
 ivpSpringMassAir_ev_et :: ODEIVP Poly
 ivpSpringMassAir_ev_et =
     ivp
@@ -203,7 +243,7 @@ ivpSpringMassAir_ev_et =
 
 
 runOnce :: [String] -> IO ()
-runOnce [ivpName, shouldShowStepsS, maxDegS, depthS] =
+runOnce [ivpName, shouldShowStepsS, shouldWrapS, maxDegS, depthS] =
     do
     let shouldShowSteps = read shouldShowStepsS :: Bool
     let maxDeg = read maxDegS :: Int
@@ -211,13 +251,14 @@ runOnce [ivpName, shouldShowStepsS, maxDegS, depthS] =
     putStrLn "--------------------------------------------------"
     putStrLn "demo of solve-Vt from (Konecny, Taha, Duracz 2012)"
     putStrLn "--------------------------------------------------"
-    _ <- solveVtPrintSteps shouldShowSteps ivp (maxDeg, depth)
+    _ <- solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxDeg, depth)
     return ()
     where
     ivp = ivpByName ivpName
+    shouldWrap = read shouldWrapS
 
 writeCSV :: [String] -> IO ()
-writeCSV [ivpName, outputFileName] =
+writeCSV [ivpName, outputFileName, shouldWrapS] =
     do
     isClash <- doesFileExist outputFileName
     case isClash of
@@ -229,6 +270,7 @@ writeCSV [ivpName, outputFileName] =
                 writeCSVheader handle
                 mapM_ (runSolverMeasureTimeMSwriteLine handle) paramCombinations
     where
+    shouldWrap = read shouldWrapS
     ivp = ivpByName ivpName
     paramCombinations = 
         [(maxDegree, depth) | 
@@ -252,7 +294,7 @@ writeCSV [ivpName, outputFileName] =
         solveAndMeasure _ =
             do
             starttime <- getCPUTime
-            solverResult <- solveVtPrintSteps False ivp (maxDegree, depth)
+            solverResult <- solveVtPrintSteps shouldWrap False ivp (maxDegree, depth)
             endtime <- getCPUTime
             return $ (solverResult, (endtime - starttime) `div` 1000000000)
         
@@ -265,11 +307,10 @@ writeCSV [ivpName, outputFileName] =
 --        ++ enclosureErrorBoundS ++ ","
         ++ enclosureErrorS
         where
-        (_enclosureErrorBoundS, enclosureErrorS) =
+        enclosureErrorS =
             case maybeVec of
-                Nothing -> (show "no solution", show "no solution")
-                Just (vecOut, vecIn) ->
-                    (computeMaxDiff vecOut vecIn, 
+                Nothing -> show "no solution"
+                Just vecOut ->
                         case maybeVecExact of
                             Just vecExact 
                                 | not (refinesVec vecExact vecOut) -> --  && refinesVec vecIn vecExact) ->
@@ -280,7 +321,7 @@ writeCSV [ivpName, outputFileName] =
 --                                        ++ "\n vecIn = " ++ show vecIn
                                 | otherwise -> 
                                     computeMaxDiff vecOut vecExact
-                            _ -> show "exact solution not known")
+                            _ -> show "exact solution not known"
                 where
                 computeMaxDiff vecOut vecOther = 
                     removeBracks $
@@ -299,8 +340,10 @@ refines :: CF -> CF -> Bool
 refines a1 a2 = (a2 CF.|<=? a1) == Just True
    
 solveVtPrintSteps ::
-    (solvingInfo ~ (CF, Maybe ([CF],[CF])))
+    (solvingInfo ~ (CF, Maybe [CF]))
     => 
+    Bool
+    ->
     Bool
     ->
     ODEIVP Poly 
@@ -309,15 +352,13 @@ solveVtPrintSteps ::
     -> 
     IO 
     (
-     Maybe ([CF],[CF])
+        Maybe [CF]
     ,
         (
             SplittingInfo solvingInfo (solvingInfo, Maybe CF)
-        ,
-            SplittingInfo solvingInfo (solvingInfo, Maybe CF)
         )
     )
-solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
+solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
     do
     putStrLn $ "solving: " ++ description
     putStrLn "----------  parameters: -------------------------"
@@ -330,31 +371,34 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
     case maybeExactResult of
         Just exactResult ->
-            putStr $ showSegInfo "(almost) exact result = " (tEnd, Just (exactResult, exactResult))
+            putStr $ showSegInfo "(almost) exact result = " (tEnd, Just exactResult)
         _ -> return ()
+    putStrLn "----------  steps: ---------------------------"
+    printStepsInfo (1:: Int) splittingInfoOut
+    putStrLn "----------  step summary: -----------------------"
+    putStrLn $ "number of atomic segments = " ++ (show $ splittingInfoCountLeafs splittingInfoOut)
+    putStrLn $ "smallest segment size: " ++ (show smallestSegSize)  
     putStrLn "----------  result: -----------------------------"
     putStr $ showSegInfo ">>> " (tEnd, endValues)
     case shouldShowSteps of
         True ->
             do
-            putStrLn "----------  outwards-rounded computation steps: -----------------"
+            putStrLn "----------  splitting info: -----------------"
             putStrLn $ showSplittingInfo showSegInfo showSplitReason "" splittingInfoOut
-            putStrLn "----------  inwards-rounded computation steps: -----------------"
-            putStrLn $ showSplittingInfo showSegInfo showSplitReason "" splittingInfoIn
         False -> return ()
     putStrLn "-------------------------------------------------"
-    return (endValues, splittingInfo)
+    return (endValues, splittingInfoOut)
     where
     -- solver call:
-    (endValues, splittingInfo@(splittingInfoOut, splittingInfoIn)) =
-        solveIVPWithUncertainValue
+    (endValues, splittingInfoOut) =
+        solveIVPWithUncertainValue shouldWrap
             sizeLimits effCf substSplitSizeLimit delta m 
                 minStepSize splitImprovementThreshold
                     ivp
     -- parameters:
     delta = 1
     maxdeg = maxdegParam
-    maxsize = 100
+    maxsize = 1000
     m = 20
     substSplitSizeLimit = 100
 --    minStepSizeExp = -4 :: Int
@@ -364,6 +408,7 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
     
     -- auxiliary:
     description = odeivp_description ivp
+    tStart = odeivp_tStart ivp
     tEnd = odeivp_tEnd ivp
     maybeExactResult = odeivp_maybeExactValuesAtTEnd ivp
     componentNames = odeivp_componentNames ivp
@@ -374,6 +419,32 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
         getSizeLimits $
             makeSampleWithVarsDoms maxdeg maxsize [] []
             
+    (smallestSegSize, _) =
+        aux tStart (tEnd CF.<-> tStart) splittingInfoOut
+        where
+        aux tPrev tSmallestSoFar (SegNoSplit (tNow,_)) =
+            (CF.minOut tSmallestSoFar (tNow CF.<-> tPrev), tNow)
+        aux tPrev tSmallestSoFar (SegSplit _ left Nothing) =
+            aux tPrev tSmallestSoFar left
+        aux tPrev tSmallestSoFar (SegSplit _ left (Just right)) =
+            aux tPrevL tSmallestSoFarL right
+            where
+            (tSmallestSoFarL, tPrevL) =
+                aux tPrev tSmallestSoFar left
+    
+    showStepInfo (n, segInfo@(t, _)) =
+        "step " ++ show n ++ ": t = " ++ show t ++ "\n" ++ (showSegInfo "    " segInfo)
+    printStepsInfo n (SegNoSplit segInfo) =
+        do
+        putStrLn $ showStepInfo (n, segInfo)
+        return $ n + 1
+    printStepsInfo n (SegSplit _ left maybeRight) =
+        do
+        n2 <- printStepsInfo n left
+        case maybeRight of
+            Just right -> printStepsInfo n2 right
+            Nothing -> return $ n2 + 1
+    
     showSegInfo indent (t, maybeValues) =
         unlines $ map showComponent $ zip componentNames valueSs
         where
@@ -383,9 +454,9 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
 --        showVec list = "(" ++ (intercalate "," list) ++ ")"
         valueSs =
             case maybeValues of
-                Just (valuesOut, valuesIn) -> map showValue $ zip valuesOut valuesIn
+                Just valuesOut -> map showValue valuesOut
                 _ -> replicate (length componentNames) "<no result computed>"
-        showValue (valueOut, _valueIn) =
+        showValue valueOut =
             show valueOut 
 --            ++ "(err<=" ++ show err ++ ")" 
 --            ++ "; valueIn = " ++ show valueIn
@@ -402,8 +473,9 @@ solveVtPrintSteps shouldShowSteps ivp (maxdegParam, depthParam) =
 
 
 solveIVPWithUncertainValue ::
-    (solvingInfo ~ (CF, Maybe ([CF],[CF])))
+    (solvingInfo ~ (CF, Maybe [CF]))
     =>
+    Bool ->
     SizeLimits Poly -> 
     ArithInOut.RoundedRealEffortIndicator CF -> 
     Int -> 
@@ -414,24 +486,28 @@ solveIVPWithUncertainValue ::
     ODEIVP Poly
     -> 
     (
-     Maybe ([CF],[CF])
+     Maybe ([CF])
     ,
         (
-            SplittingInfo solvingInfo (solvingInfo, Maybe CF)
-        ,
             SplittingInfo solvingInfo (solvingInfo, Maybe CF)
         )
     )
 solveIVPWithUncertainValue
-        sizeLimits effCf substSplitSizeLimit
+        shouldWrap sizeLimits effCf substSplitSizeLimit
             delta m minStepSize splitImprovementThreshold
                 odeivp
     =
     solveUncertainValueExactTimeSplit
-        sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effCf
-            delta m minStepSize splitImprovementThreshold
-                odeivp 
+        delta m minStepSize splitImprovementThreshold
+            odeivp
     where
+    solveUncertainValueExactTimeSplit 
+        | shouldWrap =
+            solveUncertainValueExactTimeSplitWrap
+                sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effCf
+        | otherwise =
+            solveUncertainValueExactTimeSplitPEval
+                sizeLimits effSizeLims effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effCf
 
 --    substituteInitialValueUncertainty fn =
 --        pEvalAtPointOutEff effEval initValDomBox fn
@@ -441,10 +517,12 @@ solveIVPWithUncertainValue
 --        
     sampleCf = delta
     
+    effSizeLims = effCf
     effCompose = (effCf, Int1To10 substSplitSizeLimit)
     effEval = (effCf, Int1To10 substSplitSizeLimit)
     effInteg = effCf
     effAddFn = effCf
+    effMultFn = effCf
     effAddFnDom =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effInclFn = ((Int1To1000 0, (effCf, Int1To10 100)), ())

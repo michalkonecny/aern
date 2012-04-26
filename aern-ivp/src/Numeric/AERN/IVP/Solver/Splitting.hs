@@ -65,8 +65,8 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 
-import Numeric.AERN.Basics.Exception
-import Control.Exception (throw)
+--import Numeric.AERN.Basics.Exception
+--import Control.Exception (throw)
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -241,16 +241,16 @@ solveODEIVPBySplittingAtT0End ::
      HasAntiConsistency f,
      Show f, Show (Domain f))
     =>
-    (ODEIVP f -> (Maybe ([f], [f]), solvingInfoL)) -- ^ uncertain time solver; giving parametrised results
+    (ODEIVP f -> (Maybe [f], solvingInfoL)) -- ^ uncertain time solver; giving parametrised results
     -> 
     ([f] -> ODEInitialValues f) -- ^ make ODE IVP initial value specification from parametrised initial values
     -> 
-    (ODEIVP f -> (Maybe ([Domain f], [Domain f]), solvingInfoR)) -- ^ exact time solver; giving wrapped results
+    (ODEIVP f -> (Maybe [Domain f], solvingInfoR)) -- ^ exact time solver; giving wrapped results
     -> 
     ODEIVP f
     -> 
     (
-        Maybe ([Domain f], [Domain f])
+        Maybe [Domain f]
     , 
         (solvingInfoL, Maybe solvingInfoR)
     )
@@ -262,9 +262,9 @@ solveODEIVPBySplittingAtT0End
     where
     (maybeResult, maybeInfoR) =
         case maybeResultL of
-            Just (fnVecLOut, _fnVecLIn) ->
+            Just fnVecLOut ->
                 case maybeResultROut of
-                    Just (resultOut, _) ->
+                    Just resultOut ->
 --                        unsafePrint
 --                        (
 --                            "solveODEIVPBySplittingAtT0End:"
@@ -272,36 +272,11 @@ solveODEIVPBySplittingAtT0End
 --                        )
                         (Just result, Just infoROut)
                         where
-                        result = (resultOut, resultOut) 
-                        -- cheating - the second component should be inner rounded but
-                        -- implementation of proper inner rounding has been postponed...
---                        case maybeResultRIn of
---                            Just (resultInOut, resultInIn) ->
---                                (Just result, Just infoROut)
---                            where
---                            result = (resultOut, resultInUsed)
---                            resultInUsed 
---                                | fnVecLInIsConsistent = resultInIn
---                                | otherwise = map flipConsistency resultInOut
---                            Nothing -> (Nothing, Just (infoRIn))
+                        result = resultOut 
                     Nothing -> (Nothing, Just infoROut)
                 where
                 (maybeResultROut, infoROut) = solverVt odeivpROut
                 odeivpROut = odeivpR fnVecLOut
---                (maybeResultRIn, infoRIn) = solverVt odeivpRIn
---                odeivpRIn = odeivpR fnVecLInUsed
---                fnVecLInUsed 
---                    | fnVecLInIsConsistent = fnVecLIn
---                    | otherwise = map flipConsistency fnVecLIn
---                fnVecLInIsConsistent 
---                    | all (== Just True) result2 = True
---                    | all (== Just False) result2 = False
---                    | otherwise = 
---                        throw $ AERNException "aern-ivp: Splitting: solveODEIVPBySplittingAtT0End: currently cannot deal with intermediate results of mixed consistency"
---                    where
---                    result2 =
---                        map (isConsistentEff $ consistencyDefaultEffort sampleFn) fnVecLIn
---                (sampleFn : _) = fnVecLIn
                 odeivpR fnVecL =
                     odeivpG
                         {
@@ -336,53 +311,48 @@ solveODEIVPBySplittingT ::
      Domain f ~ Imprecision (Domain f),
      Show f, Show (Domain f))
     =>
-    (ODEIVP f -> (Maybe ([Domain f],[Domain f]), solvingInfo)) -- ^ solver to use for segments  
+    (ODEIVP f -> (Maybe result, solvingInfo)) -- ^ solver to use for segments  
     ->
-    ([Domain f] -> ODEInitialValues f) -- ^ how to change initial conditions
+    (result -> Domain f) -- ^ measure imprecision
+    ->
+    (result -> ODEInitialValues f) -- ^ how to change initial conditions
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
     ->
-    Imprecision (Domain f) -- ^ splitting improvement threshold
+    (Domain f) -- ^ splitting improvement threshold
     ->
     Domain f -- ^ minimum segment length  
     ->
     (ODEIVP f)  -- ^ problem to solve
     ->
     (
-        Maybe ([Domain f], [Domain f])
+        Maybe result
     ,
         (
-            SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
-        ,
             SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
         )
     )
 solveODEIVPBySplittingT
-        solver makeMakeInitValFnVec
+        solver measureResultImprecision makeMakeInitValFnVec
             effDom splitImprovementThreshold minStepSize 
                 odeivpG 
     =
     result
     where
-    result = 
-        case (splitSolve False odeivpG, splitSolve True odeivpG) of
-            ((Just valuesOut, infoOut), (Just valuesIn, infoIn)) -> 
-                (Just (valuesOut, valuesIn), (infoOut, infoIn))
-            ((_, infoOut), (_, infoIn)) -> 
-                (Nothing, (infoOut, infoIn))
+    result = splitSolve odeivpG
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDivDomInt = 
         ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
             ArithInOut.rrEffortIntMixedField sampleDom effDom
-    effRefComp = ArithInOut.rrEffortRefComp sampleDom effDom
     sampleDom = odeivp_tStart odeivpG
-    effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDom effDom
-    
-    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
+
+--    effRefComp = ArithInOut.rrEffortRefComp sampleDom effDom
+--    effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDom effDom
+--    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
 --    sampleImpr = imprecisionOfEff effImpr sampleDom
 --    effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
     
-    splitSolve shouldRoundInwards odeivp =
+    splitSolve odeivp =
 --        unsafePrint
 --        (
 --            "solveODEIVPBySplittingT: splitSolve: "
@@ -411,9 +381,7 @@ solveODEIVPBySplittingT
 
         directComputation =
             case maybeDirectResult of
-                Just (resultOut, resultIn) 
-                    | shouldRoundInwards -> (Just resultIn, SegNoSplit directInfo)
-                    | otherwise -> (Just resultOut, SegNoSplit directInfo)
+                Just resultOut -> (Just resultOut, SegNoSplit directInfo)
                 _ -> (Nothing, SegNoSplit directInfo) 
         (maybeDirectResult, directInfo) = solver odeivp
         directComputationFailed =
@@ -421,16 +389,12 @@ solveODEIVPBySplittingT
         
         splitOnceComputation = -- needed only to decide whether splitting is benefitial, the result is then discarded
             case solver odeivpL of
-                (Just (midValuesOut, midValuesIn), _) ->
+                (Just midValuesOut, _) ->
                     case solver odeivpR of
-                        (Just (endValuesOut, endValuesIn), _) 
-                            | shouldRoundInwards -> Just endValuesIn
-                            | otherwise -> Just endValuesOut 
+                        (Just endValuesOut, _) -> Just endValuesOut 
                         _ -> Nothing
                     where
-                    midValues 
-                        | shouldRoundInwards = midValuesIn
-                        | otherwise = midValuesOut
+                    midValues = midValuesOut
                     odeivpR =
                         odeivp
                         {
@@ -442,41 +406,25 @@ solveODEIVPBySplittingT
                 _ -> Nothing
                 
         splitComputation =
-            case splitSolve shouldRoundInwards odeivpL of
-                (Just midValues, infoL) -> 
-                    case splitSolve shouldRoundInwardsR odeivpR of
-                        (Nothing, infoR) ->
-                            (Nothing, SegSplit (directInfo, maybeSplitImprovement) infoL (Just infoR))
-                        (Just endValues, infoR) ->
-                            (
-                                Just $ maybeFlip endValues
-                            , 
-                                SegSplit (directInfo, maybeSplitImprovement) infoL (Just infoR)
-                            )
-                    where
-                    maybeFlip 
-                        | not midValuesAreConsistent = map flipConsistency
-                        | otherwise = id
-                    shouldRoundInwardsR =
-                        shouldRoundInwards && midValuesAreConsistent
-                    midValuesAreConsistent
-                        | and result2 = True
-                        | not (or result2) = False
-                        | otherwise =
-                            throw $ AERNException "aern-ivp: Splitting: solveODEIVPBySplittingT: currently cannot deal with intermediate results of mixed consistency"
+            (maybeState, SegSplit (directInfo, maybeSplitImprovement) infoL maybeInfoR)
+            where
+            (maybeMidState, infoL) =
+                splitSolve odeivpL
+            (maybeState, maybeInfoR) =
+                case maybeMidState of
+                    Just midState ->
+                        case splitSolve odeivpR of
+                            (maybeState2, infoR) -> (maybeState2, Just infoR)
                         where
-                        result2 =
-                            map (/= Just False) $
-                                map (isConsistentEff $ consistencyDefaultEffort sampleDom) midValues
-                    odeivpR =
-                        odeivp
-                        {
-                            odeivp_tStart = tMid,
-                            odeivp_t0End = tMid, -- exact initial time
-                            odeivp_makeInitialValueFnVec =
-                                makeMakeInitValFnVec $ maybeFlip midValues
-                        }
-                failedLeftComputation -> failedLeftComputation
+                        odeivpR =
+                            odeivp
+                            {
+                                odeivp_tStart = tMid,
+                                odeivp_t0End = tMid, -- exact initial time
+                                odeivp_makeInitialValueFnVec =
+                                    makeMakeInitValFnVec  midState
+                            }
+                    Nothing -> (Nothing, Nothing)
         odeivpL =
             odeivp
             {
@@ -489,29 +437,31 @@ solveODEIVPBySplittingT
         
         maybeSplitImprovement =
             case (directComputation, splitOnceComputation) of
-                ((Just directResult, _), Just splitOnceResult) 
---            case (directComputation, splitComputation) of
---                ((Just directResult, _), (Just splitOnceResult, _)) 
-                    | shouldRoundInwards -> 
-                        measureImprovementVec splitOnceResult directResult
-                    | otherwise ->
+                ((Just directResult, _), Just splitOnceResult) -> 
                         measureImprovementVec directResult splitOnceResult
                 _ -> Nothing
-        measureImprovementVec vec1 vec2 = 
-            do
-            improvements <- sequence $ 
-                                map measureImprovement $ 
-                                    zip vec1 vec2
-            Just $ foldl1 (NumOrd.minOutEff effMinmax) improvements
-        measureImprovement (encl1, encl2) =
+
+        measureImprovementVec res1 res2 =
             let ?addInOutEffort = effAddDom in
-            let ?pCompareEffort = effRefComp in
-            do
---            refines <- encl1 |<=? encl2
---            case refines of
---                True -> 
-                    Just $ (imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
---                False -> Nothing 
+            Just $ imprecision1 <-> imprecision2
+            where
+            imprecision1 = measureResultImprecision res1
+            imprecision2 = measureResultImprecision res2
+--        measureImprovementVec vec1 vec2 = 
+--            do
+--            improvements <- sequence $ 
+--                                map measureImprovement $ 
+--                                    zip vec1 vec2
+--            Just $ foldl1 (NumOrd.minOutEff effMinmax) improvements
+--        measureImprovement (encl1, encl2) =
+--            let ?addInOutEffort = effAddDom in
+--            let ?pCompareEffort = effRefComp in
+--            do
+----            refines <- encl1 |<=? encl2
+----            case refines of
+----                True -> 
+--                    Just $ (imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
+----                False -> Nothing 
                 
 solveODEIVPBySplittingT0 ::
     (CanAddVariables f,
@@ -526,10 +476,10 @@ solveODEIVPBySplittingT0 ::
      ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike(Domain f),
      Domain f ~ Imprecision (Domain f),
-     solvingInfoSub ~ ((Domain f, Maybe ([Domain f], [Domain f])), solvingInfo),
+     solvingInfoSub ~ ((Domain f, Maybe [Domain f]), solvingInfo),
      Show f, Show (Domain f))
     =>
-    (ODEIVP f -> (Maybe ([Domain f], [Domain f]), solvingInfo)) -- ^ solver to use for segments  
+    (ODEIVP f -> (Maybe [Domain f], solvingInfo)) -- ^ solver to use for segments  
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
     ->
@@ -540,7 +490,7 @@ solveODEIVPBySplittingT0 ::
     (ODEIVP f)  -- ^ problem to solve
     ->
     (
-        Maybe ([Domain f], [Domain f])
+        Maybe [Domain f]
     , 
         SplittingInfo solvingInfoSub (solvingInfoSub, Maybe (Imprecision (Domain f)))
     )
@@ -591,18 +541,14 @@ solveODEIVPBySplittingT0
         
         splitOnceComputation = -- needed only to decide whether splitting is benefitial, the result is then discarded
             case solver odeivpL of
-                (Just (endValuesLOut, endValuesLIn), _) -> 
+                (Just endValuesLOut, _) -> 
                     case solver odeivpR of
-                        (Just (endValuesROut, endValuesRIn), _) ->
-                            Just endValues
+                        (Just endValuesROut, _) ->
+                            Just endValuesOut
                             where
-                            endValues = (endValuesOut, endValuesIn)
                             endValuesOut =
                                 let ?joinmeetEffort = effJoinDom in
                                 zipWith (</\>) endValuesLOut endValuesROut
-                            endValuesIn =
-                                let ?joinmeetEffort = effJoinDom in
-                                zipWith (>/\<) endValuesLIn endValuesRIn
                         _ -> Nothing
                     where
                     odeivpR =
@@ -614,18 +560,14 @@ solveODEIVPBySplittingT0
 
         splitComputation =
             case splitSolve odeivpL of
-                (Just (endValuesLOut, endValuesLIn), infoL) -> 
+                (Just endValuesLOut, infoL) -> 
                     case splitSolve odeivpR of
-                        (Just (endValuesROut, endValuesRIn), infoR) ->
-                            (Just endValues, SegSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL (Just infoR))
+                        (Just endValuesROut, infoR) ->
+                            (Just endValuesOut, SegSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL (Just infoR))
                             where
-                            endValues = (endValuesOut, endValuesIn)
                             endValuesOut =
                                 let ?joinmeetEffort = effJoinDom in
                                 zipWith (</\>) endValuesLOut endValuesROut
-                            endValuesIn =
-                                let ?joinmeetEffort = effJoinDom in
-                                zipWith (>/\<) endValuesLIn endValuesRIn
                         (Nothing, infoR) ->
                             (Nothing, SegSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL (Just infoR))
                     where
@@ -648,7 +590,7 @@ solveODEIVPBySplittingT0
         
         maybeSplitImprovement =
             case (directComputation, splitOnceComputation) of
-                ((Just (directResult, _), _), Just (splitOnceResult, _)) ->
+                ((Just directResult, _), Just splitOnceResult) ->
 --            case (directComputation, splitComputation) of
 --                ((Just (directResult, _), _), (Just (splitOnceResult, _), _)) ->
                     measureImprovementVec directResult splitOnceResult
