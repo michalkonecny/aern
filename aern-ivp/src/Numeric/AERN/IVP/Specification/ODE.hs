@@ -305,11 +305,11 @@ partiallyEvalAtEndTimeOutInVec ::
     =>
     Var f -> 
     Domain f -> 
-    [(f,f)]
+    ([f],[f])
     -> 
     ([f],[f])
 partiallyEvalAtEndTimeOutInVec tVar tEnd fnVec =
-    unzip $ map (partiallyEvalAtEndTimeOutInFn tVar tEnd) fnVec
+    unzip $ map (partiallyEvalAtEndTimeOutInFn tVar tEnd) $ uncurry zip fnVec
 
 partiallyEvalAtEndTimeOutInFn ::
     (Show (Domain f), Show f,

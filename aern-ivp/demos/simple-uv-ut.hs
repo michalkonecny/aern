@@ -52,6 +52,7 @@ type Poly = IntPoly String CF
 main :: IO ()
 main =
     do
+    hSetBuffering stdout LineBuffering
     args <- getArgs
     case length args of
         2 -> writeCSV args
@@ -287,7 +288,7 @@ writeCSV [ivpName, outputFileName] =
         enclosureErrorS =
             case maybeVec of
                 Nothing -> show "no solution"
-                Just (vecOut, _vecIn) ->
+                Just vecOut ->
 --                    (computeDiff vecOut vecIn, 
                         case maybeVecExact of
                             Just vecExact -> 
@@ -317,9 +318,9 @@ refines a1 a2 =
 --    tolerance = 2 ^^ (-50)
 
 solveVTPrintSteps :: 
-    (solvingInfo1 ~ (CF, Maybe ([CF],[CF])),
+    (solvingInfo1 ~ (CF, Maybe [CF]),
      solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe CF),
-     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe (solvingInfo2, solvingInfo2)))
+     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe solvingInfo2))
     )
     =>
     Bool
@@ -328,7 +329,7 @@ solveVTPrintSteps ::
     -> 
     (Int, Int, Int, Int, Int) 
     -> 
-    IO (Maybe ([CF],[CF]), SplittingInfo solvingInfo3 (solvingInfo3, Maybe CF))
+    IO (Maybe [CF], SplittingInfo solvingInfo3 (solvingInfo3, Maybe CF))
 solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t0depthParam, maxSplitSizeParam) =
     do
     putStrLn $ "solving: " ++ description
@@ -344,12 +345,12 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
     case maybeExactResult of
         Just exactResult ->
-            putStr $ showSegInfo1 "(almost) exact result = " (tEnd, Just (exactResult, exactResult))
+            putStr $ showSegInfo1 "(almost) exact result = " (tEnd, Just exactResult)
         _ -> return ()
     putStrLn "----------  result: -----------------------------"
     putStr $ showSegInfo1 ">>> " (tEnd, endValues)
     case (maybeExactResult, endValues) of
-        (Just exactResult, Just (resultOut, _)) ->
+        (Just exactResult, Just resultOut) ->
             putStrLn $ "error = " ++ show (getErrorVec exactResult resultOut)
         _ -> return ()
     case shouldShowSteps of
@@ -420,9 +421,9 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
 --        showVec list = "(" ++ (intercalate "," list) ++ ")"
         valueSs =
             case maybeValues of
-                Just (valuesOut, valuesIn) -> map showValue $ zip valuesOut valuesIn
+                Just valuesOut -> map showValue valuesOut
                 _ -> replicate (length componentNames) "<no result computed>"
-        showValue (valueOut, _valueIn) =
+        showValue valueOut =
             show valueOut 
 --            ++ "(err<=" ++ show err ++ ")"
 --            ++ "; valueIn = " ++ show valueIn
@@ -432,11 +433,10 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
 --            wIn = CF.width valueIn     
     showSegInfo2 indent splittingInfo2 =
         showSplittingInfo showSegInfo1 showSplitReason2 indent splittingInfo2
-    showSegInfo3 indent (segInfoT, (segInfoT0,  Just (segInfo2Out, segInfo2In))) =
+    showSegInfo3 indent (segInfoT, (segInfoT0,  Just segInfo2Out)) =
         indent ++ "at t0End:\n" ++ showSegInfo1 (indent ++ "  ") segInfoT0
         ++ indent ++ "at tEnd:\n" ++ showSegInfo1 (indent ++ "  ") segInfoT
-        ++ showSegInfo2 (indent ++ ":<> ") segInfo2Out
-        ++ showSegInfo2 (indent ++ ":>< ") segInfo2In
+        ++ showSegInfo2 (indent ++ ":   ") segInfo2Out
     showSplitReason2 indent (segInfo, (Just improvement)) =
         showSegInfo1 indent segInfo ++ 
         indent ++ "; but splitting improves by " ++ show improvement ++ ":"
@@ -451,9 +451,9 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
         indent ++ " - thus splitting"
 
 solveIVPWithUncertainTime ::
-    (solvingInfo1 ~ (CF, Maybe ([CF],[CF])),
+    (solvingInfo1 ~ (CF, Maybe [CF]),
      solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe CF),
-     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe (solvingInfo2, solvingInfo2)))
+     solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe solvingInfo2))
     )
     =>
     SizeLimits Poly -> 
@@ -469,7 +469,7 @@ solveIVPWithUncertainTime ::
     ODEIVP Poly 
     ->
     (
-     Maybe ([CF], [CF])
+     Maybe [CF]
     ,
      SplittingInfo solvingInfo3 (solvingInfo3, Maybe CF)
     )
