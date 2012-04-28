@@ -37,6 +37,7 @@ Library
         aern-order == 0.5.*,
         aern-real == 0.5.*
   exposed-modules:
+                  Numeric.AERN.RmToRn.Differentiation,
                   Numeric.AERN.RmToRn.Domain,
                   Numeric.AERN.RmToRn.Evaluation,
                   Numeric.AERN.RmToRn.Integration,
