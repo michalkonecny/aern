@@ -1,6 +1,8 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.Differentiation
     Description :  symbolic differentiation of interval polynomials  
@@ -22,12 +24,28 @@ where
     
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
+import Numeric.AERN.Poly.IntPoly.New ()
+
+import Numeric.AERN.RmToRn.Differentiation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Data.IntMap as IntMap
+
+instance
+    (Ord var, ArithInOut.RoundedReal cf)
+    => 
+    RoundedFakeDerivative (IntPoly var cf)
+    where
+    type FakeDerivativeEffortIndicator (IntPoly var cf) = ArithInOut.RoundedRealEffortIndicator cf
+    fakeDerivativeDefaultEffort (IntPoly cfg _) = ArithInOut.roundedRealDefaultEffort sampleCf
+        where
+        sampleCf = ipolycfg_sample_cf cfg
+    fakePartialDerivativeOutEff effCf var p = diffPolyOut effCf p var
+    fakePartialDerivativeInEff = 
+        error "inner rounded fake derivative of IntPoly not implemented yet"
 
 {-|
     Symbolic differentiation of a polynomial by one of its variables.
