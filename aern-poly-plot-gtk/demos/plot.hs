@@ -1,14 +1,15 @@
 module Main where
 
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly
+import Numeric.AERN.Poly.IntPoly
+import Numeric.AERN.Poly.IntPoly.Plot ()
 
 import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
 import Numeric.AERN.RmToRn.Plot.CairoDrawable
 
 import Numeric.AERN.RmToRn.New
-import Numeric.AERN.RmToRn.Evaluation
+--import Numeric.AERN.RmToRn.Evaluation
 
-import Numeric.AERN.RealArithmetic.Basis.Double
+import Numeric.AERN.RealArithmetic.Basis.Double ()
 import Numeric.AERN.RealArithmetic.Basis.MPFR
 import Numeric.AERN.Basics.Interval
 
@@ -25,6 +26,7 @@ import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.ShowInternals
+import Numeric.AERN.Basics.Effort
 
 import Numeric.AERN.Misc.Debug
 
@@ -54,11 +56,12 @@ main =
     Gtk.unsafeInitGUIForThreadedRTS
 --    let (fns, fnmeta) = (fnsSinsin, fnmetaSinsin)
 --    let (fns, fnmeta) = (fnsMinmaxInOut, fnmetaMinmaxInOut)
-    let (fns, fnmeta) = (fnsTest, fnmetaTest)
+    let (fns, fnmeta) = (fnsMinmaxOut, fnmetaMinmaxOut)
+--    let (fns, fnmeta) = (fnsTest, fnmetaTest)
     fnDataTV <- atomically $ newTVar $ FV.FnData fns
     fnMetaTV <- atomically $ newTVar $ fnmeta
 --    putStrLn "plot main: calling FV.new"
-    FV.new samplePoly effDrawFn effCF effCF (fnDataTV, fnMetaTV) Nothing
+    FV.new samplePoly effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
 --    putStrLn "plot main: FV.new completed"
 --    Concurrent.forkIO $ signalFn fnMetaTV
     Gtk.mainGUI
@@ -156,7 +159,7 @@ main =
 --    }
 
 ---------------------------------
-    
+
 --fnsMinmaxUpDn :: [[Poly]]    
 --fnsMinmaxUpDn = 
 --    [ 
@@ -175,7 +178,7 @@ main =
 --      NumOrd.maxDnEff minmaxUpDnEff (x <*> cHalf1) cOneMinusOneOver16
 --     ]
 --    ]
---    
+
 --fnsMinmaxInOut :: [[Poly]]    
 --fnsMinmaxInOut = 
 --    [ 
@@ -221,6 +224,34 @@ main =
 --             [black, black, black, black]]
 --    }
 
+fnsMinmaxOut :: [[Poly]]    
+fnsMinmaxOut = 
+    [ 
+     [x, cOneOver16, 
+      NumOrd.maxOutEff minmaxInOutEff (x) cOneOver16
+     ]
+     ,
+     [x, cSevenOver16, 
+      NumOrd.maxOutEff minmaxInOutEff (x) cSevenOver16
+     ]
+     ,
+     [x, cOneMinusOneOver16, 
+      NumOrd.maxOutEff minmaxInOutEff (x) cOneMinusOneOver16
+     ]
+    ]
+
+fnmetaMinmaxOut = (FV.defaultFnMetaData x)
+    {
+        FV.dataFnGroupNames = ["max 1/16", "max 7/16", "max 15/16"],
+        FV.dataFnNames = 
+            [["x", "1/16", "maxOut"], 
+             ["x", "7/16", "maxOut"],
+             ["x", "15/16", "maxOut"]],
+        FV.dataFnStyles = 
+            [[black, black, blue],
+             [black, black, blue],
+             [black, black, blue]]
+    }
     
 black = FV.defaultFnPlotStyle
 blue = FV.defaultFnPlotStyle 
@@ -251,9 +282,7 @@ effRefComp = RefOrd.pCompareDefaultEffort x
 minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 x
 minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 x
 effDrawFn = cairoDrawFnDefaultEffort samplePoly
-
-
-evalOpsOutCf = evalOpsOut effCF x (0::CF)
+effEval = (effCF, Int1To10 10)
 
 cfg = cfgD 4
 cfgD maxdeg =
@@ -287,15 +316,17 @@ fnsTest =
         [
             a1,
             b1,
-            a1 <*> b1,
-            a1 >*< b1
+            a1 <*> b1
+--            ,
+--            a1 >*< b1
         ]
         ,
         [
             a2,
             b2,
-            a2 <*> b2,
-            a2 >*< b2
+            a2 <*> b2
+--            ,
+--            a2 >*< b2
         ]
     ]
     
@@ -337,8 +368,8 @@ fnmetaTest = (FV.defaultFnMetaData x)
         FV.dataFnGroupNames = ["mul1","mul2"]
         ,
         FV.dataFnNames = 
-            [["a1","b1","a1<*>b1","a1>*<b1"],
-             ["a2","b2","a2<*>b2","a2>*<b2"]]
+            [["a1","b1","a1<*>b1"], -- ,"a1>*<b1"],
+             ["a2","b2","a2<*>b2"]] -- ,"a2>*<b2"]]
         ,
         FV.dataFnStyles = 
             [replicate 4 black, replicate 4 blue]

@@ -69,14 +69,14 @@ new ::
     (CairoDrawableFn f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      RefOrd.PartialComparison (Domain f),
      Show f, Show (Domain f))
     =>
     f {-^ sample value -} ->
     (CairoDrawFnEffortIndicator f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
-    EvalOpsEffortIndicator f (Domain f) ->
+    EvaluationEffortIndicator f ->
     (TVar (FnData f),
      TVar (FnMetaData f)) ->
     (Maybe Gtk.Window) {- ^ parent window -} -> 
@@ -122,13 +122,13 @@ setHandlers ::
     (CairoDrawableFn f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
-     HasEvalOps f (Domain f), 
+     CanEvaluate f, 
      Show f, Show (Domain f))
     =>
     f {-^ sample value -} ->
     (CairoDrawFnEffortIndicator f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
-    EvalOpsEffortIndicator f (Domain f) ->
+    EvaluationEffortIndicator f ->
     Widgets -> 
     IORef FnViewDynWidgets -> 
     (TVar (FnData f), TVar (FnMetaData f)) -> 
@@ -325,7 +325,7 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                 updateZoomWidgets toDbl widgets state
                 Gtk.widgetQueueDraw (canvas widgets)
                 return False
-        return () -- TODO
+        return ()
             
     setHandlerDefaultEvalPointButton =
         Gtk.onClicked (defaultEvalPointButton widgets) $

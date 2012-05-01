@@ -46,7 +46,7 @@ import qualified Data.Map as Map
 
 type CairoDrawEffortIndicatorFnFromEval f =
     (
-     EvalOpsEffortIndicator f (Domain f)
+     EvaluationEffortIndicator f
     ,
     ( 
      ArithInOut.RoundedRealEffortIndicator (Domain f)
@@ -59,7 +59,7 @@ type CairoDrawEffortIndicatorFnFromEval f =
 
 cairoDrawFnDefaultEffortFromEval ::
     (HasAntiConsistency (Domain f),
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
      Show (Domain f)
@@ -69,7 +69,7 @@ cairoDrawFnDefaultEffortFromEval ::
     CairoDrawEffortIndicatorFnFromEval f
 cairoDrawFnDefaultEffortFromEval sampleF =
     (
-       evalOpsDefaultEffort sampleF sampleDF
+       evaluationDefaultEffort sampleF
        ,
        (
         ArithInOut.roundedRealDefaultEffort sampleDF
@@ -84,7 +84,7 @@ cairoDrawFnDefaultEffortFromEval sampleF =
 
 cairoDrawFnFromEval ::
     (HasAntiConsistency (Domain f),
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
      Show (Domain f)
@@ -155,7 +155,7 @@ cairoDrawFnFromEval
             mkPt d =
                 mapVarBox (const d) dombox
             evalPt pt =
-                evalOtherType (evalOpsEff effEval sampleF sampleDF) pt fn
+                evalAtPointOutEff effEval pt fn
             partition =
                 [domLO] ++ (map ithPt [1..(segCnt -1)]) ++ [domHI]
                 where

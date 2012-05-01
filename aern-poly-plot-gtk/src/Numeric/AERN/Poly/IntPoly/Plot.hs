@@ -5,7 +5,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-|
-    Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Plot
+    Module      :  Numeric.AERN.Poly.IntPoly.Plot
     Description :  Cairo plotting support
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -17,13 +17,12 @@
     Cairo plotting support.
 -}
 
-module Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Plot
+module Numeric.AERN.Poly.IntPoly.Plot
 (
 )
 where
     
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Basics
-import Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Evaluation
+import Numeric.AERN.Poly.IntPoly
 
 import Numeric.AERN.RmToRn.Plot.CairoDrawable
 import Numeric.AERN.RmToRn.Plot.FromEval
