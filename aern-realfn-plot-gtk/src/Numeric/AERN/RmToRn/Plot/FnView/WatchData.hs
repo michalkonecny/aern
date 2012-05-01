@@ -47,13 +47,13 @@ import Data.IORef
 
 dataWatchThread ::
     (ArithInOut.RoundedReal (Domain f),
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      RefOrd.PartialComparison (Domain f),
      Show (Domain f))
     =>
     f ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
-    EvalOpsEffortIndicator f (Domain f) ->
+    EvaluationEffortIndicator f -> 
     Widgets ->
     IORef FnViewDynWidgets ->
     (TVar (FnData f),
@@ -185,11 +185,11 @@ data DataChange
 -}
 updateValueDisplay ::
     (ArithInOut.Convertible Double (Domain f),
-     HasEvalOps f (Domain f), 
+     CanEvaluate f, 
      Show (Domain f))
     =>
     ArithInOut.ConvertEffortIndicator Double (Domain f) ->
-    EvalOpsEffortIndicator f (Domain f) ->
+    EvaluationEffortIndicator f ->
     Widgets ->
     IORef FnViewDynWidgets ->
     (FnViewState f) ->
@@ -218,7 +218,7 @@ updateValueDisplay effFromDouble effEval widgets dynWidgetsRef state (fndata, _)
             where
 --            getDimValueTexts :: (FA.ERFnApprox box varid domra ranra fa) => fa -> [ra]
             getDimValue fn =
-                evalOtherType (evalOpsEff effEval fn sampleDom) evalPt fn
+                evalAtPointOutEff effEval evalPt fn
                 where
                 evalPt =
                     unaryVarBox var $
@@ -348,12 +348,12 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta fndataTVs stateTV =
         
 updateView ::
     (ArithInOut.RoundedReal (Domain f),
-     HasEvalOps f (Domain f), 
+     CanEvaluate f, 
      Show (Domain f))
     =>
     f ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
-    EvalOpsEffortIndicator f (Domain f) ->
+    EvaluationEffortIndicator f ->
     Widgets ->
     IORef FnViewDynWidgets ->
     (FnViewState f) ->
