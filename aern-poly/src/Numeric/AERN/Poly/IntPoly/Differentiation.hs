@@ -43,7 +43,7 @@ instance
     fakeDerivativeDefaultEffort (IntPoly cfg _) = ArithInOut.roundedRealDefaultEffort sampleCf
         where
         sampleCf = ipolycfg_sample_cf cfg
-    fakePartialDerivativeOutEff effCf var p = diffPolyOut effCf p var
+    fakePartialDerivativeOutEff effCf p var = diffPolyOut effCf var p
     fakePartialDerivativeInEff = 
         error "inner rounded fake derivative of IntPoly not implemented yet"
 
