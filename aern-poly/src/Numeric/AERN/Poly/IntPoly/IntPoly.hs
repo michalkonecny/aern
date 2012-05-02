@@ -28,6 +28,9 @@ import Numeric.AERN.RealArithmetic.Measures (HasImprecision(..))
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort ((|==?))
 
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsDefaultEffort ((<=?))
+
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.Consistency
 
@@ -317,6 +320,21 @@ maybeGetProblemForTerms cfg terms
     findFirstJust [] = Nothing
 
 {-- Order-related ops --}
+
+makeCoeffsConsistentOut :: 
+    (NumOrd.PartialComparison cf, 
+     RefOrd.IntervalLike cf) 
+    =>
+    IntPoly var cf -> 
+    IntPoly var cf
+makeCoeffsConsistentOut poly =
+    polyMapCoeffs makeCfConsistent poly
+    where
+    makeCfConsistent coeff
+        | (coeffL <=? coeffR) == Just True = coeff
+        | otherwise = coeffL
+        where
+        (coeffL, coeffR) = RefOrd.getEndpointsOutWithDefaultEffort coeff
 
 {-| 
     Swaps the consistency of all coefficients.
