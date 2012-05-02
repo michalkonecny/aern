@@ -98,7 +98,10 @@ class
     a function defined in Laws.
 -}
     
-class (HasDomainBox f) => CanCompose f
+class
+    (HasVarValue (VarBox f f) (Var f) f) 
+    => 
+    CanCompose f
     where
     type CompositionEffortIndicator f
     compositionDefaultEffort :: f -> CompositionEffortIndicator f
