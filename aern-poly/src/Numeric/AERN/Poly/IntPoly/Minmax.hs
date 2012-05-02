@@ -43,7 +43,7 @@ import Numeric.AERN.RmToRn.Domain
 --import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Arbitrary
 import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Minmax
 
---import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
@@ -197,6 +197,59 @@ instance
      Show (Imprecision cf),
      NumOrd.PartialComparison (Imprecision cf))
     =>
+    ArithUpDn.RoundedAbsEffort (IntPoly var cf)
+    where
+    type ArithUpDn.AbsEffortIndicator (IntPoly var cf) =
+        (NumOrd.MinmaxEffortIndicator (IntPoly var cf),
+         ArithInOut.AbsEffortIndicator cf)
+    absDefaultEffort p =
+        (NumOrd.minmaxDefaultEffort p,
+         ArithInOut.absDefaultEffort $ getSampleDomValue p)
+
+instance
+    (Ord var,
+     GeneratableVariables var,
+     HasAntiConsistency cf, 
+     Arbitrary cf, 
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
+     ArithInOut.RoundedMixedField cf cf,
+     Show var,
+     Show cf,
+     Show (Imprecision cf),
+     NumOrd.PartialComparison (Imprecision cf))
+    =>
+    ArithUpDn.RoundedAbs (IntPoly var cf)
+    where
+    absUpEff (effMinmax, effAbsDom) p =
+        case getConstantIfPolyConstant p of
+            Just c -> 
+                newConstFnFromSample p $ 
+                    snd $ RefOrd.getEndpointsOutWithDefaultEffort $ 
+                        ArithInOut.absOutEff effAbsDom c
+            _ -> NumOrd.maxUpEff effMinmax p (neg p)
+    absDnEff (effMinmax, effAbsDom) p =
+        case getConstantIfPolyConstant p of
+            Just c -> 
+                newConstFnFromSample p $ 
+                    fst $ RefOrd.getEndpointsOutWithDefaultEffort $ 
+                        ArithInOut.absOutEff effAbsDom c
+            _ -> NumOrd.maxDnEff effMinmax p (neg p)
+
+
+instance
+    (Ord var,
+     GeneratableVariables var,
+     HasAntiConsistency cf, 
+     Arbitrary cf, 
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
+     ArithInOut.RoundedMixedField cf cf,
+     Show var,
+     Show cf,
+     Show (Imprecision cf),
+     NumOrd.PartialComparison (Imprecision cf))
+    =>
     NumOrd.RefinementRoundedLatticeEffort (IntPoly var cf)
     where
     type NumOrd.MinmaxInOutEffortIndicator (IntPoly var cf) =
@@ -249,19 +302,25 @@ instance
     maxOutEff (effMinmax,Int1To10 degreeMinusOne,effGetE,effFromE) a b =
         result
         where
-        result = RefOrd.fromEndpointsOutEff effFromE (resL,resR)
-        (resR, resL) = maxUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
-        (_aL,aR) = RefOrd.getEndpointsOutEff effGetE a
-        (_bL,bR) = RefOrd.getEndpointsOutEff effGetE b
+        result =
+            makeCoeffsConsistentOut $ 
+            RefOrd.fromEndpointsOutEff effFromE (resL,resR)
+        resL = maxDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+        (resR, _) = maxUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+        (aL,aR) = RefOrd.getEndpointsOutEff effGetE a
+        (bL,bR) = RefOrd.getEndpointsOutEff effGetE b
     maxInEff =
         error "aern-poly: inner-rounded max not available for IntPoly"
     minOutEff (effMinmax,Int1To10 degreeMinusOne,effGetE,effFromE) a b =
         result
         where
-        result = RefOrd.fromEndpointsOutEff effFromE (resL,resR)
-        (resL, resR) = minDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
-        (aL,_aR) = RefOrd.getEndpointsOutEff effGetE a
-        (bL,_bR) = RefOrd.getEndpointsOutEff effGetE b
+        result = 
+            makeCoeffsConsistentOut $ 
+            RefOrd.fromEndpointsOutEff effFromE (resL,resR)
+        (resL, _) = minDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+        resR = minUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+        (aL,aR) = RefOrd.getEndpointsOutEff effGetE a
+        (bL,bR) = RefOrd.getEndpointsOutEff effGetE b
     minInEff =
         error "aern-poly: inner-rounded min not available for IntPoly"
     
