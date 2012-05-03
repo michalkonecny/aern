@@ -483,7 +483,11 @@ solveIVPWithUncertainTime
     where
     result =
         solveUncertainValueUncertainTimeSplit
-            sizeLimits t0SizeLimits effSizeLims effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effCf
+            sizeLimits t0SizeLimits 
+            effSizeLims effCompose effEval effInteg effDeriv effInclFn 
+            effAddFn effMultFn effAbsFn effMinmaxFn 
+            effDivFnInt effAddFnDom effMultFnDom effCf
+--            effSizeLims effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effCf
                 delta m minStepSize minT0StepSize splitImprovementThreshold
                     t0Var
                         odeivp
@@ -494,11 +498,19 @@ solveIVPWithUncertainTime
     effCompose = (effCf, Int1To10 substSplitSizeLimit)
     effEval = (effCf, Int1To10 substSplitSizeLimit)
     effInteg = effCf
+    effDeriv = effCf
     effAddFn = effCf
     effMultFn = effCf
-    effAddFnDom =
-        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effInclFn = ((Int1To1000 0, (effCf, Int1To10 20)), ())
+    effAbsFn = (effMinmaxFn, effAbsCf)
+    effAbsCf = ArithInOut.rrEffortAbs sampleCf effCf
+    effMinmaxFn = error "effMinmaxUpDnFn undefined"
+    effAddFnDom = effAddCf
+    effMultFnDom = (((), ()), (), ((), (), ()))
+    effDivFnInt =
+        ArithInOut.mxfldEffortDiv sampleCf (0::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
+    effAddCf =
+        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
 
 
 makeSampleWithVarsDoms :: 

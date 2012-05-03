@@ -26,18 +26,22 @@ where
 
 import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Solver.Splitting
+import Numeric.AERN.IVP.Solver.ShrinkWrap
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RmToRn.Integration
+import Numeric.AERN.RmToRn.Differentiation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
---import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+
+import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
@@ -52,15 +56,24 @@ _ = unsafePrint
 solveUncertainValueExactTimeSplitWrap ::
     (CanAddVariables f,
      CanEvaluate f,
+     CanPartiallyEvaluate f,
      CanCompose f,
+     CanChangeSizeLimits f,
      HasProjections f,
      HasConstFns f,
      RefOrd.IntervalLike f,
      HasAntiConsistency f,
      RefOrd.PartialComparison f,
      RoundedIntegration f,
+     RoundedFakeDerivative f,
      ArithInOut.RoundedAdd f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMultiply f,
+     ArithUpDn.RoundedAbs f,
+     NumOrd.RoundedLattice f,
+     ArithInOut.RoundedMixedDivide f Int,
      ArithInOut.RoundedMixedAdd f (Domain f),
+     ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f),
@@ -69,13 +82,21 @@ solveUncertainValueExactTimeSplitWrap ::
      Show f, Show (Domain f), Show (Var f))
     =>
     SizeLimits f {-^ size limits for all function -} ->
+    SizeLimitsChangeEffort f ->
     CompositionEffortIndicator f ->
     EvaluationEffortIndicator f ->
     IntegrationEffortIndicator f ->
+    FakeDerivativeEffortIndicator f ->
     RefOrd.PartialCompareEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
+    ArithInOut.MultEffortIndicator f ->
+    ArithUpDn.AbsEffortIndicator f ->
+    NumOrd.MinmaxEffortIndicator f ->
+    ArithInOut.MixedDivEffortIndicator f Int ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
-    ArithInOut.RoundedRealEffortIndicator (Domain f) ->
+    ArithInOut.MixedMultEffortIndicator f (Domain f) ->
+    ArithInOut.RoundedRealEffortIndicator (Domain f) 
+    ->
     Domain f {-^ initial widening @delta@ -}  ->
     Int {-^ @m@ -} -> 
     Domain f {-^ step size @s@ -} -> 
@@ -90,9 +111,11 @@ solveUncertainValueExactTimeSplitWrap ::
         )
     )
 solveUncertainValueExactTimeSplitWrap
-        sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effDom
-            delta m minStepSize splitImprovementThreshold
-                odeivpG
+        sizeLimits _effSizeLims effCompose effEval effInteg _effDeriv effInclFn 
+        effAddFn _effMultFn _effAbsFn _effMinmaxFn 
+        _effDivFnInt effAddFnDom _effMultFnDom effDom
+                delta m minStepSize splitImprovementThreshold
+                    (odeivpG :: ODEIVP f)
     | (odeivp_tStart odeivpG <? odeivp_t0End odeivpG) == Just True =
         error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
     | otherwise =
@@ -143,10 +166,15 @@ solveUncertainValueExactTimeSplitPEval ::
      HasAntiConsistency f,
      RefOrd.PartialComparison f,
      RoundedIntegration f,
+     RoundedFakeDerivative f,
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
+     ArithUpDn.RoundedAbs f,
+     NumOrd.RoundedLattice f,
+     ArithInOut.RoundedMixedDivide f Int,
      ArithInOut.RoundedMixedAdd f (Domain f),
+     ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f),
@@ -154,16 +182,24 @@ solveUncertainValueExactTimeSplitPEval ::
      solvingInfo ~ (Domain f, Maybe [Domain f]), 
      Show f, Show (Domain f), Show (Var f))
     =>
+    Bool {-^ should try to shrink wrap parameterised intermediate values ? -}
+    ->
     SizeLimits f {-^ size limits for all function -} ->
     SizeLimitsChangeEffort f ->
     CompositionEffortIndicator f ->
     EvaluationEffortIndicator f ->
     IntegrationEffortIndicator f ->
+    FakeDerivativeEffortIndicator f ->
     RefOrd.PartialCompareEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
     ArithInOut.MultEffortIndicator f ->
+    ArithUpDn.AbsEffortIndicator f ->
+    NumOrd.MinmaxEffortIndicator f ->
+    ArithInOut.MixedDivEffortIndicator f Int ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
-    ArithInOut.RoundedRealEffortIndicator (Domain f) ->
+    ArithInOut.MixedMultEffortIndicator f (Domain f) ->
+    ArithInOut.RoundedRealEffortIndicator (Domain f) 
+    ->
     Domain f {-^ initial widening @delta@ -}  ->
     Int {-^ @m@ -} -> 
     Domain f {-^ step size @s@ -} -> 
@@ -178,9 +214,12 @@ solveUncertainValueExactTimeSplitPEval ::
         )
     )
 solveUncertainValueExactTimeSplitPEval
-        sizeLimits effSizeLim effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
-            delta m minStepSize splitImprovementThreshold
-                (odeivpG :: ODEIVP f)
+        doShringWrap
+            sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
+            effAddFn effMultFn effAbsFn effMinmaxFn 
+            effDivFnInt effAddFnDom effMultFnDom effDom
+                delta m minStepSize splitImprovementThreshold
+                    (odeivpG :: ODEIVP f)
     | (tStart <? t0End) == Just True =
         error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
     | otherwise =
@@ -195,7 +234,7 @@ solveUncertainValueExactTimeSplitPEval
     componentNames = odeivp_componentNames odeivpG
 
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
-    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
+--    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
     sampleDom :: Domain f
     sampleDom = tStart
 
@@ -207,7 +246,7 @@ solveUncertainValueExactTimeSplitPEval
     solve odeivp =
         solveODEIVPBySplittingT
             directSolver measureResultImprecision 
-                (makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLim componentNames)
+                (makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames)
                 effDom splitImprovementThreshold minStepSize
                     odeivp
 
@@ -226,11 +265,20 @@ solveUncertainValueExactTimeSplitPEval
         case maybeIterations of
             Just iterations ->
                 let paramValuesAtEnd = partiallySubst $ iterations !! m in
-                let valuesAtEnd = evalAtEndTimeVec effEval tVar tEnd $ iterations !! m in
-                (Just (fst paramValuesAtEnd), (tEnd, Just (fst valuesAtEnd)))
+                let valuesAtEnd = fst $ evalAtEndTimeVec effEval tVar tEnd $ iterations !! m in
+                (Just paramValuesAtEnd, (tEnd, Just valuesAtEnd))
             Nothing -> (Nothing, (tEnd, Nothing))
         where
-        partiallySubst fns = partiallyEvalAtEndTimeOutInVec tVar tEnd (fns, fns)
+        partiallySubst fns 
+            | doShringWrap =
+                shrinkWrap 
+                    effCompose effEval effDeriv effAddFn effAbsFn effMinmaxFn 
+                        effDivFnInt effAddFnDom effMultFnDom effDom $
+                            parameterisedMidValue
+            | otherwise = parameterisedMidValue
+            where
+            parameterisedMidValue =
+                fst $ partiallyEvalAtEndTimeOutInVec tVar tEnd (fns, fns)
         maybeIterations :: Maybe [[f]]
         maybeIterations =
             solveUncertainValueExactTime
