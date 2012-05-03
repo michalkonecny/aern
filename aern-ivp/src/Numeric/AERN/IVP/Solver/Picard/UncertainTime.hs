@@ -31,11 +31,14 @@ import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RmToRn.Integration
+import Numeric.AERN.RmToRn.Differentiation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 --import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
+
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsDefaultEffort
@@ -61,10 +64,15 @@ solveUncertainValueUncertainTimeSplit ::
      HasAntiConsistency f,
      NumOrd.RefinementRoundedLattice f,
      RoundedIntegration f,
+     RoundedFakeDerivative f,
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
+     ArithUpDn.RoundedAbs f,
+     NumOrd.RoundedLattice f,
+     ArithInOut.RoundedMixedDivide f Int,
      ArithInOut.RoundedMixedAdd f (Domain f),
+     ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f), 
      HasAntiConsistency (Domain f), 
@@ -83,10 +91,15 @@ solveUncertainValueUncertainTimeSplit ::
     CompositionEffortIndicator f ->
     EvaluationEffortIndicator f ->
     IntegrationEffortIndicator f ->
+    FakeDerivativeEffortIndicator f ->
     RefOrd.PartialCompareEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
     ArithInOut.MultEffortIndicator f ->
+    ArithUpDn.AbsEffortIndicator f ->
+    NumOrd.MinmaxEffortIndicator f ->
+    ArithInOut.MixedDivEffortIndicator f Int ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
+    ArithInOut.MixedMultEffortIndicator f (Domain f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
     ->
     dom ->
@@ -103,7 +116,13 @@ solveUncertainValueUncertainTimeSplit ::
      SplittingInfo solvingInfo3 (solvingInfo3, Maybe dom)
     )
 solveUncertainValueUncertainTimeSplit
-        sizeLimits t0SizeLimits effSizeLims effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
+        sizeLimits t0SizeLimits 
+        effSizeLims effCompose effEval effInteg effDeriv effInclFn 
+        effAddFn effMultFn effAbsFn effMinmaxFn 
+        effDivFnInt effAddFnDom effMultFnDom effDom
+--        sizeLimits t0SizeLimits effSizeLims effCompose effEval effInteg .... effInclFn 
+--        effAddFn effMultFn .... 
+--        .... effAddFnDom .... effDom
             delta m minStepSize minT0StepSize splitImprovementThreshold
                 t0Var
                     odeivpG 
@@ -148,9 +167,11 @@ solveUncertainValueUncertainTimeSplit
 
     solverVt odeivp =
         solveUncertainValueExactTimeSplitWrap
-                sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effDom
-                    delta m minStepSize splitImprovementThreshold
-                        odeivp
+            sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
+            effAddFn effMultFn effAbsFn effMinmaxFn 
+            effDivFnInt effAddFnDom effMultFnDom effDom
+                delta m minStepSize splitImprovementThreshold
+                    odeivp
         
 solveUncertainValueUncertainTime ::
     (CanAddVariables f,

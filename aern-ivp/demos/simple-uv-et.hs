@@ -8,8 +8,11 @@ import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Solver.Splitting
 import Numeric.AERN.IVP.Solver.Picard.UncertainValue
 
+import Numeric.AERN.IVP.Solver.ShrinkWrap -- only for testing
+
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
+import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 import qualified Numeric.AERN.DoubleBasis.Interval as CF
@@ -47,9 +50,75 @@ main =
     hSetBuffering stdout LineBuffering
     args <- getArgs
     case length args of
+        0 -> testShrinkWrap
         3 -> writeCSV args
         5 -> runOnce args
         _ -> usage
+        
+testShrinkWrap :: IO ()
+testShrinkWrap =
+    do
+    mapM_ putStrLn $ map show $ getSides result
+    return ()
+    where
+    getSides [x,y] =
+        [(xSL,ySL),(xTL,yTL),(xSR,ySR),(xTR,yTR)]
+        where
+        xSL = pEvalAtPointOutEff effComp sL x
+        xSR = pEvalAtPointOutEff effComp sR x
+        xTL = pEvalAtPointOutEff effComp tL x
+        xTR = pEvalAtPointOutEff effComp tR x
+        ySL = pEvalAtPointOutEff effComp sL y
+        ySR = pEvalAtPointOutEff effComp sR y
+        yTL = pEvalAtPointOutEff effComp tL y
+        yTR = pEvalAtPointOutEff effComp tR y
+        sL = fromList [("s", -1)]
+        sR = fromList [("s", 1)]
+        tL = fromList [("t", -1)]
+        tR = fromList [("t", 1)]
+    
+    result =
+        shrinkWrap 
+            effComp effEval effDeriv effAddFn effAbsFn effMinmaxUpDnFn 
+                effDivFnInt effAddPolyCf effMultPolyCf effCf 
+                    [xUsingTS, yUsingTS]
+    xUsingTS = s <*> tPlus2 <+> pmeps -- s(t+2) +- eps
+    yUsingTS = (c1 <-> s <*> s) <*> tPlus2 <+> pmeps -- (1-s^2)(t+2) +- eps
+    tPlus2 = (c1 <+> c1 <+> t)
+    t = newProjectionFromSample c1 "t"
+    s = (0.5 :: CF) |<*> newProjectionFromSample c1 "s"
+    pmeps = newConstFnFromSample c1 $ ((-eps) CF.</\> eps)
+        where
+        eps = 0.125
+    c1 :: Poly
+    c1 = newConstFn cfg dombox (1 :: CF)
+    dombox = fromList [("t", unitDom),  ("s", unitDom)]
+    unitDom = (-1) CF.</\> 1
+    cfg =
+        IntPolyCfg
+        {
+            ipolycfg_vars = ["t","s"],
+            ipolycfg_domsLZ = [0 CF.</\> 2, 0 CF.</\> 2],
+            ipolycfg_domsLE = [-1,-1],
+            ipolycfg_sample_cf = 0 :: CF,
+            ipolycfg_maxdeg = 3,
+            ipolycfg_maxsize = 1000
+        }
+    sampleCf = 0 :: CF
+    effCf = ArithInOut.roundedRealDefaultEffort sampleCf
+    effEval = (effCf, Int1To10 10)
+    effComp = (effCf, Int1To10 10)
+    effDeriv = effCf
+    effAddFn = effCf
+    effAbsFn = (effMinmaxUpDnFn, effAbsCf)
+    effAbsCf = ArithInOut.rrEffortAbs sampleCf effCf
+    effMinmaxUpDnFn = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 4 s
+    effAddPolyCf = effAddCf
+    effMultPolyCf = (((), ()), (), ((), (), ()))
+    effDivFnInt =
+        ArithInOut.mxfldEffortDiv sampleCf (0::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
+    effAddCf =
+        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
         
 usage :: IO ()
 usage =
@@ -504,10 +573,14 @@ solveIVPWithUncertainValue
     solveUncertainValueExactTimeSplit 
         | shouldWrap =
             solveUncertainValueExactTimeSplitWrap
-                sizeLimits effCompose effEval effInteg effInclFn effAddFn effAddFnDom effCf
+                sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
+                effAddFn effMultFn effAbsFn effMinmaxFn 
+                effDivFnInt effAddFnDom effMultFnDom effCf
         | otherwise =
-            solveUncertainValueExactTimeSplitPEval
-                sizeLimits effSizeLims effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effCf
+            solveUncertainValueExactTimeSplitPEval True
+                sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
+                effAddFn effMultFn effAbsFn effMinmaxFn 
+                effDivFnInt effAddFnDom effMultFnDom effCf
 
 --    substituteInitialValueUncertainty fn =
 --        pEvalAtPointOutEff effEval initValDomBox fn
@@ -521,11 +594,19 @@ solveIVPWithUncertainValue
     effCompose = (effCf, Int1To10 substSplitSizeLimit)
     effEval = (effCf, Int1To10 substSplitSizeLimit)
     effInteg = effCf
+    effDeriv = effCf
     effAddFn = effCf
     effMultFn = effCf
-    effAddFnDom =
-        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effInclFn = ((Int1To1000 0, (effCf, Int1To10 100)), ())
+    effAbsFn = (effMinmaxFn, effAbsCf)
+    effAbsCf = ArithInOut.rrEffortAbs sampleCf effCf
+    effMinmaxFn = error "effMinmaxUpDnFn undefined"
+    effAddFnDom = effAddCf
+    effMultFnDom = (((), ()), (), ((), (), ()))
+    effDivFnInt =
+        ArithInOut.mxfldEffortDiv sampleCf (0::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
+    effAddCf =
+        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
 
 makeSampleWithVarsDoms :: 
      Int -> Int -> [Var Poly] -> [CF] -> Poly
