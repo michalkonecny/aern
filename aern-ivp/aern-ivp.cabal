@@ -34,15 +34,15 @@ Library
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-realfn == 0.5.*,
-        array
+        aern-realfn-plot-gtk == 0.5.*
   exposed-modules:  
-                    Numeric.AERN.IVP.Solver.Events,
-                    Numeric.AERN.IVP.Solver.Picard.UncertainTime,
-                    Numeric.AERN.IVP.Solver.Picard.UncertainValue,
-                    Numeric.AERN.IVP.Solver.ShrinkWrap,
-                    Numeric.AERN.IVP.Solver.Splitting,
-                    Numeric.AERN.IVP.Specification.Hybrid,
-                    Numeric.AERN.IVP.Specification.ODE
+        Numeric.AERN.IVP.Solver.Events,
+        Numeric.AERN.IVP.Solver.Picard.UncertainTime,
+        Numeric.AERN.IVP.Solver.Picard.UncertainValue,
+        Numeric.AERN.IVP.Solver.ShrinkWrap,
+        Numeric.AERN.IVP.Solver.Splitting,
+        Numeric.AERN.IVP.Specification.Hybrid,
+        Numeric.AERN.IVP.Specification.ODE
 
 executable simple-uv-et
   build-depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
@@ -53,7 +53,9 @@ executable simple-uv-et
         aern-real == 0.5.*,
         aern-double == 0.5.*,
         aern-realfn == 0.5.*,
+        aern-realfn-plot-gtk == 0.5.*,
         aern-poly == 0.5.*,
+        aern-poly-plot-gtk == 0.5.*,
         aern-ivp == 0.5.*
   ghc-options:     -Wall -rtsopts
   hs-source-dirs:  demos

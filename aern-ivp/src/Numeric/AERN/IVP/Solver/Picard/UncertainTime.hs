@@ -166,7 +166,7 @@ solveUncertainValueUncertainTimeSplit
                             odeivp 
 
     solverVt odeivp =
-        solveUncertainValueExactTimeSplitWrap
+        solveUncertainValueExactTimeSplit False True
             sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
             effDivFnInt effAddFnDom effMultFnDom effDom

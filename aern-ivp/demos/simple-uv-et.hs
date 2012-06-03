@@ -77,7 +77,7 @@ testShrinkWrap =
         tL = fromList [("t", -1)]
         tR = fromList [("t", 1)]
     
-    result =
+    Just result =
         shrinkWrap 
             effComp effEval effDeriv effAddFn effAbsFn effMinmaxUpDnFn 
                 effDivFnInt effAddPolyCf effMultPolyCf effCf 
@@ -132,6 +132,8 @@ ivpByName "ivpExpDecay-uv-et" = ivpExpDecay_uv_et
 ivpByName "ivpSpringMass-ev-et" = ivpSpringMass_ev_et
 ivpByName "ivpSpringMass-uv-et" = ivpSpringMass_uv_et     
 ivpByName "ivpSpringMassAir-ev-et" = ivpSpringMassAir_ev_et
+ivpByName "ivpFallAir-ishii" = ivpFallAir_ishii
+ivpByName "ivpLorenz-ishii" = ivpLorenz_ishii
 ivpByName "ivpRoessler" = ivpRoessler
 
 ivpExpDecay_ev_et :: ODEIVP Poly
@@ -243,6 +245,68 @@ ivpSpringMass_uv_et =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
 
+ivpFallAir_ishii :: ODEIVP Poly
+ivpFallAir_ishii =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x'' = -9.8+(x'*x')/1000; (x,x')(" ++ show tStart ++ ") ∊ " ++ show initialValues,
+            odeivp_field = \ [_x,x'] -> [x',(-9.8 :: Double) |<+>  x' <*> x' </>| (1000 :: Int)],
+            odeivp_componentNames = ["x", "x'"],
+            odeivp_tVar = "t",
+            odeivp_tStart = 0,
+            odeivp_t0End = 0,
+            odeivp_tEnd = 10000,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing
+        }
+    initialValues = 
+        [
+            (1) CF.</\> (1.1)
+        ,
+            (0 CF.<-> 4.1)
+        ]
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
+
+ivpLorenz_ishii :: ODEIVP Poly
+ivpLorenz_ishii =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x' = 10(y-x), y' = x(28-z)-y, z' = xy - 8z/3; (x,y,z)(" ++ show tStart ++ ") ∊ " ++ show initialValues,
+            odeivp_field = \ [x,y,z] -> 
+                [(10 :: Int) |<*> (y <-> x),
+                  (x <*> ((28 :: Int) |<+> (neg z))) <-> y,
+                  (x <*> y) <-> (((8 :: Int) |<*> z) </>| (3 :: Int))
+                ],
+            odeivp_componentNames = ["x", "y", "z"],
+            odeivp_tVar = "t",
+            odeivp_tStart = 0,
+            odeivp_t0End = 0,
+            odeivp_tEnd = 24,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing
+        }
+    initialValues = 
+        [
+            (0 CF.<+> 15)
+        ,
+            (0 CF.<+> 15)
+        ,
+            (0 CF.<+> 36)
+        ]
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
+
 ivpRoessler :: ODEIVP Poly
 ivpRoessler =
     ivp
@@ -262,7 +326,7 @@ ivpRoessler =
             odeivp_tVar = "t",
             odeivp_tStart = 0,
             odeivp_t0End = 0,
-            odeivp_tEnd = 6,
+            odeivp_tEnd = 48,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_maybeExactValuesAtTEnd = Nothing 
         }
@@ -468,7 +532,7 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
     delta = 1
     maxdeg = maxdegParam
     maxsize = 1000
-    m = 20
+    m = 40
     substSplitSizeLimit = 100
 --    minStepSizeExp = -4 :: Int
     minStepSizeExp = - depthParam
@@ -562,25 +626,20 @@ solveIVPWithUncertainValue ::
         )
     )
 solveIVPWithUncertainValue
-        shouldWrap sizeLimits effCf substSplitSizeLimit
-            delta m minStepSize splitImprovementThreshold
-                odeivp
+        shouldWrap 
+            sizeLimits effCf substSplitSizeLimit
+                delta m minStepSize splitImprovementThreshold
+                    odeivp
     =
-    solveUncertainValueExactTimeSplit
+    solveUncertainValueExactTimeSplit2
         delta m minStepSize splitImprovementThreshold
             odeivp
     where
-    solveUncertainValueExactTimeSplit 
-        | shouldWrap =
-            solveUncertainValueExactTimeSplitWrap
-                sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
-                effAddFn effMultFn effAbsFn effMinmaxFn 
-                effDivFnInt effAddFnDom effMultFnDom effCf
-        | otherwise =
-            solveUncertainValueExactTimeSplitPEval True
-                sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
-                effAddFn effMultFn effAbsFn effMinmaxFn 
-                effDivFnInt effAddFnDom effMultFnDom effCf
+    solveUncertainValueExactTimeSplit2 =
+        solveUncertainValueExactTimeSplit shouldWrap True
+            sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
+            effAddFn effMultFn effAbsFn effMinmaxFn 
+            effDivFnInt effAddFnDom effMultFnDom effCf
 
 --    substituteInitialValueUncertainty fn =
 --        pEvalAtPointOutEff effEval initValDomBox fn
