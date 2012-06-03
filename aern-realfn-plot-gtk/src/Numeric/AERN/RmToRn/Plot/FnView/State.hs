@@ -54,12 +54,20 @@ initState ::
 initState effReal (_, fnmeta) =
     FnViewState
     {
-        favstActiveFns = map (map $ const True) $ dataFnNames fnmeta,
+        favstActiveFns = activeFns,
         favstTrackingDefaultEvalPt = True,
         favstCanvasParams = dataDefaultCanvasParams fnmeta,
         favstZoomPercent = defaultZoom,
         favstPanCentre = getDefaultCentre effReal fnmeta
     }
+    where
+    activeFns = mergeDefaults (mergeDefaults $ \ a b -> b) allTrue $ dataDefaultActiveFns fnmeta
+    allTrue = map (map $ const True) $ dataFnNames fnmeta
+    mergeDefaults :: (a -> a -> a) -> [a] -> [a] -> [a]
+    mergeDefaults _ [] _ = [] 
+    mergeDefaults _ list1 [] = list1
+    mergeDefaults mergeElems (h1:t1) (h2:t2) =
+        (mergeElems h1 h2) : (mergeDefaults mergeElems t1 t2)
     
 defaultZoom :: Double
 defaultZoom = 95

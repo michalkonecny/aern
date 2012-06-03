@@ -88,7 +88,7 @@ dataWatchThread
         do
 --        putStrLn $ "DataChangeMeta"
 --        putStrLn $ show $ dataFAs fndata
-        updateFnWidgets toDbl widgets dynWidgetsRef fnmeta fndataTVs stateTV
+        updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV
         let initialisedState = initState effReal (fndata, fnmeta)
         atomically $ writeTVar stateTV initialisedState
         updateView sampleF effReal effEval widgets dynWidgetsRef initialisedState (fndata, fnmeta)
@@ -102,7 +102,7 @@ dataWatchThread
                     show $ (dataDefaultEvalPoint fnmeta)
             False -> 
                 return () 
-        updateFnWidgets toDbl widgets dynWidgetsRef fnmeta fndataTVs stateTV
+        updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV
         updateView sampleF effReal effEval widgets dynWidgetsRef state (fndata, fnmeta)
     action DataChangeDefaultEvalPoint (fndata, fnmeta) state =
         do
@@ -269,11 +269,12 @@ updateFnWidgets ::
     Widgets ->
     IORef FnViewDynWidgets ->
     FnMetaData f ->
+    FnViewState f ->
     ((TVar (FnData f)),
       TVar (FnMetaData f)) ->
     (TVar (FnViewState f)) ->
     IO ()
-updateFnWidgets toDbl widgets dynWidgetsRef fnmeta fndataTVs stateTV =
+updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV =
     do
     -- update the name of the domain variable:
     Gtk.labelSetText (domVarLabel widgets) $ domName ++ "="
@@ -285,7 +286,8 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta fndataTVs stateTV =
     -- add new dim rows:
     Gtk.tableResize table (fnRowCount + 1) 3
     -- fill each row with widgets and return all newly created value entries:
-    valueLabels <- addGroupLabels 0 $ zip3 [0..] grpNames fnNames
+    let activeFns = favstActiveFns state
+    valueLabels <- addGroupLabels 0 $ zip3 [0..] grpNames $ zipWith zip fnNames activeFns
     -- layout the table:
     Gtk.widgetShowAll table
     Gtk.containerResizeChildren table
@@ -302,7 +304,7 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta fndataTVs stateTV =
     fnNames = dataFnNames fnmeta
     fnRowCount = (length grpNames) + (sum $ map length fnNames)
     addGroupLabels nextRowNo [] = return []
-    addGroupLabels nextRowNo ((grpNo, grpName, fnNames):rest) =
+    addGroupLabels nextRowNo ((grpNo, grpName, fnNamesActive):rest) =
         do
         -- add a function label:
         grpLabel <- Gtk.labelNew (Just grpName)        
@@ -310,16 +312,16 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta fndataTVs stateTV =
         Gtk.set table [ Gtk.tableChildXOptions grpLabel := []]
         Gtk.miscSetAlignment grpLabel 0 0.5
         -- add all result labels:
-        labels <- addFnLabels (nextRowNo + 1) (grpNo, grpName) fnNames
+        labels <- addFnLabels (nextRowNo + 1) (grpNo, grpName) fnNamesActive
         -- recurse for the following functions:
         restLabels <- addGroupLabels (nextRowNo + 1 + (length fnNames)) rest
         return $ labels : restLabels
         
-    addFnLabels nextRowNo (grpNo, grpName) fnNames =
+    addFnLabels nextRowNo (grpNo, grpName) fnNamesActive =
         do
-        mapM addFnLabel $ zip3 [nextRowNo..] [0..] fnNames
+        mapM addFnLabel $ zip3 [nextRowNo..] [0..] fnNamesActive
         where
-        addFnLabel (nextRowNo, fnNo, fnName) =
+        addFnLabel (nextRowNo, fnNo, (fnName, isActive)) =
             do
             -- add variable label:
             fnLabel <- Gtk.labelNew (Just labelText)
@@ -332,7 +334,7 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta fndataTVs stateTV =
             showCheckButton <- Gtk.checkButtonNew
             Gtk.tableAttachDefaults table showCheckButton 0 1 nextRowNo nextRowNoPlus1
             -- make it ticked:
-            Gtk.toggleButtonSetActive showCheckButton True
+            Gtk.toggleButtonSetActive showCheckButton isActive
             -- give the check button a handler:
             Gtk.onToggled showCheckButton $
                 do

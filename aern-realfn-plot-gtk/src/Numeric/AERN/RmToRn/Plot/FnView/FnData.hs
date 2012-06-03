@@ -59,6 +59,7 @@ data FnMetaData f =
         dataFnNames :: [[String]], -- ^ a name for each function
         dataFnGroupNames :: [String],
         dataFnStyles :: [[FnPlotStyle]],
+        dataDefaultActiveFns :: [[Bool]],
         dataDefaultEvalPoint :: Domain f, -- ^ show the values of the functions at this point
         dataDefaultEvalPointName :: String, -- ^ label to put on the button
         dataDefaultCanvasParams :: CanvasParams (Domain f)
@@ -79,6 +80,8 @@ instance
         equalComp dataFnNames
         &&
         equalComp dataFnStyles
+        &&
+        equalComp dataDefaultActiveFns
         &&
         equalComp dataDefaultEvalPointName
         &&
@@ -119,9 +122,10 @@ defaultFnMetaData sampleF =
         dataDomR = one sampleDom,
         dataValLO = zero sampleDom,
         dataValHI = one sampleDom,
-        dataFnNames = [["fn1"]],
-        dataFnGroupNames = ["group1"],
+        dataFnNames = [],
+        dataFnGroupNames = [],
         dataFnStyles = [[defaultFnPlotStyle]], -- black
+        dataDefaultActiveFns = [],
         dataDefaultEvalPoint = zero sampleDom,
         dataDefaultEvalPointName = "default",
         dataDefaultCanvasParams = defaultCanvasParams sampleDom
