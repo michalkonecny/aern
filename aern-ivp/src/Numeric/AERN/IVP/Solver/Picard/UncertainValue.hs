@@ -153,6 +153,7 @@ solveUncertainValueExactTimeSplit
 
     measureResultImprecision :: [f] -> Domain f
     measureResultImprecision fnVec =
+        snd $ RefOrd.getEndpointsOutWithDefaultEffort $
         let ?addInOutEffort = effAddDom in
         foldl1 (<+>) $ map perComp fnVec
         where
@@ -163,10 +164,10 @@ solveUncertainValueExactTimeSplit
             (fnL, fnR) = RefOrd.getEndpointsOutWithDefaultEffort fn
             
     directSolver odeivp =
-        case maybeIterations of
-            Just iterations ->
-                let valuesAtEnd = fst $ evalAtEndTimeVec effEval tVar tEnd $ iterations !! m in
-                let paramValuesAtTEnd = evalAtTEnd valuesAtEnd $ iterations !! m in
+        case maybeResult of
+            Just (result, resultAtTEnd) ->
+                let valuesAtEnd = resultAtTEnd in
+                let paramValuesAtTEnd = evalAtTEnd valuesAtEnd $ result in
                 (Just paramValuesAtTEnd, (tEnd, Just valuesAtEnd))
             Nothing -> (Nothing, (tEnd, Nothing))
         where
@@ -203,6 +204,33 @@ solveUncertainValueExactTimeSplit
                             thickParamValuesAtTEnd
             thickParamValuesAtTEnd =
                 fst $ partiallyEvalAtEndTimeOutInVec tVar tEnd (fns, fns)
+        
+        maybeResult =
+            fmap (untilStableButNotMoreThan m) maybeIterations
+        untilStableButNotMoreThan maxIters (hInit : tInit) =
+            aux 1 hInitImprecision tInit
+            where
+            hInitImprecision = measureResultImprecision hInit
+            aux iterNo prevImprecision (h : t) 
+                | iterNo >= maxIters = (h, hAtTEnd)
+                | notMuchImprovement =
+                     unsafePrint 
+                        ("solveUncertainValueExactTimeSplit:"
+                            ++ " finished after " ++ show iterNo 
+                            ++ " iterations (max = " ++ show maxIters ++ ")") $
+                    (h, hAtTEnd)
+                | otherwise =
+                    unsafePrint 
+                        ("solveUncertainValueExactTimeSplit: "
+                            ++ "hImprecision = " ++ show hImprecision
+                        ) $
+                    aux (iterNo + 1) hImprecision t
+                where
+                notMuchImprovement = 
+                    let ?addInOutEffort = effAddDom in
+                    (prevImprecision <-> hImprecision <=? splitImprovementThreshold) == Just True  
+                hImprecision = measureResultImprecision h
+                hAtTEnd = fst $ evalAtEndTimeVec effEval tVar tEnd h
         maybeIterations :: Maybe [[f]]
         maybeIterations =
             solveUncertainValueExactTime
@@ -246,7 +274,7 @@ solveUncertainValueExactTime
             _ -> Nothing
     where
     result =
-        case findEnclosure (40 :: Int) $ iterate picard initialAttemptFns of
+        case findEnclosure (50 :: Int) $ iterate picard initialAttemptFns of
             Just firstEnclosure ->
                 Just $ iterate picard firstEnclosure
             Nothing -> Nothing

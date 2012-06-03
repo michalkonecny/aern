@@ -258,7 +258,7 @@ ivpFallAir_ishii =
             odeivp_tVar = "t",
             odeivp_tStart = 0,
             odeivp_t0End = 0,
-            odeivp_tEnd = 10000,
+            odeivp_tEnd = 4, -- 10000
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
@@ -532,7 +532,7 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
     delta = 1
     maxdeg = maxdegParam
     maxsize = 1000
-    m = 40
+    m = 100
     substSplitSizeLimit = 100
 --    minStepSizeExp = -4 :: Int
     minStepSizeExp = - depthParam
