@@ -84,19 +84,20 @@ new ::
 new (sampleF :: f) effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) maybeParentWindow =
     do
     -- create initial state objects:
-    (stateTV, fnmeta) <- atomically $
+    (stateTV, state, fnmeta) <- atomically $
         do
         fndata <- readTVar fndataTV
         fnmeta <- readTVar fnmetaTV
-        stateTV <- newTVar $ initState effReal (fndata, fnmeta)
-        return (stateTV, fnmeta)
+        let state = initState effReal (fndata, fnmeta)
+        stateTV <- newTVar state
+        return (stateTV, state, fnmeta)
     dynWidgetsRef <- newIORef initFnViewDynWidgets
     -- create most widgets:
     widgets <- loadGlade (FilePath.combine GLADE_DIR "FnView.glade")
     -- create plotting canvas:
     widgets <- makeCanvas sampleF effDraw effReal widgets fndataTVs stateTV
     -- add dynamic function label widgets:
-    updateFnWidgets toDbl widgets dynWidgetsRef fnmeta fndataTVs stateTV
+    updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV
     -- attach handlers to widgets
     Gtk.onDestroy (window widgets) $
         do
