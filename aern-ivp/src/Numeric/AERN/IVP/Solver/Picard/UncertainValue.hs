@@ -307,27 +307,34 @@ solveUncertainValueExactTime
         wideningInterval =
             let ?joinmeetEffort = effJoinDom in
             (neg delta) </\> delta
-    findEnclosure maxIter (fn1Vec : fn2Vec : rest)
-        | maxIter > 0 =
-            case fn2RefinesFn1 of
-                True -> Just fn2Vec
-                _ ->
---                    unsafePrint
---                    (
---                        "solveUncertainValueExactTime: findEnclosure: not yet enclosing:"
---                        ++ "\n fn1Vec = " ++ (show $ evalAtEndTimeVec fn1Vec)
---                        ++ "\n fn2Vec = " ++ (show $ evalAtEndTimeVec fn2Vec)
---                        ++ "\n fn1Vec at end time = " ++ (show $ evalAtEndTimeVec fn1Vec)
---                        ++ "\n fn2Vec at end time = " ++ (show $ evalAtEndTimeVec fn2Vec)
---                    ) $
-                    findEnclosure (maxIter - 1) (fn2Vec : rest)
+    findEnclosure maxIter = aux 0 
         where
-        fn2RefinesFn1 =
-            let ?pCompareEffort = effInclFn in
-            and $ map (== (Just True)) $ zipWith (|<=?) fn1Vec fn2Vec
-    findEnclosure _ _  =
-        Nothing
---        error "aern-picard: solveUncertainValueExactTime failed to find enclosure"
+        aux iterNo (fn1Vec : fn2Vec : rest)
+            | iterNo <= maxIter =
+                case fn2RefinesFn1 of
+                    True ->
+                        unsafePrint 
+                            ("solveUncertainValueExactTime:" 
+                                ++ " enclosure found after " ++ show iterNo ++ " iterations"
+                                ++ " (max = " ++ show maxIter ++ ")") $ 
+                        Just fn2Vec
+                    _ ->
+--                        unsafePrint
+--                        (
+--                            "solveUncertainValueExactTime: findEnclosure: not yet enclosing:"
+--                            ++ "\n fn1Vec = " ++ (show $ evalAtEndTimeVec fn1Vec)
+--                            ++ "\n fn2Vec = " ++ (show $ evalAtEndTimeVec fn2Vec)
+--                            ++ "\n fn1Vec at end time = " ++ (show $ evalAtEndTimeVec fn1Vec)
+--                            ++ "\n fn2Vec at end time = " ++ (show $ evalAtEndTimeVec fn2Vec)
+--                        ) $
+                        aux (iterNo + 1) (fn2Vec : rest)
+            where
+            fn2RefinesFn1 =
+                let ?pCompareEffort = effInclFn in
+                and $ map (== (Just True)) $ zipWith (|<=?) fn1Vec fn2Vec
+        aux _ _  =
+            Nothing
+--            error "aern-picard: solveUncertainValueExactTime failed to find enclosure"
     picard xvec = 
 --        unsafePrint
 --        (
