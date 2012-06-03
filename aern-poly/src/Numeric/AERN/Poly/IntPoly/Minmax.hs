@@ -133,7 +133,7 @@ instance
     =>
     NumOrd.RoundedLattice (IntPoly var cf)
     where
-    maxUpEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne,effGetE) a b =
+    maxUpEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne, effGetE) a b =
 --        unsafePrint 
 --            ( "IntPoly maxUpEff:"
 --                ++ "\n a = " ++ showPoly show show a
@@ -150,7 +150,7 @@ instance
                     fst $ maxUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
         (_aL,aR) = RefOrd.getEndpointsOutEff effGetE a
         (_bL,bR) = RefOrd.getEndpointsOutEff effGetE b
-    maxDnEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne,effGetE) a b =
+    maxDnEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne, effGetE) a b =
         result
         where
         result =

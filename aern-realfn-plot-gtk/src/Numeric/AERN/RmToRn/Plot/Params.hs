@@ -147,7 +147,7 @@ defaultCanvasParams sample =
         cnvprmShowSampleValuesFontSize = Just 12,
         cnvprmBackgroundColour = 
             Just (0.8,0.85,0.9,1), -- light blue
-        cnvprmSamplesPerUnit = 100
+        cnvprmSamplesPerUnit = 400
     }
     where
     c0 = zero sample
