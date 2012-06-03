@@ -114,6 +114,40 @@ makeFnVecFromInitialValues componentNames initialValues sizeLimits t0Var t0Domai
     dombox =
         fromList $ (t0Var, t0Domain) : zip componentNames initialValues
 
+parameteriseInitialValues ::
+     (Show f, Show (Domain f), Show (Var f),
+      HasProjections f) 
+      =>
+     SizeLimits f -> 
+     [Var f] {-^ names for solution vector components -} -> 
+     [Domain f] {-^ initial values, one for each component -}
+     ->
+     [f]
+parameteriseInitialValues sizeLimits componentNames initialValues =
+--    unsafePrint
+--    (
+--        "makeFnVecFromInitialValues:"
+--        ++ "\n componentNames = " ++ show componentNames
+--        ++ "\n initialValues = " ++ show initialValues
+----        ++ "\n sizeLimits = " ++ show sizeLimits
+--        ++ "\n tVar = " ++ show tVar
+--        ++ "\n timeDomain = " ++ show timeDomain
+--        ++ "\n result = " ++ show initialValuesFnVec
+--    ) $
+    initialValuesFnVec
+    where    
+    initialValuesFnVec =
+        map initialValueFn componentNames
+    initialValueFn = 
+        newProjection sizeLimitsAdjusted dombox
+    sizeLimitsAdjusted =
+        adjustSizeLimitsToVarsAndDombox sampleF vars dombox sizeLimits
+    sampleF = initialValueFn sampleVar  
+    vars@(sampleVar : _) = componentNames
+    dombox =
+        fromList $ zip componentNames initialValues
+
+
 makeFnVecFromParamInitialValuesOut ::
      (Show f, Show (Domain f), Show (Var f),
       ArithInOut.RoundedReal (Domain f),

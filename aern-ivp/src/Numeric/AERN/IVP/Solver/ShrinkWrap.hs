@@ -80,7 +80,7 @@ shrinkWrap ::
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
     ->
     [f] ->
-    [f]
+    Maybe [f]
 shrinkWrap effComp effEval effDeriv effAddFn effAbsFn effMinmaxFn effDivFnInt effAddFnDom effMultFnDom effDom fns =
     unsafePrint
     (
@@ -93,12 +93,12 @@ shrinkWrap effComp effEval effDeriv effAddFn effAbsFn effMinmaxFn effDivFnInt ef
     where
     result 
         | (delta >? threshold) == Just True =
-            fns
+            Nothing
         | otherwise =
-            map zoomDomains $ map snd wAndfnMs
+            Just $ map zoomDomains $ map snd wAndfnMs
     threshold =
         let ?addInOutEffort = effAdd in 
-        maxW <+> maxW <+> maxW <+> maxW
+        maxW <+> maxW -- <+> maxW <+> maxW
     maxW = foldl1 (NumOrd.maxOutEff effMinmax) ws
     ws = map fst wAndfnMs
     
@@ -315,6 +315,10 @@ getDomainDelta1 effComp effEval effDeriv  _effAbsFn _effMinmaxFn effAddFnDom eff
 --        unsafePrint
 --        (
 --            "ShrinkWrap: getDomainDelta: getFnDelta:" 
+--                ++ "\n fn = " ++ show fn
+--                ++ "\n fnWithOldDelta = " ++ show fnWithOldDelta
+--                ++ "\n derivatives = " ++ show derivatives
+--                ++ "\n effEval = " ++ show effEval
 --                ++ "\n slopes = " ++ show slopes
 --                ++ "\n maxSlope = " ++ show maxSlope
 --                ++ "\n fnDelta = " ++ show fnDelta
@@ -326,13 +330,16 @@ getDomainDelta1 effComp effEval effDeriv  _effAbsFn _effMinmaxFn effAddFnDom eff
             let ?divInOutEffort = effDiv in
             w </> maxSlope 
         maxSlope = foldl1 (NumOrd.maxOutEff effMinmax) slopes 
-        slopes = map getSlope vars
+        slopes = map getSlope derivatives
         fnWithOldDelta =
             zoomDomainsInterpretationBy effComp effAddFnDom effMultFnDom effDom oldDelta fn
-        getSlope var =
+        getSlope derivative =
             ArithInOut.absOutEff effAbs $
                 evalAtPointOutEff effEval dombox $
-                    fakePartialDerivativeOutEff effDeriv fnWithOldDelta var
+                    derivative
+        derivatives = map getDeriv vars
+        getDeriv var =
+            fakePartialDerivativeOutEff effDeriv fnWithOldDelta var
     
     effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDom effDom
     effAbs = ArithInOut.rrEffortAbs sampleDom effDom
