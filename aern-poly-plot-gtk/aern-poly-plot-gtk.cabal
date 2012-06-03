@@ -61,3 +61,26 @@ executable plot
         aern-poly == 0.5.*,
         aern-poly-plot-gtk == 0.5.*
 
+executable plotPicard
+  hs-source-dirs:  demos
+  ghc-options:     -Wall -rtsopts
+  main-is:         plotPicard.hs
+  Build-Depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
+        containers >= 0.3 && < 0.5,
+        random >= 1.0 && < 1.1,
+        gtk >= 0.12.0 && < 0.13,
+        cairo >= 0.12.0 && < 0.13,
+        glade >= 0.12.0 && < 0.13,
+        stm >= 2.1.2.1 && < 2.4,
+        filepath >= 1.1.0.4 && < 1.3,
+        directory >= 1.0.1.1 && < 1.2,
+        aern-order == 0.5.*,
+        aern-real == 0.5.*,
+        aern-interval == 0.5.*,
+        aern-double == 0.5.*,
+        aern-mpfr == 0.5.*,
+        aern-realfn == 0.5.*,
+        aern-realfn-plot-gtk == 0.5.*,
+        aern-poly == 0.5.*,
+        aern-poly-plot-gtk == 0.5.*
+
