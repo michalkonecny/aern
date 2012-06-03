@@ -58,9 +58,11 @@ main =
     -- enable multithreaded GUI:
     Gtk.unsafeInitGUIForThreadedRTS
     let (fns, fnmeta) = getFns ivpName maxdeg iters
+--    let (fns, fnmeta) = getFnsI ivpName maxdeg iters
     fnDataTV <- atomically $ newTVar $ FV.FnData fns
     fnMetaTV <- atomically $ newTVar $ fnmeta
     FV.new samplePoly effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
+--    FV.new samplePolyInterval effDrawFnI effCF effEvalI (fnDataTV, fnMetaTV) Nothing
 --    Concurrent.forkIO $ signalFn fnMetaTV
     Gtk.mainGUI
     
@@ -70,7 +72,7 @@ getFns "smass-ev" maxdeg iters =
 getFns "smass-uv" maxdeg iters = 
     (fnsSpringMass_uv maxdeg iters, fnmetaSpringMass iters)
     
-getFns "smass-uvp" maxdeg iters = 
+getFnsI "smass-uvp" maxdeg iters = 
     (fnsSpringMass_uvp_mono maxdeg iters, fnmetaSpringMass iters)
     
 --getFns "smass-b" maxdeg iters = 
@@ -166,14 +168,14 @@ fnsSpringMass_uv maxdeg iters =
         initialApprox =
             map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 
-fnsSpringMass_uvp_mono :: Int -> Int -> [[Poly]]
+fnsSpringMass_uvp_mono :: Int -> Int -> [[CF.Interval Poly]]
 fnsSpringMass_uvp_mono maxdeg iters = 
     [
         concat $ take iters $ enclosures maxdeg
     ]
     where
     enclosures maxdeg =
-        zipWith (zipWith (</\>)) (enclosures [0,0]) (enclosures [1,0])
+        zipWith (zipWith CF.Interval) (enclosures [0,0]) (enclosures [1,0])
         where 
         enclosures initVals =
             iterate (picardOp fieldSpringMass $ initValsFns) initialApprox
@@ -217,6 +219,7 @@ picardOp field [y0, yDer0] [yPrev, yDerPrev] =
     
 --c1,c0,x,c01,c10,cHalf,cHalf1,cOneOver16,cSevenOver16,cOneMinusOneOver16, samplePoly :: Poly
 samplePoly = newProjection cfg1 dombox1 "x"
+samplePolyInterval = CF.Interval samplePoly samplePoly
 --xD maxdeg = newProjection (cfgD maxdeg) dombox "x"
 --c0 = newConstFn cfg dombox 0
 --c1 = newConstFn cfg dombox 1
@@ -231,11 +234,13 @@ samplePoly = newProjection cfg1 dombox1 "x"
 ----eff = (100, (100,())) -- MPFR
 effCF = ArithInOut.roundedRealDefaultEffort (0:: CF)
 effEval = evaluationDefaultEffort samplePoly
+effEvalI = (effEval, ())
 effNumComp = NumOrd.pCompareDefaultEffort samplePoly
 effRefComp = RefOrd.pCompareDefaultEffort samplePoly
 minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 samplePoly
 minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 samplePoly
 effDrawFn = cairoDrawFnDefaultEffort samplePoly
+effDrawFnI = cairoDrawFnDefaultEffort samplePolyInterval
 --
 --
 --evalOpsOutCf = evalOpsOut effCF x (0::CF)

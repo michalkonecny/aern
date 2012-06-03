@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Plot.FromEval
@@ -37,6 +38,9 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
+import Numeric.AERN.Basics.Interval
+import Numeric.AERN.RmToRn.Interval
+
 import Numeric.AERN.Misc.Debug
 
 import Graphics.Rendering.Cairo
@@ -44,6 +48,21 @@ import Graphics.Rendering.Cairo
 import qualified Data.Map as Map
 --import qualified Data.List as List
 
+instance 
+    (HasAntiConsistency (Domain f),
+     CanEvaluate f,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     Show (Domain f)
+    )
+    =>
+    (CairoDrawableFn (Interval f))
+    where
+    type CairoDrawFnEffortIndicator (Interval f) =
+        CairoDrawEffortIndicatorFnFromEval (Interval f)
+    cairoDrawFnDefaultEffort = cairoDrawFnDefaultEffortFromEval
+    cairoDrawFn = cairoDrawFnFromEval
+    
 type CairoDrawEffortIndicatorFnFromEval f =
     (
      EvaluationEffortIndicator f

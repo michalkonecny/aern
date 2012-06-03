@@ -35,12 +35,14 @@ Library
         test-framework-quickcheck2 >= 0.2 && < 0.3,
         random >= 1.0.0.2 && < 1.1,
         aern-order == 0.5.*,
-        aern-real == 0.5.*
+        aern-real == 0.5.*,
+        aern-interval == 0.5.*
   exposed-modules:
                   Numeric.AERN.RmToRn.Differentiation,
                   Numeric.AERN.RmToRn.Domain,
                   Numeric.AERN.RmToRn.Evaluation,
                   Numeric.AERN.RmToRn.Integration,
+                  Numeric.AERN.RmToRn.Interval,
                   Numeric.AERN.RmToRn.Laws,
                   Numeric.AERN.RmToRn.New,
                   Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Arbitrary,
