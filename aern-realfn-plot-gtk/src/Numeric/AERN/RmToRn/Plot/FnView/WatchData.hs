@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -314,7 +315,7 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV =
         -- add all result labels:
         labels <- addFnLabels (nextRowNo + 1) (grpNo, grpName) fnNamesActive
         -- recurse for the following functions:
-        restLabels <- addGroupLabels (nextRowNo + 1 + (length fnNames)) rest
+        restLabels <- addGroupLabels (nextRowNo + 1 + (length fnNamesActive)) rest
         return $ labels : restLabels
         
     addFnLabels nextRowNo (grpNo, grpName) fnNamesActive =
