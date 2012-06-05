@@ -5,6 +5,7 @@
 module Main where
 
 import Numeric.AERN.Poly.IntPoly
+import Numeric.AERN.Poly.IntPoly.Plot ()
 
 import Numeric.AERN.IVP.Specification.Hybrid
 --import Numeric.AERN.IVP.Specification.ODE
@@ -47,6 +48,13 @@ import System.Directory
 import System.CPUTime
 import System.Timeout
 
+import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
+import Numeric.AERN.RmToRn.Plot.CairoDrawable
+
+import qualified Graphics.UI.Gtk as Gtk
+import qualified Control.Concurrent as Concurrent
+import Control.Concurrent.STM
+
 import Numeric.AERN.Misc.Debug (unsafePrint)
 _ = unsafePrint -- stop the unused warning
 
@@ -63,7 +71,7 @@ main =
     args <- getArgs
     case length args of
         2 -> writeCSV args
-        5 -> runOnce args
+        6 -> runOnce args
         _ -> usage
         
 usage :: IO ()
@@ -461,13 +469,14 @@ ivpBouncingBall_AtTime tEnd [xEnd, xDerEnd] =
     tVar = hybivp_tVar ivp
 
 runOnce :: [String] -> IO ()
-runOnce [ivpName, maxDegS, depthS, shouldShowStepsS, maxSplitSizeS] =
+runOnce [ivpName, maxDegS, depthS, shouldPlotStepsS, shouldShowStepsS, maxSplitSizeS] =
     do
     let maxDeg = read maxDegS :: Int
     let depth = read depthS :: Int
     let maxSplitSize = read maxSplitSizeS :: Int
     let shouldShowSteps = read shouldShowStepsS :: Bool
-    _ <- solveEventsPrintSteps shouldShowSteps ivp (maxDeg, depth, maxSplitSize)
+    let shouldPlotSteps = read shouldPlotStepsS :: Bool
+    _ <- solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxDeg, depth, maxSplitSize)
     return ()
     where
     ivp = ivpByName ivpName
@@ -508,7 +517,7 @@ writeCSV [ivpName, outputFileName] =
         solveAndMeasure _ =
             do
             starttime <- getCPUTime
-            maybeSolverResult <- timeout (10 * oneMinuteInMicroS) $ solveEventsPrintSteps False ivp (maxDegree, depth, 4*maxDegree*maxDegree)
+            maybeSolverResult <- timeout (10 * oneMinuteInMicroS) $ solveEventsPrintSteps False False ivp (maxDegree, depth, 4*maxDegree*maxDegree)
             endtime <- getCPUTime
             let solverResult = tweakSolverResult maybeSolverResult 
             return $ (solverResult, (endtime - starttime) `div` 1000000000)
@@ -563,12 +572,14 @@ solveEventsPrintSteps ::
     =>
     Bool
     ->
+    Bool
+    ->
     HybridIVP Poly 
     -> 
     (Int, Int, Int) 
     -> 
     IO (Maybe (HybridSystemUncertainState Poly), SplittingInfo solvingInfo (solvingInfo, Maybe CF))
-solveEventsPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSizeParam) =
+solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSizeParam) =
     do
     putStrLn "---------------------------------------------------"
     putStrLn "demo of solve-VtE from (Konecny, Taha, Duracz 2012)"
@@ -589,7 +600,7 @@ solveEventsPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSize
             putStr $ showSegInfo "   " (tEnd, Just exactResult, [])
         _ -> return ()
     putStrLn "----------  steps: ---------------------------"
-    printStepsInfo (1:: Int) splittingInfo
+    _ <- printStepsInfo (1:: Int) splittingInfo
     putStrLn "----------  step summary: -----------------------"
     putStrLn $ "number of atomic segments = " ++ (show $ splittingInfoCountLeafs splittingInfo)
     putStrLn $ "smallest segment size: " ++ (show smallestSegSize)  
@@ -609,6 +620,9 @@ solveEventsPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSize
         _ -> return ()
     putStrLn $ "event count = " ++ show eventCount
     putStrLn "-------------------------------------------------"
+    case shouldPlotSteps of
+        False -> return ()
+        True -> plotEventResolution effCf componentNames splittingInfo
     return (maybeEndState, splittingInfo)
     where
     (maybeEndState, splittingInfo) =
@@ -806,3 +820,79 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
             ipolycfg_maxsize = maxsize
         }
      
+plotEventResolution effCF componentNames splittingInfo =
+    do
+    Gtk.unsafeInitGUIForThreadedRTS
+    fnDataTV <- atomically $ newTVar $ FV.FnData fns
+    fnMetaTV <- atomically $ newTVar $ fnmeta
+    FV.new samplePoly effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
+    Gtk.mainGUI
+    where
+    ((samplePoly : _) : _) = fns 
+    effDrawFn = cairoDrawFnDefaultEffort samplePoly
+    effEval = evaluationDefaultEffort samplePoly
+    (fns, fnNames) = 
+        unzip $ map getFnsFromSegInfo $ splittingInfoGetLeafSegInfoSequence splittingInfo
+        where
+        getFnsFromSegInfo (_,_,modeEventInfos) =
+            unzip $ concat $ map getFnsFromMEI modeEventInfos
+        getFnsFromMEI (HybSysMode modeName, eventInfo) =
+            collectFns modeName eventInfo
+        collectFns namePrefix (EventNextSure (_, fnVec) eventMap) =
+            (numberFnVec fnVec namePrefix) ++
+            (concat $ map perEvent $ toAscList eventMap)
+            where
+            perEvent (HybSysEventKind eventName, subEventInfo) =
+                collectFns (namePrefix ++ "!" ++ eventName) subEventInfo
+        collectFns namePrefix (EventNextMaybe (_, fnVec) eventMap) =
+            (numberFnVec fnVec namePrefix) ++
+            (concat $ map perEvent $ toAscList eventMap)
+            where
+            perEvent (HybSysEventKind eventName, subEventInfo) =
+                collectFns (namePrefix ++ "?" ++ eventName) subEventInfo
+        collectFns namePrefix (EventFixedPoint (_, fnVec)) =
+            (numberFnVec fnVec namePrefix)
+        collectFns _ _ = 
+            []
+        numberFnVec fnVec namePrefix =
+            zipWith addName fnVec componentNames
+            where
+            addName fn compName = (fn, namePrefix ++ "." ++ compName)
+    segs = length fnNames
+    fnmeta = 
+        (FV.defaultFnMetaData samplePoly)
+        {
+            FV.dataFnGroupNames = map ("segment " ++) (map show [1..segs]),
+            FV.dataFnNames = fnNames,
+            FV.dataFnStyles = map giveColours fnNames,
+            FV.dataDomL = 0,
+            FV.dataDomR = 4,
+            FV.dataValLO = -2,
+            FV.dataValHI = 2,
+            FV.dataDefaultEvalPoint = 0,
+            FV.dataDefaultCanvasParams =
+                (FV.defaultCanvasParams (0::CF))
+                {
+                    FV.cnvprmCoordSystem = 
+                        FV.CoordSystemLinear $ 
+                            FV.Rectangle  2 (-2) 0 (4)
+                    ,
+                    FV.cnvprmSamplesPerUnit = 100
+                }
+        }
+    giveColours list =
+        take (length list) colours
+    colours = cycle [blue, green] 
+    
+    black = FV.defaultFnPlotStyle
+    blue = FV.defaultFnPlotStyle 
+        { 
+            FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
+            FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
+        } 
+    green = FV.defaultFnPlotStyle 
+        { 
+            FV.styleOutlineColour = Just (0.1,0.8,0.1,1), 
+            FV.styleFillColour = Just (0.1,0.8,0.1,0.1) 
+        } 
+    

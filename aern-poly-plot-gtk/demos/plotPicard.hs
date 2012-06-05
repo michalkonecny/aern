@@ -1,7 +1,7 @@
 module Main where
 
 import Numeric.AERN.Poly.IntPoly
-import Numeric.AERN.Poly.IntPoly.Plot
+import Numeric.AERN.Poly.IntPoly.Plot ()
 
 import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
 import Numeric.AERN.RmToRn.Plot.CairoDrawable
@@ -20,18 +20,16 @@ import qualified Numeric.AERN.DoubleBasis.Interval as CF
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
-import Numeric.AERN.RealArithmetic.ExactOps
+--import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+--import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
-import Numeric.AERN.Basics.Consistency
-import Numeric.AERN.Basics.ShowInternals
-
-import Numeric.AERN.Misc.Debug
+--import Numeric.AERN.Basics.Consistency
+--import Numeric.AERN.Basics.ShowInternals
 
 import qualified Graphics.UI.Gtk as Gtk
 
@@ -43,6 +41,8 @@ import qualified Data.List as List
 
 import System.Environment
 
+import Numeric.AERN.Misc.Debug
+_ = unsafePrint
 
 --type CF = Interval MPFR
 type CF = CF.DI
