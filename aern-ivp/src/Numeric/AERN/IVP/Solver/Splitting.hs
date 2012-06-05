@@ -40,7 +40,8 @@ module Numeric.AERN.IVP.Solver.Splitting
     solveODEIVPBySplittingT0,
     SplittingInfo(..),
     showSplittingInfo,
-    splittingInfoCountLeafs
+    splittingInfoCountLeafs,
+    splittingInfoGetLeafSegInfoSequence
 )
 where
 
@@ -643,4 +644,14 @@ splittingInfoCountLeafs (SegSplit _ left Nothing) =
     splittingInfoCountLeafs left
 splittingInfoCountLeafs (SegSplit _ left (Just right)) =
     splittingInfoCountLeafs left + splittingInfoCountLeafs right
-     
+    
+    
+splittingInfoGetLeafSegInfoSequence ::
+    SplittingInfo segInfo splitReason -> [segInfo]
+splittingInfoGetLeafSegInfoSequence (SegNoSplit info) = [info]
+splittingInfoGetLeafSegInfoSequence (SegSplit _ left Nothing) =
+    splittingInfoGetLeafSegInfoSequence left
+splittingInfoGetLeafSegInfoSequence (SegSplit _ left (Just right)) =
+    splittingInfoGetLeafSegInfoSequence left
+    ++
+    splittingInfoGetLeafSegInfoSequence right

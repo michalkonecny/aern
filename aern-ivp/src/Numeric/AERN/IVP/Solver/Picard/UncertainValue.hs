@@ -214,16 +214,16 @@ solveUncertainValueExactTimeSplit
             aux iterNo prevImprecision (h : t) 
                 | iterNo >= maxIters = (h, hAtTEnd)
                 | notMuchImprovement =
-                     unsafePrint 
-                        ("solveUncertainValueExactTimeSplit:"
-                            ++ " finished after " ++ show iterNo 
-                            ++ " iterations (max = " ++ show maxIters ++ ")") $
+--                     unsafePrint 
+--                        ("solveUncertainValueExactTimeSplit:"
+--                            ++ " finished after " ++ show iterNo 
+--                            ++ " iterations (max = " ++ show maxIters ++ ")") $
                     (h, hAtTEnd)
                 | otherwise =
-                    unsafePrint 
-                        ("solveUncertainValueExactTimeSplit: "
-                            ++ "hImprecision = " ++ show hImprecision
-                        ) $
+--                    unsafePrint 
+--                        ("solveUncertainValueExactTimeSplit: "
+--                            ++ "hImprecision = " ++ show hImprecision
+--                        ) $
                     aux (iterNo + 1) hImprecision t
                 where
                 notMuchImprovement = 
@@ -313,10 +313,10 @@ solveUncertainValueExactTime
             | iterNo <= maxIter =
                 case fn2RefinesFn1 of
                     True ->
-                        unsafePrint 
-                            ("solveUncertainValueExactTime:" 
-                                ++ " enclosure found after " ++ show iterNo ++ " iterations"
-                                ++ " (max = " ++ show maxIter ++ ")") $ 
+--                        unsafePrint 
+--                            ("solveUncertainValueExactTime:" 
+--                                ++ " enclosure found after " ++ show iterNo ++ " iterations"
+--                                ++ " (max = " ++ show maxIter ++ ")") $ 
                         Just fn2Vec
                     _ ->
 --                        unsafePrint
