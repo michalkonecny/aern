@@ -70,13 +70,18 @@ data HybridSystem f =
     ,
         hybsys_modeFields :: Map.Map HybSysMode ([f] -> [f])
     ,
+        hybsys_modeInvariants :: Map.Map HybSysMode ([Domain f] -> [Domain f])
+    ,
         hybsys_eventModeSwitchesAndResetFunctions :: Map.Map HybSysEventKind (HybSysMode, [f] -> [f])
     ,
         hybsys_eventDetector :: 
             HybSysMode -> 
             [f] -> 
             Set.Set 
-                (HybSysEventKind, 
+                (HybSysEventKind,
+                 [Domain f] -> [Domain f], 
+                    {- intersection with the support of the guard, 
+                       used to prune some impossible states at the switching point -} 
                  Bool) -- is this event certain unless it is beaten by another event? 
     }
     

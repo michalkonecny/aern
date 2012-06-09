@@ -96,6 +96,8 @@ solveHybridIVPBySplittingT ::
     ->
     Domain f -- ^ minimum segment length  
     ->
+    Domain f -- ^ maximum segment length  
+    ->
     (HybridIVP f)  -- ^ problem to solve
     ->
     (
@@ -107,7 +109,7 @@ solveHybridIVPBySplittingT ::
     )
 solveHybridIVPBySplittingT
         solver
-            effDom splitImprovementThreshold minStepSize 
+            effDom splitImprovementThreshold minStepSize maxStepSize 
                 hybivpG 
     =
     result
@@ -125,6 +127,7 @@ solveHybridIVPBySplittingT
         where
         result2
             | belowStepSize = directComputation
+            | aboveMaxStepSize = splitComputation
             | directComputationFailed = splitComputation
             | otherwise = 
                 case maybeSplitImprovement of
@@ -138,9 +141,11 @@ solveHybridIVPBySplittingT
         tEnd = hybivp_tEnd hybivp
         
         belowStepSize =
---            unsafePrintReturn ("belowStepSize = ") $
             let ?addInOutEffort = effAddDom in
             ((tEnd <-> tStart) >? minStepSize) /= Just True
+        aboveMaxStepSize =
+            let ?addInOutEffort = effAddDom in
+            ((tEnd <-> tStart) <? maxStepSize) /= Just True
 
         directComputation =
 --            unsafePrint
