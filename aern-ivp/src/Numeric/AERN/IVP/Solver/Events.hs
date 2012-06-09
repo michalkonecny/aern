@@ -89,7 +89,8 @@ solveEventsTimeSplit ::
     Domain f {-^ initial widening @delta@ -}  ->
     Int {-^ @m@ -} -> 
     Var f {-^ @t0@ - the initial time variable -} ->
-    Domain f {-^ step size @s@ -} -> 
+    Domain f {-^ min step size @s@ -} -> 
+    Domain f {-^ max step size @s@ -} -> 
     Imprecision (Domain f) {-^ split improvement threshold @eps@ -} ->
     HybridIVP f
     ->
@@ -102,20 +103,46 @@ solveEventsTimeSplit ::
     )
 solveEventsTimeSplit
         sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
-            delta m t0Var minStepSize splitImprovementThreshold
+            delta m t0Var minStepSize maxStepSize splitImprovementThreshold
                 hybivpG
     = solve hybivpG
     where
     solve hybivp =
         solveHybridIVPBySplittingT
             directSolver
-                effDom splitImprovementThreshold minStepSize
+                effDom splitImprovementThreshold minStepSize maxStepSize
                     hybivp
 
     directSolver depth hybivp =
-        (maybeFinalState, (tEnd, maybeFinalState, modeEventInfoList))
+        (maybeFinalStateWithInvariants, (tEnd, maybeFinalStateWithInvariants, modeEventInfoList))
         where
         tEnd = hybivp_tEnd hybivp
+        maybeFinalStateWithInvariants
+            = fmap filterInvariants maybeFinalState
+            where
+            filterInvariants st@(HybridSystemUncertainState modes vec) =
+                result
+                where
+                _ = [st, result]
+                result =
+                    HybridSystemUncertainState modes $ filterInvariantsVec vec
+                filterInvariantsVec vec =
+                    -- for each mode, lookup the invariant and apply it, 
+                    --  then take the union of all the results
+                    takeUnion $ map applyModeInvariant $ Set.toList modes
+                    where
+                    applyModeInvariant mode =
+                        invariant vec
+                        where
+                        Just invariant =
+                            Map.lookup mode modeInvariants
+                    takeUnion [] = vec
+                    takeUnion list =
+                        let ?joinmeetEffort = effJoin in 
+                        foldl1 (zipWith (</\>)) list
+                    effJoin = ArithInOut.rrEffortJoinMeet sampleDom effDom
+                    (sampleDom : _) = vec
+        modeInvariants = hybsys_modeInvariants $ hybivp_system hybivp
         (maybeFinalState, modeEventInfoList) = 
             solveEvents
                 sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
@@ -323,16 +350,17 @@ solveEvents
                     | someEventCertain = EventNextSure
                     | otherwise = EventNextMaybe
                 someEventCertain =
-                    or $ map snd $ Set.elems possibleOrCertainFirstEventsSet
+                    or $ map (\(a,b,c) -> c) $ Set.elems possibleOrCertainFirstEventsSet
                 
                 eventTasksMap =
                     Map.fromAscList eventTasks
                 givenUp2 = 
                     or $ map eventInfoIsGivenUp (map snd eventTasks)
                 eventTasks =
-                    map simulateEvent $ eventKindList
-                simulateEvent eventKind =
-                    case maybeFnVecAfterEvent of
+                    map simulateEvent $ eventKindAndPruneList
+                simulateEvent (eventKind, pruneUsingTheGuard) =
+--                    case maybeFnVecAfterEventUseVT of
+                    case maybeFnVecAfterEventUseBox of
                         Just fnVecAfterEvent ->
                             (eventKind, EventTODO (modeAfterEvent, fnVecAfterEvent))
                         Nothing ->
@@ -342,24 +370,44 @@ solveEvents
                         case Map.lookup eventKind eventModeSwitchesAndResetFunctions of
                             Just res -> res
                             Nothing -> error $ "aern-ivp: hybrid system has no information about event kind " ++ show eventKind
-                    fnVecAtEvent = eventSwitchingFn fnVec
-                    maybeFnVecAfterEvent = 
-                        fmap (map $ removeAllVarsButT . fst) $
+                    fnVecAtEvent =
+                        wrapFnVecAsBox effEval pruneUsingTheGuard $
+                        eventSwitchingFn fnVec
+--                    maybeFnVecAfterEventUseVT = 
+--                        fmap (map $ removeAllVarsButT . fst) $
+--                        fmap (!! m) $
+--                        solveUncertainValueUncertainTime
+--                                sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+--                                    delta
+--                                        t0Var $
+--                                            odeivp tEnd modeAfterEvent $
+--                                                makeInitialValuesFromFnVecAtEvent
+--                        where
+--                        makeInitialValuesFromFnVecAtEvent _sizeLimits t0Var2 _t0Domain =
+--                            parametriseThickFunctions effAddFn effMultFn componentNames $
+--                                map (renameVar tVar t0Var2) fnVecAtEvent
+                    maybeFnVecAfterEventUseBox =
+                        fmap (wrapFnVecAsBox effEval invariant) $
+                        fmap (map removeAllVarsButT) $
                         fmap (!! m) $
-                        solveUncertainValueUncertainTime
-                                sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-                                    delta
-                                        t0Var $
-                                            odeivp tEnd modeAfterEvent $
-                                                makeInitialValuesFromFnVecAtEvent
+                        solveUncertainValueExactTime
+                            sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+                                delta
+                                    (odeivp tStart modeAfterEvent $ 
+                                        makeFnVecFromInitialValues componentNames 
+                                            $ getRangeVec fnVecAtEvent)
                         where
-                        makeInitialValuesFromFnVecAtEvent _sizeLimits t0Var2 _t0Domain =
-                            parametriseThickFunctions effAddFn effMultFn componentNames $
-                                map (renameVar tVar t0Var2) fnVecAtEvent
+                        Just invariant = Map.lookup modeAfterEvent modeInvariants  
                     
+                    getRangeVec fnVec = 
+                        map getRange fnVec
+                    getRange fn =
+                        evalAtPointOutEff effEval (getDomainBox fn) fn
+    
                 eventModeSwitchesAndResetFunctions = hybsys_eventModeSwitchesAndResetFunctions hybsys
-                eventKindList =
-                    map fst $ Set.elems $ possibleOrCertainFirstEventsSet
+                modeInvariants = hybsys_modeInvariants hybsys
+                eventKindAndPruneList =
+                    map (\(a,b,c) -> (a,b)) $ Set.elems $ possibleOrCertainFirstEventsSet
 
     odeivp t0End mode makeInitValueFnVec =
         ODEIVP
@@ -377,6 +425,32 @@ solveEvents
         where
         Just field = Map.lookup mode modeFields
         modeFields = hybsys_modeFields hybsys
+    
+wrapFnVecAsBox effEval transformVec fnVec =
+    result
+    where
+    result =
+        map (newConstFnFromSample sampleFn) $ transformVec rangeVec
+
+    rangeVec = map (evalAtPointOutEff effEval dombox) fnVec         
+    dombox = getDomainBox sampleFn
+    (sampleFn : _) = fnVec
+
+makeNonneg ::
+    (HasZero d, NumOrd.PartialComparison d, RefOrd.IntervalLike d) 
+    => 
+    d -> d
+makeNonneg r
+    | rangeContainsZero =
+        RefOrd.fromEndpointsOutWithDefaultEffort (z, rR)
+    | otherwise = r 
+    where
+    rangeContainsZero =
+        ((rL <=? z) == Just True)
+        &&
+        ((z <=? rR) == Just True)
+    z = zero r
+    (rL, rR) = RefOrd.getEndpointsOutWithDefaultEffort r
     
 data EventInfo f
     = EventNextSure (HybSysMode, [f]) (Map.Map HybSysEventKind (EventInfo f)) -- at least one

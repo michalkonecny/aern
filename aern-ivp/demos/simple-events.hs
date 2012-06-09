@@ -71,7 +71,7 @@ main =
     args <- getArgs
     case length args of
         2 -> writeCSV args
-        6 -> runOnce args
+        7 -> runOnce args
         _ -> usage
         
 usage :: IO ()
@@ -113,6 +113,7 @@ ivpExpDecay_resetTHalf =
         {
             hybsys_componentNames = ["x","time"],
             hybsys_modeFields = Map.fromList [(modeBefore, odeBefore), (modeAfter, odeAfter)],
+            hybsys_modeInvariants = Map.fromList [(modeBefore, id), (modeAfter, id)],
             hybsys_eventModeSwitchesAndResetFunctions =
                 Map.fromList [(eventReset, (modeAfter, switchReset))],
             hybsys_eventDetector = eventDetector
@@ -125,15 +126,15 @@ ivpExpDecay_resetTHalf =
     eventReset = HybSysEventKind "reset"
     switchReset :: [Poly] -> [Poly]
     switchReset [x,time] = [newConstFnFromSample x initValue, time]
-    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, Bool)
+    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, [CF] -> [CF], Bool)
     eventDetector (HybSysMode "after") _ = Set.empty -- reset only once!
     eventDetector _ [_x,time] =
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         case (time <? tEventPoly, tEventPoly <? time) of
             (Just True, _) -> Set.empty
             (_, Just True) -> Set.empty
-            (Just False, Just False) -> Set.singleton (eventReset, True)
-            _ -> Set.singleton (eventReset, False)
+            (Just False, Just False) -> Set.singleton (eventReset, id, True)
+            _ -> Set.singleton (eventReset, id, False)
         where
         tEventPoly = newConstFnFromSample time $ 1 <*>| tEventDbl
     tEventDbl = 0.5 :: Double
@@ -179,6 +180,7 @@ ivpExpDecay_resetOn34 =
         {
             hybsys_componentNames = ["x"],
             hybsys_modeFields = Map.fromList [(modeNormal, odeNormal)],
+            hybsys_modeInvariants = Map.fromList [(modeNormal, id)],
             hybsys_eventModeSwitchesAndResetFunctions =
                 Map.fromList [(eventReset, (modeNormal, switchReset))],
             hybsys_eventDetector = eventDetector
@@ -189,13 +191,13 @@ ivpExpDecay_resetOn34 =
     eventReset = HybSysEventKind "reset"
     switchReset :: [Poly] -> [Poly]
     switchReset [x] = [newConstFnFromSample x initValue]
-    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, Bool)
+    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, [CF] -> [CF], Bool)
     eventDetector _mode [x] =
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         case (xEventPoly <? x, x `leqT` xEventPoly) of
             (Just True, _) -> Set.empty -- reset ruled out
-            (_, True) -> Set.singleton (eventReset, True) -- reset inevitable
-            _ -> Set.singleton (eventReset, False)
+            (_, True) -> Set.singleton (eventReset, id, True) -- reset inevitable
+            _ -> Set.singleton (eventReset, id, False)
         where
         xEventPoly = newConstFnFromSample x $ 1 <*>| xEventDbl
         leqT = leqOverSomeT effEval 10 tVar
@@ -245,6 +247,7 @@ ivpSpringMass_resetTHalf =
         {
             hybsys_componentNames = ["x","x'","time"],
             hybsys_modeFields = Map.fromList [(modeBefore, odeBefore), (modeAfter, odeAfter)],
+            hybsys_modeInvariants = Map.fromList [(modeBefore, id), (modeAfter, id)],
             hybsys_eventModeSwitchesAndResetFunctions =
                 Map.fromList [(eventReset, (modeAfter, switchReset))],
             hybsys_eventDetector = eventDetector
@@ -257,15 +260,15 @@ ivpSpringMass_resetTHalf =
     eventReset = HybSysEventKind "reset"
     switchReset :: [Poly] -> [Poly]
     switchReset [x,_x',time] = map (newConstFnFromSample x) initValues ++ [time]
-    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, Bool)
+    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, [CF] -> [CF], Bool)
     eventDetector (HybSysMode "after") _ = Set.empty -- reset only once!
     eventDetector _ [_x,_x',time] =
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         case (time <? tEventPoly, tEventPoly <? time) of
             (Just True, _) -> Set.empty
             (_, Just True) -> Set.empty
-            (Just False, Just False) -> Set.singleton (eventReset, True)
-            _ -> Set.singleton (eventReset, False)
+            (Just False, Just False) -> Set.singleton (eventReset, id, True)
+            _ -> Set.singleton (eventReset, id, False)
         where
         tEventPoly = newConstFnFromSample time $ 1 <*>| tEventDbl
     tEventDbl = 0.5 :: Double
@@ -313,6 +316,7 @@ ivpSpringMass_resetOn34 =
         {
             hybsys_componentNames = ["x","x'"],
             hybsys_modeFields = Map.fromList [(modeNormal, odeNormal)],
+            hybsys_modeInvariants = Map.fromList [(modeNormal, id)],
             hybsys_eventModeSwitchesAndResetFunctions =
                 Map.fromList [(eventReset, (modeNormal, switchReset))],
             hybsys_eventDetector = eventDetector
@@ -323,13 +327,13 @@ ivpSpringMass_resetOn34 =
     eventReset = HybSysEventKind "reset"
     switchReset :: [Poly] -> [Poly]
     switchReset [x,_x'] = map (newConstFnFromSample x) initValues
-    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, Bool)
+    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, [CF] -> [CF], Bool)
     eventDetector _mode [x,_x'] =
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         case (xEventPoly <? x, x `leqT` xEventPoly) of
             (Just True, _) -> Set.empty -- reset ruled out
-            (_, True) -> Set.singleton (eventReset, True) -- reset inevitable
-            _ -> Set.singleton (eventReset, False)
+            (_, True) -> Set.singleton (eventReset, id, True) -- reset inevitable
+            _ -> Set.singleton (eventReset, id, False)
         where
         xEventPoly = newConstFnFromSample x $ 1 <*>| xEventDbl
         leqT = leqOverSomeT effEval 10 tVar
@@ -397,6 +401,7 @@ ivpBouncingBall_AtTime tEnd [xEnd, xDerEnd] =
         {
             hybsys_componentNames = ["x","x'"],
             hybsys_modeFields = Map.fromList [(modeFreeFall, odeFreeFall)],
+            hybsys_modeInvariants = Map.fromList [(modeFreeFall, invariantFreeFall)],
             hybsys_eventModeSwitchesAndResetFunctions =
                 Map.fromList [(eventBounce, (modeFreeFall, switchBounce))],
             hybsys_eventDetector = eventDetector
@@ -404,17 +409,21 @@ ivpBouncingBall_AtTime tEnd [xEnd, xDerEnd] =
     modeFreeFall = HybSysMode "freefall"
     odeFreeFall :: [Poly] -> [Poly]
     odeFreeFall [x,x'] = [x', newConstFnFromSample x (-10)]
+    invariantFreeFall [x,x'] = [makeNonneg x,x']
     eventBounce = HybSysEventKind "bounce"
+    pruneBounce [_x,x'] = [0, x']
     switchBounce :: [Poly] -> [Poly]
-    switchBounce [_x,x'] = [newConstFnFromSample x' 0, (-0.5 :: Double) |<*> x']
-    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, Bool)
+    switchBounce [x,x'] = 
+        [x, (-0.5 :: Double) |<*> x']
+--        [newConstFnFromSample x' 0, (0 :: Double) |<*> x']
+    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, [CF] -> [CF], Bool)
     eventDetector _mode [x,x'] =
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         case (zP <? x, zP <? x', [x,x'] `allLeqT` 0) of
             (Just True, _, _) -> Set.empty -- ball above ground, bounce ruled out
             (_, Just True, _) -> Set.empty -- ball rising, bounce ruled out 
-            (_, _, True) -> Set.singleton (eventBounce, True) -- bounce inevitable
-            _ -> Set.singleton (eventBounce, False)
+            (_, _, True) -> Set.singleton (eventBounce, pruneBounce, True) -- bounce inevitable
+            _ -> Set.singleton (eventBounce, pruneBounce, False)
         where
         zP = newConstFnFromSample x 0
         allLeqT fns bound = predOverSomeT bothLeqBound effEval 10 tVar fns
@@ -464,19 +473,21 @@ ivpBouncingBall_AtTime tEnd [xEnd, xDerEnd] =
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", x'(" ++ show tStart ++ ") = " ++ show initX'
     initValues@[initX, initX'] = [5,0] :: [CF]
+--    initValues@[initX, initX'] = [0,0] :: [CF]
     tStart = hybivp_tStart ivp
 --    tEnd = hybivp_tEnd ivp
     tVar = hybivp_tVar ivp
 
 runOnce :: [String] -> IO ()
-runOnce [ivpName, maxDegS, depthS, shouldPlotStepsS, shouldShowStepsS, maxSplitSizeS] =
+runOnce [ivpName, maxDegS, depthS, minDepthS, shouldPlotStepsS, shouldShowStepsS, maxSplitSizeS] =
     do
     let maxDeg = read maxDegS :: Int
     let depth = read depthS :: Int
+    let minDepth = read minDepthS :: Int
     let maxSplitSize = read maxSplitSizeS :: Int
     let shouldShowSteps = read shouldShowStepsS :: Bool
     let shouldPlotSteps = read shouldPlotStepsS :: Bool
-    _ <- solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxDeg, depth, maxSplitSize)
+    _ <- solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxDeg, depth, minDepth, maxSplitSize)
     return ()
     where
     ivp = ivpByName ivpName
@@ -517,7 +528,7 @@ writeCSV [ivpName, outputFileName] =
         solveAndMeasure _ =
             do
             starttime <- getCPUTime
-            maybeSolverResult <- timeout (10 * oneMinuteInMicroS) $ solveEventsPrintSteps False False ivp (maxDegree, depth, 4*maxDegree*maxDegree)
+            maybeSolverResult <- timeout (10 * oneMinuteInMicroS) $ solveEventsPrintSteps False False ivp (maxDegree, depth, minDepth, 4*maxDegree*maxDegree)
             endtime <- getCPUTime
             let solverResult = tweakSolverResult maybeSolverResult 
             return $ (solverResult, (endtime - starttime) `div` 1000000000)
@@ -527,6 +538,7 @@ writeCSV [ivpName, outputFileName] =
 --            oneHourInMicroS = 60 * oneMinuteInMicroS
             oneMinuteInMicroS = 60 * oneSecondInMicroS
             oneSecondInMicroS = 1000000
+        minDepth = 1
     
     description = hybivp_description ivp
     maybeStateExact = hybivp_maybeExactStateAtTEnd ivp
@@ -576,10 +588,10 @@ solveEventsPrintSteps ::
     ->
     HybridIVP Poly 
     -> 
-    (Int, Int, Int) 
+    (Int, Int, Int, Int) 
     -> 
     IO (Maybe (HybridSystemUncertainState Poly), SplittingInfo solvingInfo (solvingInfo, Maybe CF))
-solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthParam, maxSplitSizeParam) =
+solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthParam, minDepthParam, maxSplitSizeParam) =
     do
     putStrLn "---------------------------------------------------"
     putStrLn "demo of solve-VtE from (Konecny, Taha, Duracz 2012)"
@@ -628,7 +640,7 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
     (maybeEndState, splittingInfo) =
         solveHybridIVP
             sizeLimits effCf substSplitSizeLimit
-                delta m minStepSize splitImprovementThreshold
+                delta m minStepSize maxStepSize splitImprovementThreshold
                     "t0" 
                         ivp
     -- parameters:
@@ -640,6 +652,8 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
 --    minStepSizeExp = -4 :: Int
     minStepSizeExp = - depthParam
     minStepSize = 2^^minStepSizeExp
+    maxStepSizeExp = - minDepthParam
+    maxStepSize = 2^^maxStepSizeExp
     splitImprovementThreshold = 2^^(-48 :: Int)
     
     -- auxiliary:
@@ -763,6 +777,7 @@ solveHybridIVP ::
     Int ->
     CF ->
     CF ->
+    CF ->
     Var Poly ->
     HybridIVP Poly 
     ->
@@ -773,7 +788,7 @@ solveHybridIVP ::
     )
 solveHybridIVP 
         sizeLimits effCf substSplitSizeLimit
-            delta m minStepSize splitImprovementThreshold 
+            delta m minStepSize maxStepSize splitImprovementThreshold 
                 t0Var
                     hybivp
     =
@@ -782,7 +797,7 @@ solveHybridIVP
     result =
         solveEventsTimeSplit
             sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effCf
-                delta m t0Var minStepSize splitImprovementThreshold
+                delta m t0Var minStepSize maxStepSize splitImprovementThreshold
                     hybivp
 
     sampleCf = delta 
