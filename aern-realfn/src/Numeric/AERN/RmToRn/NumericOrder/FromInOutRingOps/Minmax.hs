@@ -2,6 +2,7 @@
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Minmax
     Description :  approximation of min and max using only ring operations

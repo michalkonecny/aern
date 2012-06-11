@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding
     Description :  common arithmetical operations rounded up/down  

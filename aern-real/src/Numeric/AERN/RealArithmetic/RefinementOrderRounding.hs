@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-|
     Module      :  Numeric.AERN.RefinementOrderRounding
     Description :  common arithmetical operations rounded in/out  
