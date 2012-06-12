@@ -342,15 +342,15 @@ solveEvents
                     | nodeCountSoFar + eventCount > maxNodes = Nothing
                     | otherwise = Just $ nodeCountSoFar + eventCount
                 eventCount = 
-                    Set.size possibleOrCertainFirstEventsSet
-                possibleOrCertainFirstEventsSet = 
+                    Map.size possibleOrCertainFirstEventsMap
+                possibleOrCertainFirstEventsMap = 
                     hybsys_eventDetector hybsys mode fnVec
 
                 constructorForNextEvents 
                     | someEventCertain = EventNextSure
                     | otherwise = EventNextMaybe
                 someEventCertain =
-                    or $ map (\(a,b,c) -> c) $ Set.elems possibleOrCertainFirstEventsSet
+                    or $ map (\(b,c) -> c) $ Map.elems possibleOrCertainFirstEventsMap
                 
                 eventTasksMap =
                     Map.fromAscList eventTasks
@@ -407,7 +407,7 @@ solveEvents
                 eventModeSwitchesAndResetFunctions = hybsys_eventModeSwitchesAndResetFunctions hybsys
                 modeInvariants = hybsys_modeInvariants hybsys
                 eventKindAndPruneList =
-                    map (\(a,b,c) -> (a,b)) $ Set.elems $ possibleOrCertainFirstEventsSet
+                    map (\(a,(b,c)) -> (a,b)) $ Map.toList $ possibleOrCertainFirstEventsMap
 
     odeivp t0End mode makeInitValueFnVec =
         ODEIVP

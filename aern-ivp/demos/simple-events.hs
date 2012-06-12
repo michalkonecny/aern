@@ -129,15 +129,15 @@ ivpExpDecay_resetTHalf =
     eventReset = HybSysEventKind "reset"
     switchReset :: [Poly] -> [Poly]
     switchReset [x,time] = [newConstFnFromSample x initValue, time]
-    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, [CF] -> [CF], Bool)
-    eventDetector (HybSysMode "after") _ = Set.empty -- reset only once!
+    eventDetector :: HybSysMode -> [Poly] -> Map.Map HybSysEventKind ([CF] -> [CF], Bool)
+    eventDetector (HybSysMode "after") _ = Map.empty -- reset only once!
     eventDetector _ [_x,time] =
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         case (time <? tEventPoly, tEventPoly <? time) of
-            (Just True, _) -> Set.empty
-            (_, Just True) -> Set.empty
-            (Just False, Just False) -> Set.singleton (eventReset, id, True)
-            _ -> Set.singleton (eventReset, id, False)
+            (Just True, _) -> Map.empty
+            (_, Just True) -> Map.empty
+            (Just False, Just False) -> Map.singleton eventReset (id, True)
+            _ -> Map.singleton eventReset (id, False)
         where
         tEventPoly = newConstFnFromSample time $ 1 <*>| tEventDbl
     tEventDbl = 0.5 :: Double
@@ -194,13 +194,13 @@ ivpExpDecay_resetOn34 =
     eventReset = HybSysEventKind "reset"
     switchReset :: [Poly] -> [Poly]
     switchReset [x] = [newConstFnFromSample x initValue]
-    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, [CF] -> [CF], Bool)
+    eventDetector :: HybSysMode -> [Poly] -> Map.Map HybSysEventKind ([CF] -> [CF], Bool)
     eventDetector _mode [x] =
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         case (xEventPoly <? x, x `leqT` xEventPoly) of
-            (Just True, _) -> Set.empty -- reset ruled out
-            (_, True) -> Set.singleton (eventReset, id, True) -- reset inevitable
-            _ -> Set.singleton (eventReset, id, False)
+            (Just True, _) -> Map.empty -- reset ruled out
+            (_, True) -> Map.singleton eventReset (id, True) -- reset inevitable
+            _ -> Map.singleton eventReset (id, False)
         where
         xEventPoly = newConstFnFromSample x $ 1 <*>| xEventDbl
         leqT = leqOverSomeT effEval 10 tVar
@@ -263,15 +263,15 @@ ivpSpringMass_resetTHalf =
     eventReset = HybSysEventKind "reset"
     switchReset :: [Poly] -> [Poly]
     switchReset [x,_x',time] = map (newConstFnFromSample x) initValues ++ [time]
-    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, [CF] -> [CF], Bool)
-    eventDetector (HybSysMode "after") _ = Set.empty -- reset only once!
+    eventDetector :: HybSysMode -> [Poly] -> Map.Map HybSysEventKind ([CF] -> [CF], Bool)
+    eventDetector (HybSysMode "after") _ = Map.empty -- reset only once!
     eventDetector _ [_x,_x',time] =
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         case (time <? tEventPoly, tEventPoly <? time) of
-            (Just True, _) -> Set.empty
-            (_, Just True) -> Set.empty
-            (Just False, Just False) -> Set.singleton (eventReset, id, True)
-            _ -> Set.singleton (eventReset, id, False)
+            (Just True, _) -> Map.empty
+            (_, Just True) -> Map.empty
+            (Just False, Just False) -> Map.singleton eventReset (id, True)
+            _ -> Map.singleton eventReset (id, False)
         where
         tEventPoly = newConstFnFromSample time $ 1 <*>| tEventDbl
     tEventDbl = 0.5 :: Double
@@ -330,13 +330,13 @@ ivpSpringMass_resetOn34 =
     eventReset = HybSysEventKind "reset"
     switchReset :: [Poly] -> [Poly]
     switchReset [x,_x'] = map (newConstFnFromSample x) initValues
-    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, [CF] -> [CF], Bool)
+    eventDetector :: HybSysMode -> [Poly] -> Map.Map HybSysEventKind ([CF] -> [CF], Bool)
     eventDetector _mode [x,_x'] =
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         case (xEventPoly <? x, x `leqT` xEventPoly) of
-            (Just True, _) -> Set.empty -- reset ruled out
-            (_, True) -> Set.singleton (eventReset, id, True) -- reset inevitable
-            _ -> Set.singleton (eventReset, id, False)
+            (Just True, _) -> Map.empty -- reset ruled out
+            (_, True) -> Map.singleton eventReset (id, True) -- reset inevitable
+            _ -> Map.singleton eventReset (id, False)
         where
         xEventPoly = newConstFnFromSample x $ 1 <*>| xEventDbl
         leqT = leqOverSomeT effEval 10 tVar
@@ -419,14 +419,14 @@ ivpBouncingBall_AtTime tEnd [xEnd, xDerEnd] =
     switchBounce [x,x'] = 
         [x, (-0.5 :: Double) |<*> x']
 --        [newConstFnFromSample x' 0, (0 :: Double) |<*> x']
-    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, [CF] -> [CF], Bool)
+    eventDetector :: HybSysMode -> [Poly] -> Map.Map HybSysEventKind ([CF] -> [CF], Bool)
     eventDetector _mode [x,x'] =
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         case (zP <? x, zP <? x', [x,x'] `allLeqT` 0) of
-            (Just True, _, _) -> Set.empty -- ball above ground, bounce ruled out
-            (_, Just True, _) -> Set.empty -- ball rising, bounce ruled out 
-            (_, _, True) -> Set.singleton (eventBounce, pruneBounce, True) -- bounce inevitable
-            _ -> Set.singleton (eventBounce, pruneBounce, False)
+            (Just True, _, _) -> Map.empty -- ball above ground, bounce ruled out
+            (_, Just True, _) -> Map.empty -- ball rising, bounce ruled out 
+            (_, _, True) -> Map.singleton eventBounce (pruneBounce, True) -- bounce inevitable
+            _ -> Map.singleton eventBounce (pruneBounce, False)
         where
         zP = newConstFnFromSample x 0
         allLeqT fns bound = predOverSomeT allLeqBound effEval 10 tVar fns
@@ -509,20 +509,153 @@ ivpTwoTanks_AfterZeno tEndMinusTZeno =
     event2To1 = HybSysEventKind "2To1"
     prune1To2 [x1,_x2] = [x1, 0]
     prune2To1 [_x1,x2] = [0, x2]
-    eventDetector :: HybSysMode -> [Poly] -> Set.Set (HybSysEventKind, [CF] -> [CF], Bool)
+    eventDetector :: HybSysMode -> [Poly] -> Map.Map HybSysEventKind ([CF] -> [CF], Bool)
     eventDetector mode [x1,x2] =
         case mode of
             HybSysMode "fill1" ->
                 case (zP <? x2, [x2] `allLeqT` 0) of
-                    (Just True, _) -> Set.empty -- tank 2 not empty throughtout T, switch ruled out
-                    (_, True) -> Set.singleton (event1To2, prune1To2, True) -- switch inevitable somewhere on T
-                    _ -> Set.singleton (event1To2, prune1To2, False) -- switch cannot be ruled out nor ascertained on T
+                    (Just True, _) -> Map.empty -- tank 2 not empty throughtout T, switch ruled out
+                    (_, True) -> Map.singleton event1To2 (prune1To2, True) -- switch inevitable somewhere on T
+                    _ -> Map.singleton event1To2 (prune1To2, False) -- switch cannot be ruled out nor ascertained on T
             HybSysMode "fill2" ->
                 case (zP <? x1, [x1] `allLeqT` 0) of
-                    (Just True, _) -> Set.empty -- tank 1 not empty throughtout T, switch ruled out
-                    (_, True) -> Set.singleton (event2To1, prune2To1, True) -- switch inevitable somewhere on T
-                    _ -> Set.singleton (event2To1, prune2To1, False) -- switch cannot be ruled out nor ascertained on T
+                    (Just True, _) -> Map.empty -- tank 1 not empty throughtout T, switch ruled out
+                    (_, True) -> Map.singleton event2To1 (prune2To1, True) -- switch inevitable somewhere on T
+                    _ -> Map.singleton event2To1 (prune2To1, False) -- switch cannot be ruled out nor ascertained on T
         where
+        zP = newConstFnFromSample x1 0
+        allLeqT fns bound = predOverSomeT allLeqBound effEval 10 tVar fns
+            where
+            allLeqBound vals
+--                | result =
+--                    unsafePrint
+--                    (
+--                        "bothLeqBound: result = true:"
+--                        ++ "\n a = " ++ show a
+--                        ++ "\n b = " ++ show b
+--                        ++ "\n bound = " ++ show bound
+--                    ) 
+--                    result
+                | otherwise = result
+                where
+                result =
+                    and $ map (\a -> ((a <=? bound) == Just True)) vals
+        effEval = evaluationDefaultEffort x1
+    
+    ivp :: HybridIVP Poly
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = 0,
+            hybivp_tEnd = tEnd,
+            hybivp_initialStateEnclosure = 
+                HybridSystemUncertainState 
+                { 
+                    hybstate_modes = Set.singleton modeFill1,
+                    hybstate_values = initValues
+                },
+            hybivp_maybeExactStateAtTEnd = Just $
+                HybridSystemUncertainState 
+                {
+                    hybstate_modes = Set.fromList [modeFill1, modeFill2],
+                    hybstate_values = [0, 0]
+                }
+        }
+    description =
+        ""
+        ++    "if fill1 then (if x2 = 0 then fill2 else x1' = 4-2, x2' =  -3)"
+        ++ "\n if fill2 then (if x1 = 0 then fill1 else x1' =  -2, x2' = 4-3)"
+        ++ "\n ; x1(" ++ show tStart ++ ") = " ++ show initX1
+        ++    ", x2(" ++ show tStart ++ ") = " ++ show initX2
+    initValues@[initX1, initX2] = [1,1] :: [CF]
+    tStart = hybivp_tStart ivp
+--    tEnd = hybivp_tEnd ivp
+    tVar = hybivp_tVar ivp
+
+ivpTwoTanksSum_AfterZeno :: CF -> HybridIVP Poly
+ivpTwoTanksSum_AfterZeno tEndMinusTZeno =
+    ivp
+    where
+    v1 = 2 :: CF
+    v2 = 3 :: CF
+    w = 4 :: CF
+    tZeno = 2
+    tEnd = tEndMinusTZeno + tZeno
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x1","x2","x12"],
+            hybsys_modeFields = Map.fromList 
+                [(modeFill1, odeFill1), 
+                 (modeFill2, odeFill2),
+                 (modeFlow, odeFlow)
+                ],
+            hybsys_modeInvariants = Map.fromList [(modeFill1, invariant), (modeFill2, invariant)],
+            hybsys_eventModeSwitchesAndResetFunctions =
+                Map.fromList 
+                    [(event1To2, (modeFill2, id)), 
+                     (event2To1, (modeFill1, id)),
+                     (eventEmpty, (modeFlow, id))
+                    ],
+            hybsys_eventDetector = eventDetector
+        }
+    modeFill1 = HybSysMode "fill1"
+    modeFill2 = HybSysMode "fill2"
+    modeFlow = HybSysMode "flow"
+    odeFill1 :: [Poly] -> [Poly]
+    odeFill1 [_x1,_x2,_x12] = 
+        [newConstFnFromSample _x1 (w - v1), 
+         newConstFnFromSample _x1 (- v2), 
+         newConstFnFromSample _x1 (w - v1- v2)
+        ]
+    odeFill2 :: [Poly] -> [Poly]
+    odeFill2 [_x1,_x2,_x12] = 
+        [newConstFnFromSample _x1 (- v1), 
+         newConstFnFromSample _x1 (w - v2),
+         newConstFnFromSample _x1 (w - v1- v2)
+        ]
+    odeFlow :: [Poly] -> [Poly]
+    odeFlow [_x1,_x2,_x12] =
+        [newConstFnFromSample _x1 0, 
+         newConstFnFromSample _x1 0,
+         newConstFnFromSample _x1 0
+        ]
+    invariant [x1,x2,x12] =
+        [(makeNonneg x1) CF.<\/> (x12 - x2), 
+         (makeNonneg x2) CF.<\/> (x12 - x1), 
+         x12 CF.<\/> (x1 + x2)
+        ]
+    event1To2 = HybSysEventKind "1To2"
+    event2To1 = HybSysEventKind "2To1"
+    eventEmpty = HybSysEventKind "empty"
+    prune1To2 [x1,_x2, x12] = [x1, 0, x12]
+    prune2To1 [_x1,x2, x12] = [0, x2, x12]
+    pruneEmpty _ = [0,0,0]
+--    pruneEmpty = id -- only for testing, the above definition is clearly better
+    eventDetector :: HybSysMode -> [Poly] -> Map.Map HybSysEventKind ([CF] -> [CF], Bool)
+    eventDetector mode [x1,x2,x12] =
+        switchEvents `Map.union` emptyEvents
+        where
+        emptyEvents =
+            case (zP <? x12, [x12] `allLeqT` 0) of
+                (Just True, _) -> Map.empty -- sum of tank levels positive throughtout T, emptying ruled out
+                (_, True) -> Map.singleton eventEmpty (pruneEmpty, True) -- emptying inevitable somewhere on T
+                _ -> Map.singleton eventEmpty (pruneEmpty, False) -- emptying cannot be ruled out nor ascertained on T
+        switchEvents =
+            case mode of
+                HybSysMode "fill1" ->
+                    case (zP <? x2, [x2] `allLeqT` 0) of
+                        (Just True, _) -> Map.empty -- tank 2 not empty throughtout T, switch ruled out
+                        (_, True) -> Map.singleton event1To2 (prune1To2, True) -- switch inevitable somewhere on T
+                        _ -> Map.singleton event1To2 (prune1To2, False) -- switch cannot be ruled out nor ascertained on T
+                HybSysMode "fill2" ->
+                    case (zP <? x1, [x1] `allLeqT` 0) of
+                        (Just True, _) -> Map.empty -- tank 1 not empty throughtout T, switch ruled out
+                        (_, True) -> Map.singleton event2To1 (prune2To1, True) -- switch inevitable somewhere on T
+                        _ -> Map.singleton event2To1 (prune2To1, False) -- switch cannot be ruled out nor ascertained on T
         zP = newConstFnFromSample x1 0
         allLeqT fns bound = predOverSomeT allLeqBound effEval 10 tVar fns
             where
