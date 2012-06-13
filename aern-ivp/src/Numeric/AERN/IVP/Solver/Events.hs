@@ -312,7 +312,7 @@ solveEvents
                         where
                         (newChild, newNodeCountSoFar, hasChanged) = 
                             processNode nodeCountSoFarWithRest previousStates child
-            processState nodeCountSoFar previousStates state@(mode, fnVec) 
+            processState nodeCountSoFar previousStates state@(mode, fnVecBeforeEvent) 
                 -- first check whether this state is included in a previous state:
                 | stateShrinksPreviousOne =
                     (EventFixedPoint state, Just (nodeCountSoFar + 1), True)
@@ -344,21 +344,21 @@ solveEvents
                 eventCount = 
                     Map.size possibleOrCertainFirstEventsMap
                 possibleOrCertainFirstEventsMap = 
-                    hybsys_eventDetector hybsys mode fnVec
+                    hybsys_eventDetector hybsys mode fnVecBeforeEvent
 
                 constructorForNextEvents 
                     | someEventCertain = EventNextSure
                     | otherwise = EventNextMaybe
                 someEventCertain =
-                    or $ map (\(b,c) -> c) $ Map.elems possibleOrCertainFirstEventsMap
+                    or $ map (\(eventCertain, _,_) -> eventCertain) $ Map.elems possibleOrCertainFirstEventsMap
                 
                 eventTasksMap =
                     Map.fromAscList eventTasks
                 givenUp2 = 
                     or $ map eventInfoIsGivenUp (map snd eventTasks)
                 eventTasks =
-                    map simulateEvent $ eventKindAndPruneList
-                simulateEvent (eventKind, pruneUsingTheGuard) =
+                    map simulateEvent $ eventKindAffectCompsAndPruneList
+                simulateEvent (eventKind, affectedComponents, pruneUsingTheGuard) =
 --                    case maybeFnVecAfterEventUseVT of
                     case maybeFnVecAfterEventUseBox of
                         Just fnVecAfterEvent ->
@@ -372,7 +372,7 @@ solveEvents
                             Nothing -> error $ "aern-ivp: hybrid system has no information about event kind " ++ show eventKind
                     fnVecAtEvent =
                         wrapFnVecAsBox effEval pruneUsingTheGuard $
-                        eventSwitchingFn fnVec
+                        eventSwitchingFn fnVecBeforeEvent
 --                    maybeFnVecAfterEventUseVT = 
 --                        fmap (map $ removeAllVarsButT . fst) $
 --                        fmap (!! m) $
@@ -387,7 +387,9 @@ solveEvents
 --                            parametriseThickFunctions effAddFn effMultFn componentNames $
 --                                map (renameVar tVar t0Var2) fnVecAtEvent
                     maybeFnVecAfterEventUseBox =
+                        fmap (restoreUnaffectedComponents) $ -- to remove boxes for unaffected components
                         fmap (wrapFnVecAsBox effEval invariant) $
+                        fmap (restoreUnaffectedComponents) $ -- to improve the effect of the invariant if unaffected components are used
                         fmap (map removeAllVarsButT) $
                         fmap (!! m) $
                         solveUncertainValueExactTime
@@ -398,7 +400,11 @@ solveEvents
                                             $ getRangeVec fnVecAtEvent)
                         where
                         Just invariant = Map.lookup modeAfterEvent modeInvariants  
-                    
+                        restoreUnaffectedComponents fnVecAfterEvent =
+                            zipWith pick affectedComponents $ zip fnVecAfterEvent fnVecBeforeEvent
+                            where
+                            pick True (fnAfterEvent, _fnBeforeEvent) = fnAfterEvent
+                            pick False (_fnAfterEvent, fnBeforeEvent) = fnBeforeEvent  
                     getRangeVec fnVec = 
                         map getRange fnVec
                     getRange fn =
@@ -406,8 +412,9 @@ solveEvents
     
                 eventModeSwitchesAndResetFunctions = hybsys_eventModeSwitchesAndResetFunctions hybsys
                 modeInvariants = hybsys_modeInvariants hybsys
-                eventKindAndPruneList =
-                    map (\(a,(b,c)) -> (a,b)) $ Map.toList $ possibleOrCertainFirstEventsMap
+                eventKindAffectCompsAndPruneList =
+                    map (\(eventKind,(_,affectedComps,pruneFn)) -> (eventKind,affectedComps,pruneFn)) $ 
+                        Map.toList $ possibleOrCertainFirstEventsMap
 
     odeivp t0End mode makeInitValueFnVec =
         ODEIVP

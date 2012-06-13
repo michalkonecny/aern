@@ -78,10 +78,16 @@ data HybridSystem f =
             HybSysMode ->
             [f] -> 
             Map.Map HybSysEventKind
-                ([Domain f] -> [Domain f], 
+                (
+                 Bool, -- is this event certain unless it is beaten by another event?
+                 [Bool],
+                    {- indication of which components are affected by the event;
+                       a component is affected if the reset function changes its value OR
+                       if the new mode has a different dynamics for this variable -}
+                 [Domain f] -> [Domain f] 
                     {- intersection with the support of the guard, 
                        used to prune some impossible states at the switching point -} 
-                 Bool) -- is this event certain unless it is beaten by another event? 
+                )  
     }
     
 newtype HybSysMode = HybSysMode String deriving (Eq, Ord, Show)
