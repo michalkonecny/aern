@@ -217,10 +217,10 @@ solveHybridIVPBySplittingT
             where
             improvement =
                 let ?addInOutEffort = effAddDom in
-                modeImprovement <+> (foldl1 (NumOrd.maxOutEff effMinmax) improvements)
+                modeImprovement <+> (foldl1 (<+>) improvements)
             improvements = map measureImprovement $ zip vec1 vec2
             modeImprovement 
-                | modes1 /= modes2 = one sampleDom
+--                | modes1 /= modes2 = one sampleDom
                 | otherwise = zero sampleDom
             vec1 = hybstate_values state1
             vec2 = hybstate_values state2
