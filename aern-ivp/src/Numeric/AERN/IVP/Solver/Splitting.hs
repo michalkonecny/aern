@@ -133,7 +133,7 @@ solveHybridIVPBySplittingT
                 case maybeSplitImprovement of
                     Just improvementBy 
                         | (improvementBy >? splitImprovementThreshold) /= Just True -> 
-                            directComputation -- computations succeeded but brought no noticeable improvement
+                            directComputation -- split once computations succeeded but brought no noticeable improvement
                     _
                         | splitComputationFailed -> directComputation
                         | otherwise -> splitComputation -- splitting either brought noticeable improvement or some computation failed 
@@ -220,7 +220,7 @@ solveHybridIVPBySplittingT
                 modeImprovement <+> (foldl1 (<+>) improvements)
             improvements = map measureImprovement $ zip vec1 vec2
             modeImprovement 
---                | modes1 /= modes2 = one sampleDom
+                | modes1 /= modes2 = one sampleDom
                 | otherwise = zero sampleDom
             vec1 = hybstate_values state1
             vec2 = hybstate_values state2

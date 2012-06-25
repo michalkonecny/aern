@@ -104,6 +104,9 @@ ivpByName "bouncingBall-zenoPlus2" = ivpBouncingBall_AfterZeno 2
 ivpByName "bouncingBallEnergy-zeno" = ivpBouncingBallEnergy_AfterZeno 0 
 ivpByName "bouncingBallEnergy-zenoPlus1Over2" = ivpBouncingBallEnergy_AfterZeno 0.5 
 ivpByName "bouncingBallEnergy-zenoPlus2" = ivpBouncingBallEnergy_AfterZeno 2
+ivpByName "bouncingBallEnergyPeak-zeno" = ivpBouncingBallEnergyPeak_AfterZeno 0 
+ivpByName "bouncingBallEnergyPeak-zenoPlus1Over2" = ivpBouncingBallEnergyPeak_AfterZeno 0.5 
+ivpByName "bouncingBallEnergyPeak-zenoPlus2" = ivpBouncingBallEnergyPeak_AfterZeno 2
 ivpByName "twoTanks-zenoMinus1Over16" = ivpTwoTanks_AfterZeno (-1/16) 
 ivpByName "twoTanks-zeno" = ivpTwoTanks_AfterZeno 0 
 ivpByName "twoTanks-zenoPlus1Over2" = ivpTwoTanks_AfterZeno 0.5 
@@ -111,6 +114,7 @@ ivpByName "twoTanks-zenoPlus2" = ivpTwoTanks_AfterZeno 2
 ivpByName "twoTanksSum-zenoMinus1Over16" = ivpTwoTanksSum_AfterZeno (-1/16) 
 ivpByName "twoTanksSum-zeno" = ivpTwoTanksSum_AfterZeno (0) 
 ivpByName "twoTanksSum-zenoPlus1Over2" = ivpTwoTanksSum_AfterZeno 0.5 
+ivpByName "bouncingSpring-1" = ivpBouncingSpring_AtTime 4 [0,0] 
 ivpByName name = error $ "unknown IVP " ++ name
 
 
@@ -410,16 +414,17 @@ ivpBouncingBall_AtTime tEnd [xEnd, xDerEnd] =
         HybridSystem
         {
             hybsys_componentNames = ["x","x'"],
-            hybsys_modeFields = Map.fromList [(modeFreeFall, odeFreeFall)],
-            hybsys_modeInvariants = Map.fromList [(modeFreeFall, invariantFreeFall)],
+            hybsys_modeFields = Map.fromList [(modeMove, odeMove)],
+            hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
             hybsys_eventModeSwitchesAndResetFunctions =
-                Map.fromList [(eventBounce, (modeFreeFall, switchBounce))],
+                Map.fromList [(eventBounce, (modeMove, switchBounce))],
             hybsys_eventDetector = eventDetector
         }
-    modeFreeFall = HybSysMode "freefall"
-    odeFreeFall :: [Poly] -> [Poly]
-    odeFreeFall [x,x'] = [x', newConstFnFromSample x (-10)]
-    invariantFreeFall [x,x'] = [makeNonneg x,x']
+    modeMove = HybSysMode "move"
+    odeMove :: [Poly] -> [Poly]
+    odeMove [x,x'] = [x', newConstFnFromSample x (-10)]
+--    invariantMove = id
+    invariantMove [x,x'] = [makeNonneg x,x']
     eventBounce = HybSysEventKind "bounce"
     pruneBounce [_x,x'] = [0, x']
     switchBounce :: [Poly] -> [Poly]
@@ -466,18 +471,18 @@ ivpBouncingBall_AtTime tEnd [xEnd, xDerEnd] =
             hybivp_initialStateEnclosure = 
                 HybridSystemUncertainState 
                 { 
-                    hybstate_modes = Set.singleton modeFreeFall,
+                    hybstate_modes = Set.singleton modeMove,
                     hybstate_values = initValues
                 },
             hybivp_maybeExactStateAtTEnd = Just $
                 HybridSystemUncertainState 
                 {
-                    hybstate_modes = Set.singleton modeFreeFall,
+                    hybstate_modes = Set.singleton modeMove,
                     hybstate_values = [xEnd, xDerEnd]
                 }
         }
     description =
-        "if x <= 0 && x' <= 0 then post(x) = 0, post(x') = -0.5*pre(x') else x'' = -10" 
+        "if x = 0 && x' <= 0 then post(x') = -0.5*pre(x') else x'' = -10" 
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", x'(" ++ show tStart ++ ") = " ++ show initX'
     initValues@[initX, initX'] = [5,0] :: [CF]
@@ -504,6 +509,138 @@ ivpBouncingBallEnergy_AfterZeno howLong =
 
 ivpBouncingBallEnergy_AtTime :: CF -> [CF] -> HybridIVP Poly
 ivpBouncingBallEnergy_AtTime tEnd [xEnd, vEnd] =
+    ivp
+    where
+    rEnd = energyWith xEnd vEnd
+    energyWith x v = 0 CF.</\> (v * v + 20 * x)
+        -- added zero so that after reset the interval refines the original (model-level hack!)  
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x","v","r"],
+            hybsys_modeFields = Map.fromList [(modeMove, odeMove)],
+            hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
+            hybsys_eventModeSwitchesAndResetFunctions =
+                Map.fromList [(eventBounce, (modeMove, resetBounce))],
+            hybsys_eventDetector = eventDetector
+        }
+    modeMove = HybSysMode "move"
+    odeMove :: [Poly] -> [Poly]
+    odeMove [x,v,r] = [v, newConstFnFromSample x (-10), newConstFnFromSample r 0]
+    invariantMove [x,v,r] =
+--        unsafePrintReturn
+--        (
+--            "invariantFall:"
+--            ++ "\n x = " ++ show x
+--            ++ "\n v = " ++ show v
+--            ++ "\n r = " ++ show r
+--            ++ "\n xNN = " ++ show xNN
+--            ++ "\n vNP = " ++ show vNP
+--            ++ "\n rNN = " ++ show rNN
+--            ++ "\n x2 = " ++ show x2
+--            ++ "\n -absV = " ++ show (-absV)
+--            ++ "\n result = "
+--        ) 
+        [xNN CF.<\/> x2, 
+         v CF.<\/> ((-absV) CF.</\> absV), 
+         rNN]
+        {- making use of the energy conservation law: 
+           (x')^2 + 2gx = r
+           
+           which implies 
+           |x'| = sqrt(r - 2gx) 
+           x = (r - (x')^2) / 2g 
+        -}
+        where
+        rNN = makeNonneg r
+        xNN = makeNonneg x
+        absV = CF.sqrtOut $ makeNonneg $ rNN <-> (20 <*> xNN)
+        x2 = (rNN <-> (makeNonneg $ v <*> v)) </> 20
+    eventBounce = HybSysEventKind "bc"
+    pruneBounce [_x,v,r] = [0,v,r]
+    resetBounce :: [Poly] -> [Poly]
+    resetBounce [x,x',r] = 
+        [x, 
+         (-0.5 :: Double) |<*> x', 
+         (0.25 :: Double) |<*> r]
+    eventDetector :: HybSysMode -> [Poly] -> Map.Map HybSysEventKind (Bool, [Bool], [CF] -> [CF])
+    eventDetector _mode [x,v,_r] =
+        case (zP <? x, zP <=? v,[x, v] `allLeqT` 0) of
+            (Just True, _, _) -> Map.empty -- ball above ground, bounce ruled out
+            (_, Just True, _) -> Map.empty -- ball rising, bounce ruled out
+            (_, _, True) -> Map.singleton eventBounce (True, [True, True, True], pruneBounce) -- bounce inevitable
+            _ -> Map.singleton eventBounce (False, [True, True, True], pruneBounce)
+        where
+        zP = newConstFnFromSample x 0
+        allLeqT fns bound = predOverSomeT allLeqBound effEval 10 tVar fns
+            where
+            allLeqBound vals
+--                | result =
+--                    unsafePrint
+--                    (
+--                        "bothLeqBound: result = true:"
+--                        ++ "\n a = " ++ show a
+--                        ++ "\n b = " ++ show b
+--                        ++ "\n bound = " ++ show bound
+--                    ) 
+--                    result
+                | otherwise = result
+                where
+                result =
+                    and $ map (\a -> ((a <=? bound) == Just True)) vals
+        effEval = evaluationDefaultEffort x
+    
+    ivp :: HybridIVP Poly
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = 0,
+            hybivp_tEnd = tEnd,
+            hybivp_initialStateEnclosure = 
+                HybridSystemUncertainState 
+                { 
+                    hybstate_modes = Set.singleton modeMove,
+                    hybstate_values = initValues
+                },
+            hybivp_maybeExactStateAtTEnd = Just $
+                HybridSystemUncertainState 
+                {
+                    hybstate_modes = Set.fromList [modeMove],
+                    hybstate_values = [xEnd, vEnd, rEnd]
+                }
+        }
+    description =
+        "" ++ "if x = 0 && v <= 0 then post(v) = -v/2, post(r) = r/4 else x' = v, v' = -10, r' = 0, r = (x')^2+20x, x >= 0, r >= 0)" 
+        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
+        ++ ", x'(" ++ show tStart ++ ") = " ++ show initX'
+        ++ ", r(" ++ show tStart ++ ") ∊ " ++ show initR
+    initValues@[initX, initX', initR] = [5, 0, energyWith initX initX'] :: [CF]
+--    initValues@[initX, initX'] = [0,0] :: [CF]
+    tStart = hybivp_tStart ivp
+--    tEnd = hybivp_tEnd ivp
+    tVar = hybivp_tVar ivp
+
+ivpBouncingBallEnergyPeak_AfterBounce :: Int -> HybridIVP Poly
+ivpBouncingBallEnergyPeak_AfterBounce n =
+    ivpBouncingBallEnergyPeak_AtTime tEnd [xEnd, xDerEnd]
+    where
+    tEnd = 1 <*>| (3*(1 - 2^^(-n)) :: Double)
+    xEnd = 1 <*>| (5 * (2^^(-2*n)) :: Double)
+    xDerEnd = 0 -- exactly between two bounces, the ball brieflly stops, ie its speed is zero
+
+ivpBouncingBallEnergyPeak_AfterZeno :: CF -> HybridIVP Poly
+ivpBouncingBallEnergyPeak_AfterZeno howLong =
+    ivpBouncingBallEnergyPeak_AtTime tEnd [xEnd, xDerEnd]
+    where
+    tEnd = 3 <+> howLong
+    xEnd = 0
+    xDerEnd = 0
+
+ivpBouncingBallEnergyPeak_AtTime :: CF -> [CF] -> HybridIVP Poly
+ivpBouncingBallEnergyPeak_AtTime tEnd [xEnd, vEnd] =
     ivp
     where
     rEnd = energyWith xEnd vEnd
@@ -662,6 +799,85 @@ ivpBouncingBallEnergy_AtTime tEnd [xEnd, vEnd] =
 --    tEnd = hybivp_tEnd ivp
     tVar = hybivp_tVar ivp
 
+ivpBouncingSpring_AtTime :: CF -> [CF] -> HybridIVP Poly
+ivpBouncingSpring_AtTime tEnd [xEnd, xDerEnd] =
+    ivp
+    where
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x","x'"],
+            hybsys_modeFields = Map.fromList [(modeMove, odeMove)],
+            hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
+            hybsys_eventModeSwitchesAndResetFunctions =
+                Map.fromList [(eventBounce, (modeMove, switchBounce))],
+            hybsys_eventDetector = eventDetector
+        }
+    modeMove = HybSysMode "move"
+    odeMove :: [Poly] -> [Poly]
+    odeMove [x,x'] = [x', (-1 :: Int) |<*> x]
+    invariantMove [x,x'] = [1 + (makeNonneg (x-1)), x']
+    eventBounce = HybSysEventKind "bounce"
+    pruneBounce [_x,x'] = [1, x']
+    switchBounce :: [Poly] -> [Poly]
+    switchBounce [x,x'] = 
+        [x, (-0.5 :: Double) |<*> x']
+--        [newConstFnFromSample x' 0, (0 :: Double) |<*> x']
+    eventDetector :: HybSysMode -> [Poly] -> Map.Map HybSysEventKind (Bool, [Bool], [CF] -> [CF])
+    eventDetector _mode [x,x'] =
+--        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
+        case (zP <? xM1, zP <? x', [xM1,x'] `allLeqT` 0) of
+            (Just True, _, _) -> Map.empty -- ball above ground, bounce ruled out
+            (_, Just True, _) -> Map.empty -- ball rising, bounce ruled out 
+            (_, _, True) -> Map.singleton eventBounce (True, [True, True], pruneBounce) -- bounce inevitable
+            _ -> Map.singleton eventBounce (False, [True, True], pruneBounce)
+        where
+        xM1 = x <+>| (-1 :: Int)
+        zP = newConstFnFromSample x 0
+        allLeqT fns bound = predOverSomeT allLeqBound effEval 10 tVar fns
+            where
+            allLeqBound vals
+--                | result =
+--                    unsafePrint
+--                    (
+--                        "bothLeqBound: result = true:"
+--                        ++ "\n a = " ++ show a
+--                        ++ "\n b = " ++ show b
+--                        ++ "\n bound = " ++ show bound
+--                    ) 
+--                    result
+                | otherwise = result
+                where
+                result =
+                    and $ map (\a -> ((a <=? bound) == Just True)) vals
+        effEval = evaluationDefaultEffort x
+    
+    ivp :: HybridIVP Poly
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = 0,
+            hybivp_tEnd = tEnd,
+            hybivp_initialStateEnclosure = 
+                HybridSystemUncertainState 
+                { 
+                    hybstate_modes = Set.singleton modeMove,
+                    hybstate_values = initValues
+                },
+            hybivp_maybeExactStateAtTEnd = Nothing
+        }
+    description =
+        "if x = 1 && x' <= 0 then post(x') = -0.5*pre(x') else x'' = -10x" 
+        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
+        ++ ", x'(" ++ show tStart ++ ") = " ++ show initX'
+    initValues@[initX, initX'] = [1,1] :: [CF]
+--    initValues@[initX, initX'] = [0,0] :: [CF]
+    tStart = hybivp_tStart ivp
+--    tEnd = hybivp_tEnd ivp
+    tVar = hybivp_tVar ivp
 
 ivpTwoTanks_AfterZeno :: CF -> HybridIVP Poly
 ivpTwoTanks_AfterZeno tEndMinusTZeno =
@@ -1317,6 +1533,7 @@ plotEventResolution effCF componentNames splittingInfo =
             FV.dataDomR = 4,
             FV.dataValLO = -2,
             FV.dataValHI = 2,
+            FV.dataDefaultActiveFns = map whichActive fnNames,
             FV.dataDefaultEvalPoint = 0,
             FV.dataDefaultCanvasParams =
                 (FV.defaultCanvasParams (0::CF))
@@ -1326,13 +1543,24 @@ plotEventResolution effCF componentNames splittingInfo =
                             FV.Rectangle  2 (-2) 0 (4)
                     ,
                     FV.cnvprmSamplesPerUnit = 100
+                    ,
+                    FV.cnvprmBackgroundColour = Just (1,1,1,1)
                 }
         }
-    giveColours list =
-        take (length list) colours
-    colours = cycle $ map snd $ zip componentNames (cycle [blue, green, red]) 
+    whichActive list =
+        take (length list) activityCycle 
+        where
+        activityCycle = cycle $ map snd $ zip componentNames $ True : (repeat True) -- False) 
     
-    _black = FV.defaultFnPlotStyle
+    giveColours list =
+        take (length list) colourCycle
+        where
+        colourCycle = cycle $ map snd $ 
+            zip componentNames 
+                (cycle [blue, green, red, black]) 
+--                (cycle [black, blue, green, red]) 
+
+    black = FV.defaultFnPlotStyle
     blue = FV.defaultFnPlotStyle 
         { 
             FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
