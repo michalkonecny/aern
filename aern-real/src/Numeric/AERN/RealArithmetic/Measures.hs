@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Measures
@@ -117,4 +118,21 @@ testsImprecision (name, sample) =
          testProperty "decreases with refinement" (propImprecisionDecreasesWithRefinement sample)
         ]
 
-        
+instance 
+    (HasImprecision t,
+     NumOrd.RefinementRoundedLattice (Imprecision t)) 
+    => 
+    HasImprecision [t]
+    where
+    type Imprecision [t] = Imprecision t
+    type ImprecisionEffortIndicator [t] = 
+        (ImprecisionEffortIndicator t, NumOrd.MinmaxInOutEffortIndicator (Imprecision t))
+    imprecisionDefaultEffort (h : _) =
+        (effImpr, NumOrd.minmaxInOutDefaultEffort (imprecisionOfEff effImpr h))
+        where
+        effImpr = imprecisionDefaultEffort h
+    imprecisionOfEff (effImpr, effMax) list@(_:_) =
+        foldl1 (NumOrd.maxOutEff effMax) $ map (imprecisionOfEff effImpr) list
+    isExactEff (eff, _) list =
+        fmap and $ sequence $ map (isExactEff eff) list
+         
