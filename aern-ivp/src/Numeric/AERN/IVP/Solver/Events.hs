@@ -371,8 +371,9 @@ solveEvents
                             Just res -> res
                             Nothing -> error $ "aern-ivp: hybrid system has no information about event kind " ++ show eventKind
                     fnVecAtEvent =
+                        eventSwitchingFn $ 
                         wrapFnVecAsBox effEval pruneUsingTheGuard $
-                        eventSwitchingFn fnVecBeforeEvent
+                        fnVecBeforeEvent
 --                    maybeFnVecAfterEventUseVT = 
 --                        fmap (map $ removeAllVarsButT . fst) $
 --                        fmap (!! m) $
