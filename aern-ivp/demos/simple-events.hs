@@ -117,7 +117,7 @@ ivpByName "twoTanksSum-zenoPlus1Over2" = ivpTwoTanksSum_AfterZeno 0.5
 ivpByName "bouncingSpring-4" = ivpBouncingSpring_AtTime 4 [0,0] 
 ivpByName "bouncingBallVibr-graze" = ivpBouncingBallVibr_AtTime 2 
 ivpByName "bouncingBallDrop" = ivpBouncingBallDrop_AtTime 3 2 0 3.5
-ivpByName "bouncingBallEnergyDrop" = ivpBouncingBallEnergyDrop_AtTime 3 2 0 3.5
+ivpByName "bouncingBallEnergyDrop" = ivpBouncingBallEnergyDrop_AtTime 3 2 0 5
 ivpByName name = error $ "unknown IVP " ++ show name
 
 
@@ -1036,10 +1036,10 @@ ivpBouncingBallEnergyDrop_AtTime groundInit tDrop groundDrop tEnd =
     pruneDrop [x,v,r,y,_tt] = [x,v,r,y,tDrop]
     resetDrop :: [Poly] -> [Poly]
     resetDrop [x,v,r,y,tt] = 
-        [x, v, zP </\> r, 
+        [x, v, 
+         zP </\> r, -- include 0 to create a refinement fixed point (hack!!)  
          newConstFnFromSample y groundDrop, 
          tt <+>| (1 :: Int)] -- move clock to avoid another drop event (hack!!)
---        [newConstFnFromSample v 0, (0 :: Double) |<*> v]
         where
         zP = newConstFnFromSample r 0
     eventDetector :: HybSysMode -> [Poly] -> Map.Map HybSysEventKind (Bool, [Bool], [CF] -> [CF])
@@ -1050,8 +1050,8 @@ ivpBouncingBallEnergyDrop_AtTime groundInit tDrop groundDrop tEnd =
             case (tt <? tDropP, tDropP <? tt, [tDropP <-> tt] `allLeqT` 0) of
                 (Just True, _, _) -> Map.empty
                 (_, Just True, _) -> Map.empty
-                (_, _, True) -> Map.singleton eventDrop (True, [False, False, False, True, True], pruneDrop) 
-                _ -> Map.singleton eventDrop (False, [False, False, False, True, True], pruneDrop) 
+                (_, _, True) -> Map.singleton eventDrop (True, [False, False, True, True, True], pruneDrop) 
+                _ -> Map.singleton eventDrop (False, [False, False, True, True, True], pruneDrop) 
 --        let ?pCompareEffort = NumOrd.pCompareDefaultEffort x in
         eventsBounce =
             case (zP <? x<->y, zP <? v, [x<->y,v] `allLeqT` 0) of
@@ -1836,7 +1836,9 @@ plotEventResolution effCF componentNames splittingInfo =
     whichActive list =
         take (length list) activityCycle 
         where
-        activityCycle = cycle $ map snd $ zip componentNames $ True : (repeat True) -- False) 
+        activityCycle = cycle $ map snd $ zip componentNames $ 
+--            True : (repeat True) 
+            True : (repeat False) 
     
     giveColours list =
         take (length list) colourCycle

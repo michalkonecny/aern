@@ -326,7 +326,7 @@ solveEvents
                 -- at the same time sum up the overall events 
                 --  (how? need breadth-first with size cut off - need to have partial event info to hold intermediate results;
                 --   could use a zipper...)
-                (constructorForNextEvents state eventTasksMap, maybeNodeCountNew, True)
+                    (constructorForNextEvents state eventTasksMap, maybeNodeCountNew, True)
                 where
                 stateShrinksPreviousOne =
                     or $ map (stateIncludedIn state) previousStates
@@ -518,8 +518,8 @@ eventInfoCollectFinalStates ::
 eventInfoCollectFinalStates effEval tVar tEnd eventInfo =
     aux eventInfo
     where
-    aux (EventFixedPoint state) = Just [stateFromModeFnVec state] 
-    aux (EventNextSure _ furtherInfo) =
+    aux (EventFixedPoint _state) = Just [] -- the enclosure can be discounted as it is included in an earlier one 
+    aux (EventNextSure _state furtherInfo) =
         fmap concat $ sequence $ map aux $ Map.elems furtherInfo
     aux (EventNextMaybe state furtherInfo) =
         fmap concat $ sequence $
