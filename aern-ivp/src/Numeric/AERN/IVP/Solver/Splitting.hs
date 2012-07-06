@@ -55,7 +55,7 @@ import Numeric.AERN.RmToRn.Integration
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
-import Numeric.AERN.RealArithmetic.ExactOps
+--import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
@@ -68,6 +68,9 @@ import Numeric.AERN.Basics.Consistency
 
 --import Numeric.AERN.Basics.Exception
 --import Control.Exception (throw)
+
+--import qualified Data.Map as Map
+
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -88,7 +91,7 @@ solveHybridIVPBySplittingT ::
      Domain f ~ Imprecision (Domain f),
      Show f, Show (Domain f))
     =>
-    (Int -> HybridIVP f -> (Maybe (HybridSystemUncertainState f), solvingInfo)) -- ^ solver to use for segments  
+    (Int -> HybridIVP f -> (Maybe (HybridSystemUncertainState (Domain f)), solvingInfo)) -- ^ solver to use for segments  
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
     ->
@@ -101,7 +104,7 @@ solveHybridIVPBySplittingT ::
     (HybridIVP f)  -- ^ problem to solve
     ->
     (
-        Maybe (HybridSystemUncertainState f)
+        Maybe (HybridSystemUncertainState (Domain f))
     ,
         (
             SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
@@ -210,25 +213,8 @@ solveHybridIVPBySplittingT
         maybeSplitImprovement =
             case (maybeDirectResult, splitOnceComputation) of
                 (Just directResult, Just splitOnceResult) -> 
-                    Just $ measureImprovementState directResult splitOnceResult
+                    Just $ measureImprovementState sampleDom effDom directResult splitOnceResult
                 _ -> Nothing
-        measureImprovementState state1 state2 = 
-            improvement 
-            where
-            improvement =
-                let ?addInOutEffort = effAddDom in
-                modeImprovement <+> (foldl1 (<+>) improvements)
-            improvements = map measureImprovement $ zip vec1 vec2
-            modeImprovement 
-                | modes1 /= modes2 = one sampleDom
-                | otherwise = zero sampleDom
-            vec1 = hybstate_values state1
-            vec2 = hybstate_values state2
-            modes1 = hybstate_modes state1
-            modes2 = hybstate_modes state2
-        measureImprovement (encl1, encl2) =
-            let ?addInOutEffort = effAddDom in
-            (imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
 
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDivDomInt = 
@@ -236,9 +222,9 @@ solveHybridIVPBySplittingT
             ArithInOut.rrEffortIntMixedField sampleDom effDom
 --    effRefComp = ArithInOut.rrEffortRefComp sampleDom effDom
     sampleDom = hybivp_tStart hybivpG
-    effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDom effDom
+--    effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDom effDom
     
-    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
+--    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
 --    sampleImpr = imprecisionOfEff effImpr sampleDom
 --    effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
         
