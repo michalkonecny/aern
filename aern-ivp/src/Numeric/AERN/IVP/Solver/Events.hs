@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
---{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.IVP.Solver.Events
     Description :  hybrid system simulation  
@@ -73,7 +73,7 @@ solveEventsTimeSplit ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
-     solvingInfo ~ (Domain f, Maybe (HybridSystemUncertainState f), [(HybSysMode, EventInfo f)]),
+     solvingInfo ~ (Domain f, Maybe (HybridSystemUncertainState (Domain f)), [(HybSysMode, EventInfo f)]),
      Show f, Show (Domain f), Show (Var f), Eq (Var f))
     =>
     SizeLimits f {-^ size limits for all function -} ->
@@ -95,7 +95,7 @@ solveEventsTimeSplit ::
     HybridIVP f
     ->
     (
-        Maybe (HybridSystemUncertainState f)
+        Maybe (HybridSystemUncertainState (Domain f))
     ,
         (
             SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
@@ -120,28 +120,14 @@ solveEventsTimeSplit
         maybeFinalStateWithInvariants
             = fmap filterInvariants maybeFinalState
             where
-            filterInvariants st@(HybridSystemUncertainState modes vec) =
-                result
+            filterInvariants st =
+                Map.mapWithKey filterInvariantsVec st
                 where
-                _ = [st, result]
-                result =
-                    HybridSystemUncertainState modes $ filterInvariantsVec vec
-                filterInvariantsVec vec =
-                    -- for each mode, lookup the invariant and apply it, 
-                    --  then take the union of all the results
-                    takeUnion $ map applyModeInvariant $ Set.toList modes
+                filterInvariantsVec mode vec =
+                    invariant vec
                     where
-                    applyModeInvariant mode =
-                        invariant vec
-                        where
-                        Just invariant =
-                            Map.lookup mode modeInvariants
-                    takeUnion [] = vec
-                    takeUnion list =
-                        let ?joinmeetEffort = effJoin in 
-                        foldl1 (zipWith (</\>)) list
-                    effJoin = ArithInOut.rrEffortJoinMeet sampleDom effDom
-                    (sampleDom : _) = vec
+                    Just invariant =
+                        Map.lookup mode modeInvariants
         modeInvariants = hybsys_modeInvariants $ hybivp_system hybivp
         (maybeFinalState, modeEventInfoList) = 
             solveEvents
@@ -204,13 +190,13 @@ solveEvents ::
     ->
     HybridIVP f 
     ->
-    (Maybe (HybridSystemUncertainState f), [(HybSysMode, (EventInfo f))])
+    (Maybe (HybridSystemUncertainState (Domain f)), [(HybSysMode, (EventInfo f))])
 solveEvents
         sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
             maxNodes
                 delta m
                     t0Var
-                        hybivp
+                        (hybivp :: HybridIVP f)
     | givenUp =        
         (Nothing, modeEventInfoList)
     | otherwise =
@@ -224,6 +210,7 @@ solveEvents
     hybsys = hybivp_system hybivp
     componentNames = hybsys_componentNames hybsys
     
+--    finalState :: HybridSystemUncertainState (Domain f)
     (givenUp, finalState) = 
         case sequence perModeMaybeFinalState of
             Just perModeFinalState ->
@@ -232,13 +219,12 @@ solveEvents
     modeEventInfoList = 
         zip modeList perModeEventInfo 
     (perModeMaybeFinalState, perModeEventInfo) = 
-        unzip $ map solveEventsOneMode modeList 
-    modeList = 
-        Set.toList initialModeSet
-    HybridSystemUncertainState initialModeSet initialValues 
-        = hybivp_initialStateEnclosure hybivp
+        unzip $ map solveEventsOneMode modeValueList 
+    modeList = map fst modeValueList
+    modeValueList = Map.toList initState 
+    initState = hybivp_initialStateEnclosure hybivp
     
-    solveEventsOneMode initialMode =
+    solveEventsOneMode (initialMode, initialValues) =
         (maybeFinalState, eventInfo)
         where
 --        maxNodes = 100
@@ -492,7 +478,7 @@ showEventInfo prefix showState eventInfo =
             (EventNextSure state2 eventsMap2) -> ("EventNextSure", state2, eventsMap2)
             _ -> error ""
     showEvents [] = " []"
-    showEvents events = 
+    showEvents events =
         "\n" ++ (unlines $ map showEvent events)
     showEvent (eventKind, eventInfo2) =
         prefix ++ show eventKind ++ " ->\n" 
@@ -514,7 +500,7 @@ eventInfoCollectFinalStates ::
     ->
     Var f -> Domain f -> EventInfo f 
     -> 
-    Maybe [HybridSystemUncertainState f]
+    Maybe [HybridSystemUncertainState (Domain f)]
 eventInfoCollectFinalStates effEval tVar tEnd eventInfo =
     aux eventInfo
     where
@@ -527,12 +513,7 @@ eventInfoCollectFinalStates effEval tVar tEnd eventInfo =
              (map aux $ Map.elems furtherInfo))
     aux _ = Nothing
     stateFromModeFnVec (mode, fnVec) =
-        HybridSystemUncertainState
-        {
-            hybstate_modes = Set.singleton mode
-        ,
-            hybstate_values = valueVec
-        }
+        Map.singleton mode valueVec
         where
         valueVec =
             fst $ evalAtEndTimeVec effEval tVar tEnd fnVec
