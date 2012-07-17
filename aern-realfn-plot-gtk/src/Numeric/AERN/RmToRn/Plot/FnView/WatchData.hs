@@ -43,7 +43,7 @@ import qualified Graphics.UI.Gtk as Gtk
 import Graphics.UI.Gtk (AttrOp((:=)))
 
 import qualified Control.Concurrent as Concurrent
-import Control.Concurrent.STM -- as STM
+import Control.Concurrent.STM (STM, TVar, atomically, newTVar, retry, readTVar, writeTVar) -- as STM
 import Data.IORef
 
 dataWatchThread ::

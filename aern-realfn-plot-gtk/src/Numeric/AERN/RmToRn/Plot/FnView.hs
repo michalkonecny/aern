@@ -57,7 +57,7 @@ import Graphics.UI.Gtk (AttrOp((:=)))
 import qualified Graphics.UI.Gtk.Gdk.EventM as GdkEv
 
 import Control.Concurrent (forkIO)
-import Control.Concurrent.STM -- as STM
+import Control.Concurrent.STM (STM, TVar, newTVar, atomically, retry, readTVar, writeTVar) -- as STM
 import Data.IORef
 
 import qualified System.FilePath as FilePath
@@ -187,7 +187,7 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                             return state
                     Gtk.widgetQueueDraw (canvas widgets)
                     updateZoomWidgets toDbl widgets state
-        
+    
     setHandlerZoomAndPanEntries =
         do
         Gtk.onEntryActivate (zoomEntry widgets) (zoomHandler ())
