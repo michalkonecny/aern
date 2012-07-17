@@ -2,6 +2,9 @@
 
 module Main where
 
+-- the MPFR interval type:
+import qualified Numeric.AERN.MPFRBasis.Interval as MI
+
 -- numerical comparison abstraction and operators:
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsDefaultEffort
@@ -11,9 +14,6 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
-
--- the MPFR interval type:
-import qualified Numeric.AERN.MPFRBasis.Interval as MI
 
 -- generic tools for controlling effort and formatting:
 import Numeric.AERN.Basics.Effort
@@ -82,37 +82,4 @@ ensurePrecision :: Precision -> RealApprox -> RealApprox
 ensurePrecision prec x =
     (ArithInOut.convertOutEff prec (0:: Int)) <+> x 
         
-{-|
-    A generic function that applies a given approximate function
-    repeatedly with increasing effort until the required accuracy
-    is reached.
--}
-withAccuracy :: 
-    (HasImprecision t,
-    NumOrd.PartialComparison (Imprecision t),
-    EffortIndicator eff) 
-    =>
-    Int {-^ @iterLimit@ maximum number of different efforts to try out -} -> 
-    Imprecision t {-^ @maxImprecision@ imprecision threshold for the result -} -> 
-    eff {-^ @initEff@ the initial effort -} -> 
-    (eff -> t) {-^ the function to compute -} -> 
-    [(eff,t)] {-^ the efforts that were tried and the corresponding results -}
-withAccuracy iterLimit maxImprecision initEff fn =
-    stopWhenAccurate $ 
-        take iterLimit $ 
-            zip efforts (map fn efforts)
-    where
-    efforts = effortIncrementSequence initEff
-
-    stopWhenAccurate [] = []
-    stopWhenAccurate ((eff, result) : rest)
-        | accurateEnough = [(eff, result)]
-        | otherwise = (eff, result) : (stopWhenAccurate rest)
-        where
-        accurateEnough =
-            (resultImprecision <=? maxImprecision) == Just True
-        resultImprecision =
-            imprecisionOfEff effImpr result
-        effImpr =
-            imprecisionDefaultEffort result
              

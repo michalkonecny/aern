@@ -136,3 +136,39 @@ instance
     isExactEff (eff, _) list =
         fmap and $ sequence $ map (isExactEff eff) list
          
+         
+{-|
+    A generic function that applies a given approximate function
+    repeatedly with increasing effort until the required accuracy
+    is reached.
+-}
+withAccuracy :: 
+    (HasImprecision t,
+    NumOrd.PartialComparison (Imprecision t),
+    EffortIndicator eff) 
+    =>
+    Int {-^ @iterLimit@ maximum number of different efforts to try out -} -> 
+    Imprecision t {-^ @maxImprecision@ imprecision threshold for the result -} -> 
+    eff {-^ @initEff@ the initial effort -} -> 
+    (eff -> t) {-^ the function to compute -} -> 
+    [(eff,t)] {-^ the efforts that were tried and the corresponding results -}
+withAccuracy iterLimit maxImprecision initEff fn =
+    stopWhenAccurate $ 
+        take iterLimit $ 
+            zip efforts (map fn efforts)
+    where
+    efforts = effortIncrementSequence initEff
+
+    stopWhenAccurate [] = []
+    stopWhenAccurate ((eff, result) : rest)
+        | accurateEnough = [(eff, result)]
+        | otherwise = (eff, result) : (stopWhenAccurate rest)
+        where
+        accurateEnough =
+            let ?pCompareEffort = NumOrd.pCompareDefaultEffort maxImprecision in
+            (resultImprecision <=? maxImprecision) == Just True
+        resultImprecision =
+            imprecisionOfEff effImpr result
+        effImpr =
+            imprecisionDefaultEffort result
+         
