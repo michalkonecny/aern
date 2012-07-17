@@ -213,7 +213,7 @@ solveEvents
 --    finalState :: HybridSystemUncertainState (Domain f)
     (givenUp, finalState) = 
         case sequence perModeMaybeFinalState of
-            Just perModeFinalState ->
+            Just perModeFinalState | not (null perModeFinalState) ->
                 (False, foldl1 (mergeHybridStates effJoinDom) perModeFinalState) 
             _ -> (True, error "internal error in solveEvents: finalState undefined")
     modeEventInfoList = 
@@ -231,7 +231,7 @@ solveEvents
         
         maybeFinalState =
             case eventInfoCollectFinalStates effEval tVar tEnd eventInfo of
-                Just states -> Just $ foldl1 (mergeHybridStates effJoinDom) states
+                Just states | not (null states) -> Just $ foldl1 (mergeHybridStates effJoinDom) states
                 _ -> Nothing
             
         eventInfo =
@@ -529,8 +529,9 @@ eventInfoCountEvents sampleD effD eventInfo =
     aux eventInfo
     where
     aux (EventFixedPoint _) = nonneg 
-    aux (EventNextSure _ furtherInfo) =
-        foldl1 union $ map incr $ map aux $ Map.elems furtherInfo
+    aux (EventNextSure _ furtherInfo) 
+        | Map.null furtherInfo = error "eventInfoCountEvents: EventNextSure furtherInfo is empty"
+        | otherwise = foldl1 union $ map incr $ map aux $ Map.elems furtherInfo
     aux (EventNextMaybe _ furtherInfo) =
         foldl union c0 $ map incr $ map aux $ Map.elems furtherInfo
     aux _ = nonneg

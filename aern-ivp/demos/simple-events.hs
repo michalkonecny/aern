@@ -1064,10 +1064,12 @@ ivpTwoBouncingBallsDrop_AtTime groundInit tDrop1 tDrop2Pre groundDrop tEnd =
             hybsys_eventModeSwitchesAndResetFunctions =
                 Map.fromList 
                     [
-                        (eventBounce1, (modeMove, resetBounce1)),
+                        (eventBounce1, (modeMove, resetBounce1))
+                        ,
                         (eventDrop1, (modeMove, resetDrop1))
                         ,
-                        (eventBounce2, (modeMove, resetBounce2)),
+                        (eventBounce2, (modeMove, resetBounce2))
+                        ,
                         (eventDrop2, (modeMove, resetDrop2))
                     ],
             hybsys_eventDetector = eventDetector
@@ -1913,8 +1915,9 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
     eventCount =
         aux splittingInfo
         where
-        aux (SegNoSplit (_,_,modeEventInfoList)) =
-            foldl1 (CF.</\>) $ map (eventInfoCountEvents 0 effCf . snd) modeEventInfoList
+        aux (SegNoSplit (_,_,modeEventInfoList)) 
+            | null modeEventInfoList = error "solveEventsPrintSteps: SegNoSplit with empty modeEventInfoList" 
+            | otherwise = foldl1 (CF.</\>) $ map (eventInfoCountEvents 0 effCf . snd) modeEventInfoList
         aux (SegSplit _ left Nothing) =
             aux left
         aux (SegSplit _ left (Just right)) =
@@ -2201,16 +2204,17 @@ plotEnclosures effCF plotMinSegSize tVar componentNames splittingInfo =
         where
         activityCycle = cycle $ map snd $ zip componentNames $ 
 --            True : (repeat True) 
---            True : (repeat False) 
-            True : False : False : False : True : (repeat False) 
+            True : (repeat False) 
+--            True : False : False : True : (repeat False) 
+--            True : False : False : False : True : (repeat False) 
     
     giveColours list =
         take (length list) colourCycle
         where
         colourCycle = cycle $ map snd $ 
             zip componentNames 
-                (cycle [blue, green, red, black])
---                (cycle [black, blue, green, red]) 
+--                (cycle [blue, green, red, black])
+                (cycle [black]) 
 
     black = FV.defaultFnPlotStyle
     blue = FV.defaultFnPlotStyle 
