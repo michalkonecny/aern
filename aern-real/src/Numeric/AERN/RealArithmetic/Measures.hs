@@ -142,7 +142,7 @@ instance
     repeatedly with increasing effort until the required accuracy
     is reached.
 -}
-withAccuracy :: 
+iterateUntilAccurate :: 
     (HasImprecision t,
     NumOrd.PartialComparison (Imprecision t),
     EffortIndicator eff) 
@@ -152,7 +152,7 @@ withAccuracy ::
     eff {-^ @initEff@ the initial effort -} -> 
     (eff -> t) {-^ the function to compute -} -> 
     [(eff,t)] {-^ the efforts that were tried and the corresponding results -}
-withAccuracy iterLimit maxImprecision initEff fn =
+iterateUntilAccurate iterLimit maxImprecision initEff fn =
     stopWhenAccurate $ 
         take iterLimit $ 
             zip efforts (map fn efforts)
