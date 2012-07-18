@@ -14,30 +14,30 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 -- real arithmetic operators and imprecision measure:
-import Numeric.AERN.RealArithmetic.ExactOps
+--import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
 -- generic tools for controlling effort and formatting:
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.ShowInternals
 
-import Data.Maybe (catMaybes)
-
 import System.IO
 import System.Environment
 
+
+-- convenience type synonyms:
 type RealApprox = MI.MI
 type Precision = MI.Precision
 
 main =
     do
-    -- print a line asap:
+    -- print each line asap:
     hSetBuffering stdout LineBuffering
     -- boilerplate to process arguments:
     [digitsS] <- getArgs
-    let digits = read digitsS
+    let digits = read digitsS -- desired accuracy in decimal digits
     
     -- sqrt(2) to the given number of digits:
     putStrLn $ "findRootDigits(fn(x)=x^2-2, leftEndpoint=0, rightEndpoint=2, digits=" ++ show digits ++ ") = "
@@ -45,19 +45,17 @@ main =
     
     -- log(3) to the given number of digits:
     putStrLn $ "findRootDigits(fn(x)=exp(x)-3, leftEndpoint=0, rightEndpoint=2, digits=" ++ show digits ++ ") = "
-    putStrLn $ showRealApprox digits $ findRootDigits digits (100,100) expXMinus3 0 2
+    putStrLn $ showRealApprox digits $ findRootDigits digits (100,()) expXMinus3 0 2
     where
     showRealApprox digits = showInternals shouldShowInternals
         where
         shouldShowInternals = (digitsW+2, False)
         digitsW = fromIntegral digits
     
---    sqrt2 =
-        
     xSquareMinus2 _eff x = x * x - 2
-        -- the effort parameter is not required, using the unit type ()
-    expXMinus3 eff x = (ArithInOut.expOutEff eff x) - 3
-        -- using MPFR exp, the effort indicator for this function is a floating-point precision
+        -- the effort parameter is not required in this case, using the unit type ()
+    expXMinus3 _eff x = (exp x) - 3
+        -- the effort parameter is not required in this case, using the unit type ()
 
 findRootDigits ::
     (EffortIndicator effort)
@@ -148,7 +146,7 @@ data Sign = Positive | Negative
 
 ensurePrecision :: Precision -> RealApprox -> RealApprox
 ensurePrecision prec x =
-    (ArithInOut.convertOutEff prec (0:: Int)) <+> x 
+    (ArithInOut.convertOutEff prec (0:: Int)) + x 
         
 
 --expEffort :: Int -> ArithInOut.ExpEffortIndicator RealApprox

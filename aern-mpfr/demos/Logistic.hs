@@ -27,12 +27,12 @@ type Precision = MI.Precision
 
 main =
     do
-    -- print a line asap:
+    -- print each line asap:
     hSetBuffering stdout LineBuffering
     -- boilerplate to process arguments:
     [itersS, digitsS] <- getArgs
-    let iters = read itersS
-    let digits = read digitsS
+    let iters = read itersS -- number of iterations of the logistic map
+    let digits = read digitsS -- desired accuracy in decimal digits
 
     -- compute and print the result for each precision:
     mapM_ (reportItem digits) $ items iters digits
