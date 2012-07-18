@@ -39,7 +39,7 @@ main =
     where
     items iters digits =
         -- invoke an iRRAM-style procedure for automatic precision/effort incrementing: 
-        withAccuracy maxIncrements (maxImprecision digits) initPrec $ 
+        iterateUntilAccurate maxIncrements (maxImprecision digits) initPrec $ 
             -- on the computation of iters-many iterations of the logistic map:
             \prec -> ((logistic prec r x0) !! (iters - 1))
     

@@ -35,14 +35,48 @@ main =
     do
     -- print a line asap:
     hSetBuffering stdout LineBuffering
+    -- boilerplate to process arguments:
+    [digitsS] <- getArgs
+    let digits = read digitsS
     
-    -- sqrt(2) with fixed effort:
-    putStrLn $ "findRoot(fn(x)=x^2-2, leftEndpoint=0, rightEndpoint=2, prec=100, effFn = ()) = "
-    putStrLn $ show $ findRoot (100,()) (\_ x -> x * x - 2) 0 2
+    -- sqrt(2) to the given number of digits:
+    putStrLn $ "findRootDigits(fn(x)=x^2-2, leftEndpoint=0, rightEndpoint=2, digits=" ++ show digits ++ ") = "
+    putStrLn $ showRealApprox digits $ findRootDigits digits (100,()) xSquareMinus2 0 2
     
-    -- log(2) with fixed effort:
-    putStrLn $ "findRoot(fn(x)=exp(x)-2, leftEndpoint=0, rightEndpoint=1, prec=100, effFn = ()) = "
-    putStrLn $ show $ findRoot (100, 100) (\eff x -> (ArithInOut.expOutEff eff x) - 2) 0 1
+    -- log(3) to the given number of digits:
+    putStrLn $ "findRootDigits(fn(x)=exp(x)-3, leftEndpoint=0, rightEndpoint=2, digits=" ++ show digits ++ ") = "
+    putStrLn $ showRealApprox digits $ findRootDigits digits (100,100) expXMinus3 0 2
+    where
+    showRealApprox digits = showInternals shouldShowInternals
+        where
+        shouldShowInternals = (digitsW+2, False)
+        digitsW = fromIntegral digits
+    
+--    sqrt2 =
+        
+    xSquareMinus2 _eff x = x * x - 2
+        -- the effort parameter is not required, using the unit type ()
+    expXMinus3 eff x = (ArithInOut.expOutEff eff x) - 3
+        -- using MPFR exp, the effort indicator for this function is a floating-point precision
+
+findRootDigits ::
+    (EffortIndicator effort)
+    =>
+    Int ->
+    (Precision, effort) ->
+    (effort -> RealApprox -> RealApprox) ->
+    RealApprox ->
+    RealApprox ->
+    RealApprox
+findRootDigits digits initEff fn leftEndpoint rightEndpoint =
+    snd $ last $
+    iterateUntilAccurate maxIncrements (maxImprecision digits) initEff $
+        \eff -> findRoot eff fn leftEndpoint rightEndpoint
+    where
+    maxIncrements = 100
+
+    maxImprecision :: Int -> RealApprox
+    maxImprecision digits = (ensurePrecision 10 10)^^(-digits)
 
 findRoot ::
     (Precision, effort) ->
@@ -62,6 +96,13 @@ findRoot (prec, effFn) fn leftEndpoint rightEndpoint =
     where
     leftSign = getSign leftEndpointPrec
     rightSign = getSign rightEndpointPrec
+    getSign x =
+        case (fnAtX >? 0, fnAtX <? 0) of
+            (Just True, _) -> Just Positive
+            (_, Just True) -> Just Negative
+            _ -> Nothing
+        where
+        fnAtX = fn effFn x
     
     leftEndpointPrec = ensurePrecision prec leftEndpoint
     rightEndpointPrec = ensurePrecision prec rightEndpoint
@@ -71,12 +112,12 @@ findRoot (prec, effFn) fn leftEndpoint rightEndpoint =
     oppositeSigns _ _ = False
     
     shrinkLRandMerge lAndSign@(l,lSign) rAndSign@(r,rSign) =
-        case findPointWithSign l r of
+        case findMidPointWithSign l r of
             Nothing -> l </\> r
             Just (mAndSign@(_, mSign))
                 | oppositeSigns lSign mSign -> shrinkLRandMerge lAndSign mAndSign
                 | oppositeSigns mSign rSign -> shrinkLRandMerge mAndSign rAndSign
-    findPointWithSign l r =
+    findMidPointWithSign l r =
         case potentialSplitPoints of
             [] -> Nothing
             mAndSign : _ -> Just mAndSign 
@@ -86,14 +127,8 @@ findRoot (prec, effFn) fn leftEndpoint rightEndpoint =
         addSign x = (x, getSign x)
         hasSign (_, Nothing) = False
         hasSign _ = True
-    getSign x =
-        case (fnAtX >? 0, fnAtX <? 0) of
-            (Just True, _) -> Just Positive
-            (_, Just True) -> Just Negative
-            _ -> Nothing
-        where
-        fnAtX = fn effFn x
     pointsInBetween l r =
+--        -- ensure the points are exact and in the interior of the interval [l,r]:
 --        filter betweenLR $
 --        map getLeftEndpoint $
         [
