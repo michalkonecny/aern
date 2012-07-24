@@ -14,7 +14,7 @@ Synopsis:       numeric and refinement order on approximations of exact entities
 Tested-with:
                 GHC==6.12.3,
                 GHC==7.2.2,
-                GHC==7.4.1
+                GHC==7.4.2
 Description:
  Type-classes abstracting various kinds of approximations for exact entities:
  .   
@@ -53,7 +53,7 @@ Library
         criterion >= 0.5 && < 0.6,
         deepseq >= 1.1 && < 1.4,
         random >= 1.0 && < 1.1,
-        test-framework >= 0.3.3 && < 0.6, 
+        test-framework >= 0.3.3 && < 0.7, 
         test-framework-quickcheck2 >= 0.2 && < 0.3
     
   Other-modules:

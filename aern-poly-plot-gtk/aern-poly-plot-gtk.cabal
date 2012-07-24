@@ -13,7 +13,7 @@ Category:       Data, Math
 Synopsis:       support for solving ODE IVPs using the interval polynomial Picard operator
 Tested-with:    GHC==6.12.3,
                 GHC==7.2.2,
-                GHC==7.4.1
+                GHC==7.4.2
 Description:    Support for interactive plotting of types from aern-poly.
     .
     Includes several example plot executables.
@@ -26,9 +26,8 @@ library
         random >= 1.0 && < 1.1,
         gtk >= 0.12.0 && < 0.13,
         cairo >= 0.12.0 && < 0.13,
-        glade >= 0.12.0 && < 0.13,
-        stm >= 2.1.2.1 && < 2.4,
-        filepath >= 1.1.0.4 && < 1.3,
+        stm >= 2.1.2.1 && < 2.5,
+        filepath >= 1.1.0.4 && < 1.4,
         directory >= 1.0.1.1 && < 1.2,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
@@ -47,9 +46,8 @@ executable plot
         random >= 1.0 && < 1.1,
         gtk >= 0.12.0 && < 0.13,
         cairo >= 0.12.0 && < 0.13,
-        glade >= 0.12.0 && < 0.13,
-        stm >= 2.1.2.1 && < 2.4,
-        filepath >= 1.1.0.4 && < 1.3,
+        stm >= 2.1.2.1 && < 2.5,
+        filepath >= 1.1.0.4 && < 1.4,
         directory >= 1.0.1.1 && < 1.2,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
@@ -70,9 +68,8 @@ executable plotPicard
         random >= 1.0 && < 1.1,
         gtk >= 0.12.0 && < 0.13,
         cairo >= 0.12.0 && < 0.13,
-        glade >= 0.12.0 && < 0.13,
-        stm >= 2.1.2.1 && < 2.4,
-        filepath >= 1.1.0.4 && < 1.3,
+        stm >= 2.1.2.1 && < 2.5,
+        filepath >= 1.1.0.4 && < 1.4,
         directory >= 1.0.1.1 && < 1.2,
         aern-order == 0.5.*,
         aern-real == 0.5.*,

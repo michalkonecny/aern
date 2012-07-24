@@ -14,7 +14,7 @@ Synopsis:       arbitrary precision real interval arithmetic
 Tested-with:
                 GHC==6.12.3,
                 GHC==7.2.2,
-                GHC==7.4.1
+                GHC==7.4.2
 Description:
     A concrete implementation for the refinement-order type classes from aern-real in the form
     of interval arithmetic.  The arithmetic supports also anti-consistent
@@ -45,7 +45,7 @@ Library
   Build-Depends:
         base == 4.2.* || == 4.4.* || == 4.5.*,
         QuickCheck >= 2.4 && < 2.5,
-        test-framework >= 0.3.3 && < 0.6, 
+        test-framework >= 0.3.3 && < 0.7, 
         test-framework-quickcheck2 >= 0.2 && < 0.3,
         deepseq >= 1.1 && < 1.4,
         aern-order == 0.5.*,
