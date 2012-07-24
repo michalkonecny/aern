@@ -153,7 +153,8 @@ iterateUntilAccurate ::
     (eff -> t) {-^ the function to compute -} -> 
     [(eff,t)] {-^ the efforts that were tried and the corresponding results -}
 iterateUntilAccurate iterLimit maxImprecision initEff fn =
-    stopWhenAccurate $ 
+    let ?pCompareEffort = NumOrd.pCompareDefaultEffort maxImprecision in -- needed for ghc 6.12
+      stopWhenAccurate $ 
         take iterLimit $ 
             zip efforts (map fn efforts)
     where

@@ -50,6 +50,11 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
+import Numeric.AERN.RefinementOrder
+    (PartialCompareEffortIndicator,
+     GetEndpointsEffortIndicator,
+     FromEndpointsEffortIndicator)
+     -- ^^^ needed for ghc 6.12
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Interval (refordPCompareInFullIntervalsEff)
@@ -70,7 +75,7 @@ instance
     => 
     RefOrd.PartialComparison (IntPoly var cf) 
     where
-    type RefOrd.PartialCompareEffortIndicator (IntPoly var cf) =
+    type PartialCompareEffortIndicator (IntPoly var cf) =
         (NumOrd.PartialCompareEffortIndicator (IntPoly var cf),
          RefOrd.GetEndpointsEffortIndicator cf) 
     pCompareDefaultEffort p =
@@ -92,9 +97,9 @@ instance
     => 
     (RefOrd.IntervalLike (IntPoly var cf))
     where
-    type RefOrd.GetEndpointsEffortIndicator (IntPoly var cf) = 
+    type GetEndpointsEffortIndicator (IntPoly var cf) = 
         RefOrd.GetEndpointsEffortIndicator cf
-    type RefOrd.FromEndpointsEffortIndicator (IntPoly var cf) = 
+    type FromEndpointsEffortIndicator (IntPoly var cf) = 
         RefOrd.FromEndpointsEffortIndicator cf
     getEndpointsDefaultEffort (IntPoly cfg _) =
         RefOrd.getEndpointsDefaultEffort sampleCf

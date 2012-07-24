@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -53,7 +54,13 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder 
+    (MinmaxEffortIndicator, MinmaxInOutEffortIndicator)
+    -- ^^^ needed for ghc 6.12
 import qualified Numeric.AERN.RefinementOrder as RefOrd
+import Numeric.AERN.RefinementOrder
+    (JoinMeetEffortIndicator)
+    -- ^^^ needed for ghc 6.12
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 --import Numeric.AERN.Basics.PartialOrdering
@@ -81,7 +88,7 @@ instance
     =>
     NumOrd.RoundedLatticeEffort (IntPoly var cf)
     where
-    type NumOrd.MinmaxEffortIndicator (IntPoly var cf) =
+    type MinmaxEffortIndicator (IntPoly var cf) =
         (MinmaxEffortIndicatorFromRingOps (IntPoly var cf) (IntPoly var cf),
          NumOrd.MinmaxInOutEffortIndicator cf,
          Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
@@ -199,9 +206,15 @@ instance
     =>
     ArithUpDn.RoundedAbsEffort (IntPoly var cf)
     where
+#if (__GLASGOW_HASKELL__ >= 704)
+    type AbsEffortIndicator (IntPoly var cf) =
+        (NumOrd.MinmaxEffortIndicator (IntPoly var cf),
+         ArithInOut.AbsEffortIndicator cf)
+#else
     type ArithUpDn.AbsEffortIndicator (IntPoly var cf) =
         (NumOrd.MinmaxEffortIndicator (IntPoly var cf),
          ArithInOut.AbsEffortIndicator cf)
+#endif
     absDefaultEffort p =
         (NumOrd.minmaxDefaultEffort p,
          ArithInOut.absDefaultEffort $ getSampleDomValue p)
@@ -252,7 +265,7 @@ instance
     =>
     NumOrd.RefinementRoundedLatticeEffort (IntPoly var cf)
     where
-    type NumOrd.MinmaxInOutEffortIndicator (IntPoly var cf) =
+    type MinmaxInOutEffortIndicator (IntPoly var cf) =
         (MinmaxEffortIndicatorFromRingOps (IntPoly var cf) (IntPoly var cf),
          Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
          RefOrd.GetEndpointsEffortIndicator (IntPoly var cf),
@@ -340,9 +353,15 @@ instance
     =>
     ArithInOut.RoundedAbsEffort (IntPoly var cf)
     where
+#if (__GLASGOW_HASKELL__ >= 704)
     type AbsEffortIndicator (IntPoly var cf) =
         (NumOrd.MinmaxInOutEffortIndicator (IntPoly var cf),
          ArithInOut.AbsEffortIndicator cf)
+#else
+    type ArithInOut.AbsEffortIndicator (IntPoly var cf) =
+        (NumOrd.MinmaxInOutEffortIndicator (IntPoly var cf),
+         ArithInOut.AbsEffortIndicator cf)
+#endif
     absDefaultEffort p =
         (NumOrd.minmaxInOutDefaultEffort p,
          ArithInOut.absDefaultEffort $ getSampleDomValue p)
@@ -384,7 +403,7 @@ instance
     =>
     RefOrd.RoundedLatticeEffort (IntPoly var cf)
     where
-    type RefOrd.JoinMeetEffortIndicator (IntPoly var cf) =
+    type JoinMeetEffortIndicator (IntPoly var cf) =
         RefOrd.JoinMeetEffortIndicator cf
 
     joinmeetDefaultEffort (IntPoly cfg _) =

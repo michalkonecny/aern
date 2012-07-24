@@ -63,7 +63,7 @@ diffPolyOut ::
     IntPoly var cf ->
     IntPoly var cf
 diffPolyOut effCf var (IntPoly cfg poly) =
---    let ?mixedMultInOutEffort = effMult in
+    let ?mixedMultInOutEffort = effMult in -- needed for ghc 6.12
     IntPoly cfg $ dp cfg poly
     where
     effMult = ArithInOut.mxfldEffortMult sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf

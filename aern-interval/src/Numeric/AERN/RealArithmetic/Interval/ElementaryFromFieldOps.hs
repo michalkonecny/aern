@@ -50,7 +50,9 @@ instance
      -- MK has no idea why the following three are not automatically deduced from the above...
      ArithUpDn.RoundedReal e,
      ArithInOut.RoundedAddEffort (Distance e),
-     RefOrd.RoundedLatticeEffort (Distance e)
+     RefOrd.RoundedLatticeEffort (Distance e),
+     EffortIndicator
+                        (ArithInOut.FieldOpsEffortIndicator (Distance e))
      )
     => 
     (ArithInOut.RoundedExponentiationEffort (Interval e))
@@ -76,6 +78,7 @@ instance
      ArithUpDn.RoundedReal e,
      ArithInOut.RoundedAddEffort (Distance e),
      RefOrd.RoundedLatticeEffort (Distance e),
+     EffortIndicator (ArithInOut.FieldOpsEffortIndicator (Distance e)),
      --
      NumOrd.HasExtrema e)
     => 
@@ -118,6 +121,7 @@ expOutIters, expInIters ::
      ArithUpDn.RoundedReal e,
      ArithInOut.RoundedAddEffort (Distance e),
      RefOrd.RoundedLatticeEffort (Distance e),
+     EffortIndicator (ArithInOut.FieldOpsEffortIndicator (Distance e)),
      --
      NumOrd.HasExtrema e)
     => 

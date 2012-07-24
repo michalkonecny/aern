@@ -49,7 +49,8 @@ instance
      -- MK has no idea why the following three are not automatically deduced from the above...
      ArithUpDn.RoundedReal e,
      ArithInOut.RoundedAddEffort (Distance e),
-     RefOrd.RoundedLatticeEffort (Distance e)
+     RefOrd.RoundedLatticeEffort (Distance e),
+     EffortIndicator (ArithInOut.FieldOpsEffortIndicator (Distance e))
     ) 
     => 
     (ArithInOut.RoundedExponentiationInPlace (Interval e))
@@ -91,7 +92,8 @@ expOutInPlaceIters, expInInPlaceIters ::
      -- MK has no idea why the following three are not automatically deduced from the above...
      ArithUpDn.RoundedReal e,
      ArithInOut.RoundedAddEffort (Distance e),
-     RefOrd.RoundedLatticeEffort (Distance e)
+     RefOrd.RoundedLatticeEffort (Distance e),
+     EffortIndicator (ArithInOut.FieldOpsEffortIndicator (Distance e))
     ) 
     => 
     Int -> OpMutable1 (Interval e) s 

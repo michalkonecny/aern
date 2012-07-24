@@ -44,10 +44,12 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder 
+    (PartialCompareEffortIndicator) -- needed for ghc 6.12
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
-import Numeric.AERN.Basics.Interval (refordPCompareInFullIntervalsEff)
+--import Numeric.AERN.Basics.Interval (refordPCompareInFullIntervalsEff)
 
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Effort
@@ -68,7 +70,7 @@ instance
     => 
     NumOrd.PartialComparison (IntPoly var cf) 
     where
-    type NumOrd.PartialCompareEffortIndicator (IntPoly var cf) =
+    type PartialCompareEffortIndicator (IntPoly var cf) =
         (Int1To1000, (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)) 
     pCompareDefaultEffort p@(IntPoly cfg _) = 
         (Int1To1000 $ 4 * varsN,

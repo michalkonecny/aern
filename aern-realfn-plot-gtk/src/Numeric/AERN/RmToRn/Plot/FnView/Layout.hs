@@ -25,7 +25,6 @@ import Numeric.AERN.RmToRn.Plot.FnView.State
 import Numeric.AERN.RmToRn.Plot.Params
 
 import qualified Graphics.UI.Gtk as Gtk
-import qualified Graphics.UI.Gtk.Glade as Glade
 
 import System.Directory (doesFileExist)
 
@@ -38,22 +37,23 @@ loadGlade gladeFileName =
     case gotGladeFile of
         True -> return ()
         False -> error $ "AERN: RmToRn.Plot.FnView: glade file " ++ gladeFileName ++ " not found" 
-    Just xml <- Glade.xmlNew gladeFileName
-    window <- Glade.xmlGetWidget xml Gtk.castToWindow "window1"
-    canvasAlignment <- Glade.xmlGetWidget xml Gtk.castToAlignment "canvasAlignment1"
-    coorSystemCombo <- Glade.xmlGetWidget xml Gtk.castToComboBox "coorSystemCombo1"
-    evalPointEntry <- Glade.xmlGetWidget xml Gtk.castToEntry "evalPointEntry1"
-    defaultEvalPointButton <- Glade.xmlGetWidget xml Gtk.castToButton "defaultEvalPointButton1"
-    dimTable <- Glade.xmlGetWidget xml Gtk.castToTable "dimTable1"
-    domVarLabel <- Glade.xmlGetWidget xml Gtk.castToLabel "domVarLabel1"
-    zoomEntry <- Glade.xmlGetWidget xml Gtk.castToEntry "zoomEntry1"
-    defaultZoomPanButton <- Glade.xmlGetWidget xml Gtk.castToButton "defaultZoomPanButton1"
-    centreXEntry <- Glade.xmlGetWidget xml Gtk.castToEntry "centreXEntry1"
-    centreYEntry <- Glade.xmlGetWidget xml Gtk.castToEntry "centreYEntry1"
-    exportPNGButton <- Glade.xmlGetWidget xml Gtk.castToButton "exportPNGButton1"
-    exportSVGButton <- Glade.xmlGetWidget xml Gtk.castToButton "exportSVGButton1"
-    exportPDFButton <- Glade.xmlGetWidget xml Gtk.castToButton "exportPDFButton1"
-    printTXTButton <- Glade.xmlGetWidget xml Gtk.castToButton "printTXTButton1"
+    gui <- Gtk.builderNew
+    Gtk.builderAddFromFile gui gladeFileName
+    window <- Gtk.builderGetObject gui Gtk.castToWindow "window1"
+    canvasAlignment <- Gtk.builderGetObject gui Gtk.castToAlignment "canvasAlignment1"
+    coorSystemCombo <- Gtk.builderGetObject gui Gtk.castToComboBox "coorSystemCombo1"
+    evalPointEntry <- Gtk.builderGetObject gui Gtk.castToEntry "evalPointEntry1"
+    defaultEvalPointButton <- Gtk.builderGetObject gui Gtk.castToButton "defaultEvalPointButton1"
+    dimTable <- Gtk.builderGetObject gui Gtk.castToTable "dimTable1"
+    domVarLabel <- Gtk.builderGetObject gui Gtk.castToLabel "domVarLabel1"
+    zoomEntry <- Gtk.builderGetObject gui Gtk.castToEntry "zoomEntry1"
+    defaultZoomPanButton <- Gtk.builderGetObject gui Gtk.castToButton "defaultZoomPanButton1"
+    centreXEntry <- Gtk.builderGetObject gui Gtk.castToEntry "centreXEntry1"
+    centreYEntry <- Gtk.builderGetObject gui Gtk.castToEntry "centreYEntry1"
+    exportPNGButton <- Gtk.builderGetObject gui Gtk.castToButton "exportPNGButton1"
+    exportSVGButton <- Gtk.builderGetObject gui Gtk.castToButton "exportSVGButton1"
+    exportPDFButton <- Gtk.builderGetObject gui Gtk.castToButton "exportPDFButton1"
+    printTXTButton <- Gtk.builderGetObject gui Gtk.castToButton "printTXTButton1"
     return $ Widgets
         {
             window = window,

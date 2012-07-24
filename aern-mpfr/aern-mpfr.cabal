@@ -14,7 +14,7 @@ Synopsis:       arbitrary precision real interval arithmetic
 Tested-with:
                 GHC==6.12.3,
                 GHC==7.2.2,
-                GHC==7.4.1
+                GHC==7.4.2
 Description:
     This package provides bindings and tests for using arbitrary precision floating-point numbers 
     provided by the library MPFR (via the Haskell library hmpfr)
@@ -82,7 +82,7 @@ Executable testAERN-Real-MPFR
   Build-Depends:
         base == 4.2.* || == 4.4.* || == 4.5.*,
         QuickCheck >= 2.4 && < 2.5,
-        test-framework >= 0.3.3 && < 0.6, 
+        test-framework >= 0.3.3 && < 0.7, 
         test-framework-quickcheck2 >= 0.2 && < 0.3,
         hmpfr >= 0.3.3 && < 0.4,
         aern-order == 0.5.*,

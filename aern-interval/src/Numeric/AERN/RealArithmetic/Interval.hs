@@ -59,7 +59,7 @@ instance
 #if (__GLASGOW_HASKELL__ >= 704)
     type RoundedRealEffortIndicator (Interval e) = 
         (ArithUpDn.RoundedRealEffortIndicator e, 
-         (ArithInOut.FieldEffortIndicator (Distance e),
+         (ArithInOut.FieldOpsEffortIndicator (Distance e),
           NumOrd.PartialCompareEffortIndicator (Distance e),
           RefOrd.JoinMeetEffortIndicator (Distance e)
          ))

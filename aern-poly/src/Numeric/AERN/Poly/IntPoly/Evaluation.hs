@@ -42,7 +42,8 @@ import Numeric.AERN.RmToRn.Evaluation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn 
+import Numeric.AERN.RealArithmetic.NumericOrderRounding (ConvertEffortIndicator) -- needed for ghc 6.12
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
@@ -238,6 +239,7 @@ coeffPolyEvalOpsOut eff depth sample =
         let ?addInOutEffort = effAdd in
         let ?pCompareEffort = effComp in
         let ?joinmeetEffort = effJoin in
+        let ?mixedDivInOutEffort = effDivInt in -- needed for ghc 6.12
         PolyEvalOps (zero sample) (<+>) (<*>) (<^>) id (const Nothing) depth $
             Just $ PolyEvalMonoOps
                 result -- outer rounded ops = itself
@@ -287,7 +289,7 @@ instance
     =>
     ArithUpDn.Convertible (IntPoly var cf) cf
     where
-    type ArithUpDn.ConvertEffortIndicator (IntPoly var cf) cf = 
+    type ConvertEffortIndicator (IntPoly var cf) cf = 
         (EvaluationEffortIndicator (IntPoly var cf), 
          RefOrd.GetEndpointsEffortIndicator cf)
     convertDefaultEffort sampleP sampleCf = 

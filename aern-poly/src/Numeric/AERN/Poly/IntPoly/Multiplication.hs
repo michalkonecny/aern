@@ -135,9 +135,10 @@ multPolysOut eff p1@(IntPoly cfg terms1) (IntPoly _ terms2)
     reducePolyTermCountOut eff $ 
         reducePolyDegreeOut eff $ 
             IntPoly cfg $
-                let ?addInOutEffort = effAdd in
-                let ?multInOutEffort = effMult in
-                termsNormalise $ multTerms (<+>) (<*>) terms1 terms2
+                termsNormalise $ 
+                    let (<+>>) = ArithInOut.addOutEff effAdd in
+                    let (<*>>) = ArithInOut.multOutEff effMult in
+                    multTerms (<+>>) (<*>>) terms1 terms2
     where
     effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
@@ -172,8 +173,13 @@ instance
     (ArithInOut.RoundedReal cf) => 
     ArithInOut.RoundedPowerToNonnegIntEffort (IntPoly var cf)
     where
-    type (ArithInOut.PowerToNonnegIntEffortIndicator (IntPoly var cf)) =
+#if (__GLASGOW_HASKELL__ >= 704)
+    type PowerToNonnegIntEffortIndicator (IntPoly var cf) =
          ArithInOut.PowerToNonnegIntEffortIndicatorFromMult (IntPoly var cf)
+#else
+    type ArithInOut.PowerToNonnegIntEffortIndicator (IntPoly var cf) =
+         ArithInOut.PowerToNonnegIntEffortIndicatorFromMult (IntPoly var cf)
+#endif
     powerToNonnegIntDefaultEffort = ArithInOut.powerToNonnegIntDefaultEffortFromMult
 
 instance
@@ -287,7 +293,7 @@ instance
          RefOrd.GetEndpointsEffortIndicator cf) 
 #else
     type ArithUpDn.MixedMultEffortIndicator (IntPoly var cf) Int = 
-        (ArithInOut.MixedMultEffortIndicator (IntPoly var cf) Int,
+        (ArithInOut.MixedMultEffortIndicator (IntPoly var cf) Int, 
          RefOrd.GetEndpointsEffortIndicator cf) 
 #endif
     mixedMultDefaultEffort p@(IntPoly cfg _) sampleOther = 
@@ -354,8 +360,13 @@ instance
     => 
     ArithInOut.RoundedRingEffort (IntPoly var cf)
     where
+#if (__GLASGOW_HASKELL__ >= 704)
+    type RingOpsEffortIndicator (IntPoly var cf) =
+        (ArithInOut.RoundedRealEffortIndicator cf)
+#else
     type ArithInOut.RingOpsEffortIndicator (IntPoly var cf) =
         (ArithInOut.RoundedRealEffortIndicator cf)
+#endif
     ringOpsDefaultEffort (IntPoly cfg _) = 
         ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg
     ringEffortAdd _ eff = eff  
@@ -377,8 +388,13 @@ instance
     => 
     ArithInOut.RoundedMixedRingEffort (IntPoly var cf) other
     where
+#if (__GLASGOW_HASKELL__ >= 704)
+    type MixedRingOpsEffortIndicator (IntPoly var cf) other =
+        ArithInOut.MixedRingOpsEffortIndicator cf other
+#else
     type ArithInOut.MixedRingOpsEffortIndicator (IntPoly var cf) other =
         ArithInOut.MixedRingOpsEffortIndicator cf other
+#endif
     mixedRingOpsDefaultEffort (IntPoly cfg _) other = 
         ArithInOut.mixedRingOpsDefaultEffort (ipolycfg_sample_cf cfg) other
     mxringEffortAdd  (IntPoly cfg _) eff = 
@@ -432,8 +448,13 @@ instance
     => 
     ArithInOut.RoundedMixedFieldEffort (IntPoly var cf) other
     where
+#if (__GLASGOW_HASKELL__ >= 704)
+    type MixedFieldOpsEffortIndicator (IntPoly var cf) other =
+        ArithInOut.MixedFieldOpsEffortIndicator cf other
+#else
     type ArithInOut.MixedFieldOpsEffortIndicator (IntPoly var cf) other =
         ArithInOut.MixedFieldOpsEffortIndicator cf other
+#endif
     mixedFieldOpsDefaultEffort (IntPoly cfg _) other = 
         ArithInOut.mixedFieldOpsDefaultEffort (ipolycfg_sample_cf cfg) other
     mxfldEffortAdd  (IntPoly cfg _) eff = 
