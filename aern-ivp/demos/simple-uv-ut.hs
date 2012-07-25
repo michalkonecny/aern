@@ -5,7 +5,7 @@ module Main where
 import Numeric.AERN.Poly.IntPoly
 
 import Numeric.AERN.IVP.Specification.ODE
-import Numeric.AERN.IVP.Solver.Splitting
+import Numeric.AERN.IVP.Solver.Bisection
 import Numeric.AERN.IVP.Solver.Picard.UncertainTime
 
 import Numeric.AERN.RmToRn.New
@@ -319,7 +319,7 @@ refines a1 a2 =
 
 solveVTPrintSteps :: 
     (solvingInfo1 ~ (CF, Maybe [CF]),
-     solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe CF),
+     solvingInfo2 ~ BisectionInfo solvingInfo1 (solvingInfo1, Maybe CF),
      solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe solvingInfo2))
     )
     =>
@@ -329,7 +329,7 @@ solveVTPrintSteps ::
     -> 
     (Int, Int, Int, Int, Int) 
     -> 
-    IO (Maybe [CF], SplittingInfo solvingInfo3 (solvingInfo3, Maybe CF))
+    IO (Maybe [CF], BisectionInfo solvingInfo3 (solvingInfo3, Maybe CF))
 solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t0depthParam, maxSplitSizeParam) =
     do
     putStrLn $ "solving: " ++ description
@@ -357,12 +357,12 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
         True ->
             do
             putStrLn "----------  steps: ------------------------------"
-            putStrLn $ showSplittingInfo showSegInfo3 showSplitReason3 "" splittingInfo
+            putStrLn $ showBisectionInfo showSegInfo3 showSplitReason3 "" bisectionInfo
         False -> return ()
     putStrLn "-------------------------------------------------"
-    return (endValues, splittingInfo)
+    return (endValues, bisectionInfo)
     where
-    (endValues, splittingInfo) =
+    (endValues, bisectionInfo) =
         solveIVPWithUncertainTime
             sizeLimits t0SizeLimits effCf substSplitSizeLimit
                 delta m minStepSize minT0StepSize splitImprovementThreshold
@@ -431,8 +431,8 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
 --            err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
 --            wOut = CF.width valueOut     
 --            wIn = CF.width valueIn     
-    showSegInfo2 indent splittingInfo2 =
-        showSplittingInfo showSegInfo1 showSplitReason2 indent splittingInfo2
+    showSegInfo2 indent bisectionInfo2 =
+        showBisectionInfo showSegInfo1 showSplitReason2 indent bisectionInfo2
     showSegInfo3 indent (segInfoT, (segInfoT0,  Just segInfo2Out)) =
         indent ++ "at t0End:\n" ++ showSegInfo1 (indent ++ "  ") segInfoT0
         ++ indent ++ "at tEnd:\n" ++ showSegInfo1 (indent ++ "  ") segInfoT
@@ -452,7 +452,7 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
 
 solveIVPWithUncertainTime ::
     (solvingInfo1 ~ (CF, Maybe [CF]),
-     solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe CF),
+     solvingInfo2 ~ BisectionInfo solvingInfo1 (solvingInfo1, Maybe CF),
      solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe solvingInfo2))
     )
     =>
@@ -471,7 +471,7 @@ solveIVPWithUncertainTime ::
     (
      Maybe [CF]
     ,
-     SplittingInfo solvingInfo3 (solvingInfo3, Maybe CF)
+     BisectionInfo solvingInfo3 (solvingInfo3, Maybe CF)
     )
 solveIVPWithUncertainTime 
         sizeLimits t0SizeLimits effCf substSplitSizeLimit
@@ -482,7 +482,7 @@ solveIVPWithUncertainTime
     result
     where
     result =
-        solveUncertainValueUncertainTimeSplit
+        solveUncertainValueUncertainTimeBisect
             sizeLimits t0SizeLimits 
             effSizeLims effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
@@ -562,13 +562,3 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
 --    putStrLn $ "at end time: " ++ (show $ evalAtEndTimeVec tVar tEnd vector)
         
         
-{- TODO:
-
-copy changes to main and output from simpleVt.hs
-
-write a solver that can cope with t0End < tEnd by splittin into two problems,
-solving the second one using solver for exact initial time with splitting
-
-write a version of splitting that works on t0End instead of tEnd
-
--}       

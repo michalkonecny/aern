@@ -75,16 +75,18 @@ data HybridSystem f =
     ,
         hybsys_eventModeSwitchesAndResetFunctions :: Map.Map HybSysEventKind (HybSysMode, [f] -> [f])
     ,
-        hybsys_eventDetector :: 
+        hybsys_eventSpecification :: 
             HybSysMode ->
-            [f] -> 
             Map.Map HybSysEventKind
                 (
-                 Bool, -- is this event certain unless it is beaten by another event?
                  [Bool],
                     {- indication of which components are affected by the event;
                        a component is affected if the reset function changes its value OR
                        if the new mode has a different dynamics for this variable -}
+                 [f] -> f,
+                    {- construction of a zero crossing function -}
+                 [Domain f] -> Maybe Bool,
+                    {- additional condition -}
                  [Domain f] -> [Domain f] 
                     {- intersection with the support of the guard, 
                        used to prune some impossible states at the switching point -} 

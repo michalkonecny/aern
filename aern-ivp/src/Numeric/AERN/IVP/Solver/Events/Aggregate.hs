@@ -4,7 +4,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-    Module      :  Numeric.AERN.IVP.Solver.Events
+    Module      :  Numeric.AERN.IVP.Solver.Events.Aggregate
     Description :  hybrid system simulation  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -16,16 +16,17 @@
     Hybrid system simulation.
 -}
 
-module Numeric.AERN.IVP.Solver.Events
+module Numeric.AERN.IVP.Solver.Events.Aggregate
 --(
 --)
 where
 
+import Numeric.AERN.IVP.Solver.Events.Locate
+
 import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Specification.Hybrid
 import Numeric.AERN.IVP.Solver.Picard.UncertainValue
-import Numeric.AERN.IVP.Solver.Picard.UncertainTime
-import Numeric.AERN.IVP.Solver.Splitting
+--import Numeric.AERN.IVP.Solver.Picard.UncertainTime
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
@@ -34,7 +35,6 @@ import Numeric.AERN.RmToRn.Integration
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
-import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
@@ -45,97 +45,13 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 
+import Data.Maybe (catMaybes)
 import qualified Data.Map as Map
-import qualified Data.Set as Set
+--import qualified Data.Set as Set
 --import qualified Data.List as List
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
-
-solveEventsTimeSplit ::
-    (CanAddVariables f,
-     CanRenameVariables f,
-     CanEvaluate f,
-     CanCompose f,
-     CanPartiallyEvaluate f,
-     HasProjections f,
-     HasConstFns f,
-     RefOrd.IntervalLike f,
-     HasAntiConsistency f,
-     NumOrd.RefinementRoundedLattice f,
-     RefOrd.PartialComparison f,
-     RoundedIntegration f,
-     ArithInOut.RoundedAdd f,
-     ArithInOut.RoundedSubtr f,
-     ArithInOut.RoundedMultiply f,
-     ArithInOut.RoundedMixedAdd f (Domain f),
-     ArithInOut.RoundedReal (Domain f), 
-     RefOrd.IntervalLike (Domain f),
-     HasAntiConsistency (Domain f),
-     Domain f ~ Imprecision (Domain f),
-     solvingInfo ~ (Domain f, Maybe (HybridSystemUncertainState (Domain f)), [(HybSysMode, EventInfo f)]),
-     Show f, Show (Domain f), Show (Var f), Eq (Var f))
-    =>
-    SizeLimits f {-^ size limits for all function -} ->
-    PartialEvaluationEffortIndicator f ->
-    CompositionEffortIndicator f ->
-    EvaluationEffortIndicator f ->
-    IntegrationEffortIndicator f ->
-    RefOrd.PartialCompareEffortIndicator f ->
-    ArithInOut.AddEffortIndicator f ->
-    ArithInOut.MultEffortIndicator f ->
-    ArithInOut.MixedAddEffortIndicator f (Domain f) ->
-    ArithInOut.RoundedRealEffortIndicator (Domain f) ->
-    Domain f {-^ initial widening @delta@ -}  ->
-    Int {-^ @m@ -} -> 
-    Var f {-^ @t0@ - the initial time variable -} ->
-    Domain f {-^ min step size @s@ -} -> 
-    Domain f {-^ max step size @s@ -} -> 
-    Imprecision (Domain f) {-^ split improvement threshold @eps@ -} ->
-    HybridIVP f
-    ->
-    (
-        Maybe (HybridSystemUncertainState (Domain f))
-    ,
-        (
-            SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
-        )
-    )
-solveEventsTimeSplit
-        sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
-            delta m t0Var minStepSize maxStepSize splitImprovementThreshold
-                hybivpG
-    = solve hybivpG
-    where
-    solve hybivp =
-        solveHybridIVPBySplittingT
-            directSolver
-                effDom splitImprovementThreshold minStepSize maxStepSize
-                    hybivp
-
-    directSolver depth hybivp =
-        (maybeFinalStateWithInvariants, (tEnd, maybeFinalStateWithInvariants, modeEventInfoList))
-        where
-        tEnd = hybivp_tEnd hybivp
-        maybeFinalStateWithInvariants
-            = fmap filterInvariants maybeFinalState
-            where
-            filterInvariants st =
-                Map.mapWithKey filterInvariantsVec st
-                where
-                filterInvariantsVec mode vec =
-                    invariant vec
-                    where
-                    Just invariant =
-                        Map.lookup mode modeInvariants
-        modeInvariants = hybsys_modeInvariants $ hybivp_system hybivp
-        (maybeFinalState, modeEventInfoList) = 
-            solveEvents
-                sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
-                    (10 + 2 * depth)
-                        delta m
-                            t0Var
-                                hybivp
 
 solveEvents ::
     (CanAddVariables f,
@@ -184,7 +100,7 @@ solveEvents ::
     ->
     Domain f {-^ initial widening @delta@ -}
     ->
-    Int  
+    Int  {-^ @m@ - limit on the number of Picard iterations after stabilisation -}
     ->
     Var f {-^ @t0@ - the initial time variable -} 
     ->
@@ -192,10 +108,10 @@ solveEvents ::
     ->
     (Maybe (HybridSystemUncertainState (Domain f)), [(HybSysMode, (EventInfo f))])
 solveEvents
-        sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
+        sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn _effMultFn effAddFnDom effDom
             maxNodes
                 delta m
-                    t0Var
+                    _t0Var
                         (hybivp :: HybridIVP f)
     | givenUp =        
         (Nothing, modeEventInfoList)
@@ -329,14 +245,16 @@ solveEvents
                     | otherwise = Just $ nodeCountSoFar + eventCount
                 eventCount = 
                     Map.size possibleOrCertainFirstEventsMap
-                possibleOrCertainFirstEventsMap = 
-                    hybsys_eventDetector hybsys mode fnVecBeforeEvent
+                possibleOrCertainFirstEventsMap =
+                    detectEventsWithoutLocalisation eventSpecMap (tStart, tEnd) fnVecBeforeEvent
+                eventSpecMap = 
+                    hybsys_eventSpecification hybsys mode
 
                 constructorForNextEvents 
                     | someEventCertain = EventNextSure
                     | otherwise = EventNextMaybe
                 someEventCertain =
-                    or $ map (\(eventCertain, _,_) -> eventCertain) $ Map.elems possibleOrCertainFirstEventsMap
+                    or $ map (\(eventCertain, _, _) -> eventCertain) $ Map.elems possibleOrCertainFirstEventsMap
                 
                 eventTasksMap =
                     Map.fromAscList eventTasks
@@ -420,6 +338,33 @@ solveEvents
         Just field = Map.lookup mode modeFields
         modeFields = hybsys_modeFields hybsys
     
+detectEventsWithoutLocalisation :: 
+    (RefOrd.IntervalLike (Domain f), CanEvaluate f,
+     NumOrd.PartialComparison (Domain f),
+     HasZero (Domain f)) =>
+    Map.Map HybSysEventKind ([Bool], [f] -> f, [Domain f] -> Maybe Bool, resetMap) -> 
+    (Domain f, Domain f) -> 
+    [f] -> 
+    Map.Map HybSysEventKind (Bool, [Bool], resetMap)
+detectEventsWithoutLocalisation eventSpecMap (tStart,tEnd) fnVecBeforeEvent =
+    Map.fromAscList $
+        catMaybes $ 
+            map detectEvent $
+                Map.toAscList eventSpecMap
+    where
+    detectEvent (eventType, (affectedComps, makeZeroCrossingFn, otherCond, pruneFn)) =
+        case examineDipOnDom otherCond fnVecBeforeEvent (makeZeroCrossingFn fnVecBeforeEvent) (tStart,tEnd) of
+            LDResNone -> Nothing
+            LDResSure _ -> Just (eventType, (True, affectedComps, pruneFn))
+            LDResMaybe _ -> Just (eventType, (False, affectedComps, pruneFn))
+        
+wrapFnVecAsBox ::
+    (CanEvaluate f, HasConstFns f) 
+    =>
+    EvaluationEffortIndicator f -> 
+    ([Domain f] -> [Domain f]) -> 
+    [f] -> 
+    [f]
 wrapFnVecAsBox effEval transformVec fnVec =
     result
     where

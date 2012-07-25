@@ -19,12 +19,12 @@
 module Numeric.AERN.IVP.Solver.Picard.UncertainValue
 (
     solveUncertainValueExactTime,
-    solveUncertainValueExactTimeSplit
+    solveUncertainValueExactTimeBisect
 )
 where
 
 import Numeric.AERN.IVP.Specification.ODE
-import Numeric.AERN.IVP.Solver.Splitting
+import Numeric.AERN.IVP.Solver.Bisection
 import Numeric.AERN.IVP.Solver.ShrinkWrap
 
 import Numeric.AERN.RmToRn.Domain
@@ -53,7 +53,7 @@ import Numeric.AERN.Misc.Debug
 _ = unsafePrint
         
 
-solveUncertainValueExactTimeSplit ::
+solveUncertainValueExactTimeBisect ::
     (CanAddVariables f,
      CanEvaluate f,
      CanPartiallyEvaluate f,
@@ -111,10 +111,10 @@ solveUncertainValueExactTimeSplit ::
         Maybe [Domain f]
     ,
         (
-            SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+            BisectionInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
         )
     )
-solveUncertainValueExactTimeSplit
+solveUncertainValueExactTimeBisect
         shouldWrap shouldShrinkWrap
             sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
@@ -125,8 +125,8 @@ solveUncertainValueExactTimeSplit
         error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
     | otherwise =
         case solve odeivpG of
-            (maybeResFnVec, splittingInfo) ->
-                (fmap (map getRange) maybeResFnVec, splittingInfo)
+            (maybeResFnVec, bisectionInfo) ->
+                (fmap (map getRange) maybeResFnVec, bisectionInfo)
     where
     tVar = odeivp_tVar odeivpG
     tStart, t0End :: Domain f
@@ -145,7 +145,7 @@ solveUncertainValueExactTimeSplit
         evalAtPointOutEff effEval (getDomainBox fn) fn
 
     solve odeivp =
-        solveODEIVPBySplittingT
+        solveODEIVPByBisectingT
             directSolver measureResultImprecision 
                 (makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames)
                 effDom splitImprovementThreshold minStepSize
@@ -176,13 +176,13 @@ solveUncertainValueExactTimeSplit
             | shouldShrinkWrap = 
                 case shrinkWrappedParamValuesAtTEnd of
                     Just fns2 ->
-                        unsafePrint ("solveUncertainValueExactTimeSplit: shrink wrapping succeeded") $ 
+                        unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping succeeded") $ 
                         fns2
                     _ | haveAnExactDomain -> 
-                        unsafePrint ("solveUncertainValueExactTimeSplit: shrink wrapping failed, wrapping") $ 
+                        unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping failed, wrapping") $ 
                         wrappedParamValuesAtTEnd
                     _ -> 
-                        unsafePrint ("solveUncertainValueExactTimeSplit: shrink wrapping failed, leaving it thick") $ 
+                        unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping failed, leaving it thick") $ 
                         thickParamValuesAtTEnd 
             | otherwise = thickParamValuesAtTEnd
             where
@@ -215,13 +215,13 @@ solveUncertainValueExactTimeSplit
                 | iterNo >= maxIters = (h, hAtTEnd)
                 | notMuchImprovement =
 --                     unsafePrint 
---                        ("solveUncertainValueExactTimeSplit:"
+--                        ("solveUncertainValueExactTimeBisect:"
 --                            ++ " finished after " ++ show iterNo 
 --                            ++ " iterations (max = " ++ show maxIters ++ ")") $
                     (h, hAtTEnd)
                 | otherwise =
 --                    unsafePrint 
---                        ("solveUncertainValueExactTimeSplit: "
+--                        ("solveUncertainValueExactTimeBisect: "
 --                            ++ "hImprecision = " ++ show hImprecision
 --                        ) $
                     aux (iterNo + 1) hImprecision t

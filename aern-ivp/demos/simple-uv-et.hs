@@ -5,7 +5,7 @@ module Main where
 import Numeric.AERN.Poly.IntPoly
 
 import Numeric.AERN.IVP.Specification.ODE
-import Numeric.AERN.IVP.Solver.Splitting
+import Numeric.AERN.IVP.Solver.Bisection
 import Numeric.AERN.IVP.Solver.Picard.UncertainValue
 
 import Numeric.AERN.IVP.Solver.ShrinkWrap -- only for testing
@@ -488,7 +488,7 @@ solveVtPrintSteps ::
         Maybe [CF]
     ,
         (
-            SplittingInfo solvingInfo (solvingInfo, Maybe CF)
+            BisectionInfo solvingInfo (solvingInfo, Maybe CF)
         )
     )
 solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
@@ -507,9 +507,9 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
             putStr $ showSegInfo "(almost) exact result = " (tEnd, Just exactResult)
         _ -> return ()
     putStrLn "----------  steps: ---------------------------"
-    printStepsInfo (1:: Int) splittingInfoOut
+    printStepsInfo (1:: Int) bisectionInfoOut
     putStrLn "----------  step summary: -----------------------"
-    putStrLn $ "number of atomic segments = " ++ (show $ splittingInfoCountLeafs splittingInfoOut)
+    putStrLn $ "number of atomic segments = " ++ (show $ bisectionInfoCountLeafs bisectionInfoOut)
     putStrLn $ "smallest segment size: " ++ (show smallestSegSize)  
     putStrLn "----------  result: -----------------------------"
     putStr $ showSegInfo ">>> " (tEnd, endValues)
@@ -517,13 +517,13 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
         True ->
             do
             putStrLn "----------  splitting info: -----------------"
-            putStrLn $ showSplittingInfo showSegInfo showSplitReason "" splittingInfoOut
+            putStrLn $ showBisectionInfo showSegInfo showSplitReason "" bisectionInfoOut
         False -> return ()
     putStrLn "-------------------------------------------------"
-    return (endValues, splittingInfoOut)
+    return (endValues, bisectionInfoOut)
     where
     -- solver call:
-    (endValues, splittingInfoOut) =
+    (endValues, bisectionInfoOut) =
         solveIVPWithUncertainValue shouldWrap
             sizeLimits effCf substSplitSizeLimit delta m 
                 minStepSize splitImprovementThreshold
@@ -553,13 +553,13 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
             makeSampleWithVarsDoms maxdeg maxsize [] []
             
     (smallestSegSize, _) =
-        aux tStart (tEnd CF.<-> tStart) splittingInfoOut
+        aux tStart (tEnd CF.<-> tStart) bisectionInfoOut
         where
-        aux tPrev tSmallestSoFar (SegNoSplit (tNow,_)) =
+        aux tPrev tSmallestSoFar (BisectionNoSplit (tNow,_)) =
             (CF.minOut tSmallestSoFar (tNow CF.<-> tPrev), tNow)
-        aux tPrev tSmallestSoFar (SegSplit _ left Nothing) =
+        aux tPrev tSmallestSoFar (BisectionSplit _ left Nothing) =
             aux tPrev tSmallestSoFar left
-        aux tPrev tSmallestSoFar (SegSplit _ left (Just right)) =
+        aux tPrev tSmallestSoFar (BisectionSplit _ left (Just right)) =
             aux tPrevL tSmallestSoFarL right
             where
             (tSmallestSoFarL, tPrevL) =
@@ -567,11 +567,11 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
     
     showStepInfo (n, segInfo@(t, _)) =
         "step " ++ show n ++ ": t = " ++ show t ++ "\n" ++ (showSegInfo "    " segInfo)
-    printStepsInfo n (SegNoSplit segInfo) =
+    printStepsInfo n (BisectionNoSplit segInfo) =
         do
         putStrLn $ showStepInfo (n, segInfo)
         return $ n + 1
-    printStepsInfo n (SegSplit _ left maybeRight) =
+    printStepsInfo n (BisectionSplit _ left maybeRight) =
         do
         n2 <- printStepsInfo n left
         case maybeRight of
@@ -622,7 +622,7 @@ solveIVPWithUncertainValue ::
      Maybe ([CF])
     ,
         (
-            SplittingInfo solvingInfo (solvingInfo, Maybe CF)
+            BisectionInfo solvingInfo (solvingInfo, Maybe CF)
         )
     )
 solveIVPWithUncertainValue
@@ -631,12 +631,12 @@ solveIVPWithUncertainValue
                 delta m minStepSize splitImprovementThreshold
                     odeivp
     =
-    solveUncertainValueExactTimeSplit2
+    solveUncertainValueExactTimeBisect2
         delta m minStepSize splitImprovementThreshold
             odeivp
     where
-    solveUncertainValueExactTimeSplit2 =
-        solveUncertainValueExactTimeSplit shouldWrap True
+    solveUncertainValueExactTimeBisect2 =
+        solveUncertainValueExactTimeBisect shouldWrap True
             sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
             effDivFnInt effAddFnDom effMultFnDom effCf
