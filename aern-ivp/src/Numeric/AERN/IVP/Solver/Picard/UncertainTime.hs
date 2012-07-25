@@ -19,12 +19,12 @@
 module Numeric.AERN.IVP.Solver.Picard.UncertainTime
 (
     solveUncertainValueUncertainTime,
-    solveUncertainValueUncertainTimeSplit
+    solveUncertainValueUncertainTimeBisect
 )
 where
 
 import Numeric.AERN.IVP.Specification.ODE
-import Numeric.AERN.IVP.Solver.Splitting
+import Numeric.AERN.IVP.Solver.Bisection
 import Numeric.AERN.IVP.Solver.Picard.UncertainValue
 
 import Numeric.AERN.RmToRn.Domain
@@ -51,7 +51,7 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
         
-solveUncertainValueUncertainTimeSplit ::        
+solveUncertainValueUncertainTimeBisect ::        
     (CanAddVariables f,
      CanChangeSizeLimits f,
      CanEvaluate f,
@@ -81,7 +81,7 @@ solveUncertainValueUncertainTimeSplit ::
      dom ~ Domain f,
      dom ~ Imprecision dom, 
      solvingInfo1 ~ (dom, Maybe [dom]),
-     solvingInfo2 ~ SplittingInfo solvingInfo1 (solvingInfo1, Maybe dom),
+     solvingInfo2 ~ BisectionInfo solvingInfo1 (solvingInfo1, Maybe dom),
      solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe solvingInfo2))
     )
     =>
@@ -113,9 +113,9 @@ solveUncertainValueUncertainTimeSplit ::
     (
      Maybe [dom]
     ,
-     SplittingInfo solvingInfo3 (solvingInfo3, Maybe dom)
+     BisectionInfo solvingInfo3 (solvingInfo3, Maybe dom)
     )
-solveUncertainValueUncertainTimeSplit
+solveUncertainValueUncertainTimeBisect
         sizeLimits t0SizeLimits 
         effSizeLims effCompose effEval effInteg effDeriv effInclFn 
         effAddFn effMultFn effAbsFn effMinmaxFn 
@@ -134,13 +134,13 @@ solveUncertainValueUncertainTimeSplit
     tVar = odeivp_tVar odeivpG
     
     solverSplittingT0 odeivp =
-        solveODEIVPBySplittingT0
+        solveODEIVPByBisectingT0
             solverSplittingAtT0End
                 effDom splitImprovementThreshold minT0StepSize
                     odeivp
 
     solverSplittingAtT0End odeivp =
-        solveODEIVPBySplittingAtT0End
+        solveODEIVPByBisectingAtT0End
             solverVT (makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNamesWithT0) 
                 solverVt 
                     odeivp
@@ -166,7 +166,7 @@ solveUncertainValueUncertainTimeSplit
                             odeivp 
 
     solverVt odeivp =
-        solveUncertainValueExactTimeSplit False True
+        solveUncertainValueExactTimeBisect False True
             sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
             effDivFnInt effAddFnDom effMultFnDom effDom
@@ -249,7 +249,7 @@ solveUncertainValueUncertainTime
     t0End = odeivp_t0End odeivp
 
     -- perform eliminating substitution: t0 |-> min (T0 , t):
-    enclosuresWithoutT0 =
+    _enclosuresWithoutT0 =
         map (map (removeT0)) enclosuresShifted
         where
         removeT0 (enclOut, enclIn) =
@@ -277,9 +277,9 @@ solveUncertainValueUncertainTime
                 odeivp_t0End = tStart,
                 odeivp_tEnd = tEndAdj 
             }
-        makeInitialValuesFnVecExactTime sizeLimits t0Var2 t0Domain2 =
+        makeInitialValuesFnVecExactTime sizeLimits2 t0Var2 t0Domain2 =
             map (addVariablesFront [(t0Var2, t0Domain2)]) $
-                odeivp_makeInitialValueFnVec odeivp sizeLimits t0Var timeDomain
+                odeivp_makeInitialValueFnVec odeivp sizeLimits2 t0Var timeDomain
     tEndAdj =
         let ?addInOutEffort = effAddDom in 
         tEnd <+> tEnd <-> tStart

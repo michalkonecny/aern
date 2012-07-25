@@ -4,7 +4,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 --{-# LANGUAGE ScopedTypeVariables #-}
 {-|
-    Module      :  Numeric.AERN.IVP.Solver.Splitting
+    Module      :  Numeric.AERN.IVP.Solver.Bisection
     Description :  adaptive splitting solver parametrised by a single-step solver  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
@@ -15,33 +15,33 @@
     
     Adaptive splitting solver parametrised by a single-step solver.
     
-    Typically one uses solveODEIVPBySplittingT0 and
-    its subsolver is defined using solveODEIVPBySplittingAtT0End
+    Typically one uses solveODEIVPByBisectingT0 and
+    its subsolver is defined using solveODEIVPByBisectingAtT0End
     and its subsolver for the right-hand side is 
-    defined using solveODEIVPBySplittingT:
+    defined using solveODEIVPByBisectingT:
     
-    solveODEIVPBySplittingT0
+    solveODEIVPByBisectingT0
     |
     |
-    solveODEIVPBySplittingAtT0End
+    solveODEIVPByBisectingAtT0End
     |       \
     |        \
-    solve-VT  solveODEIVPBySplittingT
+    solve-VT  solveODEIVPByBisectingT
               |
               |
               solve-Vt
 -}
 
-module Numeric.AERN.IVP.Solver.Splitting
+module Numeric.AERN.IVP.Solver.Bisection
 (
-    solveHybridIVPBySplittingT,
-    solveODEIVPBySplittingAtT0End,
-    solveODEIVPBySplittingT,
-    solveODEIVPBySplittingT0,
-    SplittingInfo(..),
-    showSplittingInfo,
-    splittingInfoCountLeafs,
-    splittingInfoGetLeafSegInfoSequence
+    solveHybridIVPByBisectingT,
+    solveODEIVPByBisectingAtT0End,
+    solveODEIVPByBisectingT,
+    solveODEIVPByBisectingT0,
+    BisectionInfo(..),
+    showBisectionInfo,
+    bisectionInfoCountLeafs,
+    bisectionInfoGetLeafSegInfoSequence
 )
 where
 
@@ -75,7 +75,7 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
         
-solveHybridIVPBySplittingT ::
+solveHybridIVPByBisectingT ::
     (CanAddVariables f,
      CanEvaluate f,
      CanCompose f,
@@ -107,10 +107,10 @@ solveHybridIVPBySplittingT ::
         Maybe (HybridSystemUncertainState (Domain f))
     ,
         (
-            SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+            BisectionInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
         )
     )
-solveHybridIVPBySplittingT
+solveHybridIVPByBisectingT
         solver
             effDom splitImprovementThreshold minStepSize maxStepSize 
                 hybivpG 
@@ -122,7 +122,7 @@ solveHybridIVPBySplittingT
     splitSolve depth hybivp =
 --        unsafePrint
 --        (
---            "solveHybridIVPBySplittingT: splitSolve: "
+--            "solveHybridIVPByBisectingT: splitSolve: "
 --            ++ "tStart = " ++ show tStart
 --            ++ "tEnd = " ++ show tEnd
 --        ) $
@@ -153,12 +153,12 @@ solveHybridIVPBySplittingT
         directComputation =
 --            unsafePrint
 --            (
---                "solveHybridIVPBySplittingT: completed time " ++ show tEnd
+--                "solveHybridIVPByBisectingT: completed time " ++ show tEnd
 --            ) $
             case maybeDirectResult of
                 Just resultOut 
-                    | otherwise -> (Just resultOut, SegNoSplit directInfo)
-                _ -> (Nothing, SegNoSplit directInfo) 
+                    | otherwise -> (Just resultOut, BisectionNoSplit directInfo)
+                _ -> (Nothing, BisectionNoSplit directInfo) 
         (maybeDirectResult, directInfo) = solver depth hybivp
         directComputationFailed =
             case maybeDirectResult of Just _ -> False; _ -> True
@@ -180,7 +180,7 @@ solveHybridIVPBySplittingT
                 
         (splitComputation, splitComputationFailed) =
             (
-                (maybeState, SegSplit (directInfo, maybeSplitImprovement) infoL maybeInfoR)
+                (maybeState, BisectionSplit (directInfo, maybeSplitImprovement) infoL maybeInfoR)
             , 
                 case maybeState of Just _ -> False; _ -> True
             )
@@ -228,7 +228,7 @@ solveHybridIVPBySplittingT
 --    sampleImpr = imprecisionOfEff effImpr sampleDom
 --    effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
         
-solveODEIVPBySplittingAtT0End ::
+solveODEIVPByBisectingAtT0End ::
     (HasAntiConsistency (Domain f), 
      HasAntiConsistency f,
      Show f, Show (Domain f))
@@ -246,7 +246,7 @@ solveODEIVPBySplittingAtT0End ::
     , 
         (solvingInfoL, Maybe solvingInfoR)
     )
-solveODEIVPBySplittingAtT0End
+solveODEIVPByBisectingAtT0End
         solverVT makeMakeParamInitValFnVec solverVt 
             odeivpG 
     =
@@ -259,7 +259,7 @@ solveODEIVPBySplittingAtT0End
                     Just resultOut ->
 --                        unsafePrint
 --                        (
---                            "solveODEIVPBySplittingAtT0End:"
+--                            "solveODEIVPByBisectingAtT0End:"
 --                            ++ "\n fnVecLOut = " ++ show fnVecLOut
 --                        )
                         (Just result, Just infoROut)
@@ -287,7 +287,7 @@ solveODEIVPBySplittingAtT0End
             }
     t0End = odeivp_t0End odeivpG
     
-solveODEIVPBySplittingT ::
+solveODEIVPByBisectingT ::
     (CanAddVariables f,
      CanEvaluate f,
      CanCompose f,
@@ -321,10 +321,10 @@ solveODEIVPBySplittingT ::
         Maybe result
     ,
         (
-            SplittingInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
+            BisectionInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
         )
     )
-solveODEIVPBySplittingT
+solveODEIVPByBisectingT
         solver measureResultImprecision makeMakeInitValFnVec
             effDom splitImprovementThreshold minStepSize 
                 odeivpG 
@@ -347,7 +347,7 @@ solveODEIVPBySplittingT
     splitSolve odeivp =
 --        unsafePrint
 --        (
---            "solveODEIVPBySplittingT: splitSolve: "
+--            "solveODEIVPByBisectingT: splitSolve: "
 --            ++ "shouldRoundInwards = " ++ show shouldRoundInwards
 --            ++ "tStart = " ++ show tStart
 --            ++ "tEnd = " ++ show tEnd
@@ -373,8 +373,8 @@ solveODEIVPBySplittingT
 
         directComputation =
             case maybeDirectResult of
-                Just resultOut -> (Just resultOut, SegNoSplit directInfo)
-                _ -> (Nothing, SegNoSplit directInfo) 
+                Just resultOut -> (Just resultOut, BisectionNoSplit directInfo)
+                _ -> (Nothing, BisectionNoSplit directInfo) 
         (maybeDirectResult, directInfo) = solver odeivp
         directComputationFailed =
             case maybeDirectResult of Just _ -> False; _ -> True
@@ -398,7 +398,7 @@ solveODEIVPBySplittingT
                 _ -> Nothing
                 
         splitComputation =
-            (maybeState, SegSplit (directInfo, maybeSplitImprovement) infoL maybeInfoR)
+            (maybeState, BisectionSplit (directInfo, maybeSplitImprovement) infoL maybeInfoR)
             where
             (maybeMidState, infoL) =
                 splitSolve odeivpL
@@ -455,7 +455,7 @@ solveODEIVPBySplittingT
 --                    Just $ (imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
 ----                False -> Nothing 
                 
-solveODEIVPBySplittingT0 ::
+solveODEIVPByBisectingT0 ::
     (CanAddVariables f,
      CanEvaluate f,
      CanCompose f,
@@ -484,9 +484,9 @@ solveODEIVPBySplittingT0 ::
     (
         Maybe [Domain f]
     , 
-        SplittingInfo solvingInfoSub (solvingInfoSub, Maybe (Imprecision (Domain f)))
+        BisectionInfo solvingInfoSub (solvingInfoSub, Maybe (Imprecision (Domain f)))
     )
-solveODEIVPBySplittingT0
+solveODEIVPByBisectingT0
         solver
             effDom splitImprovementThreshold minStepSize 
                 odeivpG 
@@ -526,7 +526,7 @@ solveODEIVPBySplittingT0
             ((t0End <-> tStart) >? minStepSize) /= Just True
 
         directComputation =
-            (maybeDirectResult, SegNoSplit ((tEnd, maybeDirectResult), directInfo))
+            (maybeDirectResult, BisectionNoSplit ((tEnd, maybeDirectResult), directInfo))
         (maybeDirectResult, directInfo) = solver odeivp
         directComputationFailed =
             case maybeDirectResult of Just _ -> False; _ -> True
@@ -555,13 +555,13 @@ solveODEIVPBySplittingT0
                 (Just endValuesLOut, infoL) -> 
                     case splitSolve odeivpR of
                         (Just endValuesROut, infoR) ->
-                            (Just endValuesOut, SegSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL (Just infoR))
+                            (Just endValuesOut, BisectionSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL (Just infoR))
                             where
                             endValuesOut =
                                 let ?joinmeetEffort = effJoinDom in
                                 zipWith (</\>) endValuesLOut endValuesROut
                         (Nothing, infoR) ->
-                            (Nothing, SegSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL (Just infoR))
+                            (Nothing, BisectionSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL (Just infoR))
                     where
                     odeivpR =
                         odeivp
@@ -601,48 +601,48 @@ solveODEIVPBySplittingT0
                     Just $ (imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
 --                False -> Nothing 
 
-data SplittingInfo segInfo splitReason
-    = SegNoSplit segInfo
-    | SegSplit splitReason (SplittingInfo segInfo splitReason) (Maybe (SplittingInfo segInfo splitReason))
+data BisectionInfo segInfo splitReason
+    = BisectionNoSplit segInfo
+    | BisectionSplit splitReason (BisectionInfo segInfo splitReason) (Maybe (BisectionInfo segInfo splitReason))
 
-showSplittingInfo :: 
+showBisectionInfo :: 
     (String -> segInfo -> String) 
     -> 
     (String -> splitReason -> String) 
     -> 
-    String -> SplittingInfo segInfo splitReason -> String
-showSplittingInfo showSegInfo showSplitReason indentG splittingInfoG =
-    shLevel indentG splittingInfoG
+    String -> BisectionInfo segInfo splitReason -> String
+showBisectionInfo showSegInfo showSplitReason indentG bisectionInfoG =
+    shLevel indentG bisectionInfoG
     where
-    shLevel indent splittingInfo =
-        case splittingInfo of
-            SegNoSplit segInfo -> showSegInfo indent segInfo
-            SegSplit reason infoL Nothing ->
+    shLevel indent bisectionInfo =
+        case bisectionInfo of
+            BisectionNoSplit segInfo -> showSegInfo indent segInfo
+            BisectionSplit reason infoL Nothing ->
                 (showSplitReason indent reason)
                 ++ "\n" ++
                 (shLevel (indent ++ "| ") infoL)
-            SegSplit reason infoL (Just infoR) ->
+            BisectionSplit reason infoL (Just infoR) ->
                 (showSplitReason indent reason)
                 ++ "\n" ++
                 (shLevel (indent ++ "| ") infoL)
                 ++ "\n" ++
                 (shLevel (indent ++ "  ") infoR)
              
-splittingInfoCountLeafs ::
-    SplittingInfo segInfo splitReason -> Int
-splittingInfoCountLeafs (SegNoSplit _) = 1
-splittingInfoCountLeafs (SegSplit _ left Nothing) =
-    splittingInfoCountLeafs left
-splittingInfoCountLeafs (SegSplit _ left (Just right)) =
-    splittingInfoCountLeafs left + splittingInfoCountLeafs right
+bisectionInfoCountLeafs ::
+    BisectionInfo segInfo splitReason -> Int
+bisectionInfoCountLeafs (BisectionNoSplit _) = 1
+bisectionInfoCountLeafs (BisectionSplit _ left Nothing) =
+    bisectionInfoCountLeafs left
+bisectionInfoCountLeafs (BisectionSplit _ left (Just right)) =
+    bisectionInfoCountLeafs left + bisectionInfoCountLeafs right
     
     
-splittingInfoGetLeafSegInfoSequence ::
-    SplittingInfo segInfo splitReason -> [segInfo]
-splittingInfoGetLeafSegInfoSequence (SegNoSplit info) = [info]
-splittingInfoGetLeafSegInfoSequence (SegSplit _ left Nothing) =
-    splittingInfoGetLeafSegInfoSequence left
-splittingInfoGetLeafSegInfoSequence (SegSplit _ left (Just right)) =
-    splittingInfoGetLeafSegInfoSequence left
+bisectionInfoGetLeafSegInfoSequence ::
+    BisectionInfo segInfo splitReason -> [segInfo]
+bisectionInfoGetLeafSegInfoSequence (BisectionNoSplit info) = [info]
+bisectionInfoGetLeafSegInfoSequence (BisectionSplit _ left Nothing) =
+    bisectionInfoGetLeafSegInfoSequence left
+bisectionInfoGetLeafSegInfoSequence (BisectionSplit _ left (Just right)) =
+    bisectionInfoGetLeafSegInfoSequence left
     ++
-    splittingInfoGetLeafSegInfoSequence right
+    bisectionInfoGetLeafSegInfoSequence right
