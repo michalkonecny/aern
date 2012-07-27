@@ -18,24 +18,29 @@
 
 module Numeric.AERN.IVP.Solver.Events.SplitNearEvents
 (
-    solveEventsSplitNearEvents
+    solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
 )
 where
 
 import Numeric.AERN.IVP.Solver.Events.Aggregate
+import Numeric.AERN.IVP.Solver.Picard.UncertainValue
 
 import Numeric.AERN.IVP.Specification.Hybrid
+import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Solver.Bisection
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RmToRn.Integration
+import Numeric.AERN.RmToRn.Differentiation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.Measures
 --import Numeric.AERN.RealArithmetic.ExactOps
+
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
@@ -52,11 +57,12 @@ import qualified Data.Map as Map
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
 
-solveEventsSplitNearEvents ::
+solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
     (CanAddVariables f,
      CanRenameVariables f,
      CanEvaluate f,
      CanCompose f,
+     CanChangeSizeLimits f,
      CanPartiallyEvaluate f,
      HasProjections f,
      HasConstFns f,
@@ -65,10 +71,15 @@ solveEventsSplitNearEvents ::
      NumOrd.RefinementRoundedLattice f,
      RefOrd.PartialComparison f,
      RoundedIntegration f,
+     RoundedFakeDerivative f,
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
+     ArithInOut.RoundedMixedDivide f Int,
      ArithInOut.RoundedMixedAdd f (Domain f),
+     ArithInOut.RoundedMixedMultiply f (Domain f),
+     ArithUpDn.RoundedAbs f,
+     NumOrd.RoundedLattice f,
      ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f),
@@ -81,10 +92,15 @@ solveEventsSplitNearEvents ::
     CompositionEffortIndicator f ->
     EvaluationEffortIndicator f ->
     IntegrationEffortIndicator f ->
+    FakeDerivativeEffortIndicator f ->
     RefOrd.PartialCompareEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
     ArithInOut.MultEffortIndicator f ->
+    ArithUpDn.AbsEffortIndicator f ->
+    NumOrd.MinmaxEffortIndicator f ->
+    ArithInOut.MixedDivEffortIndicator f Int ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
+    ArithInOut.MixedMultEffortIndicator f (Domain f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
     Domain f {-^ initial widening @delta@ -}  ->
     Int {-^ @m@ -} -> 
@@ -99,20 +115,34 @@ solveEventsSplitNearEvents ::
     ,
         [solvingInfo]
     )
-solveEventsSplitNearEvents
-        sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
+solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
+        sizeLimits effPEval effCompose effEval effInteg effDeriv effInclFn 
+            effAddFn effMultFn effAbsFn effMinmaxFn 
+            effDivFnInt effAddFnDom effMultFnDom effDom
             delta m t0Var minStepSize maxStepSize splitImprovementThreshold
                 hybivpG
     = 
     solve hybivpG
     where
     solve hybivp =
-        solveHybridIVPBySplittingTNearEvents
-            directSolver
+        solveHybridIVP_SplitNearEvents
+            solveHybridNoSplitting
+            solveODENoSplitting
                 effDom splitImprovementThreshold minStepSize maxStepSize
                     hybivp
 
-    directSolver hybivp =
+    solveODENoSplitting =
+        solveODEIVPUncertainValueExactTime_UsingPicard
+            shouldWrap shouldShrinkWrap
+                sizeLimits effCompose effEval effInteg effDeriv effInclFn 
+                effAddFn effAbsFn effMinmaxFn 
+                effDivFnInt effAddFnDom effMultFnDom effDom
+                    delta m splitImprovementThreshold
+        where
+        shouldWrap = True
+        shouldShrinkWrap = False
+
+    solveHybridNoSplitting hybivp =
         (maybeFinalStateWithInvariants, (tEnd, maybeFinalStateWithInvariants, modeEventInfoList))
         where
         tEnd = hybivp_tEnd hybivp
@@ -129,14 +159,14 @@ solveEventsSplitNearEvents
                         Map.lookup mode modeInvariants
         modeInvariants = hybsys_modeInvariants $ hybivp_system hybivp
         (maybeFinalState, modeEventInfoList) = 
-            solveEvents
+            solveHybridIVP_UsingPicardAndEventTree
                 sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
                      20
                         delta m
                             t0Var
                                 hybivp
 
-solveHybridIVPBySplittingTNearEvents ::
+solveHybridIVP_SplitNearEvents ::
     (CanAddVariables f,
      CanEvaluate f,
      CanCompose f,
@@ -152,7 +182,11 @@ solveHybridIVPBySplittingTNearEvents ::
      Domain f ~ Imprecision (Domain f),
      Show f, Show (Domain f))
     =>
-    (HybridIVP f -> (Maybe (HybridSystemUncertainState (Domain f)), solvingInfo)) -- ^ solver to use for segments  
+    (HybridIVP f -> (Maybe (HybridSystemUncertainState (Domain f)), solvingInfo))
+        -- ^ solver to use on small segments that may contain events  
+    ->
+    (ODEIVP f -> (Maybe [f], (Domain f, Maybe [Domain f])))
+        -- ^ solver to use on large segments before event localisation  
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
     ->
@@ -169,12 +203,18 @@ solveHybridIVPBySplittingTNearEvents ::
     ,
         [solvingInfo]
     )
-solveHybridIVPBySplittingTNearEvents
-        solver
+solveHybridIVP_SplitNearEvents
+        solveHybridNoSplitting
+        solveODENoSplitting
             effDom splitImprovementThreshold minStepSize maxStepSize 
                 hybivpG 
     =
     splitSolve hybivpG
+    {-
+        overview:
+        
+        apply solverODE
+    -}
     where
     splitSolve hybivp =
         undefined

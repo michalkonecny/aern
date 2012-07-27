@@ -636,7 +636,7 @@ solveIVPWithUncertainValue
             odeivp
     where
     solveUncertainValueExactTimeBisect2 =
-        solveUncertainValueExactTimeBisect shouldWrap True
+        solveODEIVPUncertainValueExactTime_UsingPicard_Bisect shouldWrap True
             sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
             effDivFnInt effAddFnDom effMultFnDom effCf

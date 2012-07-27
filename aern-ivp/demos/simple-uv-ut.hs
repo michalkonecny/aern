@@ -482,7 +482,7 @@ solveIVPWithUncertainTime
     result
     where
     result =
-        solveUncertainValueUncertainTimeBisect
+        solveODEIVPUncertainValueUncertainTime_UsingPicard_Bisect
             sizeLimits t0SizeLimits 
             effSizeLims effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
