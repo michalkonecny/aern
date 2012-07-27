@@ -18,8 +18,8 @@
 
 module Numeric.AERN.IVP.Solver.Picard.UncertainTime
 (
-    solveUncertainValueUncertainTime,
-    solveUncertainValueUncertainTimeBisect
+    solveODEIVPUncertainValueUncertainTime_PicardIterations,
+    solveODEIVPUncertainValueUncertainTime_UsingPicard_Bisect
 )
 where
 
@@ -51,7 +51,7 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
         
-solveUncertainValueUncertainTimeBisect ::        
+solveODEIVPUncertainValueUncertainTime_UsingPicard_Bisect ::        
     (CanAddVariables f,
      CanChangeSizeLimits f,
      CanEvaluate f,
@@ -115,7 +115,7 @@ solveUncertainValueUncertainTimeBisect ::
     ,
      BisectionInfo solvingInfo3 (solvingInfo3, Maybe dom)
     )
-solveUncertainValueUncertainTimeBisect
+solveODEIVPUncertainValueUncertainTime_UsingPicard_Bisect
         sizeLimits t0SizeLimits 
         effSizeLims effCompose effEval effInteg effDeriv effInclFn 
         effAddFn effMultFn effAbsFn effMinmaxFn 
@@ -159,21 +159,21 @@ solveUncertainValueUncertainTimeBisect
         where
         t0End = odeivp_t0End odeivp
         maybeIterations =
-            solveUncertainValueUncertainTime
+            solveODEIVPUncertainValueUncertainTime_PicardIterations
                 t0SizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
                     delta
                         t0Var
                             odeivp 
 
     solverVt odeivp =
-        solveUncertainValueExactTimeBisect False True
+        solveODEIVPUncertainValueExactTime_UsingPicard_Bisect False True
             sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
             effDivFnInt effAddFnDom effMultFnDom effDom
                 delta m minStepSize splitImprovementThreshold
                     odeivp
         
-solveUncertainValueUncertainTime ::
+solveODEIVPUncertainValueUncertainTime_PicardIterations ::
     (CanAddVariables f,
      CanEvaluate f,
      CanCompose f,
@@ -214,7 +214,7 @@ solveUncertainValueUncertainTime ::
     ODEIVP f 
     ->
     Maybe [[(f,f)]] {-^ sequence of outer and inner enclosures with domain @T x D@ produced by the Picard operator -}
-solveUncertainValueUncertainTime
+solveODEIVPUncertainValueUncertainTime_PicardIterations
         sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
             delta
                 t0Var
@@ -265,7 +265,7 @@ solveUncertainValueUncertainTime
     (Just enclosuresWithTT0) = solveWithExactTime
     -- compute the enclosures parameterised by t and t0:
     solveWithExactTime =
-        solveUncertainValueExactTime
+        solveODEIVPUncertainValueExactTime_PicardIterations
             sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
             delta
             odeivpExactTime

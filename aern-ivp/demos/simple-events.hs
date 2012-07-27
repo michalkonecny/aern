@@ -1642,7 +1642,7 @@ solveHybridIVP
     result
     where
     result =
-        solveEventsBisect
+        solveHybridIVP_UsingPicardAndEventTree_Bisect
             sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effCf
                 delta m t0Var minStepSize maxStepSize splitImprovementThreshold
                     hybivp

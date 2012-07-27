@@ -18,8 +18,9 @@
 
 module Numeric.AERN.IVP.Solver.Picard.UncertainValue
 (
-    solveUncertainValueExactTime,
-    solveUncertainValueExactTimeBisect
+    solveODEIVPUncertainValueExactTime_PicardIterations,
+    solveODEIVPUncertainValueExactTime_UsingPicard,
+    solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
 )
 where
 
@@ -53,7 +54,7 @@ import Numeric.AERN.Misc.Debug
 _ = unsafePrint
         
 
-solveUncertainValueExactTimeBisect ::
+solveODEIVPUncertainValueExactTime_UsingPicard_Bisect ::
     (CanAddVariables f,
      CanEvaluate f,
      CanPartiallyEvaluate f,
@@ -114,7 +115,7 @@ solveUncertainValueExactTimeBisect ::
             BisectionInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
         )
     )
-solveUncertainValueExactTimeBisect
+solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
         shouldWrap shouldShrinkWrap
             sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
@@ -126,7 +127,7 @@ solveUncertainValueExactTimeBisect
     | otherwise =
         case solve odeivpG of
             (maybeResFnVec, bisectionInfo) ->
-                (fmap (map getRange) maybeResFnVec, bisectionInfo)
+                (fmap (map (getRange effEval)) maybeResFnVec, bisectionInfo)
     where
     tVar = odeivp_tVar odeivpG
     tStart, t0End :: Domain f
@@ -140,106 +141,205 @@ solveUncertainValueExactTimeBisect
     sampleDom = tStart
 
     
-    getRange :: f -> Domain f 
-    getRange fn =
-        evalAtPointOutEff effEval (getDomainBox fn) fn
-
     solve odeivp =
         solveODEIVPByBisectingT
-            directSolver measureResultImprecision 
+            solveODEIVPNoSplitting 
+                (measureResultImprecision effEval effAddFn effAddDom) 
                 (makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames)
                 effDom splitImprovementThreshold minStepSize
                     odeivp
 
-    measureResultImprecision :: [f] -> Domain f
-    measureResultImprecision fnVec =
-        snd $ RefOrd.getEndpointsOutWithDefaultEffort $
-        let ?addInOutEffort = effAddDom in
-        foldl1 (<+>) $ map perComp fnVec
+    solveODEIVPNoSplitting odeivp =
+        solveODEIVPUncertainValueExactTime_UsingPicard 
+            shouldWrap shouldShrinkWrap
+                sizeLimits effCompose effEval effInteg effDeriv effInclFn 
+                effAddFn effAbsFn effMinmaxFn 
+                effDivFnInt effAddFnDom effMultFnDom effDom
+                    delta m splitImprovementThreshold
+                        odeivp 
+
+
+--measureResultImprecision :: 
+--    [f] -> 
+--    Domain f
+measureResultImprecision :: 
+    (RefOrd.IntervalLike (Domain f), RefOrd.IntervalLike f,
+     ArithInOut.RoundedAdd (Domain f), ArithInOut.RoundedSubtr f,
+     CanEvaluate f)
+    =>
+    EvaluationEffortIndicator f
+    -> ArithInOut.AddEffortIndicator f
+    -> ArithInOut.AddEffortIndicator (Domain f)
+    -> [f]
+    -> Domain f
+measureResultImprecision effEval effAddFn effAddDom fnVec =
+    snd $ RefOrd.getEndpointsOutWithDefaultEffort $
+    let ?addInOutEffort = effAddDom in
+    foldl1 (<+>) $ map perComp fnVec
+    where
+    perComp fn =
+        let ?addInOutEffort = effAddFn in
+        getRange effEval $ fnR <-> fnL
         where
-        perComp fn =
-            let ?addInOutEffort = effAddFn in
-            getRange $ fnR <-> fnL
-            where
-            (fnL, fnR) = RefOrd.getEndpointsOutWithDefaultEffort fn
+        (fnL, fnR) = RefOrd.getEndpointsOutWithDefaultEffort fn
+
+getRange ::
+    (CanEvaluate f) 
+    =>
+    EvaluationEffortIndicator f -> 
+    f -> Domain f
+getRange effEval fn =
+    evalAtPointOutEff effEval (getDomainBox fn) fn
+
             
-    directSolver odeivp =
-        case maybeResult of
-            Just (result, resultAtTEnd) ->
-                let valuesAtEnd = resultAtTEnd in
-                let paramValuesAtTEnd = evalAtTEnd valuesAtEnd $ result in
-                (Just paramValuesAtTEnd, (tEnd, Just valuesAtEnd))
-            Nothing -> (Nothing, (tEnd, Nothing))
+
+solveODEIVPUncertainValueExactTime_UsingPicard ::
+    (CanAddVariables f,
+     CanEvaluate f,
+     CanPartiallyEvaluate f,
+     CanCompose f,
+     CanChangeSizeLimits f,
+     HasProjections f,
+     HasConstFns f,
+     RefOrd.IntervalLike f,
+     HasAntiConsistency f,
+     RefOrd.PartialComparison f,
+     RoundedIntegration f,
+     RoundedFakeDerivative f,
+     ArithInOut.RoundedAdd f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMultiply f,
+     ArithUpDn.RoundedAbs f,
+     NumOrd.RoundedLattice f,
+     ArithInOut.RoundedMixedDivide f Int,
+     ArithInOut.RoundedMixedAdd f (Domain f),
+     ArithInOut.RoundedMixedMultiply f (Domain f),
+     ArithInOut.RoundedReal (Domain f), 
+     RefOrd.IntervalLike (Domain f),
+     HasAntiConsistency (Domain f),
+     Domain f ~ Imprecision (Domain f),
+     solvingInfo ~ (Domain f, Maybe [Domain f]), 
+     Show f, Show (Domain f), Show (Var f))
+    =>
+    Bool {-^ should wrap intermediate values ? -}
+    -> 
+    Bool {-^ if not wrapping, should try to shrink wrap parameterised intermediate values ? -}
+    ->
+    SizeLimits f {-^ size limits for all function -} ->
+    CompositionEffortIndicator f ->
+    EvaluationEffortIndicator f ->
+    IntegrationEffortIndicator f ->
+    FakeDerivativeEffortIndicator f ->
+    RefOrd.PartialCompareEffortIndicator f ->
+    ArithInOut.AddEffortIndicator f ->
+    ArithUpDn.AbsEffortIndicator f ->
+    NumOrd.MinmaxEffortIndicator f ->
+    ArithInOut.MixedDivEffortIndicator f Int ->
+    ArithInOut.MixedAddEffortIndicator f (Domain f) ->
+    ArithInOut.MixedMultEffortIndicator f (Domain f) ->
+    ArithInOut.RoundedRealEffortIndicator (Domain f) 
+    ->
+    Domain f {-^ initial widening @delta@ -}  ->
+    Int {-^ @m@ -} -> 
+    Domain f {-^ step size @s@ -} -> 
+    ODEIVP f
+    ->
+    (Maybe [f], (Domain f, Maybe [Domain f]))
+solveODEIVPUncertainValueExactTime_UsingPicard 
+        shouldWrap shouldShrinkWrap
+            sizeLimits effCompose effEval effInteg effDeriv effInclFn 
+            effAddFn effAbsFn effMinmaxFn 
+            effDivFnInt effAddFnDom effMultFnDom effDom
+                delta m splitImprovementThreshold
+                    (odeivp :: ODEIVP f) 
+    =
+    case maybeResult of
+        Just (result, resultAtTEnd) ->
+            let valuesAtEnd = resultAtTEnd in
+            let paramValuesAtTEnd = evalAtTEnd valuesAtEnd $ result in
+            (Just paramValuesAtTEnd, (tEnd, Just valuesAtEnd))
+        Nothing -> (Nothing, (tEnd, Nothing))
+    where
+    tVar = odeivp_tVar odeivp
+    tStart :: Domain f
+    tStart = odeivp_tStart odeivp
+--    t0End = odeivp_t0End odeivp
+    componentNames = odeivp_componentNames odeivp
+
+    effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+--    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
+    sampleDom :: Domain f
+    sampleDom = tStart
+
+    evalAtTEnd valuesAtEnd fns
+        | shouldWrap = wrappedParamValuesAtTEnd
+        | shouldShrinkWrap = 
+            case shrinkWrappedParamValuesAtTEnd of
+                Just fns2 ->
+                    unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping succeeded") $ 
+                    fns2
+                _ | haveAnExactDomain -> 
+                    unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping failed, wrapping") $ 
+                    wrappedParamValuesAtTEnd
+                _ -> 
+                    unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping failed, leaving it thick") $ 
+                    thickParamValuesAtTEnd 
+        | otherwise = thickParamValuesAtTEnd
         where
-        evalAtTEnd valuesAtEnd fns
-            | shouldWrap = wrappedParamValuesAtTEnd
-            | shouldShrinkWrap = 
-                case shrinkWrappedParamValuesAtTEnd of
-                    Just fns2 ->
-                        unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping succeeded") $ 
-                        fns2
-                    _ | haveAnExactDomain -> 
-                        unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping failed, wrapping") $ 
-                        wrappedParamValuesAtTEnd
-                    _ -> 
-                        unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping failed, leaving it thick") $ 
-                        thickParamValuesAtTEnd 
-            | otherwise = thickParamValuesAtTEnd
+        wrappedParamValuesAtTEnd =
+            parameteriseInitialValues sizeLimits componentNames valuesAtEnd
+        haveAnExactDomain =
+            or $ map isExact $ domains
             where
-            wrappedParamValuesAtTEnd =
-                parameteriseInitialValues sizeLimits componentNames valuesAtEnd
-            haveAnExactDomain =
-                or $ map isExact $ domains
+            isExact dom =
+                (domL ==? domR) == Just True
                 where
-                isExact dom =
-                    (domL ==? domR) == Just True
-                    where
-                    (domL, domR) = RefOrd.getEndpointsOutWithDefaultEffort dom
-                domains = map snd $ toAscList $ getDomainBox fn
-                (fn : _) = fns 
-            shrinkWrappedParamValuesAtTEnd =
-                shrinkWrap 
-                    effCompose effEval effDeriv effAddFn effAbsFn effMinmaxFn 
-                        effDivFnInt effAddFnDom effMultFnDom effDom $
-                            thickParamValuesAtTEnd
-            thickParamValuesAtTEnd =
-                fst $ partiallyEvalAtEndTimeOutInVec tVar tEnd (fns, fns)
-        
-        maybeResult =
-            fmap (untilStableButNotMoreThan m) maybeIterations
-        untilStableButNotMoreThan maxIters (hInit : tInit) =
-            aux 1 hInitImprecision tInit
+                (domL, domR) = RefOrd.getEndpointsOutWithDefaultEffort dom
+            domains = map snd $ toAscList $ getDomainBox fn
+            (fn : _) = fns 
+        shrinkWrappedParamValuesAtTEnd =
+            shrinkWrap 
+                effCompose effEval effDeriv effAddFn effAbsFn effMinmaxFn 
+                    effDivFnInt effAddFnDom effMultFnDom effDom $
+                        thickParamValuesAtTEnd
+        thickParamValuesAtTEnd =
+            fst $ partiallyEvalAtEndTimeOutInVec tVar tEnd (fns, fns)
+    
+    maybeResult =
+        fmap (untilStableButNotMoreThan m) maybeIterations
+    untilStableButNotMoreThan maxIters (hInit : tInit) =
+        aux 1 hInitImprecision tInit
+        where
+        hInitImprecision = measureResultImprecision effEval effAddFn effAddDom hInit
+        aux iterNo prevImprecision (h : t) 
+            | iterNo >= maxIters = (h, hAtTEnd)
+            | notMuchImprovement =
+--                 unsafePrint 
+--                    ("solveUncertainValueExactTimeBisect:"
+--                        ++ " finished after " ++ show iterNo 
+--                        ++ " iterations (max = " ++ show maxIters ++ ")") $
+                (h, hAtTEnd)
+            | otherwise =
+--                unsafePrint 
+--                    ("solveUncertainValueExactTimeBisect: "
+--                        ++ "hImprecision = " ++ show hImprecision
+--                    ) $
+                aux (iterNo + 1) hImprecision t
             where
-            hInitImprecision = measureResultImprecision hInit
-            aux iterNo prevImprecision (h : t) 
-                | iterNo >= maxIters = (h, hAtTEnd)
-                | notMuchImprovement =
---                     unsafePrint 
---                        ("solveUncertainValueExactTimeBisect:"
---                            ++ " finished after " ++ show iterNo 
---                            ++ " iterations (max = " ++ show maxIters ++ ")") $
-                    (h, hAtTEnd)
-                | otherwise =
---                    unsafePrint 
---                        ("solveUncertainValueExactTimeBisect: "
---                            ++ "hImprecision = " ++ show hImprecision
---                        ) $
-                    aux (iterNo + 1) hImprecision t
-                where
-                notMuchImprovement = 
-                    let ?addInOutEffort = effAddDom in
-                    (prevImprecision <-> hImprecision <=? splitImprovementThreshold) == Just True  
-                hImprecision = measureResultImprecision h
-                hAtTEnd = fst $ evalAtEndTimeVec effEval tVar tEnd h
-        maybeIterations :: Maybe [[f]]
-        maybeIterations =
-            solveUncertainValueExactTime
-                sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-                    delta
-                        odeivp
-        tEnd = odeivp_tEnd odeivp
+            notMuchImprovement = 
+                let ?addInOutEffort = effAddDom in
+                (prevImprecision <-> hImprecision <=? splitImprovementThreshold) == Just True  
+            hImprecision = measureResultImprecision effEval effAddFn effAddDom h
+            hAtTEnd = fst $ evalAtEndTimeVec effEval tVar tEnd h
+    maybeIterations :: Maybe [[f]]
+    maybeIterations =
+        solveODEIVPUncertainValueExactTime_PicardIterations
+            sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+                delta
+                    odeivp
+    tEnd = odeivp_tEnd odeivp
                 
-solveUncertainValueExactTime ::
+solveODEIVPUncertainValueExactTime_PicardIterations ::
     (CanAddVariables f,
      CanEvaluate f,
      CanCompose f,
@@ -262,7 +362,7 @@ solveUncertainValueExactTime ::
     Domain f {-^ initial widening @delta@ -}  ->
     ODEIVP f ->
     Maybe [[f]] {-^ sequence of enclosures with domain @T x D@ produced by the Picard operator -}
-solveUncertainValueExactTime
+solveODEIVPUncertainValueExactTime_PicardIterations
         sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
         delta
         odeivp
@@ -348,9 +448,9 @@ solveUncertainValueExactTime
 ----            ++ "\n xdvec at end time = " ++ (show $ evalAtEndTimeVec tVar tEnd xdvec)
 ----            ++ "\n result at end time = " ++ (show $ evalAtEndTimeVec tVar tEnd result)
 --        ) $
-        result
+        resultPic
         where
-        result =
+        resultPic =
             let ?addInOutEffort = effAddFn in 
             zipWith (<+>) primitFn initialValuesFnVec
         primitFn = map picardFn xdvec

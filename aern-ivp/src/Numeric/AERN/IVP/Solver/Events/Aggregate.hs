@@ -53,7 +53,7 @@ import qualified Data.Map as Map
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
 
-solveEvents ::
+solveHybridIVP_UsingPicardAndEventTree ::
     (CanAddVariables f,
      CanRenameVariables f,
      CanEvaluate f,
@@ -107,7 +107,7 @@ solveEvents ::
     HybridIVP f 
     ->
     (Maybe (HybridSystemUncertainState (Domain f)), [(HybSysMode, (EventInfo f))])
-solveEvents
+solveHybridIVP_UsingPicardAndEventTree
         sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn _effMultFn effAddFnDom effDom
             maxNodes
                 delta m
@@ -158,7 +158,7 @@ solveEvents
         maybeFnVecNoEvent =
             fmap (map removeAllVarsButT) $ -- parameters have to be removed so that we can test inclusion
             fmap (!! m) $
-            solveUncertainValueExactTime
+            solveODEIVPUncertainValueExactTime_PicardIterations
                 sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
                 delta
                 (odeivp tStart initialMode $ 
@@ -297,7 +297,7 @@ solveEvents
                         fmap (restoreUnaffectedComponents) $ -- to improve the effect of the invariant if unaffected components are used
                         fmap (map removeAllVarsButT) $
                         fmap (!! m) $
-                        solveUncertainValueExactTime
+                        solveODEIVPUncertainValueExactTime_PicardIterations
                             sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
                                 delta
                                     (odeivp tStart modeAfterEvent $ 
@@ -493,60 +493,59 @@ eventInfoCountEvents sampleD effD eventInfo =
     effAdd = 
         ArithInOut.fldEffortAdd sampleD $ ArithInOut.rrEffortField sampleD effD
         
-        
-leqOverSomeT ::
-    (Show (Domain f),
-    Show f,
-    RefOrd.IntervalLike f,
-    RefOrd.IntervalLike (Domain f),
-    NumOrd.PartialComparison (Domain f),
-    HasAntiConsistency f,
-    HasAntiConsistency (Domain f),
-    CanEvaluate f) 
-    =>
-    EvaluationEffortIndicator f -> 
-    Int -> 
-    Var f 
-    -> 
-    f -> f -> Bool
-leqOverSomeT effEval n tVar f1 f2 =
-    predOverSomeT (\[e1,e2] -> (e1 <=? e2) == Just True) effEval n tVar [f1, f2]
-        
-predOverSomeT :: 
-    (Show (Domain f),
-    Show f,
-    RefOrd.IntervalLike f,
-    RefOrd.IntervalLike (Domain f),
-    NumOrd.PartialComparison (Domain f),
-    HasAntiConsistency f,
-    HasAntiConsistency (Domain f),
-    CanEvaluate f) 
-    =>
-    ([Domain f] -> Bool)
-    ->
-    EvaluationEffortIndicator f -> 
-    Int -> 
-    Var f 
-    -> 
-    [f] -> Bool
-predOverSomeT predicate effEval n tVar fs =
-    or predResults
-    where
-    predResults = map predOnSample tSamples
-        where
-        predOnSample tSample = predicate fsOnT
-            where
-            fsOnT = map onT fs
-            onT f = res
-                where
-                [res] = fst $ evalAtEndTimeVec effEval tVar tSample [f]
-    tSamples = map getTDom tSampleBoxes
-    tSampleBoxes = getNSamplesFromDomainBox sampleF domboxTOnly n
-    domboxTOnly = fromList [(tVar, tDom)]
-    tDom = getTDom dombox
-    getTDom box = 
-        case lookupVar box tVar of
-            Just tDom2 -> tDom2
-            _ -> error "aern-ivp: internal error in predOverSomeT"
-    dombox = getDomainBox sampleF
-    (sampleF : _) = fs
+--leqOverSomeT ::
+--    (Show (Domain f),
+--    Show f,
+--    RefOrd.IntervalLike f,
+--    RefOrd.IntervalLike (Domain f),
+--    NumOrd.PartialComparison (Domain f),
+--    HasAntiConsistency f,
+--    HasAntiConsistency (Domain f),
+--    CanEvaluate f) 
+--    =>
+--    EvaluationEffortIndicator f -> 
+--    Int -> 
+--    Var f 
+--    -> 
+--    f -> f -> Bool
+--leqOverSomeT effEval n tVar f1 f2 =
+--    predOverSomeT (\[e1,e2] -> (e1 <=? e2) == Just True) effEval n tVar [f1, f2]
+--        
+--predOverSomeT :: 
+--    (Show (Domain f),
+--    Show f,
+--    RefOrd.IntervalLike f,
+--    RefOrd.IntervalLike (Domain f),
+--    NumOrd.PartialComparison (Domain f),
+--    HasAntiConsistency f,
+--    HasAntiConsistency (Domain f),
+--    CanEvaluate f) 
+--    =>
+--    ([Domain f] -> Bool)
+--    ->
+--    EvaluationEffortIndicator f -> 
+--    Int -> 
+--    Var f 
+--    -> 
+--    [f] -> Bool
+--predOverSomeT predicate effEval n tVar fs =
+--    or predResults
+--    where
+--    predResults = map predOnSample tSamples
+--        where
+--        predOnSample tSample = predicate fsOnT
+--            where
+--            fsOnT = map onT fs
+--            onT f = res
+--                where
+--                [res] = fst $ evalAtEndTimeVec effEval tVar tSample [f]
+--    tSamples = map getTDom tSampleBoxes
+--    tSampleBoxes = getNSamplesFromDomainBox sampleF domboxTOnly n
+--    domboxTOnly = fromList [(tVar, tDom)]
+--    tDom = getTDom dombox
+--    getTDom box = 
+--        case lookupVar box tVar of
+--            Just tDom2 -> tDom2
+--            _ -> error "aern-ivp: internal error in predOverSomeT"
+--    dombox = getDomainBox sampleF
+--    (sampleF : _) = fs

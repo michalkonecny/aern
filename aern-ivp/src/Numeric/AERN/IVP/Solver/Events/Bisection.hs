@@ -18,7 +18,7 @@
 
 module Numeric.AERN.IVP.Solver.Events.Bisection
 (
-    solveEventsBisect
+    solveHybridIVP_UsingPicardAndEventTree_Bisect
 )
 where
 
@@ -52,7 +52,7 @@ import qualified Data.Map as Map
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
 
-solveEventsBisect ::
+solveHybridIVP_UsingPicardAndEventTree_Bisect ::
     (CanAddVariables f,
      CanRenameVariables f,
      CanEvaluate f,
@@ -101,7 +101,7 @@ solveEventsBisect ::
             BisectionInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
         )
     )
-solveEventsBisect
+solveHybridIVP_UsingPicardAndEventTree_Bisect
         sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
             delta m t0Var minStepSize maxStepSize splitImprovementThreshold
                 hybivpG
@@ -130,7 +130,7 @@ solveEventsBisect
                         Map.lookup mode modeInvariants
         modeInvariants = hybsys_modeInvariants $ hybivp_system hybivp
         (maybeFinalState, modeEventInfoList) = 
-            solveEvents
+            solveHybridIVP_UsingPicardAndEventTree
                 sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
                     (10 + 2 * depth)
                         delta m
