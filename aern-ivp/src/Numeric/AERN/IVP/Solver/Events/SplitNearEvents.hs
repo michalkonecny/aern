@@ -88,6 +88,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
      Show f, Show (Domain f), Show (Var f), Eq (Var f))
     =>
     SizeLimits f {-^ size limits for all function -} ->
+    SizeLimitsChangeEffort f ->
     PartialEvaluationEffortIndicator f ->
     CompositionEffortIndicator f ->
     EvaluationEffortIndicator f ->
@@ -116,7 +117,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
         [solvingInfo]
     )
 solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
-        sizeLimits effPEval effCompose effEval effInteg effDeriv effInclFn 
+        sizeLimits effSizeLims effPEval effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
             effDivFnInt effAddFnDom effMultFnDom effDom
             delta m t0Var minStepSize maxStepSize splitImprovementThreshold
@@ -127,17 +128,17 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
     solve hybivp =
         solveHybridIVP_SplitNearEvents
             solveHybridNoSplitting
-            solveODENoSplitting
+            solveODEWithSplitting
                 effDom splitImprovementThreshold minStepSize maxStepSize
                     hybivp
 
-    solveODENoSplitting =
-        solveODEIVPUncertainValueExactTime_UsingPicard
+    solveODEWithSplitting =
+        solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
             shouldWrap shouldShrinkWrap
-                sizeLimits effCompose effEval effInteg effDeriv effInclFn 
-                effAddFn effAbsFn effMinmaxFn 
+                sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
+                effAddFn effMultFn effAbsFn effMinmaxFn 
                 effDivFnInt effAddFnDom effMultFnDom effDom
-                    delta m splitImprovementThreshold
+                    delta m minStepSize splitImprovementThreshold
         where
         shouldWrap = True
         shouldShrinkWrap = False
@@ -180,12 +181,13 @@ solveHybridIVP_SplitNearEvents ::
      RefOrd.IntervalLike(Domain f),
      HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
-     Show f, Show (Domain f))
+     Show f, Show (Domain f),
+     solvingInfoODE ~ (Maybe [f], (Domain f, Maybe [Domain f])))
     =>
     (HybridIVP f -> (Maybe (HybridSystemUncertainState (Domain f)), solvingInfo))
         -- ^ solver to use on small segments that may contain events  
     ->
-    (ODEIVP f -> (Maybe [f], (Domain f, Maybe [Domain f])))
+    (ODEIVP f -> (Maybe [Domain f], BisectionInfo solvingInfoODE (solvingInfoODE, prec)))
         -- ^ solver to use on large segments before event localisation  
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
@@ -205,7 +207,7 @@ solveHybridIVP_SplitNearEvents ::
     )
 solveHybridIVP_SplitNearEvents
         solveHybridNoSplitting
-        solveODENoSplitting
+        solveODEWithSplitting
             effDom splitImprovementThreshold minStepSize maxStepSize 
                 hybivpG 
     =
@@ -213,7 +215,18 @@ solveHybridIVP_SplitNearEvents
     {-
         overview:
         
-        apply solverODE
+        (1) apply solveODENoSplitting over T_1 = T, T/2, T/4, ... (here assuming \leftendpoint{T} = 0)
+            until it succeeds or the minimum step size is reached
+        (2) locate the first event on T_1 within T_ev \subseteq T_1, set t_R = \rightendpoint{T_ev}
+            or if no event, set t_R = \rightendpoint{T_1} and compute the value A_R at t_R
+        (3) investigate whether bisecting T_1 leads to a substantial improvement in T_e/A_R
+            and if so, halve the size of T_1 and go to (2)
+        (4) if the occurrence of an event is uncertain and 
+            t_R = \rightendpoint{T_1} and 2*\length{T_e} < \length{T_1}, 
+            halve T_1 and compute t_R and A_R for the new T_1
+        (5) if we have T_e, apply solveHybridNoSplitting on T_e to compute value A_R at t_R
+        (6) if t_R < \rightendpoint{T}, 
+            recursively apply this computation on the interval [t_R, \rightendpoint{T}]
     -}
     where
     splitSolve hybivp =

@@ -79,7 +79,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
-     solvingInfo ~ (Domain f, Maybe [Domain f]), 
+     solvingInfo ~ (Maybe [f], (Domain f, Maybe [Domain f])), 
      Show f, Show (Domain f), Show (Var f))
     =>
     Bool {-^ should wrap intermediate values ? -}
