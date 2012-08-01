@@ -246,7 +246,7 @@ solveHybridIVP_UsingPicardAndEventTree
                 eventCount = 
                     Map.size possibleOrCertainFirstEventsMap
                 possibleOrCertainFirstEventsMap =
-                    detectEventsWithoutLocalisation eventSpecMap (tStart, tEnd) fnVecBeforeEvent
+                    detectEventsWithoutLocalisation effEval eventSpecMap (tStart, tEnd) fnVecBeforeEvent
                 eventSpecMap = 
                     hybsys_eventSpecification hybsys mode
 
@@ -341,22 +341,53 @@ solveHybridIVP_UsingPicardAndEventTree
 detectEventsWithoutLocalisation :: 
     (RefOrd.IntervalLike (Domain f), CanEvaluate f,
      NumOrd.PartialComparison (Domain f),
-     HasZero (Domain f)) =>
-    Map.Map HybSysEventKind ([Bool], [f] -> f, [Domain f] -> Maybe Bool, resetMap) -> 
-    (Domain f, Domain f) -> 
-    [f] -> 
+     HasZero (Domain f)) 
+    =>
+    EvaluationEffortIndicator f 
+    ->
+    Map.Map HybSysEventKind ([Bool], [f] -> f, [Domain f] -> Maybe Bool, resetMap) 
+    -> 
+    (Domain f, Domain f) 
+    -> 
+    [f] 
+    -> 
     Map.Map HybSysEventKind (Bool, [Bool], resetMap)
-detectEventsWithoutLocalisation eventSpecMap (tStart,tEnd) fnVecBeforeEvent =
+detectEventsWithoutLocalisation effEval eventSpecMap (tStart,tEnd) fnVecBeforeEvent =
     Map.fromAscList $
         catMaybes $ 
             map detectEvent $
                 Map.toAscList eventSpecMap
     where
     detectEvent (eventType, (affectedComps, makeZeroCrossingFn, otherCond, pruneFn)) =
-        case examineDipOnDom otherCond fnVecBeforeEvent (makeZeroCrossingFn fnVecBeforeEvent) (tStart,tEnd) of
+        case examineDipOnDom 
+                otherConditionOnDom 
+                dipFnPositiveOnDom
+                dipFnNegativeOnDom 
+                (tStart,tEnd) of
             LDResNone -> Nothing
             LDResSure _ -> Just (eventType, (True, affectedComps, pruneFn))
             LDResMaybe _ -> Just (eventType, (False, affectedComps, pruneFn))
+        where
+        otherConditionOnDom d =
+            otherCond fnVecBeforeEventOnD
+            where
+            fnVecBeforeEventOnD = map (evalAtPointOutEff effEval boxD) fnVecBeforeEvent
+            boxD = fromList [(tVar, d)]
+        dipFnPositiveOnDom d =
+            dipFnOnD >? (zero d)
+            where
+            dipFn = makeZeroCrossingFn fnVecBeforeEvent
+            dipFnOnD = evalAtPointOutEff effEval boxD dipFn
+            boxD = fromList [(tVar, d)]
+        dipFnNegativeOnDom d =
+            dipFnOnD <? (zero d)
+            where
+            dipFn = makeZeroCrossingFn fnVecBeforeEvent
+            dipFnOnD = evalAtPointOutEff effEval boxD dipFn
+            boxD = fromList [(tVar, d)]
+        [(tVar,_)] = toAscList $ getDomainBox sampleFn
+        (sampleFn : _) = fnVecBeforeEvent
+            
         
 wrapFnVecAsBox ::
     (CanEvaluate f, HasConstFns f) 
