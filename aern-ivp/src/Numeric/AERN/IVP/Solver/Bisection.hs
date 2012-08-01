@@ -301,9 +301,10 @@ solveODEIVPByBisectingT ::
      RefOrd.IntervalLike(Domain f),
      HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
-     Show f, Show (Domain f))
+     Show f, Show (Domain f),
+     solvingInfo ~ (Maybe result, additionalInfo))
     =>
-    (ODEIVP f -> (Maybe result, solvingInfo)) -- ^ solver to use for segments  
+    (ODEIVP f -> solvingInfo) -- ^ solver to use for segments  
     ->
     (result -> Domain f) -- ^ measure imprecision
     ->
@@ -375,7 +376,7 @@ solveODEIVPByBisectingT
             case maybeDirectResult of
                 Just resultOut -> (Just resultOut, BisectionNoSplit directInfo)
                 _ -> (Nothing, BisectionNoSplit directInfo) 
-        (maybeDirectResult, directInfo) = solver odeivp
+        directInfo@(maybeDirectResult, _) = solver odeivp
         directComputationFailed =
             case maybeDirectResult of Just _ -> False; _ -> True
         

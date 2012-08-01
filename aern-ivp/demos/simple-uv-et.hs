@@ -473,7 +473,7 @@ refines :: CF -> CF -> Bool
 refines a1 a2 = (a2 CF.|<=? a1) == Just True
    
 solveVtPrintSteps ::
-    (solvingInfo ~ (CF, Maybe [CF]))
+    (solvingInfo ~ (Maybe [Poly], (CF, Maybe [CF])))
     => 
     Bool
     ->
@@ -504,7 +504,7 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
     case maybeExactResult of
         Just exactResult ->
-            putStr $ showSegInfo "(almost) exact result = " (tEnd, Just exactResult)
+            putStr $ showSegInfo "(almost) exact result = " (Nothing, (tEnd, Just exactResult))
         _ -> return ()
     putStrLn "----------  steps: ---------------------------"
     printStepsInfo (1:: Int) bisectionInfoOut
@@ -512,7 +512,7 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
     putStrLn $ "number of atomic segments = " ++ (show $ bisectionInfoCountLeafs bisectionInfoOut)
     putStrLn $ "smallest segment size: " ++ (show smallestSegSize)  
     putStrLn "----------  result: -----------------------------"
-    putStr $ showSegInfo ">>> " (tEnd, endValues)
+    putStr $ showSegInfo ">>> " (Nothing, (tEnd, endValues))
     case shouldShowSteps of
         True ->
             do
@@ -555,7 +555,7 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
     (smallestSegSize, _) =
         aux tStart (tEnd CF.<-> tStart) bisectionInfoOut
         where
-        aux tPrev tSmallestSoFar (BisectionNoSplit (tNow,_)) =
+        aux tPrev tSmallestSoFar (BisectionNoSplit (_,(tNow,_))) =
             (CF.minOut tSmallestSoFar (tNow CF.<-> tPrev), tNow)
         aux tPrev tSmallestSoFar (BisectionSplit _ left Nothing) =
             aux tPrev tSmallestSoFar left
@@ -565,7 +565,7 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
             (tSmallestSoFarL, tPrevL) =
                 aux tPrev tSmallestSoFar left
     
-    showStepInfo (n, segInfo@(t, _)) =
+    showStepInfo (n, segInfo@(_, (t, _))) =
         "step " ++ show n ++ ": t = " ++ show t ++ "\n" ++ (showSegInfo "    " segInfo)
     printStepsInfo n (BisectionNoSplit segInfo) =
         do
@@ -578,7 +578,7 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
             Just right -> printStepsInfo n2 right
             Nothing -> return $ n2 + 1
     
-    showSegInfo indent (t, maybeValues) =
+    showSegInfo indent (_, (t, maybeValues)) =
         unlines $ map showComponent $ zip componentNames valueSs
         where
         showComponent (name, valueS) =
@@ -606,7 +606,7 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
 
 
 solveIVPWithUncertainValue ::
-    (solvingInfo ~ (CF, Maybe [CF]))
+    (solvingInfo ~ (Maybe [Poly], (CF, Maybe [CF])))
     =>
     Bool ->
     SizeLimits Poly -> 

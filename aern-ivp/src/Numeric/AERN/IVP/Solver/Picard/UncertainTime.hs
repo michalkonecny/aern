@@ -81,7 +81,7 @@ solveODEIVPUncertainValueUncertainTime_UsingPicard_Bisect ::
      dom ~ Domain f,
      dom ~ Imprecision dom, 
      solvingInfo1 ~ (dom, Maybe [dom]),
-     solvingInfo2 ~ BisectionInfo solvingInfo1 (solvingInfo1, Maybe dom),
+     solvingInfo2 ~ BisectionInfo (Maybe [f], solvingInfo1) ((Maybe [f], solvingInfo1), Maybe dom),
      solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe solvingInfo2))
     )
     =>
@@ -100,7 +100,7 @@ solveODEIVPUncertainValueUncertainTime_UsingPicard_Bisect ::
     ArithInOut.MixedDivEffortIndicator f Int ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.MixedMultEffortIndicator f (Domain f) ->
-    ArithInOut.RoundedRealEffortIndicator (Domain f) 
+    ArithInOut.RoundedRealEffortIndicator (Domain f)
     ->
     dom ->
     Int ->

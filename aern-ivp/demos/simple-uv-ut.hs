@@ -319,7 +319,8 @@ refines a1 a2 =
 
 solveVTPrintSteps :: 
     (solvingInfo1 ~ (CF, Maybe [CF]),
-     solvingInfo2 ~ BisectionInfo solvingInfo1 (solvingInfo1, Maybe CF),
+     otherInfo ~ Maybe [Poly],
+     solvingInfo2 ~ BisectionInfo (otherInfo, solvingInfo1) ((otherInfo, solvingInfo1), Maybe CF),
      solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe solvingInfo2))
     )
     =>
@@ -412,6 +413,7 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
             err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
             wOut = CF.width valueOut     
             wIn = CF.width valueIn     
+    showSegInfo1IgnoreOther indent (_, info) = showSegInfo1 indent info
     showSegInfo1 indent (t, maybeValues) =
         unlines $ map showComponent $ zip componentNames valueSs
         where
@@ -432,16 +434,16 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
 --            wOut = CF.width valueOut     
 --            wIn = CF.width valueIn     
     showSegInfo2 indent bisectionInfo2 =
-        showBisectionInfo showSegInfo1 showSplitReason2 indent bisectionInfo2
+        showBisectionInfo showSegInfo1IgnoreOther showSplitReason2 indent bisectionInfo2
     showSegInfo3 indent (segInfoT, (segInfoT0,  Just segInfo2Out)) =
         indent ++ "at t0End:\n" ++ showSegInfo1 (indent ++ "  ") segInfoT0
         ++ indent ++ "at tEnd:\n" ++ showSegInfo1 (indent ++ "  ") segInfoT
         ++ showSegInfo2 (indent ++ ":   ") segInfo2Out
     showSplitReason2 indent (segInfo, (Just improvement)) =
-        showSegInfo1 indent segInfo ++ 
+        showSegInfo1IgnoreOther indent segInfo ++ 
         indent ++ "; but splitting improves by " ++ show improvement ++ ":"
     showSplitReason2 indent (segInfo, Nothing) =
-        showSegInfo1 indent segInfo ++ 
+        showSegInfo1IgnoreOther indent segInfo ++ 
         indent ++ " - thus splitting"
     showSplitReason3 indent ((segInfoT, (_segInfoT0, _)), (Just improvement)) =
         showSegInfo1 indent segInfoT ++ 
@@ -452,7 +454,8 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
 
 solveIVPWithUncertainTime ::
     (solvingInfo1 ~ (CF, Maybe [CF]),
-     solvingInfo2 ~ BisectionInfo solvingInfo1 (solvingInfo1, Maybe CF),
+     otherInfo ~ Maybe [Poly],
+     solvingInfo2 ~ BisectionInfo (otherInfo, solvingInfo1) ((otherInfo, solvingInfo1), Maybe CF),
      solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe solvingInfo2))
     )
     =>
