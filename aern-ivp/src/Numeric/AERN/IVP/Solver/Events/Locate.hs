@@ -38,7 +38,7 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 --import Numeric.AERN.Basics.Consistency
 
-import qualified Data.Map as Map
+--import qualified Data.Map as Map
 --import qualified Data.Set as Set
 --import qualified Data.List as List
 
@@ -79,23 +79,23 @@ _ = unsafePrint
     typical simple call:
         locateFirstZeroDip stepLimit (const $ Just True) [dipFn] dipFn 
 -}
-locateFirstZeroDip :: 
-    (RefOrd.IntervalLike (Domain f),
-     ArithInOut.RoundedReal (Domain f),
-     CanEvaluate f) 
+locateFirstDip :: 
+    (RefOrd.IntervalLike (dom),
+     ArithInOut.RoundedReal (dom)) 
     =>
-    Domain f -> 
-    ([Domain f] -> Maybe Bool) -> 
-    [f] -> 
-    f -> 
-    Maybe (Domain f, Bool)
-locateFirstZeroDip stepLimit otherResetCondition allFns dipFn = 
-    case locateBySplitting $ RefOrd.getEndpointsOutWithDefaultEffort tDom of
+    dom -> 
+    (dom -> Maybe Bool) {-^ whether other reset conditions are true/false on the given point/area -} -> 
+    (dom -> Maybe Bool) {-^ whether dip function is positive on the given point/area -} -> 
+    (dom -> Maybe Bool) {-^ whether dip function is negative on the given point/area -} -> 
+    (dom, dom) -> 
+    Maybe (dom, Bool)
+locateFirstDip stepLimit otherConditionOnDom dipFnPositiveOnDom dipFnNegativeOnDom (tStart, tEnd) = 
+    case locateBySplitting (tStart, tEnd) of
         LDResNone -> Nothing
         LDResSure dom -> Just (dom, True)
         LDResMaybe dom -> Just (dom, False)
     where
-    locateBySplitting d@(dLE, dRE) 
+    locateBySplitting d@(dLE, dRE)
         | ((stepLimit <? size) /= Just True) = 
             resD -- no more splitting
         | otherwise =
@@ -104,28 +104,27 @@ locateFirstZeroDip stepLimit otherResetCondition allFns dipFn =
                 -- TODO: stop splitting also when dipFn includes zero throughout 
                 _ -> combineLocateDipResults resL resR
         where
-        resD = examineDipOnDom otherResetCondition allFns dipFn d 
+        resD = examineDipOnDom otherConditionOnDom dipFnPositiveOnDom dipFnNegativeOnDom d 
         size = dRE <-> dLE
         resL = locateBySplitting (dLE, dM)
         resR = locateBySplitting (dM, dRE)
         (dM, _) = RefOrd.getEndpointsOutWithDefaultEffort $ (dLE <+> dRE) </>| (2 :: Int) 
-    [(_tVar,tDom)] = toAscList $ getDomainBox sampleFn
-    (sampleFn:_) = allFns
     
     
 examineDipOnDom :: 
-    (RefOrd.IntervalLike (Domain f), 
-     CanEvaluate f,
-     NumOrd.PartialComparison (Domain f), 
-     HasZero (Domain f)) 
+    (RefOrd.IntervalLike (dom))
+--    , 
+--     CanEvaluate f,
+--     NumOrd.PartialComparison (dom), 
+--     HasZero (dom)) 
     =>
-    ([Domain f] -> Maybe Bool) -> 
-    [f] -> 
-    f -> 
-    (Domain f, Domain f) -> 
-    LocateDipResult (Domain f)
-examineDipOnDom otherResetCondition allFns dipFn (dLE, dRE) =
-    case (z <? dipFnOnD, dipFnOnDR <? z, otherResetCondition allFnsOnD) of
+    (dom -> Maybe Bool) {-^ whether other reset conditions are true/false on the given point/area -} -> 
+    (dom -> Maybe Bool) {-^ whether dip function is positive on the given point/area -} -> 
+    (dom -> Maybe Bool) {-^ whether dip function is negative on the given point/area -} -> 
+    (dom, dom) -> 
+    LocateDipResult (dom)
+examineDipOnDom otherConditionOnDom dipFnPositiveOnDom dipFnNegativeOnDom (dLE, dRE) =
+    case (dipFnPositiveOnDom d, dipFnNegativeOnDom dRE, otherConditionOnDom d) of
         (Just True, _, _) -> LDResNone -- no dip
         (_, _, Just False) -> LDResNone -- other condition definitely false
         (_, Just True, Just True) -> LDResSure d 
@@ -136,18 +135,18 @@ examineDipOnDom otherResetCondition allFns dipFn (dLE, dRE) =
             -- in all other cases, we declare that we don't know for sure
             -- TODO: LDResMaybe d enclosesZero
     where
-    dipFnOnD = evalAtPointOutEff effEval boxD dipFn
-    allFnsOnD = map (evalAtPointOutEff effEval boxD) $ allFns
-    boxD = fromList [(tVar, d)]
     d = RefOrd.fromEndpointsOutWithDefaultEffort (dLE, dRE)
-    dipFnOnDR = evalAtPointOutEff effEval boxDR dipFn
---    allFnsOnDR = map (evalAtPointOutEff effEval boxDR) $ allFns
-    boxDR = fromList [(tVar, dRE)]
-    effEval = evaluationDefaultEffort sampleFn
-    z = zero sampleDom
-    [(tVar,_)] = toAscList $ getDomainBox sampleFn
-    sampleFn = dipFn
-    sampleDom = dLE
+--    dipFnOnD = evalAtPointOutEff effEval boxD dipFn
+--    allFnsOnD = map (evalAtPointOutEff effEval boxD) $ allFns
+--    boxD = fromList [(tVar, d)]
+--    dipFnOnDR = evalAtPointOutEff effEval boxDR dipFn
+----    allFnsOnDR = map (evalAtPointOutEff effEval boxDR) $ allFns
+--    boxDR = fromList [(tVar, dRE)]
+--    effEval = evaluationDefaultEffort sampleFn
+--    z = zero sampleDom
+--    [(tVar,_)] = toAscList $ getDomainBox sampleFn
+--    sampleFn = dipFn
+--    sampleDom = dLE
     
     
 data LocateDipResult dom =
