@@ -38,8 +38,8 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 --import Numeric.AERN.Basics.Consistency
 
---import qualified Data.Map as Map
---import qualified Data.Set as Set
+import qualified Data.Map as Map
+import qualified Data.Set as Set
 --import qualified Data.List as List
 
 import Numeric.AERN.Misc.Debug
@@ -79,32 +79,47 @@ _ = unsafePrint
     typical simple call:
         locateFirstZeroDip stepLimit (const $ Just True) [dipFn] dipFn 
 -}
-locateFirstDip :: 
+locateFirstDipAmongMultipleFns :: 
     (RefOrd.IntervalLike (dom),
-     ArithInOut.RoundedReal (dom)) 
+     ArithInOut.RoundedReal (dom),
+     Ord eventId) 
     =>
-    dom -> 
-    (dom -> Maybe Bool) {-^ whether other reset conditions are true/false on the given point/area -} -> 
-    (dom -> Maybe Bool) {-^ whether dip function is positive on the given point/area -} -> 
-    (dom -> Maybe Bool) {-^ whether dip function is negative on the given point/area -} -> 
-    (dom, dom) -> 
-    Maybe (dom, Bool)
-locateFirstDip stepLimit otherConditionOnDom dipFnPositiveOnDom dipFnNegativeOnDom (tStart, tEnd) = 
-    case locateBySplitting (tStart, tEnd) of
-        LDResNone -> Nothing
-        LDResSure dom -> Just (dom, True)
-        LDResMaybe dom -> Just (dom, False)
+    dom  {-^ minimum step size -} ->
+    Map.Map eventId
+        ((dom -> Maybe Bool), {-^ whether other reset conditions are true/false on the given point/area -} 
+         (dom -> Maybe Bool), {-^ whether dip function is positive on the given point/area -}
+         (dom -> Maybe Bool), {-^ whether dip function is negative on the given point/area -}
+         (dom -> Maybe Bool) {-^ whether dip function encloses zero on the given point/area -}
+        ) {-^ detection information for each type of event -} -> 
+    (dom, dom) {-^ domain to search over -} -> 
+    LocateDipResult dom eventId
+locateFirstDipAmongMultipleFns stepLimit eventDetectionInfoMap (tStart, tEnd) =
+    result 
     where
+    result = locateBySplitting (tStart, tEnd)
     locateBySplitting d@(dLE, dRE)
-        | ((stepLimit <? size) /= Just True) = 
+        | ((stepLimit <? size) /= Just True) = -- hit the minimum split size 
             resD -- no more splitting
         | otherwise =
             case resD of
-                LDResNone -> resD -- no point splitting in this case
-                -- TODO: stop splitting also when dipFn includes zero throughout 
+                LDResNone -> resD
+                LDResSome LDResDipPoorEnclosure _ _ -> resD 
+                    -- splitting will not give more information because the enclosure is too poor
                 _ -> combineLocateDipResults resL resR
         where
-        resD = examineDipOnDom otherConditionOnDom dipFnPositiveOnDom dipFnNegativeOnDom d 
+        resD
+            | Set.null possibleEventsSet = LDResNone
+            | otherwise = 
+                LDResSome certainty d possibleEventsSet
+            where
+            certainty = foldl combineLocateDipCertainties LDResDipPoorEnclosure certainties
+            certainties = map ldresEventCertainty $ Map.elems possibleEventsMap
+            possibleEventsSet = Map.keysSet possibleEventsMap
+            possibleEventsMap = Map.filter (not . isLDResNone) resDMap
+        resDMap = Map.map examineOne eventDetectionInfoMap
+            where
+            examineOne (otherConditionOnDom, dipFnPositiveOnDom, dipFnNegativeOnDom, dipFnEnclosesZeroOnDom) =
+                examineDipOnDom otherConditionOnDom dipFnPositiveOnDom dipFnNegativeOnDom dipFnEnclosesZeroOnDom d 
         size = dRE <-> dLE
         resL = locateBySplitting (dLE, dM)
         resR = locateBySplitting (dM, dRE)
@@ -112,60 +127,68 @@ locateFirstDip stepLimit otherConditionOnDom dipFnPositiveOnDom dipFnNegativeOnD
     
     
 examineDipOnDom :: 
-    (RefOrd.IntervalLike (dom))
---    , 
---     CanEvaluate f,
---     NumOrd.PartialComparison (dom), 
---     HasZero (dom)) 
+    (RefOrd.IntervalLike dom)
     =>
     (dom -> Maybe Bool) {-^ whether other reset conditions are true/false on the given point/area -} -> 
     (dom -> Maybe Bool) {-^ whether dip function is positive on the given point/area -} -> 
-    (dom -> Maybe Bool) {-^ whether dip function is negative on the given point/area -} -> 
+    (dom -> Maybe Bool) {-^ whether dip function is negative on the given point/area -} ->
+    (dom -> Maybe Bool) {-^ whether dip function enclosure contains zero on the given point/area -} ->
     (dom, dom) -> 
-    LocateDipResult (dom)
-examineDipOnDom otherConditionOnDom dipFnPositiveOnDom dipFnNegativeOnDom (dLE, dRE) =
-    case (dipFnPositiveOnDom d, dipFnNegativeOnDom dRE, otherConditionOnDom d) of
-        (Just True, _, _) -> LDResNone -- no dip
-        (_, _, Just False) -> LDResNone -- other condition definitely false
-        (_, Just True, Just True) -> LDResSure d 
+    LocateDipResult dom ()
+examineDipOnDom 
+        otherConditionOnDom 
+        dipFnPositiveOnDom 
+        dipFnNegativeOnDom 
+        dipFnEnclosesZeroOnDom 
+        (dLE, dRE) =
+    case (dipFnPositiveOnDom d, dipFnNegativeOnDom dRE, dipFnEnclosesZeroOnDom d, otherConditionOnDom d) of
+        (Just True, _, _, _) -> LDResNone -- no dip
+        (_, _, _, Just False) -> LDResNone -- other condition definitely false
+        (_, Just True, _, Just True) -> LDResSome LDResDipCertain (dLE, dRE) Set.empty
             -- dip must have occured within d because the fn is below 0 in the end 
             -- and the other condition also holds on the whole of d, 
             --   so it held also at the time of the dip
-        _ -> LDResMaybe d
+        (_, _, Just True, _) -> LDResSome LDResDipPoorEnclosure (dLE, dRE) Set.empty
+        _ -> LDResSome LDResDipMaybe (dLE, dRE) Set.empty
             -- in all other cases, we declare that we don't know for sure
-            -- TODO: LDResMaybe d enclosesZero
     where
     d = RefOrd.fromEndpointsOutWithDefaultEffort (dLE, dRE)
---    dipFnOnD = evalAtPointOutEff effEval boxD dipFn
---    allFnsOnD = map (evalAtPointOutEff effEval boxD) $ allFns
---    boxD = fromList [(tVar, d)]
---    dipFnOnDR = evalAtPointOutEff effEval boxDR dipFn
-----    allFnsOnDR = map (evalAtPointOutEff effEval boxDR) $ allFns
---    boxDR = fromList [(tVar, dRE)]
---    effEval = evaluationDefaultEffort sampleFn
---    z = zero sampleDom
---    [(tVar,_)] = toAscList $ getDomainBox sampleFn
---    sampleFn = dipFn
---    sampleDom = dLE
     
     
-data LocateDipResult dom =
+data LocateDipResult dom eventId =
       LDResNone
-    | LDResSure dom
-    | LDResMaybe dom
+    | LDResSome
+        { 
+            ldresEventCertainty :: LocateDipResultCertainty,
+            ldresFirstEventLoc :: (dom, dom),
+            ldresFirstEventType :: Set.Set eventId
+        }
+
+data LocateDipResultCertainty =
+    LDResDipCertain | LDResDipMaybe | LDResDipPoorEnclosure
+
+isLDResNone LDResNone = True
+isLDResNone _ = False
+
+isLDResSure (LDResSome LDResDipCertain _ _) = True 
+isLDResSure _ = False
 
 combineLocateDipResults :: 
-  (RefOrd.RoundedLattice dom) 
+  (Ord eventId)
   =>
-  LocateDipResult dom -> 
-  LocateDipResult dom -> 
-  LocateDipResult dom
+  LocateDipResult dom eventId -> 
+  LocateDipResult dom eventId -> 
+  LocateDipResult dom eventId
 combineLocateDipResults LDResNone res2 = res2
-combineLocateDipResults res1@(LDResSure _) _ = res1
-combineLocateDipResults (LDResMaybe dom1) (LDResMaybe dom2) =
-    let ?joinmeetEffort = RefOrd.joinmeetDefaultEffort dom1 in  
-    LDResMaybe $ dom1 </\> dom2
-combineLocateDipResults (LDResMaybe dom1) (LDResSure dom2) = 
-    let ?joinmeetEffort = RefOrd.joinmeetDefaultEffort dom1 in  
-    LDResSure $ dom1 </\> dom2  
-    
+combineLocateDipResults res1 LDResNone = res1
+combineLocateDipResults res1@(LDResSome LDResDipCertain _ _) _ = res1
+combineLocateDipResults (LDResSome certainty1 (dL,_) events1) (LDResSome certainty2 (_,dR) events2) =
+    LDResSome certainty (dL, dR) (Set.union events1 events2)
+    where
+    certainty =
+        combineLocateDipCertainties certainty1 certainty2
+
+combineLocateDipCertainties LDResDipCertain _ = LDResDipCertain
+combineLocateDipCertainties _ LDResDipCertain = LDResDipCertain
+combineLocateDipCertainties LDResDipPoorEnclosure LDResDipPoorEnclosure = LDResDipPoorEnclosure
+combineLocateDipCertainties _ _ = LDResDipMaybe

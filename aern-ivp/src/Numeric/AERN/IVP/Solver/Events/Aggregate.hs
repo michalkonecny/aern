@@ -362,11 +362,12 @@ detectEventsWithoutLocalisation effEval eventSpecMap (tStart,tEnd) fnVecBeforeEv
         case examineDipOnDom 
                 otherConditionOnDom 
                 dipFnPositiveOnDom
-                dipFnNegativeOnDom 
+                dipFnNegativeOnDom
+                dipFnEnclosesZeroOnDom
                 (tStart,tEnd) of
             LDResNone -> Nothing
-            LDResSure _ -> Just (eventType, (True, affectedComps, pruneFn))
-            LDResMaybe _ -> Just (eventType, (False, affectedComps, pruneFn))
+            LDResSome LDResDipCertain _ _ -> Just (eventType, (True, affectedComps, pruneFn))
+            _ -> Just (eventType, (False, affectedComps, pruneFn))
         where
         otherConditionOnDom d =
             otherCond fnVecBeforeEventOnD
@@ -385,6 +386,7 @@ detectEventsWithoutLocalisation effEval eventSpecMap (tStart,tEnd) fnVecBeforeEv
             dipFn = makeZeroCrossingFn fnVecBeforeEvent
             dipFnOnD = evalAtPointOutEff effEval boxD dipFn
             boxD = fromList [(tVar, d)]
+        dipFnEnclosesZeroOnDom _ = Nothing
         [(tVar,_)] = toAscList $ getDomainBox sampleFn
         (sampleFn : _) = fnVecBeforeEvent
             
