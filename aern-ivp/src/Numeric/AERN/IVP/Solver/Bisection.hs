@@ -41,7 +41,8 @@ module Numeric.AERN.IVP.Solver.Bisection
     BisectionInfo(..),
     showBisectionInfo,
     bisectionInfoCountLeafs,
-    bisectionInfoGetLeafSegInfoSequence
+    bisectionInfoGetLeafSegInfoSequence,
+    checkConditionOnBisection
 )
 where
 
@@ -71,6 +72,8 @@ import Numeric.AERN.Basics.Consistency
 
 --import qualified Data.Map as Map
 
+
+import Data.Maybe (isJust)
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -205,10 +208,8 @@ solveHybridIVPByBisectingT
             {
                 hybivp_tEnd = tMid
             }
-        tMid = 
-            let ?addInOutEffort = effAddDom in
-            let ?mixedDivInOutEffort = effDivDomInt in
-            (tStart <+> tEnd) </>| (2 :: Int)
+        tMid =
+            getMidPoint effAddDom effDivDomInt tStart tEnd 
         
         maybeSplitImprovement =
             case (maybeDirectResult, splitOnceComputation) of
@@ -423,10 +424,8 @@ solveODEIVPByBisectingT
             {
                 odeivp_tEnd = tMid
             }
-        tMid = 
-            let ?addInOutEffort = effAddDom in
-            let ?mixedDivInOutEffort = effDivDomInt in
-            (tStart <+> tEnd) </>| (2 :: Int)
+        tMid =
+            getMidPoint effAddDom effDivDomInt tStart tEnd 
         
         maybeSplitImprovement =
             case (directComputation, splitOnceComputation) of
@@ -576,10 +575,8 @@ solveODEIVPByBisectingT0
             {
                 odeivp_t0End = t0Mid
             }
-        t0Mid = 
-            let ?addInOutEffort = effAddDom in
-            let ?mixedDivInOutEffort = effDivDomInt in
-            (tStart <+> t0End) </>| (2 :: Int)
+        t0Mid =
+            getMidPoint effAddDom effDivDomInt tStart t0End 
         
         maybeSplitImprovement =
             case (directComputation, splitOnceComputation) of
@@ -647,3 +644,74 @@ bisectionInfoGetLeafSegInfoSequence (BisectionSplit _ left (Just right)) =
     bisectionInfoGetLeafSegInfoSequence left
     ++
     bisectionInfoGetLeafSegInfoSequence right
+
+checkConditionOnBisection ::
+    (ArithInOut.RoundedReal dom,
+     RefOrd.IntervalLike dom) 
+    => 
+    ArithInOut.RoundedRealEffortIndicator dom ->
+    (segInfo -> Maybe Bool) {-^ the condition to check -} -> 
+    BisectionInfo segInfo (segInfo, otherInfo) {-^ bisected function  -} -> 
+    (dom, dom) {-^ the domain of the function encoded by the above bisection -} -> 
+    dom -> 
+    Maybe Bool
+checkConditionOnBisection effDom condition bisectionInfo bisectionDom dom =
+    aux bisectionDom bisectionInfo
+    where
+    aux _ (BisectionNoSplit info) = condition info
+    aux (dL, dR) (BisectionSplit (info, _) left maybeRight) 
+        | isJust resultUsingInfo = resultUsingInfo
+        | domNotInR = auxLeft
+        | domNotInL = auxRight
+        | domInsideBothLR = 
+            case auxLeft of
+                Just _ -> auxLeft
+                _ -> auxRight
+        | otherwise = -- domSplitBetweenLR =
+            case (auxLeft, auxRight) of
+                (Just False, Just False) -> Just False
+                (Just True , Just True ) -> Just True
+                _ -> Nothing
+        where
+        resultUsingInfo = condition info
+        domNotInL =
+            let ?pCompareEffort = effComp in 
+            (dM <? dom) == Just True
+        domNotInR =
+            let ?pCompareEffort = effComp in 
+            (dom <? dM) == Just True
+        domInsideBothLR = 
+            let ?pCompareEffort = effComp in 
+            (dom ==? dM) == Just True
+        dM = 
+            getMidPoint effAddDom effDivDomInt dL dR 
+        auxLeft = aux (dL, dM) left
+        auxRight = 
+            case maybeRight of 
+                Nothing -> Nothing
+                Just right-> aux (dM, dR) right
+    effComp = ArithInOut.rrEffortNumComp sampleDom effDom
+    effJoinMeet = ArithInOut.rrEffortJoinMeet sampleDom effDom
+    effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+    effDivDomInt = 
+        ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
+            ArithInOut.rrEffortIntMixedField sampleDom effDom
+    sampleDom = dom
+
+
+getMidPoint :: 
+    (RefOrd.IntervalLike dom, 
+     ArithInOut.RoundedAdd dom,
+     ArithInOut.RoundedMixedDivide dom Int) 
+    =>
+    ArithInOut.AddEffortIndicator dom 
+    -> 
+    ArithInOut.MixedDivEffortIndicator dom Int 
+    -> 
+    dom -> dom -> dom
+getMidPoint effAddDom effDivDomInt l r =             
+    let ?addInOutEffort = effAddDom in
+    let ?mixedDivInOutEffort = effDivDomInt in
+    fst $ RefOrd.getEndpointsOutWithDefaultEffort $
+    (l <+> r) </>| (2 :: Int)
+        

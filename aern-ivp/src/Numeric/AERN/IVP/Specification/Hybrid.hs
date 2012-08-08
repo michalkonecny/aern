@@ -86,7 +86,7 @@ data HybridSystem f =
                  [f] -> f,
                     {- construction of a zero crossing function -}
                  [Domain f] -> Maybe Bool,
-                    {- additional condition -}
+                    {- additional reset condition -}
                  [Domain f] -> [Domain f] 
                     {- intersection with the support of the guard, 
                        used to prune some impossible states at the switching point -} 
