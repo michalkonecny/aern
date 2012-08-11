@@ -37,7 +37,7 @@ import Numeric.AERN.RmToRn.Integration
 import Numeric.AERN.RmToRn.Differentiation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
---import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.ExactOps
 
@@ -47,13 +47,14 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 
 import qualified Data.Map as Map
 --import qualified Data.Set as Set
---import qualified Data.List as List
+import qualified Data.List as List
+import Data.Maybe (catMaybes)
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -118,10 +119,17 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
         Maybe (HybridSystemUncertainState (Domain f))
     ,
         [(
-            (Domain f, Domain f) 
+            Domain f
             -- start and end time of this segment (including the event resolution sub-segment)  
          ,
-            Map.Map HybSysMode (solvingInfoODE, Maybe solvingInfoEvents)
+            Maybe (HybridSystemUncertainState (Domain f))
+         ,
+            Map.Map HybSysMode 
+                (
+                    solvingInfoODE,
+                    Maybe (HybridSystemUncertainState (Domain f)),
+                    Maybe solvingInfoEvents
+                )
          )
         ]
     )
@@ -139,7 +147,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
             solveHybridNoSplitting
             solveODEWithSplitting
                 effEval effDom 
-                    splitImprovementThreshold minStepSize maxStepSize
+                    minStepSize maxStepSize
                         hybivp
 
     solveODEWithSplitting =
@@ -206,8 +214,6 @@ solveHybridIVP_SplitNearEvents ::
     -> 
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
     ->
-    Imprecision (Domain f) -- ^ splitting improvement threshold
-    ->
     Domain f -- ^ minimum segment length  
     ->
     Domain f -- ^ maximum segment length  
@@ -218,10 +224,19 @@ solveHybridIVP_SplitNearEvents ::
         Maybe (HybridSystemUncertainState (Domain f))
     ,
         [(
-            (Domain f, Domain f) 
-            -- start and end time of this segment (including the event resolution sub-segment)  
+            Domain f 
+            -- ^ end time of this segment (including the event resolution sub-segment)  
          ,
-            Map.Map HybSysMode (solvingInfoODE, Maybe solvingInfoEvents)
+            Maybe (HybridSystemUncertainState (Domain f))
+            -- ^ state at the end time of this segment (if simulation has not failed)
+         ,
+            Map.Map HybSysMode 
+                ( 
+                 solvingInfoODE, 
+                 Maybe (HybridSystemUncertainState (Domain f)),
+                 Maybe solvingInfoEvents
+                )
+            -- ^ solving information (typically including an enclosure of all solutions)
          )
         ]
     )
@@ -229,11 +244,10 @@ solveHybridIVP_SplitNearEvents
         solveHybridNoSplitting
         solveODEWithSplitting
             effEval effDom 
-                splitImprovementThreshold minStepSize maxStepSize 
+                minStepSize maxStepSize
                     (hybivpG :: HybridIVP f)
     =
-    (Nothing, -- TODO
-     splitSolve hybivpG)
+    (finalState, segments)
     {-
         overview:
         
@@ -251,24 +265,102 @@ solveHybridIVP_SplitNearEvents
             recursively apply this computation on the interval [t_R, \rightendpoint{T}]
     -}
     where
+    (_, finalState, _) = last segments
+    segments = splitSolve hybivpG
     splitSolve hybivp =
-        ((tStart, tEventR), Map.mapWithKey processEvents firstDipModeMap) : rest
+        (tEventR, stateAtTEventR, simulationInfoModeMap) : rest
         where
+        effJoinMeet = ArithInOut.rrEffortJoinMeet sampleD effDom
+        effMinmax = ArithInOut.rrEffortMinmaxInOut sampleD effDom
+        effAdd = ArithInOut.fldEffortAdd sampleD $ ArithInOut.rrEffortField sampleD effDom
+        sampleD = tEventR
+        
         rest =
-            undefined 
-            -- TODO: if tEventR < tEnd, construct new hybivp, mainly its initial uncertain state
-        processEvents _ (noEventsSolution, LDResNone) = (noEventsSolution, Nothing)
-        processEvents mode (noEventsSolution, LDResSome _ (tEventL, _) possibleEvents) =
-            (noEventsSolution, Nothing) 
-            -- TODO: call solveHybridIVP_UsingPicardAndEventTree over (tEventL, tEventR)
-        tEventR =
             undefined
-            -- TODO: compute a intersection-transitive-closure of all doms in dipInfos starting from leftmostDom  
+            -- TODO: if tEventR < tEnd, construct new hybivp, mainly its initial uncertain state
+        stateAtTEventR =
+            case states of
+                [] -> Nothing
+                _ -> Just $ foldl1 (mergeHybridStates effJoinMeet) states   
             where
-            leftmostDom =
-                undefined -- TODO: compute leftmostDom by scanning dipInfos
-            dipInfos = 
-                map snd $ Map.elems firstDipModeMap
+            states = catMaybes $ map getState $ Map.elems simulationInfoModeMap
+            getState (_, state, _) = state
+        simulationInfoModeMap = Map.mapWithKey processEvents firstDipModeMap
+        processEvents mode (noEventsSolution, locateDipResult) =
+            case locateDipResult of 
+                LDResNone ->
+                    (noEventsSolution, noEventsStateAt tEventR, Nothing)
+                LDResSome _certainty (tEventL, _) _possibleEvents
+                    | ((tEventR <=? tEventL) == Just True) 
+                        -- an event was located but it could not happen before tEventR  
+                        -> (noEventsSolution, noEventsStateAt tEventR, Nothing)
+                    | otherwise
+                        -- call solveHybridIVP_UsingPicardAndEventTree over (tEventL, tEventR)
+                        ->
+                        (noEventsSolution, stateAfterEvents, maybeSolvingInfo)
+                    where
+                    (stateAfterEvents, maybeSolvingInfo) = solveEvents tEventL
+            where
+            noEventsStateAt :: Domain f -> Maybe (HybridSystemUncertainState (Domain f))
+            noEventsStateAt t =
+                case valuesVariants of
+                    [] -> Nothing
+                    _ -> Just $ Map.singleton mode values
+                where
+                values = 
+                    let ?joinmeetEffort = effJoinMeet in
+                    foldl1 (zipWith (<\/>)) valuesVariants
+                valuesVariants = catMaybes valuesMaybeVariants
+                [valuesMaybeVariants] = 
+                    evalFnOnBisection effDom evalFnsAtTEventsR noEventsSolution (tStart, tEnd) t
+                evalFnsAtTEventsR (Just fns, _) = Just $ map evalFnAtTEventsR fns
+                evalFnsAtTEventsR _ = Nothing
+                evalFnAtTEventsR fn = evalAtPointOutEff effEval boxD fn
+                boxD = fromList [(tVar, t)]
+            solveEvents tEventL =
+                case noEventsStateAt tEventL of
+                    Nothing -> (Nothing, Nothing)
+                    Just midState -> solveEventsFromState midState
+                where
+                solveEventsFromState midState =
+                    (finalState2, Just solvingInfo)
+                    where
+                    (finalState2, solvingInfo) = solveHybridNoSplitting (hybivpEventRegion midState) 
+                hybivpEventRegion midState =
+                    hybivp
+                    {
+                        hybivp_tStart = tEventL,
+                        hybivp_tEnd = tEventR,
+                        hybivp_initialStateEnclosure = midState
+                    }
+        tEventR :: Domain f
+        tEventR =
+            keepAddingIntersectingDomsAndReturnR leftmostDomR doms
+            -- compute a intersection-transitive-closure of all doms in dipInfos starting from leftmostDom  
+            where
+            keepAddingIntersectingDomsAndReturnR dR domsLeft = 
+                case intersectingDoms of
+                    [] -> dR
+                    _ -> keepAddingIntersectingDomsAndReturnR newR nonintersectingDoms
+                where
+                (intersectingDoms, nonintersectingDoms) =
+                    List.partition intersectsDom domsLeft
+                    where
+                    intersectsDom (dL, _) = (dL <? dR) /= Just False
+                newR = foldl pickTheRightOne dR (map snd intersectingDoms)
+                    where
+                    pickTheRightOne d1 d2
+                        | (d1 >? d2) == Just True = d1
+                        | otherwise = d2
+            (_, leftmostDomR) =
+                foldr1 pickTheLeftOne ((tEnd, tEnd) : doms)
+                where
+                pickTheLeftOne d1@(d1L,_) d2@(d2L, _) 
+                    | (d1L <? d2L) == Just True = d1
+                    | otherwise = d2
+            doms =
+                map getLDResDom $ filter (not . isLDResNone) $ map snd $ Map.elems firstDipModeMap
+            
 --        firstDipModeMap ::
 --            (
 --             solvingInfoODESegment ~ (Maybe [f], solvingInfoODESegmentOther),
@@ -337,7 +429,7 @@ solveHybridIVP_SplitNearEvents
                 odeivp_componentNames = componentNames,
                 odeivp_tVar = tVar,
                 odeivp_tStart = tStart,
-                odeivp_tEnd = tEnd,
+                odeivp_tEnd = tStepEnd,
                 odeivp_makeInitialValueFnVec = makeInitValueFnVec,
                 odeivp_t0End = tStart,
                 odeivp_maybeExactValuesAtTEnd = Nothing
@@ -349,6 +441,13 @@ solveHybridIVP_SplitNearEvents
         tVar = hybivp_tVar hybivp
         tStart = hybivp_tStart hybivp
         tEnd = hybivp_tEnd hybivp
+        tStepEnd = -- min(tEnd, tStart + maxStepSize)
+            NumOrd.minOutEff effMinmax tEnd tStartPlusMaxStep
+            where
+            (tStartPlusMaxStep, _) =
+                let ?addInOutEffort = effAdd in
+                RefOrd.getEndpointsOutWithDefaultEffort $ 
+                tStart <+> maxStepSize
 --        tDom = RefOrd.fromEndpointsOutWithDefaultEffort (tStart, tEnd)
         initialStateModeMap = hybivp_initialStateEnclosure hybivp
         hybsys = hybivp_system hybivp
@@ -356,8 +455,6 @@ solveHybridIVP_SplitNearEvents
         modeFields = hybsys_modeFields hybsys
         
         
-        -- TODO: complete solveHybridIVP_SplitNearEvents
-
 ----        unsafePrint
 ----        (
 ----            "solveHybridIVPByBisectingT: splitSolve: "

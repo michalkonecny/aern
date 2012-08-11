@@ -21,20 +21,20 @@ module Numeric.AERN.IVP.Solver.Events.Locate
 --)
 where
 
-import Numeric.AERN.RmToRn.Domain
+--import Numeric.AERN.RmToRn.Domain
 --import Numeric.AERN.RmToRn.New
-import Numeric.AERN.RmToRn.Evaluation
+--import Numeric.AERN.RmToRn.Evaluation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 --import Numeric.AERN.RealArithmetic.Measures
-import Numeric.AERN.RealArithmetic.ExactOps
+--import Numeric.AERN.RealArithmetic.ExactOps
 
-import qualified Numeric.AERN.NumericOrder as NumOrd
+--import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+--import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 --import Numeric.AERN.Basics.Consistency
 
@@ -163,15 +163,26 @@ data LocateDipResult dom eventId =
             ldresFirstEventLoc :: (dom, dom),
             ldresFirstEventType :: Set.Set eventId
         }
+    deriving Show
 
 data LocateDipResultCertainty =
     LDResDipCertain | LDResDipMaybe | LDResDipPoorEnclosure
+    deriving Show
 
+isLDResNone :: LocateDipResult dom eventId -> Bool
 isLDResNone LDResNone = True
 isLDResNone _ = False
 
+isLDResSure :: LocateDipResult dom eventId -> Bool
 isLDResSure (LDResSome LDResDipCertain _ _) = True 
 isLDResSure _ = False
+
+getLDResDom ::
+    (Show dom, Show eventId)
+    => 
+    LocateDipResult dom eventId -> (dom, dom)
+getLDResDom (LDResSome _ dom _) = dom
+getLDResDom ldr = error $ "getLDResDom applied on " ++ show ldr
 
 combineLocateDipResults :: 
   (Ord eventId)
@@ -188,6 +199,10 @@ combineLocateDipResults (LDResSome certainty1 (dL,_) events1) (LDResSome certain
     certainty =
         combineLocateDipCertainties certainty1 certainty2
 
+combineLocateDipCertainties :: 
+    LocateDipResultCertainty -> 
+    LocateDipResultCertainty -> 
+    LocateDipResultCertainty
 combineLocateDipCertainties LDResDipCertain _ = LDResDipCertain
 combineLocateDipCertainties _ LDResDipCertain = LDResDipCertain
 combineLocateDipCertainties LDResDipPoorEnclosure LDResDipPoorEnclosure = LDResDipPoorEnclosure
