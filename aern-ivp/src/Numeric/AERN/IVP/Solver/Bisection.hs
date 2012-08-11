@@ -42,7 +42,8 @@ module Numeric.AERN.IVP.Solver.Bisection
     showBisectionInfo,
     bisectionInfoCountLeafs,
     bisectionInfoGetLeafSegInfoSequence,
-    checkConditionOnBisection
+    checkConditionOnBisection,
+    evalFnOnBisection
 )
 where
 
@@ -691,13 +692,65 @@ checkConditionOnBisection effDom condition bisectionInfo bisectionDom dom =
                 Nothing -> Nothing
                 Just right-> aux (dM, dR) right
     effComp = ArithInOut.rrEffortNumComp sampleDom effDom
-    effJoinMeet = ArithInOut.rrEffortJoinMeet sampleDom effDom
+--    effJoinMeet = ArithInOut.rrEffortJoinMeet sampleDom effDom
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDivDomInt = 
         ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
             ArithInOut.rrEffortIntMixedField sampleDom effDom
     sampleDom = dom
 
+evalFnOnBisection ::
+    (ArithInOut.RoundedReal dom,
+     RefOrd.IntervalLike dom) 
+    => 
+    ArithInOut.RoundedRealEffortIndicator dom ->
+    (segInfo -> a) {-^ the evaluation function -} -> 
+    BisectionInfo segInfo otherInfo {-^ bisected function  -} -> 
+    (dom, dom) {-^ the domain of the function encoded by the above bisection -} -> 
+    dom {-^ @dom@ - domain to evaluate the function on -} -> 
+    [[a]] {-^ evaluation on various sub-segments of @dom@, possibly in multiple ways -}
+evalFnOnBisection effDom evalFn bisectionInfo bisectionDom domG =
+    aux bisectionDom bisectionInfo domG
+    where
+    aux _ (BisectionNoSplit info) _ = [[evalFn info]]
+    aux (dL, dR) (BisectionSplit _ left maybeRight) dom 
+        | domNotInR = auxLeft
+        | domNotInL = auxRight
+        | domInsideBothLR =
+            zipWith (++) auxLeft auxRight 
+        | otherwise = -- domSplitBetweenLR =
+            auxLeft ++ auxRight
+        where
+        domNotInL =
+            let ?pCompareEffort = effComp in 
+            (dM <? dom) == Just True
+        domNotInR =
+            let ?pCompareEffort = effComp in 
+            (dom <? dM) == Just True
+        domInsideBothLR = 
+            let ?pCompareEffort = effComp in 
+            (dom ==? dM) == Just True
+        dM = 
+            getMidPoint effAddDom effDivDomInt dL dR 
+        auxLeft = aux (dL, dM) left domL
+        auxRight = 
+            case maybeRight of 
+                Nothing -> []
+                Just right-> aux (dM, dR) right domR
+        domL = 
+            let ?joinmeetEffort = effJoinMeet in
+            dom <\/> (dL </\> dM)
+        domR =
+            let ?joinmeetEffort = effJoinMeet in
+            dom <\/> (dM </\> dR)
+    effComp = ArithInOut.rrEffortNumComp sampleDom effDom
+    effJoinMeet = ArithInOut.rrEffortJoinMeet sampleDom effDom
+    effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+    effDivDomInt = 
+        ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
+            ArithInOut.rrEffortIntMixedField sampleDom effDom
+    sampleDom = domG
+    
 
 getMidPoint :: 
     (RefOrd.IntervalLike dom, 
