@@ -63,6 +63,7 @@ _ = unsafePrint
 solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
     (CanAddVariables f,
      CanRenameVariables f,
+     CanAdjustDomains f,
      CanEvaluate f,
      CanCompose f,
      CanChangeSizeLimits f,
@@ -191,6 +192,7 @@ solveHybridIVP_SplitNearEvents ::
     (CanAddVariables f,
      CanEvaluate f,
      CanCompose f,
+     CanAdjustDomains f,
      HasProjections f,
      HasConstFns f,
      RefOrd.PartialComparison f,
@@ -299,21 +301,38 @@ solveHybridIVP_SplitNearEvents
             getState (_, state, _) = state
         simulationInfoModeMap = Map.mapWithKey processEvents firstDipModeMap
         processEvents mode (noEventsSolution, locateDipResult) =
-            -- TODO: cut off noEventsSolution at tEventR
             case locateDipResult of 
                 LDResNone ->
-                    (noEventsSolution, noEventsStateAt tEventR, Nothing)
+                    (noEventsSolutionUpToR, noEventsStateAt tEventR, Nothing)
                 LDResSome _certainty (tEventL, _) _possibleEvents
                     | ((tEventR <=? tEventL) == Just True) 
                         -- an event was located but it could not happen before tEventR  
-                        -> (noEventsSolution, noEventsStateAt tEventR, Nothing)
+                        -> (noEventsSolutionUpToR, noEventsStateAt tEventR, Nothing)
                     | otherwise
                         -- call solveHybridIVP_UsingPicardAndEventTree over (tEventL, tEventR)
                         ->
-                        (noEventsSolution, stateAfterEvents, maybeSolvingInfo)
+                        (noEventsSolutionUpToR, stateAfterEvents, maybeSolvingInfo)
                     where
                     (stateAfterEvents, maybeSolvingInfo) = solveEvents tEventL
             where
+            noEventsSolutionUpToR =
+                -- cut off noEventsSolution at tEventR
+                bisectionInfoTrimAt 
+                    effDom trimInfo removeInfo
+                        noEventsSolution (tStart, tEnd) tEventR
+                where
+                removeInfo (_, otherInfo) = (Nothing, otherInfo)
+                trimInfo (Just (fns, midVals), otherInfo) =
+                    (Just (trimmedFns, midVals), otherInfo)
+                    where
+                    trimmedFns = 
+                        map trimFn fns
+                    trimFn fn =
+                        adjustDomain fn tVar newTDom
+                        where
+                        newTDom = NumOrd.minOutEff effMinmax tDom tEventR
+                        Just tDom = lookupVar dombox tVar
+                        dombox = getDomainBox fn
             noEventsStateAt :: Domain f -> Maybe (HybridSystemUncertainState (Domain f))
             noEventsStateAt t =
                 case valuesVariants of
@@ -325,7 +344,7 @@ solveHybridIVP_SplitNearEvents
                     foldl1 (zipWith (<\/>)) valuesVariants
                 valuesVariants = catMaybes valuesMaybeVariants
                 [valuesMaybeVariants] = 
-                    evalFnOnBisection effDom evalFnsAtTEventsR noEventsSolution (tStart, tEnd) t
+                    bisectionInfoEvalFn effDom evalFnsAtTEventsR noEventsSolution (tStart, tEnd) t
                 evalFnsAtTEventsR (Just (fns,_), _) = Just $ map evalFnAtTEventsR fns
                 evalFnsAtTEventsR _ = Nothing
                 evalFnAtTEventsR fn = evalAtPointOutEff effEval boxD fn
@@ -420,7 +439,7 @@ solveHybridIVP_SplitNearEvents
                         where
                         (_, dipFnRE) = RefOrd.getEndpointsOutWithDefaultEffort $ makeDipFn fns
                     checkConditionOnBisectedFunction functionCalculation valueCondition dom =
-                        checkConditionOnBisection effDom condition bisectionInfo (tStart, tEnd) dom
+                        bisectionInfoCheckCondition effDom condition bisectionInfo (tStart, tEnd) dom
                         where
                         condition (Nothing, _) = Nothing
                         condition (Just (fns,_), _) = 

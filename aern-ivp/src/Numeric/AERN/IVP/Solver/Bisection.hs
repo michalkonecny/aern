@@ -40,10 +40,12 @@ module Numeric.AERN.IVP.Solver.Bisection
     solveODEIVPByBisectingT0,
     BisectionInfo(..),
     showBisectionInfo,
+    bisectionInfoMapSegments,
     bisectionInfoCountLeafs,
     bisectionInfoGetLeafSegInfoSequence,
-    checkConditionOnBisection,
-    evalFnOnBisection
+    bisectionInfoCheckCondition,
+    bisectionInfoEvalFn,
+    bisectionInfoTrimAt
 )
 where
 
@@ -608,7 +610,21 @@ solveODEIVPByBisectingT0
 
 data BisectionInfo segInfo splitReason
     = BisectionNoSplit segInfo
-    | BisectionSplit splitReason (BisectionInfo segInfo splitReason) (Maybe (BisectionInfo segInfo splitReason))
+    | BisectionSplit 
+        splitReason 
+        (BisectionInfo segInfo splitReason) 
+        (Maybe (BisectionInfo segInfo splitReason))
+
+bisectionInfoMapSegments :: 
+    (segInfo1 -> segInfo2) ->
+    BisectionInfo segInfo1 splitReason ->
+    BisectionInfo segInfo2 splitReason
+bisectionInfoMapSegments segFn bisectionInfo =
+    aux bisectionInfo
+    where
+    aux (BisectionNoSplit segInfo) = BisectionNoSplit $ segFn segInfo
+    aux (BisectionSplit splitReason left maybeRight) =
+        BisectionSplit splitReason (aux left) (fmap aux maybeRight)
 
 showBisectionInfo :: 
     (String -> segInfo -> String) 
@@ -652,7 +668,7 @@ bisectionInfoGetLeafSegInfoSequence (BisectionSplit _ left (Just right)) =
     ++
     bisectionInfoGetLeafSegInfoSequence right
 
-checkConditionOnBisection ::
+bisectionInfoCheckCondition ::
     (ArithInOut.RoundedReal dom,
      RefOrd.IntervalLike dom) 
     => 
@@ -662,7 +678,7 @@ checkConditionOnBisection ::
     (dom, dom) {-^ the domain of the function encoded by the above bisection -} -> 
     dom -> 
     Maybe Bool
-checkConditionOnBisection effDom condition bisectionInfo bisectionDom dom =
+bisectionInfoCheckCondition effDom condition bisectionInfo bisectionDom dom =
     aux bisectionDom bisectionInfo
     where
     aux _ (BisectionNoSplit info) = condition info
@@ -705,9 +721,9 @@ checkConditionOnBisection effDom condition bisectionInfo bisectionDom dom =
             ArithInOut.rrEffortIntMixedField sampleDom effDom
     sampleDom = dom
 
-evalFnOnBisection ::
+bisectionInfoEvalFn ::
     (ArithInOut.RoundedReal dom,
-     RefOrd.IntervalLike dom) 
+     RefOrd.IntervalLike dom)
     => 
     ArithInOut.RoundedRealEffortIndicator dom ->
     (segInfo -> a) {-^ the evaluation function -} -> 
@@ -715,7 +731,7 @@ evalFnOnBisection ::
     (dom, dom) {-^ the domain of the function encoded by the above bisection -} -> 
     dom {-^ @dom@ - domain to evaluate the function on -} -> 
     [[a]] {-^ evaluation on various sub-segments of @dom@, possibly in multiple ways -}
-evalFnOnBisection effDom evalFn bisectionInfo bisectionDom domG =
+bisectionInfoEvalFn effDom evalFn bisectionInfo bisectionDom domG =
     aux bisectionDom bisectionInfo domG
     where
     aux _ (BisectionNoSplit info) _ = [[evalFn info]]
@@ -757,7 +773,46 @@ evalFnOnBisection effDom evalFn bisectionInfo bisectionDom domG =
             ArithInOut.rrEffortIntMixedField sampleDom effDom
     sampleDom = domG
     
-
+bisectionInfoTrimAt :: 
+    (ArithInOut.RoundedReal dom,
+     RefOrd.IntervalLike dom)
+    => 
+    ArithInOut.RoundedRealEffortIndicator dom 
+    ->
+    (segInfo1 -> segInfo1)
+    -> 
+    (segInfo1 -> segInfo1)
+    -> 
+    BisectionInfo segInfo1 splitReason
+    -> 
+    (dom, dom)
+    -> 
+    dom
+    -> 
+    BisectionInfo segInfo1 splitReason
+bisectionInfoTrimAt effDom trimResult removeResult bisectionInfoG bisectionDom cutOffPoint =
+    aux bisectionDom bisectionInfoG
+    where
+    aux (dL, dR) bisectionInfo =
+        case (dR <=? cutOffPoint, cutOffPoint <=? dL) of
+            (Just True, _) -> bisectionInfo -- entirely to the left of the point
+            (_, Just True) -> bisectionInfoMapSegments removeResult bisectionInfo
+            _ ->
+                case bisectionInfo of
+                    BisectionNoSplit info -> BisectionNoSplit $ trimResult info
+                    BisectionSplit splitReason left maybeRight ->
+                        BisectionSplit splitReason newLeft maybeNewRight
+                        where
+                        newLeft = aux (dL, dM) left
+                        maybeNewRight =
+                            fmap (aux (dM, dR)) maybeRight
+                        dM = getMidPoint effAddDom effDivDomInt dL dR 
+    effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+    effDivDomInt = 
+        ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
+            ArithInOut.rrEffortIntMixedField sampleDom effDom
+    sampleDom = cutOffPoint
+            
 getMidPoint :: 
     (RefOrd.IntervalLike dom, 
      ArithInOut.RoundedAdd dom,
