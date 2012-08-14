@@ -184,6 +184,10 @@ getSampleFromInsideDomainBoxUsingEndpointsEff
             (domME, _) = RefOrd.getEndpointsOutEff effGetE domR
             (_, domR) = defaultDomSplit sampleF dom
 
+class (HasDomainBox f) => CanAdjustDomains f
+    where
+    adjustDomain :: f -> (Var f) -> (Domain f) -> f 
+
 class HasVarValue vbox var val 
     | vbox -> var val
     where
