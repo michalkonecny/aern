@@ -38,6 +38,7 @@ import Numeric.AERN.Basics.Consistency
 
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
+import Data.List (elemIndex)
 
 {-- Basic function-approximation specific ops --}
 
@@ -67,6 +68,24 @@ instance
         getSampleFromInsideDomainBoxUsingEndpointsDefaultEffort sampleDom sampleP dombox
         where
         sampleDom = ipolycfg_sample_cf cfg
+
+instance 
+    (Ord var, Show var, 
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf
+    ) 
+    => 
+    CanAdjustDomains (IntPoly var cf)
+    where
+    adjustDomain poly@(IntPoly cfg terms) var newDom =
+        IntPoly adjustedCfg terms
+        where
+        adjustedCfg =
+            adjustSizeLimitsToVarsAndDombox poly vars adjustedDombox cfg
+        vars = ipolycfg_vars cfg
+        adjustedDombox =
+            insertVar var newDom dombox
+        dombox = getDomainBox poly
 
 instance
     (Ord var, Show var,
