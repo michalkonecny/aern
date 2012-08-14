@@ -53,7 +53,7 @@ instance
      CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
-     Show (Domain f)
+     Show (Domain f), Show (Var f), Show (VarBox f (Domain f))
     )
     =>
     (CairoDrawableFn (Interval f))
@@ -106,7 +106,7 @@ cairoDrawFnFromEval ::
      CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
-     Show (Domain f)
+     Show (Domain f), Show (Var f), Show (VarBox f (Domain f))
     )
     =>
     CairoDrawEffortIndicatorFnFromEval f ->
@@ -218,6 +218,10 @@ cairoDrawFnFromEval
     dom =
         case lookupVar dombox plotVar of 
             Just dom -> dom
+            _ -> error $ 
+                "aern-realfn-plot-gtk error: plotVar not present in dombox:"
+                ++ "\n  plotVar = " ++ show plotVar 
+                ++ "\n  dombox = " ++ show dombox 
     dombox = getDomainBox fn
     coordSystem = cnvprmCoordSystem canvasParams
     segPerUnit = cnvprmSamplesPerUnit canvasParams
