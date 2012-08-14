@@ -206,8 +206,8 @@ combineLocateDipResults ::
   LocateDipResult dom eventId -> 
   LocateDipResult dom eventId
 combineLocateDipResults LDResNone res2 = res2
-combineLocateDipResults res1 LDResNone = res1
 combineLocateDipResults res1@(LDResSome LDResDipCertain _ _) _ = res1
+combineLocateDipResults res1 LDResNone = res1
 combineLocateDipResults (LDResSome certainty1 (dL,_) events1) (LDResSome certainty2 (_,dR) events2) =
     LDResSome certainty (dL, dR) (Set.union events1 events2)
     where

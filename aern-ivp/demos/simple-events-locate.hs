@@ -261,16 +261,16 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
         
     putStrLn "----------  result: -----------------------------"
     putStr $ showState ">>> " (tEnd, maybeEndState)
---    case (maybeExactResult, maybeEndState) of
---        (Just exactResult, Just resultOut) ->
---            putStrLn $ "error = " ++ show (getErrorState exactResult resultOut)
---        _ -> return ()
+    case (maybeExactResult, maybeEndState) of
+        (Just exactResult, Just resultOut) ->
+            putStrLn $ "error = " ++ show (getErrorState exactResult resultOut)
+        _ -> return ()
     putStrLn $ "event count = " ++ show eventCount
     putStrLn "-------------------------------------------------"
 
     case shouldPlotSteps of
         False -> return ()
-        True -> plotEnclosures effCf (2^^(-8) :: CF) "t" componentNames segmentsInfo
+        True -> plotEnclosures effCf (2^^(-12 :: Int) :: CF) "t" componentNames segmentsInfo
 
     return (maybeEndState, segmentsInfo)
     where

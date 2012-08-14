@@ -351,9 +351,9 @@ solveODEIVPByBisectingT
 --        unsafePrint
 --        (
 --            "solveODEIVPByBisectingT: splitSolve: "
---            ++ "shouldRoundInwards = " ++ show shouldRoundInwards
---            ++ "tStart = " ++ show tStart
---            ++ "tEnd = " ++ show tEnd
+--            ++ "\n  tStart = " ++ show tStart
+--            ++ "\n  tEnd = " ++ show tEnd
+--            ++ "\n  maybeSplitImprovement = " ++ show maybeSplitImprovement
 --        ) $
         results
         where
@@ -435,6 +435,12 @@ solveODEIVPByBisectingT
                 _ -> Nothing
 
         measureImprovementVec res1 res2 =
+--            unsafePrintReturn
+--            (
+--                "solveODEIVPByBisectingT: measureImprovementVec: "
+--                ++ "\n  imprecision1 = " ++ show imprecision1 
+--                ++ "\n  imprecision2 = " ++ show imprecision2 
+--            ) $
             let ?addInOutEffort = effAddDom in
             Just $ imprecision1 <-> imprecision2
             where

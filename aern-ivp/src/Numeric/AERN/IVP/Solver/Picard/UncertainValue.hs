@@ -152,7 +152,8 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
                     odeivp
         where
         measureImpr (_, parameterisedInitialValues) =
-            measureResultImprecision effEval effAddFn effAddDom parameterisedInitialValues
+            measureResultImprecision effAddDom $ 
+                map (getRange effEval) parameterisedInitialValues
         makeFnVec (_, parameterisedInitialValues) =
             makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames parameterisedInitialValues
     solveODEIVPNoSplitting odeivp =
@@ -165,24 +166,71 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
                         odeivp 
 
 
---measureResultImprecision :: 
---    [f] -> 
---    Domain f
 measureResultImprecision :: 
-    (RefOrd.IntervalLike (Domain f), RefOrd.IntervalLike f,
-     ArithInOut.RoundedAdd (Domain f), ArithInOut.RoundedSubtr f,
-     CanEvaluate f)
+    (RefOrd.IntervalLike dom, 
+     ArithInOut.RoundedSubtr dom, 
+     Show dom
+    )
+    =>
+    ArithInOut.AddEffortIndicator dom
+    -> 
+    [dom]
+    ->
+    dom
+measureResultImprecision effAddDom resVec =
+--    unsafePrint
+--    (
+--        "measureResultImprecision:"
+--        ++ "\n fnVec = " ++ show fnVec
+--        ++ "\n imprVec = " ++ show imprVec
+--        ++ "\n result = " ++ show result
+--    ) $
+    result
+    where
+    result =
+        snd $ RefOrd.getEndpointsOutWithDefaultEffort $
+        let ?addInOutEffort = effAddDom in
+        foldl1 (<+>) imprVec
+    imprVec = map perComp resVec
+    perComp res =
+        let ?addInOutEffort = effAddDom in
+        resR <-> resL
+        where
+        (resL, resR) = RefOrd.getEndpointsOutWithDefaultEffort res
+
+measureFunctionImprecision :: 
+    (RefOrd.IntervalLike (Domain f), 
+     RefOrd.IntervalLike f,
+     ArithInOut.RoundedAdd (Domain f), 
+     ArithInOut.RoundedSubtr f,
+     CanEvaluate f,
+     Show (Domain f), Show f
+    )
     =>
     EvaluationEffortIndicator f
-    -> ArithInOut.AddEffortIndicator f
-    -> ArithInOut.AddEffortIndicator (Domain f)
-    -> [f]
-    -> Domain f
-measureResultImprecision effEval effAddFn effAddDom fnVec =
-    snd $ RefOrd.getEndpointsOutWithDefaultEffort $
-    let ?addInOutEffort = effAddDom in
-    foldl1 (<+>) $ map perComp fnVec
+    -> 
+    ArithInOut.AddEffortIndicator f
+    -> 
+    ArithInOut.AddEffortIndicator (Domain f)
+    -> 
+    [f]
+    -> 
+    Domain f
+measureFunctionImprecision effEval effAddFn effAddDom fnVec =
+--    unsafePrint
+--    (
+--        "measureFunctionImprecision:"
+--        ++ "\n fnVec = " ++ show fnVec
+--        ++ "\n imprVec = " ++ show imprVec
+--        ++ "\n result = " ++ show result
+--    ) $
+    result
     where
+    result =
+        snd $ RefOrd.getEndpointsOutWithDefaultEffort $
+        let ?addInOutEffort = effAddDom in
+        foldl1 (<+>) imprVec
+    imprVec = map perComp fnVec
     perComp fn =
         let ?addInOutEffort = effAddFn in
         getRange effEval $ fnR <-> fnL
@@ -316,7 +364,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard
     untilStableButNotMoreThan maxIters (hInit : tInit) =
         aux 1 hInitImprecision tInit
         where
-        hInitImprecision = measureResultImprecision effEval effAddFn effAddDom hInit
+        hInitImprecision = measureFunctionImprecision effEval effAddFn effAddDom hInit
         aux iterNo prevImprecision (h : t)
             | iterNo >= maxIters = (h, hAtTEnd)
             | notMuchImprovement =
@@ -335,7 +383,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard
             notMuchImprovement = 
                 let ?addInOutEffort = effAddDom in
                 (prevImprecision <-> hImprecision <=? splitImprovementThreshold) == Just True  
-            hImprecision = measureResultImprecision effEval effAddFn effAddDom h
+            hImprecision = measureFunctionImprecision effEval effAddFn effAddDom h
             hAtTEnd = fst $ evalAtEndTimeVec effEval tVar tEnd h
     maybeIterations :: Maybe [[f]]
     maybeIterations =
