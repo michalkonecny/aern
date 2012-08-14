@@ -284,7 +284,6 @@ getDomainDelta1 effComp effEval effDeriv  _effAbsFn _effMinmaxFn effAddFnDom eff
     {- 
         The constraint for delta depends on delta.  We try to obtain
         a delta that satisfies the constraint by iterating the
-        formula in the constraint.
     -}
     getPeak (100 :: Int) $ iterate computeDelta initDelta
     where

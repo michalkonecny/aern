@@ -408,22 +408,6 @@ wrapFnVecAsBox effEval transformVec fnVec =
     dombox = getDomainBox sampleFn
     (sampleFn : _) = fnVec
 
-makeNonneg ::
-    (HasZero d, NumOrd.PartialComparison d, RefOrd.IntervalLike d) 
-    => 
-    d -> d
-makeNonneg r
-    | rangeContainsZero =
-        RefOrd.fromEndpointsOutWithDefaultEffort (z, rR)
-    | otherwise = r 
-    where
-    rangeContainsZero =
-        ((rL <=? z) == Just True)
-        &&
-        ((z <=? rR) == Just True)
-    z = zero r
-    (rL, rR) = RefOrd.getEndpointsOutWithDefaultEffort r
-    
 data EventInfo f
     = EventNextSure (HybSysMode, [f]) (Map.Map HybSysEventKind (EventInfo f)) -- at least one
     | EventNextMaybe (HybSysMode, [f]) (Map.Map HybSysEventKind (EventInfo f)) -- possibly none

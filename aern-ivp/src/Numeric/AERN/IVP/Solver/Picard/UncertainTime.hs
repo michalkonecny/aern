@@ -81,7 +81,8 @@ solveODEIVPUncertainValueUncertainTime_UsingPicard_Bisect ::
      dom ~ Domain f,
      dom ~ Imprecision dom, 
      solvingInfo1 ~ (dom, Maybe [dom]),
-     solvingInfo2 ~ BisectionInfo (Maybe [f], solvingInfo1) ((Maybe [f], solvingInfo1), Maybe dom),
+     segInfo ~ (Maybe ([f],[f]), solvingInfo1),
+     solvingInfo2 ~ BisectionInfo segInfo (segInfo, Maybe dom),
      solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe solvingInfo2))
     )
     =>
@@ -141,8 +142,9 @@ solveODEIVPUncertainValueUncertainTime_UsingPicard_Bisect
 
     solverSplittingAtT0End odeivp =
         solveODEIVPByBisectingAtT0End
-            solverVT (makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNamesWithT0) 
-                solverVt 
+            solverVT 
+                (makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNamesWithT0) 
+                solverVt
                     odeivp
         where
         componentNamesWithT0 =
