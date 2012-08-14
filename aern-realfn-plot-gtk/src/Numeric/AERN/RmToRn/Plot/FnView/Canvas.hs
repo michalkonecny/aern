@@ -133,7 +133,7 @@ drawFunctions ::
     FnViewState f ->
     Double -> Double ->
     [Bool] ->
-    [f] ->
+    [(f, Var f)] ->
     [FnPlotStyle] ->
     Render ()
 drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fns fnsStyles =
@@ -159,10 +159,10 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fn
         (fn, col) : (collectFns restActive restFns restStyles)
     
     drawFn ::
-        (f, FnPlotStyle) ->
+        ((f, Var f), FnPlotStyle) ->
         Render ()
-    drawFn (fn, style) =
-        cairoDrawFn effDraw canvasParams toScreenCoordsFromUnit style fn
+    drawFn ((fn, plotVar), style) =
+        cairoDrawFn effDraw canvasParams toScreenCoordsFromUnit style plotVar fn
         
     drawAxes 
         | cnvprmShowAxes canvasParams =

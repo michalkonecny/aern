@@ -218,14 +218,15 @@ updateValueDisplay effFromDouble effEval widgets dynWidgetsRef state (fndata, _)
             map (map $ show . getDimValue) $ dataFns fndata
             where
 --            getDimValueTexts :: (FA.ERFnApprox box varid domra ranra fa) => fa -> [ra]
-            getDimValue fn =
+            getDimValue (fn, plotVar) =
                 evalAtPointOutEff effEval evalPt fn
                 where
                 evalPt =
-                    unaryVarBox var $
-                        ArithInOut.convertOutEff effFromDouble evalPointD
-                [(var, _)] = toAscList $ getDomainBox fn
+                    insertVar plotVar evalPointDom dombox 
+                evalPointDom =
+                    ArithInOut.convertOutEff effFromDouble evalPointD
                 sampleDom = getSampleDomValue fn
+                dombox = getDomainBox fn
 
 updateValueDisplayTV effFromDouble effEval widgets dynWidgetsRef fndataTVs stateTV =
     do

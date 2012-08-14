@@ -113,12 +113,13 @@ cairoDrawFnFromEval ::
     CanvasParams (Domain f) ->
     ((Domain f, Domain f) -> (Double, Double)) ->
     FnPlotStyle ->
+    Var f ->
     f ->
     Render ()
 cairoDrawFnFromEval 
         eff@(effEval, (effReal, effGetE, effConsistency))
         canvasParams toScreenCoords 
-        style fn 
+        style plotVar fn 
     = 
 --    unsafePrint (
 --        "cairoDrawFnFromEval: starting"
@@ -172,7 +173,7 @@ cairoDrawFnFromEval
             enclosureValues =
                 map evalPt $ map mkPt partition
             mkPt d =
-                mapVarBox (const d) dombox
+                insertVar plotVar d dombox
             evalPt pt =
                 evalAtPointOutEff effEval pt fn
             partition =
@@ -215,7 +216,8 @@ cairoDrawFnFromEval
         where
         (_,_,vdomLO, vdomHI) = getVisibleDomExtents coordSystem
     dom =
-        case toAscList dombox of [(_,dom)] -> dom
+        case lookupVar dombox plotVar of 
+            Just dom -> dom
     dombox = getDomainBox fn
     coordSystem = cnvprmCoordSystem canvasParams
     segPerUnit = cnvprmSamplesPerUnit canvasParams

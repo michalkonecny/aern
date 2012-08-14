@@ -58,13 +58,20 @@ main =
 --    let (fns, fnmeta) = (fnsMinmaxInOut, fnmetaMinmaxInOut)
     let (fns, fnmeta) = (fnsMinmaxOut, fnmetaMinmaxOut)
 --    let (fns, fnmeta) = (fnsTest, fnmetaTest)
-    fnDataTV <- atomically $ newTVar $ FV.FnData fns
+    fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
     fnMetaTV <- atomically $ newTVar $ fnmeta
 --    putStrLn "plot main: calling FV.new"
     FV.new samplePoly effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
 --    putStrLn "plot main: FV.new completed"
 --    Concurrent.forkIO $ signalFn fnMetaTV
     Gtk.mainGUI
+    
+addPlotVar :: [[Poly]] -> [[(Poly, String)]]
+addPlotVar fns =
+    map (map addV) fns
+    where
+    addV fn = (fn, plotVar)
+    (plotVar : _) = vars    
     
 --signalFn fnMetaTV =
 --    do
