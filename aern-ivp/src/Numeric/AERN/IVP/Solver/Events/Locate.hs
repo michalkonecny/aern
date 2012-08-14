@@ -82,7 +82,8 @@ _ = unsafePrint
 locateFirstDipAmongMultipleFns :: 
     (RefOrd.IntervalLike (dom),
      ArithInOut.RoundedReal (dom),
-     Ord eventId) 
+     Ord eventId, 
+     Show dom, Show eventId)
     =>
     dom  {-^ minimum step size -} ->
     Map.Map eventId
@@ -94,6 +95,14 @@ locateFirstDipAmongMultipleFns ::
     (dom, dom) {-^ domain to search over -} -> 
     LocateDipResult dom eventId
 locateFirstDipAmongMultipleFns stepLimit eventDetectionInfoMap (tStart, tEnd) =
+--    unsafePrint
+--    (
+--        "locateFirstDipAmongMultipleFns:"
+--        ++ "\n stepLimit = " ++ show stepLimit
+--        ++ "\n tStart = " ++ show tStart
+--        ++ "\n tEnd = " ++ show tEnd
+--        ++ "\n result = " ++ show result
+--    ) $
     result 
     where
     result = locateBySplitting (tStart, tEnd)
@@ -101,6 +110,12 @@ locateFirstDipAmongMultipleFns stepLimit eventDetectionInfoMap (tStart, tEnd) =
         | ((stepLimit <? size) /= Just True) = -- hit the minimum split size 
             resD -- no more splitting
         | otherwise =
+--            unsafePrint
+--            (
+--                "locateFirstDipAmongMultipleFns: locateBySplitting:"
+--                ++ "\n d = " ++ show d
+--                ++ "; resD = " ++ show resD
+--            ) $
             case resD of
                 LDResNone -> resD
                 LDResSome LDResDipPoorEnclosure _ _ -> resD 

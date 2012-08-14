@@ -319,7 +319,7 @@ refines a1 a2 =
 
 solveVTPrintSteps :: 
     (solvingInfo1 ~ (CF, Maybe [CF]),
-     otherInfo ~ Maybe [Poly],
+     otherInfo ~ Maybe ([Poly],[Poly]),
      solvingInfo2 ~ BisectionInfo (otherInfo, solvingInfo1) ((otherInfo, solvingInfo1), Maybe CF),
      solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe solvingInfo2))
     )
@@ -454,7 +454,7 @@ solveVTPrintSteps shouldShowSteps ivp (maxdegParam, depthParam, t0MaxDegParam, t
 
 solveIVPWithUncertainTime ::
     (solvingInfo1 ~ (CF, Maybe [CF]),
-     otherInfo ~ Maybe [Poly],
+     otherInfo ~ Maybe ([Poly],[Poly]),
      solvingInfo2 ~ BisectionInfo (otherInfo, solvingInfo1) ((otherInfo, solvingInfo1), Maybe CF),
      solvingInfo3 ~ (solvingInfo1, (solvingInfo1, Maybe solvingInfo2))
     )

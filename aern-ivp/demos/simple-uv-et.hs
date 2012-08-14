@@ -473,7 +473,7 @@ refines :: CF -> CF -> Bool
 refines a1 a2 = (a2 CF.|<=? a1) == Just True
    
 solveVtPrintSteps ::
-    (solvingInfo ~ (Maybe [Poly], (CF, Maybe [CF])))
+    (solvingInfo ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])))
     => 
     Bool
     ->
@@ -606,7 +606,7 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
 
 
 solveIVPWithUncertainValue ::
-    (solvingInfo ~ (Maybe [Poly], (CF, Maybe [CF])))
+    (solvingInfo ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])))
     =>
     Bool ->
     SizeLimits Poly -> 

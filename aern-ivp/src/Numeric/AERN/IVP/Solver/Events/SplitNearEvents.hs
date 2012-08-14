@@ -55,6 +55,7 @@ import qualified Data.Map as Map
 --import qualified Data.Set as Set
 import qualified Data.List as List
 import Data.Maybe (catMaybes)
+import Control.Monad (liftM2)
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -86,9 +87,9 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
-     solvingInfoODESegment ~ (Maybe [f], (Domain f, Maybe [Domain f])),
+     solvingInfoODESegment ~ (Maybe ([f],[f]), (Domain f, Maybe [Domain f])),
      solvingInfoODE ~ BisectionInfo solvingInfoODESegment (solvingInfoODESegment, Maybe (Domain f)),
-     solvingInfoEvents ~ (Domain f, Maybe (HybridSystemUncertainState (Domain f)), [(HybSysMode, EventInfo f)]),
+     solvingInfoEvents ~ (Domain f, Maybe (HybridSystemUncertainState (Domain f)), EventInfo f),
      Show f, Show (Domain f), Show (Var f), Eq (Var f))
     =>
     SizeLimits f {-^ size limits for all function -} ->
@@ -120,7 +121,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
     ,
         [(
             Domain f
-            -- start and end time of this segment (including the event resolution sub-segment)  
+            -- end time of this segment (including the event resolution sub-segment)  
          ,
             Maybe (HybridSystemUncertainState (Domain f))
          ,
@@ -162,7 +163,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
         shouldShrinkWrap = False
 
     solveHybridNoSplitting hybivp =
-        (maybeFinalStateWithInvariants, (tEnd, maybeFinalStateWithInvariants, modeEventInfoList))
+        (maybeFinalStateWithInvariants, (tEnd, maybeFinalStateWithInvariants, eventInfo))
         where
         tEnd = hybivp_tEnd hybivp
         maybeFinalStateWithInvariants
@@ -177,6 +178,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
                     Just invariant =
                         Map.lookup mode modeInvariants
         modeInvariants = hybsys_modeInvariants $ hybivp_system hybivp
+        [(_, eventInfo)] = modeEventInfoList
         (maybeFinalState, modeEventInfoList) = 
             solveHybridIVP_UsingPicardAndEventTree
                 sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
@@ -193,6 +195,7 @@ solveHybridIVP_SplitNearEvents ::
      HasConstFns f,
      RefOrd.PartialComparison f,
      RoundedIntegration f,
+     RefOrd.IntervalLike f,
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedReal (Domain f), 
@@ -200,7 +203,7 @@ solveHybridIVP_SplitNearEvents ::
      HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
      Show f, Show (Domain f), Show (Var f),
-     solvingInfoODESegment ~ (Maybe [f], solvingInfoODESegmentOther),
+     solvingInfoODESegment ~ (Maybe ([f],[f]), solvingInfoODESegmentOther),
      solvingInfoODE ~ BisectionInfo solvingInfoODESegment (solvingInfoODESegment, prec)
     )
     =>
@@ -276,8 +279,17 @@ solveHybridIVP_SplitNearEvents
         sampleD = tEventR
         
         rest =
-            undefined
-            -- TODO: if tEventR < tEnd, construct new hybivp, mainly its initial uncertain state
+            case (stateAtTEventR, tEventR <? tEnd) of
+                -- solving up to tEventR has not failed and there is more to solve:
+                (Just state, Just True) -> splitSolve (hybivpRest state)
+                _ -> []
+            where
+            hybivpRest midState = 
+                hybivp
+                {
+                    hybivp_tStart = tEventR,
+                    hybivp_initialStateEnclosure = midState
+                }
         stateAtTEventR =
             case states of
                 [] -> Nothing
@@ -287,6 +299,7 @@ solveHybridIVP_SplitNearEvents
             getState (_, state, _) = state
         simulationInfoModeMap = Map.mapWithKey processEvents firstDipModeMap
         processEvents mode (noEventsSolution, locateDipResult) =
+            -- TODO: cut off noEventsSolution at tEventR
             case locateDipResult of 
                 LDResNone ->
                     (noEventsSolution, noEventsStateAt tEventR, Nothing)
@@ -313,10 +326,13 @@ solveHybridIVP_SplitNearEvents
                 valuesVariants = catMaybes valuesMaybeVariants
                 [valuesMaybeVariants] = 
                     evalFnOnBisection effDom evalFnsAtTEventsR noEventsSolution (tStart, tEnd) t
-                evalFnsAtTEventsR (Just fns, _) = Just $ map evalFnAtTEventsR fns
+                evalFnsAtTEventsR (Just (fns,_), _) = Just $ map evalFnAtTEventsR fns
                 evalFnsAtTEventsR _ = Nothing
                 evalFnAtTEventsR fn = evalAtPointOutEff effEval boxD fn
-                boxD = fromList [(tVar, t)]
+                    where
+                    boxD = insertVar tVar t boxFn
+                    boxFn = getDomainBox fn
+                
             solveEvents tEventL =
                 case noEventsStateAt tEventL of
                     Nothing -> (Nothing, Nothing)
@@ -388,31 +404,33 @@ solveHybridIVP_SplitNearEvents
                     otherConditionOnDom =
                         checkConditionOnBisectedFunction id otherCond
                     dipFnNegativeOnDom =
-                        checkConditionOnBisectedFunction makeDipFnL (\[x] -> x <? (zero x))
+                        checkConditionOnBisectedFunction makeDipFnAsList (\[x] -> x <? (zero x))
                     dipFnPositiveOnDom =
-                        checkConditionOnBisectedFunction makeDipFnL (\[x] -> (zero x) <? x)
-                    dipFnEnclosesZeroOnDom =
-                        checkConditionOnBisectedFunction makeDipFnL enclosesZero
+                        checkConditionOnBisectedFunction makeDipFnAsList (\[x] -> (zero x) <? x)
+                    dipFnEnclosesZeroOnDom dom =
+                        liftM2 (&&)
+                            (checkConditionOnBisectedFunction makeDipFnLEAsList (\[x] -> x <=? (zero x)) dom)
+                            (checkConditionOnBisectedFunction makeDipFnREAsList (\[x] -> (zero x) <=? x) dom)
+                    makeDipFnAsList :: [f] -> [f]
+                    makeDipFnAsList fns = [makeDipFn fns]
+                    makeDipFnLEAsList fns = [dipFnLE]
                         where
-                        enclosesZero [x] =
-                            case (xL <=? z, z <=? xR) of
-                                (Just True, Just True) -> Just True
-                                _ -> Nothing
-                            where
-                            (xL, xR) = RefOrd.getEndpointsOutWithDefaultEffort x
-                            z = zero x
-                    makeDipFnL :: [f] -> [f]
-                    makeDipFnL fns = [makeDipFn fns]
+                        (dipFnLE, _) = RefOrd.getEndpointsOutWithDefaultEffort $ makeDipFn fns
+                    makeDipFnREAsList fns = [dipFnRE]
+                        where
+                        (_, dipFnRE) = RefOrd.getEndpointsOutWithDefaultEffort $ makeDipFn fns
                     checkConditionOnBisectedFunction functionCalculation valueCondition dom =
                         checkConditionOnBisection effDom condition bisectionInfo (tStart, tEnd) dom
                         where
                         condition (Nothing, _) = Nothing
-                        condition (Just fns, _) = 
+                        condition (Just (fns,_), _) = 
                             valueCondition $
                                 map eval $ 
                                     functionCalculation fns
                         eval fn = evalAtPointOutEff effEval boxD fn
-                        boxD = fromList [(tVar, dom)] 
+                            where
+                            boxD = insertVar tVar dom boxFn
+                            boxFn = getDomainBox fn
 --        noEventsSolutionModeMap ::
 --            Map.Map HybSysMode (BisectionInfo solvingInfoODESegment (solvingInfoODESegment, prec))
         noEventsSolutionModeMap =

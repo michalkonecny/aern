@@ -79,7 +79,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect ::
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
-     solvingInfo ~ (Maybe [f], (Domain f, Maybe [Domain f])), 
+     solvingInfo ~ (Maybe ([f],[f]), (Domain f, Maybe [Domain f])), 
      Show f, Show (Domain f), Show (Var f))
     =>
     Bool {-^ should wrap intermediate values ? -}
@@ -126,10 +126,12 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
         error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
     | otherwise =
         case solve odeivpG of
-            (maybeResFnVec, bisectionInfo) ->
-                (fmap (map (getRange effEval)) maybeResFnVec, bisectionInfo)
+            (Nothing, bisectionInfo) ->
+                (Nothing, bisectionInfo)
+            (Just (_, parameterisedInitialValues), bisectionInfo) ->
+                (Just $ map (getRange effEval) parameterisedInitialValues, bisectionInfo)
     where
-    tVar = odeivp_tVar odeivpG
+--    tVar = odeivp_tVar odeivpG
     tStart, t0End :: Domain f
     tStart = odeivp_tStart odeivpG
     t0End = odeivp_t0End odeivpG
@@ -144,11 +146,15 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
     solve odeivp =
         solveODEIVPByBisectingT
             solveODEIVPNoSplitting 
-                (measureResultImprecision effEval effAddFn effAddDom) 
-                (makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames)
+                (measureImpr) 
+                (makeFnVec)
                 effDom splitImprovementThreshold minStepSize
                     odeivp
-
+        where
+        measureImpr (_, parameterisedInitialValues) =
+            measureResultImprecision effEval effAddFn effAddDom parameterisedInitialValues
+        makeFnVec (_, parameterisedInitialValues) =
+            makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames parameterisedInitialValues
     solveODEIVPNoSplitting odeivp =
         solveODEIVPUncertainValueExactTime_UsingPicard 
             shouldWrap shouldShrinkWrap
@@ -244,7 +250,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard ::
     Domain f {-^ step size @s@ -} -> 
     ODEIVP f
     ->
-    (Maybe [f], (Domain f, Maybe [Domain f]))
+    (Maybe ([f],[f]), (Domain f, Maybe [Domain f]))
 solveODEIVPUncertainValueExactTime_UsingPicard 
         shouldWrap shouldShrinkWrap
             sizeLimits effCompose effEval effInteg effDeriv effInclFn 
@@ -257,7 +263,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard
         Just (result, resultAtTEnd) ->
             let valuesAtEnd = resultAtTEnd in
             let paramValuesAtTEnd = evalAtTEnd valuesAtEnd $ result in
-            (Just paramValuesAtTEnd, (tEnd, Just valuesAtEnd))
+            (Just (result, paramValuesAtTEnd), (tEnd, Just valuesAtEnd))
         Nothing -> (Nothing, (tEnd, Nothing))
     where
     tVar = odeivp_tVar odeivp
@@ -311,7 +317,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard
         aux 1 hInitImprecision tInit
         where
         hInitImprecision = measureResultImprecision effEval effAddFn effAddDom hInit
-        aux iterNo prevImprecision (h : t) 
+        aux iterNo prevImprecision (h : t)
             | iterNo >= maxIters = (h, hAtTEnd)
             | notMuchImprovement =
 --                 unsafePrint 
