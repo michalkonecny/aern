@@ -71,7 +71,7 @@ new ::
      RefOrd.IntervalLike (Domain f),
      CanEvaluate f,
      RefOrd.PartialComparison (Domain f),
-     Show f, Show (Domain f))
+     Show f, Show (Var f), Show (Domain f))
     =>
     f {-^ sample value -} ->
     (CairoDrawFnEffortIndicator f) ->
@@ -124,7 +124,7 @@ setHandlers ::
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
      CanEvaluate f, 
-     Show f, Show (Domain f))
+     Show f, Show (Var f), Show (Domain f))
     =>
     f {-^ sample value -} ->
     (CairoDrawFnEffortIndicator f) ->

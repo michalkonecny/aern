@@ -43,7 +43,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 data FnData f =
     FnData
     {
-        dataFns :: [[f]] -- ^ groups of functions to plot, all must be unary
+        dataFns :: [[(f, Var f)]] -- ^ groups of functions to plot, all must be unary
     }
 
 data FnMetaData f =

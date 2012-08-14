@@ -59,12 +59,18 @@ main =
     Gtk.unsafeInitGUIForThreadedRTS
     let (fns, fnmeta) = getFns ivpName maxdeg iters
 --    let (fns, fnmeta) = getFnsI ivpName maxdeg iters
-    fnDataTV <- atomically $ newTVar $ FV.FnData fns
+    fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
     fnMetaTV <- atomically $ newTVar $ fnmeta
     FV.new samplePoly effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
 --    FV.new samplePolyInterval effDrawFnI effCF effEvalI (fnDataTV, fnMetaTV) Nothing
 --    Concurrent.forkIO $ signalFn fnMetaTV
     Gtk.mainGUI
+    
+addPlotVar :: [[Poly]] -> [[(Poly, String)]]
+addPlotVar fns =
+    map (map addV) fns
+    where
+    addV fn = (fn, tVar)
     
 getFns "exp-uv" maxdeg iters = 
     (fnsExp_uv maxdeg iters, fnmetaExp iters)
@@ -390,7 +396,8 @@ dombox1P1Only = Map.fromList $ zip paramVars1 [constructCF (-1) 1] -- initValues
 dombox1P2 = Map.fromList $ zip ("t" : paramVars2) doms1P
 dombox1P2Only = Map.fromList $ zip paramVars2 [constructCF 0 1,0] -- initValuesSpringMass_uv
 
-vars = ["t"]
+tVar = "t"
+vars = [tVar]
 paramVars1 = ["xi"]
 paramVars2 = ["xi", "x'i"]
 

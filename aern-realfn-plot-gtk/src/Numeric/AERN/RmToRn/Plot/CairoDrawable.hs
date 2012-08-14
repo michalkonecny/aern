@@ -30,13 +30,17 @@ class
     cairoDrawFnDefaultEffort ::
         f -> (CairoDrawFnEffortIndicator f)
     {-|
-        Plot an element on the active cairo canvas.
+        Plot the graph of a uni-variate function on the active cairo canvas.
+        A multi-variate function is transformed into an univariate function
+        by ranging all other variables over their entire domains and taking
+        the union of all the uni-variate functions thus obtained.
      -}
     cairoDrawFn ::
         CairoDrawFnEffortIndicator f -> 
         CanvasParams (Domain f) ->
         ((Domain f, Domain f) -> (Double, Double)) {-^ conversion from [0,1]^2 (origin bottom left) to screen coords -} ->
         FnPlotStyle ->
+        Var f ->
         f -> 
         Render ()
 
