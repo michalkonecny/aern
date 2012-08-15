@@ -625,7 +625,7 @@ plotEnclosures effCF _plotMinSegSize tVar componentNames segmentsInfo =
         take (length list) activityCycle 
         where
         activityCycle = cycle $ map snd $ zip componentNames $ 
-            True : (repeat True) 
+            True : (repeat True)
 --            True : (repeat False) 
 --            True : False : False : True : (repeat False) 
 --            True : False : False : False : True : (repeat False) 
