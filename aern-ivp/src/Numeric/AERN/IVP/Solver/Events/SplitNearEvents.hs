@@ -148,7 +148,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
         solveHybridIVP_SplitNearEvents
             solveHybridNoSplitting
             solveODEWithSplitting
-                effEval effDom 
+                effEval effPEval effDom 
                     minStepSize maxStepSize
                         hybivp
 
@@ -191,6 +191,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
 solveHybridIVP_SplitNearEvents ::
     (CanAddVariables f,
      CanEvaluate f,
+     CanPartiallyEvaluate f,
      CanCompose f,
      CanAdjustDomains f,
      HasProjections f,
@@ -216,6 +217,8 @@ solveHybridIVP_SplitNearEvents ::
         -- ^ solver to use on large segments before event localisation  
     ->
     EvaluationEffortIndicator f
+    -> 
+    PartialEvaluationEffortIndicator f
     -> 
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
     ->
@@ -248,7 +251,7 @@ solveHybridIVP_SplitNearEvents ::
 solveHybridIVP_SplitNearEvents
         solveHybridNoSplitting
         solveODEWithSplitting
-            effEval effDom 
+            effEval effPEval effDom 
                 minStepSize maxStepSize
                     (hybivpG :: HybridIVP f)
     =
@@ -428,16 +431,30 @@ solveHybridIVP_SplitNearEvents
                         checkConditionOnBisectedFunction makeDipFnAsList (\[x] -> (zero x) <? x)
                     dipFnEnclosesZeroOnDom dom =
                         liftM2 (&&)
-                            (checkConditionOnBisectedFunction makeDipFnLEAsList (\[x] -> x <=? (zero x)) dom)
-                            (checkConditionOnBisectedFunction makeDipFnREAsList (\[x] -> (zero x) <=? x) dom)
+                            (checkConditionOnBisectedFunction makeDipFnLEAsList leqZero dom)
+                            (checkConditionOnBisectedFunction makeDipFnREAsList geqZero dom)
+                        where
+                        leqZero [x]=
+                            x <=? (zero x)
+                        geqZero [x]=
+                            (zero x) <=? x
                     makeDipFnAsList :: [f] -> [f]
                     makeDipFnAsList fns = [makeDipFn fns]
                     makeDipFnLEAsList fns = [dipFnLE]
                         where
-                        (dipFnLE, _) = RefOrd.getEndpointsOutWithDefaultEffort $ makeDipFn fns
+                        (dipFnLE, _) = 
+                            RefOrd.getEndpointsOutWithDefaultEffort $ 
+                                eliminateAllVarsButT $ makeDipFn fns
                     makeDipFnREAsList fns = [dipFnRE]
                         where
-                        (_, dipFnRE) = RefOrd.getEndpointsOutWithDefaultEffort $ makeDipFn fns
+                        (_, dipFnRE) = 
+                            RefOrd.getEndpointsOutWithDefaultEffort $ 
+                                eliminateAllVarsButT $ makeDipFn fns
+                    eliminateAllVarsButT fn =
+                        pEvalAtPointOutEff effPEval domboxNoT fn
+                        where
+                        domboxNoT = removeVar tVar dombox
+                        dombox = getDomainBox fn
                     checkConditionOnBisectedFunction functionCalculation valueCondition dom =
                         bisectionInfoCheckCondition effDom condition bisectionInfo (tStart, tEnd) dom
                         where

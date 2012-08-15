@@ -106,22 +106,24 @@ locateFirstDipAmongMultipleFns stepLimit eventDetectionInfoMap (tStart, tEnd) =
     result 
     where
     result = locateBySplitting (tStart, tEnd)
-    locateBySplitting d@(dLE, dRE)
-        | ((stepLimit <? size) /= Just True) = -- hit the minimum split size 
-            resD -- no more splitting
-        | otherwise =
---            unsafePrint
---            (
---                "locateFirstDipAmongMultipleFns: locateBySplitting:"
---                ++ "\n d = " ++ show d
---                ++ "; resD = " ++ show resD
---            ) $
-            case resD of
-                LDResNone -> resD
-                LDResSome LDResDipPoorEnclosure _ _ -> resD 
-                    -- splitting will not give more information because the enclosure is too poor
-                _ -> combineLocateDipResults resL resR
+    locateBySplitting d@(dLE, dRE) =
+--        unsafePrint
+--        (
+--            "locateFirstDipAmongMultipleFns: locateBySplitting:"
+--            ++ "\n d = " ++ show d
+--            ++ "; resD = " ++ show resD
+--        ) $
+        result2
         where
+        result2
+            | ((stepLimit <? size) /= Just True) = -- hit the minimum split size 
+                resD -- no more splitting
+            | otherwise =
+                case resD of
+                    LDResNone -> resD
+                    LDResSome LDResDipPoorEnclosure _ _ -> resD 
+                        -- splitting will not give more information because the enclosure is too poor
+                    _ -> combineLocateDipResults resL resR
         resD
             | Set.null possibleEventsSet = LDResNone
             | otherwise = 
