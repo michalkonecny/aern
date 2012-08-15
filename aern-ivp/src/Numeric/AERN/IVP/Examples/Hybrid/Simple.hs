@@ -80,20 +80,20 @@ ivpByName "bouncingBallEnergy-zeno" = ivpBouncingBallEnergy_AfterZeno 0
 ivpByName "bouncingBallEnergy-zenoPlus1Over2" = ivpBouncingBallEnergy_AfterZeno 0.5 
 ivpByName "bouncingBallEnergy-zenoPlus2" = ivpBouncingBallEnergy_AfterZeno 2
 ivpByName "bouncingBallVibr-graze" = ivpBouncingBallVibr_AtTime 2 
-    -- TODO: fix missing sections in plot
+    -- TODO: define "bouncingBallVibrEnergy-graze" 
 ivpByName "bouncingBallDrop" = ivpBouncingBallDrop_AtTime 3 2 0 5
 ivpByName "bouncingBallEnergyDrop" = ivpBouncingBallEnergyDrop_AtTime 3 2 0 5
 ivpByName "twoBouncingBallsDrop" = ivpTwoBouncingBallsDrop_AtTime 30 20 25 10 45
 ivpByName "twoBouncingBallsEnergyDrop" = ivpTwoBouncingBallsEnergyDrop_AtTime 30 20 25 10 45
     -- TODO: fix breakage at time 20
---ivpByName "bouncingSpring-4" = ivpBouncingSpring_AtTime 4 
---ivpByName "twoTanks-zenoMinus1Over16" = ivpTwoTanks_AfterZeno (-1/16) 
---ivpByName "twoTanks-zeno" = ivpTwoTanks_AfterZeno 0 
---ivpByName "twoTanks-zenoPlus1Over2" = ivpTwoTanks_AfterZeno 0.5
---ivpByName "twoTanks-zenoPlus2" = ivpTwoTanks_AfterZeno 2
---ivpByName "twoTanksSum-zenoMinus1Over16" = ivpTwoTanksSum_AfterZeno (-1/16) 
---ivpByName "twoTanksSum-zeno" = ivpTwoTanksSum_AfterZeno (0) 
---ivpByName "twoTanksSum-zenoPlus1Over2" = ivpTwoTanksSum_AfterZeno 0.5 
+ivpByName "bouncingSpring-4" = ivpBouncingSpring_AtTime 4 
+ivpByName "twoTanks-zenoMinus1Over16" = ivpTwoTanks_AfterZeno (-1/16) 
+ivpByName "twoTanks-zeno" = ivpTwoTanks_AfterZeno 0 
+ivpByName "twoTanks-zenoPlus1Over2" = ivpTwoTanks_AfterZeno 0.5
+ivpByName "twoTanks-zenoPlus2" = ivpTwoTanks_AfterZeno 2
+ivpByName "twoTanksSum-zenoMinus1Over16" = ivpTwoTanksSum_AfterZeno (-1/16) 
+ivpByName "twoTanksSum-zeno" = ivpTwoTanksSum_AfterZeno (0) 
+ivpByName "twoTanksSum-zenoPlus1Over2" = ivpTwoTanksSum_AfterZeno 0.5 
 ivpByName name = error $ "unknown IVP " ++ show name
 
 
@@ -484,10 +484,9 @@ ivpBouncingBall_AtTime tEndDbl [xEndDbl, xDerEndDbl] (sampleFn :: f) =
         "if x = 0 && v <= 0 then post(v) = -0.5*pre(v) else x'' = -10" 
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
-    initValues@[initX, initX'] = [z <+>| (5::Int),z] :: [Domain f]
-    z = toDom 0
---    initValues@[initX, initX'] = [0,0] :: [Domain f]
+    initValues@[initX, initX'] = [toDom 5, toDom 0] :: [Domain f]
     tStart = hybivp_tStart ivp
+    z = toDom 0
     tEnd = toDom tEndDbl
     toDom = dblToDom sampleDom
     sampleDom = getSampleDomValue sampleFn
@@ -1307,234 +1306,269 @@ ivpTwoBouncingBallsEnergyDrop_AtTime
     toDom = dblToDom sampleDom
     sampleDom = getSampleDomValue sampleFn
 
--- TODO: convert the remaining examples
+ivpBouncingSpring_AtTime :: 
+    (Var f ~ String,
+     HasConstFns f,
+     ArithInOut.RoundedMixedAdd f Double,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     Show (Domain f)
+    )
+    => 
+    Double -> 
+    f -> 
+    HybridIVP f
+ivpBouncingSpring_AtTime tEndDbl (sampleFn :: f) =
+    ivp
+    where
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x","v"],
+            hybsys_modeFields = Map.fromList [(modeMove, odeMove)],
+            hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
+            hybsys_eventModeSwitchesAndResetFunctions =
+                Map.fromList [(eventBounce, (modeMove, resetBounce))],
+            hybsys_eventSpecification = eventSpecMap
+        }
+    modeMove = HybSysMode "move"
+    odeMove :: [f] -> [f]
+    odeMove [x,v] = [v, (-1 :: Double) |<*> x]
+    invariantMove [x,v] = [(toDom 1) <+> (makeNonneg (x <-> (toDom 1))), v]
+    eventBounce = HybSysEventKind "bounce"
+    pruneBounce [_x,v] = [toDom 1, neg $ makeNonneg $ neg v]
+    resetBounce :: [f] -> [f]
+    resetBounce [x,v] = 
+        [x, (-0.5 :: Double) |<*> v]
+--        [newConstFnFromSample v 0, (0 :: Double) |<*> v]
+    eventSpecMap _mode =
+        Map.singleton eventBounce $
+            ([True, True], xDip, vNegative, pruneBounce)
+        where
+        xDip [x,_v] = x <+>| (-1 :: Double)
+        vNegative [_x,v] = (v <? z)
 
---ivpBouncingSpring_AtTime :: Domain f -> HybridIVP f
---ivpBouncingSpring_AtTime tEnd  =
---    ivp
---    where
---    system =
---        HybridSystem
---        {
---            hybsys_componentNames = ["x","v"],
---            hybsys_modeFields = Map.fromList [(modeMove, odeMove)],
---            hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
---            hybsys_eventModeSwitchesAndResetFunctions =
---                Map.fromList [(eventBounce, (modeMove, resetBounce))],
---            hybsys_eventSpecification = eventSpecMap
---        }
---    modeMove = HybSysMode "move"
---    odeMove :: [f] -> [f]
---    odeMove [x,v] = [v, (-1 :: Int) |<*> x]
---    invariantMove [x,v] = [1 + (makeNonneg (x-1)), v]
---    eventBounce = HybSysEventKind "bounce"
---    pruneBounce [_x,v] = [1, neg $ makeNonneg $ neg v]
---    resetBounce :: [f] -> [f]
---    resetBounce [x,v] = 
---        [x, (-0.5 :: Double) |<*> v]
-----        [newConstFnFromSample v 0, (0 :: Double) |<*> v]
---    eventSpecMap _mode =
---        Map.singleton eventBounce $
---            ([True, True], xDip, vNegative, pruneBounce)
---        where
---        xDip [x,_v] = x <+>| (-1 :: Int)
---        vNegative [_x,v] = (v <? 0)
---
---    ivp :: HybridIVP f
---    ivp =
---        HybridIVP
---        {
---            hybivp_description = description,
---            hybivp_system = system,
---            hybivp_tVar = "t",
---            hybivp_tStart = 0,
---            hybivp_tEnd = tEnd,
---            hybivp_initialStateEnclosure = 
---                Map.singleton modeMove initValues,
---            hybivp_maybeExactStateAtTEnd = Nothing
---        }
---    description =
---        "if x = 1 && v <= 0 then post(v) = -0.5*pre(v) else x'' = -10x" 
---        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
---        ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
---    initValues@[initX, initX'] = [1,1] :: [Domain f]
-----    initValues@[initX, initX'] = [0,0] :: [Domain f]
---    tStart = hybivp_tStart ivp
-----    tEnd = hybivp_tEnd ivp
-----    tVar = hybivp_tVar ivp
---
---ivpTwoTanks_AfterZeno :: Domain f -> HybridIVP f
---ivpTwoTanks_AfterZeno tEndMinusTZeno =
---    ivp
---    where
---    v1 = 2 :: Domain f
---    v2 = 3 :: Domain f
---    w = 4 :: Domain f
---    tZeno = 2
---    tEnd = tEndMinusTZeno + tZeno
---    system =
---        HybridSystem
---        {
---            hybsys_componentNames = ["x1","x2"],
---            hybsys_modeFields = Map.fromList [(modeFill1, odeFill1), (modeFill2, odeFill2)],
---            hybsys_modeInvariants = Map.fromList [(modeFill1, invariant), (modeFill2, invariant)],
---            hybsys_eventModeSwitchesAndResetFunctions =
---                Map.fromList [(event1To2, (modeFill2, id)), (event2To1, (modeFill1, id))],
---            hybsys_eventSpecification = eventSpecMap
---        }
---    modeFill1 = HybSysMode "fill1"
---    modeFill2 = HybSysMode "fill2"
---    odeFill1 :: [f] -> [f]
---    odeFill1 [_x1,_x2] = [newConstFnFromSample _x1 (w - v1), newConstFnFromSample _x1 (- v2)]
---    odeFill2 :: [f] -> [f]
---    odeFill2 [_x1,_x2] = [newConstFnFromSample _x1 (- v1), newConstFnFromSample _x1 (w - v2)]
---    invariant [x1,x2] = [makeNonneg x1, makeNonneg x2]
---    event1To2 = HybSysEventKind "1To2"
---    event2To1 = HybSysEventKind "2To1"
---    prune1To2 [x1,_x2] = [x1, 0]
---    prune2To1 [_x1,x2] = [0, x2]
---
---    eventSpecMap (HybSysMode "fill1") =
---        Map.singleton event1To2 $
---            ([True, True], x2Dip, const (Just True), prune1To2)
---        where
---        x2Dip [_x1,x2] = x2
---    eventSpecMap (HybSysMode "fill2") =
---        Map.singleton event2To1 $
---            ([True, True], x1Dip, const (Just True), prune2To1)
---        where
---        x1Dip [x1,_x2] = x1
---
---    ivp :: HybridIVP f
---    ivp =
---        HybridIVP
---        {
---            hybivp_description = description,
---            hybivp_system = system,
---            hybivp_tVar = "t",
---            hybivp_tStart = 0,
---            hybivp_tEnd = tEnd,
---            hybivp_initialStateEnclosure = 
---                Map.singleton modeFill1 initValues,
---            hybivp_maybeExactStateAtTEnd = Just $
---                Map.fromList
---                [
---                    (modeFill1, [0,0]),
---                    (modeFill2, [0,0])
---                ]
---        }
---    description =
---        ""
---        ++    "if fill1 then (if x2 = 0 then fill2 else x1' = 4-2, x2' =  -3)"
---        ++ "\n if fill2 then (if x1 = 0 then fill1 else x1' =  -2, x2' = 4-3)"
---        ++ "\n ; x1(" ++ show tStart ++ ") = " ++ show initX1
---        ++    ", x2(" ++ show tStart ++ ") = " ++ show initX2
---    initValues@[initX1, initX2] = [1,1] :: [Domain f]
---    tStart = hybivp_tStart ivp
-----    tEnd = hybivp_tEnd ivp
-----    tVar = hybivp_tVar ivp
---
---ivpTwoTanksSum_AfterZeno :: Domain f -> HybridIVP f
---ivpTwoTanksSum_AfterZeno tEndMinusTZeno =
---    ivp
---    where
---    v1 = 2 :: Domain f
---    v2 = 3 :: Domain f
---    w = 4 :: Domain f
---    tZeno = 2
---    tEnd = tEndMinusTZeno + tZeno
---    system =
---        HybridSystem
---        {
---            hybsys_componentNames = ["x1","x2","x12"],
---            hybsys_modeFields = Map.fromList 
---                [(modeFill1, odeFill1), 
---                 (modeFill2, odeFill2)
---                ],
---            hybsys_modeInvariants = Map.fromList 
---                [(modeFill1, invariant), 
---                 (modeFill2, invariant)
---                ],
---            hybsys_eventModeSwitchesAndResetFunctions =
---                Map.fromList 
---                    [(event1To2, (modeFill2, id)), 
---                     (event2To1, (modeFill1, id))
---                    ],
---            hybsys_eventSpecification = eventSpecMap
---        }
---    modeFill1 = HybSysMode "fill1"
---    modeFill2 = HybSysMode "fill2"
---    odeFill1 :: [f] -> [f]
---    odeFill1 [_x1,_x2,_x12] = 
---        [newConstFnFromSample _x1 (w - v1), 
---         newConstFnFromSample _x1 (- v2), 
---         newConstFnFromSample _x1 (w - v1- v2)
---        ]
---    odeFill2 :: [f] -> [f]
---    odeFill2 [_x1,_x2,_x12] = 
---        [newConstFnFromSample _x1 (- v1), 
---         newConstFnFromSample _x1 (w - v2),
---         newConstFnFromSample _x1 (w - v1- v2)
---        ]
-----    invariant = id
---    invariant [x1,x2,x12] =
---        [x1NN <\/> (makeNonneg $ x12NN - x2NN),
---         x2NN <\/> (makeNonneg $ x12NN - x1NN), 
---         x12NN <\/> (x1NN + x2NN)
---        ]
---        where
---        x1NN = makeNonneg x1
---        x2NN = makeNonneg x2
---        x12NN = makeNonneg x12
---    event1To2 = HybSysEventKind "1To2"
---    event2To1 = HybSysEventKind "2To1"
---    prune1To2 [x1,_x2, x12] = [x1, 0, x12]
---    prune2To1 [_x1,x2, x12] = [0, x2, x12]
---
---    eventSpecMap (HybSysMode "fill1") =
---        Map.singleton event1To2 $
---            ([True, True, True], x2Dip, const (Just True), prune1To2)
---        where
---        x2Dip [_x1,x2,_x12] = x2
---    eventSpecMap (HybSysMode "fill2") =
---        Map.singleton event2To1 $
---            ([True, True, True], x1Dip, const (Just True), prune2To1)
---        where
---        x1Dip [x1,_x2,_x12] = x1
---
---
---    ivp :: HybridIVP f
---    ivp =
---        HybridIVP
---        {
---            hybivp_description = description,
---            hybivp_system = system,
---            hybivp_tVar = "t",
---            hybivp_tStart = 0,
---            hybivp_tEnd = tEnd,
---            hybivp_initialStateEnclosure = 
---                Map.singleton modeFill1 initValues,
---            hybivp_maybeExactStateAtTEnd =
---                Nothing 
-----                Just $
-----                HybridSystemUncertainState 
-----                {
-----                    hybstate_modes = Set.fromList [modeFlow],
-----                    hybstate_values = [0, 0, 0]
-----                }
---        }
---    description =
---        ""
---        ++    "if fill1 then (if x2 = 0 then fill2 else x1' = 4-2, x2' =  -3)"
---        ++ "\n if fill2 then (if x1 = 0 then fill1 else x1' =  -2, x2' = 4-3)"
---        ++ "\n invariant x12 = x1 + x2"
---        ++ "\n ; x1(" ++ show tStart ++ ") = " ++ show initX1
---        ++    ", x2(" ++ show tStart ++ ") = " ++ show initX2
---        ++    ", x12(" ++ show tStart ++ ") = " ++ show initX12
---    initValues@[initX1, initX2, initX12] = [1,1,2] :: [Domain f]
---    tStart = hybivp_tStart ivp
-----    tEnd = hybivp_tEnd ivp
-----    tVar = hybivp_tVar ivp
+    ivp :: HybridIVP f
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = z,
+            hybivp_tEnd = tEnd,
+            hybivp_initialStateEnclosure = 
+                Map.singleton modeMove initValues,
+            hybivp_maybeExactStateAtTEnd = Nothing
+        }
+    description =
+        "if x = 1 && v <= 0 then post(v) = -0.5*pre(v) else x'' = -10x" 
+        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
+        ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
+    initValues@[initX, initX'] = [toDom 1,toDom 1] :: [Domain f]
+    tStart = hybivp_tStart ivp
+    z = toDom 0
+    tEnd = toDom tEndDbl
+    toDom = dblToDom sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+ivpTwoTanks_AfterZeno :: 
+    (Var f ~ String,
+     HasConstFns f,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     Show (Domain f)
+    )
+    => 
+    Double -> 
+    f -> 
+    HybridIVP f
+ivpTwoTanks_AfterZeno tEndMinusTZenoDbl (sampleFn :: f) =
+    ivp
+    where
+    v1 = toDom 2
+    v2 = toDom 3
+    w = toDom 4
+    tZenoDbl = 2
+    tEndDbl = tEndMinusTZenoDbl + tZenoDbl
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x1","x2"],
+            hybsys_modeFields = Map.fromList [(modeFill1, odeFill1), (modeFill2, odeFill2)],
+            hybsys_modeInvariants = Map.fromList [(modeFill1, invariant), (modeFill2, invariant)],
+            hybsys_eventModeSwitchesAndResetFunctions =
+                Map.fromList [(event1To2, (modeFill2, id)), (event2To1, (modeFill1, id))],
+            hybsys_eventSpecification = eventSpecMap
+        }
+    modeFill1 = HybSysMode "fill1"
+    modeFill2 = HybSysMode "fill2"
+    odeFill1 :: [f] -> [f]
+    odeFill1 [_x1,_x2] = [newConstFnFromSample _x1 (w <-> v1), newConstFnFromSample _x1 (neg v2)]
+    odeFill2 :: [f] -> [f]
+    odeFill2 [_x1,_x2] = [newConstFnFromSample _x1 (neg v1), newConstFnFromSample _x1 (w <-> v2)]
+    invariant [x1,x2] = [makeNonneg x1, makeNonneg x2]
+    event1To2 = HybSysEventKind "1To2"
+    event2To1 = HybSysEventKind "2To1"
+    prune1To2 [x1,_x2] = [x1, toDom 0]
+    prune2To1 [_x1,x2] = [toDom 0, x2]
+
+    eventSpecMap (HybSysMode "fill1") =
+        Map.singleton event1To2 $
+            ([True, True], x2Dip, const (Just True), prune1To2)
+        where
+        x2Dip [_x1,x2] = x2
+    eventSpecMap (HybSysMode "fill2") =
+        Map.singleton event2To1 $
+            ([True, True], x1Dip, const (Just True), prune2To1)
+        where
+        x1Dip [x1,_x2] = x1
+
+    ivp :: HybridIVP f
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = z,
+            hybivp_tEnd = tEnd,
+            hybivp_initialStateEnclosure = 
+                Map.singleton modeFill1 initValues,
+            hybivp_maybeExactStateAtTEnd = Just $
+                Map.fromList
+                [
+                    (modeFill1, [toDom 0,toDom 0]),
+                    (modeFill2, [toDom 0,toDom 0])
+                ]
+        }
+    description =
+        ""
+        ++    "if fill1 then (if x2 = 0 then fill2 else x1' = 4-2, x2' =  -3)"
+        ++ "\n if fill2 then (if x1 = 0 then fill1 else x1' =  -2, x2' = 4-3)"
+        ++ "\n ; x1(" ++ show tStart ++ ") = " ++ show initX1
+        ++    ", x2(" ++ show tStart ++ ") = " ++ show initX2
+    initValues@[initX1, initX2] = [toDom 1,toDom 1] :: [Domain f]
+    tStart = hybivp_tStart ivp
+    z = toDom 0
+    tEnd = toDom tEndDbl
+    toDom = dblToDom sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+ivpTwoTanksSum_AfterZeno :: 
+    (Var f ~ String,
+     HasConstFns f,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     Show (Domain f)
+    )
+    => 
+    Double -> 
+    f -> 
+    HybridIVP f
+ivpTwoTanksSum_AfterZeno tEndMinusTZenoDbl (sampleFn :: f) =
+    ivp
+    where
+    v1 = toDom 2
+    v2 = toDom 3
+    w = toDom 4
+    tZenoDbl = 2
+    tEndDbl = tEndMinusTZenoDbl + tZenoDbl
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x1","x2","x12"],
+            hybsys_modeFields = Map.fromList 
+                [(modeFill1, odeFill1), 
+                 (modeFill2, odeFill2)
+                ],
+            hybsys_modeInvariants = Map.fromList 
+                [(modeFill1, invariant), 
+                 (modeFill2, invariant)
+                ],
+            hybsys_eventModeSwitchesAndResetFunctions =
+                Map.fromList 
+                    [(event1To2, (modeFill2, id)), 
+                     (event2To1, (modeFill1, id))
+                    ],
+            hybsys_eventSpecification = eventSpecMap
+        }
+    modeFill1 = HybSysMode "fill1"
+    modeFill2 = HybSysMode "fill2"
+    odeFill1 :: [f] -> [f]
+    odeFill1 [_x1,_x2,_x12] = 
+        [newConstFnFromSample _x1 (w <-> v1), 
+         newConstFnFromSample _x1 (neg v2), 
+         newConstFnFromSample _x1 (w <-> v1 <-> v2)
+        ]
+    odeFill2 :: [f] -> [f]
+    odeFill2 [_x1,_x2,_x12] = 
+        [newConstFnFromSample _x1 (neg v1), 
+         newConstFnFromSample _x1 (w <-> v2),
+         newConstFnFromSample _x1 (w <-> v1 <-> v2)
+        ]
+--    invariant = id
+    invariant [x1,x2,x12] =
+        [x1NN <\/> (makeNonneg $ x12NN <-> x2NN),
+         x2NN <\/> (makeNonneg $ x12NN <-> x1NN), 
+         x12NN <\/> (x1NN <+> x2NN)
+        ]
+        where
+        x1NN = makeNonneg x1
+        x2NN = makeNonneg x2
+        x12NN = makeNonneg x12
+    event1To2 = HybSysEventKind "1To2"
+    event2To1 = HybSysEventKind "2To1"
+    prune1To2 [x1,_x2, x12] = [x1, toDom 0, x12]
+    prune2To1 [_x1,x2, x12] = [toDom 0, x2, x12]
+
+    eventSpecMap (HybSysMode "fill1") =
+        Map.singleton event1To2 $
+            ([True, True, True], x2Dip, const (Just True), prune1To2)
+        where
+        x2Dip [_x1,x2,_x12] = x2
+    eventSpecMap (HybSysMode "fill2") =
+        Map.singleton event2To1 $
+            ([True, True, True], x1Dip, const (Just True), prune2To1)
+        where
+        x1Dip [x1,_x2,_x12] = x1
+
+
+    ivp :: HybridIVP f
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = z,
+            hybivp_tEnd = tEnd,
+            hybivp_initialStateEnclosure = 
+                Map.singleton modeFill1 initValues,
+            hybivp_maybeExactStateAtTEnd =
+                Nothing 
+--                Just $
+--                HybridSystemUncertainState 
+--                {
+--                    hybstate_modes = Set.fromList [modeFlow],
+--                    hybstate_values = [0, 0, 0]
+--                }
+        }
+    description =
+        ""
+        ++    "if fill1 then (if x2 = 0 then fill2 else x1' = 4-2, x2' =  -3)"
+        ++ "\n if fill2 then (if x1 = 0 then fill1 else x1' =  -2, x2' = 4-3)"
+        ++ "\n invariant x12 = x1 + x2"
+        ++ "\n ; x1(" ++ show tStart ++ ") = " ++ show initX1
+        ++    ", x2(" ++ show tStart ++ ") = " ++ show initX2
+        ++    ", x12(" ++ show tStart ++ ") = " ++ show initX12
+    initValues@[initX1, initX2, initX12] = [toDom 1,toDom 1,toDom 2] :: [Domain f]
+    tStart = hybivp_tStart ivp
+    z = toDom 0
+    tEnd = toDom tEndDbl
+    toDom = dblToDom sampleDom
+    sampleDom = getSampleDomValue sampleFn
 
 
 dblToDom ::
