@@ -143,8 +143,6 @@ solveHybridIVP_UsingPicardAndEventTree
     solveEventsOneMode (initialMode, initialValues) =
         (maybeFinalState, eventInfo)
         where
---        maxNodes = 100
-        
         maybeFinalState =
             case eventInfoCollectFinalStates effEval tVar tEnd eventInfo of
                 Just states | not (null states) -> Just $ foldl1 (mergeHybridStates effJoinDom) states
@@ -218,8 +216,15 @@ solveHybridIVP_UsingPicardAndEventTree
                 -- first check whether this state is included in a previous state:
                 | stateShrinksPreviousOne =
                     (EventFixedPoint state, Just (nodeCountSoFar + 1), True)
-                | stateExpandsPreviousOne =
-                    (EventGivenUp, Nothing, True)
+--                -- the following case unnecessarily gives up in some cases:
+--                | stateExpandsPreviousOne =
+--                    unsafePrint
+--                    (
+--                        "solveHybridIVP_UsingPicardAndEventTree: processState: stateExpandsPreviousOne"
+--                        ++ "\n  state = " ++ show state
+--                        ++ "\n  previousStates =\n" ++ unlines (map show previousStates)
+--                    ) $
+--                    (EventGivenUp, Nothing, True)
                 | otherwise =
                 -- find which events are not ruled out by fnVec and try to determine whether an event is certain
                 -- for each potential event, compute an enclosure for the state at the event
