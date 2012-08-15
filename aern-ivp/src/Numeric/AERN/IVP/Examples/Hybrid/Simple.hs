@@ -80,10 +80,12 @@ ivpByName "bouncingBallEnergy-zeno" = ivpBouncingBallEnergy_AfterZeno 0
 ivpByName "bouncingBallEnergy-zenoPlus1Over2" = ivpBouncingBallEnergy_AfterZeno 0.5 
 ivpByName "bouncingBallEnergy-zenoPlus2" = ivpBouncingBallEnergy_AfterZeno 2
 ivpByName "bouncingBallVibr-graze" = ivpBouncingBallVibr_AtTime 2 
+    -- TODO: fix missing sections in plot
 ivpByName "bouncingBallDrop" = ivpBouncingBallDrop_AtTime 3 2 0 5
 ivpByName "bouncingBallEnergyDrop" = ivpBouncingBallEnergyDrop_AtTime 3 2 0 5
 ivpByName "twoBouncingBallsDrop" = ivpTwoBouncingBallsDrop_AtTime 30 20 25 10 45
 ivpByName "twoBouncingBallsEnergyDrop" = ivpTwoBouncingBallsEnergyDrop_AtTime 30 20 25 10 45
+    -- TODO: fix breakage at time 20
 --ivpByName "bouncingSpring-4" = ivpBouncingSpring_AtTime 4 
 --ivpByName "twoTanks-zenoMinus1Over16" = ivpTwoTanks_AfterZeno (-1/16) 
 --ivpByName "twoTanks-zeno" = ivpTwoTanks_AfterZeno 0 
@@ -1305,6 +1307,7 @@ ivpTwoBouncingBallsEnergyDrop_AtTime
     toDom = dblToDom sampleDom
     sampleDom = getSampleDomValue sampleFn
 
+-- TODO: convert the remaining examples
 
 --ivpBouncingSpring_AtTime :: Domain f -> HybridIVP f
 --ivpBouncingSpring_AtTime tEnd  =

@@ -636,7 +636,7 @@ plotEnclosures effCF _plotMinSegSize tVar componentNames segmentsInfo =
         colourCycle = cycle $ map snd $ 
             zip componentNames 
                 (cycle [blue, green, red, black])
---                (cycle [black]) 
+--                (cycle [black])
 
     black = FV.defaultFnPlotStyle
     blue = FV.defaultFnPlotStyle 

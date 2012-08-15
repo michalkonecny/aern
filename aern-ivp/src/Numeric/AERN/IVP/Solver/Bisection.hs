@@ -615,23 +615,16 @@ data BisectionInfo segInfo splitReason
         (BisectionInfo segInfo splitReason) 
         (Maybe (BisectionInfo segInfo splitReason))
 
-bisectionInfoMapSegments :: 
-    (segInfo1 -> segInfo2) ->
-    BisectionInfo segInfo1 splitReason ->
-    BisectionInfo segInfo2 splitReason
-bisectionInfoMapSegments segFn bisectionInfo =
-    aux bisectionInfo
-    where
-    aux (BisectionNoSplit segInfo) = BisectionNoSplit $ segFn segInfo
-    aux (BisectionSplit splitReason left maybeRight) =
-        BisectionSplit splitReason (aux left) (fmap aux maybeRight)
-
 showBisectionInfo :: 
     (String -> segInfo -> String) 
     -> 
     (String -> splitReason -> String) 
     -> 
-    String -> BisectionInfo segInfo splitReason -> String
+    String -- ^ indentation to add to all lines 
+    -> 
+    BisectionInfo segInfo splitReason 
+    -> 
+    String
 showBisectionInfo showSegInfo showSplitReason indentG bisectionInfoG =
     shLevel indentG bisectionInfoG
     where
@@ -649,6 +642,17 @@ showBisectionInfo showSegInfo showSplitReason indentG bisectionInfoG =
                 ++ "\n" ++
                 (shLevel (indent ++ "  ") infoR)
              
+bisectionInfoMapSegments :: 
+    (segInfo1 -> segInfo2) ->
+    BisectionInfo segInfo1 splitReason ->
+    BisectionInfo segInfo2 splitReason
+bisectionInfoMapSegments segFn bisectionInfo =
+    aux bisectionInfo
+    where
+    aux (BisectionNoSplit segInfo) = BisectionNoSplit $ segFn segInfo
+    aux (BisectionSplit splitReason left maybeRight) =
+        BisectionSplit splitReason (aux left) (fmap aux maybeRight)
+
 bisectionInfoCountLeafs ::
     BisectionInfo segInfo splitReason -> Int
 bisectionInfoCountLeafs (BisectionNoSplit _) = 1
@@ -796,7 +800,7 @@ bisectionInfoTrimAt effDom trimResult removeResult bisectionInfoG bisectionDom c
     aux (dL, dR) bisectionInfo =
         case (dR <=? cutOffPoint, cutOffPoint <=? dL) of
             (Just True, _) -> bisectionInfo -- entirely to the left of the point
-            (_, Just True) -> bisectionInfoMapSegments removeResult bisectionInfo
+            (_, Just True) -> bisectionInfoRemoveSegInfo bisectionInfo
             _ ->
                 case bisectionInfo of
                     BisectionNoSplit info -> BisectionNoSplit $ trimResult info
@@ -807,6 +811,11 @@ bisectionInfoTrimAt effDom trimResult removeResult bisectionInfoG bisectionDom c
                         maybeNewRight =
                             fmap (aux (dM, dR)) maybeRight
                         dM = getMidPoint effAddDom effDivDomInt dL dR 
+    
+    bisectionInfoRemoveSegInfo (BisectionNoSplit info) = BisectionNoSplit $ removeResult info
+    bisectionInfoRemoveSegInfo (BisectionSplit splitReason left _maybeRight) =
+        BisectionSplit splitReason (bisectionInfoRemoveSegInfo left) Nothing
+    
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDivDomInt = 
         ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
