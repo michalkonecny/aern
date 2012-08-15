@@ -91,7 +91,8 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
      solvingInfoODESegment ~ (Maybe ([f],[f]), (Domain f, Maybe [Domain f])),
      solvingInfoODE ~ BisectionInfo solvingInfoODESegment (solvingInfoODESegment, Maybe (Domain f)),
      solvingInfoEvents ~ (Domain f, Maybe (HybridSystemUncertainState (Domain f)), EventInfo f),
-     Show f, Show (Domain f), Show (Var f), Eq (Var f))
+     Show f, Show (Domain f), Show (Var f), Show (SizeLimits f),
+     Eq (Var f))
     =>
     SizeLimits f {-^ size limits for all function -} ->
     SizeLimitsChangeEffort f ->
@@ -205,7 +206,8 @@ solveHybridIVP_SplitNearEvents ::
      RefOrd.IntervalLike(Domain f),
      HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
-     Show f, Show (Domain f), Show (Var f),
+     Show f, Show (Domain f), Show (Var f), Show (SizeLimits f),
+     Show solvingInfoODESegmentOther,
      solvingInfoODESegment ~ (Maybe ([f],[f]), solvingInfoODESegmentOther),
      solvingInfoODE ~ BisectionInfo solvingInfoODESegment (solvingInfoODESegment, prec)
     )
@@ -319,7 +321,16 @@ solveHybridIVP_SplitNearEvents
                     (stateAfterEvents, maybeSolvingInfo) = solveEvents tEventL
             where
             noEventsSolutionUpToR =
-                -- cut off noEventsSolution at tEventR
+                -- cut off noEventsSolution at tEventR:
+--                unsafePrint
+--                (
+--                    "noEventsSolutionUpToR:"
+--                    ++ "\n tStart = " ++ show tStart
+--                    ++ "\n tEnd = " ++ show tEnd
+--                    ++ "\n tEventR = " ++ show tEventR
+--                    ++ "\n noEventsSolution =\n" 
+--                    ++ showBisectionInfo (\indent info -> indent ++ show info) (\indent info -> indent) "   " noEventsSolution
+--                ) $
                 bisectionInfoTrimAt 
                     effDom trimInfo removeInfo
                         noEventsSolution (tStart, tEnd) tEventR
@@ -331,8 +342,15 @@ solveHybridIVP_SplitNearEvents
                     trimmedFns = 
                         map trimFn fns
                     trimFn fn =
-                        adjustDomain fn tVar newTDom
+--                        unsafePrint
+--                        (
+--                            "solveHybridIVP_UsingPicardAndEventTree: trimInfo:"
+--                            ++ "\n sizeLimits of fn = " ++ show (getSizeLimits fn)
+--                            ++ "\n sizeLimits of trimmedFn = " ++ show (getSizeLimits trimmedFn)
+--                        )
+                        trimmedFn
                         where
+                        trimmedFn = adjustDomain fn tVar newTDom 
                         newTDom = NumOrd.minOutEff effMinmax tDom tEventR
                         Just tDom = lookupVar dombox tVar
                         dombox = getDomainBox fn
@@ -483,7 +501,7 @@ solveHybridIVP_SplitNearEvents
                 odeivp_componentNames = componentNames,
                 odeivp_tVar = tVar,
                 odeivp_tStart = tStart,
-                odeivp_tEnd = tStepEnd,
+                odeivp_tEnd = tEnd,
                 odeivp_makeInitialValueFnVec = makeInitValueFnVec,
                 odeivp_t0End = tStart,
                 odeivp_maybeExactValuesAtTEnd = Nothing
@@ -495,125 +513,15 @@ solveHybridIVP_SplitNearEvents
         tVar = hybivp_tVar hybivp
         tStart = hybivp_tStart hybivp
         tEnd = hybivp_tEnd hybivp
-        tStepEnd = -- min(tEnd, tStart + maxStepSize)
-            NumOrd.minOutEff effMinmax tEnd tStartPlusMaxStep
-            where
-            (tStartPlusMaxStep, _) =
-                let ?addInOutEffort = effAdd in
-                RefOrd.getEndpointsOutWithDefaultEffort $ 
-                tStart <+> maxStepSize
+--        tStepEnd = -- min(tEnd, tStart + maxStepSize)
+--            NumOrd.minOutEff effMinmax tEnd tStartPlusMaxStep
+--            where
+--            (tStartPlusMaxStep, _) =
+--                let ?addInOutEffort = effAdd in
+--                RefOrd.getEndpointsOutWithDefaultEffort $ 
+--                tStart <+> maxStepSize
 --        tDom = RefOrd.fromEndpointsOutWithDefaultEffort (tStart, tEnd)
         initialStateModeMap = hybivp_initialStateEnclosure hybivp
         hybsys = hybivp_system hybivp
         componentNames = hybsys_componentNames hybsys
         modeFields = hybsys_modeFields hybsys
-        
-        
-----        unsafePrint
-----        (
-----            "solveHybridIVPByBisectingT: splitSolve: "
-----            ++ "tStart = " ++ show tStart
-----            ++ "tEnd = " ++ show tEnd
-----        ) $
---        result2
---        where
---        result2
---            | belowStepSize = directComputation
---            | aboveMaxStepSize = splitComputation
---            | directComputationFailed = splitComputation
---            | otherwise = 
---                case maybeSplitImprovement of
---                    Just improvementBy 
---                        | (improvementBy >? splitImprovementThreshold) /= Just True -> 
---                            directComputation -- split once computations succeeded but brought no noticeable improvement
---                    _
---                        | splitComputationFailed -> directComputation
---                        | otherwise -> splitComputation -- splitting either brought noticeable improvement or some computation failed 
---        tStart = hybivp_tStart hybivp
---        tEnd = hybivp_tEnd hybivp
---        
---        belowStepSize =
---            let ?addInOutEffort = effAddDom in
---            ((tEnd <-> tStart) >? minStepSize) /= Just True
---        aboveMaxStepSize =
---            let ?addInOutEffort = effAddDom in
---            ((tEnd <-> tStart) <? maxStepSize) /= Just True
---
---        directComputation =
-----            unsafePrint
-----            (
-----                "solveHybridIVPByBisectingT: completed time " ++ show tEnd
-----            ) $
---            case maybeDirectResult of
---                Just resultOut 
---                    | otherwise -> (Just resultOut, BisectionNoSplit directInfo)
---                _ -> (Nothing, BisectionNoSplit directInfo) 
---        (maybeDirectResult, directInfo) = solver depth hybivp
---        directComputationFailed =
---            case maybeDirectResult of Just _ -> False; _ -> True
---        
---        splitOnceComputation = -- needed only to decide whether splitting is benefitial, the result is then discarded
---            case solver (depth + 1) hybivpL of
---                (Just midState, _) ->
---                    case solver (depth + 1) hybivpR of
---                        (Just endStateOut, _) -> Just endStateOut 
---                        _ -> Nothing
---                    where
---                    hybivpR =
---                        hybivp
---                        {
---                            hybivp_tStart = tMid,
---                            hybivp_initialStateEnclosure = midState
---                        }
---                _ -> Nothing
---                
---        (splitComputation, splitComputationFailed) =
---            (
---                (maybeState, BisectionSplit (directInfo, maybeSplitImprovement) infoL maybeInfoR)
---            , 
---                case maybeState of Just _ -> False; _ -> True
---            )
---            where
---            (maybeMidState, infoL) =
---                splitSolve (depth + 1) hybivpL
---            (maybeState, maybeInfoR) =
---                case maybeMidState of
---                    Just midState ->
---                        case splitSolve (depth + 1) hybivpR of
---                            (maybeState2, infoR) -> (maybeState2, Just infoR)
---                        where
---                        hybivpR =
---                            hybivp
---                            {
---                                hybivp_tStart = tMid,
---                                hybivp_initialStateEnclosure = midState
---                            }
---                    Nothing -> (Nothing, Nothing)
---        hybivpL =
---            hybivp
---            {
---                hybivp_tEnd = tMid
---            }
---        tMid = 
---            let ?addInOutEffort = effAddDom in
---            let ?mixedDivInOutEffort = effDivDomInt in
---            (tStart <+> tEnd) </>| (2 :: Int)
---        
---        maybeSplitImprovement =
---            case (maybeDirectResult, splitOnceComputation) of
---                (Just directResult, Just splitOnceResult) -> 
---                    Just $ measureImprovementState sampleDom effDom directResult splitOnceResult
---                _ -> Nothing
---
---    effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
---    effDivDomInt = 
---        ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
---            ArithInOut.rrEffortIntMixedField sampleDom effDom
-----    effRefComp = ArithInOut.rrEffortRefComp sampleDom effDom
---    sampleDom = hybivp_tStart hybivpG
-----    effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDom effDom
---    
-----    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
-----    sampleImpr = imprecisionOfEff effImpr sampleDom
-----    effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
-                                
