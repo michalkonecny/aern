@@ -1,5 +1,6 @@
-{-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly
     Description :  datatype of polynomials with consistent interval coefficients  
@@ -46,6 +47,84 @@ import Numeric.AERN.Poly.IntPoly.NumericOrder ()
 import Numeric.AERN.Poly.IntPoly.RefinementOrder ()
 import Numeric.AERN.Poly.IntPoly.Minmax
 
+import Numeric.AERN.RmToRn.Domain
+
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import Numeric.AERN.RealArithmetic.NumericOrderRounding 
+    (RoundedRealEffortIndicator) -- needed for ghc 6.12
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+
+import Numeric.AERN.RealArithmetic.Measures
+
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
+
+import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.Effort
+
+import Test.QuickCheck.Arbitrary
+
+--instance
+--    (ArithInOut.RoundedReal cf,
+--     ArithInOut.RoundedMixedField cf cf,
+--     RefOrd.IntervalLike cf,
+--     HasAntiConsistency cf,     
+--     Arbitrary cf,
+--     GeneratableVariables var, Ord var, Show var,
+--     Show cf, Show (Imprecision cf)
+--    )
+--    => 
+--    ArithUpDn.RoundedReal (IntPoly var cf) 
+--    where
+--    type RoundedRealEffortIndicator (IntPoly var cf) =
+--        (
+--          (
+--            (Int1To1000, -- number of samples when looking for counter examples
+--             (ArithInOut.RoundedRealEffortIndicator cf, 
+--              Int1To10 -- how many segments to split the domain into eg when evaluating
+--             )
+--            )
+--          ,
+--            (NumOrd.MinmaxEffortIndicator (IntPoly var cf),
+--             ArithInOut.AbsEffortIndicator cf)
+--          )
+--        ,
+--         (RefOrd.GetEndpointsEffortIndicator cf,
+--          RefOrd.FromEndpointsEffortIndicator cf)
+--        ,
+--         (NumOrd.MinmaxInOutEffortIndicator cf,
+--          Int1To10) -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
+--        ) 
+--    roundedRealDefaultEffort fn =
+--        (
+--          (NumOrd.pCompareDefaultEffort fn,
+--           ArithUpDn.absDefaultEffort fn)
+--        ,
+--         (RefOrd.getEndpointsDefaultEffort fn,
+--          RefOrd.fromEndpointsDefaultEffort fn)
+--        ,
+--         (NumOrd.minmaxInOutDefaultEffort cf,
+--          Int1To10 3)
+--        )
+--        where
+--        cf = getSampleDomValue fn
+--    rrEffortComp _ ((effComp, _),_,_) = effComp
+--    rrEffortMinmax _ ((_, (effMinmax,_)),_,_) = effMinmax
+--    rrEffortDistance _ (((_, effEval),_),_,_) = effEval
+--    rrEffortToInt _ _ = ()
+--    rrEffortFromInt _ _ = ()
+--    rrEffortToInteger _ _ = ()
+--    rrEffortFromInteger _ _ = ()
+--    rrEffortToDouble _ _ = () 
+--    rrEffortFromDouble _ _ = ()
+--    rrEffortToRational _ _ = ()
+--    rrEffortFromRational _ _ = ()
+--    rrEffortAbs _ ((_, effAbs),_,_) = effAbs
+--    rrEffortField _ _ = ()
+--    rrEffortIntMixedField _ _ = ()
+--    rrEffortIntegerMixedField _ _ = ()
+--    rrEffortDoubleMixedField _ _ = ()
+--    rrEffortRationalMixedField _ _ = ()
 
 
 --import Numeric.AERN.RmToRn.New

@@ -281,6 +281,30 @@ coeffPolyEvalOpsOut eff depth sample =
     effMinmax = ArithInOut.rrEffortMinmaxInOut sample eff
 
 
+instance 
+    (Ord var, Show var, Show cf,
+     ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf, 
+     RefOrd.IntervalLike cf)
+    => 
+    (HasDistance (IntPoly var cf))
+    where
+    type Distance (IntPoly var cf) = cf
+    type DistanceEffortIndicator (IntPoly var cf) =
+        (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)
+    distanceDefaultEffort p =
+        evaluationDefaultEffort p
+    distanceBetweenEff effEval@(effCf, _) p1 p2 =
+        evalAtPointOutEff effEval dombox diff
+        where
+        dombox = getDomainBox diff
+        diff = polyJoinWith (zero sampleCf) (uncurry $ ArithInOut.subtrOutEff effAdd) (p1, p2) 
+        sampleCf = getSampleDomValue p1 
+        effAdd = 
+            ArithInOut.fldEffortAdd sampleCf $ 
+                ArithInOut.rrEffortField sampleCf effCf
+        
+
 instance
     (Ord var, Show var,
      ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
