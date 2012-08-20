@@ -23,7 +23,7 @@ import Numeric.AERN.Poly.IntPoly.Config
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Measures (HasImprecision(..))
+import Numeric.AERN.RealArithmetic.Measures (HasImprecision(..), HasDistance(..))
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort ((|==?))
@@ -398,3 +398,4 @@ termsIsZero terms =
     case getConstantIfTermsConstant terms of
         Just val -> (val |==? (zero val)) == Just True
         _ -> False
+
