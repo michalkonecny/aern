@@ -1,5 +1,4 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -73,16 +72,3 @@ convertDnEffException effort sample x =
        _ -> throw $ AERNException $
                 "failed to convert to interval: x = " ++ show x
            
-instance (ArithUpDn.Convertible e t) => 
-        ArithUpDn.Convertible (Interval e) t where
-#if (__GLASGOW_HASKELL__ >= 704)
-    type ConvertEffortIndicator (Interval e) t = 
-        ArithUpDn.ConvertEffortIndicator e t
-#else
-    type ArithUpDn.ConvertEffortIndicator (Interval e) t = 
-        ArithUpDn.ConvertEffortIndicator e t
-#endif
-    convertDefaultEffort (Interval sampleE _) i = ArithUpDn.convertDefaultEffort sampleE i 
-    convertUpEff effort sampleT (Interval _ r) = ArithUpDn.convertUpEff effort sampleT r
-    convertDnEff effort sampleT (Interval l _) = ArithUpDn.convertDnEff effort sampleT l
-
