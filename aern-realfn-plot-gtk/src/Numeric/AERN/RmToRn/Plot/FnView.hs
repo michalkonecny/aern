@@ -117,7 +117,7 @@ new (sampleF :: f) effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) maybeP
     toDbl :: (Domain f) -> Double
     toDbl a = d
         where
-        (Just d) = ArithUpDn.convertUpEff effToDouble a
+        (Just d) = ArithUpDn.convertUpEff effToDouble 0 a
 
 setHandlers :: 
     (CairoDrawableFn f,
@@ -156,7 +156,7 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
     toDbl :: (Domain f) -> Double
     toDbl a = d
         where
-        (Just d) = ArithUpDn.convertUpEff effToDouble a
+        (Just d) = ArithUpDn.convertUpEff effToDouble 0 a
     effToDouble = ArithInOut.rrEffortToDouble sampleDom effReal
     effFromDouble = ArithInOut.rrEffortFromDouble sampleDom effReal
     sampleDom = getSampleDomValue sampleF
@@ -214,8 +214,8 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                                     getFnExtents fnmeta 
                         return ()
                     where
-                    centreX = ArithInOut.convertOutEff effFromDouble (centreXD :: Double)
-                    centreY = ArithInOut.convertOutEff effFromDouble (centreYD :: Double)
+                    centreX = ArithInOut.convertOutEff effFromDouble sampleDom (centreXD :: Double)
+                    centreY = ArithInOut.convertOutEff effFromDouble sampleDom (centreYD :: Double)
                 wrongParseResults ->
                     do
                     putStrLn $ "zoomHandler: parse error: " ++ show wrongParseResults 

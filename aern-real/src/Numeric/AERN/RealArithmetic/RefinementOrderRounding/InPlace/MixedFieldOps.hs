@@ -86,7 +86,7 @@ propMixedAddInPlaceEqualsConvert ::
       ConvertEffortIndicator tn t)) -> 
     (RefOrd.UniformlyOrderedSingleton t) -> 
     tn -> Bool
-propMixedAddInPlaceEqualsConvert sample1 sample2 initEffort 
+propMixedAddInPlaceEqualsConvert sample _sampleN initEffort 
         (RefOrd.UniformlyOrderedSingleton d) n =
     equalRoundingUpDn "mixed in-place addition"
         expr1In expr1Out expr2In expr2Out 
@@ -107,9 +107,9 @@ propMixedAddInPlaceEqualsConvert sample1 sample2 initEffort
             dR <+>|= n
             unsafeReadMutable dR
     expr2In (_,effAdd,effConv) =
-        let (>+<) = addInEff effAdd in (convertInEff effConv n) >+< d
+        let (>+<) = addInEff effAdd in (convertInEff effConv sample n) >+< d
     expr2Out (_,effAdd,effConv) =
-        let (<+>) = addOutEff effAdd in (convertOutEff effConv n) <+> d
+        let (<+>) = addOutEff effAdd in (convertOutEff effConv sample n) <+> d
 
 
 
@@ -155,7 +155,7 @@ propMixedMultInPlaceEqualsConvert ::
       ConvertEffortIndicator tn t)) -> 
     (RefOrd.UniformlyOrderedSingleton t) -> 
     tn -> Bool
-propMixedMultInPlaceEqualsConvert sample1 sample2 initEffort 
+propMixedMultInPlaceEqualsConvert sample _sampleN initEffort 
         (RefOrd.UniformlyOrderedSingleton d) n =
     equalRoundingUpDn "in-place mixed multiplication"
         expr1In expr1Out expr2In expr2Out 
@@ -176,9 +176,9 @@ propMixedMultInPlaceEqualsConvert sample1 sample2 initEffort
             dR <*>|= n
             unsafeReadMutable dR
     expr2In (_,effMult,effConv) =
-        let (>*<) = multInEff effMult in (convertInEff effConv n) >*< d
+        let (>*<) = multInEff effMult in (convertInEff effConv sample n) >*< d
     expr2Out (_,effMult,effConv) =
-        let (<*>) = multOutEff effMult in (convertOutEff effConv n) <*> d
+        let (<*>) = multOutEff effMult in (convertOutEff effConv sample n) <*> d
 
 class (RoundedMixedDivideEffort t tn, CanBeMutable t) => 
     RoundedMixedDivideInPlace t tn 
@@ -212,7 +212,8 @@ mixedDivInInPlaceEffByConversion ::
     OpMutableNonmut t tn s
 mixedDivInInPlaceEffByConversion (effDiv, effConv) rM dM n =
     do
-    let nConverted = convertInEff effConv n
+    sample <- readMutable dM
+    let nConverted = convertInEff effConv sample n
     nM <- unsafeMakeMutable nConverted
     divInInPlaceEff effDiv rM dM nM
 
@@ -222,7 +223,8 @@ mixedDivOutInPlaceEffByConversion ::
     OpMutableNonmut t tn s
 mixedDivOutInPlaceEffByConversion (effDiv, effConv) rM dM n =
     do
-    let nConverted = convertOutEff effConv n
+    sample <- readMutable dM
+    let nConverted = convertOutEff effConv sample n
     nM <- unsafeMakeMutable nConverted
     divOutInPlaceEff effDiv rM dM nM
 
@@ -242,7 +244,7 @@ propMixedDivInPlaceEqualsConvert ::
       ConvertEffortIndicator tn t)) -> 
     (RefOrd.UniformlyOrderedSingleton t) -> 
     tn -> Bool
-propMixedDivInPlaceEqualsConvert sample1 sample2
+propMixedDivInPlaceEqualsConvert sample _sampleN
         initEffort@(effComp,(_,effConv,_)) 
         (RefOrd.UniformlyOrderedSingleton d) n
     =
@@ -265,9 +267,9 @@ propMixedDivInPlaceEqualsConvert sample1 sample2
             dR </>|= n
             unsafeReadMutable dR
     expr2In (_,effDiv,effConv) =
-        let (>/<) = divInEff effDiv in d >/< (convertInEff effConv n)
+        let (>/<) = divInEff effDiv in d >/< (convertInEff effConv sample n)
     expr2Out (_,effDiv,effConv) =
-        let (</>) = divOutEff effDiv in d </> (convertOutEff effConv n)
+        let (</>) = divOutEff effDiv in d </> (convertOutEff effConv sample n)
     
 testsInOutMixedFieldOpsInPlace (name, sample) (nameN, sampleN) =
     testGroup (name ++ " with " ++ nameN ++ ": in-place mixed up/dn rounded ops") $

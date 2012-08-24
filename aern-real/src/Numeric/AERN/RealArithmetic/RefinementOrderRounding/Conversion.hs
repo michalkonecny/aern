@@ -47,8 +47,16 @@ class
     where
     type ConvertEffortIndicator t1 t2
     convertDefaultEffort :: t1 -> t2 -> ConvertEffortIndicator t1 t2 
-    convertInEff :: ConvertEffortIndicator t1 t2 -> t1 -> t2
-    convertOutEff :: ConvertEffortIndicator t1 t2 -> t1 -> t2
+    convertInEff :: 
+        ConvertEffortIndicator t1 t2 -> 
+        t2 {-^ sample value of the target type -} -> 
+        t1 -> 
+        t2
+    convertOutEff :: 
+        ConvertEffortIndicator t1 t2 -> 
+        t2 {-^ sample value of the target type -} -> 
+        t1 -> 
+        t2
 
 propConvertMonotoneFromNumOrd ::
     (Convertible t1 t2, 
@@ -63,11 +71,10 @@ propConvertMonotoneFromNumOrd sample1 sample2 (effortFrom, effortComp) (NumOrd.L
     &&
     (trueOrNothing $ let ?pCompareEffort = effortComp in aIn <=? bIn)
     where
-    aOut = convertOutEff effortFrom a 
-    aIn = convertInEff effortFrom a 
-    bOut = convertOutEff effortFrom b 
-    bIn = convertInEff effortFrom b
-    _ = [sample2, aOut, aIn]
+    aOut = convertOutEff effortFrom sample2 a 
+    aIn = convertInEff effortFrom sample2 a 
+    bOut = convertOutEff effortFrom sample2 b 
+    bIn = convertInEff effortFrom sample2 b
 
 propConvertRoundTripNumOrd ::
     (UpDnConversion.Convertible t1 t2, Convertible t2 t1, 
@@ -86,13 +93,12 @@ propConvertRoundTripNumOrd sample1 sample2 (effortComp, effortFrom, effortTo) a 
        (_, Just False) -> printErrorDetail
        _ -> True
     where
-    aDnOut = convertOutEff effortFrom aDn 
-    maDn = UpDnConversion.convertDnEff effortTo a
-    aDn = fromJust maDn 
-    aUpOut = convertOutEff effortFrom aUp
-    maUp = UpDnConversion.convertUpEff effortTo a
-    aUp = fromJust maUp 
-    _ = [sample2, aDn, aUp]
+    aDnOut = convertOutEff effortFrom sample1 aDn 
+    maDn = UpDnConversion.convertDnEff effortTo sample2 a
+    Just aDn = maDn 
+    aUpOut = convertOutEff effortFrom sample1 aUp
+    maUp = UpDnConversion.convertUpEff effortTo sample2 a
+    Just aUp = maUp 
     printErrorDetail =
         error $
            "propToFromInteger failed:"

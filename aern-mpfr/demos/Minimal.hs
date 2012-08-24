@@ -91,7 +91,7 @@ exp1000efforts =
 three, ten, hundred, thousand :: MI
 
 [three, ten, hundred, thousand] = 
-    map (ArithInOut.convertOutEff 100) ([3,10,100,1000] :: [Int])
+    map (ArithInOut.convertOutEff 100 sampleMI) ([3,10,100,1000] :: [Int])
 
     
 expEffort n =

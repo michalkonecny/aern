@@ -83,12 +83,12 @@ expOutThinArg eff
     effortFromDouble = ArithInOut.rrEffortFromDouble sample eff
     sample = x
     (xUp, xTooBig) =
-        case ArithUpDn.convertUpEff effortToInt x of
-            Just xUp -> (xUp :: Int, False)
+        case ArithUpDn.convertUpEff effortToInt (0 :: Int) x of
+            Just xUp -> (xUp, False)
             _ -> (error "internal error in expOutThinArg", True)
     (xDn, xTooLow) =
-        case ArithUpDn.convertDnEff effortToInt x of
-            Just xDn -> (xDn :: Int, False)
+        case ArithUpDn.convertDnEff effortToInt (0 :: Int) x of
+            Just xDn -> (xDn, False)
             _ -> (error "internal error in expOutThinArg", True)
     expOutViaTaylorForXScaledNearZero =
         let ?joinmeetEffort = effortMeet in
@@ -125,9 +125,9 @@ expOutThinArg eff
                         _ -> -- near or crossing zero:
                             recipEDn </\> eUp
                 eUp =
-                    ArithInOut.convertOutEff effortFromDouble (2.718281829 :: Double)
+                    ArithInOut.convertOutEff effortFromDouble sample (2.718281829 :: Double)
                 recipEDn =
-                    ArithInOut.convertOutEff effortFromDouble (0.367879440 :: Double)
+                    ArithInOut.convertOutEff effortFromDouble sample (0.367879440 :: Double)
 
 expOutThinArgInPlace ::
     (ArithInOut.RoundedRealInPlace t) =>
@@ -190,12 +190,12 @@ expOutThinArgInPlace
 
     -- compute integer bounds on x if possible: 
     let (xUp, xTooBig) =
-          case ArithUpDn.convertUpEff effortToInt x of
-            Just xUp -> (xUp :: Int, False)
+          case ArithUpDn.convertUpEff effortToInt (0::Int) x of
+            Just xUp -> (xUp, False)
             _ -> (error "internal error in expOutThinArg", True)
     let (xDn, xTooLow) =
-          case ArithUpDn.convertDnEff effortToInt x of
-            Just xDn -> (xDn :: Int, False)
+          case ArithUpDn.convertDnEff effortToInt (0::Int) x of
+            Just xDn -> (xDn, False)
             _ -> (error "internal error in expOutThinArg", True)
 
     -- infinities not handled well by the Taylor formula,
@@ -261,6 +261,7 @@ expOutThinArgInPlace
                         _ -> -- near or crossing zero:
                             recipEDn </\> eUp
                 eUp =
-                    ArithInOut.convertOutEff effortFromDouble (2.718281829 :: Double)
+                    ArithInOut.convertOutEff effortFromDouble sample (2.718281829 :: Double)
                 recipEDn =
-                    ArithInOut.convertOutEff effortFromDouble (0.367879440 :: Double)
+                    ArithInOut.convertOutEff effortFromDouble sample (0.367879440 :: Double)
+                sample = x

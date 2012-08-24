@@ -183,7 +183,7 @@ ivpSpringMass_ut withInitialValueUncertainty =
     tStart = odeivp_tStart ivp
     t0End = odeivp_t0End ivp
     tEndDbl :: Double
-    (Just tEndDbl) = ArithUpDn.convertUpEff () $ odeivp_tEnd ivp
+    (Just tEndDbl) = ArithUpDn.convertUpEff () 0 $ odeivp_tEnd ivp
     componentNames = odeivp_componentNames ivp
     dummySizeLimits =
         getSizeLimits $

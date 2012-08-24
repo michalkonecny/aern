@@ -65,10 +65,11 @@ mixedAddUpEffByConversion (effAdd, effConv) d n =
     addUpEff effAdd nUp d
     where
     nUp = 
-        case convertUpEff effConv n of
+        case convertUpEff effConv sample n of
             (Just nUp) -> nUp
             _ -> throw $ AERNException $ 
                         "conversion failed during mixed addition: n = " ++ show n
+    sample = d
 
 mixedAddDnEffByConversion ::
     (Convertible tn t, RoundedAdd t, Show tn) =>
@@ -78,10 +79,11 @@ mixedAddDnEffByConversion (effAdd, effConv) d n =
     addDnEff effAdd nDn d
     where
     nDn = 
-        case convertDnEff effConv n of
+        case convertDnEff effConv sample n of
             (Just nDn) -> nDn
             _ -> throw $ AERNException $ 
                         "conversion failed during mixed addition: n = " ++ show n
+    sample = d
 
 {- properties of mixed addition -}
 
@@ -98,7 +100,7 @@ propMixedAddEqualsConvert ::
     (NumOrd.UniformlyOrderedSingleton t) -> 
     tn -> 
     Bool
-propMixedAddEqualsConvert sampleN sample initEffort 
+propMixedAddEqualsConvert sample sampleN initEffort 
         (NumOrd.UniformlyOrderedSingleton d) n =
     equalRoundingUpDn "mixed addition by conversion"
         expr1Up expr1Dn expr2Up expr2Dn 
@@ -109,9 +111,13 @@ propMixedAddEqualsConvert sampleN sample initEffort
     expr1Dn (effMAdd,_,_) =
         let (+.|) = mixedAddDnEff effMAdd in d +.| n
     expr2Up (_,effAdd,effConv) =
-        let (+^) = addUpEff effAdd in d +^ (fromJust $ convertUpEff effConv n)
+        let (+^) = addUpEff effAdd in d +^ nUp
+        where
+        Just nUp = convertUpEff effConv sample n
     expr2Dn (_,effAdd,effConv) =
-        let (+.) = addDnEff effAdd in d +. (fromJust $ convertDnEff effConv n)
+        let (+.) = addDnEff effAdd in d +. nDn
+        where
+        Just nDn = convertDnEff effConv sample n
 
 class
     (EffortIndicator (MixedMultEffortIndicator t tn))
@@ -150,10 +156,11 @@ mixedMultUpEffByConversion (effMult, effConv, effMinmax) d n =
     (multUpEff effMult d nUp)
     where
     (nUp, nDn) = 
-        case (convertUpEff effConv n, convertDnEff effConv n) of
+        case (convertUpEff effConv sample n, convertDnEff effConv sample n) of
             (Just nUp, Just nDn) -> (nUp, nDn)
             _ -> throw $ AERNException $ 
                         "conversion failed during mixed multiplication: n = " ++ show n
+    sample = d
 
 mixedMultDnEffByConversion ::
     (Convertible tn t, RoundedMultiply t, NumOrd.RoundedLattice t, Show tn) =>
@@ -167,10 +174,11 @@ mixedMultDnEffByConversion (effMult, effConv, effMinmax) d n =
     (multDnEff effMult d nUp)
     where
     (nUp, nDn) = 
-        case (convertUpEff effConv n, convertDnEff effConv n) of
+        case (convertUpEff effConv sample n, convertDnEff effConv sample n) of
             (Just nUp, Just nDn) -> (nUp, nDn)
             _ -> throw $ AERNException $ 
                         "conversion failed during mixed multiplication: n = " ++ show n
+    sample = d
 
 
 {- properties of mixed multiplication -}
@@ -189,7 +197,7 @@ propMixedMultEqualsConvert ::
        NumOrd.MinmaxEffortIndicator t))) -> 
     (NumOrd.UniformlyOrderedSingleton t) -> 
     tn -> Bool
-propMixedMultEqualsConvert sample sampleN initEffort 
+propMixedMultEqualsConvert sample _sampleN initEffort 
         (NumOrd.UniformlyOrderedSingleton d) n =
     equalRoundingUpDn "mixed multiplication by conversion"
         expr1Up expr1Dn expr2Up expr2Dn 
@@ -202,13 +210,13 @@ propMixedMultEqualsConvert sample sampleN initEffort
     expr2Up (_,(effMult,effConv,effMinmax)) =
         let (*^) = multUpEff effMult in
         NumOrd.maxUpEff effMinmax  
-            (d *^ (fromJust $ convertUpEff effConv n))
-            (d *^ (fromJust $ convertDnEff effConv n))
+            (d *^ (fromJust $ convertUpEff effConv sample n))
+            (d *^ (fromJust $ convertDnEff effConv sample n))
     expr2Dn (_,(effMult,effConv,effMinmax)) =
         let (*.) = multDnEff effMult in
         NumOrd.minDnEff effMinmax  
-            (d *. (fromJust $ convertUpEff effConv n))
-            (d *. (fromJust $ convertDnEff effConv n))
+            (d *. (fromJust $ convertUpEff effConv sample n))
+            (d *. (fromJust $ convertDnEff effConv sample n))
 
 class
     (EffortIndicator (MixedDivEffortIndicator t tn))
@@ -261,11 +269,12 @@ mixedDivUpEffByConversion (effDiv, effConv, (effMinmax, effComp)) d n =
             (divUpEff effDiv d nDn)
             (divUpEff effDiv d nUp)
     (nUp, nDn) = 
-        case (convertUpEff effConv n, convertDnEff effConv n) of
+        case (convertUpEff effConv sample n, convertDnEff effConv sample n) of
             (Just nUp, Just nDn) -> (nUp, nDn)
             _ -> throw $ AERNException $ 
                         "conversion failed during mixed division: n = " ++ show n
-
+    sample = d
+    
 mixedDivDnEffByConversion ::
     (Convertible tn t, 
      RoundedDivide t, 
@@ -290,10 +299,11 @@ mixedDivDnEffByConversion (effDiv, effConv, (effMinmax, effComp)) d n =
             (divDnEff effDiv d nDn)
             (divDnEff effDiv d nUp)
     (nUp, nDn) = 
-        case (convertUpEff effConv n, convertDnEff effConv n) of
+        case (convertUpEff effConv sample n, convertDnEff effConv sample n) of
             (Just nUp, Just nDn) -> (nUp, nDn)
             _ -> throw $ AERNException $ 
                         "conversion failed during mixed division: n = " ++ show n
+    sample = d
 
 {- properties of mixed multiplication -}
 
@@ -312,7 +322,7 @@ propMixedDivEqualsConvert ::
        NumOrd.MinmaxEffortIndicator t))) -> 
     (NumOrd.UniformlyOrderedSingleton t) -> 
     tn -> Bool
-propMixedDivEqualsConvert sample sampleN initEffort@(effComp,(_,(_,effConv,_))) 
+propMixedDivEqualsConvert sample _sampleN initEffort@(effComp,(_,(_,effConv,_))) 
         (NumOrd.UniformlyOrderedSingleton d) n
     =
     equalRoundingUpDn "mixed division by conversion"
@@ -326,13 +336,13 @@ propMixedDivEqualsConvert sample sampleN initEffort@(effComp,(_,(_,effConv,_)))
     expr2Up (_,(effDiv,effConv,effMinmax)) =
         let (/^) = divUpEff effDiv in
         NumOrd.maxUpEff effMinmax  
-            (d /^ (fromJust $ convertUpEff effConv n))
-            (d /^ (fromJust $ convertDnEff effConv n))
+            (d /^ (fromJust $ convertUpEff effConv sample n))
+            (d /^ (fromJust $ convertDnEff effConv sample n))
     expr2Dn (_,(effDiv,effConv,effMinmax)) =
         let (/.) = divDnEff effDiv in
         NumOrd.minDnEff effMinmax  
-            (d /. (fromJust $ convertUpEff effConv n))
-            (d /. (fromJust $ convertDnEff effConv n))
+            (d /. (fromJust $ convertUpEff effConv sample n))
+            (d /. (fromJust $ convertDnEff effConv sample n))
     
 testsUpDnMixedFieldOps (name, sample) (nameN, sampleN) =
     testGroup (name ++ " with " ++ nameN ++ ": mixed up/dn rounded ops") $

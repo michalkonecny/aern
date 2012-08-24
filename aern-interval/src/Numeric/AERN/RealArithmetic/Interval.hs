@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -19,13 +20,13 @@ module Numeric.AERN.RealArithmetic.Interval
 ()
 where
 
-import Numeric.AERN.RealArithmetic.Interval.ExactOps
-import Numeric.AERN.RealArithmetic.Interval.Measures
-import Numeric.AERN.RealArithmetic.Interval.Conversion
-import Numeric.AERN.RealArithmetic.Interval.FieldOps
-import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
-import Numeric.AERN.RealArithmetic.Interval.SpecialConst
-import Numeric.AERN.RealArithmetic.Interval.Floating
+import Numeric.AERN.RealArithmetic.Interval.ExactOps ()
+import Numeric.AERN.RealArithmetic.Interval.Measures ()
+import Numeric.AERN.RealArithmetic.Interval.Conversion ()
+import Numeric.AERN.RealArithmetic.Interval.FieldOps ()
+import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps ()
+import Numeric.AERN.RealArithmetic.Interval.SpecialConst ()
+import Numeric.AERN.RealArithmetic.Interval.Floating ()
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn

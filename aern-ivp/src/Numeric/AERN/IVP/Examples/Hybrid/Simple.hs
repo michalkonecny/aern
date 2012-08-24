@@ -165,7 +165,7 @@ ivpExpDecay_resetTHalf (sampleFn :: f) =
     tEnd = hybivp_tEnd ivp
     xEnd = (one sampleDom) <*>| (exp (-tEndDbl+tEventDbl) :: Double)
     tEndDbl :: Double
-    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) tEnd
+    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
     toDom = dblToDom sampleDom
     sampleDom = getSampleDomValue sampleFn
 
@@ -231,7 +231,7 @@ ivpExpDecay_resetOn34 (sampleFn :: f) =
 --    tVar = hybivp_tVar ivp
     xEnd = (toDom 1) <*>| (exp (-tEndDbl-3*(log xEventDbl)) :: Double)
     tEndDbl :: Double
-    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) tEnd
+    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
     toDom = dblToDom sampleDom
     sampleDom = getSampleDomValue sampleFn
 
@@ -305,7 +305,7 @@ ivpSpringMass_resetTHalf (sampleFn :: f) =
     xEnd = (toDom 1) <*>| (cos (tEndDbl - tEventDbl) :: Double)
     xDerEnd = (toDom $ -1) <*>| (sin (tEndDbl - tEventDbl) :: Double)
     tEndDbl :: Double
-    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) tEnd
+    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
     toDom = dblToDom sampleDom
     sampleDom = getSampleDomValue sampleFn
     
@@ -374,7 +374,7 @@ ivpSpringMass_resetOn34 (sampleFn :: f) =
     xEnd = (one sampleDom) <*>| (cos (tEndDbl - tEventDbl) :: Double)
     xDerEnd = (toDom $ -1) <*>| (sin (tEndDbl - tEventDbl) :: Double)
     tEndDbl :: Double
-    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) tEnd
+    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
     toDom = dblToDom sampleDom
     sampleDom = getSampleDomValue sampleFn
 

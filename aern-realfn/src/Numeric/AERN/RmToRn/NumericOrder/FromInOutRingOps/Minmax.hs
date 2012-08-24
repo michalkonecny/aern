@@ -298,7 +298,7 @@ maxZeroDnUp
         ((effTToDom, effRealDF, effGetEDF), 
          (effEvalOpsT, effEvalOpsDF), 
          (effRingF, effIntFldF, sizeLimits), 
-         (effRingT, effFldTDF))
+         (_effRingT, effFldTDF))
         degree
         a =
     let ?pCompareEffort = effCompDF in
@@ -329,8 +329,8 @@ maxZeroDnUp
     sampleF = x
     x = getX sizeLimits
     sampleDF = getSampleDomValue x
-    maybeaUp = ArithUpDn.convertUpEff effTToDom a
-    maybeaDn = ArithUpDn.convertDnEff effTToDom a
+    maybeaUp = ArithUpDn.convertUpEff effTToDom sampleDF a
+    maybeaDn = ArithUpDn.convertDnEff effTToDom sampleDF a
     Just aUp = maybeaUp
     Just aDn = maybeaDn
     bounded = excludesInfinity aWidth
@@ -390,7 +390,7 @@ maxZeroDnUp
     effDivTDF = ArithInOut.mxfldEffortDiv a c0 effFldTDF
     
     effMultDFI = ArithInOut.mxfldEffortMult sampleDF (1::Int) $ ArithInOut.rrEffortIntMixedField sampleDF effRealDF
-    effDivDFI = ArithInOut.mxfldEffortDiv sampleDF (1::Int) $ ArithInOut.rrEffortIntMixedField sampleDF effRealDF
+--    effDivDFI = ArithInOut.mxfldEffortDiv sampleDF (1::Int) $ ArithInOut.rrEffortIntMixedField sampleDF effRealDF
 
 {-| compute an upper Bernstein approximation of the function max(x,c) over [0,1] -}
 hillbaseApproxUp :: 
@@ -452,7 +452,7 @@ hillbaseApproxUp effComp effRingF effIntFldF effRealDF effEvalOps x c n =
     effMultDFI = ArithInOut.mxfldEffortMult sampleDF (1::Int) $ ArithInOut.rrEffortIntMixedField sampleDF effRealDF
     effDivDFI = ArithInOut.mxfldEffortDiv sampleDF (1::Int) $ ArithInOut.rrEffortIntMixedField sampleDF effRealDF
 
-    effMultDF = ArithInOut.fldEffortMult sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
+--    effMultDF = ArithInOut.fldEffortMult sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
     effAddDF = ArithInOut.fldEffortAdd sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
 
 {-| compute a lower Bernstein approximation of the function max(c,x) over [0,1] 

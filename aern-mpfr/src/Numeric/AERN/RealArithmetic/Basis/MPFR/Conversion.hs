@@ -38,53 +38,65 @@ import qualified Data.Number.MPFR.Mutable as MM
 
 instance Convertible Integer MPFR where
     type ConvertEffortIndicator Integer MPFR = M.Precision
-    convertDefaultEffort n _ = 
-        max 100 $ 1 + M.bitsInInteger n -- see hmpfr Num instance
-    convertUpEff prec n = Just $ M.fromIntegerA M.Up prec n 
-    convertDnEff prec n = Just $ M.fromIntegerA M.Down prec n
+    convertDefaultEffort n sampleD =
+        max precD $ 1 + M.bitsInInteger n -- see hmpfr Num instance
+        where
+        precD = M.getPrec sampleD
+    convertUpEff prec sampleD n = 
+        Just $ M.fromIntegerA M.Up (max prec precD) n 
+        where
+        precD = M.getPrec sampleD
+    convertDnEff prec sampleD n = 
+        Just $ M.fromIntegerA M.Down (max prec precD) n
+        where
+        precD = M.getPrec sampleD
 
 instance Convertible Int MPFR where
     type ConvertEffortIndicator Int MPFR = M.Precision
     convertDefaultEffort _ _ = 100
-    convertUpEff prec n = Just $ M.fromInt M.Up prec n 
-    convertDnEff prec n = Just $ M.fromInt M.Down prec n
+    convertUpEff prec sampleD n = Just $ M.fromInt M.Up (max prec precD) n 
+        where
+        precD = M.getPrec sampleD
+    convertDnEff prec sampleD n = Just $ M.fromInt M.Down (max prec precD) n
+        where
+        precD = M.getPrec sampleD
 
 instance Convertible MPFR Integer where
     type ConvertEffortIndicator MPFR Integer = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff _ d 
+    convertUpEff _ _ d 
         | M.isInfinite d = Nothing
         | otherwise = Just $ ceiling d
-    convertDnEff _ d 
+    convertDnEff _ _ d 
         | M.isInfinite d = Nothing
         | otherwise = Just $ floor d
 
 instance Convertible MPFR Int where
     type ConvertEffortIndicator MPFR Int = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff effort d =
+    convertUpEff effort _ d =
         case mdUpInteger of
             Nothing -> Nothing
             Just dUpInteger
                 | dUpInteger > (toInteger intMax) -> Nothing
                 | otherwise -> Just $ fromInteger dUpInteger
         where
-        mdUpInteger = convertUpEff effort d
+        mdUpInteger = convertUpEff effort (0 :: Integer) d
         intMax = maxBound :: Int
-    convertDnEff effort d =
+    convertDnEff effort _ d =
         case mdDnInteger of
             Nothing -> Nothing
             Just dDnInteger
                 | dDnInteger < (toInteger intMin) -> Nothing
                 | otherwise -> Just $ fromInteger dDnInteger
         where
-        mdDnInteger = convertDnEff effort d
+        mdDnInteger = convertDnEff effort (0 :: Integer) d
         intMin = minBound :: Int
 
 instance Convertible MPFR Double where
     type ConvertEffortIndicator MPFR Double = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff _ d
+    convertUpEff _ _ d
         | d == plusInfinity d = Just (1/0) 
         | d == minusInfinity d = Just (-1/0)
         | otherwise =
@@ -94,7 +106,7 @@ instance Convertible MPFR Double where
                        d2 | d2 == -(1/0) -> Just dblMinBound
                        d2 | d2 == 0 && d > 0 -> Just dblEpsilon
                        d2 -> Just d2 
-    convertDnEff _ d
+    convertDnEff _ _ d
         | d == plusInfinity d = Just (1/0) 
         | d == minusInfinity d = Just (-1/0)
         | otherwise =
@@ -118,38 +130,42 @@ dblEpsilon = encodeFloat 1 (-1074)
 instance Convertible Double MPFR where
     type ConvertEffortIndicator Double MPFR = M.Precision
     convertDefaultEffort _ _ = 100
-    convertUpEff prec d = Just $ M.fromDouble M.Up prec d 
-    convertDnEff prec d = Just $ M.fromDouble M.Down prec d
+    convertUpEff prec _ d = Just $ M.fromDouble M.Up prec d 
+    convertDnEff prec _ d = Just $ M.fromDouble M.Down prec d
 
 instance Convertible Rational MPFR where
     type ConvertEffortIndicator Rational MPFR = M.Precision
     convertDefaultEffort _ _ = 100
-    convertUpEff prec r 
-        | r < 0 = fmap negate (positiveRational2MPFRDn prec (- r))
+    convertUpEff prec sampleD r 
+        | r < 0 = fmap negate (positiveRational2MPFRDn (max prec precD) (- r))
         | otherwise = positiveRational2MPFRUp prec r
-    convertDnEff prec r 
-        | r < 0 = fmap negate (positiveRational2MPFRUp prec (- r))
+        where
+        precD = M.getPrec sampleD
+    convertDnEff prec sampleD r 
+        | r < 0 = fmap negate (positiveRational2MPFRUp (max prec precD) (- r))
         | otherwise = positiveRational2MPFRDn prec r
+        where
+        precD = M.getPrec sampleD
         
 positiveRational2MPFRUp prec r =        
-        case (convertUpEff prec $ numerator r, convertDnEff prec $ denominator r) of
+        case (convertUpEff prec 0 $ numerator r, convertDnEff prec 0 $ denominator r) of
             (Just num, Just den) -> Just $ divUpEff prec num den
             _ -> Nothing
-positiveRational2MPFRDn prec r =        
-        case (convertDnEff prec $ numerator r, convertUpEff prec $ denominator r) of
+positiveRational2MPFRDn prec r =
+        case (convertDnEff prec 0 $ numerator r, convertUpEff prec 0 $ denominator r) of
             (Just num, Just den) -> Just $ divDnEff prec num den
             _ -> Nothing
 
 instance Convertible MPFR Rational where
     type ConvertEffortIndicator MPFR Rational = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff _ d
+    convertUpEff _ _ d
         | M.isInfinite d = Nothing
         | otherwise = Just $ toRational d
-    convertDnEff eff d = convertUpEff eff d
+    convertDnEff = convertUpEff
 
 instance Convertible MPFR MPFR where
     type ConvertEffortIndicator MPFR MPFR = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff _ d = Just d
-    convertDnEff _ d = Just d
+    convertUpEff _ _ d = Just d
+    convertDnEff _ _ d = Just d

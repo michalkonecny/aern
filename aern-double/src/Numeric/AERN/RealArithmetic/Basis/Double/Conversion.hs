@@ -27,7 +27,7 @@ import Control.Exception
 instance Convertible Integer Double where
     type ConvertEffortIndicator Integer Double = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff _ n
+    convertUpEff _ _ n
        | ndn >= n = Just dn
        | otherwise = Just dnUp
        where
@@ -35,7 +35,7 @@ instance Convertible Integer Double where
        ndn = floor dn
        (m, e) = decodeFloat dn
        dnUp = encodeFloat (m + 1) e
-    convertDnEff _ n
+    convertDnEff _ _ n
        | ndn <= n = Just dn
        | otherwise = Just dnDn
        where
@@ -47,53 +47,53 @@ instance Convertible Integer Double where
 instance Convertible Int Double where
     type ConvertEffortIndicator Int Double = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff effort n =
-       convertUpEff effort (toInteger n)
-    convertDnEff effort n =
-       convertDnEff effort (toInteger n)
+    convertUpEff effort sampleD n =
+       convertUpEff effort sampleD (toInteger n)
+    convertDnEff effort sampleD n =
+       convertDnEff effort sampleD (toInteger n)
 
 instance Convertible Double Integer where
     type ConvertEffortIndicator Double Integer = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff _ d 
+    convertUpEff _ _ d 
         | isInfinite d = Nothing
         | otherwise = Just $ ceiling d
-    convertDnEff _ d 
+    convertDnEff _ _ d 
         | isInfinite d = Nothing
         | otherwise = Just $ floor d
 
 instance Convertible Double Int where
     type ConvertEffortIndicator Double Int = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff effort d =
+    convertUpEff effort _ d =
         case mdUpInteger of
             Nothing -> Nothing
             Just dUpInteger
                 | dUpInteger > (toInteger intMax) -> Nothing
                 | otherwise -> Just $ fromInteger dUpInteger
         where
-        mdUpInteger = convertUpEff effort d
+        mdUpInteger = convertUpEff effort (0::Integer) d
         intMax = maxBound :: Int
-    convertDnEff effort d =
+    convertDnEff effort _ d =
         case mdDnInteger of
             Nothing -> Nothing
             Just dDnInteger
                 | dDnInteger < (toInteger intMin) -> Nothing
                 | otherwise -> Just $ fromInteger dDnInteger
         where
-        mdDnInteger = convertDnEff effort d
+        mdDnInteger = convertDnEff effort (0::Integer) d
         intMin = minBound :: Int
 
 instance Convertible Double Double where
     type ConvertEffortIndicator Double Double = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff _ d = Just d
-    convertDnEff _ d = Just d
+    convertUpEff _ _ d = Just d
+    convertDnEff _ _ d = Just d
 
 instance Convertible Rational Double where
     type ConvertEffortIndicator Rational Double = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff _ r
+    convertUpEff _ _ r
        | rdr >= r = Just dr
        | otherwise = Just drUp
        where
@@ -101,7 +101,7 @@ instance Convertible Rational Double where
        dr = fromRational r
        (m, e) = decodeFloat dr
        drUp = encodeFloat (m + 1) e
-    convertDnEff _ r
+    convertDnEff _ _ r
        | rdr <= r = Just dr
        | otherwise = Just drDn
        where
@@ -113,8 +113,8 @@ instance Convertible Rational Double where
 instance Convertible Double Rational where
     type ConvertEffortIndicator Double Rational = ()
     convertDefaultEffort _ _ = ()
-    convertUpEff _ d
+    convertUpEff _ _ d
         | isInfinite d = Nothing
         | otherwise = Just $ toRational d
-    convertDnEff eff d = convertUpEff eff d
+    convertDnEff = convertUpEff
 

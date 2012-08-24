@@ -168,7 +168,7 @@ dataWatchThread
     toDbl :: (Domain f) -> Double
     toDbl a = d
         where
-        (Just d) = ArithUpDn.convertUpEff effToDouble a
+        (Just d) = ArithUpDn.convertUpEff effToDouble 0 a
     effToDouble = ArithInOut.rrEffortToDouble sampleDom effReal
     effFromDouble = ArithInOut.rrEffortFromDouble sampleDom effReal
     sampleDom = getSampleDomValue sampleF
@@ -224,7 +224,7 @@ updateValueDisplay effFromDouble effEval widgets dynWidgetsRef state (fndata, _)
                 evalPt =
                     insertVar plotVar evalPointDom dombox 
                 evalPointDom =
-                    ArithInOut.convertOutEff effFromDouble evalPointD
+                    ArithInOut.convertOutEff effFromDouble sampleDom evalPointD
                 sampleDom = getSampleDomValue fn
                 dombox = getDomainBox fn
 
@@ -374,7 +374,7 @@ updateView (sampleF :: f) effReal effEval widgets dynWidgetsRef state (fndata, f
     toDbl :: (Domain f) -> Double
     toDbl a = d
         where
-        (Just d) = ArithUpDn.convertUpEff effToDouble a
+        (Just d) = ArithUpDn.convertUpEff effToDouble 0 a
     effToDouble = ArithInOut.rrEffortToDouble sampleDom effReal
     effFromDouble = ArithInOut.rrEffortFromDouble sampleDom effReal
     sampleDom = getSampleDomValue sampleF

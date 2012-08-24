@@ -67,14 +67,18 @@ mixedAddInEffByConversion ::
     (AddEffortIndicator t, ConvertEffortIndicator tn t) ->
     t -> tn -> t
 mixedAddInEffByConversion (effAdd, effConv) d n = 
-    addInEff effAdd d (convertInEff effConv n)
+    addInEff effAdd d (convertInEff effConv sample n)
+    where
+    sample = d
 
 mixedAddOutEffByConversion ::
     (Convertible tn t, RoundedAdd t) =>
     (AddEffortIndicator t, ConvertEffortIndicator tn t) ->
     t -> tn -> t
 mixedAddOutEffByConversion (effAdd, effConv) d n = 
-    addOutEff effAdd d (convertOutEff effConv n)
+    addOutEff effAdd d (convertOutEff effConv sample n)
+    where
+    sample = d
 
 
 propMixedAddEqualsConvert ::
@@ -89,7 +93,7 @@ propMixedAddEqualsConvert ::
       AddEffortIndicator t,
       ConvertEffortIndicator tn t)) -> 
     tn -> Bool
-propMixedAddEqualsConvert sample sampleN 
+propMixedAddEqualsConvert sample _sampleN 
         (RefOrd.UniformlyOrderedSingleton d) 
         initEffort 
         n 
@@ -103,9 +107,9 @@ propMixedAddEqualsConvert sample sampleN
     expr1Out (effMAdd,_,_) =
         let (<+>|) = mixedAddOutEff effMAdd in d <+>| n
     expr2In (_,effAdd,effConv) =
-        let (>+<) = addInEff effAdd in  d >+< (convertInEff effConv n)
+        let (>+<) = addInEff effAdd in  d >+< (convertInEff effConv sample n)
     expr2Out (_,effAdd,effConv) =
-        let (<+>) = addOutEff effAdd in  d <+> (convertOutEff effConv n)
+        let (<+>) = addOutEff effAdd in  d <+> (convertOutEff effConv sample n)
 
 
 class
@@ -128,14 +132,18 @@ mixedMultInEffByConversion ::
     (MultEffortIndicator t, ConvertEffortIndicator tn t) ->
     t -> tn -> t
 mixedMultInEffByConversion (effMult, effConv) d n = 
-    multInEff effMult d (convertInEff effConv n)
+    multInEff effMult d (convertInEff effConv sample n)
+    where
+    sample = d
 
 mixedMultOutEffByConversion ::
     (Convertible tn t, RoundedMultiply t) =>
     (MultEffortIndicator t, ConvertEffortIndicator tn t) ->
     t -> tn -> t
 mixedMultOutEffByConversion (effMult, effConv) d n = 
-    multOutEff effMult d (convertOutEff effConv n)
+    multOutEff effMult d (convertOutEff effConv sample n)
+    where
+    sample = d
 
 
 propMixedMultEqualsConvert ::
@@ -150,7 +158,7 @@ propMixedMultEqualsConvert ::
        MultEffortIndicator t,
        ConvertEffortIndicator tn t)) -> 
     tn -> Bool
-propMixedMultEqualsConvert sample sampleN 
+propMixedMultEqualsConvert sample _sampleN 
         (RefOrd.UniformlyOrderedSingleton d) 
         initEffort 
         n 
@@ -164,9 +172,9 @@ propMixedMultEqualsConvert sample sampleN
     expr1Out (effMMult,_,_) =
         let (<*>|) = mixedMultOutEff effMMult in d <*>| n
     expr2In (_,effMult,effConv) =
-        let (>*<) = multInEff effMult in d >*< (convertInEff effConv n)
+        let (>*<) = multInEff effMult in d >*< (convertInEff effConv sample n)
     expr2Out (_,effMult,effConv) =
-        let (<*>) = multOutEff effMult in d <*> (convertOutEff effConv n)
+        let (<*>) = multOutEff effMult in d <*> (convertOutEff effConv sample n)
 
 class
     (EffortIndicator (MixedDivEffortIndicator t tn))
@@ -188,14 +196,18 @@ mixedDivInEffByConversion ::
     (DivEffortIndicator t, ConvertEffortIndicator tn t) ->
     t -> tn -> t
 mixedDivInEffByConversion (effDiv, effConv) d n = 
-    divInEff effDiv d (convertInEff effConv n)
+    divInEff effDiv d (convertInEff effConv sample n)
+    where
+    sample = d
 
 mixedDivOutEffByConversion ::
     (Convertible tn t, RoundedDivide t) =>
     (DivEffortIndicator t, ConvertEffortIndicator tn t) ->
     t -> tn -> t
 mixedDivOutEffByConversion (effDiv, effConv) d n = 
-    divOutEff effDiv d (convertOutEff effConv n)
+    divOutEff effDiv d (convertOutEff effConv sample n)
+    where
+    sample = d
 
 
 propMixedDivEqualsConvert ::
@@ -210,7 +222,7 @@ propMixedDivEqualsConvert ::
       DivEffortIndicator t,
       ConvertEffortIndicator tn t)) -> 
     tn -> Bool
-propMixedDivEqualsConvert sample sampleN 
+propMixedDivEqualsConvert sample _sampleN 
         (RefOrd.UniformlyOrderedSingleton d) 
         initEffort@(effComp,(_,_,effConv)) 
         n
@@ -224,9 +236,9 @@ propMixedDivEqualsConvert sample sampleN
     expr1Out (effMDiv,_,_) =
         let (</>|) = mixedDivOutEff effMDiv in d </>| n
     expr2In (_,effDiv,effConv) =
-        let (>/<) = divInEff effDiv in d >/< (convertInEff effConv n)
+        let (>/<) = divInEff effDiv in d >/< (convertInEff effConv sample n)
     expr2Out (_,effDiv,effConv) =
-        let (</>) = divOutEff effDiv in d </> (convertOutEff effConv n)
+        let (</>) = divOutEff effDiv in d </> (convertOutEff effConv sample n)
 
     
 testsInOutMixedFieldOps (name, sample) (nameN, sampleN) area =

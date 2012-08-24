@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -33,29 +34,41 @@ import Numeric.AERN.Basics.Interval
 
 import Control.Exception
 
-instance (ArithUpDn.Convertible t e, Show t) => Convertible t (Interval e) where
+instance 
+    (ArithUpDn.Convertible t e, Show t) 
+    => 
+    Convertible t (Interval e) 
+    where
     type ConvertEffortIndicator t (Interval e) = 
         ArithUpDn.ConvertEffortIndicator t e
-    convertDefaultEffort i (Interval l r) = ArithUpDn.convertDefaultEffort i l 
-    convertInEff effort x =
+    convertDefaultEffort i (Interval sampleE _) = ArithUpDn.convertDefaultEffort i sampleE 
+    convertInEff effort (Interval sampleE _) x =
         Interval xUp xDn
         where
-        xUp = convertUpEffException effort x
-        xDn = convertDnEffException effort x
-    convertOutEff effort x =
+        xUp = convertUpEffException effort sampleE x
+        xDn = convertDnEffException effort sampleE x
+    convertOutEff effort (Interval sampleE _) x =
         Interval xDn xUp
         where
-        xUp = convertUpEffException effort x
-        xDn = convertDnEffException effort x
+        xUp = convertUpEffException effort sampleE x
+        xDn = convertDnEffException effort sampleE x
 
-convertUpEffException effort x =
-    case ArithUpDn.convertUpEff effort x of
+convertUpEffException ::
+    (Show t1, ArithUpDn.Convertible t1 t2) 
+    =>
+    ArithUpDn.ConvertEffortIndicator t1 t2 -> t2 -> t1 -> t2
+convertUpEffException effort sample x =
+    case ArithUpDn.convertUpEff effort sample x of
        Just xUp -> xUp
        _ -> throw $ AERNException $
                 "failed to convert to interval: x = " ++ show x
     
-convertDnEffException effort x =
-    case ArithUpDn.convertDnEff effort x of
+convertDnEffException ::
+    (Show t1, ArithUpDn.Convertible t1 t2) 
+    =>
+    ArithUpDn.ConvertEffortIndicator t1 t2 -> t2 -> t1 -> t2
+convertDnEffException effort sample x =
+    case ArithUpDn.convertDnEff effort sample x of
        Just xDn -> xDn
        _ -> throw $ AERNException $
                 "failed to convert to interval: x = " ++ show x
@@ -69,7 +82,7 @@ instance (ArithUpDn.Convertible e t) =>
     type ArithUpDn.ConvertEffortIndicator (Interval e) t = 
         ArithUpDn.ConvertEffortIndicator e t
 #endif
-    convertDefaultEffort (Interval l r) i = ArithUpDn.convertDefaultEffort l i 
-    convertUpEff effort (Interval l r) = ArithUpDn.convertUpEff effort r
-    convertDnEff effort (Interval l r) = ArithUpDn.convertDnEff effort l
+    convertDefaultEffort (Interval sampleE _) i = ArithUpDn.convertDefaultEffort sampleE i 
+    convertUpEff effort sampleT (Interval _ r) = ArithUpDn.convertUpEff effort sampleT r
+    convertDnEff effort sampleT (Interval l _) = ArithUpDn.convertDnEff effort sampleT l
 
