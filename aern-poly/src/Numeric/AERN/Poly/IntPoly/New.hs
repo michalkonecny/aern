@@ -145,30 +145,6 @@ mkConstTerms value vars
 
 instance
     (Ord var, Show var, Show cf,
-     ArithInOut.RoundedReal cf,
-     HasConsistency cf,
-     RefOrd.IntervalLike cf)
-    =>
-    HasZero (IntPoly var cf)
-    where
-    zero sampleP = newConstFnFromSample sampleP $ zero sampleCf
-        where
-        sampleCf = getSampleDomValue sampleP
-        
-instance
-    (Ord var, Show var, Show cf,
-     HasConsistency cf,
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf)
-    =>
-    HasOne (IntPoly var cf)
-    where
-    one sampleP = newConstFnFromSample sampleP $ one sampleCf
-        where
-        sampleCf = getSampleDomValue sampleP
-        
-instance
-    (Ord var, Show var, Show cf,
      HasConsistency cf,
      ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf)
