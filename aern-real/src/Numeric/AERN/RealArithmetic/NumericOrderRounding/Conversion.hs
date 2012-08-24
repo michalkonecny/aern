@@ -44,8 +44,8 @@ class
     where
     type ConvertEffortIndicator t1 t2
     convertDefaultEffort :: t1 -> t2 -> ConvertEffortIndicator t1 t2 
-    convertUpEff :: ConvertEffortIndicator t1 t2 -> t1 -> Maybe t2
-    convertDnEff :: ConvertEffortIndicator t1 t2 -> t1 -> Maybe t2
+    convertUpEff :: ConvertEffortIndicator t1 t2 -> t2 -> t1 -> Maybe t2
+    convertDnEff :: ConvertEffortIndicator t1 t2 -> t2 -> t1 -> Maybe t2
 
 propConvertMonotone ::
     (Convertible t1 t2, 
@@ -61,11 +61,10 @@ propConvertMonotone sample1 sample2 (effortConvert, effortComp2) (NumOrd.LEPair 
         let ?pCompareEffort = effortComp2 in
         a1Dn <=? a2Up)
     where
-    ma1Dn = convertDnEff effortConvert a1 
-    ma2Up = convertUpEff effortConvert a2
-    a1Dn = fromJust ma1Dn
-    a2Up = fromJust ma2Up
-    _ = [sample2, a1Dn, a2Up]
+    ma1Dn = convertDnEff effortConvert sample2 a1 
+    ma2Up = convertUpEff effortConvert sample2 a2
+    Just a1Dn = ma1Dn
+    Just a2Up = ma2Up
     
 propConvertRoundTrip ::
     (Convertible t1 t2, Convertible t2 t1, NumOrd.PartialComparison t1) =>
@@ -74,7 +73,7 @@ propConvertRoundTrip ::
      ConvertEffortIndicator t2 t1, 
      ConvertEffortIndicator t1 t2) ->
     t1 -> Bool
-propConvertRoundTrip _ sample2 (effortComp, effortFrom2, effortTo2) a =
+propConvertRoundTrip sample1 sample2 (effortComp, effortFrom2, effortTo2) a =
     (defined maDn2 && defined maDn && defined maUp2 && defined maUp) ===>
     let ?pCompareEffort = effortComp in
     case (aDn <=? a, a <=? aUp) of
@@ -82,14 +81,14 @@ propConvertRoundTrip _ sample2 (effortComp, effortFrom2, effortTo2) a =
        (_, Just False) -> False
        _ -> True
     where
-    maDn = convertDnEff effortFrom2 aDn2
-    aDn = fromJust maDn 
-    maDn2 = convertDnEff effortTo2 a
-    aDn2 = fromJust maDn2 
-    maUp = convertUpEff effortFrom2 aUp2
-    aUp = fromJust maUp 
-    maUp2 = convertUpEff effortTo2 a
-    aUp2 = fromJust maUp2
+    maDn = convertDnEff effortFrom2 sample1 aDn2
+    Just aDn = maDn 
+    maDn2 = convertDnEff effortTo2 sample2 a
+    Just aDn2 = maDn2 
+    maUp = convertUpEff effortFrom2 sample1 aUp2
+    Just aUp = maUp 
+    maUp2 = convertUpEff effortTo2 sample2 a
+    Just aUp2 = maUp2
     _ = [sample2, aUp2, aDn2] 
     
 testsConvert (name1, sample1, name2, sample2) =

@@ -236,8 +236,8 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fn
         (w*xUnitD,h*(1-yUnitD)) -- Cairo's origin is the top left corner 
         where
         _ = [sampleDom, xUnit, yUnit]
-        Just xUnitD = ArithUpDn.convertUpEff effToDouble xUnit
-        Just yUnitD = ArithUpDn.convertUpEff effToDouble yUnit
+        Just xUnitD = ArithUpDn.convertUpEff effToDouble 0 xUnit
+        Just yUnitD = ArithUpDn.convertUpEff effToDouble 0 yUnit
 
     coordSystem = cnvprmCoordSystem canvasParams
     c0 = zero sampleDom
@@ -276,11 +276,11 @@ pickAFewDyadicBetween sampleDom effReal a b =
     
     aCount, bCount :: Integer
     Just aCount =
-        ArithUpDn.convertUpEff effToInteger $
+        ArithUpDn.convertUpEff effToInteger 0 $
             let ?divInOutEffort = effDiv in
             a </> partitionBase
     Just bCount = 
-        ArithUpDn.convertDnEff effToInteger $
+        ArithUpDn.convertDnEff effToInteger 0 $
             let ?divInOutEffort = effDiv in
             b </> partitionBase
     
@@ -303,8 +303,8 @@ pickAFewDyadicBetween sampleDom effReal a b =
             intLogDown (2::Integer) sizeDnI
     
     sizeRecipUpI, sizeDnI :: Integer
-    Just sizeRecipUpI = ArithUpDn.convertUpEff effToInteger sizeRecip
-    Just sizeDnI = ArithUpDn.convertDnEff effToInteger size
+    Just sizeRecipUpI = ArithUpDn.convertUpEff effToInteger 0 sizeRecip
+    Just sizeDnI = ArithUpDn.convertDnEff effToInteger 0 size
 
     sizeBelowOne =
         let ?pCompareEffort = effComp in

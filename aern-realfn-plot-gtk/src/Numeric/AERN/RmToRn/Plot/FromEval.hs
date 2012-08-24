@@ -194,7 +194,7 @@ cairoDrawFnFromEval
                 getSegmentCount segPerUnit coordSystem dom = 
 --                        unsafePrint ("cairoDrawFnFromEval: getSegmentCount: dom = " ++ show dom ++ " domWidthScreen = " ++ show domWidthScreen) $
                     let ?mixedMultInOutEffort = effMultInt in
-                    case ArithUpDn.convertUpEff effToInt (segPerUnit |<*> domWidthScreen) of
+                    case ArithUpDn.convertUpEff effToInt 0 (segPerUnit |<*> domWidthScreen) of
                         Just cnt -> (cnt :: Int)
                     where
                     domWidthScreen = 

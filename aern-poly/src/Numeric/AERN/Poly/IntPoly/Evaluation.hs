@@ -266,7 +266,7 @@ coeffPolyEvalOpsOut eff depth sample =
             (valL <+> valR) </>| (2 :: Int)
     getWidthAsDouble val = wD
         where
-        Just wD = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort val (0::Double)) w
+        Just wD = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort val (0::Double)) 0 w
         w = 
             let ?addInOutEffort = effAdd in
             valR <-> valL
@@ -319,21 +319,18 @@ instance
     convertDefaultEffort sampleP sampleCf = 
         (evaluationDefaultEffort sampleP, 
          RefOrd.getEndpointsDefaultEffort sampleCf)
-    convertUpEff (effEval, effGetEndpts) p =
+    convertUpEff (effEval, effGetEndpts) sampleCf p =
         Just $ snd $ RefOrd.getEndpointsOutEff effGetEndpts range
         where
         range = evalOtherType (evalOpsEff effEval sampleP sampleCf) varDoms p 
-        sampleP = p
-        sampleCf = getSampleDomValue sampleP
         varDoms = getDomainBox p
-    convertDnEff (effEval, effGetEndpts) p =
+        sampleP = p
+    convertDnEff (effEval, effGetEndpts) sampleCf p =
         Just $ fst $ RefOrd.getEndpointsOutEff effGetEndpts range
         where
         range = evalOtherType (evalOpsEff effEval sampleP sampleCf) varDoms p 
-        sampleP = p
-        
-        sampleCf = getSampleDomValue sampleP
         varDoms = getDomainBox p
+        sampleP = p
     
 
 evalPolyAtPointOut, evalPolyAtPointIn ::

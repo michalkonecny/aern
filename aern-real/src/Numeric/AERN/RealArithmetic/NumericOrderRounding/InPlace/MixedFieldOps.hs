@@ -77,11 +77,12 @@ mixedAddUpInPlaceEffByConversion ::
     OpMutableNonmutEff (AddEffortIndicator t, ConvertEffortIndicator tn t) t tn s 
 mixedAddUpInPlaceEffByConversion (effAdd, effConv) rM dM n =
     do
-    nUpM <- makeMutable nUp
+    sample <- readMutable dM
+    nUpM <- makeMutable $ nUp sample
     addUpInPlaceEff effAdd rM dM nUpM
     where
-    nUp = 
-        case convertUpEff effConv n of
+    nUp sample = 
+        case convertUpEff effConv sample n of
             (Just nUp) -> nUp
             _ -> throw $ AERNException $ 
                         "conversion failed during mixed addition: n = " ++ show n
@@ -91,11 +92,12 @@ mixedAddDnInPlaceEffByConversion ::
     OpMutableNonmutEff (AddEffortIndicator t, ConvertEffortIndicator tn t) t tn s 
 mixedAddDnInPlaceEffByConversion (effAdd, effConv) rM dM n =
     do
-    nDnM <- makeMutable nDn
+    sample <- readMutable dM
+    nDnM <- makeMutable $ nDn sample
     addDnInPlaceEff effAdd rM dM nDnM
     where
-    nDn = 
-        case convertDnEff effConv n of
+    nDn sample = 
+        case convertDnEff effConv sample n of
             (Just nDn) -> nDn
             _ -> throw $ AERNException $ 
                         "conversion failed during mixed addition: n = " ++ show n
@@ -117,7 +119,7 @@ propMixedAddInPlaceEqualsConvert ::
       ConvertEffortIndicator tn t)) -> 
     (NumOrd.UniformlyOrderedSingleton t) -> 
     tn -> Bool
-propMixedAddInPlaceEqualsConvert sample1 sample2 initEffort 
+propMixedAddInPlaceEqualsConvert sample1 _sample2 initEffort 
         (NumOrd.UniformlyOrderedSingleton d) n =
     equalRoundingUpDn "in-place rounded mixed addition"
         expr1Up expr1Dn expr2Up expr2Dn 
@@ -138,9 +140,9 @@ propMixedAddInPlaceEqualsConvert sample1 sample2 initEffort
             dR +.|= n
             unsafeReadMutable dR
     expr2Up (_,effAdd,effConv) =
-        let (+^) = addUpEff effAdd in (fromJust $ convertUpEff effConv n) +^ d
+        let (+^) = addUpEff effAdd in (fromJust $ convertUpEff effConv sample1 n) +^ d
     expr2Dn (_,effAdd,effConv) =
-        let (+.) = addDnEff effAdd in (fromJust $ convertDnEff effConv n) +. d
+        let (+.) = addDnEff effAdd in (fromJust $ convertDnEff effConv sample1 n) +. d
 
 
 
@@ -209,13 +211,13 @@ propMixedMultInPlaceEqualsConvert sample1 sample2 initEffort
     expr2Up (_,(effMult,effConv,effMinmax)) =
         let (*^) = multUpEff effMult in
         NumOrd.maxUpEff effMinmax  
-            (d *^ (fromJust $ convertUpEff effConv n))
-            (d *^ (fromJust $ convertDnEff effConv n))
+            (d *^ (fromJust $ convertUpEff effConv sample1 n))
+            (d *^ (fromJust $ convertDnEff effConv sample1 n))
     expr2Dn (_,(effMult,effConv,effMinmax)) =
         let (*.) = multDnEff effMult in
         NumOrd.minDnEff effMinmax  
-            (d *. (fromJust $ convertUpEff effConv n))
-            (d *. (fromJust $ convertDnEff effConv n))
+            (d *. (fromJust $ convertUpEff effConv sample1 n))
+            (d *. (fromJust $ convertDnEff effConv sample1 n))
 
 class (RoundedMixedDivide t tn, CanBeMutable t) => RoundedMixedDivideInPlace t tn where
     mixedDivUpInPlaceEff :: 
@@ -287,13 +289,13 @@ propMixedDivInPlaceEqualsConvert sample1 sample2
     expr2Up (_,(effDiv,effConv,effMinmax)) =
         let (/^) = divUpEff effDiv in
         NumOrd.maxUpEff effMinmax  
-            (d /^ (fromJust $ convertUpEff effConv n))
-            (d /^ (fromJust $ convertDnEff effConv n))
+            (d /^ (fromJust $ convertUpEff effConv sample1 n))
+            (d /^ (fromJust $ convertDnEff effConv sample1 n))
     expr2Dn (_,(effDiv,effConv,effMinmax)) =
         let (/.) = divDnEff effDiv in
         NumOrd.minDnEff effMinmax  
-            (d /. (fromJust $ convertUpEff effConv n))
-            (d /. (fromJust $ convertDnEff effConv n))
+            (d /. (fromJust $ convertUpEff effConv sample1 n))
+            (d /. (fromJust $ convertDnEff effConv sample1 n))
     
 testsUpDnMixedFieldOpsInPlace (name, sample) (nameN, sampleN) =
     testGroup (name ++ " with " ++ nameN ++ ": in-place mixed up/dn rounded ops") $

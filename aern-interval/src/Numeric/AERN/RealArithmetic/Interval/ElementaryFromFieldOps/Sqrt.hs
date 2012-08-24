@@ -22,17 +22,17 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.OpsImplicitEffort
 --import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+--import qualified Numeric.AERN.RefinementOrder as RefOrd
+--import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Interval
+import Numeric.AERN.RealArithmetic.Interval ()
 
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.Consistency
-import Numeric.AERN.Basics.Effort
+--import Numeric.AERN.Basics.Consistency
+--import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Exception
 
@@ -91,8 +91,8 @@ sqrtOutThinArg
     where
     (xRecipSqrtDownPrev, xRecipSqrtDown) = recipSqrtDown
     xRecipSqrtDownInFastRegion =
-        case ArithUpDn.convertDnEff effortToDouble t of
-            Just lowerBound -> lowerBound > (0.381966012 :: Double) -- (3 - sqrt 5)/2
+        case ArithUpDn.convertDnEff effortToDouble (0::Double) t of
+            Just lowerBound -> lowerBound > 0.381966012 -- (3 - sqrt 5)/2
             Nothing -> False
         where
         t = (xRecipSqrtDownPrev *. xRecipSqrtDownPrev) *. x
@@ -106,8 +106,8 @@ sqrtOutThinArg
             (3 |+^ (neg $ x *. (xRecipSqrtDownPrev *. xRecipSqrtDownPrev))) 
             
     sureAbove0 t = 
-        case ArithUpDn.convertDnEff effortToDouble t of
-            Just lowerBound -> lowerBound > (0 :: Double)
+        case ArithUpDn.convertDnEff effortToDouble (0::Double) t of
+            Just lowerBound -> lowerBound > 0
             Nothing -> False
             
     sureIsZero t = 
@@ -118,8 +118,8 @@ sqrtOutThinArg
     x1 +^ x2 = ArithUpDn.addUpEff effortAdd x1 x2
     x1 *^ x2 = ArithUpDn.multUpEff effortMult x1 x2
     x1 *. x2 = ArithUpDn.multDnEff effortMult x1 x2
-    recipUp x = ArithUpDn.recipUpEff effortDiv x
-    recipDn x = ArithUpDn.recipDnEff effortDiv x
+    recipUp x1 = ArithUpDn.recipUpEff effortDiv x1
+    recipDn x1 = ArithUpDn.recipDnEff effortDiv x1
     n |+^ x = ArithUpDn.mixedAddUpEff effortAddInt x (n :: Int)
     n |+. x = ArithUpDn.mixedAddDnEff effortAddInt x  (n :: Int)
     x /^| n = ArithUpDn.mixedDivUpEff effortDivInt x  (n :: Int)
@@ -160,10 +160,10 @@ sqrtOutThinArg
         -- iteratively improve q, a lower bound on sqrt(1/x)
         --   using the formula q_{n+1} = (q_n / 2) * (3 - x * q_n * q_n)  
         --   quoted eg in http://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Iterative_methods_for_reciprocal_square_roots
-        iterRecipSqrt maxIters qNm2 qNm1
-            | maxIters > 0 && sureAbove0 qNm1 =
---                    unsafePrint ("AERN: sqrtOutThinArg: recipSqrtDown: iterRecipSqrt: maxIters = " ++ show maxIters) $
-                iterRecipSqrt (maxIters - 1) qNm1 qN
+        iterRecipSqrt maxIters2 qNm2 qNm1
+            | maxIters2 > 0 && sureAbove0 qNm1 =
+--                    unsafePrint ("AERN: sqrtOutThinArg: recipSqrtDown: iterRecipSqrt: maxIters2 = " ++ show maxIters2) $
+                iterRecipSqrt (maxIters2 - 1) qNm1 qN
             | otherwise = (qNm2, qNm1)
             where
             qN =
@@ -212,9 +212,9 @@ sqrtOutThinArgInPlace
     let ?mixedAddUpDnEffort = ArithUpDn.mxfldEffortAdd x (0::Int) effortMixedField
     let ?mixedMultUpDnEffort = ArithUpDn.mxfldEffortMult x (0::Int) effortMixedField
     let ?mixedDivUpDnEffort = ArithUpDn.mxfldEffortDiv x (0::Int) effortMixedField
-    computeSqrt xM x
+    computeSqrt x
     where
-    computeSqrt xM x =
+    computeSqrt x =
         do
         continue
         where
@@ -281,43 +281,43 @@ sqrtOutThinArgInPlace
                             NumOrd.maxUpEff effortMinmax x (one x)
                     where
                     xRecipSqrtDownInFastRegion =
-                        case ArithUpDn.convertDnEff effortToDouble t of
-                            Just lowerBound -> lowerBound > (0.381966012 :: Double) -- (3 - sqrt 5)/2
+                        case ArithUpDn.convertDnEff effortToDouble (0::Double) t of
+                            Just lowerBound -> lowerBound > 0.381966012 -- (3 - sqrt 5)/2
                             Nothing -> False
                         where
                         t = 
                             (xRecipSqrtDownPrev *. xRecipSqrtDownPrev) *. x
-                newtonIterateUp resM tM = 
-                    -- assumes no aliasing between resM and tM, does not change tM
+                newtonIterateUp resM2 tM = 
+                    -- assumes no aliasing between resM2 and tM, does not change tM
                     do
                     -- res :=
                     --    (t /^| 2 )
                     --     *^
                     --    (3 |+^ (neg $ x *. (t *. t))) 
-                    ArithUpDn.multUpInPlaceEff effortMult resM tM tM
-                    resM *^= xM
-                    negInPlace resM resM
-                    resM +.|= (3 :: Int)
-                    resM *.= tM
-                    resM /.|= (2 :: Int)
+                    ArithUpDn.multUpInPlaceEff effortMult resM2 tM tM
+                    resM2 *^= xM
+                    negInPlace resM2 resM2
+                    resM2 +.|= (3 :: Int)
+                    resM2 *.= tM
+                    resM2 /.|= (2 :: Int)
     
-                newtonIterateDn resM tM = 
-                    -- assumes no aliasing between resM and tM, does not change tM
+                newtonIterateDn resM2 tM = 
+                    -- assumes no aliasing between resM2 and tM, does not change tM
                     do
                     -- res :=
                     --    (t /.| 2 )
                     --     *.
                     --    (3 |+. (neg $ x *^ (t *^ t))) 
-                    ArithUpDn.multDnInPlaceEff effortMult resM tM tM
-                    resM *.= xM
-                    negInPlace resM resM
-                    resM +^|= (3 :: Int)
-                    resM *^= tM
-                    resM /^|= (2 :: Int)
+                    ArithUpDn.multDnInPlaceEff effortMult resM2 tM tM
+                    resM2 *.= xM
+                    negInPlace resM2 resM2
+                    resM2 +^|= (3 :: Int)
+                    resM2 *^= tM
+                    resM2 /^|= (2 :: Int)
     
                 sureAbove0 t = 
-                    case ArithUpDn.convertDnEff effortToDouble t of
-                        Just lowerBound -> lowerBound > (0 :: Double)
+                    case ArithUpDn.convertDnEff effortToDouble (0 :: Double) t of
+                        Just lowerBound -> lowerBound > 0
                         Nothing -> False
                         
                 sureIsZero t = 
@@ -325,12 +325,12 @@ sqrtOutThinArgInPlace
                         Just True -> True
                         _ -> False
                 
-                effortAdd = ArithUpDn.fldEffortAdd x effortField
+--                effortAdd = ArithUpDn.fldEffortAdd x effortField
                 effortMult = ArithUpDn.fldEffortMult x effortField
                 effortDiv = ArithUpDn.fldEffortDiv x effortField
-                effortMultInt = ArithUpDn.mxfldEffortMult x (0::Int) effortMixedField
-                effortAddInt = ArithUpDn.mxfldEffortAdd x (0::Int) effortMixedField
-                effortDivInt = ArithUpDn.mxfldEffortDiv x (0::Int) effortMixedField
+--                effortMultInt = ArithUpDn.mxfldEffortMult x (0::Int) effortMixedField
+--                effortAddInt = ArithUpDn.mxfldEffortAdd x (0::Int) effortMixedField
+--                effortDivInt = ArithUpDn.mxfldEffortDiv x (0::Int) effortMixedField
             
                 recipSqrtDown aM bM
                     | q0OK = -- computed an approximation in the stable region:
@@ -371,19 +371,19 @@ sqrtOutThinArgInPlace
                     -- iteratively improve q, a lower bound on sqrt(1/x)
                     --   using the formula q_{n+1} = (q_n / 2) * (3 - x * q_n * q_n)  
                     --   quoted eg in http://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Iterative_methods_for_reciprocal_square_roots
-                    iterRecipSqrt maxIters prevFirst aM bM =
+                    iterRecipSqrt maxIters2 prevFirst aM2 bM2 =
                         -- assuming aM and bM do not alias
                         do
                         qNm1 <- unsafeReadMutable qNm1M
-                        case maxIters > 0 && sureAbove0 qNm1 of
+                        case maxIters2 > 0 && sureAbove0 qNm1 of
                             False -> -- should not or cannot continue iterating
                                 return prevFirst -- indicate which of the two variables has the older result
                             True ->
                                 do
                                 newtonIterateDn qN qNm1M
-                                iterRecipSqrt (maxIters - 1) (not prevFirst) bM aM -- swap the variables
+                                iterRecipSqrt (maxIters2 - 1) (not prevFirst) bM2 aM2 -- swap the variables
                         where
                         (qNm2M, qNm1M) 
-                            | prevFirst = (aM,bM)
-                            | otherwise = (bM,aM)
+                            | prevFirst = (aM2,bM2)
+                            | otherwise = (bM2,aM2)
                         qN = qNm2M

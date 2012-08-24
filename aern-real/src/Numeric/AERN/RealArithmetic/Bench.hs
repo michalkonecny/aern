@@ -39,7 +39,7 @@ mkCommentImprecision1 opOut opIn effort a =
     where
     imprecisionD :: Double
     imprecisionD =
-        case ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort imprecision sampleD) imprecision of
+        case ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort imprecision sampleD) sampleD imprecision of
             Just imprecisionUp -> imprecisionUp
             Nothing -> error $ "mkCommentImprecision: cannot convert up to a Double: " ++ show imprecision
     sampleD = 0 :: Double
@@ -71,18 +71,18 @@ mkCommentAreaImprecision op effort a =
             _ -> ""
     aE = getThinRepresentative a
     Just aD =
-        ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort a sampleD) aE
+        ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort a sampleD) sampleD aE
     aExp = exponent aD
     
     resultE = op effort aE
     Just resultD =
-        ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort a sampleD) resultE
+        ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort a sampleD) sampleD resultE
     resultExp = exponent resultD
     
     imprecisionE =
         imprecisionOfEff (imprecisionDefaultEffort a) resultE
     Just imprecisionD =
-        ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort imprecisionE sampleD) imprecisionE
+        ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort imprecisionE sampleD) sampleD imprecisionE
     imprecisionExp = exponent imprecisionD
     
     resultBinaryDigits = resultExp - imprecisionExp

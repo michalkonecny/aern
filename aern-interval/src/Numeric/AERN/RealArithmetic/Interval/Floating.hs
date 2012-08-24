@@ -1,7 +1,9 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.Floating
     Description :  Floating instance using outer rounding
@@ -23,12 +25,12 @@ import Prelude hiding (EQ, LT, GT)
 import qualified Prelude
 import Numeric.AERN.Basics.PartialOrdering
 
-import Numeric.AERN.RealArithmetic.Interval.ExactOps
-import Numeric.AERN.RealArithmetic.Interval.Measures
-import Numeric.AERN.RealArithmetic.Interval.Conversion
-import Numeric.AERN.RealArithmetic.Interval.FieldOps
-import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
-import Numeric.AERN.RealArithmetic.Interval.SpecialConst
+import Numeric.AERN.RealArithmetic.Interval.ExactOps ()
+import Numeric.AERN.RealArithmetic.Interval.Measures ()
+import Numeric.AERN.RealArithmetic.Interval.Conversion ()
+import Numeric.AERN.RealArithmetic.Interval.FieldOps ()
+import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps ()
+import Numeric.AERN.RealArithmetic.Interval.SpecialConst ()
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
@@ -100,9 +102,14 @@ instance
     fromInteger n = 
         result
         where
-        result@(Interval l r) =
-            ArithInOut.convertOutEff (ArithUpDn.convertDefaultEffort n l) n
-    signum a =
+        result :: Interval e =
+            ArithInOut.convertOutEff (ArithUpDn.convertDefaultEffort n sampleErr1) sampleErr2 n
+            where
+            sampleErr1 = sampleErr :: e
+            sampleErr2 = sampleErr :: Interval e
+            sampleErr = 
+                error $ "fromRational failed for Interval t since this type t requires a sample for the conversion"
+    signum _ =
         error $ "signum not implemented for Interval"
 
 instance 
@@ -120,8 +127,13 @@ instance
     fromRational r = 
         result
         where
-        result@(Interval l _) =
-            ArithInOut.convertOutEff (ArithUpDn.convertDefaultEffort r l) r
+        result :: Interval e =
+            ArithInOut.convertOutEff (ArithUpDn.convertDefaultEffort r sampleErr1) sampleErr2 r
+            where
+            sampleErr1 = sampleErr :: e
+            sampleErr2 = sampleErr :: Interval e
+            sampleErr = 
+                error $ "fromRational failed for Interval t since this type t requires a sample for the conversion"
 
 instance
     (ArithUpDn.Convertible Integer e,
