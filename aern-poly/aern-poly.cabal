@@ -38,6 +38,7 @@ Library
                     Numeric.AERN.Poly.IntPoly.Addition,
                     Numeric.AERN.Poly.IntPoly.Composition,
                     Numeric.AERN.Poly.IntPoly.Config,
+                    Numeric.AERN.Poly.IntPoly.Conversion,
                     Numeric.AERN.Poly.IntPoly.Differentiation,
                     Numeric.AERN.Poly.IntPoly.Evaluation,
                     Numeric.AERN.Poly.IntPoly.IntPoly,

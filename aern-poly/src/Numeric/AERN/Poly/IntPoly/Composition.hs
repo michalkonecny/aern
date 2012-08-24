@@ -26,6 +26,7 @@ where
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
 import Numeric.AERN.Poly.IntPoly.New ()
+import Numeric.AERN.Poly.IntPoly.Conversion ()
 import Numeric.AERN.Poly.IntPoly.Evaluation
 import Numeric.AERN.Poly.IntPoly.Show ()
 import Numeric.AERN.Poly.IntPoly.NumericOrder ()

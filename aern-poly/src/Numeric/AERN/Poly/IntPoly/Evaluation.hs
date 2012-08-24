@@ -43,7 +43,7 @@ import Numeric.AERN.RmToRn.Evaluation
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn 
-import Numeric.AERN.RealArithmetic.NumericOrderRounding (ConvertEffortIndicator) -- needed for ghc 6.12
+--import Numeric.AERN.RealArithmetic.NumericOrderRounding (ConvertEffortIndicator) -- needed for ghc 6.12
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
@@ -57,11 +57,13 @@ import Numeric.AERN.NumericOrder.OpsImplicitEffort
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 
-import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
 --import qualified Data.Map as Map
 import Data.List (sortBy)
+
+import Numeric.AERN.Misc.Debug
+_ = unsafePrint
 
 instance 
     (Ord var, Show var, Show cf,
@@ -305,32 +307,32 @@ instance
                 ArithInOut.rrEffortField sampleCf effCf
         
 
-instance
-    (Ord var, Show var,
-     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
-     HasAntiConsistency cf, 
-     Show cf)
-    =>
-    ArithUpDn.Convertible (IntPoly var cf) cf
-    where
-    type ConvertEffortIndicator (IntPoly var cf) cf = 
-        (EvaluationEffortIndicator (IntPoly var cf), 
-         RefOrd.GetEndpointsEffortIndicator cf)
-    convertDefaultEffort sampleP sampleCf = 
-        (evaluationDefaultEffort sampleP, 
-         RefOrd.getEndpointsDefaultEffort sampleCf)
-    convertUpEff (effEval, effGetEndpts) sampleCf p =
-        Just $ snd $ RefOrd.getEndpointsOutEff effGetEndpts range
-        where
-        range = evalOtherType (evalOpsEff effEval sampleP sampleCf) varDoms p 
-        varDoms = getDomainBox p
-        sampleP = p
-    convertDnEff (effEval, effGetEndpts) sampleCf p =
-        Just $ fst $ RefOrd.getEndpointsOutEff effGetEndpts range
-        where
-        range = evalOtherType (evalOpsEff effEval sampleP sampleCf) varDoms p 
-        varDoms = getDomainBox p
-        sampleP = p
+--instance
+--    (Ord var, Show var,
+--     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+--     HasAntiConsistency cf, 
+--     Show cf)
+--    =>
+--    ArithUpDn.Convertible (IntPoly var cf) cf
+--    where
+--    type ConvertEffortIndicator (IntPoly var cf) cf = 
+--        (EvaluationEffortIndicator (IntPoly var cf), 
+--         RefOrd.GetEndpointsEffortIndicator cf)
+--    convertDefaultEffort sampleP sampleCf = 
+--        (evaluationDefaultEffort sampleP, 
+--         RefOrd.getEndpointsDefaultEffort sampleCf)
+--    convertUpEff (effEval, effGetEndpts) sampleCf p =
+--        Just $ snd $ RefOrd.getEndpointsOutEff effGetEndpts range
+--        where
+--        range = evalOtherType (evalOpsEff effEval sampleP sampleCf) varDoms p 
+--        varDoms = getDomainBox p
+--        sampleP = p
+--    convertDnEff (effEval, effGetEndpts) sampleCf p =
+--        Just $ fst $ RefOrd.getEndpointsOutEff effGetEndpts range
+--        where
+--        range = evalOtherType (evalOpsEff effEval sampleP sampleCf) varDoms p 
+--        varDoms = getDomainBox p
+--        sampleP = p
     
 
 evalPolyAtPointOut, evalPolyAtPointIn ::
