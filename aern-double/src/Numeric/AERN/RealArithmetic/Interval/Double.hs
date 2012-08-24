@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.Double
     Description :  Interval Double utilities and tests  
@@ -21,6 +22,8 @@ module Numeric.AERN.RealArithmetic.Interval.Double
 )
 where
 
+import Numeric.AERN.RealArithmetic.NumericOrderRounding
+
 import Numeric.AERN.Basics.Interval
 
 import Numeric.AERN.RealArithmetic.Interval
@@ -37,6 +40,18 @@ type DI = Interval Double
 
 sampleDI :: DI
 sampleDI = Interval 0 0
+
+instance 
+    Convertible Double (Interval Double)
+    where
+    type ConvertEffortIndicator Double (Interval Double) = 
+        ()
+    convertDefaultEffort _ _ = () 
+    convertUpEff _ _ x =
+        Just $ Interval x x
+    convertDnEff _ _ x =
+        Just $ Interval x x
+
 
 newtype PositiveDI = PositiveDI { unPositiveDI :: DI }
 

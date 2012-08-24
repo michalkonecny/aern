@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, TypeFamilies #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.MPFR
     Description :  Interval MPFR utilities and tests  
@@ -12,6 +13,8 @@
 -}
 module Numeric.AERN.RealArithmetic.Interval.MPFR 
 where
+
+import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
 import Numeric.AERN.Basics.Interval
 
@@ -34,6 +37,18 @@ type MI = Interval MPFR
 
 sampleMI :: MI
 sampleMI = Interval 0 0
+
+instance 
+    Convertible MPFR (Interval MPFR)
+    where
+    type ConvertEffortIndicator MPFR (Interval MPFR) = 
+        ()
+    convertDefaultEffort _ _ = () 
+    convertUpEff _ _ x =
+        Just $ Interval x x
+    convertDnEff _ _ x =
+        Just $ Interval x x
+
 
 newtype PositiveMI = PositiveMI { unPositiveMI :: MI }
 

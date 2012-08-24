@@ -22,6 +22,7 @@ where
 
 import Numeric.AERN.RealArithmetic.Interval.ExactOps ()
 import Numeric.AERN.RealArithmetic.Interval.Measures ()
+import Numeric.AERN.RealArithmetic.Interval.UpDnConversion ()
 import Numeric.AERN.RealArithmetic.Interval.Conversion ()
 import Numeric.AERN.RealArithmetic.Interval.FieldOps ()
 import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps ()
