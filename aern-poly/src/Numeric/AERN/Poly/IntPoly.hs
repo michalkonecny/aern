@@ -68,6 +68,7 @@ import Test.QuickCheck.Arbitrary
 --instance
 --    (ArithInOut.RoundedReal cf,
 --     ArithInOut.RoundedMixedField cf cf,
+--     ArithUpDn.Convertible cf cf,
 --     RefOrd.IntervalLike cf,
 --     HasAntiConsistency cf,     
 --     Arbitrary cf,
@@ -112,20 +113,44 @@ import Test.QuickCheck.Arbitrary
 --    rrEffortComp _ ((effComp, _),_,_) = effComp
 --    rrEffortMinmax _ ((_, (effMinmax,_)),_,_) = effMinmax
 --    rrEffortDistance _ (((_, effEval),_),_,_) = effEval
---    rrEffortToInt _ _ = ()
---    rrEffortFromInt _ _ = ()
---    rrEffortToInteger _ _ = ()
---    rrEffortFromInteger _ _ = ()
---    rrEffortToDouble _ _ = () 
---    rrEffortFromDouble _ _ = ()
---    rrEffortToRational _ _ = ()
---    rrEffortFromRational _ _ = ()
+--    rrEffortToInt sampleP (((_, effEval@(effCf,_)),_),(effGetE, _),_) = (effEval, effGetE, effToI)
+--        where
+--        effToI = ArithInOut.rrEffortToInt sampleCf effCf
+--        sampleCf = getSampleDomValue sampleP
+--    rrEffortFromInt sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effFromI, effGetE)
+--        where
+--        effFromI = ArithInOut.rrEffortFromInt sampleCf effCf
+--        sampleCf = getSampleDomValue sampleP
+--    rrEffortToInteger sampleP (((_, effEval@(effCf,_)),_),(effGetE, _),_) = (effEval, effGetE, effToI)
+--        where
+--        effToI = ArithInOut.rrEffortToInteger sampleCf effCf
+--        sampleCf = getSampleDomValue sampleP
+--    rrEffortFromInteger sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effFromI, effGetE)
+--        where
+--        effFromI = ArithInOut.rrEffortFromInteger sampleCf effCf
+--        sampleCf = getSampleDomValue sampleP
+--    rrEffortToDouble sampleP (((_, effEval@(effCf,_)),_),(effGetE, _),_) = (effEval, effGetE, effToD)
+--        where
+--        effToD = ArithInOut.rrEffortToDouble sampleCf effCf
+--        sampleCf = getSampleDomValue sampleP
+--    rrEffortFromDouble sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effFromD, effGetE)
+--        where
+--        effFromD = ArithInOut.rrEffortFromDouble sampleCf effCf
+--        sampleCf = getSampleDomValue sampleP
+--    rrEffortToRational sampleP (((_, effEval@(effCf,_)),_),(effGetE, _),_) = (effEval, effGetE, effToR)
+--        where
+--        effToR = ArithInOut.rrEffortToRational sampleCf effCf
+--        sampleCf = getSampleDomValue sampleP
+--    rrEffortFromRational sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effFromR, effGetE)
+--        where
+--        effFromR = ArithInOut.rrEffortFromRational sampleCf effCf
+--        sampleCf = getSampleDomValue sampleP
 --    rrEffortAbs _ ((_, effAbs),_,_) = effAbs
---    rrEffortField _ _ = ()
---    rrEffortIntMixedField _ _ = ()
---    rrEffortIntegerMixedField _ _ = ()
---    rrEffortDoubleMixedField _ _ = ()
---    rrEffortRationalMixedField _ _ = ()
+----    rrEffortField _ _ = ()
+----    rrEffortIntMixedField _ _ = ()
+----    rrEffortIntegerMixedField _ _ = ()
+----    rrEffortDoubleMixedField _ _ = ()
+----    rrEffortRationalMixedField _ _ = ()
 
 
 --import Numeric.AERN.RmToRn.New
