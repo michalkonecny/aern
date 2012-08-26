@@ -92,43 +92,6 @@ instance
         p1Endpoints = polyGetEndpointsOutEff effGetE p1
         p2Endpoints = polyGetEndpointsOutEff effGetE p2
         
-instance
-    (RefOrd.IntervalLike cf, HasZero cf)
-    => 
-    (RefOrd.IntervalLike (IntPoly var cf))
-    where
-    type GetEndpointsEffortIndicator (IntPoly var cf) = 
-        RefOrd.GetEndpointsEffortIndicator cf
-    type FromEndpointsEffortIndicator (IntPoly var cf) = 
-        RefOrd.FromEndpointsEffortIndicator cf
-    getEndpointsDefaultEffort (IntPoly cfg _) =
-        RefOrd.getEndpointsDefaultEffort sampleCf
-        where
-        sampleCf = ipolycfg_sample_cf cfg
-    fromEndpointsDefaultEffort (IntPoly cfg _) =
-        RefOrd.fromEndpointsDefaultEffort sampleCf
-        where
-        sampleCf = ipolycfg_sample_cf cfg
-    getEndpointsInEff eff = polySplitWith (RefOrd.getEndpointsInEff eff)
-    getEndpointsOutEff eff = polySplitWith (RefOrd.getEndpointsOutEff eff)
-    fromEndpointsInEff eff pp@(IntPoly cfg _, _) = 
-        polyJoinWith z (RefOrd.fromEndpointsInEff eff) pp
-        where 
-        z = zero $ ipolycfg_sample_cf cfg 
-    fromEndpointsOutEff eff pp@(IntPoly cfg _, _) = 
-        polyJoinWith z (RefOrd.fromEndpointsOutEff eff) pp
-        where 
-        z = zero $ ipolycfg_sample_cf cfg 
-    getEndpointsInWithDefaultEffort = polySplitWith (RefOrd.getEndpointsInWithDefaultEffort)
-    getEndpointsOutWithDefaultEffort = polySplitWith (RefOrd.getEndpointsOutWithDefaultEffort)
-    fromEndpointsInWithDefaultEffort pp@(IntPoly cfg _, _) = 
-        polyJoinWith z (RefOrd.fromEndpointsInWithDefaultEffort) pp
-        where 
-        z = zero $ ipolycfg_sample_cf cfg 
-    fromEndpointsOutWithDefaultEffort pp@(IntPoly cfg _, _) = 
-        polyJoinWith z (RefOrd.fromEndpointsOutWithDefaultEffort) pp
-        where 
-        z = zero $ ipolycfg_sample_cf cfg 
 
 
 instance 
