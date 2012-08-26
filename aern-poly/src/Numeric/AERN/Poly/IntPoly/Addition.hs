@@ -146,6 +146,15 @@ instance
     =>
     ArithInOut.RoundedSubtr (IntPoly var cf) 
     
+instance
+    (ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,  
+     HasAntiConsistency cf,
+     Ord var, 
+     Show var, Show cf) 
+    =>
+    ArithUpDn.RoundedSubtr (IntPoly var cf) 
+    
 addTerms :: 
     (Show var, Show cf) =>
     (cf -> cf -> cf) ->

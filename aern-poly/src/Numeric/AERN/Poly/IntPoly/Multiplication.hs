@@ -43,7 +43,7 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 --import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
@@ -233,6 +233,84 @@ powTerms eff sample cfg (+) (*) =
                 reduceTermsDegreeOut eff cfg $ 
                     termsNormalise $ multTerms (+) (*) t1 t2
     
+instance
+    (Ord var,
+     ArithInOut.RoundedReal cf, 
+     RefOrd.IntervalLike cf) 
+    => 
+    ArithUpDn.RoundedPowerNonnegToNonnegIntEffort (IntPoly var cf)
+    where
+#if (__GLASGOW_HASKELL__ >= 704)
+    type PowerNonnegToNonnegIntEffortIndicator (IntPoly var cf) =
+         (ArithInOut.PowerToNonnegIntEffortIndicatorFromMult (IntPoly var cf),
+          RefOrd.GetEndpointsEffortIndicator cf)
+#else
+    type ArithInOut.PowerNonnegToNonnegIntEffortIndicator (IntPoly var cf) =
+         (ArithInOut.PowerToNonnegIntEffortIndicatorFromMult (IntPoly var cf),
+          RefOrd.GetEndpointsEffortIndicator cf)
+#endif
+    powerNonnegToNonnegIntDefaultEffort sampleP = 
+        (ArithInOut.powerToNonnegIntDefaultEffortFromMult sampleP,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = getSampleDomValue sampleP
+
+instance
+    (ArithInOut.RoundedReal cf, 
+     RefOrd.IntervalLike cf, 
+     HasAntiConsistency cf,
+--     NumOrd.PartialComparison (Imprecision cf), 
+--     Show (Imprecision cf),
+     Show var, Show cf, Ord var) 
+    =>
+    ArithUpDn.RoundedPowerNonnegToNonnegInt (IntPoly var cf) 
+    where
+    powerNonnegToNonnegIntUpEff (effPow, effGetE) p n =
+        snd $ RefOrd.getEndpointsOutEff effGetE $
+            ArithInOut.powerToNonnegIntOutEff effPow p n   
+    powerNonnegToNonnegIntDnEff (effPow, effGetE) p n =
+        fst $ RefOrd.getEndpointsOutEff effGetE $
+            ArithInOut.powerToNonnegIntOutEff effPow p n   
+    
+instance
+    (Ord var,
+     ArithInOut.RoundedReal cf, 
+     RefOrd.IntervalLike cf) 
+    => 
+    ArithUpDn.RoundedPowerToNonnegIntEffort (IntPoly var cf)
+    where
+#if (__GLASGOW_HASKELL__ >= 704)
+    type PowerToNonnegIntEffortIndicator (IntPoly var cf) =
+         (ArithInOut.PowerToNonnegIntEffortIndicatorFromMult (IntPoly var cf),
+          RefOrd.GetEndpointsEffortIndicator cf)
+#else
+    type ArithInOut.PowerToNonnegIntEffortIndicator (IntPoly var cf) =
+         (ArithInOut.PowerToNonnegIntEffortIndicatorFromMult (IntPoly var cf),
+          RefOrd.GetEndpointsEffortIndicator cf)
+#endif
+    powerToNonnegIntDefaultEffort sampleP = 
+        (ArithInOut.powerToNonnegIntDefaultEffortFromMult sampleP,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = getSampleDomValue sampleP
+
+instance
+    (ArithInOut.RoundedReal cf, 
+     RefOrd.IntervalLike cf, 
+     HasAntiConsistency cf,
+--     NumOrd.PartialComparison (Imprecision cf), 
+--     Show (Imprecision cf),
+     Show var, Show cf, Ord var) 
+    =>
+    ArithUpDn.RoundedPowerToNonnegInt (IntPoly var cf) 
+    where
+    powerToNonnegIntUpEff (effPow, effGetE) p n =
+        snd $ RefOrd.getEndpointsOutEff effGetE $
+            ArithInOut.powerToNonnegIntOutEff effPow p n   
+    powerToNonnegIntDnEff (effPow, effGetE) p n =
+        fst $ RefOrd.getEndpointsOutEff effGetE $
+            ArithInOut.powerToNonnegIntOutEff effPow p n   
+    
     
 {----- mixed addition up/dn via out -----}    
 
@@ -373,6 +451,41 @@ instance
     ringEffortMult _ eff = eff
     ringEffortPow _ eff = eff  
 
+
+instance 
+    (ArithInOut.RoundedReal cf,
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithUpDn.RoundedRing (IntPoly var cf)
+
+instance
+    (Ord var,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf) 
+    => 
+    ArithUpDn.RoundedRingEffort (IntPoly var cf)
+    where
+#if (__GLASGOW_HASKELL__ >= 704)
+    type RingOpsEffortIndicator (IntPoly var cf) =
+        (ArithInOut.RoundedRealEffortIndicator cf,
+         RefOrd.GetEndpointsEffortIndicator cf)
+#else
+    type ArithUpDn.RingOpsEffortIndicator (IntPoly var cf) =
+        (ArithInOut.RoundedRealEffortIndicator cf,
+         RefOrd.GetEndpointsEffortIndicator cf)
+#endif
+    ringOpsDefaultEffort sampleP = 
+        (ArithInOut.roundedRealDefaultEffort sampleCf,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = getSampleDomValue sampleP
+    ringEffortAdd _ eff = eff  
+    ringEffortMult _ eff = eff
+    ringEffortPow _ eff = eff
+
 instance 
     (ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
@@ -381,6 +494,7 @@ instance
      NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
     =>
     ArithInOut.RoundedRing (IntPoly var cf)
+
 
 instance
     (ArithInOut.RoundedReal cf,
@@ -414,6 +528,42 @@ instance
 
 
 instance
+    (ArithInOut.RoundedMixedDivideEffort cf Int,
+     RefOrd.IntervalLike cf) 
+    => 
+    ArithUpDn.RoundedMixedDivideEffort (IntPoly var cf) Int 
+    where
+#if (__GLASGOW_HASKELL__ >= 704)
+    type MixedDivEffortIndicator (IntPoly var cf) Int = 
+        (ArithInOut.MixedDivEffortIndicator (IntPoly var cf) Int, 
+         RefOrd.GetEndpointsEffortIndicator cf) 
+#else
+    type ArithUpDn.MixedDivEffortIndicator (IntPoly var cf) Int = 
+        (ArithInOut.MixedDivEffortIndicator (IntPoly var cf) Int, 
+         RefOrd.GetEndpointsEffortIndicator cf) 
+#endif
+    mixedDivDefaultEffort p@(IntPoly cfg _) sampleOther = 
+        (ArithInOut.mixedDivDefaultEffort p sampleOther,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = ipolycfg_sample_cf cfg
+
+instance
+    (ArithInOut.RoundedMixedDivide cf Int,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,  
+     HasAntiConsistency cf,
+     Ord var, 
+     Show var, Show cf) 
+    =>
+    ArithUpDn.RoundedMixedDivide (IntPoly var cf) Int 
+    where
+    mixedDivUpEff (effOut, effGetE) p1 other =
+        snd $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedDivOutEff effOut p1 other
+    mixedDivDnEff (effOut, effGetE) p1 other =
+        fst $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedDivOutEff effOut p1 other
+
+instance
     (ArithInOut.RoundedMixedDivideEffort cf other) => 
     ArithInOut.RoundedMixedDivideEffort (IntPoly var cf) other 
     where
@@ -440,7 +590,7 @@ instance
         where
         (/|) = ArithInOut.mixedDivOutEff eff
     mixedDivInEff =
-        error "aern-poly: IntPoly does not support inwards-rounded mixed multiplication" 
+        error "aern-poly: IntPoly does not support inwards-rounded mixed division" 
         
 instance
     (ArithInOut.RoundedReal cf,
