@@ -4,6 +4,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE FlexibleContexts          #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.Conversion
     Description :  conversions to and from common numeric types
@@ -132,3 +133,132 @@ instance
         sampleP = p
         sampleCf = getSampleDomValue sampleP
 
+instance
+    (Ord var, Show var,
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+     HasAntiConsistency cf,
+     ArithUpDn.Convertible Int cf,
+     Show cf)
+    =>
+    ArithUpDn.Convertible Int (IntPoly var cf)
+    where
+    type ConvertEffortIndicator Int (IntPoly var cf) =
+        (ArithInOut.ConvertEffortIndicator Int cf,
+         RefOrd.GetEndpointsEffortIndicator cf)
+    convertDefaultEffort sampleI sampleP =
+        (ArithInOut.convertDefaultEffort sampleI sampleCf,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = getSampleDomValue sampleP
+    convertUpEff (effConv, effGetEndpts) sampleP n =
+        Just $
+            newConstFnFromSample sampleP $
+                snd $ RefOrd.getEndpointsOutEff effGetEndpts $
+                    ArithInOut.convertOutEff effConv sampleCf n 
+        where
+        sampleCf = getSampleDomValue sampleP
+    convertDnEff (effConv, effGetEndpts) sampleP n =
+        Just $
+            newConstFnFromSample sampleP $
+                fst $ RefOrd.getEndpointsOutEff effGetEndpts $
+                    ArithInOut.convertOutEff effConv sampleCf n 
+        where
+        sampleCf = getSampleDomValue sampleP
+
+instance
+    (Ord var, Show var,
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+     HasAntiConsistency cf,
+     ArithUpDn.Convertible Integer cf,
+     Show cf)
+    =>
+    ArithUpDn.Convertible Integer (IntPoly var cf)
+    where
+    type ConvertEffortIndicator Integer (IntPoly var cf) =
+        (ArithInOut.ConvertEffortIndicator Integer cf,
+         RefOrd.GetEndpointsEffortIndicator cf)
+    convertDefaultEffort sampleI sampleP =
+        (ArithInOut.convertDefaultEffort sampleI sampleCf,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = getSampleDomValue sampleP
+    convertUpEff (effConv, effGetEndpts) sampleP n =
+        Just $
+            newConstFnFromSample sampleP $
+                snd $ RefOrd.getEndpointsOutEff effGetEndpts $
+                    ArithInOut.convertOutEff effConv sampleCf n 
+        where
+        sampleCf = getSampleDomValue sampleP
+    convertDnEff (effConv, effGetEndpts) sampleP n =
+        Just $
+            newConstFnFromSample sampleP $
+                fst $ RefOrd.getEndpointsOutEff effGetEndpts $
+                    ArithInOut.convertOutEff effConv sampleCf n 
+        where
+        sampleCf = getSampleDomValue sampleP
+
+
+instance
+    (Ord var, Show var,
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+     HasAntiConsistency cf,
+     ArithUpDn.Convertible Rational cf,
+     Show cf)
+    =>
+    ArithUpDn.Convertible Rational (IntPoly var cf)
+    where
+    type ConvertEffortIndicator Rational (IntPoly var cf) =
+        (ArithInOut.ConvertEffortIndicator Rational cf,
+         RefOrd.GetEndpointsEffortIndicator cf)
+    convertDefaultEffort sampleI sampleP =
+        (ArithInOut.convertDefaultEffort sampleI sampleCf,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = getSampleDomValue sampleP
+    convertUpEff (effConv, effGetEndpts) sampleP n =
+        Just $
+            newConstFnFromSample sampleP $
+                snd $ RefOrd.getEndpointsOutEff effGetEndpts $
+                    ArithInOut.convertOutEff effConv sampleCf n 
+        where
+        sampleCf = getSampleDomValue sampleP
+    convertDnEff (effConv, effGetEndpts) sampleP n =
+        Just $
+            newConstFnFromSample sampleP $
+                fst $ RefOrd.getEndpointsOutEff effGetEndpts $
+                    ArithInOut.convertOutEff effConv sampleCf n 
+        where
+        sampleCf = getSampleDomValue sampleP
+
+
+instance
+    (Ord var, Show var,
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+     HasAntiConsistency cf,
+     ArithUpDn.Convertible Double cf,
+     Show cf)
+    =>
+    ArithUpDn.Convertible Double (IntPoly var cf)
+    where
+    type ConvertEffortIndicator Double (IntPoly var cf) =
+        (ArithInOut.ConvertEffortIndicator Double cf,
+         RefOrd.GetEndpointsEffortIndicator cf)
+    convertDefaultEffort sampleI sampleP =
+        (ArithInOut.convertDefaultEffort sampleI sampleCf,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = getSampleDomValue sampleP
+    convertUpEff (effConv, effGetEndpts) sampleP n =
+        Just $
+            newConstFnFromSample sampleP $
+                snd $ RefOrd.getEndpointsOutEff effGetEndpts $
+                    ArithInOut.convertOutEff effConv sampleCf n 
+        where
+        sampleCf = getSampleDomValue sampleP
+    convertDnEff (effConv, effGetEndpts) sampleP n =
+        Just $
+            newConstFnFromSample sampleP $
+                fst $ RefOrd.getEndpointsOutEff effGetEndpts $
+                    ArithInOut.convertOutEff effConv sampleCf n 
+        where
+        sampleCf = getSampleDomValue sampleP
