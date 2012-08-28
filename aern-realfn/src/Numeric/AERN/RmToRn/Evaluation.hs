@@ -74,7 +74,7 @@ class
     
 class 
     (HasDomainBox f,
-     EffortIndicator (EvaluationEffortIndicator f)) 
+     EffortIndicator (PartialEvaluationEffortIndicator f)) 
     => 
     CanPartiallyEvaluate f
     where
