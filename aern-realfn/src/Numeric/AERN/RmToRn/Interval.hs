@@ -134,7 +134,7 @@ instance
         rN = renameVars renVar r
     
 
-instance 
+instance
     (CanEvaluate f, 
      RefOrd.IntervalLike (Domain f)) 
     =>
@@ -156,6 +156,28 @@ instance
         where
         lVal = evalAtPointInEff effEval dombox l
         rVal = evalAtPointInEff effEval dombox r
+
+instance
+    (CanPartiallyEvaluate f, 
+     RefOrd.IntervalLike f) 
+    =>
+    (CanPartiallyEvaluate (Interval f))
+    where
+    type PartialEvaluationEffortIndicator (Interval f) =
+        (PartialEvaluationEffortIndicator f, 
+         RefOrd.GetEndpointsEffortIndicator f)
+    partialEvaluationDefaultEffort (Interval l _) = 
+        (partialEvaluationDefaultEffort l, RefOrd.getEndpointsDefaultEffort l)
+    pEvalAtPointOutEff (effEval, effGetE) dombox (Interval l r) =
+        Interval lVal rVal
+        where
+        (lVal, _) = RefOrd.getEndpointsOutEff effGetE $ pEvalAtPointOutEff effEval dombox l
+        (_, rVal) = RefOrd.getEndpointsOutEff effGetE $ pEvalAtPointOutEff effEval dombox r
+    pEvalAtPointInEff (effEval, effGetE) dombox (Interval l r) =
+        Interval lVal rVal
+        where
+        (lVal, _) = RefOrd.getEndpointsInEff effGetE $ pEvalAtPointInEff effEval dombox l
+        (_, rVal) = RefOrd.getEndpointsInEff effGetE $ pEvalAtPointInEff effEval dombox r
 
 instance 
     (RoundedIntegration f,
