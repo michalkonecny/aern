@@ -42,6 +42,7 @@ import Numeric.AERN.Poly.IntPoly.Evaluation
 import Numeric.AERN.Poly.IntPoly.Reduction
 import Numeric.AERN.Poly.IntPoly.Addition
 import Numeric.AERN.Poly.IntPoly.Multiplication
+import Numeric.AERN.Poly.IntPoly.UpDnField ()
 import Numeric.AERN.Poly.IntPoly.Composition
 import Numeric.AERN.Poly.IntPoly.Show
 import Numeric.AERN.Poly.IntPoly.NumericOrder ()
