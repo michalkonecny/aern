@@ -24,6 +24,9 @@ import Numeric.AERN.Basics.Mutable
 
 import Data.Ratio
 
+class HasSampleFromContext t where
+    sampleFromContext :: t
+
 class HasZero t where
     zero :: t -> t
     
@@ -77,14 +80,22 @@ propNegFlip _ e =
 
 -- instances for some common types:
 
+instance HasSampleFromContext Int where sampleFromContext = 0
 instance HasZero Int where zero _ = 0
 instance HasOne Int where one _ = 1
 instance Neg Int where neg = negate
 
+instance HasSampleFromContext Integer where sampleFromContext = 0
 instance HasZero Integer where zero _ = 0
 instance HasOne Integer where one _ = 1
 instance Neg Integer where neg = negate
 
+instance (HasSampleFromContext t, HasOne t, Integral t) => 
+    HasSampleFromContext (Ratio t) 
+    where 
+    sampleFromContext = sampleN % (one sampleN)
+        where
+        sampleN = sampleFromContext
 instance (HasZero t, HasOne t, Integral t) => 
     HasZero (Ratio t) 
     where 
@@ -99,6 +110,7 @@ instance (HasOne t, Integral t) =>
         sampleN = numerator sample
 instance (Integral t) => Neg (Ratio t) where neg = negate
 
+instance HasSampleFromContext Double where sampleFromContext = 0
 instance HasZero Double where zero _ = 0
 instance HasOne Double where one _ = 1
 instance Neg Double where neg = negate

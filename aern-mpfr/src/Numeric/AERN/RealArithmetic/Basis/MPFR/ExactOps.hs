@@ -22,6 +22,9 @@ import Data.Number.MPFR (MPFR)
 import Data.Number.MPFR.Instances.Up
 import qualified Data.Number.MPFR.Mutable as MM
 
+instance HasSampleFromContext MPFR where
+    sampleFromContext = 0
+
 instance HasZero MPFR where
     zero _ = 0
     
