@@ -26,7 +26,8 @@ Description:    Multi-variate polynomials with in-out-rounded point-wise arithme
 Library
   hs-source-dirs:   src
   ghc-options:      -Wall -rtsopts
-  Build-Depends:    base == 4.2.* || == 4.4.* || == 4.5.*,
+  Build-Depends:    
+        base == 4.2.* || == 4.4.* || == 4.5.*,
         containers >= 0.3 && < 0.5,
         QuickCheck >= 2.4 && < 2.5,
         aern-order == 0.5.*,
@@ -49,7 +50,8 @@ Library
                     Numeric.AERN.Poly.IntPoly.NumericOrder,
                     Numeric.AERN.Poly.IntPoly.Reduction,
                     Numeric.AERN.Poly.IntPoly.RefinementOrder,
-                    Numeric.AERN.Poly.IntPoly.Show
+                    Numeric.AERN.Poly.IntPoly.Show,
+                    Numeric.AERN.Poly.IntPoly.UpDnField
 
 executable testAERN-Poly
   Build-Depends:   base == 4.2.* || == 4.4.* || == 4.5.*,

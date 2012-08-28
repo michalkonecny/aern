@@ -1,14 +1,14 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances #-}
+
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.Addition
-    Description :  up/dn/out-rounded polynomial addition
+    Description :  out-rounded polynomial addition
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -16,7 +16,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Up/dn/out-rounded polynomial addition, subtraction and negation.
+    Out-rounded polynomial addition, subtraction and negation.
 -}
 
 module Numeric.AERN.Poly.IntPoly.Addition
@@ -36,10 +36,12 @@ import Numeric.AERN.Poly.IntPoly.Reduction
 import Numeric.AERN.RmToRn.New
 --import Numeric.AERN.RmToRn.Domain
 
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+--import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 --import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding
+    (AddEffortIndicator, MixedAddEffortIndicator)
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
@@ -57,55 +59,13 @@ import Numeric.AERN.Basics.Consistency
 
 import qualified Data.IntMap as IntMap
 
-{----- addition up/dn via out -----}    
-
-instance
-    (ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf) 
-    => 
-    ArithUpDn.RoundedAddEffort (IntPoly var cf) 
-    where
-#if (__GLASGOW_HASKELL__ >= 704)
-    type AddEffortIndicator (IntPoly var cf) = 
-        (ArithInOut.AddEffortIndicator (IntPoly var cf), 
-         RefOrd.GetEndpointsEffortIndicator cf) 
-#else
-    type ArithUpDn.AddEffortIndicator (IntPoly var cf) = 
-        (ArithInOut.AddEffortIndicator (IntPoly var cf),
-         RefOrd.GetEndpointsEffortIndicator cf) 
-#endif
-    addDefaultEffort p@(IntPoly cfg _) = 
-        (ArithInOut.addDefaultEffort p,
-         RefOrd.getEndpointsDefaultEffort sampleCf)
-        where
-        sampleCf = ipolycfg_sample_cf cfg
-
-
-instance
-    (ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,  
-     HasAntiConsistency cf,
-     Ord var, 
-     Show var, Show cf) 
-    =>
-    ArithUpDn.RoundedAdd (IntPoly var cf) 
-    where
-    addUpEff (effOut, effGetE) p1 p2 =
-        snd $ polyGetEndpointsOutEff effGetE $ ArithInOut.addOutEff effOut p1 p2
-    addDnEff (effOut, effGetE) p1 p2 =
-        fst $ polyGetEndpointsOutEff effGetE $ ArithInOut.addOutEff effOut p1 p2
 
 instance
     (ArithInOut.RoundedReal cf) => 
     ArithInOut.RoundedAddEffort (IntPoly var cf) 
     where
-#if (__GLASGOW_HASKELL__ >= 704)
     type AddEffortIndicator (IntPoly var cf) = 
         ArithInOut.RoundedRealEffortIndicator cf 
-#else
-    type ArithInOut.AddEffortIndicator (IntPoly var cf) = 
-        ArithInOut.RoundedRealEffortIndicator cf 
-#endif
     addDefaultEffort (IntPoly cfg _) = 
         ArithInOut.roundedRealDefaultEffort (ipolycfg_sample_cf cfg)
     
@@ -146,15 +106,6 @@ instance
     =>
     ArithInOut.RoundedSubtr (IntPoly var cf) 
     
-instance
-    (ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,  
-     HasAntiConsistency cf,
-     Ord var, 
-     Show var, Show cf) 
-    =>
-    ArithUpDn.RoundedSubtr (IntPoly var cf) 
-    
 addTerms :: 
     (Show var, Show cf) =>
     (cf -> cf -> cf) ->
@@ -182,100 +133,12 @@ negTerms (IntPolyV x polys) =
     IntPolyV x $ IntMap.map negTerms polys
     
   
-{----- mixed addition up/dn via out -----}    
-
-{- 
-    The generic up/dn rounded mixed addition commented out below
-    conflicts with the generic instance of mixed addition 
-    e (Interval e) which is used to define the pseudo-mixed addition
-    of (Interval e) (Interval e)
-    
-    We therefore have to make do with a few concrete instances for the common types. 
--}
-
-----instance
-----    (ArithInOut.RoundedMixedAddEffort cf other, 
-----     RefOrd.IntervalLike cf) 
-----    => 
-----    ArithUpDn.RoundedMixedAddEffort (IntPoly var cf) other 
-----    where
-----if (__GLASGOW_HASKELL__ >= 704)
-----    type MixedAddEffortIndicator (IntPoly var cf) other = 
-----        (ArithInOut.MixedAddEffortIndicator (IntPoly var cf) other, 
-----         RefOrd.GetEndpointsEffortIndicator cf) 
-----else
-----    type ArithUpDn.MixedAddEffortIndicator (IntPoly var cf) other = 
-----        (ArithInOut.MixedAddEffortIndicator (IntPoly var cf) other,
-----         RefOrd.GetEndpointsEffortIndicator cf) 
-----endif
-----    mixedAddDefaultEffort p@(IntPoly cfg _) sampleOther = 
-----        (ArithInOut.mixedAddDefaultEffort p sampleOther,
-----         RefOrd.getEndpointsDefaultEffort sampleCf)
-----        where
-----        sampleCf = ipolycfg_sample_cf cfg
-----
-----instance
-----    (ArithInOut.RoundedMixedAdd cf other,
-----     ArithInOut.RoundedReal cf,
-----     RefOrd.IntervalLike cf,  
-----     HasAntiConsistency cf,
-----     Ord var, 
-----     Show var, Show cf) 
-----    =>
-----    ArithUpDn.RoundedMixedAdd (IntPoly var cf) other 
-----    where
-----    mixedAddUpEff (effOut, effGetE) p1 other =
-----        snd $ polyGetEndpointsOut effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
-----    mixedAddDnEff (effOut, effGetE) p1 other =
-----        fst $ polyGetEndpointsOut effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
-
-instance
-    (ArithInOut.RoundedMixedAddEffort cf Int,
-     RefOrd.IntervalLike cf) 
-    => 
-    ArithUpDn.RoundedMixedAddEffort (IntPoly var cf) Int 
-    where
-#if (__GLASGOW_HASKELL__ >= 704)
-    type MixedAddEffortIndicator (IntPoly var cf) Int = 
-        (ArithInOut.MixedAddEffortIndicator (IntPoly var cf) Int, 
-         RefOrd.GetEndpointsEffortIndicator cf) 
-#else
-    type ArithUpDn.MixedAddEffortIndicator (IntPoly var cf) Int = 
-        (ArithInOut.MixedAddEffortIndicator (IntPoly var cf) Int,
-         RefOrd.GetEndpointsEffortIndicator cf) 
-#endif
-    mixedAddDefaultEffort p@(IntPoly cfg _) sampleOther = 
-        (ArithInOut.mixedAddDefaultEffort p sampleOther,
-         RefOrd.getEndpointsDefaultEffort sampleCf)
-        where
-        sampleCf = ipolycfg_sample_cf cfg
-
-instance
-    (ArithInOut.RoundedMixedAdd cf Int,
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,  
-     HasAntiConsistency cf,
-     Ord var, 
-     Show var, Show cf) 
-    =>
-    ArithUpDn.RoundedMixedAdd (IntPoly var cf) Int 
-    where
-    mixedAddUpEff (effOut, effGetE) p1 other =
-        snd $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
-    mixedAddDnEff (effOut, effGetE) p1 other =
-        fst $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
-    
 instance
     (ArithInOut.RoundedMixedAddEffort cf other) => 
     ArithInOut.RoundedMixedAddEffort (IntPoly var cf) other 
     where
-#if (__GLASGOW_HASKELL__ >= 704)
     type MixedAddEffortIndicator (IntPoly var cf) other = 
         ArithInOut.MixedAddEffortIndicator cf other  
-#else
-    type ArithInOut.MixedAddEffortIndicator (IntPoly var cf) other = 
-        ArithInOut.MixedAddEffortIndicator cf other  
-#endif
     mixedAddDefaultEffort (IntPoly cfg _) c = 
         ArithInOut.mixedAddDefaultEffort (ipolycfg_sample_cf cfg) c
 
