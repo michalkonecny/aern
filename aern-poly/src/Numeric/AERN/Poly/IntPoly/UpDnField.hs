@@ -26,6 +26,7 @@ where
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
 --import Numeric.AERN.Poly.IntPoly.Reduction
+import Numeric.AERN.Poly.IntPoly.Conversion ()
 import Numeric.AERN.Poly.IntPoly.Addition ()
 import Numeric.AERN.Poly.IntPoly.Multiplication ()
 
@@ -233,6 +234,68 @@ instance
     =>
     ArithUpDn.RoundedRing (IntPoly var cf)
 
+
+{----- mock up/dn division -----}    
+
+instance
+--    (ArithInOut.RoundedReal cf,
+--     RefOrd.IntervalLike cf) 
+--    => 
+    ArithUpDn.RoundedDivideEffort (IntPoly var cf) 
+    where
+    type DivEffortIndicator (IntPoly var cf) = ()
+--        (ArithInOut.DivEffortIndicator (IntPoly var cf), 
+--         RefOrd.GetEndpointsEffortIndicator cf) 
+    divDefaultEffort _ = ()
+--    p@(IntPoly cfg _) = 
+--        (ArithInOut.addDefaultEffort p,
+--         RefOrd.getEndpointsDefaultEffort sampleCf)
+--        where
+--        sampleCf = ipolycfg_sample_cf cfg
+
+instance
+    (ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,  
+     HasAntiConsistency cf,
+     Ord var, 
+     Show var, Show cf) 
+    =>
+    ArithUpDn.RoundedDivide (IntPoly var cf) 
+    where
+    divUpEff = 
+        error "aern-poly: IntPoly division not implemented yet"
+    divDnEff = 
+        error "aern-poly: IntPoly division not implemented yet"
+  
+
+instance
+    (Ord var,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf) 
+    => 
+    ArithUpDn.RoundedFieldEffort (IntPoly var cf)
+    where
+    type FieldOpsEffortIndicator (IntPoly var cf) =
+        (ArithInOut.RoundedRealEffortIndicator cf,
+         RefOrd.GetEndpointsEffortIndicator cf)
+    fieldOpsDefaultEffort sampleP = 
+        (ArithInOut.roundedRealDefaultEffort sampleCf,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = getSampleDomValue sampleP
+    fldEffortAdd _ eff = eff  
+    fldEffortMult _ eff = eff
+    fldEffortPow _ eff = eff
+    fldEffortDiv _ _ = ()
+  
+instance 
+    (ArithInOut.RoundedReal cf,
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithUpDn.RoundedField (IntPoly var cf)
 
 {----- mixed addition up/dn via out -----}    
 
@@ -756,4 +819,160 @@ instance
     mixedDivDnEff (effOut, effGetE) p1 other =
         fst $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedDivOutEff effOut p1 other
 
+
+instance
+    (Ord var,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
+     ArithInOut.RoundedMixedFieldEffort cf Int) 
+    => 
+    ArithUpDn.RoundedMixedFieldEffort (IntPoly var cf) Int
+    where
+    type MixedFieldOpsEffortIndicator (IntPoly var cf) Int =
+        (ArithInOut.MixedFieldOpsEffortIndicator cf Int,
+         RefOrd.GetEndpointsEffortIndicator cf)
+    mixedFieldOpsDefaultEffort sampleP other = 
+        (ArithInOut.mixedFieldOpsDefaultEffort sampleCf other,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = getSampleDomValue sampleP
+    mxfldEffortAdd sampleP sampleI (effField, effGetE) = 
+        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
+        where
+        sampleCf = getSampleDomValue sampleP
+    mxfldEffortMult sampleP sampleI (effField, effGetE) = 
+        (ArithInOut.mxfldEffortMult sampleCf sampleI effField, effGetE)  
+        where
+        sampleCf = getSampleDomValue sampleP
+    mxfldEffortDiv sampleP sampleI (effField, effGetE) = 
+        (ArithInOut.mxfldEffortDiv sampleCf sampleI effField, effGetE)  
+        where
+        sampleCf = getSampleDomValue sampleP
+
+instance
+    (ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedField cf Int,
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithUpDn.RoundedMixedField (IntPoly var cf) Int
+
+instance
+    (Ord var,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
+     ArithInOut.RoundedMixedFieldEffort cf Integer) 
+    => 
+    ArithUpDn.RoundedMixedFieldEffort (IntPoly var cf) Integer
+    where
+    type MixedFieldOpsEffortIndicator (IntPoly var cf) Integer =
+        (ArithInOut.MixedFieldOpsEffortIndicator cf Integer,
+         RefOrd.GetEndpointsEffortIndicator cf)
+    mixedFieldOpsDefaultEffort sampleP other = 
+        (ArithInOut.mixedFieldOpsDefaultEffort sampleCf other,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = getSampleDomValue sampleP
+    mxfldEffortAdd sampleP sampleI (effField, effGetE) = 
+        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
+        where
+        sampleCf = getSampleDomValue sampleP
+    mxfldEffortMult sampleP sampleI (effField, effGetE) = 
+        (ArithInOut.mxfldEffortMult sampleCf sampleI effField, effGetE)  
+        where
+        sampleCf = getSampleDomValue sampleP
+    mxfldEffortDiv sampleP sampleI (effField, effGetE) = 
+        (ArithInOut.mxfldEffortDiv sampleCf sampleI effField, effGetE)  
+        where
+        sampleCf = getSampleDomValue sampleP
+
+instance
+    (ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedField cf Integer,
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithUpDn.RoundedMixedField (IntPoly var cf) Integer
+
+instance
+    (Ord var,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
+     ArithInOut.RoundedMixedFieldEffort cf Rational) 
+    => 
+    ArithUpDn.RoundedMixedFieldEffort (IntPoly var cf) Rational
+    where
+    type MixedFieldOpsEffortIndicator (IntPoly var cf) Rational =
+        (ArithInOut.MixedFieldOpsEffortIndicator cf Rational,
+         RefOrd.GetEndpointsEffortIndicator cf)
+    mixedFieldOpsDefaultEffort sampleP other = 
+        (ArithInOut.mixedFieldOpsDefaultEffort sampleCf other,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = getSampleDomValue sampleP
+    mxfldEffortAdd sampleP sampleI (effField, effGetE) = 
+        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
+        where
+        sampleCf = getSampleDomValue sampleP
+    mxfldEffortMult sampleP sampleI (effField, effGetE) = 
+        (ArithInOut.mxfldEffortMult sampleCf sampleI effField, effGetE)  
+        where
+        sampleCf = getSampleDomValue sampleP
+    mxfldEffortDiv sampleP sampleI (effField, effGetE) = 
+        (ArithInOut.mxfldEffortDiv sampleCf sampleI effField, effGetE)  
+        where
+        sampleCf = getSampleDomValue sampleP
+
+instance
+    (ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedField cf Rational,
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithUpDn.RoundedMixedField (IntPoly var cf) Rational
+        
+instance
+    (Ord var,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf,
+     ArithInOut.RoundedMixedFieldEffort cf Double) 
+    => 
+    ArithUpDn.RoundedMixedFieldEffort (IntPoly var cf) Double
+    where
+    type MixedFieldOpsEffortIndicator (IntPoly var cf) Double =
+        (ArithInOut.MixedFieldOpsEffortIndicator cf Double,
+         RefOrd.GetEndpointsEffortIndicator cf)
+    mixedFieldOpsDefaultEffort sampleP other = 
+        (ArithInOut.mixedFieldOpsDefaultEffort sampleCf other,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = getSampleDomValue sampleP
+    mxfldEffortAdd sampleP sampleI (effField, effGetE) = 
+        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
+        where
+        sampleCf = getSampleDomValue sampleP
+    mxfldEffortMult sampleP sampleI (effField, effGetE) = 
+        (ArithInOut.mxfldEffortMult sampleCf sampleI effField, effGetE)  
+        where
+        sampleCf = getSampleDomValue sampleP
+    mxfldEffortDiv sampleP sampleI (effField, effGetE) = 
+        (ArithInOut.mxfldEffortDiv sampleCf sampleI effField, effGetE)  
+        where
+        sampleCf = getSampleDomValue sampleP
+
+instance
+    (ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedField cf Double,
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithUpDn.RoundedMixedField (IntPoly var cf) Double
         
