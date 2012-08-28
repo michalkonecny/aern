@@ -38,7 +38,7 @@ import Numeric.AERN.Poly.IntPoly.Composition ()
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
---import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn.Evaluation
 
 --import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison
 --import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Arbitrary
@@ -103,21 +103,23 @@ instance
         sampleDom = getSampleDomValue f
 
 minmaxUpDnDefaultEffortIntPolyWithBezierDegree ::
-    (Ord var,
-     GeneratableVariables var,
-     HasAntiConsistency cf, 
-     Arbitrary cf, 
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,
-     ArithUpDn.Convertible cf cf,
-     ArithInOut.RoundedMixedField cf cf,
-     NumOrd.RefinementRoundedLatticeEffort cf,
-     Show var,
-     Show cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf))
+    (ArithInOut.RoundedReal (Domain f), 
+     RefOrd.IntervalLike (Domain f), 
+     ArithUpDn.Convertible f (Domain f), 
+     ArithInOut.RoundedMixedFieldEffort f Int, 
+     ArithInOut.RoundedMixedField f (Domain f), 
+     ArithInOut.RoundedRingEffort f, 
+     HasSizeLimits f, 
+     RefOrd.IntervalLike f,
+     HasEvalOps f (Domain f),
+     HasEvalOps f f)
     =>
-    Int -> (IntPoly var cf) -> (NumOrd.MinmaxEffortIndicator (IntPoly var cf))
+    Int -> 
+    f -> 
+    (MinmaxEffortIndicatorFromRingOps f f,
+     NumOrd.MinmaxInOutEffortIndicator (Domain f),
+     Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
+     RefOrd.GetEndpointsEffortIndicator f)
 minmaxUpDnDefaultEffortIntPolyWithBezierDegree degree f =
     (defaultMinmaxEffortIndicatorFromRingOps f f,
      NumOrd.minmaxInOutDefaultEffort sampleDom,
@@ -284,20 +286,31 @@ instance
          RefOrd.fromEndpointsDefaultEffort f)
 
 minmaxInOutDefaultEffortIntPolyWithBezierDegree ::
-    (Ord var,
-     GeneratableVariables var,
-     HasAntiConsistency cf, 
-     Arbitrary cf, 
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,
-     ArithUpDn.Convertible cf cf,
-     ArithInOut.RoundedMixedField cf cf,
-     Show var,
-     Show cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf))
+    (ArithUpDn.Convertible f (Domain f), 
+     ArithInOut.RoundedMixedFieldEffort f Int, 
+     ArithInOut.RoundedMixedField f (Domain f), 
+     ArithInOut.RoundedRingEffort f, 
+     HasSizeLimits f,
+     RefOrd.IntervalLike f, 
+     HasEvalOps f (Domain f), 
+     HasEvalOps f f,
+     GeneratableVariables (Var f),
+     HasAntiConsistency (Domain f), 
+     Arbitrary (Domain f), 
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     ArithUpDn.Convertible (Domain f) (Domain f),
+     ArithInOut.RoundedMixedField (Domain f) (Domain f),
+     Show (Var f),
+     Show (Domain f),
+     Show (Imprecision (Domain f)),
+     NumOrd.PartialComparison (Imprecision (Domain f)))
     =>
-    Int -> (IntPoly var cf) -> NumOrd.MinmaxInOutEffortIndicator (IntPoly var cf)    
+    Int -> (f) -> 
+    (MinmaxEffortIndicatorFromRingOps (f) (f),
+     Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
+     RefOrd.GetEndpointsEffortIndicator (f),
+     RefOrd.FromEndpointsEffortIndicator (f))    
 minmaxInOutDefaultEffortIntPolyWithBezierDegree degree f =
     (defaultMinmaxEffortIndicatorFromRingOps f f,
      Int1To10 (degree - 1),

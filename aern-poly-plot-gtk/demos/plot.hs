@@ -7,7 +7,7 @@ import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
 import Numeric.AERN.RmToRn.Plot.CairoDrawable
 
 import Numeric.AERN.RmToRn.New
---import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 import Numeric.AERN.RealArithmetic.Basis.MPFR
@@ -41,7 +41,8 @@ import qualified Data.List as List
 
 --type CF = Interval MPFR
 type CF = Interval Double
-type Poly = IntPoly String CF
+type Endpt = IntPoly String CF
+type Fn = Interval Endpt
 
 main =
     do
@@ -61,12 +62,12 @@ main =
     fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
     fnMetaTV <- atomically $ newTVar $ fnmeta
 --    putStrLn "plot main: calling FV.new"
-    FV.new samplePoly effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
+    FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
 --    putStrLn "plot main: FV.new completed"
 --    Concurrent.forkIO $ signalFn fnMetaTV
     Gtk.mainGUI
     
-addPlotVar :: [[Poly]] -> [[(Poly, String)]]
+addPlotVar :: [[Fn]] -> [[(Fn, String)]]
 addPlotVar fns =
     map (map addV) fns
     where
@@ -102,7 +103,7 @@ addPlotVar fns =
 --            [[black, black], [blue, blue]]
 --    }
 --
---fnsSinsin :: [[Poly]]
+--fnsSinsin :: [[Fn]]
 --fnsSinsin = 
 --    [
 --     [
@@ -133,7 +134,7 @@ addPlotVar fns =
 --    
 --xTimes3D200, 
 --  xTimes3D100, xTimes3D90, xTimes3D80, xTimes3D70, xTimes3D60, 
---  xTimes3D50, xTimes3D40, xTimes3D30, xTimes3D20, xTimes3D10, xTimes3D4 :: Poly    
+--  xTimes3D50, xTimes3D40, xTimes3D30, xTimes3D20, xTimes3D10, xTimes3D4 :: Fn    
 --xTimes3D200 = (xD 200) <*>| (3 :: Int)
 --xTimes3D100 = (xD 100) <*>| (3 :: Int)
 --xTimes3D90 = (xD 90) <*>| (3 :: Int)
@@ -149,7 +150,7 @@ addPlotVar fns =
       
 ---------------------------------
 
---fnsMixed :: [[Poly]]
+--fnsMixed :: [[Fn]]
 --fnsMixed = 
 --    [[
 --        x <*> cHalf1,
@@ -167,7 +168,7 @@ addPlotVar fns =
 
 ---------------------------------
 
---fnsMinmaxUpDn :: [[Poly]]    
+--fnsMinmaxUpDn :: [[Fn]]    
 --fnsMinmaxUpDn = 
 --    [ 
 --     [x <*> cHalf1, cOneOver16, 
@@ -186,7 +187,7 @@ addPlotVar fns =
 --     ]
 --    ]
 
---fnsMinmaxInOut :: [[Poly]]    
+--fnsMinmaxInOut :: [[Fn]]    
 --fnsMinmaxInOut = 
 --    [ 
 --     [x <*> cHalf1, cOneOver16, 
@@ -231,19 +232,19 @@ addPlotVar fns =
 --             [black, black, black, black]]
 --    }
 
-fnsMinmaxOut :: [[Poly]]    
+fnsMinmaxOut :: [[Fn]]    
 fnsMinmaxOut = 
     [ 
      [x, cOneOver16, 
-      NumOrd.maxOutEff minmaxInOutEff (x) cOneOver16
+      NumOrd.maxOutEff effMinmaxInOut (x) cOneOver16
      ]
      ,
      [x, cSevenOver16, 
-      NumOrd.maxOutEff minmaxInOutEff (x) cSevenOver16
+      NumOrd.maxOutEff effMinmaxInOut (x) cSevenOver16
      ]
      ,
      [x, cOneMinusOneOver16, 
-      NumOrd.maxOutEff minmaxInOutEff (x) cOneMinusOneOver16
+      NumOrd.maxOutEff effMinmaxInOut (x) cOneMinusOneOver16
      ]
     ]
 
@@ -267,7 +268,7 @@ blue = FV.defaultFnPlotStyle
         FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
     } 
     
-c1,c0,x,c01,c10,cHalf,cHalf1,cOneOver16,cSevenOver16,cOneMinusOneOver16, samplePoly :: Poly
+c1,c0,x,c01,c10,cHalf,cHalf1,cOneOver16,cSevenOver16,cOneMinusOneOver16, sampleFn :: Fn
 x = newProjection cfg dombox "x"
 xD maxdeg = newProjection (cfgD maxdeg) dombox "x"
 c0 = newConstFn cfg dombox 0
@@ -280,16 +281,17 @@ cOneMinusOneOver16 = newConstFn cfg dombox $ 15 * 0.5^4
 c01 = newConstFn cfg dombox $ 0 </\> 1
 c10 = newConstFn cfg dombox $ 1 <\/> 0
 
-samplePoly = x
+sampleFn = x
+sampleFnEndpt = newProjection cfg dombox "x" :: Endpt
 
 --eff = (100, (100,())) -- MPFR
 effCF = ArithInOut.roundedRealDefaultEffort (0:: CF)
-effNumComp = NumOrd.pCompareDefaultEffort x
-effRefComp = RefOrd.pCompareDefaultEffort x
-minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 x
-minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 x
-effDrawFn = cairoDrawFnDefaultEffort samplePoly
-effEval = (effCF, Int1To10 10)
+effNumComp = NumOrd.pCompareDefaultEffort sampleFn
+effRefComp = RefOrd.pCompareDefaultEffort sampleFn
+effMinmaxInOut = 
+    minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 sampleFnEndpt
+effDrawFn = cairoDrawFnDefaultEffort sampleFn
+effEval = evaluationDefaultEffort sampleFn
 
 cfg = cfgD 4
 cfgD maxdeg =
@@ -317,7 +319,7 @@ cf0 = 0 :: CF
     
 -------------
     
-fnsTest :: [[Poly]]
+fnsTest :: [[Fn]]
 fnsTest = 
     [
         [
@@ -337,7 +339,7 @@ fnsTest =
         ]
     ]
     
-a1,a2,b1,b2 :: Poly
+a1,a2,b1,b2 :: Fn
 
 
 a1 =
