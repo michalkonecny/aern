@@ -87,6 +87,7 @@ instance
 
 instance 
     (ArithUpDn.Convertible Integer e, 
+     HasSampleFromContext e, 
      ShowInternals e,
      NumOrd.PartialComparison e, 
      NumOrd.RoundedLattice e, 
@@ -103,18 +104,18 @@ instance
         result
         where
         result :: Interval e =
-            ArithInOut.convertOutEff (ArithUpDn.convertDefaultEffort n sampleErr1) sampleErr2 n
+            ArithInOut.convertOutEff (ArithUpDn.convertDefaultEffort n sample) sampleInt n
             where
-            sampleErr1 = sampleErr :: e
-            sampleErr2 = sampleErr :: Interval e
-            sampleErr = 
-                error $ "fromRational failed for Interval t since this type t requires a sample for the conversion"
+            sampleInt = Interval sample sample
+            sample :: e
+            sample = sampleFromContext
     signum _ =
         error $ "signum not implemented for Interval"
 
 instance 
     (ArithUpDn.Convertible Integer e, 
-     ArithUpDn.Convertible Rational e, 
+     ArithUpDn.Convertible Rational e,
+     HasSampleFromContext e, 
      Eq e, ShowInternals e,
      NumOrd.PartialComparison e, 
      NumOrd.RoundedLattice e, 
@@ -128,16 +129,16 @@ instance
         result
         where
         result :: Interval e =
-            ArithInOut.convertOutEff (ArithUpDn.convertDefaultEffort r sampleErr1) sampleErr2 r
+            ArithInOut.convertOutEff (ArithUpDn.convertDefaultEffort r sample) sampleInt r
             where
-            sampleErr1 = sampleErr :: e
-            sampleErr2 = sampleErr :: Interval e
-            sampleErr = 
-                error $ "fromRational failed for Interval t since this type t requires a sample for the conversion"
+            sampleInt = Interval sample sample
+            sample :: e
+            sample = sampleFromContext
 
 instance
     (ArithUpDn.Convertible Integer e,
      ArithUpDn.Convertible Rational e,
+     HasSampleFromContext e,
      Eq e,
      ShowInternals e,
      NumOrd.PartialComparison e,
