@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Main where
 
 import Numeric.AERN.Poly.IntPoly
@@ -7,12 +8,13 @@ import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
 import Numeric.AERN.RmToRn.Plot.CairoDrawable
 
 import Numeric.AERN.RmToRn.New
+import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RmToRn.Integration
 
 --import Numeric.AERN.RealArithmetic.Basis.Double
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
---import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.Interval
 
 import qualified Numeric.AERN.DoubleBasis.Interval as CF
 
@@ -46,7 +48,8 @@ _ = unsafePrint
 
 --type CF = Interval MPFR
 type CF = CF.DI
-type Poly = IntPoly String CF
+type FnEndPt = IntPoly String CF
+type Fn = Interval FnEndPt
 
 main =
     do
@@ -58,15 +61,13 @@ main =
     -- enable multithreaded GUI:
     Gtk.unsafeInitGUIForThreadedRTS
     let (fns, fnmeta) = getFns ivpName maxdeg iters
---    let (fns, fnmeta) = getFnsI ivpName maxdeg iters
     fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
     fnMetaTV <- atomically $ newTVar $ fnmeta
-    FV.new samplePoly effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
---    FV.new samplePolyInterval effDrawFnI effCF effEvalI (fnDataTV, fnMetaTV) Nothing
+    FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
 --    Concurrent.forkIO $ signalFn fnMetaTV
     Gtk.mainGUI
     
-addPlotVar :: [[Poly]] -> [[(Poly, String)]]
+addPlotVar :: [[Fn]] -> [[(Fn, String)]]
 addPlotVar fns =
     map (map addV) fns
     where
@@ -84,12 +85,6 @@ getFns "smass-ev" maxdeg iters =
 getFns "smass-uv" maxdeg iters = 
     (fnsSpringMass_uv maxdeg iters, fnmetaSpringMass iters)
     
-getFnsI "smass-uvp" maxdeg iters = 
-    (fnsSpringMass_uvp_mono maxdeg iters, fnmetaSpringMass iters)
-
-getFnsI "exp-uvp" maxdeg iters = 
-    (fnsExp_uvp_mono maxdeg iters, fnmetaExp iters)
-    
 --getFns "smass-b" maxdeg iters = 
 --    (fnsSpringMass_b maxdeg iters, fnmetaSpringMass_b 1)
     
@@ -98,13 +93,15 @@ getFnsI "exp-uvp" maxdeg iters =
 
 
 ---------------------------------
+fieldExp :: [Fn] -> [Fn]
 fieldExp [x] = [(-1 :: Int) |<*> x]
 
 initValuesExp_uv :: [CF]
 initValuesExp_uv = [(-1) </\> 1]
 
+fnmetaExp :: Int -> FV.FnMetaData Fn
 fnmetaExp iters = 
-    (FV.defaultFnMetaData samplePoly)
+    (FV.defaultFnMetaData sampleFn)
     {
         FV.dataFnGroupNames = ["segment 1"],
         FV.dataFnNames = 
@@ -138,7 +135,7 @@ fnmetaExp iters =
             }
     }
 
-fnsExp_uv :: Int -> Int -> [[Poly]]
+fnsExp_uv :: Int -> Int -> [[Fn]]
 fnsExp_uv maxdeg iters = 
     [
         concat $ take iters $ enclosures maxdeg
@@ -151,7 +148,8 @@ fnsExp_uv maxdeg iters =
             map (newConstFn (cfg1D maxdeg) dombox1) initValuesExp_uv
         initialApprox =
             map (<+>| (constructCF (-0.5) 0.5)) initValsFns
-fnsExp_uvp :: Int -> Int -> [[Poly]]
+
+fnsExp_uvp :: Int -> Int -> [[Fn]]
 fnsExp_uvp maxdeg iters =
     unsafePrint
     (
@@ -176,7 +174,7 @@ fnsExp_uvp maxdeg iters =
         initialApprox =
             map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 
-fnsExp_uvp_mono :: Int -> Int -> [[CF.Interval Poly]]
+fnsExp_uvp_mono :: Int -> Int -> [[CF.Interval Fn]]
 fnsExp_uvp_mono maxdeg iters = 
     [
         concat $ take iters $ enclosures maxdeg
@@ -205,7 +203,7 @@ initValuesSpringMass_uv :: [CF]
 initValuesSpringMass_uv = [0 </\> 1,0]
 
 fnmetaSpringMass iters = 
-    (FV.defaultFnMetaData samplePoly)
+    (FV.defaultFnMetaData sampleFn)
     {
         FV.dataFnGroupNames = ["segment 1"],
         FV.dataFnNames = 
@@ -251,7 +249,7 @@ green = FV.defaultFnPlotStyle
         FV.styleFillColour = Just (0.1,0.8,0.1,0.1) 
     } 
 
-fnsSpringMass_ev :: Int -> Int -> [[Poly]]
+fnsSpringMass_ev :: Int -> Int -> [[Fn]]
 fnsSpringMass_ev maxdeg iters = 
     [
         concat $ take iters $ enclosures maxdeg
@@ -265,7 +263,7 @@ fnsSpringMass_ev maxdeg iters =
         initialApprox =
             map (<+>| (constructCF (-0.5) 0.5)) initValsFns
     
-fnsSpringMass_uv :: Int -> Int -> [[Poly]]
+fnsSpringMass_uv :: Int -> Int -> [[Fn]]
 fnsSpringMass_uv maxdeg iters = 
     [
         concat $ take iters $ enclosures maxdeg
@@ -279,7 +277,7 @@ fnsSpringMass_uv maxdeg iters =
         initialApprox =
             map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 
-fnsSpringMass_uvp_mono :: Int -> Int -> [[CF.Interval Poly]]
+fnsSpringMass_uvp_mono :: Int -> Int -> [[CF.Interval Fn]]
 fnsSpringMass_uvp_mono maxdeg iters = 
     [
         concat $ take iters $ enclosures maxdeg
@@ -296,7 +294,7 @@ fnsSpringMass_uvp_mono maxdeg iters =
             initialApprox =
                 map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 
-fnsSpringMass_uvp :: Int -> Int -> [[Poly]]
+fnsSpringMass_uvp :: Int -> Int -> [[Fn]]
 fnsSpringMass_uvp maxdeg iters = 
     [
         map removeParams $ concat $ take iters $ enclosures maxdeg
@@ -315,22 +313,26 @@ fnsSpringMass_uvp maxdeg iters =
             map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 
 picardOp ::
-    ([Poly] -> [Poly]) ->
-    [Poly] {-^ initial values -} -> 
-    [Poly] {-^ approximates of y -} -> 
-    [Poly] {-^ improved approximates of y -}
+    ([Fn] -> [Fn]) ->
+    [Fn] {-^ initial values -} -> 
+    [Fn] {-^ approximates of y -} -> 
+    [Fn] {-^ improved approximates of y -}
 picardOp field y0 yPrev =
     zipWith picardOneFn y0 $ field yPrev
     where
     picardOneFn initValFn deriveApproxFn =
         initValFn <+> primitFn deriveApproxFn
     primitFn xd =
-        primitiveFunctionOutEff effCF xd "t"
+        primitiveFunctionOutEff effInteg xd "t"
     
     
---c1,c0,x,c01,c10,cHalf,cHalf1,cOneOver16,cSevenOver16,cOneMinusOneOver16, samplePoly :: Poly
-samplePoly = newProjection cfg1 dombox1 "x"
-samplePolyInterval = CF.Interval samplePoly samplePoly
+--c1,c0,x,c01,c10,cHalf,cHalf1,cOneOver16,cSevenOver16,cOneMinusOneOver16, sampleFn :: Fn
+
+sampleFnEndpt :: FnEndPt
+sampleFnEndpt = newProjection cfg1 dombox1 "x"
+sampleFn :: Fn
+sampleFn = newProjection cfg1 dombox1 "x"
+
 --xD maxdeg = newProjection (cfgD maxdeg) dombox "x"
 --c0 = newConstFn cfg dombox 0
 --c1 = newConstFn cfg dombox 1
@@ -342,16 +344,15 @@ samplePolyInterval = CF.Interval samplePoly samplePoly
 --c01 = newConstFn cfg dombox $ 0 </\> 1
 --c10 = newConstFn cfg dombox $ 1 <\/> 0
 
-----eff = (100, (100,())) -- MPFR
+----effCF = (100, (100,())) -- MPFR
 effCF = ArithInOut.roundedRealDefaultEffort (0:: CF)
-effEval = evaluationDefaultEffort samplePoly
-effEvalI = (effEval, ())
-effNumComp = NumOrd.pCompareDefaultEffort samplePoly
-effRefComp = RefOrd.pCompareDefaultEffort samplePoly
-minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 samplePoly
-minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 samplePoly
-effDrawFn = cairoDrawFnDefaultEffort samplePoly
-effDrawFnI = cairoDrawFnDefaultEffort samplePolyInterval
+
+effEval = evaluationDefaultEffort sampleFn
+effNumComp = NumOrd.pCompareDefaultEffort sampleFn
+effRefComp = RefOrd.pCompareDefaultEffort sampleFn
+minmaxInOutEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 sampleFnEndpt
+effDrawFn = cairoDrawFnDefaultEffort sampleFn
+effInteg = integrationDefaultEffort sampleFn
 --
 --
 --evalOpsOutCf = evalOpsOut effCF x (0::CF)
