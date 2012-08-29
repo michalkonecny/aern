@@ -70,8 +70,8 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect ::
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
-     ArithUpDn.RoundedAbs f,
-     NumOrd.RoundedLattice f,
+     ArithInOut.RoundedAbs f,
+     NumOrd.RefinementRoundedLattice f,
      ArithInOut.RoundedMixedDivide f Int,
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedMixedMultiply f (Domain f),
@@ -95,8 +95,8 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect ::
     RefOrd.PartialCompareEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
     ArithInOut.MultEffortIndicator f ->
-    ArithUpDn.AbsEffortIndicator f ->
-    NumOrd.MinmaxEffortIndicator f ->
+    ArithInOut.AbsEffortIndicator f ->
+    NumOrd.MinmaxInOutEffortIndicator f ->
     ArithInOut.MixedDivEffortIndicator f Int ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.MixedMultEffortIndicator f (Domain f) ->
@@ -263,8 +263,8 @@ solveODEIVPUncertainValueExactTime_UsingPicard ::
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
-     ArithUpDn.RoundedAbs f,
-     NumOrd.RoundedLattice f,
+     ArithInOut.RoundedAbs f,
+     NumOrd.RefinementRoundedLattice f,
      ArithInOut.RoundedMixedDivide f Int,
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedMixedMultiply f (Domain f),
@@ -286,8 +286,8 @@ solveODEIVPUncertainValueExactTime_UsingPicard ::
     FakeDerivativeEffortIndicator f ->
     RefOrd.PartialCompareEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
-    ArithUpDn.AbsEffortIndicator f ->
-    NumOrd.MinmaxEffortIndicator f ->
+    ArithInOut.AbsEffortIndicator f ->
+    NumOrd.MinmaxInOutEffortIndicator f ->
     ArithInOut.MixedDivEffortIndicator f Int ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.MixedMultEffortIndicator f (Domain f) ->

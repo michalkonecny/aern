@@ -82,8 +82,8 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
      ArithInOut.RoundedMixedDivide f Int,
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedMixedMultiply f (Domain f),
-     ArithUpDn.RoundedAbs f,
-     NumOrd.RoundedLattice f,
+     ArithInOut.RoundedAbs f,
+     NumOrd.RefinementRoundedLattice f,
      ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f),
@@ -104,8 +104,8 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
     RefOrd.PartialCompareEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
     ArithInOut.MultEffortIndicator f ->
-    ArithUpDn.AbsEffortIndicator f ->
-    NumOrd.MinmaxEffortIndicator f ->
+    ArithInOut.AbsEffortIndicator f ->
+    NumOrd.MinmaxInOutEffortIndicator f ->
     ArithInOut.MixedDivEffortIndicator f Int ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.MixedMultEffortIndicator f (Domain f) ->

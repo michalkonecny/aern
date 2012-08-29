@@ -58,8 +58,8 @@ shrinkWrap ::
      RefOrd.IntervalLike f,
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedSubtr f,
-     ArithUpDn.RoundedAbs f,
-     NumOrd.RoundedLattice f,
+     ArithInOut.RoundedAbs f,
+     NumOrd.RefinementRoundedLattice f,
      ArithInOut.RoundedMixedDivide f Int,
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedMixedMultiply f (Domain f),
@@ -72,8 +72,8 @@ shrinkWrap ::
     EvaluationEffortIndicator f ->
     FakeDerivativeEffortIndicator f ->
     ArithInOut.AddEffortIndicator f ->
-    ArithUpDn.AbsEffortIndicator f ->
-    NumOrd.MinmaxEffortIndicator f ->
+    ArithInOut.AbsEffortIndicator f ->
+    NumOrd.MinmaxInOutEffortIndicator f ->
     ArithInOut.MixedDivEffortIndicator f Int ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.MixedMultEffortIndicator f (Domain f) ->
@@ -162,8 +162,8 @@ _getDomainDelta2 ::
      RefOrd.IntervalLike f,
      ArithInOut.RoundedAdd f,
      ArithInOut.RoundedSubtr f,
-     ArithUpDn.RoundedAbs f,
-     NumOrd.RoundedLattice f,
+     ArithInOut.RoundedAbs f,
+     NumOrd.RefinementRoundedLattice f,
      ArithInOut.RoundedMixedDivide f Int,
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedMixedMultiply f (Domain f),
@@ -175,8 +175,8 @@ _getDomainDelta2 ::
     CompositionEffortIndicator f ->
     EvaluationEffortIndicator f ->
     FakeDerivativeEffortIndicator f ->
-    ArithUpDn.AbsEffortIndicator f ->
-    NumOrd.MinmaxEffortIndicator f ->
+    ArithInOut.AbsEffortIndicator f ->
+    NumOrd.MinmaxInOutEffortIndicator f ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.MixedMultEffortIndicator f (Domain f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
@@ -235,11 +235,16 @@ _getDomainDelta2 effComp effEval effDeriv effAbsFn effMinmaxFn effAddFnDom effMu
         maxSlope =
             evalAtPointOutEff effEval dombox maxSlopeFn
         maxSlopeFn =
-            foldl1 (NumOrd.maxDnEff effMinmaxFn) slopes 
+            foldl1 maxDn slopes
+            where
+            maxDn slope1 slope2 =
+                fst $ RefOrd.getEndpointsOutWithDefaultEffort $
+                    NumOrd.maxOutEff effMinmaxFn slope1 slope2
         slopes = map getSlope vars
         getSlope var =
-            ArithUpDn.absDnEff effAbsFn $
-                fakePartialDerivativeOutEff effDeriv fnWithOldDelta var
+            fst $ RefOrd.getEndpointsOutWithDefaultEffort $
+                ArithInOut.absOutEff effAbsFn $
+                    fakePartialDerivativeOutEff effDeriv fnWithOldDelta var
         fnWithOldDelta =
             zoomDomainsInterpretationBy effComp effAddFnDom effMultFnDom effDom oldDelta fn
     
@@ -272,8 +277,8 @@ getDomainDelta1 ::
     CompositionEffortIndicator f ->
     EvaluationEffortIndicator f ->
     FakeDerivativeEffortIndicator f ->
-    ArithUpDn.AbsEffortIndicator f ->
-    NumOrd.MinmaxEffortIndicator f ->
+    ArithInOut.AbsEffortIndicator f ->
+    NumOrd.MinmaxInOutEffortIndicator f ->
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.MixedMultEffortIndicator f (Domain f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
