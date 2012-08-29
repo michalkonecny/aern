@@ -79,7 +79,7 @@ testShrinkWrap =
     
     Just result =
         shrinkWrap 
-            effComp effEval effDeriv effAddFn effAbsFn effMinmaxUpDnFn 
+            effComp effEval effDeriv effAddFn effAbsFn effMinmaxFn 
                 effDivFnInt effAddPolyCf effMultPolyCf effCf 
                     [xUsingTS, yUsingTS]
     xUsingTS = s <*> tPlus2 <+> pmeps -- s(t+2) +- eps
@@ -110,9 +110,9 @@ testShrinkWrap =
     effComp = (effCf, Int1To10 10)
     effDeriv = effCf
     effAddFn = effCf
-    effAbsFn = (effMinmaxUpDnFn, effAbsCf)
+    effAbsFn = (effMinmaxFn, effAbsCf)
     effAbsCf = ArithInOut.rrEffortAbs sampleCf effCf
-    effMinmaxUpDnFn = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 4 s
+    effMinmaxFn = minmaxInOutDefaultEffortIntPolyWithBezierDegree 4 s
     effAddPolyCf = effAddCf
     effMultPolyCf = (((), ()), (), ((), (), ()))
     effDivFnInt =

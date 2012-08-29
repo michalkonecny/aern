@@ -15,9 +15,13 @@ import Numeric.AERN.IVP.Solver.Events.SplitNearEvents
 import Numeric.AERN.Poly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
+import Numeric.AERN.RmToRn.Interval
+
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn.Integration
+import Numeric.AERN.RmToRn.Differentiation
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 import qualified Numeric.AERN.DoubleBasis.Interval as CF
@@ -37,6 +41,8 @@ import Numeric.AERN.NumericOrder.OpsDefaultEffort
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
+import Numeric.AERN.Basics.Interval
+import Numeric.AERN.RealArithmetic.Interval
 
 import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.ShowInternals
@@ -66,13 +72,14 @@ _ = unsafePrint -- stop the unused warning
 --import qualified Data.List as List
 
 type CF = CF.DI
-type Poly = IntPoly String CF
+type FnEndpt = IntPoly String CF
+type Fn = Interval FnEndpt
 
 sampleCf :: CF
 sampleCf = 0
 
-samplePoly :: Poly
-samplePoly = makeSampleWithVarsDoms 10 10 ["x"] [sampleCf]
+sampleFn :: Fn
+sampleFn = makeSampleWithVarsDoms 10 10 ["x"] [sampleCf]
 
 main :: IO ()
 main =
@@ -105,7 +112,7 @@ runOnce [ivpName, maxDegS, depthS, minDepthS, shouldPlotStepsS, shouldShowStepsS
     _ <- solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxDeg, depth, minDepth, maxSplitSize)
     return ()
     where
-    ivp = ivpByName ivpName samplePoly
+    ivp = ivpByName ivpName sampleFn
 
 writeCSV :: [String] -> IO ()
 writeCSV [ivpName, outputFileName] =
@@ -120,7 +127,7 @@ writeCSV [ivpName, outputFileName] =
                 writeCSVheader handle
                 mapM_ (runSolverMeasureTimeMSwriteLine handle) paramCombinations
     where
-    ivp = ivpByName ivpName samplePoly
+    ivp = ivpByName ivpName sampleFn
     paramCombinations = 
         [(maxDegree, depth) | 
             maxDegree <- [0..10], depth <- [0,5..60]]
@@ -198,16 +205,16 @@ refines a1 a2 =
 
 solveEventsPrintSteps :: 
     (
-     solvingInfoODESegment ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])),
+     solvingInfoODESegment ~ (Maybe ([Fn],[Fn]), (CF, Maybe [CF])),
      solvingInfoODE ~ BisectionInfo solvingInfoODESegment (solvingInfoODESegment, Maybe CF),
-     solvingInfoEvents ~ (CF, Maybe (HybridSystemUncertainState CF), EventInfo Poly)
+     solvingInfoEvents ~ (CF, Maybe (HybridSystemUncertainState CF), EventInfo Fn)
     )
     =>
     Bool
     ->
     Bool
     ->
-    HybridIVP Poly 
+    HybridIVP Fn 
     -> 
     (Int, Int, Int, Int) 
     -> 
@@ -276,7 +283,7 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
     where
     (maybeEndState, segmentsInfo) =
         solveHybridIVP
-            sizeLimits effCf substSplitSizeLimit
+            sizeLimits substSplitSizeLimit
                 delta m minStepSize maxStepSize splitImprovementThreshold
                     "t0" 
                         ivp
@@ -397,21 +404,20 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
 
 solveHybridIVP ::
     (
-     solvingInfoODESegment ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])),
+     solvingInfoODESegment ~ (Maybe ([Fn],[Fn]), (CF, Maybe [CF])),
      solvingInfoODE ~ BisectionInfo solvingInfoODESegment (solvingInfoODESegment, Maybe CF),
-     solvingInfoEvents ~ (CF, Maybe (HybridSystemUncertainState CF), EventInfo Poly)
+     solvingInfoEvents ~ (CF, Maybe (HybridSystemUncertainState CF), EventInfo Fn)
     )
     =>
-    SizeLimits Poly -> 
-    ArithInOut.RoundedRealEffortIndicator CF ->
+    SizeLimits Fn -> 
     Int -> 
     CF ->
     Int ->
     CF ->
     CF ->
     CF ->
-    Var Poly ->
-    HybridIVP Poly 
+    Var Fn ->
+    HybridIVP Fn 
     ->
     (
         Maybe (HybridSystemUncertainState CF)
@@ -432,7 +438,7 @@ solveHybridIVP ::
         ]
     )
 solveHybridIVP 
-        sizeLimits effCf substSplitSizeLimit
+        sizeLimits substSplitSizeLimit
             delta m minStepSize maxStepSize splitImprovementThreshold 
                 t0Var
                     hybivp
@@ -447,28 +453,26 @@ solveHybridIVP
                 delta m t0Var minStepSize maxStepSize splitImprovementThreshold
                     hybivp
 
-    effSizeLims = effCf
-    effCompose = (effCf, Int1To10 substSplitSizeLimit)
-    effEval = (effCf, Int1To10 substSplitSizeLimit)
-    effPEval = (effCf, Int1To10 substSplitSizeLimit)
-    effInteg = effCf
-    effDeriv = effCf
-    effAddFn = effCf
-    effMultFn = effCf
-    effAbsFn = ArithInOut.absDefaultEffort samplePoly
-    effMinmaxFn = NumOrd.minmaxInOutDefaultEffort samplePoly
-    effAddFnDom =
-        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-    effMultFnDom =
-        ArithInOut.mixedMultDefaultEffort samplePoly sampleCf
+    effSizeLims = sizeLimitsChangeDefaultEffort sampleFn
+    effCompose =  compositionDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effEval = evaluationDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effPEval = partialEvaluationDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effInteg = integrationDefaultEffort sampleFn
+    effDeriv = fakeDerivativeDefaultEffort sampleFn
+    effAddFn = ArithInOut.addDefaultEffort sampleFn
+    effMultFn = ArithInOut.multDefaultEffort sampleFn
+    effAbsFn = ArithInOut.absDefaultEffort sampleFn
+    effMinmaxFn = NumOrd.minmaxInOutDefaultEffort sampleFn
+    effAddFnDom = ArithInOut.mixedAddDefaultEffort sampleFn sampleCf
+    effMultFnDom = ArithInOut.mixedMultDefaultEffort sampleFn sampleCf
 --        ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-    effDivFnInt =
-        ArithInOut.mxfldEffortDiv sampleCf (0::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
-    effInclFn = ((Int1To1000 0, (effCf, Int1To10 20)), ())
+    effDivFnInt = ArithInOut.mixedDivDefaultEffort sampleFn (0::Int)
+    effInclFn = RefOrd.pCompareDefaultEffort sampleFn -- TODO ((Int1To1000 0, (effCf, Int1To10 20)), ())
+    effCf = ArithInOut.roundedRealDefaultEffort sampleCf
 
 
 makeSampleWithVarsDoms :: 
-     Int -> Int -> [Var Poly] -> [CF] -> Poly
+     Int -> Int -> [Var Fn] -> [CF] -> Fn
 makeSampleWithVarsDoms maxdeg maxsize vars doms =
     newConstFn cfg dombox sampleCf
     where
@@ -507,7 +511,7 @@ plotEnclosures ::
     Domain f
     -> 
     Var f
-    -> 
+    ->
     [String]
     -> 
     [(
