@@ -41,18 +41,6 @@ type DI = Interval Double
 sampleDI :: DI
 sampleDI = Interval 0 0
 
-instance 
-    Convertible Double (Interval Double)
-    where
-    type ConvertEffortIndicator Double (Interval Double) = 
-        ()
-    convertDefaultEffort _ _ = () 
-    convertUpEff _ _ x =
-        Just $ Interval x x
-    convertDnEff _ _ x =
-        Just $ Interval x x
-
-
 newtype PositiveDI = PositiveDI { unPositiveDI :: DI }
 
 instance Show PositiveDI where
