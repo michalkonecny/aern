@@ -144,6 +144,7 @@ maxUpEffFromRingOps ::
      Show (Domain f),
      ArithInOut.RoundedMixedField t (Domain f),
      HasEvalOps f t, 
+     RefOrd.IntervalLike t,
      HasVarValue (VarBox f t) (Var f) t,
      HasEvalOps f (Domain f),
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
@@ -184,6 +185,7 @@ maxDnEffFromRingOps ::
      Show (Domain f),
      ArithInOut.RoundedMixedField t (Domain f),
      HasEvalOps f t, 
+     RefOrd.IntervalLike t,
      HasVarValue (VarBox f t) (Var f) t,
      HasEvalOps f (Domain f),
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
@@ -214,6 +216,7 @@ minUpEffFromRingOps ::
      Show (Domain f),
      ArithInOut.RoundedMixedField t (Domain f),
      HasEvalOps f t, 
+     RefOrd.IntervalLike t,
      HasVarValue (VarBox f t) (Var f) t,
      HasEvalOps f (Domain f),
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
@@ -240,6 +243,7 @@ minDnEffFromRingOps ::
      Show (Domain f),
      ArithInOut.RoundedMixedField t (Domain f),
      HasEvalOps f t, 
+     RefOrd.IntervalLike t,
      HasVarValue (VarBox f t) (Var f) t,
      HasEvalOps f (Domain f),
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
@@ -269,6 +273,7 @@ maxZeroDnUp ::
      Show (Domain f),
      ArithInOut.RoundedMixedField t (Domain f),
      HasEvalOps f t, 
+     RefOrd.IntervalLike t,
      HasVarValue (VarBox f t) (Var f) t,
      HasEvalOps f (Domain f),
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
@@ -398,6 +403,7 @@ hillbaseApproxUp ::
      ArithInOut.RoundedMixedField f Int,
      ArithInOut.RoundedReal (Domain f),
      HasEvalOps f (Domain f),
+     RefOrd.IntervalLike (Domain f),
      Show (Domain f), Show f)
     =>
     NumOrd.PartialCompareEffortIndicator (Domain f) -> 

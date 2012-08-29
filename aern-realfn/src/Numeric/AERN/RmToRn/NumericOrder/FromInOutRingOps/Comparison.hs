@@ -31,7 +31,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 
 --import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
---import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 ----import Numeric.AERN.RefinementOrder.InPlace.OpsImplicitEffort
 
@@ -54,6 +54,7 @@ pCompareFunFromRingOps ::
      NumOrd.PartialComparison (Domain f),
      HasZero (Domain f),
      HasEvalOps f (Domain f),
+     RefOrd.IntervalLike (Domain f),
      ArithInOut.RoundedSubtr f) 
     =>
     PartialCompareEffortIndicatorFromRingOps f ->

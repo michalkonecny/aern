@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-  
     Module      :  Numeric.AERN.RmToRn.Interval
     Description :  interval of functions as a function approximation
@@ -26,8 +27,12 @@ import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RmToRn.Integration
 import Numeric.AERN.RmToRn.Differentiation
 
+import qualified Numeric.AERN.NumericOrder as NumOrd
+
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+
+import Numeric.AERN.Basics.ShowInternals
 
 instance
     (HasDomainBox f)
@@ -189,6 +194,64 @@ instance
         where
         (lVal, _) = RefOrd.getEndpointsInEff effGetE $ pEvalAtPointInEff effEval dombox l
         (_, rVal) = RefOrd.getEndpointsInEff effGetE $ pEvalAtPointInEff effEval dombox r
+
+
+
+instance
+    CanEvaluateOtherType f
+    => 
+    CanEvaluateOtherType (Interval f)
+    where
+    type EvalOps (Interval f) = EvalOps f
+    evalOtherType evalOps valuesBox (Interval l r) =
+        RefOrd.fromEndpointsOutWithDefaultEffort $ (lN, rN)
+        where
+        lN = evalOtherType evalOps valuesBox l
+        rN = evalOtherType evalOps valuesBox r
+
+instance
+    CanEvaluateOtherTypeInner f
+    => 
+    CanEvaluateOtherTypeInner (Interval f)
+    where
+    evalOtherTypeInner evalOps valuesBox (Interval l r) =
+        RefOrd.fromEndpointsInWithDefaultEffort $ (lN, rN)
+        where
+        lN = evalOtherTypeInner evalOps valuesBox l
+        rN = evalOtherTypeInner evalOps valuesBox r
+
+instance 
+    HasEvalOps f t
+    => 
+    HasEvalOps (Interval f) t
+    where
+    type EvalOpsEffortIndicator (Interval f) t =
+        EvalOpsEffortIndicator f t
+    evalOpsDefaultEffort (Interval l _) sampleT = 
+        evalOpsDefaultEffort l sampleT
+    evalOpsEff eff (Interval l _) sampleT =
+        evalOpsEff eff l sampleT 
+
+
+instance
+    (CanEvaluateOtherTypeInner f,
+     HasEvalOps f (Interval f),
+     HasVarValue (VarBox f (Interval f)) (Var f) (Interval f),
+     NumOrd.PartialComparison f,
+     ShowInternals f
+    )
+    => 
+    CanCompose (Interval f)
+    where
+    type CompositionEffortIndicator (Interval f) =
+        (EvalOpsEffortIndicator (Interval f) (Interval f))
+    compositionDefaultEffort i =
+        (evalOpsDefaultEffort i i)
+    composeVarsOutEff effOps valueBox i =
+        evalOtherType (evalOpsEff effOps i i) valueBox i
+    composeVarsInEff effOps valueBox i =
+        evalOtherTypeInner (evalOpsEff effOps i i) valueBox i
+
 
 instance 
     (RoundedIntegration f,
