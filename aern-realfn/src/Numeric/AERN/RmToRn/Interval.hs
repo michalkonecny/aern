@@ -24,6 +24,7 @@ import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RmToRn.Integration
+import Numeric.AERN.RmToRn.Differentiation
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
@@ -42,6 +43,16 @@ instance
     getNSamplesFromDomainBox (Interval l _) = getNSamplesFromDomainBox l
     getSampleFromInsideDomainBox (Interval l _) = getSampleFromInsideDomainBox l
     
+    
+instance
+    CanAdjustDomains f
+    => 
+    CanAdjustDomains (Interval f)
+    where
+    adjustDomain (Interval l r) var dom = Interval lN rN
+         where
+         lN = adjustDomain l var dom
+         rN = adjustDomain r var dom
     
 instance 
     (HasSizeLimits f)
@@ -199,3 +210,25 @@ instance
         where
         (lN, _) = RefOrd.getEndpointsInEff effGetE $ primitiveFunctionInEff effInteg l var 
         (_, rN) = RefOrd.getEndpointsInEff effGetE $ primitiveFunctionInEff effInteg r var 
+
+instance 
+    (RoundedFakeDerivative f,
+     RefOrd.IntervalLike f)
+    =>
+    RoundedFakeDerivative (Interval f)
+    where
+    type FakeDerivativeEffortIndicator (Interval f) = 
+        (FakeDerivativeEffortIndicator f,
+         RefOrd.GetEndpointsEffortIndicator f)
+    fakeDerivativeDefaultEffort (Interval l _) =
+        (fakeDerivativeDefaultEffort l, RefOrd.getEndpointsDefaultEffort l)
+    fakePartialDerivativeOutEff (effDeriv, effGetE) (Interval l r) var = Interval lN rN
+        where
+        (lN, _) = RefOrd.getEndpointsOutEff effGetE $ fakePartialDerivativeOutEff effDeriv l var 
+        (_, rN) = RefOrd.getEndpointsOutEff effGetE $ fakePartialDerivativeOutEff effDeriv r var
+    fakePartialDerivativeInEff (effDeriv, effGetE) (Interval l r) var = Interval lN rN
+        where
+        (lN, _) = RefOrd.getEndpointsInEff effGetE $ fakePartialDerivativeInEff effDeriv l var 
+        (_, rN) = RefOrd.getEndpointsInEff effGetE $ fakePartialDerivativeInEff effDeriv r var
+        
+        
