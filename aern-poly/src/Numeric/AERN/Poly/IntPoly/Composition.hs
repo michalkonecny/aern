@@ -21,6 +21,7 @@
 -}
 
 module Numeric.AERN.Poly.IntPoly.Composition
+()
 where
 
 import Numeric.AERN.Poly.IntPoly.Config
@@ -37,6 +38,7 @@ import Numeric.AERN.Poly.IntPoly.Multiplication ()
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Evaluation
+
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort ((<+>|))
@@ -79,6 +81,7 @@ instance
         polyPolyEvalOps eff sampleP sampleCf
         where
         sampleCf = getSampleDomValue sampleP
+    
 
 polyPolyEvalOps ::
     (Ord var, Show var, Show cf,
@@ -113,9 +116,6 @@ polyPolyEvalOps effCmp@(_,(effCf, Int1To10 maxSplitDepth)) sampleP sampleCf =
                 (curry join) -- a very dummy max
                 getWidthAsDoubleDummy
                 effCf
-    join = 
-        let (</\>) = RefOrd.meetOutEff effJoinCf in
-        polyJoinWith (zero sampleCf) $ uncurry (</\>)
     split val = (val1, val2)
         where
         val1 = RefOrd.fromEndpointsOutWithDefaultEffort (valL, valM)
@@ -126,12 +126,17 @@ polyPolyEvalOps effCmp@(_,(effCf, Int1To10 maxSplitDepth)) sampleP sampleCf =
             let (</>|) = ArithInOut.mixedDivOutEff effDivIntCf in
             (valL <+> valR) </>| (2 :: Int)
     getWidthAsDoubleDummy _ = 0 -- no splitting...
+    effDivIntCf = ArithInOut.mxfldEffortDiv sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
+--    effAddCf = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    join = 
+        let (</\>) = RefOrd.meetOutEff effJoinCf in
+        polyJoinWith (zero sampleCf) $ uncurry (</\>)
     isDefinitelyExact p = 
         polyIsExactEff effImpr p == Just True
-    effImpr = ArithInOut.rrEffortImprecision sampleCf effCf
-    effDivIntCf = ArithInOut.mxfldEffortDiv sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
     effJoinCf = ArithInOut.rrEffortJoinMeet sampleCf effCf
---    effAddCf = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effImpr = ArithInOut.rrEffortImprecision sampleCf effCf
+        
+        
         
 instance 
     (Ord var, Show var, 
@@ -151,12 +156,6 @@ instance
         polyComposeVarsOutEff
     composeVarsInEff = 
         polyComposeVarsInEff
-    composeVarOutEff eff substVar substPoly = 
---        performEndpointWiseWithDefaultEffort $
-            polyComposeVarOutEff eff substVar substPoly 
-    composeVarInEff eff substVar substPoly = 
-        performEndpointWiseWithDefaultEffort $
-            polyComposeVarInEff eff substVar substPoly
 
 instance
     (Ord var, Show var, 
@@ -210,41 +209,23 @@ instance
             foldl (flip removeVar) dombox substitutedVars
         dombox = getDomainBox p
 
--- TODO: move this function to aern-order
-performEndpointWiseWithDefaultEffort ::
-   (RefOrd.IntervalLike t1,
-    RefOrd.IntervalLike t2) 
-    =>
-   (t1 -> t2) 
-   -> 
-   (t1 -> t2)
-performEndpointWiseWithDefaultEffort fn p =
-    RefOrd.fromEndpointsOutWithDefaultEffort (resL, resR)
-    where
-    resL = fn pL
-    resR = fn pR
-    (pL, pR) = RefOrd.getEndpointsOutWithDefaultEffort p
+---- TODO: move this function to aern-order
+--performEndpointWiseWithDefaultEffort ::
+--   (RefOrd.IntervalLike t1,
+--    RefOrd.IntervalLike t2) 
+--    =>
+--   (t1 -> t2) 
+--   -> 
+--   (t1 -> t2)
+--performEndpointWiseWithDefaultEffort fn p =
+--    RefOrd.fromEndpointsOutWithDefaultEffort (resL, resR)
+--    where
+--    resL = fn pL
+--    resR = fn pR
+--    (pL, pR) = RefOrd.getEndpointsOutWithDefaultEffort p
      
         
 -- TODO: the following functions should be made independent of IntPoly and moved to aern-realfn        
-polyComposeVarOutEff ::
-    (Ord var, Show var, 
-     Show cf,
-     ArithInOut.RoundedReal cf, 
-     HasAntiConsistency cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf),
-     RefOrd.IntervalLike cf,
-     f ~ (IntPoly var cf))
-    =>
-    CompositionEffortIndicator f ->
-    Var f ->
-    f ->
-    f ->
-    f 
-polyComposeVarOutEff eff substVar substPoly p =
-    polyComposeVarsOutEff eff (fromList [(substVar, substPoly)]) p
-
 polyComposeVarsOutEff ::
     (Ord var, Show var, 
      Show cf,
@@ -286,24 +267,6 @@ polyComposeVarsOutEff eff substBox p@(IntPoly cfg _) =
         polyPolyEvalOps (Int1To1000 0, eff) sampleP sampleCf
     ((_,sampleP) : _) = toAscList substBox
     sampleCf = getSampleDomValue sampleP
-
-polyComposeVarInEff ::
-    (Ord var, Show var, 
-     Show cf,
-     ArithInOut.RoundedReal cf, 
-     HasAntiConsistency cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf),
-     RefOrd.IntervalLike cf,
-     f ~ (IntPoly var cf))
-    =>
-    CompositionEffortIndicator f ->
-    Var f ->
-    f ->
-    f ->
-    f 
-polyComposeVarInEff eff substVar substPoly p =
-    polyComposeVarsInEff eff (fromList [(substVar, substPoly)]) p
 
 polyComposeVarsInEff ::
     (Ord var, Show var, 

@@ -18,7 +18,7 @@ module Numeric.AERN.RmToRn.Evaluation where
 
 import Numeric.AERN.RmToRn.Domain
 
---import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.Effort
@@ -29,12 +29,15 @@ import Numeric.AERN.Basics.Consistency
 class (HasDomainBox f) => CanEvaluateOtherType f
     where
     type EvalOps f :: * -> *
-    evalOtherType :: (Show t) => (EvalOps f t) -> (VarBox f t) -> f -> t
+    evalOtherType :: 
+        (Show t, RefOrd.IntervalLike t) 
+        => 
+        (EvalOps f t) -> (VarBox f t) -> f -> t
 
 class (CanEvaluateOtherType f) => CanEvaluateOtherTypeInner f
     where
     evalOtherTypeInner :: 
-        (Show t, HasAntiConsistency t) 
+        (Show t, RefOrd.IntervalLike t, HasAntiConsistency t) 
         => 
         (EvalOps f t) -> (VarBox f t) -> f -> t
 
@@ -133,9 +136,14 @@ class
         f {-^ a function with domain @D'@ to substitute for variable @v@  -} -> 
         f {-^ a function @f@ with domain @D@ -} -> 
         f {-^ an approximation of the composition of function @f@ with the given functions -}
+    composeVarOutEff eff var value =
+        composeVarsOutEff eff $ fromList [(var, value)] -- default
     composeVarInEff ::
         CompositionEffortIndicator f -> 
         (Var f) {-^ variable @v@ -} -> 
-        f {-^ a function with domain @D@ to substitute for variable @v@  -} -> 
-        f {-^ a function @f@ with domain @(v:V) x D@ -} -> 
+        f {-^ a function with domain @D'@ to substitute for variable @v@  -} -> 
+        f {-^ a function @f@ with domain @D@ -} -> 
         f {-^ an approximation of the composition of function @f@ with the given functions -}
+    composeVarInEff eff var value =
+        composeVarsInEff eff $ fromList [(var, value)] -- default
+        
