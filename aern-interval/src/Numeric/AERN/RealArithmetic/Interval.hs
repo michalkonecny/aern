@@ -119,14 +119,6 @@ instance
          (ArithUpDn.rrEffortComp l effR,
           ArithUpDn.rrEffortMinmax l effR,
           ()
-         ),
-         ((ArithUpDn.rrEffortComp l effR,
-           ArithUpDn.rrEffortMinmax l effR,
-           ((ArithUpDn.fldEffortMult l $ ArithUpDn.rrEffortField l effR),
-            (ArithUpDn.fldEffortDiv l $ ArithUpDn.rrEffortField l effR)
-           )
-          ),
-          ArithUpDn.rrEffortFromInt l effR
          )
         )
     rrEffortIntegerMixedField (Interval l _) (effR,_) =
@@ -134,14 +126,6 @@ instance
          (ArithUpDn.rrEffortComp l effR,
           ArithUpDn.rrEffortMinmax l effR,
           ()
-         ),
-         ((ArithUpDn.rrEffortComp l effR,
-           ArithUpDn.rrEffortMinmax l effR,
-           ((ArithUpDn.fldEffortMult l $ ArithUpDn.rrEffortField l effR),
-            (ArithUpDn.fldEffortDiv l $ ArithUpDn.rrEffortField l effR)
-           )
-          ),
-          ArithUpDn.rrEffortFromInteger l effR
          )
         )
     rrEffortDoubleMixedField (Interval l _) (effR,_) =
@@ -149,14 +133,6 @@ instance
          (ArithUpDn.rrEffortComp l effR,
           ArithUpDn.rrEffortMinmax l effR,
           ()
-         ),
-         ((ArithUpDn.rrEffortComp l effR,
-           ArithUpDn.rrEffortMinmax l effR,
-           ((ArithUpDn.fldEffortMult l $ ArithUpDn.rrEffortField l effR),
-            (ArithUpDn.fldEffortDiv l $ ArithUpDn.rrEffortField l effR)
-           )
-          ),
-          ArithUpDn.rrEffortFromDouble l effR
          )
         )
     rrEffortRationalMixedField (Interval l _) (effR,_) =
@@ -164,14 +140,6 @@ instance
          (ArithUpDn.rrEffortComp l effR,
           ArithUpDn.rrEffortMinmax l effR,
           ()
-         ),
-         ((ArithUpDn.rrEffortComp l effR,
-           ArithUpDn.rrEffortMinmax l effR,
-           ((ArithUpDn.fldEffortMult l $ ArithUpDn.rrEffortField l effR),
-            (ArithUpDn.fldEffortDiv l $ ArithUpDn.rrEffortField l effR)
-           )
-          ),
-          ArithUpDn.rrEffortFromRational l effR
          )
         )
 

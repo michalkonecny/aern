@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ImplicitParams #-}
@@ -24,7 +25,7 @@ where
 import Numeric.AERN.Basics.Interval
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Interval.ExactOps
+import Numeric.AERN.RealArithmetic.Interval.ExactOps ()
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
@@ -324,7 +325,7 @@ instance
          NumOrd.MinmaxEffortIndicator e,
          (ArithUpDn.MultEffortIndicator e,
           ArithUpDn.DivEffortIndicator e))
-    divDefaultEffort (Interval l r) = 
+    divDefaultEffort (Interval l _) = 
         (NumOrd.pCompareDefaultEffort l, 
          NumOrd.minmaxDefaultEffort l,
          (ArithUpDn.multDefaultEffort l,

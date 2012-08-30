@@ -1,6 +1,8 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -77,7 +79,7 @@ instance (ArithUpDn.RoundedMixedMultiply e tn,
           NumOrd.RoundedLattice e) => 
     RoundedMixedMultiply (Interval e) tn 
     where
-    mixedMultInEff ((effortCompS, effortCompE), effortMinmax, effortMult) i n =
+    mixedMultInEff ((effortCompS, effortCompE), effortMinmax, effortMult) i@(Interval l _) n =
         fromEndpoints $
         multiplySingletonWithInterval 
             (pNonnegNonposEff effortCompS)
@@ -86,8 +88,9 @@ instance (ArithUpDn.RoundedMixedMultiply e tn,
             (flip $ ArithUpDn.mixedMultDnEff effortMult) 
             (NumOrd.maxUpEff effortMinmax) 
             (NumOrd.minDnEff effortMinmax)
+            (zero l) (zero l)
             n i
-    mixedMultOutEff ((effortCompS, effortCompE), effortMinmax, effortMult) i n =
+    mixedMultOutEff ((effortCompS, effortCompE), effortMinmax, effortMult) i@(Interval l _) n =
         fromEndpoints $
         multiplySingletonWithInterval 
             (pNonnegNonposEff effortCompS)
@@ -95,12 +98,26 @@ instance (ArithUpDn.RoundedMixedMultiply e tn,
             (flip $ ArithUpDn.mixedMultDnEff effortMult) 
             (flip $ ArithUpDn.mixedMultUpEff effortMult)
             (NumOrd.minDnEff effortMinmax)
-            (NumOrd.maxUpEff effortMinmax) 
+            (NumOrd.maxUpEff effortMinmax)
+            (zero l) (zero l)
             n i
 
+multiplySingletonWithInterval :: 
+    (tn -> (Maybe Bool, Maybe Bool))
+    -> (e -> (Maybe Bool, Maybe Bool))
+    -> (tn -> e -> e)
+    -> (tn -> e -> e)
+    -> (e -> e -> e)
+    -> (e -> e -> e)
+    -> e
+    -> e
+    -> tn
+    -> Interval e
+    -> (e, e)
 multiplySingletonWithInterval 
         sNonnegNonpos iNonnegNonpos timesL timesR 
         combineL combineR
+        zeroResL zeroResR
         s1 (Interval l2 r2) =
     let _ = [combineL, combineR] in
         case (sNonnegNonpos s1, -- sign of s1 
@@ -110,7 +127,7 @@ multiplySingletonWithInterval
              
             -- s1 is zero
             ((Just True, Just True), _, _) -> 
-                (z, z)
+                (zeroResL, zeroResR)
  
             -- s1 non negative
             ((Just True, _), _, _) -> 
@@ -132,47 +149,93 @@ multiplySingletonWithInterval
 
             -- both s1 and i2 are around zero
             _ ->
-                ((s1 `timesL` l2) `combineL` (s1 `timesL` r2) `combineL` z,
-                 (s1 `timesR` l2) `combineR` (s1 `timesR` r2) `combineR` z) 
+                ((s1 `timesL` l2) `combineL` (s1 `timesL` r2) `combineL` zeroResL,
+                 (s1 `timesR` l2) `combineR` (s1 `timesR` r2) `combineR` zeroResR) 
                 -- need to include zero to account for 
                 -- consistent vs anti-consistent cases giving constant 0
         where
-        z = zero l2
         
         
-instance 
-    (RoundedDivideEffort (Interval e),
-     -- MK has no idea why the following four need to be stated;
-     --    they should be inferred from the one above automatically...
-     ArithUpDn.RoundedMultiplyEffort e, 
-     ArithUpDn.RoundedDivideEffort e,  
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLatticeEffort e,
-     --
-     Convertible tn (Interval e)) 
-    => 
+        
+        
+instance (ArithUpDn.RoundedMixedDivideEffort e tn,
+          NumOrd.PartialComparison tn, NumOrd.PartialComparison e,
+          NumOrd.RoundedLatticeEffort e) => 
     RoundedMixedDivideEffort (Interval e) tn 
     where
-    type MixedDivEffortIndicator (Interval e) tn =
-        (DivEffortIndicator (Interval e), 
-         ConvertEffortIndicator tn (Interval e))
-    mixedDivDefaultEffort = mixedDivDefaultEffortByConversion
+    type MixedDivEffortIndicator (Interval e) tn = 
+        ((NumOrd.PartialCompareEffortIndicator tn, 
+          NumOrd.PartialCompareEffortIndicator e), 
+         NumOrd.MinmaxEffortIndicator e,
+         ArithUpDn.MixedDivEffortIndicator e tn)
+    mixedDivDefaultEffort (Interval l _) n = 
+        ((NumOrd.pCompareDefaultEffort n, 
+          NumOrd.pCompareDefaultEffort l), 
+         NumOrd.minmaxDefaultEffort l,
+         ArithUpDn.mixedDivDefaultEffort l n) 
 
-instance 
-    (RoundedDivide (Interval e),
-     -- MK has no idea why the following four need to be stated;
-     --    they should be inferred from the one above automatically...
-     ArithUpDn.RoundedMultiplyEffort e, 
-     ArithUpDn.RoundedDivideEffort e,  
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLatticeEffort e,
-     --
-     Convertible tn (Interval e)) 
-    => 
+instance (ArithUpDn.RoundedMixedDivide e tn,
+          HasZero tn, HasZero e, HasInfinities e,
+          NumOrd.PartialComparison tn, NumOrd.PartialComparison e,
+          NumOrd.RoundedLattice e) => 
     RoundedMixedDivide (Interval e) tn 
     where
-    mixedDivInEff = mixedDivInEffByConversion
-    mixedDivOutEff = mixedDivOutEffByConversion
+    mixedDivInEff ((effortCompS, effortCompE), effortMinmax, effortDiv) i@(Interval l _) n =
+        fromEndpoints $
+        multiplySingletonWithInterval 
+            (pNonnegNonposEff effortCompS)
+            (pNonnegNonposEff effortCompE)
+            (flip $ ArithUpDn.mixedDivUpEff effortDiv)
+            (flip $ ArithUpDn.mixedDivDnEff effortDiv) 
+            (NumOrd.maxUpEff effortMinmax) 
+            (NumOrd.minDnEff effortMinmax)
+            (plusInfinity l) (minusInfinity l)
+            n i
+    mixedDivOutEff ((effortCompS, effortCompE), effortMinmax, effortDiv) i@(Interval l _) n =
+        fromEndpoints $
+        multiplySingletonWithInterval 
+            (pNonnegNonposEff effortCompS)
+            (pNonnegNonposEff effortCompE)
+            (flip $ ArithUpDn.mixedDivDnEff effortDiv) 
+            (flip $ ArithUpDn.mixedDivUpEff effortDiv)
+            (NumOrd.minDnEff effortMinmax)
+            (NumOrd.maxUpEff effortMinmax) 
+            (minusInfinity l) (plusInfinity l)
+            n i
+        
+--instance 
+--    (RoundedDivideEffort (Interval e),
+--     -- MK has no idea why the following four need to be stated;
+--     --    they should be inferred from the one above automatically...
+--     ArithUpDn.RoundedMultiplyEffort e, 
+--     ArithUpDn.RoundedDivideEffort e,  
+--     NumOrd.PartialComparison e, 
+--     NumOrd.RoundedLatticeEffort e,
+--     --
+--     Convertible tn (Interval e)) 
+--    => 
+--    RoundedMixedDivideEffort (Interval e) tn 
+--    where
+--    type MixedDivEffortIndicator (Interval e) tn =
+--        (DivEffortIndicator (Interval e), 
+--         ConvertEffortIndicator tn (Interval e))
+--    mixedDivDefaultEffort = mixedDivDefaultEffortByConversion
+--
+--instance 
+--    (RoundedDivide (Interval e),
+--     -- MK has no idea why the following four need to be stated;
+--     --    they should be inferred from the one above automatically...
+--     ArithUpDn.RoundedMultiplyEffort e, 
+--     ArithUpDn.RoundedDivideEffort e,  
+--     NumOrd.PartialComparison e, 
+--     NumOrd.RoundedLatticeEffort e,
+--     --
+--     Convertible tn (Interval e)) 
+--    => 
+--    RoundedMixedDivide (Interval e) tn 
+--    where
+--    mixedDivInEff = mixedDivInEffByConversion
+--    mixedDivOutEff = mixedDivOutEffByConversion
     
 instance (RoundedMixedAddEffort (Interval e) tn,
           RoundedMixedMultiplyEffort (Interval e) tn, 
@@ -223,21 +286,22 @@ instance
         (ArithUpDn.MixedFieldOpsEffortIndicator e tn,
          (NumOrd.PartialCompareEffortIndicator e, 
           NumOrd.MinmaxEffortIndicator e, 
-          NumOrd.PartialCompareEffortIndicator tn),
-         MixedDivEffortIndicator (Interval e) tn)
-    mixedFieldOpsDefaultEffort i@(Interval l r) n =
+          NumOrd.PartialCompareEffortIndicator tn))
+    mixedFieldOpsDefaultEffort (Interval l _) n =
         (ArithUpDn.mixedFieldOpsDefaultEffort l n,
          (NumOrd.pCompareDefaultEffort l,
           NumOrd.minmaxDefaultEffort l,
-          NumOrd.pCompareDefaultEffort n),
-         mixedDivDefaultEffort i n)
-    mxfldEffortAdd (Interval l r) n (effortFld, _, _) = 
+          NumOrd.pCompareDefaultEffort n))
+    mxfldEffortAdd (Interval l _) n (effortFld, _) = 
         ArithUpDn.mxfldEffortAdd l n effortFld
-    mxfldEffortMult (Interval l r) n (effortFld, (effortCompEpt, effortMinmax, effortCompS), _) =
+    mxfldEffortMult (Interval l _) n (effortFld, (effortCompEpt, effortMinmax, effortCompS)) =
         ((effortCompS, effortCompEpt), 
           effortMinmax, 
           ArithUpDn.mxfldEffortMult l n effortFld) 
-    mxfldEffortDiv _ _ (_, _, effortDiv) = effortDiv
+    mxfldEffortDiv (Interval l _) n (effortFld, (effortCompEpt, effortMinmax, effortCompS)) =
+        ((effortCompS, effortCompEpt), 
+          effortMinmax, 
+          ArithUpDn.mxfldEffortDiv l n effortFld) 
     
 instance (RoundedMixedRing (Interval e) tn,
           RoundedMixedDivide (Interval e) tn,
