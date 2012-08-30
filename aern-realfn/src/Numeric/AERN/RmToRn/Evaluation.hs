@@ -17,6 +17,7 @@
 module Numeric.AERN.RmToRn.Evaluation where
 
 import Numeric.AERN.RmToRn.Domain
+import Numeric.AERN.RmToRn.New
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsDefaultEffort
@@ -102,7 +103,7 @@ class
 -}
     
 class
-    (HasVarValue (VarBox f f) (Var f) f) 
+    (HasDomainBox f, HasProjections f, HasVarValue (VarBox f f) (Var f) f) 
     => 
     CanCompose f
     where
@@ -136,14 +137,24 @@ class
         f {-^ a function with domain @D'@ to substitute for variable @v@  -} -> 
         f {-^ a function @f@ with domain @D@ -} -> 
         f {-^ an approximation of the composition of function @f@ with the given functions -}
-    composeVarOutEff eff var value =
-        composeVarsOutEff eff $ fromList [(var, value)] -- default
+    composeVarOutEff eff var value fn =  -- default
+        composeVarsOutEff eff valueMap fn
+        where
+        valueMap = insertVar var value var2selfMap
+        var2selfMap = fromAscList $ zip vars projections
+        (vars, _) = unzip $ toAscList $ getDomainBox fn
+        projections = map (newProjectionFromSample value) vars 
     composeVarInEff ::
         CompositionEffortIndicator f -> 
         (Var f) {-^ variable @v@ -} -> 
         f {-^ a function with domain @D'@ to substitute for variable @v@  -} -> 
         f {-^ a function @f@ with domain @D@ -} -> 
         f {-^ an approximation of the composition of function @f@ with the given functions -}
-    composeVarInEff eff var value =
-        composeVarsInEff eff $ fromList [(var, value)] -- default
+    composeVarInEff eff var value fn =  -- default
+        composeVarsInEff eff valueMap fn
+        where
+        valueMap = insertVar var value var2selfMap
+        var2selfMap = fromAscList $ zip vars projections
+        (vars, _) = unzip $ toAscList $ getDomainBox fn
+        projections = map (newProjectionFromSample value) vars 
         

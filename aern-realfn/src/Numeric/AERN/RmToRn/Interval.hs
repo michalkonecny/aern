@@ -235,6 +235,7 @@ instance
 
 instance
     (CanEvaluateOtherTypeInner f,
+     RefOrd.IntervalLike f, HasProjections f,
      HasEvalOps f (Interval f),
      HasVarValue (VarBox f (Interval f)) (Var f) (Interval f),
      NumOrd.PartialComparison f,
