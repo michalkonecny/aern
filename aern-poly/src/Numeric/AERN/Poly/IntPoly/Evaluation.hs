@@ -110,7 +110,7 @@ instance
     
 
 valsMapToValuesLZ :: 
-    (Ord var) 
+    (Ord var, Show var, Show t) 
      =>
      (t -> cf -> t) ->
      IntPolyCfg var cf -> 
@@ -125,7 +125,10 @@ valsMapToValuesLZ subtractCf cfg valsMap =
     getValue var = 
         case lookupVar valsMap var of 
             Just val -> val
-            _ -> error "aern-poly internal error in Evaluation...valsMapToValues"
+            _ -> error $ 
+                "aern-poly internal error in Evaluation...valsMapToValuesLZ:"
+                ++ "\n var " ++ show var ++ " not present in valsMap"
+                ++ "\n valsMap = " ++ show valsMap 
      
 instance
     (Ord var, Show var, Show cf,
