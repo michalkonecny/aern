@@ -41,24 +41,15 @@ import qualified Data.List as List
 
 --type CF = Interval MPFR
 type CF = Interval Double
-type Endpt = IntPoly String CF
-type Fn = Interval Endpt
+type FnEndpt = IntPoly String CF
+type Fn = Interval FnEndpt
 
 main =
     do
---    putStrLn $ "comparing v1 and v2: " 
---        ++ (show $ RefOrd.pCompareInFullEff effRefComp v1 v2)
---        ++ "\n a1 = " ++ showP a1
---        ++ "\n a2 = " ++ showP a2
---        ++ "\n v1 = " ++ showP v1
---        ++ "\n v2 = " ++ showP v2
---    Gtk.initGUI
     -- enable multithreaded GUI:
     Gtk.unsafeInitGUIForThreadedRTS
---    let (fns, fnmeta) = (fnsSinsin, fnmetaSinsin)
---    let (fns, fnmeta) = (fnsMinmaxInOut, fnmetaMinmaxInOut)
-    let (fns, fnmeta) = (fnsMinmaxOut, fnmetaMinmaxOut)
---    let (fns, fnmeta) = (fnsTest, fnmetaTest)
+--    let (fns, fnmeta) = (fnsMinmaxOut, fnmetaMinmaxOut)
+    let (fns, fnmeta) = (fnsTest, fnmetaTest)
     fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
     fnMetaTV <- atomically $ newTVar $ fnmeta
 --    putStrLn "plot main: calling FV.new"
@@ -74,15 +65,103 @@ addPlotVar fns =
     addV fn = (fn, plotVar)
     (plotVar : _) = vars    
     
---signalFn fnMetaTV =
---    do
---    atomically $
---        do
---        fnmeta <- readTVar fnMetaTV
---        writeTVar fnMetaTV $ fnmeta { FV.dataFnsUpdated = True }
 
---showP p = showPoly id show p -- ++ " [" ++ show p ++ "]"
+fnsMinmaxOut :: [[Fn]]    
+fnsMinmaxOut = 
+    [ 
+     [x, cOneOver16, 
+      NumOrd.maxOutEff effMinmaxInOut (x) cOneOver16
+     ]
+     ,
+     [x, cSevenOver16, 
+      NumOrd.maxOutEff effMinmaxInOut (x) cSevenOver16
+     ]
+     ,
+     [x, cOneMinusOneOver16, 
+      NumOrd.maxOutEff effMinmaxInOut (x) cOneMinusOneOver16
+     ]
+    ]
 
+fnmetaMinmaxOut = (FV.defaultFnMetaData x)
+    {
+        FV.dataFnGroupNames = ["max 1/16", "max 7/16", "max 15/16"],
+        FV.dataFnNames = 
+            [["x", "1/16", "maxOut"], 
+             ["x", "7/16", "maxOut"],
+             ["x", "15/16", "maxOut"]],
+        FV.dataFnStyles = 
+            [[black, black, blue],
+             [black, black, blue],
+             [black, black, blue]]
+    }
+    
+black :: FV.FnPlotStyle
+black = FV.defaultFnPlotStyle
+blue :: FV.FnPlotStyle
+blue = FV.defaultFnPlotStyle 
+    { 
+        FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
+        FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
+    } 
+red :: FV.FnPlotStyle
+red = FV.defaultFnPlotStyle 
+    { 
+        FV.styleOutlineColour = Just (0.8,0.2,0.2,1), 
+        FV.styleFillColour = Just (0.8,0.2,0.2,0.1) 
+    } 
+    
+c1,c0,x,c01,c10,cHalf,cHalf1,cOneOver16,cSevenOver16,cOneMinusOneOver16, sampleFn :: Fn
+x = newProjection cfg dombox "x"
+xD maxdeg = newProjection (cfgD maxdeg) dombox "x"
+c0 = newConstFn cfg dombox 0
+c1 = newConstFn cfg dombox 1
+cHalf = newConstFn cfg dombox 0.5
+cHalf1 = newConstFn cfg dombox $ 0.5 </\> 1
+cOneOver16 = newConstFn cfg dombox $ 0.5^4
+cSevenOver16 = newConstFn cfg dombox $ 7 * 0.5^4
+cOneMinusOneOver16 = newConstFn cfg dombox $ 15 * 0.5^4
+c01 = newConstFn cfg dombox $ 0 </\> 1
+c10 = newConstFn cfg dombox $ 1 <\/> 0
+
+sampleFn = x
+sampleFnEndpt = xE 
+
+xE = newProjection cfg dombox "x" :: FnEndpt
+c0E = newConstFn cfg dombox 0 :: FnEndpt
+
+--eff = (100, (100,())) -- MPFR
+effCF = ArithInOut.roundedRealDefaultEffort (0:: CF)
+effNumComp = NumOrd.pCompareDefaultEffort sampleFn
+effRefComp = RefOrd.pCompareDefaultEffort sampleFn
+effMinmaxInOut = 
+    minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 sampleFnEndpt
+effDrawFn = cairoDrawFnDefaultEffort sampleFn
+effEval = evaluationDefaultEffort sampleFn
+
+cfg = cfgD 4
+cfgD maxdeg =
+    IntPolyCfg
+        {
+            ipolycfg_vars = vars,
+            ipolycfg_domsLZ = doms,
+            ipolycfg_domsLE = replicate (length vars) 0,
+            ipolycfg_sample_cf = 0 :: CF,
+            ipolycfg_maxdeg = maxdeg,
+            ipolycfg_maxsize = 1000
+        }
+
+dombox = Map.fromList $ zip vars doms
+
+vars = ["x"]
+
+doms :: [CF]
+doms = [constructCF 0 1]
+
+constructCF :: Double -> Double -> CF
+constructCF l r =
+    RefOrd.fromEndpointsOutWithDefaultEffort (cf0 <+>| l, cf0 <+>| r)
+cf0 = 0 :: CF
+    
 -----------------------------------
 --fnmetaSinsin = (FV.defaultFnMetaData x)
 --    {
@@ -231,92 +310,6 @@ addPlotVar fns =
 --             [black, black, black, black],
 --             [black, black, black, black]]
 --    }
-
-fnsMinmaxOut :: [[Fn]]    
-fnsMinmaxOut = 
-    [ 
-     [x, cOneOver16, 
-      NumOrd.maxOutEff effMinmaxInOut (x) cOneOver16
-     ]
-     ,
-     [x, cSevenOver16, 
-      NumOrd.maxOutEff effMinmaxInOut (x) cSevenOver16
-     ]
-     ,
-     [x, cOneMinusOneOver16, 
-      NumOrd.maxOutEff effMinmaxInOut (x) cOneMinusOneOver16
-     ]
-    ]
-
-fnmetaMinmaxOut = (FV.defaultFnMetaData x)
-    {
-        FV.dataFnGroupNames = ["max 1/16", "max 7/16", "max 15/16"],
-        FV.dataFnNames = 
-            [["x", "1/16", "maxOut"], 
-             ["x", "7/16", "maxOut"],
-             ["x", "15/16", "maxOut"]],
-        FV.dataFnStyles = 
-            [[black, black, blue],
-             [black, black, blue],
-             [black, black, blue]]
-    }
-    
-black = FV.defaultFnPlotStyle
-blue = FV.defaultFnPlotStyle 
-    { 
-        FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
-        FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
-    } 
-    
-c1,c0,x,c01,c10,cHalf,cHalf1,cOneOver16,cSevenOver16,cOneMinusOneOver16, sampleFn :: Fn
-x = newProjection cfg dombox "x"
-xD maxdeg = newProjection (cfgD maxdeg) dombox "x"
-c0 = newConstFn cfg dombox 0
-c1 = newConstFn cfg dombox 1
-cHalf = newConstFn cfg dombox 0.5
-cHalf1 = newConstFn cfg dombox $ 0.5 </\> 1
-cOneOver16 = newConstFn cfg dombox $ 0.5^4
-cSevenOver16 = newConstFn cfg dombox $ 7 * 0.5^4
-cOneMinusOneOver16 = newConstFn cfg dombox $ 15 * 0.5^4
-c01 = newConstFn cfg dombox $ 0 </\> 1
-c10 = newConstFn cfg dombox $ 1 <\/> 0
-
-sampleFn = x
-sampleFnEndpt = newProjection cfg dombox "x" :: Endpt
-
---eff = (100, (100,())) -- MPFR
-effCF = ArithInOut.roundedRealDefaultEffort (0:: CF)
-effNumComp = NumOrd.pCompareDefaultEffort sampleFn
-effRefComp = RefOrd.pCompareDefaultEffort sampleFn
-effMinmaxInOut = 
-    minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 sampleFnEndpt
-effDrawFn = cairoDrawFnDefaultEffort sampleFn
-effEval = evaluationDefaultEffort sampleFn
-
-cfg = cfgD 4
-cfgD maxdeg =
-    IntPolyCfg
-        {
-            ipolycfg_vars = vars,
-            ipolycfg_domsLZ = doms,
-            ipolycfg_domsLE = replicate (length vars) 0,
-            ipolycfg_sample_cf = 0 :: CF,
-            ipolycfg_maxdeg = maxdeg,
-            ipolycfg_maxsize = 1000
-        }
-
-dombox = Map.fromList $ zip vars doms
-
-vars = ["x"]
-
-doms :: [CF]
-doms = [constructCF 0 1]
-
-constructCF :: Double -> Double -> CF
-constructCF l r =
-    RefOrd.fromEndpointsOutWithDefaultEffort (cf0 <+>| l, cf0 <+>| r)
-cf0 = 0 :: CF
-    
 -------------
     
 fnsTest :: [[Fn]]
@@ -326,63 +319,61 @@ fnsTest =
             a1,
             b1,
             a1 <*> b1
---            ,
---            a1 >*< b1
         ]
         ,
         [
-            a2,
-            b2,
-            a2 <*> b2
---            ,
---            a2 >*< b2
+            mkInterval a1E,
+            mkInterval b1E,
+            mkInterval $ a1E <*> b1E
         ]
     ]
+    where
+    mkInterval e = Interval e e
     
-a1,a2,b1,b2 :: Fn
-
-
+a1,b1 :: Fn
 a1 =
---  [_-1.0,0.0^]*x + [_2,3^]
- 
-    (constructCF (-1) (0.0)) |<*> x 
-    <+>|
-    (constructCF (2) (3))
-    
+--  (x-0.5) + [_0,0.5^]
+    (x <+>| (-0.5 :: Double)) 
+    <+>| 
+    (constructCF 0 (0.5))
 b1 = 
---  [_1,2^]
+--  [_-1,1^]
     c0 <+>|
-    (constructCF (1) (2))
+    (constructCF (-1) (1))
 
-a2 =
---  [_-226,0.0^]"x"^2 + [_-3e-7,0.0^]"x" + [^230,3_]
-    (constructCF (-226) (0)) |<*> (x<^>(2 :: Int)) 
-    <+> 
-    (constructCF (-3E-7) (0)) |<*> x 
-    <+>|
-    (constructCF (230) (3))
-
-b2 =
---  [_-1e-54,0.0^]"x"^2 + [_-0.5,0^]"x" + [^3.5,1_]
-    (constructCF (- 1E-54) (0)) |<*> (x<^>(2 :: Int)) 
-    <+> 
-    (constructCF (-0.5) (0.0)) |<*> x 
-    <+>|
-    (constructCF (3.5) (1))
+a1E,b1E :: FnEndpt
+a1E =
+--  -((x-0.5) + [_0,0.5^])
+    neg $
+        (xE <+>| (-0.5 :: Double)) 
+        <+>| 
+        (constructCF 0 (0.5))
+b1E = 
+--  [_-1,1^]
+    c0E <+>|
+    (constructCF (-1) (1))
 
 
-    
 fnmetaTest = (FV.defaultFnMetaData x)
     {
-        FV.dataFnGroupNames = ["mul1","mul2"]
+        FV.dataFnGroupNames = ["poly int" ,"int poly"]
         ,
         FV.dataFnNames = 
-            [["a1","b1","a1<*>b1"], -- ,"a1>*<b1"],
-             ["a2","b2","a2<*>b2"]] -- ,"a2>*<b2"]]
+            [
+                ["a1","b1","a1 <*> b1"]
+            ,
+                ["a1","b1","a1 <*> b1"]
+            ]
         ,
         FV.dataFnStyles = 
-            [replicate 4 black, replicate 4 blue]
+            [
+                replicate 3 blue
+            , 
+                replicate 3 red
+            ]
     }
+
+
 
 {- Error report being investigated:
 
