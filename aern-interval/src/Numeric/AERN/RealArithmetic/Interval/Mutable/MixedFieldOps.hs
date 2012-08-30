@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances, FlexibleInstances, MultiParamTypeClasses #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps
@@ -18,18 +19,18 @@ module Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps() where
 
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.Interval.Mutable
+--import Numeric.AERN.Basics.Interval.Mutable 
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps
+--import Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 -- import Numeric.AERN.RealArithmetic.Interval.FieldOps
-import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
+import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps ()
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import qualified Numeric.AERN.RefinementOrder as RefOrd
+--import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Control.Monad.ST (ST)
 
@@ -57,6 +58,8 @@ instance
     mixedMultInInPlaceEff  
             ((effortCompS,effortCompE), effortMinmax, effortMult)
             r i1 s =
+        do
+        (Interval l _) <- readMutable i1
         multiplySingletonAndIntervalInPlace
             (pNonnegNonposEff effortCompS)
             (pNonnegNonposEff effortCompE)
@@ -64,10 +67,13 @@ instance
             (ArithUpDn.mixedMultDnInPlaceEff effortMult)
             (NumOrd.maxUpInPlaceEff effortMinmax)
             (NumOrd.minDnInPlaceEff effortMinmax)
+            (zero l) (zero l)
             r s i1
     mixedMultOutInPlaceEff 
             ((effortCompS,effortCompE), effortMinmax, effortMult)
             r i1 s =
+        do
+        (Interval l _) <- readMutable i1
         multiplySingletonAndIntervalInPlace
             (pNonnegNonposEff effortCompS)
             (pNonnegNonposEff effortCompE)
@@ -75,6 +81,7 @@ instance
             (ArithUpDn.mixedMultUpInPlaceEff effortMult)
             (NumOrd.minDnInPlaceEff effortMinmax)
             (NumOrd.maxUpInPlaceEff effortMinmax)
+            (zero l) (zero l)
             r s i1
 
 multiplySingletonAndIntervalInPlace ::
@@ -85,6 +92,8 @@ multiplySingletonAndIntervalInPlace ::
     (OpMutableNonmut e tn s) ->
     (OpMutable2 e s) ->
     (OpMutable2 e s) ->
+    e ->
+    e ->
     (Mutable (Interval e) s) ->
     tn ->
     (Mutable (Interval e) s) ->
@@ -93,6 +102,7 @@ multiplySingletonAndIntervalInPlace
         sNonnegNonpos iNonnegNonpos 
         timesLInPlace timesRInPlace
         combineLInPlace combineRInPlace
+        zeroResL zeroResR
         (MInterval lResM rResM) s1 (MInterval l2M r2M) =
     do
     let _ = [combineLInPlace, combineRInPlace]
@@ -108,9 +118,8 @@ multiplySingletonAndIntervalInPlace
             ((Just True, Just True), _, _) -> 
 --                (zero, zero)
                 do
-                let z = zero l2
-                writeMutable lResM z
-                writeMutable rResM z
+                writeMutable lResM zeroResL
+                writeMutable rResM zeroResR
  
             -- s1 non negative
             ((Just True, _), _, _) -> 
@@ -129,7 +138,7 @@ multiplySingletonAndIntervalInPlace
 --                ((s1 `timesL` r2) `combineL` (s1 `timesL` l2), 
 --                 (s1 `timesR` r2) `combineR` (s1 `timesR` l2))
                 do
-                assignResEndpointsUsingBothOptions
+                _ <- assignResEndpointsUsingBothOptions
                 return ()
                 
             -- nothing known about s1, i2 negative
@@ -137,7 +146,7 @@ multiplySingletonAndIntervalInPlace
 --                ((s1 `timesL` r2) `combineL` (s1 `timesL` l2), 
 --                 (s1 `timesR` r2) `combineR` (s1 `timesR` l2))
                 do
-                assignResEndpointsUsingBothOptions
+                _ <- assignResEndpointsUsingBothOptions
                 return ()
 
 
@@ -149,16 +158,16 @@ multiplySingletonAndIntervalInPlace
 --                -- consistent vs anti-consistent cases giving constant 0
                 do
                 temp1 <- assignResEndpointsUsingBothOptions
-                let z = zero l2
-                writeMutable temp1 z
+                writeMutable temp1 zeroResL
                 combineLInPlace lResM lResM temp1
+                writeMutable temp1 zeroResR
                 combineRInPlace rResM rResM temp1
     where
-    assignResEndpointsUsingTimesLR l2M r2M =
+    assignResEndpointsUsingTimesLR lM rM =
         do
-        temp1 <- cloneMutable l2M
-        timesLInPlace temp1 l2M s1 -- beware of aliasing between res and param
-        timesRInPlace rResM r2M s1
+        temp1 <- cloneMutable lM
+        timesLInPlace temp1 lM s1 -- beware of aliasing between res and param
+        timesRInPlace rResM rM s1
         assignMutable lResM temp1
     assignResEndpointsUsingBothOptions =
         do
@@ -174,21 +183,58 @@ multiplySingletonAndIntervalInPlace
         assignMutable lResM temp3
         return temp1
     
-instance 
-    (RoundedDivideInPlace (Interval e),
-     -- MK has no idea why the following four need to be stated;
-     --    they should be inferred from the one above automatically...
-     ArithUpDn.RoundedMultiplyEffort e, 
-     ArithUpDn.RoundedDivideEffort e,  
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLatticeEffort e,
-     --
-     Convertible tn (Interval e)) 
-    => 
-    RoundedMixedDivideInPlace (Interval e) tn 
+instance    
+    (ArithUpDn.RoundedMixedDivideInPlace e tn,
+     NumOrd.RoundedLatticeInPlace e,
+     HasZero e,  HasInfinities e, NumOrd.PartialComparison e,  
+     HasZero tn,  NumOrd.PartialComparison tn,  
+     CanBeMutable e) => 
+    RoundedMixedDivideInPlace (Interval e) tn
     where
-    mixedDivInInPlaceEff = mixedDivInInPlaceEffByConversion
-    mixedDivOutInPlaceEff = mixedDivOutInPlaceEffByConversion
+    mixedDivInInPlaceEff  
+            ((effortCompS,effortCompE), effortMinmax, effortDiv)
+            r i1 s =
+        do
+        (Interval l _) <- readMutable i1
+        multiplySingletonAndIntervalInPlace
+            (pNonnegNonposEff effortCompS)
+            (pNonnegNonposEff effortCompE)
+            (ArithUpDn.mixedDivUpInPlaceEff effortDiv) 
+            (ArithUpDn.mixedDivDnInPlaceEff effortDiv)
+            (NumOrd.maxUpInPlaceEff effortMinmax)
+            (NumOrd.minDnInPlaceEff effortMinmax)
+            (plusInfinity l) (minusInfinity l)
+            r s i1
+    mixedDivOutInPlaceEff 
+            ((effortCompS,effortCompE), effortMinmax, effortDiv)
+            r i1 s =
+        do
+        (Interval l _) <- readMutable i1
+        multiplySingletonAndIntervalInPlace
+            (pNonnegNonposEff effortCompS)
+            (pNonnegNonposEff effortCompE)
+            (ArithUpDn.mixedDivDnInPlaceEff effortDiv) 
+            (ArithUpDn.mixedDivUpInPlaceEff effortDiv)
+            (NumOrd.minDnInPlaceEff effortMinmax)
+            (NumOrd.maxUpInPlaceEff effortMinmax)
+            (minusInfinity l) (plusInfinity l)
+            r s i1
+
+--instance 
+--    (RoundedDivideInPlace (Interval e),
+--     -- MK has no idea why the following four need to be stated;
+--     --    they should be inferred from the one above automatically...
+--     ArithUpDn.RoundedMultiplyEffort e, 
+--     ArithUpDn.RoundedDivideEffort e,  
+--     NumOrd.PartialComparison e, 
+--     NumOrd.RoundedLatticeEffort e,
+--     --
+--     Convertible tn (Interval e)) 
+--    => 
+--    RoundedMixedDivideInPlace (Interval e) tn 
+--    where
+--    mixedDivInInPlaceEff = mixedDivInInPlaceEffByConversion
+--    mixedDivOutInPlaceEff = mixedDivOutInPlaceEffByConversion
 
 instance 
     (ArithUpDn.RoundedMixedRingInPlace e tn,
@@ -212,7 +258,7 @@ instance
      Convertible tn (Interval e),
      NumOrd.PartialComparison tn,
      HasZero tn,
-     HasZero e, 
+     HasZero e, HasInfinities e,
      NumOrd.RoundedLatticeInPlace e) => 
     RoundedMixedFieldInPlace (Interval e) tn
     
