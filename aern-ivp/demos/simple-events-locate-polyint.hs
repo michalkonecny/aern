@@ -15,7 +15,6 @@ import Numeric.AERN.IVP.Solver.Events.SplitNearEvents
 import Numeric.AERN.Poly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
-import Numeric.AERN.RmToRn.Interval
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
@@ -42,7 +41,8 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.RealArithmetic.Interval
+import Numeric.AERN.RealArithmetic.Interval ()
+import Numeric.AERN.RmToRn.Interval ()
 
 import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.ShowInternals
@@ -95,7 +95,7 @@ usage :: IO ()
 usage =
     do
     putStrLn "Usage A: simple-events <ivp name> <output file name>"
-    putStrLn "Usage B: simple-events <ivp name> <maxDeg> <minStepSize> <True|False-print steps?> <maxEvalSplitSize>"
+    putStrLn "Usage B: simple-events <ivp name> <maxDeg> <minStepDepth> <maxStepDepth> <True|False-plot enclosures?> <True|False-print bisection tree?> <maxEvalSplitSize>"
 
 
 {--- END OF HYBRID SYSTEM DEFINITIONS ---}

@@ -3,6 +3,7 @@
 module Main where
 
 import Numeric.AERN.Poly.IntPoly
+--import Numeric.AERN.Poly.IntPoly.Plot ()
 
 import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Solver.Bisection
@@ -13,17 +14,26 @@ import Numeric.AERN.IVP.Solver.ShrinkWrap -- only for testing
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn.Integration
+import Numeric.AERN.RmToRn.Differentiation
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 import qualified Numeric.AERN.DoubleBasis.Interval as CF
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
 --import qualified Numeric.AERN.MPFRBasis.Interval as MI
 
+import Numeric.AERN.Basics.Interval
+import Numeric.AERN.RealArithmetic.Interval ()
+
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
+import qualified Numeric.AERN.NumericOrder as NumOrd
+--import Numeric.AERN.NumericOrder.OpsDefaultEffort
+
 import qualified Numeric.AERN.RefinementOrder as RefOrd
+--import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.ShowInternals
@@ -42,7 +52,14 @@ _ = unsafePrint -- stop the unused warning
 --import qualified Data.List as List
 
 type CF = CF.DI
-type Poly = IntPoly String CF
+type FnEndpt = IntPoly String CF
+type Fn = Interval FnEndpt
+
+sampleCf :: CF
+sampleCf = 0
+
+sampleFn :: Fn
+sampleFn = makeSampleWithVarsDoms 10 10 ["x"] [sampleCf]
 
 main :: IO ()
 main =
@@ -64,14 +81,14 @@ testShrinkWrap =
     getSides [x,y] =
         [(xSL,ySL),(xTL,yTL),(xSR,ySR),(xTR,yTR)]
         where
-        xSL = pEvalAtPointOutEff effComp sL x
-        xSR = pEvalAtPointOutEff effComp sR x
-        xTL = pEvalAtPointOutEff effComp tL x
-        xTR = pEvalAtPointOutEff effComp tR x
-        ySL = pEvalAtPointOutEff effComp sL y
-        ySR = pEvalAtPointOutEff effComp sR y
-        yTL = pEvalAtPointOutEff effComp tL y
-        yTR = pEvalAtPointOutEff effComp tR y
+        xSL = pEvalAtPointOutEff effPEval sL x
+        xSR = pEvalAtPointOutEff effPEval sR x
+        xTL = pEvalAtPointOutEff effPEval tL x
+        xTR = pEvalAtPointOutEff effPEval tR x
+        ySL = pEvalAtPointOutEff effPEval sL y
+        ySR = pEvalAtPointOutEff effPEval sR y
+        yTL = pEvalAtPointOutEff effPEval tL y
+        yTR = pEvalAtPointOutEff effPEval tR y
         sL = fromList [("s", -1)]
         sR = fromList [("s", 1)]
         tL = fromList [("t", -1)]
@@ -79,8 +96,8 @@ testShrinkWrap =
     
     Just result =
         shrinkWrap 
-            effComp effEval effDeriv effAddFn effAbsFn effMinmaxFn 
-                effDivFnInt effAddPolyCf effMultPolyCf effCf 
+            effCompose effEval effDeriv effAddFn effAbsFn effMinmaxFn 
+                effDivFnInt effAddFnDom effMultFnDom effCf 
                     [xUsingTS, yUsingTS]
     xUsingTS = s <*> tPlus2 <+> pmeps -- s(t+2) +- eps
     yUsingTS = (c1 <-> s <*> s) <*> tPlus2 <+> pmeps -- (1-s^2)(t+2) +- eps
@@ -90,7 +107,7 @@ testShrinkWrap =
     pmeps = newConstFnFromSample c1 $ ((-eps) CF.</\> eps)
         where
         eps = 0.125
-    c1 :: Poly
+    c1 :: Fn
     c1 = newConstFn cfg dombox (1 :: CF)
     dombox = fromList [("t", unitDom),  ("s", unitDom)]
     unitDom = (-1) CF.</\> 1
@@ -104,21 +121,19 @@ testShrinkWrap =
             ipolycfg_maxdeg = 3,
             ipolycfg_maxsize = 1000
         }
-    sampleCf = 0 :: CF
     effCf = ArithInOut.roundedRealDefaultEffort sampleCf
-    effEval = (effCf, Int1To10 10)
-    effComp = (effCf, Int1To10 10)
-    effDeriv = effCf
-    effAddFn = effCf
-    effAbsFn = (effMinmaxFn, effAbsCf)
-    effAbsCf = ArithInOut.rrEffortAbs sampleCf effCf
-    effMinmaxFn = minmaxInOutDefaultEffortIntPolyWithBezierDegree 4 s
-    effAddPolyCf = effAddCf
-    effMultPolyCf = (((), ()), (), ((), (), ()))
-    effDivFnInt =
-        ArithInOut.mxfldEffortDiv sampleCf (0::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
-    effAddCf =
-        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effEval = evaluationDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effPEval = partialEvaluationDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effCompose =  compositionDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effDeriv = fakeDerivativeDefaultEffort sampleFn
+    effAddFn = ArithInOut.addDefaultEffort sampleFn
+    effAbsFn = ArithInOut.absDefaultEffort sampleFn
+    effMinmaxFn = NumOrd.minmaxInOutDefaultEffort sampleFn
+--    effMinmaxFn = minmaxInOutDefaultEffortIntPolyWithBezierDegree 4 sampleFn
+    effAddFnDom = ArithInOut.mixedAddDefaultEffort sampleFn sampleCf
+    effMultFnDom = ArithInOut.mixedMultDefaultEffort sampleFn sampleCf
+    effDivFnInt = ArithInOut.mixedDivDefaultEffort sampleFn (0::Int)
+                
         
 usage :: IO ()
 usage =
@@ -126,7 +141,7 @@ usage =
     putStrLn "Usage A: simple-uv-et <ivp name> <output file name> <True|False-should wrap?>"
     putStrLn "Usage B: simple-uv-et <ivp name> <True|False-print steps?> <True|False-should wrap?> <maxDeg> <minStepSize>"
 
-ivpByName :: String -> ODEIVP Poly
+ivpByName :: String -> ODEIVP Fn
 ivpByName "ivpExpDecay-ev-et" = ivpExpDecay_ev_et     
 ivpByName "ivpExpDecay-uv-et" = ivpExpDecay_uv_et     
 ivpByName "ivpSpringMass-ev-et" = ivpSpringMass_ev_et
@@ -135,8 +150,9 @@ ivpByName "ivpSpringMassAir-ev-et" = ivpSpringMassAir_ev_et
 ivpByName "ivpFallAir-ishii" = ivpFallAir_ishii
 ivpByName "ivpLorenz-ishii" = ivpLorenz_ishii
 ivpByName "ivpRoessler" = ivpRoessler
+ivpByName name = error $ "unknown IVP: " ++ show name
 
-ivpExpDecay_ev_et :: ODEIVP Poly
+ivpExpDecay_ev_et :: ODEIVP Fn
 ivpExpDecay_ev_et =
     ivp
     where
@@ -160,7 +176,7 @@ ivpExpDecay_ev_et =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
 
-ivpExpDecay_uv_et :: ODEIVP Poly
+ivpExpDecay_uv_et :: ODEIVP Fn
 ivpExpDecay_uv_et =
     ivp
     where
@@ -185,7 +201,7 @@ ivpExpDecay_uv_et =
     tStart = odeivp_tStart ivp
 
 
-ivpSpringMass_ev_et :: ODEIVP Poly
+ivpSpringMass_ev_et :: ODEIVP Fn
 ivpSpringMass_ev_et =
     ivp
     where
@@ -210,7 +226,7 @@ ivpSpringMass_ev_et =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
 
-ivpSpringMass_uv_et :: ODEIVP Poly
+ivpSpringMass_uv_et :: ODEIVP Fn
 ivpSpringMass_uv_et =
     ivp
     where
@@ -245,7 +261,7 @@ ivpSpringMass_uv_et =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
 
-ivpFallAir_ishii :: ODEIVP Poly
+ivpFallAir_ishii :: ODEIVP Fn
 ivpFallAir_ishii =
     ivp
     where
@@ -273,7 +289,7 @@ ivpFallAir_ishii =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
 
-ivpLorenz_ishii :: ODEIVP Poly
+ivpLorenz_ishii :: ODEIVP Fn
 ivpLorenz_ishii =
     ivp
     where
@@ -307,7 +323,7 @@ ivpLorenz_ishii =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
 
-ivpRoessler :: ODEIVP Poly
+ivpRoessler :: ODEIVP Fn
 ivpRoessler =
     ivp
     where
@@ -345,7 +361,7 @@ ivpRoessler =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
 
-ivpSpringMassAir_ev_et :: ODEIVP Poly
+ivpSpringMassAir_ev_et :: ODEIVP Fn
 ivpSpringMassAir_ev_et =
     ivp
     where
@@ -473,13 +489,13 @@ refines :: CF -> CF -> Bool
 refines a1 a2 = (a2 CF.|<=? a1) == Just True
    
 solveVtPrintSteps ::
-    (solvingInfo ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])))
+    (solvingInfo ~ (Maybe ([Fn],[Fn]), (CF, Maybe [CF])))
     => 
     Bool
     ->
     Bool
     ->
-    ODEIVP Poly 
+    ODEIVP Fn 
     -> 
     (Int, Int) 
     -> 
@@ -525,7 +541,7 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
     -- solver call:
     (endValues, bisectionInfoOut) =
         solveIVPWithUncertainValue shouldWrap
-            sizeLimits effCf substSplitSizeLimit delta m 
+            sizeLimits substSplitSizeLimit delta m 
                 minStepSize splitImprovementThreshold
                     ivp
     -- parameters:
@@ -546,8 +562,6 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
     maybeExactResult = odeivp_maybeExactValuesAtTEnd ivp
     componentNames = odeivp_componentNames ivp
     
-    sampleCf = 0 :: CF
-    effCf = ArithInOut.roundedRealDefaultEffort sampleCf
     sizeLimits =
         getSizeLimits $
             makeSampleWithVarsDoms maxdeg maxsize [] []
@@ -606,17 +620,16 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
 
 
 solveIVPWithUncertainValue ::
-    (solvingInfo ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])))
+    (solvingInfo ~ (Maybe ([Fn],[Fn]), (CF, Maybe [CF])))
     =>
     Bool ->
-    SizeLimits Poly -> 
-    ArithInOut.RoundedRealEffortIndicator CF -> 
+    SizeLimits Fn -> 
     Int -> 
     CF -> 
     Int -> 
     CF -> 
     CF -> 
-    ODEIVP Poly
+    ODEIVP Fn
     -> 
     (
      Maybe ([CF])
@@ -627,7 +640,7 @@ solveIVPWithUncertainValue ::
     )
 solveIVPWithUncertainValue
         shouldWrap 
-            sizeLimits effCf substSplitSizeLimit
+            sizeLimits _substSplitSizeLimit
                 delta m minStepSize splitImprovementThreshold
                     odeivp
     =
@@ -647,32 +660,27 @@ solveIVPWithUncertainValue
 --        initValDomBox =
 --            fromList $ zip componentNames initialValues
 --        
-    sampleCf = delta
-    
-    effSizeLims = effCf
-    effCompose = (effCf, Int1To10 substSplitSizeLimit)
-    effEval = (effCf, Int1To10 substSplitSizeLimit)
-    effInteg = effCf
-    effDeriv = effCf
-    effAddFn = effCf
-    effMultFn = effCf
-    effInclFn = ((Int1To1000 0, (effCf, Int1To10 100)), ())
-    effAbsFn = (effMinmaxFn, effAbsCf)
-    effAbsCf = ArithInOut.rrEffortAbs sampleCf effCf
-    effMinmaxFn = error "effMinmaxUpDnFn undefined"
-    effAddFnDom = effAddCf
-    effMultFnDom = (((), ()), (), ((), (), ()))
-    effDivFnInt =
-        ArithInOut.mxfldEffortDiv sampleCf (0::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
-    effAddCf =
-        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effSizeLims = sizeLimitsChangeDefaultEffort sampleFn
+    effCompose =  compositionDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effEval = evaluationDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effInteg = integrationDefaultEffort sampleFn
+    effDeriv = fakeDerivativeDefaultEffort sampleFn
+    effAddFn = ArithInOut.addDefaultEffort sampleFn
+    effMultFn = ArithInOut.multDefaultEffort sampleFn
+    effAbsFn = ArithInOut.absDefaultEffort sampleFn
+    effMinmaxFn = NumOrd.minmaxInOutDefaultEffort sampleFn
+    effAddFnDom = ArithInOut.mixedAddDefaultEffort sampleFn sampleCf
+    effMultFnDom = ArithInOut.mixedMultDefaultEffort sampleFn sampleCf
+--        ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effDivFnInt = ArithInOut.mixedDivDefaultEffort sampleFn (0::Int)
+    effInclFn = RefOrd.pCompareDefaultEffort sampleFn -- ((Int1To1000 0, (effCf, Int1To10 20)), ())
+    effCf = ArithInOut.roundedRealDefaultEffort sampleCf
 
 makeSampleWithVarsDoms :: 
-     Int -> Int -> [Var Poly] -> [CF] -> Poly
+     Int -> Int -> [Var Fn] -> [CF] -> Fn
 makeSampleWithVarsDoms maxdeg maxsize vars doms =
     newConstFn cfg dombox sampleCf
     where
-    sampleCf = 0 :: CF
     domsLE = 
         map (fst . RefOrd.getEndpointsOutWithDefaultEffort) doms
     dombox = fromList $ zip vars doms 
