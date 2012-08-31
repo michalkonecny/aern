@@ -27,7 +27,7 @@ import qualified Numeric.AERN.DoubleBasis.Interval as CF
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
 --import qualified Numeric.AERN.MPFRBasis.Interval as MI
 
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+--import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
@@ -35,16 +35,16 @@ import Numeric.AERN.RealArithmetic.ExactOps
 --import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+--import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+--import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.RealArithmetic.Interval ()
 import Numeric.AERN.RmToRn.Interval ()
 
-import Numeric.AERN.Basics.Effort
+--import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.ShowInternals
 
 --import Data.List (intercalate)
@@ -237,7 +237,7 @@ solveEventsPrintSteps ::
          )
         ]
     )
-solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthParam, minDepthParam, maxSplitSizeParam) =
+solveEventsPrintSteps shouldPlotSteps _shouldShowSteps ivp (maxdegParam, depthParam, minDepthParam, maxSplitSizeParam) =
     do
     putStrLn "--------------------------------------------------------"
     putStrLn "demo of simulation based on (Konecny, Taha, Duracz 2012)" 
@@ -438,7 +438,7 @@ solveHybridIVP ::
         ]
     )
 solveHybridIVP 
-        sizeLimits substSplitSizeLimit
+        sizeLimits _substSplitSizeLimit
             delta m minStepSize maxStepSize splitImprovementThreshold 
                 t0Var
                     hybivp
