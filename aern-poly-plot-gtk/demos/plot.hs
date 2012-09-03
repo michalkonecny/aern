@@ -111,13 +111,22 @@ fnDefsMinmax maxdeg = (fns, fnmeta)
         {
             FV.dataFnGroupNames = ["max 1/16", "max 7/16", "max 15/16"],
             FV.dataFnNames = 
-                [["x", "1/16", "maxOut"], 
-                 ["x", "7/16", "maxOut"],
-                 ["x", "15/16", "maxOut"]],
+                [
+                    ["x", "1/16", "maxOut"]
+                , 
+                    ["x", "7/16", "maxOut"]
+                ,
+                    ["x", "15/16", "maxOut"]
+                ]
+                ,
             FV.dataFnStyles = 
-                [[black, black, blue],
-                 [black, black, blue],
-                 [black, black, blue]]
+                [
+                    [black, black, blue]
+                ,
+                    [black, black, blue]
+                ,
+                    [black, black, blue]
+                ]
         }
     fns = 
         [ 
@@ -157,11 +166,8 @@ fnDefsMinmax maxdeg = (fns, fnmeta)
     cSevenOver16 = newConstFn cfg dombox $ 7 * 0.5^(4::Int) :: Fn
     cOneMinusOneOver16 = newConstFn cfg dombox $ 15 * 0.5^(4::Int) :: Fn
     
-    sampleFnEndpt = xE 
-    xE = newProjection cfg dombox "x" :: FnEndpt
-    
-    effMinmaxInOut = 
-        minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 sampleFnEndpt
+    effMinmaxInOut = NumOrd.minmaxInOutDefaultEffort sampleFn
+    sampleFn = x 
 
 fnDefsMult1 :: Int -> ([[Fn]], FV.FnMetaData Fn)
 fnDefsMult1 maxdeg = (fns, fnmeta)
