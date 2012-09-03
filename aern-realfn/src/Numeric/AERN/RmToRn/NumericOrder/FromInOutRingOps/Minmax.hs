@@ -348,25 +348,24 @@ maxZeroDnUp
     Just aDn = maybeaDn
     bounded = excludesInfinity aWidth
     
-    viaBernsteinUp = 
-        doSubstUp $ maxCUp
-    viaBernsteinDn = 
-        doSubstDn $ maxCDn
-    doSubstDn = doSubst fst
-    doSubstUp = doSubst snd
-    doSubst selUPDn p =   
-        translateFromUnit $ eval $
-        selUPDn $ RefOrd.getEndpointsOutWithDefaultEffort p
+    viaBernsteinUp = doSubst maxCUp
+    viaBernsteinDn = doSubst maxCDn
+    doSubst p =   
+        translateFromUnit $ 
+            evalOtherType (evalOpsEff effEvalOpsT sampleF sampleT) varA p
         where
-        eval e = evalOtherType (evalOpsEff effEvalOpsT sampleF sampleT) varA e 
         varA = fromAscList [(var, translateToUnit a)]
     (var:_) = getVars $ getDomainBox $ x
     errUp = 
         let ?multInOutEffort = effMultDF in
         errUpUnit <*> aWidth
-    (maxCUp, errUpUnit) = 
+    maxCUp = 
+        snd $ RefOrd.getEndpointsOutWithDefaultEffort maxCUpPre
+    (maxCUpPre, errUpUnit) = 
         hillbaseApproxUp effCompDF effRingF effMultFDF effRealDF effEvalOpsDF x c degree
-    maxCDn =
+    maxCDn = 
+        fst $ RefOrd.getEndpointsOutWithDefaultEffort maxCDnPre
+    maxCDnPre =
         hillbaseApproxDn effGetEDF effCompDF effRingF effMultFDF effRealDF effEvalOpsDF x c dInit degree
         where
         dInit = 
