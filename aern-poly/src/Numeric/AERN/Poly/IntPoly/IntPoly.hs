@@ -236,7 +236,7 @@ termsJoinWith z joinCf (tL, tR) =
         where
         addNothing t = (Just t, Nothing)
     aux _ = 
-        error $ "aern-intpoly internal error: Poly: termsJoinWith used with illegal values"
+        error $ "aern-intpoly internal error: Poly: termsJoinWith used with incompatible values"
 
 
 
@@ -400,7 +400,8 @@ termsIsZero terms =
         _ -> False
 
 instance
-    (RefOrd.IntervalLike cf, HasZero cf)
+    (RefOrd.IntervalLike cf, HasZero cf, 
+     HasConsistency cf, Show cf)
     => 
     (RefOrd.IntervalLike (IntPoly var cf))
     where
@@ -419,20 +420,28 @@ instance
     getEndpointsInEff eff = polySplitWith (RefOrd.getEndpointsInEff eff)
     getEndpointsOutEff eff = polySplitWith (RefOrd.getEndpointsOutEff eff)
     fromEndpointsInEff eff pp@(IntPoly cfg _, _) = 
-        polyJoinWith z (RefOrd.fromEndpointsInEff eff) pp
-        where 
-        z = zero $ ipolycfg_sample_cf cfg 
+        polyJoinWith z fromEndpointsCheck pp
+        where
+        z = zero $ ipolycfg_sample_cf cfg
+        fromEndpointsCheck (cf1, cf2) =
+            case isConsistentEff effCons res of
+                Just True -> res
+                _ -> 
+                    error $ 
+                        "aern-poly: fromEndpointsInEff: cannot establish that coefficient is consistent: " ++ show res 
+            where
+            res = RefOrd.fromEndpointsInEff eff (cf1, cf2)
+            effCons = consistencyDefaultEffort res
     fromEndpointsOutEff eff pp@(IntPoly cfg _, _) = 
-        polyJoinWith z (RefOrd.fromEndpointsOutEff eff) pp
-        where 
-        z = zero $ ipolycfg_sample_cf cfg 
-    getEndpointsInWithDefaultEffort = polySplitWith (RefOrd.getEndpointsInWithDefaultEffort)
-    getEndpointsOutWithDefaultEffort = polySplitWith (RefOrd.getEndpointsOutWithDefaultEffort)
-    fromEndpointsInWithDefaultEffort pp@(IntPoly cfg _, _) = 
-        polyJoinWith z (RefOrd.fromEndpointsInWithDefaultEffort) pp
-        where 
-        z = zero $ ipolycfg_sample_cf cfg 
-    fromEndpointsOutWithDefaultEffort pp@(IntPoly cfg _, _) = 
-        polyJoinWith z (RefOrd.fromEndpointsOutWithDefaultEffort) pp
-        where 
-        z = zero $ ipolycfg_sample_cf cfg 
+        polyJoinWith z fromEndpointsCheck pp
+        where
+        z = zero $ ipolycfg_sample_cf cfg
+        fromEndpointsCheck (cf1, cf2) =
+            case isConsistentEff effCons res of
+                Just True -> res
+                _ -> 
+                    error $ 
+                        "aern-poly: fromEndpointsInEff: cannot establish that coefficient is consistent: " ++ show res 
+            where
+            res = RefOrd.fromEndpointsOutEff eff (cf1, cf2)
+            effCons = consistencyDefaultEffort res
