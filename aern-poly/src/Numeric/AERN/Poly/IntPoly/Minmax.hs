@@ -94,12 +94,13 @@ instance
          NumOrd.MinmaxInOutEffortIndicator cf,
          Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
          RefOrd.GetEndpointsEffortIndicator (IntPoly var cf))
-    minmaxDefaultEffort f =
+    minmaxDefaultEffort f@(IntPoly cfg _) =
         (defaultMinmaxEffortIndicatorFromRingOps f f,
          NumOrd.minmaxInOutDefaultEffort sampleDom,
-         Int1To10 3, -- degree 4
+         Int1To10 (1 + (maxdeg `div` 3)),
          RefOrd.getEndpointsDefaultEffort f)
         where
+        maxdeg = ipolycfg_maxdeg cfg
         sampleDom = getSampleDomValue f
 
 minmaxUpDnDefaultEffortIntPolyWithBezierDegree ::
@@ -148,6 +149,9 @@ instance
     maxUpEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne, effGetE) a b =
 --        unsafePrint 
 --            ( "IntPoly maxUpEff:"
+--                ++ "\n degreeMinusOne = " ++ show degreeMinusOne
+--                ++ "\n cfg a = " ++ show (intpoly_cfg a)
+--                ++ "\n cfg b = " ++ show (intpoly_cfg b)
 --                ++ "\n a = " ++ showPoly show show a
 --                ++ "\n b = " ++ showPoly show show b
 --                ++ "\n a `maxUp` b = " ++ showPoly show show result 
@@ -279,11 +283,13 @@ instance
          RefOrd.GetEndpointsEffortIndicator (IntPoly var cf),
          RefOrd.FromEndpointsEffortIndicator (IntPoly var cf))
 
-    minmaxInOutDefaultEffort f =
+    minmaxInOutDefaultEffort f@(IntPoly cfg _) =
         (defaultMinmaxEffortIndicatorFromRingOps f f, 
-         Int1To10 3, -- degree 4
+         Int1To10 (1 + (maxdeg `div` 3)),
          RefOrd.getEndpointsDefaultEffort f,
          RefOrd.fromEndpointsDefaultEffort f)
+        where
+        maxdeg = ipolycfg_maxdeg cfg
 
 minmaxInOutDefaultEffortIntPolyWithBezierDegree ::
     (ArithUpDn.Convertible f (Domain f), 
@@ -295,7 +301,7 @@ minmaxInOutDefaultEffortIntPolyWithBezierDegree ::
      HasEvalOps f (Domain f), 
      HasEvalOps f f,
      GeneratableVariables (Var f),
-     HasAntiConsistency (Domain f), 
+     HasAntiConsistency (Domain f),
      Arbitrary (Domain f), 
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
