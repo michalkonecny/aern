@@ -145,6 +145,7 @@ maxUpEffFromRingOps ::
      ArithInOut.RoundedMixedField t (Domain f),
      HasEvalOps f t, 
      RefOrd.IntervalLike t,
+     RefOrd.IntervalLike f,
      HasVarValue (VarBox f t) (Var f) t,
      HasEvalOps f (Domain f),
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
@@ -186,6 +187,7 @@ maxDnEffFromRingOps ::
      ArithInOut.RoundedMixedField t (Domain f),
      HasEvalOps f t, 
      RefOrd.IntervalLike t,
+     RefOrd.IntervalLike f,
      HasVarValue (VarBox f t) (Var f) t,
      HasEvalOps f (Domain f),
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
@@ -217,6 +219,7 @@ minUpEffFromRingOps ::
      ArithInOut.RoundedMixedField t (Domain f),
      HasEvalOps f t, 
      RefOrd.IntervalLike t,
+     RefOrd.IntervalLike f,
      HasVarValue (VarBox f t) (Var f) t,
      HasEvalOps f (Domain f),
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
@@ -244,6 +247,7 @@ minDnEffFromRingOps ::
      ArithInOut.RoundedMixedField t (Domain f),
      HasEvalOps f t, 
      RefOrd.IntervalLike t,
+     RefOrd.IntervalLike f,
      HasVarValue (VarBox f t) (Var f) t,
      HasEvalOps f (Domain f),
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
@@ -273,6 +277,7 @@ maxZeroDnUp ::
      Show (Domain f),
      ArithInOut.RoundedMixedField t (Domain f),
      HasEvalOps f t, 
+     RefOrd.IntervalLike f,
      RefOrd.IntervalLike t,
      HasVarValue (VarBox f t) (Var f) t,
      HasEvalOps f (Domain f),
@@ -344,13 +349,16 @@ maxZeroDnUp
     bounded = excludesInfinity aWidth
     
     viaBernsteinUp = 
-        doSubst $ maxCUp
+        doSubstUp $ maxCUp
     viaBernsteinDn = 
-        doSubst $ maxCDn
-    doSubst p =  
-        translateFromUnit $
-        evalOtherType (evalOpsEff effEvalOpsT sampleF sampleT) varA p
+        doSubstDn $ maxCDn
+    doSubstDn = doSubst fst
+    doSubstUp = doSubst snd
+    doSubst selUPDn p =   
+        translateFromUnit $ eval $
+        selUPDn $ RefOrd.getEndpointsOutWithDefaultEffort p
         where
+        eval e = evalOtherType (evalOpsEff effEvalOpsT sampleF sampleT) varA e 
         varA = fromAscList [(var, translateToUnit a)]
     (var:_) = getVars $ getDomainBox $ x
     errUp = 

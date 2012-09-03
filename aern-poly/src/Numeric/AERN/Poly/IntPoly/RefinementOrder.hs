@@ -98,7 +98,8 @@ instance
     (Ord var, Show var, 
      Show cf, 
      ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf, HasZero cf, 
+     RefOrd.IntervalLike cf, HasZero cf,
+     HasConsistency cf, 
      NumOrd.PartialComparison (IntPoly var cf)
     )
     => 
