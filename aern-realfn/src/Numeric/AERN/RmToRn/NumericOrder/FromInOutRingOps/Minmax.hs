@@ -66,7 +66,7 @@ type MinmaxEffortIndicatorFromRingOps f t =
            EvalOpsEffortIndicator f (Domain f))
           ,
          (ArithInOut.RingOpsEffortIndicator f,
-          ArithInOut.MixedFieldOpsEffortIndicator f Int,
+          ArithInOut.MixedMultEffortIndicator f (Domain f),
           SizeLimits f
          ),
          (ArithInOut.RingOpsEffortIndicator t,
@@ -103,7 +103,7 @@ defaultMinmaxEffortIndicatorFromRingOps ::
      HasEvalOps f t,
      HasEvalOps f (Domain f),
      ArithInOut.RoundedRingEffort f,
-     ArithInOut.RoundedMixedFieldEffort f Int,
+     ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedMixedField t (Domain f),
      ArithInOut.RoundedRingEffort t
     )
@@ -122,7 +122,7 @@ defaultMinmaxEffortIndicatorFromRingOps sampleF sampleT =
      )
      ,
      (ArithInOut.ringOpsDefaultEffort sampleF,
-      ArithInOut.mixedFieldOpsDefaultEffort sampleF (1::Int),
+      ArithInOut.mixedMultDefaultEffort sampleF sampleDF,
       getSizeLimits sampleF
      )
      ,
@@ -150,7 +150,7 @@ maxUpEffFromRingOps ::
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
      HasProjections f, HasConstFns f, HasOne f, -- HasZero f,
      ArithInOut.RoundedRing f,
-     ArithInOut.RoundedMixedField f Int) 
+     ArithInOut.RoundedMixedMultiply f (Domain f)) 
     =>
     f ->
     (SizeLimits f -> f) ->
@@ -191,7 +191,7 @@ maxDnEffFromRingOps ::
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
      HasProjections f, HasConstFns f, HasOne f, -- HasZero f,
      ArithInOut.RoundedRing f,
-     ArithInOut.RoundedMixedField f Int) 
+     ArithInOut.RoundedMixedMultiply f (Domain f)) 
     =>
     f ->
     (SizeLimits f -> f) ->
@@ -222,7 +222,7 @@ minUpEffFromRingOps ::
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
      HasProjections f, HasConstFns f, HasOne f, -- HasZero f,
      ArithInOut.RoundedRing f,
-     ArithInOut.RoundedMixedField f Int) 
+     ArithInOut.RoundedMixedMultiply f (Domain f)) 
     =>
     f ->
     (SizeLimits f -> f) ->
@@ -249,7 +249,7 @@ minDnEffFromRingOps ::
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
      HasProjections f, HasConstFns f, HasOne f, -- HasZero f,
      ArithInOut.RoundedRing f,
-     ArithInOut.RoundedMixedField f Int) 
+     ArithInOut.RoundedMixedMultiply f (Domain f)) 
     =>
     f ->
     (SizeLimits f -> f) ->
@@ -279,7 +279,7 @@ maxZeroDnUp ::
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
      HasProjections f, HasConstFns f, HasOne f, -- HasZero f,
      ArithInOut.RoundedRing f,
-     ArithInOut.RoundedMixedField f Int) 
+     ArithInOut.RoundedMixedMultiply f (Domain f)) 
     =>
     (SizeLimits f -> f) ->
     MinmaxEffortIndicatorFromRingOps f t ->
@@ -302,7 +302,7 @@ maxZeroDnUp
         getX
         ((effTToDom, effRealDF, effGetEDF), 
          (effEvalOpsT, effEvalOpsDF), 
-         (effRingF, effIntFldF, sizeLimits), 
+         (effRingF, effMultFDF, sizeLimits), 
          (_effRingT, effFldTDF))
         degree
         a =
@@ -322,10 +322,11 @@ maxZeroDnUp
             ((zero a, zero a), zero sampleDF)
         _ -> 
 --            unsafePrint ("maxZeroDnUp: mixed"
---                ++ "\n maxCUp = " ++ show maxCUp
+--                ++ "\n a = " ++ show a
+--                ++ "\n aUp = " ++ show aUp
+--                ++ "\n aDn = " ++ show aDn
 --                ++ "\n translateToUnit a = " ++ show (translateToUnit a)
---                ++ "\n evalOtherType (evalOpsOut effEvalOpsT sampleF sampleT) (fromAscList [(var, translateToUnit a)]) maxZeroUp = " 
---                ++ show (evalOtherType (evalOpsOut effEvalOpsT sampleF sampleT) (fromAscList [(var, translateToUnit a)]) maxZeroUp)
+--                ++ "\n maxCUp = " ++ show maxCUp
 --                ++ "\n maxCDn = " ++ show maxCDn
 --            ) $ 
             ((viaBernsteinDn, viaBernsteinUp), errUp)
@@ -354,9 +355,9 @@ maxZeroDnUp
         let ?multInOutEffort = effMultDF in
         errUpUnit <*> aWidth
     (maxCUp, errUpUnit) = 
-        hillbaseApproxUp effCompDF effRingF effIntFldF effRealDF effEvalOpsDF x c degree
+        hillbaseApproxUp effCompDF effRingF effMultFDF effRealDF effEvalOpsDF x c degree
     maxCDn =
-        hillbaseApproxDn effGetEDF effCompDF effRingF effIntFldF effRealDF effEvalOpsDF x c dInit degree
+        hillbaseApproxDn effGetEDF effCompDF effRingF effMultFDF effRealDF effEvalOpsDF x c dInit degree
         where
         dInit = 
             let (<->) = ArithInOut.subtrOutEff effAddDF in
@@ -400,7 +401,7 @@ maxZeroDnUp
 {-| compute an upper Bernstein approximation of the function max(x,c) over [0,1] -}
 hillbaseApproxUp :: 
     (HasConstFns f, HasProjections f, HasOne f, ArithInOut.RoundedRing f, 
-     ArithInOut.RoundedMixedField f Int,
+     ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedReal (Domain f),
      HasEvalOps f (Domain f),
      RefOrd.IntervalLike (Domain f),
@@ -408,16 +409,18 @@ hillbaseApproxUp ::
     =>
     NumOrd.PartialCompareEffortIndicator (Domain f) -> 
     ArithInOut.RingOpsEffortIndicator f -> 
-    ArithInOut.MixedFieldOpsEffortIndicator f Int -> 
+    ArithInOut.MixedMultEffortIndicator f (Domain f) -> 
     ArithInOut.RoundedRealEffortIndicator (Domain f) -> 
     EvalOpsEffortIndicator f (Domain f) -> 
     f {-^ the variable @x@ to use in the result uni-variate polynomial -} ->
     Domain f {-^ @c@ the only non-smooth point of the approximated piece-wise linear function -} ->
     Int {-^ @n@ Bernstein approximation degree -} ->
     (f, Domain f)
-hillbaseApproxUp effComp effRingF effIntFldF effRealDF effEvalOps x c n =
+hillbaseApproxUp effComp effRingF effMultFDF effRealDF effEvalOps x c n =
 --    unsafePrintReturn ( "hillbaseApproxUp:"
+--        ++ "\n x = " ++ show x
 --        ++ "\n c = " ++ show c
+--        ++ "\n n = " ++ show n
 --        ++ "\n result = "
 --    ) $
     (result, errUp)
@@ -439,10 +442,15 @@ hillbaseApproxUp effComp effRingF effIntFldF effRealDF effEvalOps x c n =
             evalOtherType (evalOpsEff effEvalOps sampleF sampleDF) varC result
         varC = fromAscList [(var, c)]
     mkBT p =
-        (newConstFnFromSample x fOfpOverN)
-        <*> 
-        (bernsteinOut (effRingF, effIntFldF) x n p)
+--        unsafePrint ( "mkBT:"
+--            ++ "\n p = " ++ show p
+--            ++ "\n pOverN = " ++ show pOverN
+--            ++ "\n fOfpOverN = " ++ show fOfpOverN
+--            ++ "\n bernstein = " ++ show bernstein
+--        ) $
+        (newConstFnFromSample x fOfpOverN) <*> bernstein
         where
+        bernstein = bernsteinOut (effRingF, effRealDF, effMultFDF) x n p 
         fOfpOverN -- = maxOutEff effMinmax c0 $ pOverN <-> c
             | (pOverN <? c) == Just True = c
             | otherwise = pOverN
@@ -470,7 +478,7 @@ hillbaseApproxUp effComp effRingF effIntFldF effRealDF effEvalOps x c n =
 -}
 hillbaseApproxDn :: 
     (HasConstFns f, HasProjections f, HasOne f, ArithInOut.RoundedRing f, 
-     ArithInOut.RoundedMixedField f Int,
+     ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
      HasEvalOps f (Domain f),
@@ -479,7 +487,7 @@ hillbaseApproxDn ::
     RefOrd.GetEndpointsEffortIndicator (Domain f) -> 
     NumOrd.PartialCompareEffortIndicator (Domain f) -> 
     ArithInOut.RingOpsEffortIndicator f -> 
-    ArithInOut.MixedFieldOpsEffortIndicator f Int -> 
+    ArithInOut.MixedMultEffortIndicator f (Domain f) -> 
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
     EvalOpsEffortIndicator f (Domain f) -> 
     f {-^ the variable @x@ to use in the result uni-variate polynomial -} ->
@@ -487,7 +495,7 @@ hillbaseApproxDn ::
     Domain f {-^ @dInit@ initial value for the offset @d@ by which to translate the approximated fn down at point c -} ->
     Int {-^ @n@ Bernstein approximation degree -} ->
     f
-hillbaseApproxDn effGetE effComp effRingF effIntFldF effRealDF effEvalOps x c dInit n =
+hillbaseApproxDn effGetE effComp effRingF effMultFDF effRealDF effEvalOps x c dInit n =
     let ?addInOutEffort = effAddDF in
     let ?mixedMultInOutEffort = effMultDFDbl in
     findDWithBelowCAtC $ findDWithAboveCAtC dInit
@@ -527,7 +535,7 @@ hillbaseApproxDn effGetE effComp effRingF effIntFldF effRealDF effEvalOps x c dI
             where
             fnAtCMinusC = fnAtC <-> c
     hillDnD = 
-        hillbaseApproxDnD effComp effRingF effIntFldF effRealDF x c n
+        hillbaseApproxDnD effComp effRingF effMultFDF effRealDF x c n
     
     (var:_) = getVars $ getDomainBox $ x
     sampleF = x
@@ -542,20 +550,20 @@ hillbaseApproxDn effGetE effComp effRingF effIntFldF effRealDF effEvalOps x c dI
 -}
 hillbaseApproxDnD :: 
     (HasConstFns f, HasProjections f, HasOne f, ArithInOut.RoundedRing f, 
-     ArithInOut.RoundedMixedField f Int,
+     ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedReal (Domain f),
      Show (Domain f), Show f)
     =>
     NumOrd.PartialCompareEffortIndicator (Domain f) -> 
     ArithInOut.RingOpsEffortIndicator f -> 
-    ArithInOut.MixedFieldOpsEffortIndicator f Int -> 
+    ArithInOut.MixedMultEffortIndicator f (Domain f) -> 
     ArithInOut.RoundedRealEffortIndicator (Domain f) -> 
     f {-^ the variable @x@ to use in the result uni-variate polynomial -} ->
     Domain f {-^ @c@ the only non-smooth point of the approximated piece-wise linear function -} ->
     Int {-^ @n@ Bernstein approximation degree -} ->
     Domain f {-^ @d@ the distance of the approximated piece-wise linear function from 0 at point c -} ->
     f
-hillbaseApproxDnD effComp effRingF effIntFldF effRealDF x c n d =
+hillbaseApproxDnD effComp effRingF effMultFDF effRealDF x c n d =
     let ?pCompareEffort = effComp in
     let ?addInOutEffort = effAddDF in
     let ?multInOutEffort = effMultDF in
@@ -582,7 +590,7 @@ hillbaseApproxDnD effComp effRingF effIntFldF effRealDF x c n d =
         let ?multInOutEffort = effMultF in
         (newConstFnFromSample x fOfpOverN)
         <*> 
-        (bernsteinOut (effRingF, effIntFldF) x n p)
+        (bernsteinOut (effRingF, effRealDF, effMultFDF) x n p)
         where
         fOfpOverN
             | (pOverN <? c) == Just True =
