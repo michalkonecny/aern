@@ -328,6 +328,8 @@ maxZeroDnUp
 --                ++ "\n translateToUnit a = " ++ show (translateToUnit a)
 --                ++ "\n maxCUp = " ++ show maxCUp
 --                ++ "\n maxCDn = " ++ show maxCDn
+--                ++ "\n viaBernsteinUp = " ++ show viaBernsteinUp
+--                ++ "\n viaBernsteinDn = " ++ show viaBernsteinDn
 --            ) $ 
             ((viaBernsteinDn, viaBernsteinUp), errUp)
     where
@@ -403,8 +405,8 @@ hillbaseApproxUp ::
     (HasConstFns f, HasProjections f, HasOne f, ArithInOut.RoundedRing f, 
      ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedReal (Domain f),
-     HasEvalOps f (Domain f),
      RefOrd.IntervalLike (Domain f),
+     HasEvalOps f (Domain f),
      Show (Domain f), Show f)
     =>
     NumOrd.PartialCompareEffortIndicator (Domain f) -> 
@@ -451,7 +453,9 @@ hillbaseApproxUp effComp effRingF effMultFDF effRealDF effEvalOps x c n =
         (newConstFnFromSample x fOfpOverN) <*> bernstein
         where
         bernstein = bernsteinOut (effRingF, effRealDF, effMultFDF) x n p 
-        fOfpOverN -- = maxOutEff effMinmax c0 $ pOverN <-> c
+        fOfpOverN =
+            fst $ RefOrd.getEndpointsOutWithDefaultEffort fOfpOverNPre
+        fOfpOverNPre -- = maxOutEff effMinmax c0 $ pOverN <-> c
             | (pOverN <? c) == Just True = c
             | otherwise = pOverN
         pOverN = (c1 <*>| p) </>| n
@@ -496,6 +500,13 @@ hillbaseApproxDn ::
     Int {-^ @n@ Bernstein approximation degree -} ->
     f
 hillbaseApproxDn effGetE effComp effRingF effMultFDF effRealDF effEvalOps x c dInit n =
+--    unsafePrintReturn ( "hillbaseApproxDn:"
+--        ++ "\n x = " ++ show x
+--        ++ "\n c = " ++ show c
+--        ++ "\n dInit = " ++ show dInit
+--        ++ "\n n = " ++ show n
+--        ++ "\n result = "
+--    ) $
     let ?addInOutEffort = effAddDF in
     let ?mixedMultInOutEffort = effMultDFDbl in
     findDWithBelowCAtC $ findDWithAboveCAtC dInit
@@ -552,6 +563,7 @@ hillbaseApproxDnD ::
     (HasConstFns f, HasProjections f, HasOne f, ArithInOut.RoundedRing f, 
      ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
      Show (Domain f), Show f)
     =>
     NumOrd.PartialCompareEffortIndicator (Domain f) -> 
@@ -587,12 +599,20 @@ hillbaseApproxDnD effComp effRingF effMultFDF effRealDF x c n d =
         let ?intPowerInOutEffort = effPowDF in
         d <*> (c <^> (4 :: Int))
     mkBT p =
+--        unsafePrintReturn ( "mkBT:"
+--            ++ "\n p = " ++ show p
+--            ++ "\n pOverN = " ++ show pOverN
+--            ++ "\n fOfpOverN = " ++ show fOfpOverN
+--            ++ "\n bernstein = " ++ show bernstein
+--            ++ "\n result = "
+--        ) $
         let ?multInOutEffort = effMultF in
-        (newConstFnFromSample x fOfpOverN)
-        <*> 
-        (bernsteinOut (effRingF, effRealDF, effMultFDF) x n p)
+        (newConstFnFromSample x fOfpOverN) <*> bernstein 
         where
-        fOfpOverN
+        bernstein = bernsteinOut (effRingF, effRealDF, effMultFDF) x n p
+        fOfpOverN =
+            snd $ RefOrd.getEndpointsOutWithDefaultEffort fOfpOverNPre
+        fOfpOverNPre
             | (pOverN <? c) == Just True =
                 cMinusL <-> (pOverN <*> dMinusLOverC)
                 -- (c-l) - (p/n(d-l)/c) 
