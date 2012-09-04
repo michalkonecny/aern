@@ -103,8 +103,8 @@ runOnce [ivpName, maxDegS, depthS, minDepthS, shouldPlotStepsS, shouldShowStepsS
     _ <- solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxDeg, depth, minDepth, maxSplitSize)
     return ()
     where
-    ivp = ivpByName ivpName samplePoly
-
+    ivp = ivpByNameReportError ivpName samplePoly
+    
 writeCSV :: [String] -> IO ()
 writeCSV [ivpName, outputFileName] =
     do
@@ -118,7 +118,7 @@ writeCSV [ivpName, outputFileName] =
                 writeCSVheader handle
                 mapM_ (runSolverMeasureTimeMSwriteLine handle) paramCombinations
     where
-    ivp = ivpByName ivpName samplePoly
+    ivp = ivpByNameReportError ivpName samplePoly
     paramCombinations = 
         [(maxDegree, depth) | 
             maxDegree <- [0..10], depth <- [0,5..60]]
@@ -268,7 +268,9 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
     minStepSizeExp = - depthParam
     minStepSize = 2^^minStepSizeExp
     maxStepSizeExp = - minDepthParam
-    maxStepSize = 2^^maxStepSizeExp
+    maxStepSize = 
+         2^^maxStepSizeExp
+--        fst $ RefOrd.getEndpointsOutWithDefaultEffort $ 10^^(-3::Int)
     splitImprovementThreshold = 2^^(-48 :: Int)
     
     -- auxiliary:
