@@ -102,26 +102,35 @@ expOutThinArg eff
     expOutViaTaylor degr x = -- assuming x inside [-1,1]
         (1::Int) |<+> (te degr (1::Int))
         where
-        te steps i
-            | steps > 0 =
-                (x </>| i) <*> ((1::Int) |<+> (te (steps - 1) (i + 1)))
-            | steps == 0 = 
-                errorBound
-                where
-                errorBound = 
-                    (x </>| i) <*> ithDerivBound
-                ithDerivBound =
-                    case (pNonnegNonposEff effortCompare x) of
-                        (Just True, _) -> -- x >= 0:
-                            (one x) </\> eUp
-                        (_, Just True) -> -- x <= 0:
-                            recipEDn </\> (one x)
-                        _ -> -- near or crossing zero:
-                            recipEDn </\> eUp
-                eUp =
-                    ArithInOut.convertOutEff effortFromDouble sample (2.718281829 :: Double)
-                recipEDn =
-                    ArithInOut.convertOutEff effortFromDouble sample (0.367879440 :: Double)
+        te steps i =
+--            unsafePrint
+--            (
+--                "expOutThinArg: expOutViaTaylor:"
+--                ++ "\n teResult = " ++ show teResult
+--                ++ "\n i = " ++ show i
+--                ++ "\n x = " ++ show x
+--            ) 
+            teResult
+            where
+            teResult 
+                | steps > 0 =
+                    (x </>| i) <*> ((1::Int) |<+> (te (steps - 1) (i + 1)))
+                | steps == 0 = 
+                    errorBound
+            errorBound = 
+                (x </>| i) <*> ithDerivBound
+            ithDerivBound =
+                case (pNonnegNonposEff effortCompare x) of
+                    (Just True, _) -> -- x >= 0:
+                        (one x) </\> eUp
+                    (_, Just True) -> -- x <= 0:
+                        recipEDn </\> (one x)
+                    _ -> -- near or crossing zero:
+                        recipEDn </\> eUp
+            eUp =
+                ArithInOut.convertOutEff effortFromDouble sample (2.718281829 :: Double)
+            recipEDn =
+                ArithInOut.convertOutEff effortFromDouble sample (0.367879440 :: Double)
 
 expOutThinArgInPlace ::
     (ArithInOut.RoundedRealInPlace t) =>
