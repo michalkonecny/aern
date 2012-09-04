@@ -97,7 +97,9 @@ instance
     minmaxDefaultEffort f@(IntPoly cfg _) =
         (defaultMinmaxEffortIndicatorFromRingOps f f,
          NumOrd.minmaxInOutDefaultEffort sampleDom,
-         Int1To10 (1 + (maxdeg `div` 3)),
+         Int1To10 (1 + (min 20 $ maxdeg `div` 3)),
+         -- TODO: the minimum 20 makes sense only with Double coeffs;
+         --       make it depend on the current coefficient precision
          RefOrd.getEndpointsDefaultEffort f)
         where
         maxdeg = ipolycfg_maxdeg cfg
@@ -285,7 +287,9 @@ instance
 
     minmaxInOutDefaultEffort f@(IntPoly cfg _) =
         (defaultMinmaxEffortIndicatorFromRingOps f f, 
-         Int1To10 (1 + (maxdeg `div` 3)),
+         Int1To10 (1 + (min 20 $ maxdeg `div` 3)),
+         -- TODO: the minimum 20 makes sense only with Double coeffs;
+         --       make it depend on the current coefficient precision
          RefOrd.getEndpointsDefaultEffort f,
          RefOrd.fromEndpointsDefaultEffort f)
         where
