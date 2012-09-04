@@ -92,10 +92,16 @@ instance
     minusInfinity sampleP = newConstFnFromSample sampleP $ minusInfinity sampleCf
         where
         sampleCf = getSampleDomValue sampleP
-    excludesMinusInfinity _p =
-        error $ "IntPoly: excludesMinusInfinity not implemented yet"
-    excludesPlusInfinity _p =
-        error $ "IntPoly: excludesPlusInfinity not implemented yet"
+    excludesMinusInfinity (IntPoly _cfg terms) =
+        and $ termsCollectCoeffsWith excludesInfty terms
+        where
+        excludesInfty _ coeff =
+            excludesMinusInfinity coeff 
+    excludesPlusInfinity (IntPoly _cfg terms) =
+        and $ termsCollectCoeffsWith excludesInfty terms
+        where
+        excludesInfty _ coeff =
+            excludesPlusInfinity coeff 
 
 instance
     (Ord var, Show var,
