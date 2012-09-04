@@ -55,9 +55,9 @@ main :: IO ()
 main =
     do
     args <- getArgs
-    let [exampleName, maxdegS] = args
+    let exampleName : maxdegS : otherParams = args
     let maxdeg = read maxdegS
-    case getFnDefs exampleName maxdeg of
+    case getFnDefs exampleName maxdeg otherParams of
         Just fnDefs -> plot fnDefs
         _ -> error $ "unknown example " ++ exampleName
 
@@ -88,23 +88,23 @@ addPlotVar fns =
         vars = map fst $ toAscList dombox
         dombox = getDomainBox fn   
 
-getFnDefs :: [Char] -> Int -> Maybe ([[Fn]], FV.FnMetaData Fn)
-getFnDefs exampleName maxdeg =
-    Map.lookup exampleName $ examples maxdeg
+getFnDefs :: String -> Int -> [String] -> Maybe ([[Fn]], FV.FnMetaData Fn)
+getFnDefs exampleName maxdeg otherParams =
+    Map.lookup exampleName $ examples maxdeg otherParams
 
-examples :: Int -> Map.Map [Char] ([[Fn]], FV.FnMetaData Fn)
-examples maxdeg =
+examples :: Int -> [String] -> Map.Map String ([[Fn]], FV.FnMetaData Fn)
+examples maxdeg otherParams =
     Map.fromList $
     [
-        ("minmax", fnDefsMinmax maxdeg)
+        ("minmax", fnDefsMinmax maxdeg otherParams)
     ,
-        ("mult1", fnDefsMult1 maxdeg)
+        ("mult1", fnDefsMult1 maxdeg otherParams)
     ,
-        ("expMx2", fnDefsExpMx2 maxdeg)
+        ("expMx2", fnDefsExpMx2 maxdeg otherParams)
     ]   
 
-fnDefsMinmax :: Int -> ([[Fn]], FV.FnMetaData Fn)
-fnDefsMinmax maxdeg = (fns, fnmeta)
+fnDefsMinmax :: Int -> [String] -> ([[Fn]], FV.FnMetaData Fn)
+fnDefsMinmax maxdeg otherParams = (fns, fnmeta)
     where
     fnmeta =
         (FV.defaultFnMetaData x)
@@ -166,11 +166,20 @@ fnDefsMinmax maxdeg = (fns, fnmeta)
     cSevenOver16 = newConstFn cfg dombox $ 7 * 0.5^(4::Int) :: Fn
     cOneMinusOneOver16 = newConstFn cfg dombox $ 15 * 0.5^(4::Int) :: Fn
     
-    effMinmaxInOut = NumOrd.minmaxInOutDefaultEffort sampleFn
+    effMinmaxInOut =
+        case maybeBernsteinDegree of
+            Nothing -> NumOrd.minmaxInOutDefaultEffort sampleFn
+            Just bernsteinDeg ->
+                minmaxUpDnDefaultEffortIntPolyWithBezierDegree bernsteinDeg sampleFnEndpt
+    maybeBernsteinDegree =
+        case otherParams of
+            [] -> Nothing
+            bernsteinDegS : _ -> Just (read bernsteinDegS)
     sampleFn = x 
+    sampleFnEndpt = newProjection cfg dombox "x" :: FnEndpt
 
-fnDefsMult1 :: Int -> ([[Fn]], FV.FnMetaData Fn)
-fnDefsMult1 maxdeg = (fns, fnmeta)
+fnDefsMult1 :: Int -> [String] -> ([[Fn]], FV.FnMetaData Fn)
+fnDefsMult1 maxdeg _otherParams = (fns, fnmeta)
     where
     fnmeta =
         (FV.defaultFnMetaData x)
@@ -252,8 +261,8 @@ fnDefsMult1 maxdeg = (fns, fnmeta)
     vars = ["x"]
     doms = [constructCF 0 1]
 
-fnDefsExpMx2 :: Int -> ([[Fn]], FV.FnMetaData Fn)
-fnDefsExpMx2 maxdeg = (fns, fnmeta)
+fnDefsExpMx2 :: Int -> [String] -> ([[Fn]], FV.FnMetaData Fn)
+fnDefsExpMx2 maxdeg _otherParams = (fns, fnmeta)
     where
     fnmeta =
         (FV.defaultFnMetaData x)
