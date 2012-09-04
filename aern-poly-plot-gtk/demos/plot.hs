@@ -290,8 +290,9 @@ fnDefsExpMx2 maxdeg _otherParams = (fns, fnmeta)
         ]
     mx2 :: Fn
     mx2 =
-    --  (x-0.5) + [_0,0.5^]
-        neg (x <*> x)
+    --  1.5-x^2
+        (neg (x <*> x)) <+>| (1.5::Double)
+--        x
 
     x = newProjection cfg dombox "x" :: Fn
     
