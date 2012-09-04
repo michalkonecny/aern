@@ -44,6 +44,7 @@ import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.ShowInternals
 
 instance
     (ArithInOut.RoundedReal (Interval e),
@@ -76,6 +77,7 @@ instance
     (ArithInOut.RoundedReal (Interval e), 
      -- MK has no idea why the following three are not automatically deduced from the above...
      ArithUpDn.RoundedReal e,
+     ShowInternals e,
      ArithInOut.RoundedAddEffort (Distance e),
      RefOrd.RoundedLatticeEffort (Distance e),
      EffortIndicator (ArithInOut.FieldOpsEffortIndicator (Distance e)),
@@ -119,6 +121,7 @@ expOutIters, expInIters ::
     (ArithInOut.RoundedReal (Interval e), 
      -- MK has no idea why the following three are not automatically deduced from the above...
      ArithUpDn.RoundedReal e,
+     ShowInternals e,
      ArithInOut.RoundedAddEffort (Distance e),
      RefOrd.RoundedLatticeEffort (Distance e),
      EffortIndicator (ArithInOut.FieldOpsEffortIndicator (Distance e)),

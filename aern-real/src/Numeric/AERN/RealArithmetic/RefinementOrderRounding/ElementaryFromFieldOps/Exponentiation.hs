@@ -34,25 +34,12 @@ import Numeric.AERN.RealArithmetic.ExactOps
 
 import Control.Monad.ST (ST)
 
---type ExpOutThinArgEffort t =
+import Numeric.AERN.Misc.Debug
+_ = unsafePrint
 
 expOutThinArg ::
---    (HasZero t, HasOne t, HasInfinities t,
---     RefOrd.PartialComparison t,
---     NumOrd.PartialComparison t,
---     RefOrd.OuterRoundedLattice t,
---     ArithUpDn.Convertible t Int,
---     ArithInOut.Convertible Double t,
---     ArithInOut.RoundedMixedField t Int,
---     ArithInOut.RoundedField t) =>
---    ArithInOut.FieldOpsEffortIndicator t ->
---    ArithInOut.MixedFieldOpsEffortIndicator t Int ->
---    RefOrd.JoinMeetOutEffortIndicator t ->
---    RefOrd.PartialCompareEffortIndicator t ->
---    NumOrd.PartialCompareEffortIndicator t ->
---    (ArithUpDn.ConvertEffortIndicator t Int, 
---     ArithInOut.ConvertEffortIndicator Double t) ->
-    (ArithInOut.RoundedReal t) =>
+    (ArithInOut.RoundedReal t, Show t) 
+    =>
     ArithInOut.RoundedRealEffortIndicator t ->
     Int {-^ the highest degree to consider in the Taylor expansion -} ->
     t {-^ @x@ assumed to be a thin approximation -} -> 
@@ -71,6 +58,15 @@ expOutThinArg eff
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
             expOutViaTaylorForXScaledNearZero
         _ -> -- not equal to infinity but not excluding infinity:
+--            unsafePrint
+--            (
+--                "expOutThinArg: overflow:"
+--                ++ "\n x = " ++ show x
+--                ++ "\n xTooLow = " ++ show xTooLow
+--                ++ "\n xTooBig = " ++ show xTooBig
+--                ++ "\n excludesMinusInfinity x = " ++ show (excludesMinusInfinity x)
+--                ++ "\n excludesPlusInfinity x = " ++ show (excludesPlusInfinity x)
+--            ) $
             (zero x) </\> (plusInfinity x)
              -- this is always a valid outer approx
     where
@@ -104,13 +100,11 @@ expOutThinArg eff
         n = -- x / n must fall inside [-1,1] 
             (abs xUp) `max` (abs xDn)
     expOutViaTaylor degr x = -- assuming x inside [-1,1]
-        oneI |<+> (te degr oneI)
+        (1::Int) |<+> (te degr (1::Int))
         where
-        oneI :: Int
-        oneI = 1
         te steps i
             | steps > 0 =
-                (x </>| i) <*> (oneI |<+> (te (steps - 1) (i + 1)))
+                (x </>| i) <*> ((1::Int) |<+> (te (steps - 1) (i + 1)))
             | steps == 0 = 
                 errorBound
                 where
@@ -132,36 +126,12 @@ expOutThinArg eff
 expOutThinArgInPlace ::
     (ArithInOut.RoundedRealInPlace t) =>
     ArithInOut.RoundedRealEffortIndicator t ->
---    (CanBeMutable t, 
---     HasZero t, HasOne t, HasInfinities t,
---     RefOrd.PartialComparison t,
---     NumOrd.PartialComparison t,
---     RefOrd.OuterRoundedLattice t,
---     ArithUpDn.Convertible t Int,
---     ArithInOut.Convertible Double t,
---     ArithInOut.RoundedField t,
---     ArithInOut.RoundedFieldInPlace t,
---     ArithInOut.RoundedMixedField t Int,
---     ArithInOut.RoundedMixedFieldInPlace t Int, -- this constraint should be redundant..
---     ArithInOut.RoundedPowerToNonnegIntInPlace t) => 
---    ArithInOut.FieldOpsEffortIndicator t ->
---    ArithInOut.MixedFieldOpsEffortIndicator t Int ->
---    RefOrd.JoinMeetOutEffortIndicator t ->
---    RefOrd.PartialCompareEffortIndicator t ->
---    NumOrd.PartialCompareEffortIndicator t ->
---    (ArithUpDn.ConvertEffortIndicator t Int, 
---     ArithInOut.ConvertEffortIndicator Double t) ->
     Mutable t s {-^ out parameter -} ->
     Int {-^ the highest degree to consider in the Taylor expansion -} ->
     Mutable t s {-^ @xM@ assumed to be a thin approximation -} -> 
     ST s ()
 expOutThinArgInPlace
         eff
---        effortField
---        effortMixedField
---        effortMeet
---        effortRefinement effortCompare
---        (effortToInt, effortFromDouble)
         resM degr xM =
     do
     -- clone xM to ensure no aliasing with resM:
