@@ -112,7 +112,7 @@ runOnce [ivpName, maxDegS, depthS, minDepthS, shouldPlotStepsS, shouldShowStepsS
     _ <- solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxDeg, depth, minDepth, maxSplitSize)
     return ()
     where
-    ivp = ivpByName ivpName sampleFn
+    ivp = ivpByNameReportError ivpName sampleFn
 
 writeCSV :: [String] -> IO ()
 writeCSV [ivpName, outputFileName] =
@@ -127,7 +127,7 @@ writeCSV [ivpName, outputFileName] =
                 writeCSVheader handle
                 mapM_ (runSolverMeasureTimeMSwriteLine handle) paramCombinations
     where
-    ivp = ivpByName ivpName sampleFn
+    ivp = ivpByNameReportError ivpName sampleFn
     paramCombinations = 
         [(maxDegree, depth) | 
             maxDegree <- [0..10], depth <- [0,5..60]]

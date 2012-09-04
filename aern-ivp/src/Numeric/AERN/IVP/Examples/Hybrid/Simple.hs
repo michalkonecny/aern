@@ -54,48 +54,115 @@ ivpByName ::
     => 
     String {-^ IVP name - see source code for the list -} -> 
     f {-^ sample function of the type to be used in simulation -} -> 
+    Maybe (HybridIVP f)
+ivpByName name sampleFn =
+    Map.lookup name $ ivpByNameMap sampleFn
+    
+ivpByNameReportError ::
+    (Var f ~ String,
+     HasConstFns f,
+     RefOrd.RoundedLattice f,
+     Neg f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMixedAdd f Double,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedMixedDivide f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show (Domain f)
+    )
+    => 
+    String -> 
+    f -> 
     HybridIVP f
-ivpByName "expDec-resetOnce" = ivpExpDecay_resetTHalf
-ivpByName "expDec-resetOn34" = ivpExpDecay_resetOn34
-ivpByName "springMass-resetOnce" = ivpSpringMass_resetTHalf
-ivpByName "springMass-resetOn34" = ivpSpringMass_resetOn34
-ivpByName "bouncingBall-after1" = ivpBouncingBall_AfterBounce 1 
-ivpByName "bouncingBall-after2" = ivpBouncingBall_AfterBounce 2
-ivpByName "bouncingBall-after3" = ivpBouncingBall_AfterBounce 3
-ivpByName "bouncingBall-after4" = ivpBouncingBall_AfterBounce 4
-ivpByName "bouncingBall-after5" = ivpBouncingBall_AfterBounce 5
-ivpByName "bouncingBall-after6" = ivpBouncingBall_AfterBounce 6
-ivpByName "bouncingBall-after7" = ivpBouncingBall_AfterBounce 7
-ivpByName "bouncingBall-after8" = ivpBouncingBall_AfterBounce 8
-ivpByName "bouncingBall-after9" = ivpBouncingBall_AfterBounce 9
-ivpByName "bouncingBall-after10" = ivpBouncingBall_AfterBounce 10 
-ivpByName "bouncingBall-after16" = ivpBouncingBall_AfterBounce 16 
-ivpByName "bouncingBall-after20" = ivpBouncingBall_AfterBounce 20 
-ivpByName "bouncingBall-after30" = ivpBouncingBall_AfterBounce 30 
-ivpByName "bouncingBall-after40" = ivpBouncingBall_AfterBounce 40 
-ivpByName "bouncingBall-zeno" = ivpBouncingBall_AfterZeno 0 
-ivpByName "bouncingBall-zenoPlus1Over2" = ivpBouncingBall_AfterZeno 0.5 
-ivpByName "bouncingBall-zenoPlus2" = ivpBouncingBall_AfterZeno 2
-ivpByName "bouncingBallEnergy-zeno" = ivpBouncingBallEnergy_AfterZeno 0 
-ivpByName "bouncingBallEnergy-zenoPlus1Over2" = ivpBouncingBallEnergy_AfterZeno 0.5 
-ivpByName "bouncingBallEnergy-zenoPlus2" = ivpBouncingBallEnergy_AfterZeno 2
-ivpByName "bouncingBallVibr-graze" = ivpBouncingBallVibr_AtTime 2 
+ivpByNameReportError ivpName samplePoly =
+    case ivpByName ivpName samplePoly of
+        Just ivp -> ivp
+        _ -> 
+            error $
+                "unknown ivp: " ++ ivpName
+                ++ "\n known ivps:\n"
+                ++ unlines (map ("    " ++) (ivpNames samplePoly))
+    
+ivpNames :: 
+    (Var f ~ String,
+     HasConstFns f,
+     RefOrd.RoundedLattice f,
+     Neg f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMixedAdd f Double,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedMixedDivide f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show (Domain f)
+    )
+    =>
+    f -> [String]
+ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
+    
+ivpByNameMap ::
+    (Var f ~ String,
+     HasConstFns f,
+     RefOrd.RoundedLattice f,
+     Neg f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMixedAdd f Double,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedMixedDivide f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show (Domain f)
+    )
+    =>
+    f ->
+    Map.Map String (HybridIVP f)    
+ivpByNameMap sampleFn =
+    Map.fromList
+    [
+        ("expDec-resetOnce", ivpExpDecay_resetTHalf sampleFn),
+        ("expDec-resetOn34", ivpExpDecay_resetOn34 sampleFn),
+        ("springMass-resetOnce", ivpSpringMass_resetTHalf sampleFn),
+        ("springMass-resetOn34", ivpSpringMass_resetOn34 sampleFn),
+        ("bouncingBall-after1", ivpBouncingBall_AfterBounce 1 sampleFn),
+        ("bouncingBall-after2", ivpBouncingBall_AfterBounce 2 sampleFn),
+        ("bouncingBall-after3", ivpBouncingBall_AfterBounce 3 sampleFn),
+        ("bouncingBall-after4", ivpBouncingBall_AfterBounce 4 sampleFn),
+        ("bouncingBall-after5", ivpBouncingBall_AfterBounce 5 sampleFn),
+        ("bouncingBall-after6", ivpBouncingBall_AfterBounce 6 sampleFn),
+        ("bouncingBall-after7", ivpBouncingBall_AfterBounce 7 sampleFn),
+        ("bouncingBall-after8", ivpBouncingBall_AfterBounce 8 sampleFn),
+        ("bouncingBall-after9", ivpBouncingBall_AfterBounce 9 sampleFn),
+        ("bouncingBall-after10", ivpBouncingBall_AfterBounce 10 sampleFn),
+        ("bouncingBall-after16", ivpBouncingBall_AfterBounce 16 sampleFn),
+        ("bouncingBall-after20", ivpBouncingBall_AfterBounce 20 sampleFn),
+        ("bouncingBall-after30", ivpBouncingBall_AfterBounce 30 sampleFn),
+        ("bouncingBall-after40", ivpBouncingBall_AfterBounce 40 sampleFn),
+        ("bouncingBall-zeno", ivpBouncingBall_AfterZeno 0  sampleFn),
+        ("bouncingBall-zenoPlus1Over2", ivpBouncingBall_AfterZeno 0.5 sampleFn),
+        ("bouncingBall-zenoPlus2", ivpBouncingBall_AfterZeno 2 sampleFn),
+        ("bouncingBallEnergy-zeno", ivpBouncingBallEnergy_AfterZeno 0 sampleFn),
+        ("bouncingBallEnergy-zenoPlus1Over2", ivpBouncingBallEnergy_AfterZeno 0.5 sampleFn),
+        ("bouncingBallEnergy-zenoPlus2", ivpBouncingBallEnergy_AfterZeno 2 sampleFn),
+        ("bouncingBallVibr-graze", ivpBouncingBallVibr_AtTime 2 sampleFn),
     -- TODO: define "bouncingBallVibrEnergy-graze" 
-ivpByName "bouncingBallDrop" = ivpBouncingBallDrop_AtTime 3 2 0 5
-ivpByName "bouncingBallEnergyDrop" = ivpBouncingBallEnergyDrop_AtTime 3 2 0 5
-ivpByName "twoBouncingBallsDrop" = ivpTwoBouncingBallsDrop_AtTime 30 20 25 10 45
-ivpByName "twoBouncingBallsEnergyDrop" = ivpTwoBouncingBallsEnergyDrop_AtTime 30 20 25 10 45
+        ("bouncingBallDrop", ivpBouncingBallDrop_AtTime 3 2 0 5 sampleFn),
+        ("bouncingBallEnergyDrop", ivpBouncingBallEnergyDrop_AtTime 3 2 0 5 sampleFn),
+        ("twoBouncingBallsDrop", ivpTwoBouncingBallsDrop_AtTime 30 20 25 10 45 sampleFn),
+        ("twoBouncingBallsEnergyDrop", ivpTwoBouncingBallsEnergyDrop_AtTime 30 20 25 10 45 sampleFn),
     -- TODO: fix breakage at time 20
-ivpByName "bouncingSpring-4" = ivpBouncingSpring_AtTime 4 
-ivpByName "twoTanks-zenoMinus1Over16" = ivpTwoTanks_AfterZeno (-1/16) 
-ivpByName "twoTanks-zeno" = ivpTwoTanks_AfterZeno 0 
-ivpByName "twoTanks-zenoPlus1Over2" = ivpTwoTanks_AfterZeno 0.5
-ivpByName "twoTanks-zenoPlus2" = ivpTwoTanks_AfterZeno 2
-ivpByName "twoTanksSum-zenoMinus1Over16" = ivpTwoTanksSum_AfterZeno (-1/16) 
-ivpByName "twoTanksSum-zeno" = ivpTwoTanksSum_AfterZeno (0) 
-ivpByName "twoTanksSum-zenoPlus1Over2" = ivpTwoTanksSum_AfterZeno 0.5 
-ivpByName name = error $ "unknown IVP " ++ show name
-
+        ("bouncingSpring-4", ivpBouncingSpring_AtTime 4 sampleFn),
+        ("twoTanks-zenoMinus1Over16", ivpTwoTanks_AfterZeno (-1/16) sampleFn),
+        ("twoTanks-zeno", ivpTwoTanks_AfterZeno 0 sampleFn),
+        ("twoTanks-zenoPlus1Over2", ivpTwoTanks_AfterZeno 0.5 sampleFn),
+        ("twoTanks-zenoPlus2", ivpTwoTanks_AfterZeno 2 sampleFn),
+        ("twoTanksSum-zenoMinus1Over16", ivpTwoTanksSum_AfterZeno (-1/16) sampleFn),
+        ("twoTanksSum-zeno", ivpTwoTanksSum_AfterZeno 0 sampleFn),
+        ("twoTanksSum-zenoPlus1Over2", ivpTwoTanksSum_AfterZeno 0.5 sampleFn)
+    ]
 
 ivpExpDecay_resetTHalf ::
     (Var f ~ String,
