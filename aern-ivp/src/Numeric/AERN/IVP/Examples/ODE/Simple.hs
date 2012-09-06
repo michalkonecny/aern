@@ -1,0 +1,501 @@
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-|
+    Module      :  Numeric.AERN.IVP.Examples.ODE.Simple
+    Description :  simple examples of ODE IVPs
+    Copyright   :  (c) Michal Konecny
+    License     :  BSD3
+
+    Maintainer  :  mikkonecny@gmail.com
+    Stability   :  experimental
+    Portability :  portable
+    
+    Simple examples of ODE IVPs.
+-}
+
+module Numeric.AERN.IVP.Examples.ODE.Simple where
+
+import Numeric.AERN.IVP.Specification.ODE
+
+import Numeric.AERN.RmToRn.Domain
+import Numeric.AERN.RmToRn.New
+
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+
+import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+
+import Numeric.AERN.RealArithmetic.ExactOps
+
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsDefaultEffort
+
+
+import qualified Data.Map as Map
+
+ivpByName :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     RefOrd.RoundedLattice f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedAbs f,
+     ArithInOut.RoundedMixedField f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    String {-^ IVP name - see source code for the list -} -> 
+    f {-^ sample function of the type to be used in simulation -} -> 
+    Maybe (ODEIVP f)
+ivpByName name sampleFn =
+    Map.lookup name $ ivpByNameMap sampleFn
+    
+ivpByNameReportError ::
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     RefOrd.RoundedLattice f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedAbs f,
+     ArithInOut.RoundedMixedField f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    String -> 
+    f -> 
+    ODEIVP f
+ivpByNameReportError ivpName samplePoly =
+    case ivpByName ivpName samplePoly of
+        Just ivp -> ivp
+        _ -> 
+            error $
+                "unknown ivp: " ++ ivpName
+                ++ "\n known ivps:\n"
+                ++ unlines (map ("    " ++) (ivpNames samplePoly))
+    
+ivpNames :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     RefOrd.RoundedLattice f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedAbs f,
+     ArithInOut.RoundedMixedField f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show f, Show (Domain f)
+    )
+    =>
+    f -> [String]
+ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
+    
+ivpByNameMap ::
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     RefOrd.RoundedLattice f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedAbs f,
+     ArithInOut.RoundedMixedField f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show f, Show (Domain f)
+    )
+    =>
+    f ->
+    Map.Map String (ODEIVP f)    
+ivpByNameMap sampleFn =
+    Map.fromList
+    [
+        ("ivpExpDecay-ev-et", ivpExpDecay_ev_et sampleFn),
+        ("ivpExpDecay-uv-et", ivpExpDecay_uv_et sampleFn),
+        ("ivpSpringMass-ev-et", ivpSpringMass_ev_et sampleFn),
+        ("ivpSpringMass-uv-et", ivpSpringMass_uv_et sampleFn),
+        ("ivpSpringMassAir-ev-et", ivpSpringMassAir_ev_et sampleFn),
+        ("ivpFallAir-ishii", ivpFallAir_ishii sampleFn),
+        ("ivpLorenz-ishii", ivpLorenz_ishii sampleFn),
+        ("ivpRoessler", ivpRoessler sampleFn)
+    ]
+
+
+ivpExpDecay_ev_et ::
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpExpDecay_ev_et sampleFn =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x' = -x; x(" ++ show tStart ++ ") = " ++ show initialValues,
+            odeivp_field = \ [x] -> [neg x],
+            odeivp_componentNames = ["x"],
+            odeivp_tVar = "t",
+            odeivp_tStart = toDom 0,
+            odeivp_t0End = toDom 0, 
+            odeivp_tEnd = toDom 1,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Just [(toDom 1) <*>| expMOne]
+        }
+    initialValues = [toDom 1]
+    expMOne = exp (-1) :: Double
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
+    toDom = dblToDom sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+ivpExpDecay_uv_et :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpExpDecay_uv_et sampleFn =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x' = -x; x(" ++ show tStart ++ ") ∊ " ++ show initialValues,
+            odeivp_field = \ [x] -> [neg x],
+            odeivp_componentNames = ["x"],
+            odeivp_tVar = "t",
+            odeivp_tStart = toDom 0,
+            odeivp_t0End = toDom 0, 
+            odeivp_tEnd = toDom 1,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = 
+                Just [lrDom (0.875 * expMOne) (1.125 * expMOne)]
+        }
+    initialValues = [lrDom (1 - 0.125 ) (1 + 0.125)]
+    expMOne = exp (-1) :: Double
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
+    lrDom = makeDomFromEndpoints sampleDom
+    toDom = dblToDom sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+ivpSpringMass_ev_et :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpSpringMass_ev_et sampleFn =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x'' = -x; (x,x')(" ++ show tStart ++ ") = " ++ show initialValues,
+            odeivp_field = \ [x,x'] -> [x',neg x],
+            odeivp_componentNames = ["x", "x'"],
+            odeivp_tVar = "t",
+            odeivp_tStart = toDom 0,
+            odeivp_t0End = toDom 0,
+            odeivp_tEnd = toDom 1,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Just [cosOne, neg sinOne]
+        }
+    initialValues = [toDom 1,toDom 0]
+    cosOne = toDom (cos 1)
+    sinOne = toDom (sin 1)
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
+--    lrDom = makeDomFromEndpoints sampleDom
+    toDom = dblToDom sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+ivpSpringMass_uv_et :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpSpringMass_uv_et sampleFn =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x'' = -x; (x,x')(" ++ show tStart ++ ") ∊ " ++ show initialValues,
+            odeivp_field = \ [x,x'] -> [x',neg x],
+            odeivp_componentNames = ["x", "x'"],
+            odeivp_tVar = "t",
+            odeivp_tStart = toDom 0,
+            odeivp_t0End = toDom 0,
+            odeivp_tEnd = toDom 1,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Just $ 
+                [
+                    lrDom (0.875 * cosOne - 0.125 * sinOne) (1.125 * cosOne + 0.125 * sinOne)  
+                , 
+                    lrDom (-1.125 * sinOne - 0.125 * cosOne) (-0.875 * sinOne + 0.125 * cosOne)
+                ]
+        }
+    initialValues = 
+        [
+            lrDom (1 - 0.125 ) (1 + 0.125)
+        ,
+            lrDom (0 - 0.125 ) (0 + 0.125)
+        ]
+    cosOne = cos 1
+    sinOne = sin 1
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
+    lrDom = makeDomFromEndpoints sampleDom
+    toDom = dblToDom sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+ivpSpringMassAir_ev_et :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedAbs f,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpSpringMassAir_ev_et sampleFn =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x'' = -x - x'*|x'|; (x,x')(" ++ show tStart ++ ") = " ++ show initialValues,
+            odeivp_field = \ [x,x'] -> [x',neg (x <+> (x' <*> (myAbs x')))],
+            odeivp_componentNames = ["x", "x'"],
+            odeivp_tVar = "t",
+            odeivp_tStart = toDom 0,
+            odeivp_t0End = toDom 0,
+            odeivp_tEnd = toDom 1,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing -- Just [cosOne, -sinOne]
+        }
+    initialValues = [toDom 1,toDom 0]
+    myAbs fn =
+        ArithInOut.absOutEff effAbsFn fn
+        where
+        effAbsFn = ArithInOut.absDefaultEffort fn
+        
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
+    lrDom = makeDomFromEndpoints sampleDom
+    toDom = dblToDom sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+
+ivpFallAir_ishii :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedMixedField f Double,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpFallAir_ishii sampleFn =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x'' = -9.8+(x'*x')/1000; (x,x')(" ++ show tStart ++ ") ∊ " ++ show initialValues,
+            odeivp_field = \ [_x,x'] -> [x',(-9.8 :: Double) |<+>  x' <*> x' </>| (1000 :: Double)],
+            odeivp_componentNames = ["x", "x'"],
+            odeivp_tVar = "t",
+            odeivp_tStart = toDom 0,
+            odeivp_t0End = toDom 0,
+            odeivp_tEnd = toDom 4, -- 10000
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing
+        }
+    initialValues = 
+        [
+            lrDom 1 1.1
+        ,
+            toDom (-4.1)
+        ]
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
+    lrDom = makeDomFromEndpoints sampleDom
+    toDom = dblToDom sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+ivpLorenz_ishii :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedMixedField f Double,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpLorenz_ishii sampleFn =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x' = 10(y-x), y' = x(28-z)-y, z' = xy - 8z/3; (x,y,z)(" ++ show tStart ++ ") ∊ " ++ show initialValues,
+            odeivp_field = \ [x,y,z] -> 
+                [(10 :: Double) |<*> (y <-> x),
+                  (x <*> ((28 :: Double) |<+> (neg z))) <-> y,
+                  (x <*> y) <-> (((8 :: Double) |<*> z) </>| (3 :: Double))
+                ],
+            odeivp_componentNames = ["x", "y", "z"],
+            odeivp_tVar = "t",
+            odeivp_tStart = toDom 0,
+            odeivp_t0End = toDom 0,
+            odeivp_tEnd = toDom 24,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing
+        }
+    initialValues = 
+        [
+            (toDom 15)
+        ,
+            (toDom 15)
+        ,
+            (toDom 36)
+        ]
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
+    lrDom = makeDomFromEndpoints sampleDom
+    toDom = dblToDom sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+ivpRoessler :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedMixedField f Double,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpRoessler sampleFn =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = 
+                "Rössler attractor: x' = -y - z; y' = x + 0.2y; z' = 0.2 + z(x-5.7); "
+                ++ "x(0) = 0, y(0) ∊ -8.38095+-0.01, z(0) ∊ 0.0295902+-0.01",
+            odeivp_field = \ [x,y,z] -> 
+                [neg $ y <+> z, 
+                 x <+> ((0.2 :: Double) |<*> y),
+                 (0.2 :: Double) |<+> (z <*> ((-5.7 :: Double) |<+> x))
+                ],
+            odeivp_componentNames = ["x", "y", "z"],
+            odeivp_tVar = "t",
+            odeivp_tStart = toDom 0,
+            odeivp_t0End = toDom 0,
+            odeivp_tEnd = toDom 48,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing 
+        }
+    initialValues = 
+        [
+            toDom 0
+        ,
+            (toDom (-8.38095)) <+> pmDelta
+        ,
+            (toDom 0.0295902) <+> pmDelta
+        ]
+        where
+        pmDelta = lrDom (- delta) delta
+        delta = 0.01
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+
+    lrDom = makeDomFromEndpoints sampleDom
+    toDom = dblToDom sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+
+
+
+makeDomFromEndpoints sampleDom l r =
+    (dblToDom sampleDom l)
+    </\>
+    (dblToDom sampleDom r)
+
+dblToDom ::
+    (ArithInOut.RoundedReal dom)
+    => 
+    dom -> Double -> dom
+dblToDom sampleDom n =
+    z <+>| n
+    where
+    z = zero sampleDom
+    
+    
+    
