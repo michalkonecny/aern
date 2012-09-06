@@ -159,7 +159,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
                 sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
                 effAddFn effMultFn effAbsFn effMinmaxFn 
                 effDivFnInt effAddFnDom effMultFnDom effDom
-                    delta m minStepSize splitImprovementThreshold
+                    delta m minStepSize maxStepSize splitImprovementThreshold
         where
         shouldWrap = True
         shouldShrinkWrap = False
@@ -254,7 +254,7 @@ solveHybridIVP_SplitNearEvents
         solveHybridNoSplitting
         solveODEWithSplitting
             effEval effPEval effDom 
-                minStepSize maxStepSize
+                minStepSize _maxStepSize
                     (hybivpG :: HybridIVP f)
     =
     (finalState, segments)

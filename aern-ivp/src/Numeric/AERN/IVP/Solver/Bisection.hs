@@ -305,7 +305,7 @@ solveODEIVPByBisectingT ::
      RefOrd.IntervalLike(Domain f),
      HasAntiConsistency (Domain f),
      Domain f ~ Imprecision (Domain f),
-     Show f, Show (Domain f),
+     Show f, Show (Domain f), Show result,
      solvingInfo ~ (Maybe result, additionalInfo))
     =>
     (ODEIVP f -> solvingInfo) -- ^ solver to use for segments  
@@ -320,6 +320,8 @@ solveODEIVPByBisectingT ::
     ->
     Domain f -- ^ minimum segment length  
     ->
+    Domain f -- ^ maximum segment length  
+    ->
     (ODEIVP f)  -- ^ problem to solve
     ->
     (
@@ -331,7 +333,7 @@ solveODEIVPByBisectingT ::
     )
 solveODEIVPByBisectingT
         solver measureResultImprecision makeMakeInitValFnVec
-            effDom splitImprovementThreshold minStepSize 
+            effDom splitImprovementThreshold minStepSize maxStepSize
                 odeivpG 
     =
     result
@@ -353,28 +355,34 @@ solveODEIVPByBisectingT
 --        unsafePrint
 --        (
 --            "solveODEIVPByBisectingT: splitSolve: "
---            ++ "\n  tStart = " ++ show tStart
---            ++ "\n  tEnd = " ++ show tEnd
---            ++ "\n  maybeSplitImprovement = " ++ show maybeSplitImprovement
+--            ++ "\n tStart = " ++ show tStart
+--            ++ "\n tEnd = " ++ show tEnd
+--            ++ "\n maybeSplitImprovement = " ++ show maybeSplitImprovement
+--            ++ "\n maybeDirectResult = " ++ show maybeDirectResult
 --        ) $
-        results
+        result2
         where
-        results
+        result2
             | belowStepSize = directComputation
+            | aboveMaxStepSize = splitComputation
             | directComputationFailed = splitComputation
             | otherwise = 
                 case maybeSplitImprovement of
                     Just improvementBy 
-                        | (improvementBy >? splitImprovementThreshold) == Just True -> 
-                            splitComputation
-                    _ -> directComputation
+                        | (improvementBy >? splitImprovementThreshold) /= Just True -> 
+                            directComputation -- split once computations succeeded but brought no noticeable improvement
+                    _
+--                        | splitComputationFailed -> directComputation
+                        | otherwise -> splitComputation -- splitting either brought noticeable improvement or some computation failed 
         tStart = odeivp_tStart odeivp
         tEnd = odeivp_tEnd odeivp
         
         belowStepSize =
---            unsafePrintReturn ("belowStepSize = ") $
             let ?addInOutEffort = effAddDom in
             ((tEnd <-> tStart) >? minStepSize) /= Just True
+        aboveMaxStepSize =
+            let ?addInOutEffort = effAddDom in
+            ((tEnd <-> tStart) <? maxStepSize) /= Just True
 
         directComputation =
             case maybeDirectResult of
