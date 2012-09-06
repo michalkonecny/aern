@@ -316,17 +316,17 @@ getDomainDelta1 effComp effEval effDeriv  _effAbsFn _effMinmaxFn effAddFnDom eff
         -}
         foldl1 (NumOrd.maxOutEff effMinmax) $  map (getFnDelta oldDelta) wAndfns
     getFnDelta oldDelta (w, fn) =
-        unsafePrint
-        (
-            "ShrinkWrap: getDomainDelta1: getFnDelta:" 
-                ++ "\n fn = " ++ show fn
-                ++ "\n fnWithOldDelta = " ++ show fnWithOldDelta
-                ++ "\n derivatives = " ++ show derivatives
-                ++ "\n effEval = " ++ show effEval
-                ++ "\n slopes = " ++ show slopes
-                ++ "\n maxSlope = " ++ show maxSlope
-                ++ "\n fnDelta = " ++ show fnDelta
-        ) $
+--        unsafePrint
+--        (
+--            "ShrinkWrap: getDomainDelta1: getFnDelta:" 
+--                ++ "\n fn = " ++ show fn
+--                ++ "\n fnWithOldDelta = " ++ show fnWithOldDelta
+--                ++ "\n derivatives = " ++ show derivatives
+--                ++ "\n effEval = " ++ show effEval
+--                ++ "\n slopes = " ++ show slopes
+--                ++ "\n maxSlope = " ++ show maxSlope
+--                ++ "\n fnDelta = " ++ show fnDelta
+--        ) $
         snd $ RefOrd.getEndpointsOutWithDefaultEffort $
         fnDelta
         where

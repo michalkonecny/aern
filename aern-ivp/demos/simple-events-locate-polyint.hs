@@ -607,6 +607,7 @@ plotEnclosures effCF _plotMinSegSize tVar componentNames segmentsInfo =
             FV.dataFnGroupNames = groupNames,
             FV.dataFnNames = fnNames,
             FV.dataFnStyles = map giveColours fnNames,
+            FV.dataDomName = "t",
             FV.dataDomL = 0,
             FV.dataDomR = 4,
             FV.dataValLO = -2,

@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Main where
 
-import Numeric.AERN.Poly.IntPoly
+import Numeric.AERN.IVP.Examples.ODE.Simple
 
 import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Solver.Bisection
@@ -14,6 +14,9 @@ import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
 
+import Numeric.AERN.Poly.IntPoly
+import Numeric.AERN.Poly.IntPoly.Plot ()
+
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 import qualified Numeric.AERN.DoubleBasis.Interval as CF
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
@@ -21,9 +24,13 @@ import qualified Numeric.AERN.DoubleBasis.Interval as CF
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
-import Numeric.AERN.RealArithmetic.ExactOps
+--import Numeric.AERN.RealArithmetic.ExactOps
+
+--import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
+import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.ShowInternals
@@ -35,6 +42,13 @@ import System.Environment
 import System.Directory
 import System.CPUTime
 
+import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
+import Numeric.AERN.RmToRn.Plot.CairoDrawable
+
+import qualified Graphics.UI.Gtk as Gtk
+--import qualified Control.Concurrent as Concurrent
+import Control.Concurrent.STM
+
 import Numeric.AERN.Misc.Debug (unsafePrint)
 _ = unsafePrint -- stop the unused warning
 
@@ -44,354 +58,53 @@ _ = unsafePrint -- stop the unused warning
 type CF = CF.DI
 type Poly = IntPoly String CF
 
+sampleCf :: CF
+sampleCf = 0
+
+samplePoly :: Poly
+samplePoly = makeSampleWithVarsDoms 10 10 ["x"] [sampleCf]
+
 main :: IO ()
 main =
     do
     hSetBuffering stdout LineBuffering
     args <- getArgs
-    case length args of
-        0 -> testShrinkWrap
-        3 -> writeCSV args
-        5 -> runOnce args
-        _ -> usage
-        
-testShrinkWrap :: IO ()
-testShrinkWrap =
-    do
-    mapM_ putStrLn $ map show $ getSides result
-    return ()
-    where
-    getSides [x,y] =
-        [(xSL,ySL),(xTL,yTL),(xSR,ySR),(xTR,yTR)]
-        where
-        xSL = pEvalAtPointOutEff effComp sL x
-        xSR = pEvalAtPointOutEff effComp sR x
-        xTL = pEvalAtPointOutEff effComp tL x
-        xTR = pEvalAtPointOutEff effComp tR x
-        ySL = pEvalAtPointOutEff effComp sL y
-        ySR = pEvalAtPointOutEff effComp sR y
-        yTL = pEvalAtPointOutEff effComp tL y
-        yTR = pEvalAtPointOutEff effComp tR y
-        sL = fromList [("s", -1)]
-        sR = fromList [("s", 1)]
-        tL = fromList [("t", -1)]
-        tR = fromList [("t", 1)]
-    
-    Just result =
-        shrinkWrap 
-            effComp effEval effDeriv effAddFn effAbsFn effMinmaxFn 
-                effDivFnInt effAddPolyCf effMultPolyCf effCf 
-                    [xUsingTS, yUsingTS]
-    xUsingTS = s <*> tPlus2 <+> pmeps -- s(t+2) +- eps
-    yUsingTS = (c1 <-> s <*> s) <*> tPlus2 <+> pmeps -- (1-s^2)(t+2) +- eps
-    tPlus2 = (c1 <+> c1 <+> t)
-    t = newProjectionFromSample c1 "t"
-    s = (0.5 :: CF) |<*> newProjectionFromSample c1 "s"
-    pmeps = newConstFnFromSample c1 $ ((-eps) CF.</\> eps)
-        where
-        eps = 0.125
-    c1 :: Poly
-    c1 = newConstFn cfg dombox (1 :: CF)
-    dombox = fromList [("t", unitDom),  ("s", unitDom)]
-    unitDom = (-1) CF.</\> 1
-    cfg =
-        IntPolyCfg
-        {
-            ipolycfg_vars = ["t","s"],
-            ipolycfg_domsLZ = [0 CF.</\> 2, 0 CF.</\> 2],
-            ipolycfg_domsLE = [-1,-1],
-            ipolycfg_sample_cf = 0 :: CF,
-            ipolycfg_maxdeg = 3,
-            ipolycfg_maxsize = 1000
-        }
-    sampleCf = 0 :: CF
-    effCf = ArithInOut.roundedRealDefaultEffort sampleCf
-    effEval = (effCf, Int1To10 10)
-    effComp = (effCf, Int1To10 10)
-    effDeriv = effCf
-    effAddFn = effCf
-    effAbsFn = (effMinmaxFn, effAbsCf)
-    effAbsCf = ArithInOut.rrEffortAbs sampleCf effCf
-    effMinmaxFn = minmaxInOutDefaultEffortIntPolyWithBezierDegree 4 s
-    effAddPolyCf = effAddCf
-    effMultPolyCf = (((), ()), (), ((), (), ()))
-    effDivFnInt =
-        ArithInOut.mxfldEffortDiv sampleCf (0::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
-    effAddCf =
-        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    runWithArgs args
         
 usage :: IO ()
 usage =
     do
     putStrLn "Usage A: simple-uv-et <ivp name> <output file name> <True|False-should wrap?>"
-    putStrLn "Usage B: simple-uv-et <ivp name> <True|False-print steps?> <True|False-should wrap?> <maxDeg> <minStepSize>"
+    putStrLn "Usage B: simple-uv-et <ivp name> <True|False-plot enclosures?> <True|False-should wrap?> <maxDeg> <minStepSize> [<tEnd>]"
 
-ivpByName :: String -> ODEIVP Poly
-ivpByName "ivpExpDecay-ev-et" = ivpExpDecay_ev_et     
-ivpByName "ivpExpDecay-uv-et" = ivpExpDecay_uv_et     
-ivpByName "ivpSpringMass-ev-et" = ivpSpringMass_ev_et
-ivpByName "ivpSpringMass-uv-et" = ivpSpringMass_uv_et     
-ivpByName "ivpSpringMassAir-ev-et" = ivpSpringMassAir_ev_et
-ivpByName "ivpFallAir-ishii" = ivpFallAir_ishii
-ivpByName "ivpLorenz-ishii" = ivpLorenz_ishii
-ivpByName "ivpRoessler" = ivpRoessler
-
-ivpExpDecay_ev_et :: ODEIVP Poly
-ivpExpDecay_ev_et =
-    ivp
-    where
-    ivp =
-        ODEIVP
-        {
-            odeivp_description = "x' = -x; x(" ++ show tStart ++ ") = " ++ show initialValues,
-            odeivp_field = \ [x] -> [neg x],
-            odeivp_componentNames = ["x"],
-            odeivp_tVar = "t",
-            odeivp_tStart = 0,
-            odeivp_t0End = 0, 
-            odeivp_tEnd = 1,
-            odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_maybeExactValuesAtTEnd = Just [1 CF.<*>| expMOne]
-        }
-    initialValues = [1]
-    expMOne = exp (-1) :: Double
-    makeIV =
-        makeFnVecFromInitialValues componentNames initialValues
-    componentNames = odeivp_componentNames ivp
-    tStart = odeivp_tStart ivp
-
-ivpExpDecay_uv_et :: ODEIVP Poly
-ivpExpDecay_uv_et =
-    ivp
-    where
-    ivp =
-        ODEIVP
-        {
-            odeivp_description = "x' = -x; x(" ++ show tStart ++ ") ∊ " ++ show initialValues,
-            odeivp_field = \ [x] -> [neg x],
-            odeivp_componentNames = ["x"],
-            odeivp_tVar = "t",
-            odeivp_tStart = 0,
-            odeivp_t0End = 0, 
-            odeivp_tEnd = 1,
-            odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_maybeExactValuesAtTEnd = Just [(0.875 CF.<*>| expMOne) CF.</\> (1.125 CF.<*>| expMOne)]
-        }
-    initialValues = [(1 CF.<-> 0.125 ) CF.</\> (1 CF.<+> 0.125)]
-    expMOne = exp (-1) :: Double
-    makeIV =
-        makeFnVecFromInitialValues componentNames initialValues
-    componentNames = odeivp_componentNames ivp
-    tStart = odeivp_tStart ivp
-
-
-ivpSpringMass_ev_et :: ODEIVP Poly
-ivpSpringMass_ev_et =
-    ivp
-    where
-    ivp =
-        ODEIVP
-        {
-            odeivp_description = "x'' = -x; (x,x')(" ++ show tStart ++ ") = " ++ show initialValues,
-            odeivp_field = \ [x,x'] -> [x',neg x],
-            odeivp_componentNames = ["x", "x'"],
-            odeivp_tVar = "t",
-            odeivp_tStart = 0,
-            odeivp_t0End = 0,
-            odeivp_tEnd = 1,
-            odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_maybeExactValuesAtTEnd = Just [cosOne, -sinOne]
-        }
-    initialValues = [1,0]
-    cosOne = 1 CF.<*>| (cos 1 :: Double)
-    sinOne = 1 CF.<*>| (sin 1 :: Double)
-    makeIV =
-        makeFnVecFromInitialValues componentNames initialValues
-    componentNames = odeivp_componentNames ivp
-    tStart = odeivp_tStart ivp
-
-ivpSpringMass_uv_et :: ODEIVP Poly
-ivpSpringMass_uv_et =
-    ivp
-    where
-    ivp =
-        ODEIVP
-        {
-            odeivp_description = "x'' = -x; (x,x')(" ++ show tStart ++ ") ∊ " ++ show initialValues,
-            odeivp_field = \ [x,x'] -> [x',neg x],
-            odeivp_componentNames = ["x", "x'"],
-            odeivp_tVar = "t",
-            odeivp_tStart = 0,
-            odeivp_t0End = 0,
-            odeivp_tEnd = 1,
-            odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_maybeExactValuesAtTEnd = Just $ 
-                [
-                    (0.875 * cosOne - 0.125 * sinOne) CF.</\> (1.125 * cosOne + 0.125 * sinOne)  
-                , 
-                    (-1.125 * sinOne - 0.125 * cosOne) CF.</\> (-0.875 * sinOne + 0.125 * cosOne)
-                ]
-        }
-    initialValues = 
-        [
-            (1 CF.<-> 0.125 ) CF.</\> (1 CF.<+> 0.125)
-        ,
-            (0 CF.<-> 0.125 ) CF.</\> (0 CF.<+> 0.125)
-        ]
-    cosOne = 1 CF.<*>| (cos 1 :: Double)
-    sinOne = 1 CF.<*>| (sin 1 :: Double)
-    makeIV =
-        makeFnVecFromInitialValues componentNames initialValues
-    componentNames = odeivp_componentNames ivp
-    tStart = odeivp_tStart ivp
-
-ivpFallAir_ishii :: ODEIVP Poly
-ivpFallAir_ishii =
-    ivp
-    where
-    ivp =
-        ODEIVP
-        {
-            odeivp_description = "x'' = -9.8+(x'*x')/1000; (x,x')(" ++ show tStart ++ ") ∊ " ++ show initialValues,
-            odeivp_field = \ [_x,x'] -> [x',(-9.8 :: Double) |<+>  x' <*> x' </>| (1000 :: Int)],
-            odeivp_componentNames = ["x", "x'"],
-            odeivp_tVar = "t",
-            odeivp_tStart = 0,
-            odeivp_t0End = 0,
-            odeivp_tEnd = 4, -- 10000
-            odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_maybeExactValuesAtTEnd = Nothing
-        }
-    initialValues = 
-        [
-            (1) CF.</\> (1.1)
-        ,
-            (0 CF.<-> 4.1)
-        ]
-    makeIV =
-        makeFnVecFromInitialValues componentNames initialValues
-    componentNames = odeivp_componentNames ivp
-    tStart = odeivp_tStart ivp
-
-ivpLorenz_ishii :: ODEIVP Poly
-ivpLorenz_ishii =
-    ivp
-    where
-    ivp =
-        ODEIVP
-        {
-            odeivp_description = "x' = 10(y-x), y' = x(28-z)-y, z' = xy - 8z/3; (x,y,z)(" ++ show tStart ++ ") ∊ " ++ show initialValues,
-            odeivp_field = \ [x,y,z] -> 
-                [(10 :: Int) |<*> (y <-> x),
-                  (x <*> ((28 :: Int) |<+> (neg z))) <-> y,
-                  (x <*> y) <-> (((8 :: Int) |<*> z) </>| (3 :: Int))
-                ],
-            odeivp_componentNames = ["x", "y", "z"],
-            odeivp_tVar = "t",
-            odeivp_tStart = 0,
-            odeivp_t0End = 0,
-            odeivp_tEnd = 24,
-            odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_maybeExactValuesAtTEnd = Nothing
-        }
-    initialValues = 
-        [
-            (0 CF.<+> 15)
-        ,
-            (0 CF.<+> 15)
-        ,
-            (0 CF.<+> 36)
-        ]
-    makeIV =
-        makeFnVecFromInitialValues componentNames initialValues
-    componentNames = odeivp_componentNames ivp
-    tStart = odeivp_tStart ivp
-
-ivpRoessler :: ODEIVP Poly
-ivpRoessler =
-    ivp
-    where
-    ivp =
-        ODEIVP
-        {
-            odeivp_description = 
-                "Rössler attractor: x' = -y - z; y' = x + 0.2y; z' = 0.2 + z(x-5.7); "
-                ++ "x(0) = 0, y(0) ∊ -8.38095+-0.01, z(0) ∊ 0.0295902+-0.01",
-            odeivp_field = \ [x,y,z] -> 
-                [neg $ y <+> z, 
-                 x <+> ((0.2 :: Double) |<*> y),
-                 (0.2 :: Double) |<+> (z <*> ((-5.7 :: Double) |<+> x))
-                ],
-            odeivp_componentNames = ["x", "y", "z"],
-            odeivp_tVar = "t",
-            odeivp_tStart = 0,
-            odeivp_t0End = 0,
-            odeivp_tEnd = 48,
-            odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_maybeExactValuesAtTEnd = Nothing 
-        }
-    initialValues = 
-        [
-            0
-        ,
-            (-8.38095 :: Double) |<+> pmDelta
-        ,
-            (0.0295902 :: Double) |<+> pmDelta
-        ]
-        where
-        pmDelta = delta CF.</\> (neg delta)
-        delta = (0.01 :: Double) |<+> 0
-    makeIV =
-        makeFnVecFromInitialValues componentNames initialValues
-    componentNames = odeivp_componentNames ivp
-
-ivpSpringMassAir_ev_et :: ODEIVP Poly
-ivpSpringMassAir_ev_et =
-    ivp
-    where
-    ivp =
-        ODEIVP
-        {
-            odeivp_description = "x'' = -x - x'*|x'|; (x,x')(" ++ show tStart ++ ") = " ++ show initialValues,
-            odeivp_field = \ [x,x'] -> [x',neg (x <+> (x' <*> (myAbs x')))],
-            odeivp_componentNames = ["x", "x'"],
-            odeivp_tVar = "t",
-            odeivp_tStart = 0,
-            odeivp_t0End = 0,
-            odeivp_tEnd = 1,
-            odeivp_makeInitialValueFnVec = makeIV,
-            odeivp_maybeExactValuesAtTEnd = Nothing -- Just [cosOne, -sinOne]
-        }
-    initialValues = [1,0]
-    myAbs fn =
-        ArithInOut.absOutEff effAbsFn fn
-        where
-        effAbsFn = ArithInOut.absDefaultEffort fn
-        
-    makeIV =
-        makeFnVecFromInitialValues componentNames initialValues
-    componentNames = odeivp_componentNames ivp
-    tStart = odeivp_tStart ivp
-
-
-
-runOnce :: [String] -> IO ()
-runOnce [ivpName, shouldShowStepsS, shouldWrapS, maxDegS, depthS] =
+runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, depthS] =
+    runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, depthS, "default"]
+runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, depthS, tEndS] =
     do
-    let shouldShowSteps = read shouldShowStepsS :: Bool
-    let maxDeg = read maxDegS :: Int
-    let depth = read depthS :: Int
-    putStrLn "--------------------------------------------------"
-    putStrLn "demo of solve-Vt from (Konecny, Taha, Duracz 2012)"
-    putStrLn "--------------------------------------------------"
-    _ <- solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxDeg, depth)
+    _ <- solveVtPrintSteps shouldWrap shouldPlotSteps ivpTEnd (maxDeg, depth)
     return ()
     where
-    ivp = ivpByName ivpName
-    shouldWrap = read shouldWrapS
-
-writeCSV :: [String] -> IO ()
-writeCSV [ivpName, outputFileName, shouldWrapS] =
+    ivpTEnd =
+        case tEndS of
+            "default" -> ivp
+            _ -> ivp
+                {
+                    odeivp_tEnd = dblToDom sampleCf $ read tEndS
+                }
+    ivp = ivpByNameReportError ivpName samplePoly
+    shouldWrap = read shouldWrapS :: Bool
+    shouldPlotSteps = read shouldPlotStepsS :: Bool
+    maxDeg = read maxDegS :: Int
+    depth = read depthS :: Int
+runWithArgs [ivpName, outputFileName, shouldWrapS] =
+    writeCSV ivp outputFileName shouldWrap
+    where
+    shouldWrap = read shouldWrapS :: Bool
+    ivp = ivpByNameReportError ivpName samplePoly
+runWithArgs _ = usage
+    
+writeCSV :: ODEIVP Poly -> FilePath -> Bool -> IO ()
+writeCSV ivp outputFileName shouldWrap =
     do
     isClash <- doesFileExist outputFileName
     case isClash of
@@ -403,8 +116,6 @@ writeCSV [ivpName, outputFileName, shouldWrapS] =
                 writeCSVheader handle
                 mapM_ (runSolverMeasureTimeMSwriteLine handle) paramCombinations
     where
-    shouldWrap = read shouldWrapS
-    ivp = ivpByName ivpName
     paramCombinations = 
         [(maxDegree, depth) | 
             maxDegree <- [0..15], depth <- [0..10]]
@@ -491,8 +202,11 @@ solveVtPrintSteps ::
             BisectionInfo solvingInfo (solvingInfo, Maybe CF)
         )
     )
-solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
+solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, depthParam) =
     do
+    putStrLn "--------------------------------------------------"
+    putStrLn "demo of solve-Vt from (Konecny, Taha, Duracz 2012)"
+    putStrLn "--------------------------------------------------"
     putStrLn $ "solving: " ++ description
     putStrLn "----------  parameters: -------------------------"
     putStrLn $ "maxdeg = " ++ show maxdeg
@@ -507,7 +221,7 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
             putStr $ showSegInfo "(almost) exact result = " (Nothing, (tEnd, Just exactResult))
         _ -> return ()
     putStrLn "----------  steps: ---------------------------"
-    printStepsInfo (1:: Int) bisectionInfoOut
+    _ <- printStepsInfo (1:: Int) bisectionInfoOut
     putStrLn "----------  step summary: -----------------------"
     putStrLn $ "number of atomic segments = " ++ (show $ bisectionInfoCountLeafs bisectionInfoOut)
     putStrLn $ "smallest segment size: " ++ (show smallestSegSize)  
@@ -520,8 +234,12 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
             putStrLn $ showBisectionInfo showSegInfo showSplitReason "" bisectionInfoOut
         False -> return ()
     putStrLn "-------------------------------------------------"
+    case shouldPlotSteps of
+        False -> return ()
+        True -> plotEnclosures effCf (2^^(-8 :: Int) :: CF) "t" componentNames bisectionInfoOut
     return (endValues, bisectionInfoOut)
     where
+    shouldShowSteps = False
     -- solver call:
     (endValues, bisectionInfoOut) =
         solveIVPWithUncertainValue shouldWrap
@@ -546,7 +264,6 @@ solveVtPrintSteps shouldWrap shouldShowSteps ivp (maxdegParam, depthParam) =
     maybeExactResult = odeivp_maybeExactValuesAtTEnd ivp
     componentNames = odeivp_componentNames ivp
     
-    sampleCf = 0 :: CF
     effCf = ArithInOut.roundedRealDefaultEffort sampleCf
     sizeLimits =
         getSizeLimits $
@@ -647,8 +364,6 @@ solveIVPWithUncertainValue
 --        initValDomBox =
 --            fromList $ zip componentNames initialValues
 --        
-    sampleCf = delta
-    
     effSizeLims = effCf
     effCompose = (effCf, Int1To10 substSplitSizeLimit)
     effEval = (effCf, Int1To10 substSplitSizeLimit)
@@ -672,7 +387,6 @@ makeSampleWithVarsDoms ::
 makeSampleWithVarsDoms maxdeg maxsize vars doms =
     newConstFn cfg dombox sampleCf
     where
-    sampleCf = 0 :: CF
     domsLE = 
         map (fst . RefOrd.getEndpointsOutWithDefaultEffort) doms
     dombox = fromList $ zip vars doms 
@@ -686,3 +400,232 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
             ipolycfg_maxdeg = maxdeg,
             ipolycfg_maxsize = maxsize
         }
+
+plotEnclosures :: 
+    (Num (Domain f),
+     CanEvaluate f,
+     CairoDrawableFn f,
+     HasSizeLimits f,
+     RefOrd.RoundedLattice f,
+     HasConstFns f,
+     HasDomainBox f,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     Show f, Show (Var f), Show (Domain f)
+    ) 
+    =>
+    ArithInOut.RoundedRealEffortIndicator (Domain f)
+    -> Domain f
+    -> Var f
+    -> [String]
+    -> BisectionInfo (Maybe ([f],[f]), t) splitReason
+    -> IO ()
+plotEnclosures effCF plotMinSegSize tVar componentNames bisectionInfo =
+    do
+    _ <- Gtk.unsafeInitGUIForThreadedRTS
+    fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
+    fnMetaTV <- atomically $ newTVar $ fnmeta
+    _ <- FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
+    Gtk.mainGUI
+    where
+    ((sampleFn : _) : _) = fns 
+    effDrawFn = cairoDrawFnDefaultEffort sampleFn
+    effEval = evaluationDefaultEffort sampleFn
+    
+    addPlotVar = map $ map addV
+        where
+        addV fn = (fn, tVar)
+    (fns, fnNames, segNames) = 
+        aggregateSequencesOfTinySegments fnsAndNames 
+    fnsAndNames = 
+        map getFnsFromSegInfo $
+            bisectionInfoGetLeafSegInfoSequence bisectionInfo
+        where
+        getFnsFromSegInfo (Just (fnVec, _), _) =
+            zip fnVec componentNames
+        getFnsFromSegInfo _ = []
+    fnmeta = 
+        (FV.defaultFnMetaData sampleFn)
+        {
+            FV.dataFnGroupNames = segNames, -- map ("segment " ++) (map show [1..segs]),
+            FV.dataFnNames = fnNames,
+            FV.dataFnStyles = map giveColours fnNames,
+            FV.dataDomL = 0,
+            FV.dataDomR = 4,
+            FV.dataValLO = -2,
+            FV.dataValHI = 2,
+            FV.dataDomName = "t",
+            FV.dataDefaultActiveFns = map whichActive fnNames,
+            FV.dataDefaultEvalPoint = 0,
+            FV.dataDefaultCanvasParams =
+                (FV.defaultCanvasParams (0::CF))
+                {
+                    FV.cnvprmCoordSystem = 
+                        FV.CoordSystemLinear $ 
+                            FV.Rectangle  2 (-2) 0 (4)
+                    ,
+                    FV.cnvprmSamplesPerUnit = 200
+                    ,
+                    FV.cnvprmBackgroundColour = Just (1,1,1,1)
+                }
+        }
+    aggregateSequencesOfTinySegments fnsAndNames2 = 
+        aggrNewSegm [] [] [] $ zip ([1..]::[Int]) fnsAndNames2
+        where
+        aggrNewSegm prevFns prevFnNames prevSegNames [] =
+            (reverse prevFns, reverse prevFnNames, reverse prevSegNames)
+        aggrNewSegm 
+                prevFns prevFnNames prevSegNames 
+                segs@((segNoFirstSeg, fnsNamesFirstSeg@((fn1FirstSeg,_) : _)) : restSegs)
+            | noAggregation =
+                aggrNewSegm 
+                    (fnsFirstSeg : prevFns) 
+                    (fnNamesFirstSeg : prevFnNames) 
+                    (("segment " ++ show segNoFirstSeg) : prevSegNames) 
+                    restSegs 
+            | otherwise =
+                aggrNewSegm
+                    (fnsAggregated : prevFns) 
+                    (fnNamesAggregated : prevFnNames) 
+                    (("segments " ++ show segNoFirstSeg ++ "-" ++ show segNoLastAggrSeg) : prevSegNames) 
+                    restSegsAfterAggr
+            where
+            noAggregation = length smallSegmentsToAggregate <= 1
+            (smallSegmentsToAggregate, restSegsAfterAggr) = 
+                span segEndsBeforeLimit segs
+                where
+                segEndsBeforeLimit (_, ((fn1ThisSeg,_) : _)) =
+                    (tEndThisSeg <=? tAggrLimit) == Just True
+                    where
+                    (_, tEndThisSeg) = getTVarDomEndpoints fn1ThisSeg
+                    tAggrLimit = tStartFirstSeg <+> plotMinSegSize
+            fnNamesAggregated =
+                map (++ "(aggr)") componentNames
+            fnsAggregated =
+                foldl1 (zipWith (</\>)) $
+                    chunksOf (length componentNames) $
+                        map makeConstFnOverAggrDom $
+                            concat $ map getFnsFromSeg smallSegmentsToAggregate
+                where
+                chunksOf _ [] = []
+                chunksOf n list = firstN : (chunksOf n rest)
+                    where
+                    (firstN, rest) = splitAt n list
+                getFnsFromSeg (_, fnsNames) = map fst fnsNames
+                makeConstFnOverAggrDom fn =
+                    newConstFn sizeLimitsNew domboxNew range
+                    where
+                    domboxNew = fromList [(tVar, aggrDom)]
+                    sizeLimitsNew =
+                        adjustSizeLimitsToVarsAndDombox fn [tVar] domboxNew sizeLimits
+                    range = evalAtPointOutEff effEval dombox fn
+                    sizeLimits = getSizeLimits fn         
+                    dombox = getDomainBox fn
+                    
+            aggrDom = RefOrd.fromEndpointsOutWithDefaultEffort (tStartFirstSeg, tEndLastAggrSeg) 
+            (tStartFirstSeg, _) = getTVarDomEndpoints fn1FirstSeg
+            (_, tEndLastAggrSeg) = getTVarDomEndpoints fn1LastAggrSeg
+            (segNoLastAggrSeg, ((fn1LastAggrSeg,_) : _)) = last smallSegmentsToAggregate 
+            getTVarDomEndpoints fn =
+                case lookupVar (getDomainBox fn) tVar of 
+                    Just tDom -> RefOrd.getEndpointsOutWithDefaultEffort tDom 
+            (fnsFirstSeg, fnNamesFirstSeg) = unzip fnsNamesFirstSeg
+    whichActive list =
+        take (length list) activityCycle 
+        where
+        activityCycle = cycle $ map snd $ zip componentNames $ 
+            True : (repeat True) 
+--            True : (repeat False) 
+--            True : False : False : True : (repeat False) 
+--            True : False : False : False : True : (repeat False) 
+    
+    giveColours list =
+        take (length list) colourCycle
+        where
+        colourCycle = cycle $ map snd $ 
+            zip componentNames 
+                (cycle [blue, green, red, black])
+--                (cycle [black]) 
+
+    black = FV.defaultFnPlotStyle
+    blue = FV.defaultFnPlotStyle 
+        { 
+            FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
+            FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
+        } 
+    green = FV.defaultFnPlotStyle 
+        { 
+            FV.styleOutlineColour = Just (0.1,0.8,0.1,1), 
+            FV.styleFillColour = Just (0.1,0.8,0.1,0.1) 
+        } 
+    red = FV.defaultFnPlotStyle 
+        { 
+            FV.styleOutlineColour = Just (0.8,0.1,0.1,1), 
+            FV.styleFillColour = Just (0.8,0.1,0.1,0.1) 
+        } 
+
+
+testShrinkWrap :: IO ()
+testShrinkWrap =
+    do
+    mapM_ putStrLn $ map show $ getSides result
+    return ()
+    where
+    getSides [x,y] =
+        [(xSL,ySL),(xTL,yTL),(xSR,ySR),(xTR,yTR)]
+        where
+        xSL = pEvalAtPointOutEff effComp sL x
+        xSR = pEvalAtPointOutEff effComp sR x
+        xTL = pEvalAtPointOutEff effComp tL x
+        xTR = pEvalAtPointOutEff effComp tR x
+        ySL = pEvalAtPointOutEff effComp sL y
+        ySR = pEvalAtPointOutEff effComp sR y
+        yTL = pEvalAtPointOutEff effComp tL y
+        yTR = pEvalAtPointOutEff effComp tR y
+        sL = fromList [("s", -1)]
+        sR = fromList [("s", 1)]
+        tL = fromList [("t", -1)]
+        tR = fromList [("t", 1)]
+    
+    Just result =
+        shrinkWrap 
+            effComp effEval effDeriv effAddFn effAbsFn effMinmaxFn 
+                effDivFnInt effAddPolyCf effMultPolyCf effCf 
+                    [xUsingTS, yUsingTS]
+    xUsingTS = s <*> tPlus2 <+> pmeps -- s(t+2) +- eps
+    yUsingTS = (c1 <-> s <*> s) <*> tPlus2 <+> pmeps -- (1-s^2)(t+2) +- eps
+    tPlus2 = (c1 <+> c1 <+> t)
+    t = newProjectionFromSample c1 "t"
+    s = (0.5 :: CF) |<*> newProjectionFromSample c1 "s"
+    pmeps = newConstFnFromSample c1 $ ((-eps) CF.</\> eps)
+        where
+        eps = 0.125
+    c1 :: Poly
+    c1 = newConstFn cfg dombox (1 :: CF)
+    dombox = fromList [("t", unitDom),  ("s", unitDom)]
+    unitDom = (-1) CF.</\> 1
+    cfg =
+        IntPolyCfg
+        {
+            ipolycfg_vars = ["t","s"],
+            ipolycfg_domsLZ = [0 CF.</\> 2, 0 CF.</\> 2],
+            ipolycfg_domsLE = [-1,-1],
+            ipolycfg_sample_cf = 0 :: CF,
+            ipolycfg_maxdeg = 3,
+            ipolycfg_maxsize = 1000
+        }
+    effCf = ArithInOut.roundedRealDefaultEffort sampleCf
+    effEval = (effCf, Int1To10 10)
+    effComp = (effCf, Int1To10 10)
+    effDeriv = effCf
+    effAddFn = effCf
+    effAbsFn = (effMinmaxFn, effAbsCf)
+    effAbsCf = ArithInOut.rrEffortAbs sampleCf effCf
+    effMinmaxFn = minmaxInOutDefaultEffortIntPolyWithBezierDegree 4 s
+    effAddPolyCf = effAddCf
+    effMultPolyCf = (((), ()), (), ((), (), ()))
+    effDivFnInt =
+        ArithInOut.mxfldEffortDiv sampleCf (0::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
+    effAddCf =
+        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+        

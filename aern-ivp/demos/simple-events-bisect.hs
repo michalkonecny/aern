@@ -521,6 +521,7 @@ plotEnclosures effCF plotMinSegSize tVar componentNames bisectionInfo =
             FV.dataFnGroupNames = segNames, -- map ("segment " ++) (map show [1..segs]),
             FV.dataFnNames = fnNames,
             FV.dataFnStyles = map giveColours fnNames,
+            FV.dataDomName = "t",
             FV.dataDomL = 0,
             FV.dataDomR = 4,
             FV.dataValLO = -2,
