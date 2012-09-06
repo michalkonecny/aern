@@ -75,13 +75,13 @@ usage :: IO ()
 usage =
     do
     putStrLn "Usage A: simple-uv-et <ivp name> <output file name> <True|False-should wrap?>"
-    putStrLn "Usage B: simple-uv-et <ivp name> <True|False-plot enclosures?> <True|False-should wrap?> <maxDeg> <minStepSize> [<tEnd>]"
+    putStrLn "Usage B: simple-uv-et <ivp name> <True|False-plot enclosures?> <True|False-should wrap?> <maxDeg> <minStepSize> <maxStepSize> [<tEnd>]"
 
-runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, depthS] =
-    runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, depthS, "default"]
-runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, depthS, tEndS] =
+runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, maxDepthS, minDepthS] =
+    runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, maxDepthS, minDepthS, "default"]
+runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, maxDepthS, minDepthS, tEndS] =
     do
-    _ <- solveVtPrintSteps shouldWrap shouldPlotSteps ivpTEnd (maxDeg, depth)
+    _ <- solveVtPrintSteps shouldWrap shouldPlotSteps ivpTEnd (maxDeg, maxDepth, minDepth)
     return ()
     where
     ivpTEnd =
@@ -95,7 +95,8 @@ runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, depthS, tEndS] =
     shouldWrap = read shouldWrapS :: Bool
     shouldPlotSteps = read shouldPlotStepsS :: Bool
     maxDeg = read maxDegS :: Int
-    depth = read depthS :: Int
+    maxDepth = read maxDepthS :: Int
+    minDepth = read minDepthS :: Int
 runWithArgs [ivpName, outputFileName, shouldWrapS] =
     writeCSV ivp outputFileName shouldWrap
     where
@@ -125,12 +126,12 @@ writeCSV ivp outputFileName shouldWrap =
         hPutStrLn handle $ "ivp: " ++ description
 --        hPutStrLn handle $ "polynomial degree, min step size (2^(-n)), time (microseconds), error upper bound at t=1, error at t = 1"
         hPutStrLn handle $ "polynomial degree, min step size (2^(-n)), time (microseconds), error at t = 1"
-    runSolverMeasureTimeMSwriteLine handle (maxDegree, depth) =
+    runSolverMeasureTimeMSwriteLine handle (maxDegree, maxDepth) =
         do
         resultsAndTimes <- mapM solveAndMeasure ([1..1] :: [Int])
         let ((result, _) : _)  = resultsAndTimes
         let averageTime = average $ map snd resultsAndTimes
-        hPutStrLn handle $ makeCSVLine ((result, averageTime), (maxDegree, depth))
+        hPutStrLn handle $ makeCSVLine ((result, averageTime), (maxDegree, maxDepth))
         where
         average list = (2 * (sum list) + n) `div` (2 * n)
             where
@@ -138,7 +139,7 @@ writeCSV ivp outputFileName shouldWrap =
         solveAndMeasure _ =
             do
             starttime <- getCPUTime
-            solverResult <- solveVtPrintSteps shouldWrap False ivp (maxDegree, depth)
+            solverResult <- solveVtPrintSteps shouldWrap False ivp (maxDegree, maxDepth, 0)
             endtime <- getCPUTime
             return $ (solverResult, (endtime - starttime) `div` 1000000000)
         
@@ -192,7 +193,7 @@ solveVtPrintSteps ::
     ->
     ODEIVP Poly 
     -> 
-    (Int, Int) 
+    (Int, Int, Int) 
     -> 
     IO 
     (
@@ -202,7 +203,7 @@ solveVtPrintSteps ::
             BisectionInfo solvingInfo (solvingInfo, Maybe CF)
         )
     )
-solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, depthParam) =
+solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, maxDepthParam) =
     do
     putStrLn "--------------------------------------------------"
     putStrLn "demo of solve-Vt from (Konecny, Taha, Duracz 2012)"
@@ -215,6 +216,7 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, depthParam) =
     putStrLn $ "m = " ++ show m
     putStrLn $ "substSplitSizeLimit = " ++ show substSplitSizeLimit
     putStrLn $ "minimum step size = 2^{" ++ show minStepSizeExp ++ "}"
+    putStrLn $ "maximum step size = 2^{" ++ show maxStepSizeExp ++ "}"
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
     case maybeExactResult of
         Just exactResult ->
@@ -244,7 +246,7 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, depthParam) =
     (endValues, bisectionInfoOut) =
         solveIVPWithUncertainValue shouldWrap
             sizeLimits effCf substSplitSizeLimit delta m 
-                minStepSize splitImprovementThreshold
+                minStepSize maxStepSize splitImprovementThreshold
                     ivp
     -- parameters:
     delta = 1
@@ -253,8 +255,10 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, depthParam) =
     m = 100
     substSplitSizeLimit = 100
 --    minStepSizeExp = -4 :: Int
-    minStepSizeExp = - depthParam
+    minStepSizeExp = - minDepthParam
+    maxStepSizeExp = - maxDepthParam
     minStepSize = 2^^minStepSizeExp
+    maxStepSize = 2^^maxStepSizeExp
     splitImprovementThreshold = 2^^(-50 :: Int)
     
     -- auxiliary:
@@ -333,6 +337,7 @@ solveIVPWithUncertainValue ::
     Int -> 
     CF -> 
     CF -> 
+    CF -> 
     ODEIVP Poly
     -> 
     (
@@ -345,11 +350,11 @@ solveIVPWithUncertainValue ::
 solveIVPWithUncertainValue
         shouldWrap 
             sizeLimits effCf substSplitSizeLimit
-                delta m minStepSize splitImprovementThreshold
+                delta m minStepSize maxStepSize splitImprovementThreshold
                     odeivp
     =
     solveUncertainValueExactTimeBisect2
-        delta m minStepSize splitImprovementThreshold
+        delta m minStepSize maxStepSize splitImprovementThreshold
             odeivp
     where
     solveUncertainValueExactTimeBisect2 =

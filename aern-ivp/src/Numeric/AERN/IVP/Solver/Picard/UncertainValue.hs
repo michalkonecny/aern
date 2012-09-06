@@ -104,7 +104,8 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect ::
     ->
     Domain f {-^ initial widening @delta@ -}  ->
     Int {-^ @m@ -} -> 
-    Domain f {-^ step size @s@ -} -> 
+    Domain f {-^ minimum step size @s@ -} -> 
+    Domain f {-^ maximum step size -} -> 
     Imprecision (Domain f) {-^ split improvement threshold @eps@ -} ->
     ODEIVP f
     ->
@@ -120,7 +121,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
             sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
             effDivFnInt effAddFnDom effMultFnDom effDom
-                delta m minStepSize splitImprovementThreshold
+                delta m minStepSize maxStepSize splitImprovementThreshold
                     (odeivpG :: ODEIVP f)
     | (tStart <? t0End) == Just True =
         error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
@@ -148,7 +149,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
             solveODEIVPNoSplitting 
                 (measureImpr) 
                 (makeFnVec)
-                effDom splitImprovementThreshold minStepSize
+                effDom splitImprovementThreshold minStepSize maxStepSize
                     odeivp
         where
         measureImpr (_, parameterisedInitialValues) =
