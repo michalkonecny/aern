@@ -11,6 +11,7 @@ import Numeric.AERN.IVP.Specification.Hybrid
 import Numeric.AERN.IVP.Solver.Bisection
 import Numeric.AERN.IVP.Solver.Events.Aggregate
 import Numeric.AERN.IVP.Solver.Events.SplitNearEvents
+import Numeric.AERN.IVP.Plot.UsingFnView (plotHybIVPListEnclosures)
 
 import Numeric.AERN.Poly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Plot ()
@@ -277,7 +278,7 @@ solveEventsPrintSteps shouldPlotSteps _shouldShowSteps ivp (maxdegParam, depthPa
 
     case shouldPlotSteps of
         False -> return ()
-        True -> plotEnclosures effCf (2^^(-12 :: Int) :: CF) "t" componentNames segmentsInfo
+        True -> plotHybIVPListEnclosures effCf (2^^(-12 :: Int) :: CF) ivp segmentsInfo
 
     return (maybeEndState, segmentsInfo)
     where
@@ -490,173 +491,3 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
             ipolycfg_maxsize = maxsize
         }
      
-plotEnclosures :: 
-    (Num (Domain f),
-     CanEvaluate f,
-     CairoDrawableFn f,
-     HasSizeLimits f,
-     RefOrd.RoundedLattice f,
-     HasConstFns f,
-     HasDomainBox f,
-     ArithInOut.RoundedReal (Domain f),
-     RefOrd.IntervalLike (Domain f),
-     Show f, Show (Var f), Show (Domain f),
-     solvingInfoODESegment ~ (Maybe ([f],[f]), (Domain f, Maybe [Domain f])),
-     solvingInfoODE ~ BisectionInfo solvingInfoODESegment (solvingInfoODESegment, Maybe (Domain f)),
-     solvingInfoEvents ~ (Domain f, Maybe (HybridSystemUncertainState (Domain f)), EventInfo f)
-     ) 
-    =>
-    ArithInOut.RoundedRealEffortIndicator (Domain f)
-    -> 
-    Domain f
-    -> 
-    Var f
-    ->
-    [String]
-    -> 
-    [(
-        Domain f
-        -- end time of this segment (including the event resolution sub-segment)  
-     ,
-        Maybe (HybridSystemUncertainState (Domain f))
-     ,
-        Map.Map HybSysMode 
-            (
-                solvingInfoODE,
-                Maybe (HybridSystemUncertainState (Domain f)),
-                Maybe solvingInfoEvents
-            )
-     )
-    ]
-    -> 
-    IO ()
-plotEnclosures effCF _plotMinSegSize tVar componentNames segmentsInfo =
-    do
-    Gtk.unsafeInitGUIForThreadedRTS
-    fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
-    fnMetaTV <- atomically $ newTVar $ fnmeta
-    FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
-    Gtk.mainGUI
-    where
-    ((sampleFn : _) : _) = fns 
-    effDrawFn = cairoDrawFnDefaultEffort sampleFn
-    effEval = evaluationDefaultEffort sampleFn
-    
-    addPlotVar = map $ map addV
-        where
-        addV fn = (fn, tVar)
-    
-    (fns, fnNames, groupNames) = 
-        unzip3 $
-            map getFnsFromSegModeInfo $ 
-                concat $ map getSegModeInfo
-                    $ zip ([1..]::[Int]) segmentsInfo
-        where
-        getSegModeInfo (segNo, (_, _, modeSolvingInfoMap)) =
-            map (\i -> (segNo,i)) $ Map.toList modeSolvingInfoMap
-        getFnsFromSegModeInfo (segNo, (HybSysMode modeName, (bisectionInfo, _, maybeEventSolvingInfo))) =
-            (groupFns, groupFnNames, groupName)
-            where
-            groupName = "seg" ++ show segNo ++ "." ++ modeName
-            (groupFns, groupFnNames) =
-                unzip $ fnsAndNames
-            fnsAndNames = 
-                fnsAndNamesNoEvents ++ 
-                fnsAndNamesEvents
-            fnsAndNamesNoEvents =
-                concat $
-                    map getFnsFromSegInfo $
-                        zip ([1..]::[Int]) $
-                            bisectionInfoGetLeafSegInfoSequence bisectionInfo
-                where
-                getFnsFromSegInfo (n, (Just (fnVec, _), _)) =
-                    nameFnVec fnVec prefix
-                    where
-                    prefix = "noev" ++ (show n)
-                getFnsFromSegInfo _ = []
-            fnsAndNamesEvents =
-                case maybeEventSolvingInfo of
-                    Nothing -> []
-                    Just (_,_,eventInfo) ->
-                        getFnsFromEventInfo eventInfo
-            getFnsFromEventInfo eventInfo =
-                collectFns "" eventInfo
-            collectFns namePrefix (EventNextSure (_, fnVec) eventMap) =
-                (nameFnVec fnVec namePrefix) ++
-                (concat $ map perEvent $ toAscList eventMap)
-                where
-                perEvent (HybSysEventKind eventName, subEventInfo) =
-                    collectFns (namePrefix ++ "!" ++ eventName) subEventInfo
-            collectFns namePrefix (EventNextMaybe (_, fnVec) eventMap) =
-                (nameFnVec fnVec namePrefix) ++
-                (concat $ map perEvent $ toAscList eventMap)
-                where
-                perEvent (HybSysEventKind eventName, subEventInfo) =
-                    collectFns (namePrefix ++ "?" ++ eventName) subEventInfo
-            collectFns namePrefix (EventFixedPoint (_, fnVec)) =
-                (nameFnVec fnVec namePrefix)
-            collectFns _ _ = 
-                []
-            nameFnVec fnVec namePrefix =
-                zipWith addName fnVec componentNames
-                where
-                addName fn compName = (fn, namePrefix ++ "." ++ compName)
-    fnmeta = 
-        (FV.defaultFnMetaData sampleFn)
-        {
-            FV.dataFnGroupNames = groupNames,
-            FV.dataFnNames = fnNames,
-            FV.dataFnStyles = map giveColours fnNames,
-            FV.dataDomName = "t",
-            FV.dataDomL = 0,
-            FV.dataDomR = 4,
-            FV.dataValLO = -2,
-            FV.dataValHI = 2,
-            FV.dataDefaultActiveFns = map whichActive fnNames,
-            FV.dataDefaultEvalPoint = 0,
-            FV.dataDefaultCanvasParams =
-                (FV.defaultCanvasParams (0::CF))
-                {
-                    FV.cnvprmCoordSystem = 
-                        FV.CoordSystemLinear $ 
-                            FV.Rectangle  2 (-2) 0 (4)
-                    ,
-                    FV.cnvprmSamplesPerUnit = 200
-                    ,
-                    FV.cnvprmBackgroundColour = Just (1,1,1,1)
-                }
-        }
-    whichActive list =
-        take (length list) activityCycle 
-        where
-        activityCycle = cycle $ map snd $ zip componentNames $ 
-            True : (repeat True)
---            True : (repeat False) 
---            True : False : False : True : (repeat False) 
---            True : False : False : False : True : (repeat False) 
-    
-    giveColours list =
-        take (length list) colourCycle
-        where
-        colourCycle = cycle $ map snd $ 
-            zip componentNames 
-                (cycle [blue, green, red, black])
---                (cycle [black])
-
-    black = FV.defaultFnPlotStyle
-    blue = FV.defaultFnPlotStyle 
-        { 
-            FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
-            FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
-        } 
-    green = FV.defaultFnPlotStyle 
-        { 
-            FV.styleOutlineColour = Just (0.1,0.8,0.1,1), 
-            FV.styleFillColour = Just (0.1,0.8,0.1,0.1) 
-        } 
-    red = FV.defaultFnPlotStyle 
-        { 
-            FV.styleOutlineColour = Just (0.8,0.1,0.1,1), 
-            FV.styleFillColour = Just (0.8,0.1,0.1,0.1) 
-        } 
-    

@@ -250,7 +250,7 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, ma
         True ->
             do
 --            _ <- Concurrent.forkIO $ 
-            plotODEIVPBisectionEnclosures effCf (2^^(-8 :: Int) :: CF) "t" ivp bisectionInfoOut
+            plotODEIVPBisectionEnclosures effCf (2^^(-8 :: Int) :: CF) ivp bisectionInfoOut
             return ()
     return (endValues, bisectionInfoOut)
     where
