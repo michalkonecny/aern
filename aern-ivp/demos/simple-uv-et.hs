@@ -236,7 +236,7 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, ma
     putStrLn "-------------------------------------------------"
     case shouldPlotSteps of
         False -> return ()
-        True -> plotODEIVPBisectionEnclosures effCf (2^^(-8 :: Int) :: CF) "t" ivp bisectionInfoOut
+        True -> plotODEIVPBisectionEnclosures effCf (2^^(-8 :: Int) :: CF) ivp bisectionInfoOut
     return (endValues, bisectionInfoOut)
     where
     shouldShowSteps = False

@@ -11,6 +11,7 @@ import Numeric.AERN.IVP.Specification.Hybrid
 import Numeric.AERN.IVP.Solver.Bisection
 import Numeric.AERN.IVP.Solver.Events.Aggregate
 import Numeric.AERN.IVP.Solver.Events.Bisection
+import Numeric.AERN.IVP.Plot.UsingFnView (plotHybIVPBisectionEnclosures)
 
 import Numeric.AERN.Poly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Plot ()
@@ -249,7 +250,7 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
     putStrLn "-------------------------------------------------"
     case shouldPlotSteps of
         False -> return ()
-        True -> plotEnclosures effCf (2^^(-8 :: Int) :: CF) "t" componentNames bisectionInfo
+        True -> plotHybIVPBisectionEnclosures effCf (2^^(-8 :: Int) :: CF) ivp bisectionInfo
     return (maybeEndState, bisectionInfo)
     where
     (maybeEndState, bisectionInfo) =
@@ -452,185 +453,4 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
             ipolycfg_maxsize = maxsize
         }
      
-plotEnclosures :: 
-    (Num (Domain f),
-     CanEvaluate f,
-     CairoDrawableFn f,
-     HasSizeLimits f,
-     RefOrd.RoundedLattice f,
-     HasConstFns f,
-     HasDomainBox f,
-     ArithInOut.RoundedReal (Domain f),
-     RefOrd.IntervalLike (Domain f),
-     Show f, Show (Var f), Show (Domain f)
-    ) 
-    =>
-    ArithInOut.RoundedRealEffortIndicator (Domain f)
-    -> Domain f
-    -> Var f
-    -> [String]
-    -> BisectionInfo (t, t1, [(HybSysMode, EventInfo f)]) splitReason
-    -> IO ()
-plotEnclosures effCF plotMinSegSize tVar componentNames bisectionInfo =
-    do
-    Gtk.unsafeInitGUIForThreadedRTS
-    fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
-    fnMetaTV <- atomically $ newTVar $ fnmeta
-    FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
-    Gtk.mainGUI
-    where
-    ((sampleFn : _) : _) = fns 
-    effDrawFn = cairoDrawFnDefaultEffort sampleFn
-    effEval = evaluationDefaultEffort sampleFn
-    
-    addPlotVar = map $ map addV
-        where
-        addV fn = (fn, tVar)
-    (fns, fnNames, segNames) = 
-        aggregateSequencesOfTinySegments fnsAndNames 
-    fnsAndNames = 
-        map getFnsFromSegInfo $ bisectionInfoGetLeafSegInfoSequence bisectionInfo
-        where
-        getFnsFromSegInfo (_,_,modeEventInfos) =
-            concat $ map getFnsFromMEI modeEventInfos
-        getFnsFromMEI (HybSysMode modeName, eventInfo) =
-            collectFns modeName eventInfo
-        collectFns namePrefix (EventNextSure (_, fnVec) eventMap) =
-            (numberFnVec fnVec namePrefix) ++
-            (concat $ map perEvent $ toAscList eventMap)
-            where
-            perEvent (HybSysEventKind eventName, subEventInfo) =
-                collectFns (namePrefix ++ "!" ++ eventName) subEventInfo
-        collectFns namePrefix (EventNextMaybe (_, fnVec) eventMap) =
-            (numberFnVec fnVec namePrefix) ++
-            (concat $ map perEvent $ toAscList eventMap)
-            where
-            perEvent (HybSysEventKind eventName, subEventInfo) =
-                collectFns (namePrefix ++ "?" ++ eventName) subEventInfo
-        collectFns namePrefix (EventFixedPoint (_, fnVec)) =
-            (numberFnVec fnVec namePrefix)
-        collectFns _ _ = 
-            []
-        numberFnVec fnVec namePrefix =
-            zipWith addName fnVec componentNames
-            where
-            addName fn compName = (fn, namePrefix ++ "." ++ compName)
-    fnmeta = 
-        (FV.defaultFnMetaData sampleFn)
-        {
-            FV.dataFnGroupNames = segNames, -- map ("segment " ++) (map show [1..segs]),
-            FV.dataFnNames = fnNames,
-            FV.dataFnStyles = map giveColours fnNames,
-            FV.dataDomName = "t",
-            FV.dataDomL = 0,
-            FV.dataDomR = 4,
-            FV.dataValLO = -2,
-            FV.dataValHI = 2,
-            FV.dataDefaultActiveFns = map whichActive fnNames,
-            FV.dataDefaultEvalPoint = 0,
-            FV.dataDefaultCanvasParams =
-                (FV.defaultCanvasParams (0::CF))
-                {
-                    FV.cnvprmCoordSystem = 
-                        FV.CoordSystemLinear $ 
-                            FV.Rectangle  2 (-2) 0 (4)
-                    ,
-                    FV.cnvprmSamplesPerUnit = 200
-                    ,
-                    FV.cnvprmBackgroundColour = Just (1,1,1,1)
-                }
-        }
-    aggregateSequencesOfTinySegments fnsAndNames2 = aggrNewSegm [] [] [] $ zip ([1..]::[Int]) fnsAndNames2
-        where
-        aggrNewSegm prevFns prevFnNames prevSegNames [] =
-            (reverse prevFns, reverse prevFnNames, reverse prevSegNames)
-        aggrNewSegm 
-                prevFns prevFnNames prevSegNames 
-                segs@((segNoFirstSeg, fnsNamesFirstSeg@((fn1FirstSeg,_) : _)) : restSegs)
-            | noAggregation =
-                aggrNewSegm 
-                    (fnsFirstSeg : prevFns) 
-                    (fnNamesFirstSeg : prevFnNames) 
-                    (("segment " ++ show segNoFirstSeg) : prevSegNames) 
-                    restSegs 
-            | otherwise =
-                aggrNewSegm
-                    (fnsAggregated : prevFns) 
-                    (fnNamesAggregated : prevFnNames) 
-                    (("segments " ++ show segNoFirstSeg ++ "-" ++ show segNoLastAggrSeg) : prevSegNames) 
-                    restSegsAfterAggr
-            where
-            noAggregation = length smallSegmentsToAggregate <= 1
-            (smallSegmentsToAggregate, restSegsAfterAggr) = 
-                span segEndsBeforeLimit segs
-                where
-                segEndsBeforeLimit (_, ((fn1ThisSeg,_) : _)) =
-                    (tEndThisSeg <=? tAggrLimit) == Just True
-                    where
-                    (_, tEndThisSeg) = getTVarDomEndpoints fn1ThisSeg
-                    tAggrLimit = tStartFirstSeg <+> plotMinSegSize
-            fnNamesAggregated =
-                map (++ "(aggr)") componentNames
-            fnsAggregated =
-                foldl1 (zipWith (</\>)) $
-                    chunksOf (length componentNames) $
-                        map makeConstFnOverAggrDom $
-                            concat $ map getFnsFromSeg smallSegmentsToAggregate
-                where
-                chunksOf _ [] = []
-                chunksOf n list = firstN : (chunksOf n rest)
-                    where
-                    (firstN, rest) = splitAt n list
-                getFnsFromSeg (_, fnsNames) = map fst fnsNames
-                makeConstFnOverAggrDom fn =
-                    newConstFn sizeLimitsNew domboxNew range
-                    where
-                    domboxNew = fromList [(tVar, aggrDom)]
-                    sizeLimitsNew =
-                        adjustSizeLimitsToVarsAndDombox fn [tVar] domboxNew sizeLimits
-                    range = evalAtPointOutEff effEval dombox fn
-                    sizeLimits = getSizeLimits fn         
-                    dombox = getDomainBox fn
-                    
-            aggrDom = RefOrd.fromEndpointsOutWithDefaultEffort (tStartFirstSeg, tEndLastAggrSeg) 
-            (tStartFirstSeg, _) = getTVarDomEndpoints fn1FirstSeg
-            (_, tEndLastAggrSeg) = getTVarDomEndpoints fn1LastAggrSeg
-            (segNoLastAggrSeg, ((fn1LastAggrSeg,_) : _)) = last smallSegmentsToAggregate 
-            getTVarDomEndpoints fn =
-                case lookupVar (getDomainBox fn) tVar of 
-                    Just tDom -> RefOrd.getEndpointsOutWithDefaultEffort tDom 
-            (fnsFirstSeg, fnNamesFirstSeg) = unzip fnsNamesFirstSeg
-    whichActive list =
-        take (length list) activityCycle 
-        where
-        activityCycle = cycle $ map snd $ zip componentNames $ 
-            True : (repeat True) 
---            True : (repeat False) 
---            True : False : False : True : (repeat False) 
---            True : False : False : False : True : (repeat False) 
-    
-    giveColours list =
-        take (length list) colourCycle
-        where
-        colourCycle = cycle $ map snd $ 
-            zip componentNames 
-                (cycle [blue, green, red, black])
---                (cycle [black]) 
-
-    black = FV.defaultFnPlotStyle
-    blue = FV.defaultFnPlotStyle 
-        { 
-            FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
-            FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
-        } 
-    green = FV.defaultFnPlotStyle 
-        { 
-            FV.styleOutlineColour = Just (0.1,0.8,0.1,1), 
-            FV.styleFillColour = Just (0.1,0.8,0.1,0.1) 
-        } 
-    red = FV.defaultFnPlotStyle 
-        { 
-            FV.styleOutlineColour = Just (0.8,0.1,0.1,1), 
-            FV.styleFillColour = Just (0.8,0.1,0.1,0.1) 
-        } 
     
