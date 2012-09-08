@@ -477,8 +477,6 @@ plotEnclosures effCF plotMinSegSize tVar componentNames bisectionInfo =
     aggregateSequencesOfTinySegments fnsAndNames2 = 
         aggrNewSegm [] [] [] $ zip ([1..]::[Int]) fnsAndNames2
         where
-        aggrNewSegm prevFns prevFnNames prevSegNames [] =
-            (reverse prevFns, reverse prevFnNames, reverse prevSegNames)
         aggrNewSegm 
                 prevFns prevFnNames prevSegNames 
                 segs@((segNoFirstSeg, fnsNamesFirstSeg@((fn1FirstSeg,_) : _)) : restSegs)
@@ -535,6 +533,8 @@ plotEnclosures effCF plotMinSegSize tVar componentNames bisectionInfo =
                 case lookupVar (getDomainBox fn) tVar of 
                     Just tDom -> RefOrd.getEndpointsOutWithDefaultEffort tDom 
             (fnsFirstSeg, fnNamesFirstSeg) = unzip fnsNamesFirstSeg
+        aggrNewSegm prevFns prevFnNames prevSegNames _ =
+            (reverse prevFns, reverse prevFnNames, reverse prevSegNames)
     whichActive list =
         take (length list) activityCycle 
         where

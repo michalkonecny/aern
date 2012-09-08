@@ -130,7 +130,8 @@ ivpByNameMap sampleFn =
         ("ivpSpringMassAir-ev-et", ivpSpringMassAir_ev_et sampleFn),
         ("ivpFallAir-ishii", ivpFallAir_ishii sampleFn),
         ("ivpLorenz-ishii", ivpLorenz_ishii sampleFn),
-        ("ivpRoessler", ivpRoessler sampleFn)
+        ("ivpRoessler", ivpRoessler sampleFn),
+        ("ivpVanDerPol", ivpVanDerPol sampleFn)
     ]
 
 
@@ -481,8 +482,66 @@ ivpRoessler sampleFn =
     sampleDom = getSampleDomValue sampleFn
 
 
+ivpVanDerPol :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedMixedField f Double,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpVanDerPol sampleFn =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = 
+                "Van der Pol oscillator: x' = y; y' = \\mu*(1 - x^2)*y - x; \\mu = " ++ show mu ++ "; " 
+                ++ "x(0) = " ++ show initialX ++ ", y(0) = " ++ show initialY,
+            odeivp_field = \ [x,y] -> 
+                [y, 
+                 ((mu |<*> y) <*> ((1::Double) |<+> (neg x <*> x))) <+> (neg x)
+                ],
+            odeivp_componentNames = ["x", "y"],
+            odeivp_tVar = "t",
+            odeivp_tStart = toDom 0,
+            odeivp_t0End = toDom 0,
+            odeivp_tEnd = toDom 1,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing 
+        }
+    initialValues = 
+        [
+            toDom initialX
+        ,
+            toDom initialY
+        ]
+    
+    mu = 1 :: Double
+    initialX = 1 :: Double
+    initialY = 1 :: Double
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+
+--    lrDom = makeDomFromEndpoints sampleDom
+    toDom = dblToDom sampleDom
+    sampleDom = getSampleDomValue sampleFn
 
 
+
+
+makeDomFromEndpoints :: 
+    (ArithInOut.RoundedReal t) 
+    =>
+    t 
+    -> 
+    Double -> Double -> t
 makeDomFromEndpoints sampleDom l r =
     (dblToDom sampleDom l)
     </\>
