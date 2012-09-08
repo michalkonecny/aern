@@ -22,6 +22,7 @@ import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal, dbldblToReal)
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
@@ -168,7 +169,7 @@ ivpExpDecay_ev_et sampleFn =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpExpDecay_uv_et :: 
@@ -205,8 +206,8 @@ ivpExpDecay_uv_et sampleFn =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
-    lrDom = makeDomFromEndpoints sampleDom
-    toDom = dblToDom sampleDom
+    lrDom = dbldblToReal sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpSpringMass_ev_et :: 
@@ -243,8 +244,8 @@ ivpSpringMass_ev_et sampleFn =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
---    lrDom = makeDomFromEndpoints sampleDom
-    toDom = dblToDom sampleDom
+--    lrDom = dbldblToReal sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpSpringMass_uv_et :: 
@@ -291,8 +292,8 @@ ivpSpringMass_uv_et sampleFn =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
-    lrDom = makeDomFromEndpoints sampleDom
-    toDom = dblToDom sampleDom
+    lrDom = dbldblToReal sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpSpringMassAir_ev_et :: 
@@ -333,8 +334,8 @@ ivpSpringMassAir_ev_et sampleFn =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
-    lrDom = makeDomFromEndpoints sampleDom
-    toDom = dblToDom sampleDom
+    lrDom = dbldblToReal sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -376,8 +377,8 @@ ivpFallAir_ishii sampleFn =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
-    lrDom = makeDomFromEndpoints sampleDom
-    toDom = dblToDom sampleDom
+    lrDom = dbldblToReal sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpLorenz_ishii :: 
@@ -424,8 +425,8 @@ ivpLorenz_ishii sampleFn =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
-    lrDom = makeDomFromEndpoints sampleDom
-    toDom = dblToDom sampleDom
+    lrDom = dbldblToReal sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpRoessler :: 
@@ -477,8 +478,8 @@ ivpRoessler sampleFn =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
 
-    lrDom = makeDomFromEndpoints sampleDom
-    toDom = dblToDom sampleDom
+    lrDom = dbldblToReal sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -529,32 +530,10 @@ ivpVanDerPol sampleFn =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
 
---    lrDom = makeDomFromEndpoints sampleDom
-    toDom = dblToDom sampleDom
+--    lrDom = dbldblToReal sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 
-
-
-makeDomFromEndpoints :: 
-    (ArithInOut.RoundedReal t) 
-    =>
-    t 
-    -> 
-    Double -> Double -> t
-makeDomFromEndpoints sampleDom l r =
-    (dblToDom sampleDom l)
-    </\>
-    (dblToDom sampleDom r)
-
-dblToDom ::
-    (ArithInOut.RoundedReal dom)
-    => 
-    dom -> Double -> dom
-dblToDom sampleDom n =
-    z <+>| n
-    where
-    z = zero sampleDom
-    
     
     
