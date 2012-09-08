@@ -9,8 +9,8 @@
 #define GLADE_DIR "./"
 #endif 
 {-|
-    Module      :  Numeric.AERN.RmToRn.Plot.FnView
-    Description :  a gtk widget inspecting cairo drawable functions
+    Module      :  Numeric.AERN.IVP.Plot.PicardView
+    Description :  UI for controlling and visualising Picard iterations 
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -18,18 +18,18 @@
     Stability   :  experimental
     Portability :  portable
     
-    A gtk widget inspecting function enclosures.
+    UI for controlling and visualising Picard iterations.
+    
+    NOT COMPLETED, CURRENTLY STALLED
 -}
-module Numeric.AERN.RmToRn.Plot.PicardView
+module Numeric.AERN.IVP.Plot.PicardView
 (
-    new,
-    module Numeric.AERN.RmToRn.Plot.PicardView.IVP
+    new
 )
 where
 
-import Numeric.AERN.RmToRn.Plot.PicardView.IVP
-import Numeric.AERN.RmToRn.Plot.PicardView.State
-import Numeric.AERN.RmToRn.Plot.PicardView.Layout
+import Numeric.AERN.IVP.Plot.PicardView.State
+import Numeric.AERN.IVP.Plot.PicardView.Layout
 
 import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
 

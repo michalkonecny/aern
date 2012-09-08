@@ -3,8 +3,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-|
-    Module      :  Numeric.AERN.RmToRn.Plot.FnView.Layout
-    Description :  layout of the FnView widget
+    Module      :  Numeric.AERN.IVP.Plot.PicardView.Layout
+    Description :  layout of the PicardView window
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -12,10 +12,12 @@
     Stability   :  experimental
     Portability :  portable
     
-    Internal module for FnView.
-    Layout of the FnView widget. 
+    Internal module for PicardView.
+    Layout of the PicardView window. 
+    
+    NOT COMPLETED, CURRENTLY STALLED
 -}
-module Numeric.AERN.RmToRn.Plot.PicardView.Layout
+module Numeric.AERN.IVP.Plot.PicardView.Layout
 --(
 --)
 where
@@ -23,33 +25,32 @@ where
 --import Numeric.AERN.RmToRn.Plot.PicardView.State
 
 import qualified Graphics.UI.Gtk as Gtk
-import qualified Graphics.UI.Gtk.Glade as Glade
 
 import System.Directory (doesFileExist)
 
-loadGlade :: 
-    FilePath ->
-    IO Widgets
-loadGlade gladeFileName =
-    do
-    gotGladeFile <- doesFileExist gladeFileName
-    case gotGladeFile of
-        True -> return ()
-        False -> error $ "AERN: RmToRn.Plot.PicardView: glade file " ++ gladeFileName ++ " not found" 
-    Just xml <- Glade.xmlNew gladeFileName
-    window <- Glade.xmlGetWidget xml Gtk.castToWindow "window1"
-    segmentTable <- Glade.xmlGetWidget xml Gtk.castToTable "segmentTable1"
-    nextPicardIterationButton <- Glade.xmlGetWidget xml Gtk.castToButton "nextPicardIterationButton1"
-    nextSegmentButton <- Glade.xmlGetWidget xml Gtk.castToButton "nextSegmentButton1"
-    undoButton <- Glade.xmlGetWidget xml Gtk.castToButton "undoButton1"
-    return $ Widgets
-        {
-            window = window,
-            segmentTable = segmentTable,
-            nextPicardIterationButton = nextPicardIterationButton,
-            nextSegmentButton = nextSegmentButton,
-            undoButton = undoButton
-        }
+--loadGlade :: 
+--    FilePath ->
+--    IO Widgets
+--loadGlade gladeFileName =
+--    do
+--    gotGladeFile <- doesFileExist gladeFileName
+--    case gotGladeFile of
+--        True -> return ()
+--        False -> error $ "aern-ivp: ...Plot.PicardView: glade file " ++ gladeFileName ++ " not found" 
+--    Just xml <- Glade.xmlNew gladeFileName
+--    window <- Glade.xmlGetWidget xml Gtk.castToWindow "window1"
+--    segmentTable <- Glade.xmlGetWidget xml Gtk.castToTable "segmentTable1"
+--    nextPicardIterationButton <- Glade.xmlGetWidget xml Gtk.castToButton "nextPicardIterationButton1"
+--    nextSegmentButton <- Glade.xmlGetWidget xml Gtk.castToButton "nextSegmentButton1"
+--    undoButton <- Glade.xmlGetWidget xml Gtk.castToButton "undoButton1"
+--    return $ Widgets
+--        {
+--            window = window,
+--            segmentTable = segmentTable,
+--            nextPicardIterationButton = nextPicardIterationButton,
+--            nextSegmentButton = nextSegmentButton,
+--            undoButton = undoButton
+--        }
 
 data Widgets = 
     Widgets

@@ -25,7 +25,8 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.SpecialConst,
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary,
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace,
-    RoundedReal(..), RoundedRealInPlace
+    RoundedReal(..), RoundedRealInPlace,
+    dblToReal, dbldblToReal
 )
 where
 
@@ -116,4 +117,29 @@ class
      RoundedMixedFieldInPlace t Double, 
      RoundedMixedFieldInPlace t Rational) => 
     RoundedRealInPlace t
+    
+dbldblToReal ::
+    (RoundedReal real) 
+    =>
+    real
+    -> 
+    Double -> Double -> real
+dbldblToReal sampleReal l r =
+    (dblToReal sampleReal l)
+    `union`
+    (dblToReal sampleReal r)
+    where
+    union = RefOrd.meetOutEff (RefOrd.joinmeetDefaultEffort sampleReal)
+
+dblToReal ::
+    (RoundedReal real)
+    => 
+    real 
+    -> 
+    Double -> real
+dblToReal sampleReal d =
+    mixedAddOutEff (mixedAddDefaultEffort sampleReal d) z d
+    where
+    z = zero sampleReal
+    
     

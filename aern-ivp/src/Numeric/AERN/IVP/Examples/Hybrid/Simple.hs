@@ -22,6 +22,7 @@ import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal)
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
@@ -233,7 +234,7 @@ ivpExpDecay_resetTHalf (sampleFn :: f) =
     xEnd = (one sampleDom) <*>| (exp (-tEndDbl+tEventDbl) :: Double)
     tEndDbl :: Double
     (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpExpDecay_resetOn34 ::
@@ -299,7 +300,7 @@ ivpExpDecay_resetOn34 (sampleFn :: f) =
     xEnd = (toDom 1) <*>| (exp (-tEndDbl-3*(log xEventDbl)) :: Double)
     tEndDbl :: Double
     (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -373,7 +374,7 @@ ivpSpringMass_resetTHalf (sampleFn :: f) =
     xDerEnd = (toDom $ -1) <*>| (sin (tEndDbl - tEventDbl) :: Double)
     tEndDbl :: Double
     (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
     
     
@@ -442,7 +443,7 @@ ivpSpringMass_resetOn34 (sampleFn :: f) =
     xDerEnd = (toDom $ -1) <*>| (sin (tEndDbl - tEventDbl) :: Double)
     tEndDbl :: Double
     (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpBouncingBall_AfterBounce :: 
@@ -555,7 +556,7 @@ ivpBouncingBall_AtTime tEndDbl [xEndDbl, xDerEndDbl] (sampleFn :: f) =
     tStart = hybivp_tStart ivp
     z = toDom 0
     tEnd = toDom tEndDbl
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpBouncingBallEnergy_AfterBounce ::
@@ -691,7 +692,7 @@ ivpBouncingBallEnergy_AtTime tEndDbl [xEndDbl, vEndDbl] (sampleFn :: f) =
     [xEnd, vEnd] = map toDom [xEndDbl, vEndDbl]
     tEnd = toDom tEndDbl
     z = toDom 0
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpBouncingBallVibr_AtTime :: 
@@ -765,7 +766,7 @@ ivpBouncingBallVibr_AtTime tEndDbl (sampleFn :: f) =
     tStart = hybivp_tStart ivp
     tEnd = toDom tEndDbl
     z = toDom 0
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -864,7 +865,7 @@ ivpBouncingBallDrop_AtTime groundInitDbl tDropDbl groundDropDbl tEndDbl (sampleF
     tStart = hybivp_tStart ivp
     [_groundInit, tDrop, groundDrop, tEnd] = map toDom [groundInitDbl, tDropDbl, groundDropDbl, tEndDbl]
     z = toDom 0
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpBouncingBallEnergyDrop_AtTime :: 
@@ -999,7 +1000,7 @@ ivpBouncingBallEnergyDrop_AtTime groundInitDbl tDropDbl groundDropDbl tEndDbl (s
     tStart = hybivp_tStart ivp
     [groundInit, tDrop, groundDrop, tEnd] = map toDom [groundInitDbl, tDropDbl, groundDropDbl, tEndDbl]
     z = toDom 0
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpTwoBouncingBallsDrop_AtTime :: 
@@ -1159,7 +1160,7 @@ ivpTwoBouncingBallsDrop_AtTime
     tStart = hybivp_tStart ivp
     [groundInit, tDrop1, tDrop2, groundDrop, tEnd] = map toDom [groundInitDbl, tDrop1Dbl, tDrop2Dbl, groundDropDbl, tEndDbl]
     z = toDom 0
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -1370,7 +1371,7 @@ ivpTwoBouncingBallsEnergyDrop_AtTime
     [groundInit, tDrop1, tDrop2, groundDrop, tEnd] = 
         map toDom [groundInitDbl, tDrop1Dbl, tDrop2Dbl, groundDropDbl, tEndDbl]
     z = toDom 0
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpBouncingSpring_AtTime :: 
@@ -1437,7 +1438,7 @@ ivpBouncingSpring_AtTime tEndDbl (sampleFn :: f) =
     tStart = hybivp_tStart ivp
     z = toDom 0
     tEnd = toDom tEndDbl
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpTwoTanks_AfterZeno :: 
@@ -1520,7 +1521,7 @@ ivpTwoTanks_AfterZeno tEndMinusTZenoDbl (sampleFn :: f) =
     tStart = hybivp_tStart ivp
     z = toDom 0
     tEnd = toDom tEndDbl
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpTwoTanksSum_AfterZeno :: 
@@ -1634,19 +1635,10 @@ ivpTwoTanksSum_AfterZeno tEndMinusTZenoDbl (sampleFn :: f) =
     tStart = hybivp_tStart ivp
     z = toDom 0
     tEnd = toDom tEndDbl
-    toDom = dblToDom sampleDom
+    toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 
-dblToDom ::
-    (ArithInOut.RoundedReal dom)
-    => 
-    dom -> Double -> dom
-dblToDom sampleDom n =
-    z <+>| n
-    where
-    z = zero sampleDom
-    
 makeNonneg ::
     (HasZero d, NumOrd.PartialComparison d, RefOrd.IntervalLike d) 
     => 

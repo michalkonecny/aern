@@ -44,7 +44,8 @@ Library
         Numeric.AERN.IVP.Solver.Picard.UncertainValue,
         Numeric.AERN.IVP.Solver.ShrinkWrap,
         Numeric.AERN.IVP.Specification.Hybrid,
-        Numeric.AERN.IVP.Specification.ODE
+        Numeric.AERN.IVP.Specification.ODE,
+        Numeric.AERN.IVP.Plot.UsingFnView
 
 executable simple-uv-et-polyint
   build-depends:   

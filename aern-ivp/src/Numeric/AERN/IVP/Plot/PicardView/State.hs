@@ -4,8 +4,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ImplicitParams #-}
 {-|
-    Module      :  Numeric.AERN.RmToRn.Plot.PicardView.State
-    Description :  internal state of a PicardView widget
+    Module      :  Numeric.AERN.IVP.Plot.PicardView.State
+    Description :  internal state of the PicardView application
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -14,14 +14,16 @@
     Portability :  portable
     
     Internal module for PicardView.
-    Internal state of a PicardView widget.
+    Internal state of the PicardView application.
+    
+    NOT COMPLETED, CURRENTLY STALLED
 -}
-module Numeric.AERN.RmToRn.Plot.PicardView.State
+module Numeric.AERN.IVP.Plot.PicardView.State
 --(
 --)
 where
 
-import Numeric.AERN.RmToRn.Plot.PicardView.IVP
+import Numeric.AERN.IVP.Specification.ODE
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
@@ -61,7 +63,7 @@ initState ::
     =>
     f ->
     (ArithInOut.RoundedRealEffortIndicator (Domain f)) ->
-    IVP f -> 
+    ODEIVP f -> 
     (PicardViewFns f, PicardViewState)
 initState sampleF effReal ivp =
     ([(initialVals, [(mkInitialEnclosures sampleF effReal initialVals, False)])],
@@ -72,7 +74,7 @@ initState sampleF effReal ivp =
         }
     )
     where
-    initialVals = ivpInitialValues ivp
+    initialVals = odeivp_makeInitialValueFnVec ivp
 
 mkInitialEnclosures ::
     (ArithInOut.RoundedReal (Domain f), 
