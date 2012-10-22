@@ -148,6 +148,9 @@ ivpByNameMap sampleFn =
         ("bouncingBallEnergy-zeno", ivpBouncingBallEnergy_AfterZeno 0 sampleFn),
         ("bouncingBallEnergy-zenoPlus1Over2", ivpBouncingBallEnergy_AfterZeno 0.5 sampleFn),
         ("bouncingBallEnergy-zenoPlus2", ivpBouncingBallEnergy_AfterZeno 2 sampleFn),
+        ("bouncingBallEnergyRise-zeno", ivpBouncingBallEnergyRise_AfterZeno 0 sampleFn),
+        ("bouncingBallEnergyRise-zenoPlus1Over2", ivpBouncingBallEnergyRise_AfterZeno 0.5 sampleFn),
+        ("bouncingBallEnergyRise-zenoPlus2", ivpBouncingBallEnergyRise_AfterZeno 2 sampleFn),
         ("bouncingBallVibr-graze", ivpBouncingBallVibr_AtTime 2 sampleFn),
     -- TODO: define "bouncingBallVibrEnergy-graze" 
         ("bouncingBallDrop", ivpBouncingBallDrop_AtTime 3 2 0 5 sampleFn),
@@ -681,6 +684,172 @@ ivpBouncingBallEnergy_AtTime tEndDbl [xEndDbl, vEndDbl] (sampleFn :: f) =
                 Map.singleton modeMove initValues,
             hybivp_maybeExactStateAtTEnd = Just $
                 Map.singleton modeMove [xEnd, vEnd, rEnd]
+        }
+    description =
+        "" ++ "if x = 0 && v <= 0 then post(v) = -v/2, post(r) = r/4 else x''= -10, r' = 0, r = v^2+20x, x >= 0, r >= 0)" 
+        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
+        ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
+        ++ ", r(" ++ show tStart ++ ") ∊ " ++ show initR
+    initValues@[initX, initX', initR] = [toDom 5, toDom 0, energyWith initX initX'] :: [Domain f]
+    tStart = hybivp_tStart ivp
+    [xEnd, vEnd] = map toDom [xEndDbl, vEndDbl]
+    tEnd = toDom tEndDbl
+    z = toDom 0
+    toDom = dblToReal sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+ivpBouncingBallEnergyRise_AfterBounce ::
+    (Var f ~ String,
+     HasConstFns f,
+     Neg f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show (Domain f)
+    )
+    => 
+    Int -> 
+    f -> 
+    HybridIVP f
+ivpBouncingBallEnergyRise_AfterBounce n =
+    ivpBouncingBallEnergyRise_AtTime tEnd [xEnd, xDerEnd]
+    where
+    tEnd = (3*(1 - 2^^(-n)) :: Double)
+    xEnd = (5 * (2^^(-2*n)) :: Double)
+    xDerEnd = 0 -- exactly between two bounces, the ball brieflly stops, ie its speed is zero
+
+ivpBouncingBallEnergyRise_AfterZeno :: 
+    (Var f ~ String,
+     HasConstFns f,
+     Neg f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show (Domain f)
+    )
+    => 
+    Double -> 
+    f -> 
+    HybridIVP f
+ivpBouncingBallEnergyRise_AfterZeno howLong =
+    ivpBouncingBallEnergyRise_AtTime tEnd [xEnd, xDerEnd]
+    where
+    tEnd = 3 + howLong
+    xEnd = 0
+    xDerEnd = 0
+
+
+
+ivpBouncingBallEnergyRise_AtTime :: 
+    (Var f ~ String,
+     HasConstFns f,
+     Neg f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show (Domain f)
+    )
+    => 
+    Double -> 
+    [Double] -> 
+    f -> 
+    HybridIVP f
+ivpBouncingBallEnergyRise_AtTime tEndDbl [xEndDbl, vEndDbl] (sampleFn :: f) =
+    ivp
+    where
+    rEnd = energyWith xEnd vEnd
+    energyWith x v = z </\> (v <*> v <+> (toDom 20) <*> x)
+        -- added zero so that after reset the interval refines the original (model-level hack!)  
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x","v","r"],
+            hybsys_modeFields = Map.fromList [(modeRise, odeMove), (modeFall, odeMove)],
+            hybsys_modeInvariants = Map.fromList [(modeRise, invariantRise), (modeFall, invariantFall)],
+            hybsys_eventModeSwitchesAndResetFunctions =
+                Map.fromList 
+                    [(eventBounce, (modeRise, resetBounce)), 
+                     (eventPeak, (modeFall, resetPeak))],
+            hybsys_eventSpecification = eventSpecMap
+        }
+    modeRise = HybSysMode "rise"
+    modeFall = HybSysMode "fall"
+    odeMove :: [f] -> [f]
+    odeMove [x,v,r] = [v, newConstFnFromSample x (toDom $ -10), newConstFnFromSample r (toDom 0)]
+    invariantRise [x,v,r] =
+        [xNN <\/> x2, -- x >=0 && x = (r - v^2)/20
+         vNN <\/> absV, -- v >=0 && |v| = sqrt(r - 20*x)
+         rNN] -- r >= 0
+        {- making use of the energy conservation law: 
+           (v)^2 + 2gx = r
+           
+           which implies 
+           |v| = sqrt(r - 2gx) 
+           x = (r - (v)^2) / 2g 
+        -}
+        where
+        rNN = makeNonneg r
+        xNN = makeNonneg x
+        vNN = makeNonneg v
+        absV = sqrtOut $ makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
+        x2 = (rNN <-> (makeNonneg $ v <*> v)) </> (toDom 20)
+    invariantFall [x,v,r] =
+        [xNN <\/> x2, -- x >=0 && x = (r - v^2)/20
+         vNP <\/> (neg absV), -- v <= 0 && |v| = sqrt(r - 20*x)
+         rNN] -- r >= 0
+        {- making use of the energy conservation law: 
+           (v)^2 + 2gx = r
+           
+           which implies 
+           |v| = sqrt(r - 2gx) 
+           x = (r - (v)^2) / 2g 
+        -}
+        where
+        rNN = makeNonneg r
+        xNN = makeNonneg x
+        vNP = neg $ makeNonneg (neg v)
+        absV = sqrtOut $ makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
+        x2 = (rNN <-> (makeNonneg $ v <*> v)) </> (toDom 20)
+    eventBounce = HybSysEventKind "bc"
+    pruneBounce [_x,v,r] = [z, neg $ makeNonneg $ neg v,r]
+    resetBounce :: [f] -> [f]
+    resetBounce [x,v,r] = 
+        [x, 
+         (-0.5 :: Double) |<*> v, 
+         (0.25 :: Double) |<*> r]
+    eventPeak = HybSysEventKind "pk"
+    prunePeak [x,v,r] = [x, z, r]
+    resetPeak :: [f] -> [f]
+    resetPeak [x,v,r] = [x,v,r] 
+    eventSpecMap mode 
+        | mode == modeFall =
+            Map.singleton
+                eventBounce ([True, True, True], xDip, const (Just True), pruneBounce)
+        | mode == modeRise =
+            Map.singleton
+                eventPeak ([False, True, False], vDip, const (Just True), prunePeak)
+        where
+        xDip [x,_v, _r] = x
+        vDip [_x,v, _r] = v
+    
+    ivp :: HybridIVP f
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = z,
+            hybivp_tEnd = tEnd,
+            hybivp_initialStateEnclosure = 
+                Map.singleton modeFall initValues,
+            hybivp_maybeExactStateAtTEnd = Nothing
         }
     description =
         "" ++ "if x = 0 && v <= 0 then post(v) = -v/2, post(r) = r/4 else x''= -10, r' = 0, r = v^2+20x, x >= 0, r >= 0)" 
@@ -1646,8 +1815,11 @@ makeNonneg ::
 makeNonneg r
     | rangeContainsZero =
         RefOrd.fromEndpointsOutWithDefaultEffort (z, rR)
-    | otherwise = r 
+    | alreadyNonneg = r
+    | otherwise = z
     where
+    alreadyNonneg =
+        (z <=? rL) == Just True
     rangeContainsZero =
         ((rL <=? z) == Just True)
         &&
