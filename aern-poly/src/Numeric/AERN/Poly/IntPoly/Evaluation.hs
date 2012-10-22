@@ -68,7 +68,8 @@ _ = unsafePrint
 instance 
     (Ord var, Show var, Show cf,
      ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf)
+     RefOrd.IntervalLike cf,
+     HasConsistency cf)
     =>
     CanEvaluateOtherType (IntPoly var cf)
     where
@@ -183,7 +184,9 @@ valuesAreExact values =
     
 instance
     (Ord var, Show var,
-     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf, Show cf)
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+     HasConsistency cf, 
+     Show cf)
     =>
     HasEvalOps (IntPoly var cf) cf
     where
@@ -375,7 +378,7 @@ evalPolyOnIntervalOut, evalPolyOnIntervalIn ::
     -> 
     IntPoly var cf -> cf
 evalPolyOnIntervalOut eff maxSplitDepth values p@(IntPoly cfg _)
-    = 
+    =
     evalPolyMono evalOut ops values p
     where
     evalOut = evalPolyDirect ops
@@ -445,6 +448,7 @@ evalPolyMono ::
     (Ord var, Show var, 
      ArithInOut.RoundedReal cf, 
      RefOrd.IntervalLike cf,
+     HasConsistency cf,
      Show cf, Show val) 
     =>
     ([val] -> IntPoly var cf -> val) -- ^ direct evaluator (typically, @evalPolyDirect opsV@) 
@@ -456,7 +460,7 @@ evalPolyMono ::
     IntPoly var cf 
     -> 
     val
-evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
+evalPolyMono evalDirect opsV valuesG pOrig@(IntPoly cfg _)
     | noMonoOps = direct
 --    | noMonotoneVar = useMonotonicityAndSplit
     | otherwise =
@@ -474,200 +478,203 @@ evalPolyMono evalDirect opsV valuesG p@(IntPoly cfg _)
 --        unsafePrint
 --        (
 --            "evalPolyMono: "
-----            ++ "\n p = " ++ show p
---            ++ "\n values = " ++ show values
---            ++ "\n valuesL = " ++ show valuesL
---            ++ "\n valuesR = " ++ show valuesR
---            ++ "\n left = " ++ show left
---            ++ "\n right = " ++ show right
+--            ++ "\n pOrig = " ++ show pOrig
+--            ++ "\n maybeResultL = " ++ show maybeResultL
+--            ++ "\n maybeResultR = " ++ show maybeResultR
 --            ++ "\n direct = " ++ show direct
 --        ) $ 
-        useMonotonicityAndSplit
+        case (maybeResultL, maybeResultR) of
+            (Just resultL, Just resultR) -> 
+                mergeV (resultL, resultR)
+            _ -> error $ 
+                    "evalPolyMono: maybeResultL = " ++ show maybeResultL 
+                    ++ "; maybeResultR = " ++ show maybeResultR
     where
     vars = ipolycfg_vars cfg
     
-    direct = evalDirect valuesG p
-        
-    segCount = emsCountNodes resultEMS
-    Just useMonotonicityAndSplit =
-        emsCollectResultsSoFar (curry mergeV) resultEMS
-    resultEMS =
-        useMonotonicityAndSplitting (direct, direct) $ 
-            EMSTODO (direct, [direct]) $ zip valuesG $ repeat (False, False)
-        
-    useMonotonicityAndSplitting (minSoFar, maxSoFar) emsTree =
-        case evalNextLevel 0 emsTree of
-            (emsTreeNew, Nothing, _) -> emsTreeNew 
-            (emsTreeNew, _, False) -> emsTreeNew 
-            (emsTreeNew, _, _) -> 
-                case emsCollectMinMax minV maxV emsTreeNew of
-                    Just (minSoFarNew, maxSoFarNew) ->
---                        unsafePrint
---                        (
---                            "evalPolyMono: useMonotonicityAndSplitting: processing next layer:"
---                            ++ "\n size of emsTreeNew = " ++ show (emsCountNodes emsTreeNew)
---                            ++ "\n minSoFarNew = " ++ show minSoFarNew
---                            ++ "\n maxSoFarNew = " ++ show maxSoFarNew
---                        ) $
-                        useMonotonicityAndSplitting (minSoFarNew, maxSoFarNew) emsTreeNew
-                    _ ->
-                        error $ 
-                            "evalPolyMono: useMonotonicityAndSplitting: no result in tree!"
-                            ++ "\n p = " ++ show p
-                            ++ "\n valuesG = " ++ show valuesG
-                            ++ "\n minSoFar = " ++ show minSoFar
-                            ++ "\n maxSoFar = " ++ show maxSoFar
-                            ++ "\n emsTree = " ++ show emsTree
-                            ++ "\n emsTreeNew = " ++ show emsTreeNew
+    direct = evalDirect valuesG pOrig
+    
+    (pL, pR) = RefOrd.getEndpointsOutWithDefaultEffort pOrig
+    maybeResultL = maybeResultForP pL
+    maybeResultR = maybeResultForP pR
+    maybeResultForP p =
+        emsCollectResultsSoFar (curry mergeV) $
+            useMonotonicityAndSplitting (direct, direct) $ 
+                EMSTODO (direct, [direct]) $ zip valuesG $ repeat (False, False)
         where
-        evalNextLevel nodeCountSoFar (EMSSplit left right) =
-            (EMSSplit leftNew rightNew, maybeNodeCountR, updatedL || updatedR)
+        useMonotonicityAndSplitting (minSoFar, maxSoFar) emsTree =
+            case evalNextLevel 0 emsTree of
+                (emsTreeNew, Nothing, _) -> emsTreeNew 
+                (emsTreeNew, _, False) -> emsTreeNew 
+                (emsTreeNew, _, _) -> 
+                    case emsCollectMinMax minV maxV emsTreeNew of
+                        Just (minSoFarNew, maxSoFarNew) ->
+--                            unsafePrint
+--                            (
+--                                "evalPolyMono: useMonotonicityAndSplitting: processing next layer:"
+--                                ++ "\n size of emsTreeNew = " ++ show (emsCountNodes emsTreeNew)
+--                                ++ "\n minSoFarNew = " ++ show minSoFarNew
+--                                ++ "\n maxSoFarNew = " ++ show maxSoFarNew
+--                            ) $
+                            useMonotonicityAndSplitting (minSoFarNew, maxSoFarNew) emsTreeNew
+                        _ ->
+                            error $ 
+                                "evalPolyMono: useMonotonicityAndSplitting: no result in tree!"
+                                ++ "\n p = " ++ show p
+                                ++ "\n valuesG = " ++ show valuesG
+                                ++ "\n minSoFar = " ++ show minSoFar
+                                ++ "\n maxSoFar = " ++ show maxSoFar
+                                ++ "\n emsTree = " ++ show emsTree
+                                ++ "\n emsTreeNew = " ++ show emsTreeNew
             where
-            (leftNew, maybeNodeCountL, updatedL) = evalNextLevel nodeCountSoFar left
-            (rightNew, maybeNodeCountR, updatedR) =
-                case maybeNodeCountL of
-                    Just nodeCountL -> 
-                        evalNextLevel nodeCountL right
-                    Nothing -> 
-                        (right, Nothing, False)
-        evalNextLevel nodeCountSoFar t@(EMSDone _) = (t, Just (nodeCountSoFar + 1), False)
-        evalNextLevel nodeCountSoFar t@(EMSIgnore _) = (t, Just (nodeCountSoFar + 1), False)
-        evalNextLevel nodeCountSoFar (EMSTODO nosplitResultSamples valuesAndDetectedMonotonicity)
-            | insideOthers = 
-                (EMSIgnore nosplitResultSamples, Just (nodeCountSoFar + 1), False)
-            | nodeCountSoFar + 1 >= maxSplitSize = -- node count limit reached 
-                (EMSDone nosplitResultSamples, Nothing, False)
-            | splitHelps =
-                (EMSSplit (EMSTODO (leftRes, leftSamples) leftValsEtc) (EMSTODO (rightRes, rightSamples) rightValsEtc), 
-                 Just $ nodeCountSoFar + 2, True)
-            | otherwise = -- ie splitting further does not help:
-                (EMSDone nosplitResultSamples, Just (nodeCountSoFar + 1), False)
-            where
-            insideOthers = 
-                (minSoFar `leqV` nosplitResult == Just True) &&
-                (nosplitResult `leqV` maxSoFar == Just True)
-            
-            nosplitResultWidth = getWidthDblV nosplitResult
-            nosplitResult = fst nosplitResultSamples
-
-            leftSamples = getSamplesFor leftValsEtc
-            rightSamples = getSamplesFor rightValsEtc
-            getSamplesFor valuesAndDetectedMonotonicity2 =
---                unsafePrint
---                (
---                    "getSamplesFor:"
---                    ++ "\n valuesAndDetectedMonotonicity2 = " ++ show valuesAndDetectedMonotonicity2
---                    ++ "\n samplePoints2 = \n" 
---                    ++ unlines (map show samplePoints2)
---                ) $
-                map (fst . useMonotonicity) samplePoints
+            evalNextLevel nodeCountSoFar (EMSSplit left right) =
+                (EMSSplit leftNew rightNew, maybeNodeCountR, updatedL || updatedR)
                 where
-                samplePoints = take maxSplitSize samplePoints2
-                samplePoints2 
-                    | someMonotonicityInfo =
-                        interleaveLists
-                        (getPoints True [] valuesAndDetectedMonotonicity2)
-                        (getPoints False [] valuesAndDetectedMonotonicity2)
-                    | otherwise =
-                        getPoints True [] valuesAndDetectedMonotonicity2
-                someMonotonicityInfo =
-                    or $ map (\(_,(isMono, _)) -> isMono) valuesAndDetectedMonotonicity2 
-                getPoints _shouldAimDown prevValues [] = [reverse prevValues]
-                getPoints shouldAimDown prevValues (vdm@(value, dm@(detectedMono, isIncreasing)) : rest)
-                    | isExactV value =
-                        getPoints shouldAimDown (vdm : prevValues) rest
-                    | detectedMono =
-                        getPoints shouldAimDown ((valueEndpt, (True, True)) : prevValues) rest
-                    | otherwise =
-                        interleaveLists
-                        (getPoints shouldAimDown ((valueLE, (True, True)) : prevValues) rest)
-                        (getPoints shouldAimDown ((valueRE, (True, True)) : prevValues) rest)
-                    where
-                    valueEndpt 
-                        | isIncreasing `xor` shouldAimDown = valueLE 
-                        | otherwise = valueRE
-                    (valueLE, valueRE) = getEndPtsV value
-
-            splitHelps 
-                | null possibleSplits = False
-                | otherwise = bestSplitWidth < nosplitResultWidth
-            ((bestSplitWidth, ((leftRes, leftValsEtc), (rightRes, rightValsEtc))))
-                = bestSplitInfo
-            (bestSplitInfo : _) =
-                sortBy (\ (a,_) (b,_) -> compare a b) splitsInfo
-            splitsInfo =
-                map getWidth splitResults
+                (leftNew, maybeNodeCountL, updatedL) = evalNextLevel nodeCountSoFar left
+                (rightNew, maybeNodeCountR, updatedR) =
+                    case maybeNodeCountL of
+                        Just nodeCountL -> 
+                            evalNextLevel nodeCountL right
+                        Nothing -> 
+                            (right, Nothing, False)
+            evalNextLevel nodeCountSoFar t@(EMSDone _) = (t, Just (nodeCountSoFar + 1), False)
+            evalNextLevel nodeCountSoFar t@(EMSIgnore _) = (t, Just (nodeCountSoFar + 1), False)
+            evalNextLevel nodeCountSoFar (EMSTODO nosplitResultSamples valuesAndDetectedMonotonicity)
+                | insideOthers = 
+                    (EMSIgnore nosplitResultSamples, Just (nodeCountSoFar + 1), False)
+                | nodeCountSoFar + 1 >= maxSplitSize = -- node count limit reached 
+                    (EMSDone nosplitResultSamples, Nothing, False)
+                | splitHelps =
+                    (EMSSplit (EMSTODO (leftRes, leftSamples) leftValsEtc) (EMSTODO (rightRes, rightSamples) rightValsEtc), 
+                     Just $ nodeCountSoFar + 2, True)
+                | otherwise = -- ie splitting further does not help:
+                    (EMSDone nosplitResultSamples, Just (nodeCountSoFar + 1), False)
                 where
-                getWidth result@((leftVal, _),(rightVal, _)) = (width :: Double, result)
-                    where
-                    width = getWidthDblV $ mergeV (leftVal, rightVal) 
-            splitResults =
-                map computeSplitResult possibleSplits
-            possibleSplits =
-                getSplits [] [] valuesAndDetectedMonotonicity
-                where
-                getSplits prevSplits _prevValues [] = prevSplits
-                getSplits prevSplits prevValues (vd@(value, dmAndIncr@(detectedMono, _)) : rest) 
-                    | detectedMono =
-                        getSplits prevSplits (vd : prevValues) rest -- do not split value for which p is monotone
-                    | otherwise =
-                        getSplits (newSplit : prevSplits) (vd : prevValues) rest
-                    where
-                    newSplit =
-                        (
-                            prevValuesRev ++ [(valueL, dmAndIncr)] ++ rest
-                        ,
-                            prevValuesRev ++ [(valueR, dmAndIncr)] ++ rest
-                        )
-                    prevValuesRev = reverse prevValues
-                    (valueL, valueR) = splitV value
+                insideOthers = 
+                    (minSoFar `leqV` nosplitResult == Just True) &&
+                    (nosplitResult `leqV` maxSoFar == Just True)
                 
-            computeSplitResult (valuesAndDM_L, valuesAndDM_R) =
-                (useMonotonicity valuesAndDM_L, useMonotonicity valuesAndDM_R)
-
-    useMonotonicity valuesAndPrevDetectedMonotonicity =
-        (fromEndPtsV (left, right), valuesAndCurrentDetectedMonotonicity)
-        where
-        values = map fst valuesAndPrevDetectedMonotonicity
-        left = evalDirect valuesL p
-        right = evalDirect valuesR p
-        (_noMonotoneVar, valuesL, valuesR, valuesAndCurrentDetectedMonotonicity) =
-            let ?mixedMultInOutEffort = effMult in
-            detectMono True [] [] [] $ 
-                reverse $  -- undo reverse due to the accummulators
-                    zip vars $ valuesAndPrevDetectedMonotonicity
-        detectMono noMonotoneVarPrev valuesLPrev valuesRPrev 
-                valuesAndCurrentDetectedMonotonicityPrev []
-            = (noMonotoneVarPrev, valuesLPrev, valuesRPrev, 
-                    valuesAndCurrentDetectedMonotonicityPrev)
-        detectMono noMonotoneVarPrev valuesLPrev valuesRPrev 
-                valuesAndCurrentDetectedMonotonicityPrev ((var, (val, dmAndIncr@(prevDM, isIncreasing))) : rest)
-            =
---            unsafePrint 
---            (
---                "evalPolyMono: detectMono: deriv = " ++ show deriv
---            ) $ 
-            detectMono noMonotoneVarNew (valLNew : valuesLPrev) (valRNew : valuesRPrev) 
-                 ((val, newDMAndIncr) : valuesAndCurrentDetectedMonotonicityPrev) rest
+                nosplitResultWidth = getWidthDblV nosplitResult
+                nosplitResult = fst nosplitResultSamples
+    
+                leftSamples = getSamplesFor leftValsEtc
+                rightSamples = getSamplesFor rightValsEtc
+                getSamplesFor valuesAndDetectedMonotonicity2 =
+--                    unsafePrint
+--                    (
+--                        "getSamplesFor:"
+--                        ++ "\n valuesAndDetectedMonotonicity2 = " ++ show valuesAndDetectedMonotonicity2
+--                        ++ "\n samplePoints2 = \n" 
+--                        ++ unlines (map show samplePoints2)
+--                    ) $
+                    map (fst . useMonotonicity) samplePoints
+                    where
+                    samplePoints = take maxSplitSize samplePoints2
+                    samplePoints2 
+                        | someMonotonicityInfo =
+                            interleaveLists
+                            (getPoints True [] valuesAndDetectedMonotonicity2)
+                            (getPoints False [] valuesAndDetectedMonotonicity2)
+                        | otherwise =
+                            getPoints True [] valuesAndDetectedMonotonicity2
+                    someMonotonicityInfo =
+                        or $ map (\(_,(isMono, _)) -> isMono) valuesAndDetectedMonotonicity2 
+                    getPoints _shouldAimDown prevValues [] = [reverse prevValues]
+                    getPoints shouldAimDown prevValues (vdm@(value, dm@(detectedMono, isIncreasing)) : rest)
+                        | isExactV value =
+                            getPoints shouldAimDown (vdm : prevValues) rest
+                        | detectedMono =
+                            getPoints shouldAimDown ((valueEndpt, (True, True)) : prevValues) rest
+                        | otherwise =
+                            interleaveLists
+                            (getPoints shouldAimDown ((valueLE, (True, True)) : prevValues) rest)
+                            (getPoints shouldAimDown ((valueRE, (True, True)) : prevValues) rest)
+                        where
+                        valueEndpt 
+                            | isIncreasing `xor` shouldAimDown = valueLE 
+                            | otherwise = valueRE
+                        (valueLE, valueRE) = getEndPtsV value
+    
+                splitHelps 
+                    | null possibleSplits = False
+                    | otherwise = bestSplitWidth < nosplitResultWidth
+                ((bestSplitWidth, ((leftRes, leftValsEtc), (rightRes, rightValsEtc))))
+                    = bestSplitInfo
+                (bestSplitInfo : _) =
+                    sortBy (\ (a,_) (b,_) -> compare a b) splitsInfo
+                splitsInfo =
+                    map getWidth splitResults
+                    where
+                    getWidth result@((leftVal, _),(rightVal, _)) = (width :: Double, result)
+                        where
+                        width = getWidthDblV $ mergeV (leftVal, rightVal) 
+                splitResults =
+                    map computeSplitResult possibleSplits
+                possibleSplits =
+                    getSplits [] [] valuesAndDetectedMonotonicity
+                    where
+                    getSplits prevSplits _prevValues [] = prevSplits
+                    getSplits prevSplits prevValues (vd@(value, dmAndIncr@(detectedMono, _)) : rest) 
+                        | detectedMono =
+                            getSplits prevSplits (vd : prevValues) rest -- do not split value for which p is monotone
+                        | otherwise =
+                            getSplits (newSplit : prevSplits) (vd : prevValues) rest
+                        where
+                        newSplit =
+                            (
+                                prevValuesRev ++ [(valueL, dmAndIncr)] ++ rest
+                            ,
+                                prevValuesRev ++ [(valueR, dmAndIncr)] ++ rest
+                            )
+                        prevValuesRev = reverse prevValues
+                        (valueL, valueR) = splitV value
+                    
+                computeSplitResult (valuesAndDM_L, valuesAndDM_R) =
+                    (useMonotonicity valuesAndDM_L, useMonotonicity valuesAndDM_R)
+    
+        useMonotonicity valuesAndPrevDetectedMonotonicity =
+            (fromEndPtsV (left, right), valuesAndCurrentDetectedMonotonicity)
             where
-            noMonotoneVarNew = noMonotoneVarPrev && varNotMono
-            (valLNew, valRNew, newDMAndIncr)
-                | prevDM && isIncreasing = (valL, valR, dmAndIncr)
-                | prevDM = (valR, valL, dmAndIncr)
-                | varNotMono = (val, val, dmAndIncr) -- not monotone, we have to be safe
-                | varNonDecr = (valL, valR, (True, True)) -- non-decreasing on the whole domain - can use endpoints
-                | otherwise = (valR, valL, (True, False)) -- non-increasing on the whole domain - can use swapped endpoints
-            (varNonDecr, varNotMono) =
-                case (valIsExact, zV `leqV` deriv, deriv `leqV` zV) of
-                    (True, _, _) -> (undefined, True) -- when a variable has a thin domain, do not bother separating endpoints 
-                    (_, Just True, _) -> (True, False) 
-                    (_, _, Just True) -> (False, False)
-                    _ -> (undefined, True)
-            deriv =
-                evalPolyDirect opsVOut values $ -- this evaluation must be outer-rounded!
-                    diffPolyOut effCf var p -- range of (d p)/(d var)    
-            (valL, valR) = getEndPtsV val
-            valIsExact = isExactV val
+            values = map fst valuesAndPrevDetectedMonotonicity
+            left = evalDirect valuesL p
+            right = evalDirect valuesR p
+            (_noMonotoneVar, valuesL, valuesR, valuesAndCurrentDetectedMonotonicity) =
+                let ?mixedMultInOutEffort = effMult in
+                detectMono True [] [] [] $ 
+                    reverse $  -- undo reverse due to the accummulators
+                        zip vars $ valuesAndPrevDetectedMonotonicity
+            detectMono noMonotoneVarPrev valuesLPrev valuesRPrev 
+                    valuesAndCurrentDetectedMonotonicityPrev []
+                = (noMonotoneVarPrev, valuesLPrev, valuesRPrev, 
+                        valuesAndCurrentDetectedMonotonicityPrev)
+            detectMono noMonotoneVarPrev valuesLPrev valuesRPrev 
+                    valuesAndCurrentDetectedMonotonicityPrev ((var, (val, dmAndIncr@(prevDM, isIncreasing))) : rest)
+                =
+    --            unsafePrint 
+    --            (
+    --                "evalPolyMono: detectMono: deriv = " ++ show deriv
+    --            ) $ 
+                detectMono noMonotoneVarNew (valLNew : valuesLPrev) (valRNew : valuesRPrev) 
+                     ((val, newDMAndIncr) : valuesAndCurrentDetectedMonotonicityPrev) rest
+                where
+                noMonotoneVarNew = noMonotoneVarPrev && varNotMono
+                (valLNew, valRNew, newDMAndIncr)
+                    | prevDM && isIncreasing = (valL, valR, dmAndIncr)
+                    | prevDM = (valR, valL, dmAndIncr)
+                    | varNotMono = (val, val, dmAndIncr) -- not monotone, we have to be safe
+                    | varNonDecr = (valL, valR, (True, True)) -- non-decreasing on the whole domain - can use endpoints
+                    | otherwise = (valR, valL, (True, False)) -- non-increasing on the whole domain - can use swapped endpoints
+                (varNonDecr, varNotMono) =
+                    case (valIsExact, zV `leqV` deriv, deriv `leqV` zV) of
+                        (True, _, _) -> (undefined, True) -- when a variable has a thin domain, do not bother separating endpoints 
+                        (_, Just True, _) -> (True, False) 
+                        (_, _, Just True) -> (False, False)
+                        _ -> (undefined, True)
+                deriv =
+                    evalPolyDirect opsVOut values $ -- this evaluation must be outer-rounded!
+                        diffPolyOut effCf var p -- range of (d p)/(d var)    
+                (valL, valR) = getEndPtsV val
+                valIsExact = isExactV val
 
         
     zV = polyEvalZero opsV
