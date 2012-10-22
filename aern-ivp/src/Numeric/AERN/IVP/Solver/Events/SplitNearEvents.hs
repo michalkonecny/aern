@@ -308,19 +308,19 @@ solveHybridIVP_SplitNearEvents
         processEvents mode (noEventsSolution, locateDipResult) =
             case locateDipResult of 
                 LDResNone ->
-                    (noEventsSolutionUpToR, noEventsStateAt tEventR, Nothing)
+                    (noEventsSolutionUpTo tEventR, noEventsStateAt tEventR, Nothing)
                 LDResSome _certainty (tEventL, _) _possibleEvents
                     | ((tEventR <=? tEventL) == Just True) 
                         -- an event was located but it could not happen before tEventR  
-                        -> (noEventsSolutionUpToR, noEventsStateAt tEventR, Nothing)
+                        -> (noEventsSolutionUpTo tEventR, noEventsStateAt tEventR, Nothing)
                     | otherwise
                         -- call solveHybridIVP_UsingPicardAndEventTree over (tEventL, tEventR)
                         ->
-                        (noEventsSolutionUpToR, stateAfterEvents, maybeSolvingInfo)
+                        (noEventsSolutionUpTo tEventL, stateAfterEvents, maybeSolvingInfo)
                     where
                     (stateAfterEvents, maybeSolvingInfo) = solveEvents tEventL
             where
-            noEventsSolutionUpToR =
+            noEventsSolutionUpTo t =
                 -- cut off noEventsSolution at tEventR:
 --                unsafePrint
 --                (
@@ -333,7 +333,7 @@ solveHybridIVP_SplitNearEvents
 --                ) $
                 bisectionInfoTrimAt 
                     effDom trimInfo removeInfo
-                        noEventsSolution (tStart, tEnd) tEventR
+                        noEventsSolution (tStart, tEnd) t
                 where
                 removeInfo (_, otherInfo) = (Nothing, otherInfo)
                 trimInfo (Just (fns, midVals), otherInfo) =
@@ -351,7 +351,7 @@ solveHybridIVP_SplitNearEvents
                         trimmedFn
                         where
                         trimmedFn = adjustDomain fn tVar newTDom 
-                        newTDom = NumOrd.minOutEff effMinmax tDom tEventR
+                        newTDom = NumOrd.minOutEff effMinmax tDom t
                         Just tDom = lookupVar dombox tVar
                         dombox = getDomainBox fn
             noEventsStateAt :: Domain f -> Maybe (HybridSystemUncertainState (Domain f))

@@ -152,7 +152,19 @@ solveHybridIVP_UsingPicardAndEventTree
             case maybeFnVecNoEvent of
                 Nothing -> EventGivenUp
                 Just fnVecNoEvent ->
+                    collapseRootIfEvents $
                     esolve (EventTODO (initialMode, fnVecNoEvent))
+                    where
+                    collapseRootIfEvents (EventNextMaybe _state children)
+                        | not (Map.null children) =
+                            EventNextMaybe collapsedState children
+                    collapseRootIfEvents (EventNextSure _state children) =
+                            EventNextSure collapsedState children
+                    collapseRootIfEvents tree = tree
+                    collapsedState =
+                        (initialMode, wrapFnVecAsBox effEval invariantInitialMode fnVecNoEvent)
+                        where
+                        Just invariantInitialMode = Map.lookup initialMode modeInvariants
         maybeFnVecNoEvent =
             fmap (map removeAllVarsButT) $ -- parameters have to be removed so that we can test inclusion
             fmap (!! m) $
@@ -212,7 +224,7 @@ solveHybridIVP_UsingPicardAndEventTree
                         where
                         (newChild, newNodeCountSoFar, hasChanged) = 
                             processNode nodeCountSoFarWithRest previousStates child
-            processState nodeCountSoFar previousStates state@(mode, fnVecBeforeEvent) 
+            processState nodeCountSoFar previousStates state@(modeBeforeEvent, fnVecBeforeEvent) 
                 -- first check whether this state is included in a previous state:
                 | stateShrinksPreviousOne =
                     (EventFixedPoint state, Just (nodeCountSoFar + 1), True)
@@ -237,8 +249,6 @@ solveHybridIVP_UsingPicardAndEventTree
                 where
                 stateShrinksPreviousOne =
                     or $ map (stateIncludedIn state) previousStates
-                stateExpandsPreviousOne =
-                    or $ map (flip stateIncludedIn state) previousStates
                 stateIncludedIn (mode1, fnVec1) (mode2, fnVec2) 
                     | mode1 /= mode2 = False
                     | otherwise =
@@ -253,7 +263,7 @@ solveHybridIVP_UsingPicardAndEventTree
                 possibleOrCertainFirstEventsMap =
                     detectEventsWithoutLocalisation effEval eventSpecMap (tStart, tEnd) fnVecBeforeEvent
                 eventSpecMap = 
-                    hybsys_eventSpecification hybsys mode
+                    hybsys_eventSpecification hybsys modeBeforeEvent
 
                 constructorForNextEvents 
                     | someEventCertain = EventNextSure
@@ -281,8 +291,10 @@ solveHybridIVP_UsingPicardAndEventTree
                             Nothing -> error $ "aern-ivp: hybrid system has no information about event kind " ++ show eventKind
                     fnVecAtEvent =
                         eventSwitchingFn $ 
-                        wrapFnVecAsBox effEval pruneUsingTheGuard $
+                        wrapFnVecAsBox effEval (invariantBeforeEvent . pruneUsingTheGuard) $
                         fnVecBeforeEvent
+                        where
+                        Just invariantBeforeEvent = Map.lookup modeBeforeEvent modeInvariants  
 --                    maybeFnVecAfterEventUseVT = 
 --                        fmap (map $ removeAllVarsButT . fst) $
 --                        fmap (!! m) $
@@ -298,7 +310,7 @@ solveHybridIVP_UsingPicardAndEventTree
 --                                map (renameVar tVar t0Var2) fnVecAtEvent
                     maybeFnVecAfterEventUseBox =
                         fmap (restoreUnaffectedComponents) $ -- to remove boxes for unaffected components
-                        fmap (wrapFnVecAsBox effEval invariant) $
+                        fmap (wrapFnVecAsBox effEval invariantAfterEvent) $
                         fmap (restoreUnaffectedComponents) $ -- to improve the effect of the invariant if unaffected components are used
                         fmap (map removeAllVarsButT) $
                         fmap (!! m) $
@@ -307,9 +319,11 @@ solveHybridIVP_UsingPicardAndEventTree
                                 delta
                                     (odeivp tStart modeAfterEvent $ 
                                         makeFnVecFromInitialValues componentNames 
-                                            $ getRangeVec fnVecAtEvent)
+                                            $ getRangeVec $ 
+                                                wrapFnVecAsBox effEval invariantAfterEvent $
+                                                    fnVecAtEvent)
                         where
-                        Just invariant = Map.lookup modeAfterEvent modeInvariants  
+                        Just invariantAfterEvent = Map.lookup modeAfterEvent modeInvariants  
                         restoreUnaffectedComponents fnVecAfterEvent =
                             zipWith pick affectedComponents $ zip fnVecAfterEvent fnVecBeforeEvent
                             where
@@ -320,11 +334,12 @@ solveHybridIVP_UsingPicardAndEventTree
                     getRange fn =
                         evalAtPointOutEff effEval (getDomainBox fn) fn
     
-                eventModeSwitchesAndResetFunctions = hybsys_eventModeSwitchesAndResetFunctions hybsys
-                modeInvariants = hybsys_modeInvariants hybsys
                 eventKindAffectCompsAndPruneList =
                     map (\(eventKind,(_,affectedComps,pruneFn)) -> (eventKind,affectedComps,pruneFn)) $ 
                         Map.toList $ possibleOrCertainFirstEventsMap
+
+        eventModeSwitchesAndResetFunctions = hybsys_eventModeSwitchesAndResetFunctions hybsys
+        modeInvariants = hybsys_modeInvariants hybsys
 
     odeivp t0End mode makeInitValueFnVec =
         ODEIVP
