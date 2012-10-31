@@ -81,18 +81,18 @@ main =
     hSetBuffering stdout LineBuffering
     args <- getArgs
     case length args of
-        2 -> writeCSV args
-        7 -> runOnce args
+        3 -> writeCSV args
+        8 -> runOnce args
         _ -> usage
         
 usage :: IO ()
 usage =
     do
-    putStrLn "Usage A: simple-events-bisect <ivp name> <output file name>"
-    putStrLn "Usage B: simple-events-bisect <ivp name> <maxDeg> <maxUnitSplitDepth> <minUnitSplitDepth> <True|False-plot steps?> <True|False-print bisection details?> <maxEvalSplitSize>"
+    putStrLn "Usage A: simple-events-bisect <ivp name> <end time> <output file name>"
+    putStrLn "Usage B: simple-events-bisect <ivp name> <end time> <maxDeg> <maxUnitSplitDepth> <minUnitSplitDepth> <True|False-plot steps?> <True|False-print bisection details?> <maxEvalSplitSize>"
 
 runOnce :: [String] -> IO ()
-runOnce [ivpName, maxDegS, depthS, minDepthS, shouldPlotStepsS, shouldShowStepsS, maxSplitSizeS] =
+runOnce [ivpName, endTimeS, maxDegS, depthS, minDepthS, shouldPlotStepsS, shouldShowStepsS, maxSplitSizeS] =
     do
     putStrLn $ hybivp_description ivp
     let maxDeg = read maxDegS :: Int
@@ -104,10 +104,11 @@ runOnce [ivpName, maxDegS, depthS, minDepthS, shouldPlotStepsS, shouldShowStepsS
     _ <- solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxDeg, depth, minDepth, maxSplitSize)
     return ()
     where
-    ivp = ivpByNameReportError ivpName samplePoly
+    ivp = ivpByNameReportError ivpName endTimeDbl samplePoly
+    endTimeDbl = read endTimeS :: Double
     
 writeCSV :: [String] -> IO ()
-writeCSV [ivpName, outputFileName] =
+writeCSV [ivpName, endTimeS, outputFileName] =
     do
     isClash <- doesFileExist outputFileName
     case isClash of
@@ -119,7 +120,8 @@ writeCSV [ivpName, outputFileName] =
                 writeCSVheader handle
                 mapM_ (runSolverMeasureTimeMSwriteLine handle) paramCombinations
     where
-    ivp = ivpByNameReportError ivpName samplePoly
+    ivp = ivpByNameReportError ivpName endTimeDbl samplePoly
+    endTimeDbl = read endTimeS :: Double
     paramCombinations = 
         [(maxDegree, depth) | 
             maxDegree <- [0..10], depth <- [0,5..60]]
@@ -250,7 +252,7 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
     putStrLn "-------------------------------------------------"
     case shouldPlotSteps of
         False -> return ()
-        True -> plotHybIVPBisectionEnclosures effCf (2^^(-8 :: Int) :: CF) ivp bisectionInfo
+        True -> plotHybIVPBisectionEnclosures effCf False (2^^(-8 :: Int) :: CF) ivp bisectionInfo
     return (maybeEndState, bisectionInfo)
     where
     (maybeEndState, bisectionInfo) =

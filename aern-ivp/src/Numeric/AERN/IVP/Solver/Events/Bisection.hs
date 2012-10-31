@@ -124,7 +124,12 @@ solveHybridIVP_UsingPicardAndEventTree_Bisect
                 Map.mapWithKey filterInvariantsVec st
                 where
                 filterInvariantsVec mode vec =
-                    invariant vec
+                    case invariant vec of
+                        Just res -> res
+                        _ -> error $ 
+                                "mode invariant failed on a value passed between two segments:"
+                                ++ "\n mode = " ++ show mode
+                                ++ "\n vec = " ++ show vec
                     where
                     Just invariant =
                         Map.lookup mode modeInvariants

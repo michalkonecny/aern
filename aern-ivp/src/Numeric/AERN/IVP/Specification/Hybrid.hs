@@ -71,25 +71,27 @@ data HybridSystem f =
     ,
         hybsys_modeFields :: Map.Map HybSysMode ([f] -> [f])
     ,
-        hybsys_modeInvariants :: Map.Map HybSysMode ([Domain f] -> [Domain f])
-    ,
-        hybsys_eventModeSwitchesAndResetFunctions :: Map.Map HybSysEventKind (HybSysMode, [f] -> [f])
+        hybsys_modeInvariants :: Map.Map HybSysMode ([Domain f] -> Maybe [Domain f])
+            {- each invariant is represented by a function that approximates the intersection with the mode domain -}
     ,
         hybsys_eventSpecification :: 
             HybSysMode ->
             Map.Map HybSysEventKind
                 (
+                 HybSysMode,
+                 [Domain f] -> [Domain f],
                  [Bool],
                     {- indication of which components are affected by the event;
                        a component is affected if the reset function changes its value OR
                        if the new mode has a different dynamics for this variable -}
-                 [f] -> f,
-                    {- construction of a zero crossing function -}
-                 [Domain f] -> Maybe Bool,
-                    {- additional reset condition -}
-                 [Domain f] -> [Domain f] 
+--                 [f] -> f,
+--                    {- construction of a zero crossing function -}
+--                 [Domain f] -> Maybe Bool,
+--                    {- additional reset condition -}
+                 Domain f -> [Domain f] -> Maybe [Domain f] 
                     {- intersection with the support of the guard, 
-                       used to prune some impossible states at the switching point -} 
+                       used to detect some cases when this kind of event is ruled out 
+                       and to prune some impossible states at the switching point -} 
                 )  
     }
     

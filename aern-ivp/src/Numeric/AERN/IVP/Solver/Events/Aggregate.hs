@@ -38,16 +38,16 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+--import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 
-import Data.Maybe (catMaybes)
+--import Data.Maybe (catMaybes)
 import qualified Data.Map as Map
---import qualified Data.Set as Set
+import qualified Data.Set as Set
 --import qualified Data.List as List
 
 import Numeric.AERN.Misc.Debug
@@ -122,6 +122,7 @@ solveHybridIVP_UsingPicardAndEventTree
     sampleDom = tStart
     tStart = hybivp_tStart hybivp
     tEnd = hybivp_tEnd hybivp
+    tDom = RefOrd.fromEndpointsOutWithDefaultEffort (tStart, tEnd)
     tVar = hybivp_tVar hybivp
     hybsys = hybivp_system hybivp
     componentNames = hybsys_componentNames hybsys
@@ -162,8 +163,12 @@ solveHybridIVP_UsingPicardAndEventTree
                             EventNextSure collapsedState children
                     collapseRootIfEvents tree = tree
                     collapsedState =
-                        (initialMode, wrapFnVecAsBox effEval invariantInitialMode fnVecNoEvent)
+                        (initialMode, collapsedFnVec)
                         where
+                        collapsedFnVec =
+                            case wrapFnVecAsBox effEval invariantInitialMode fnVecNoEvent of
+                                Just fnVec -> fnVec
+                                _ -> error $ "enclosure broke mode invariant: mode = " ++ show initialMode ++ "; enclosure = " ++ show fnVecNoEvent   
                         Just invariantInitialMode = Map.lookup initialMode modeInvariants
         maybeFnVecNoEvent =
             fmap (map removeAllVarsButT) $ -- parameters have to be removed so that we can test inclusion
@@ -200,6 +205,7 @@ solveHybridIVP_UsingPicardAndEventTree
             processNode nodeCountSoFar previousStates eventInfo2 = 
                 case eventInfo2 of
                     EventGivenUp -> (eventInfo2, Nothing, False)
+                    EventInconsistent -> (eventInfo2, Just nodeCountSoFar, False)
                     EventFixedPoint _ -> (eventInfo2, Just nodeCountSoFar, False)
                     EventNextSure state children ->
                         (EventNextSure state newChildren, maybeNodeCount, someChildHasChanged)
@@ -258,18 +264,21 @@ solveHybridIVP_UsingPicardAndEventTree
                     | givenUp2 = Nothing
                     | nodeCountSoFar + eventCount > maxNodes = Nothing
                     | otherwise = Just $ nodeCountSoFar + eventCount
-                eventCount = 
-                    Map.size possibleOrCertainFirstEventsMap
-                possibleOrCertainFirstEventsMap =
-                    detectEventsWithoutLocalisation effEval eventSpecMap (tStart, tEnd) fnVecBeforeEvent
+                (eventList, eventCount) = 
+                    case eventExaminationResult of
+                        LDResSome _ _ eventSet -> (Set.toList eventSet, Set.size eventSet)
+                        LDResNone -> ([], 0)
+                someEventCertain = isLDResSure eventExaminationResult
+                eventExaminationResult =
+                    detectEventsWithoutLocalisation 
+                        effEval eventSpecMap invariantBeforeEvent (tStart, tEnd) fnVecBeforeEvent
                 eventSpecMap = 
                     hybsys_eventSpecification hybsys modeBeforeEvent
+                Just invariantBeforeEvent = Map.lookup modeBeforeEvent modeInvariants  
 
                 constructorForNextEvents 
                     | someEventCertain = EventNextSure
                     | otherwise = EventNextMaybe
-                someEventCertain =
-                    or $ map (\(eventCertain, _, _) -> eventCertain) $ Map.elems possibleOrCertainFirstEventsMap
                 
                 eventTasksMap =
                     Map.fromAscList eventTasks
@@ -278,23 +287,24 @@ solveHybridIVP_UsingPicardAndEventTree
                 eventTasks =
                     map simulateEvent $ eventKindAffectCompsAndPruneList
                 simulateEvent (eventKind, affectedComponents, pruneUsingTheGuard) =
---                    case maybeFnVecAfterEventUseVT of
                     case maybeFnVecAfterEventUseBox of
-                        Just fnVecAfterEvent ->
+                        (Just fnVecAfterEvent, _) ->
                             (eventKind, EventTODO (modeAfterEvent, fnVecAfterEvent))
-                        Nothing ->
-                            (eventKind, EventGivenUp)
+                        (Nothing, Just givenUpOrInconsistent) ->
+                            (eventKind, givenUpOrInconsistent)
                     where
-                    (modeAfterEvent, eventSwitchingFn) =
-                        case Map.lookup eventKind eventModeSwitchesAndResetFunctions of
+                    (modeAfterEvent, eventResetMap, _, _) =
+                        case Map.lookup eventKind eventSpecMap of
                             Just res -> res
                             Nothing -> error $ "aern-ivp: hybrid system has no information about event kind " ++ show eventKind
-                    fnVecAtEvent =
-                        eventSwitchingFn $ 
-                        wrapFnVecAsBox effEval (invariantBeforeEvent . pruneUsingTheGuard) $
-                        fnVecBeforeEvent
+                    maybeFnVecAtEventAfterReset =
+                        wrapFnVecAsBox effEval pruneAndReset fnVecBeforeEvent
                         where
-                        Just invariantBeforeEvent = Map.lookup modeBeforeEvent modeInvariants  
+                        pruneAndReset valVec =
+                            do 
+                            valVec1 <- pruneUsingTheGuard tDom valVec
+                            valVec2 <- invariantBeforeEvent valVec1
+                            return $ eventResetMap valVec2 
 --                    maybeFnVecAfterEventUseVT = 
 --                        fmap (map $ removeAllVarsButT . fst) $
 --                        fmap (!! m) $
@@ -309,20 +319,33 @@ solveHybridIVP_UsingPicardAndEventTree
 --                            parametriseThickFunctions effAddFn effMultFn componentNames $
 --                                map (renameVar tVar t0Var2) fnVecAtEvent
                     maybeFnVecAfterEventUseBox =
-                        fmap (restoreUnaffectedComponents) $ -- to remove boxes for unaffected components
-                        fmap (wrapFnVecAsBox effEval invariantAfterEvent) $
-                        fmap (restoreUnaffectedComponents) $ -- to improve the effect of the invariant if unaffected components are used
-                        fmap (map removeAllVarsButT) $
-                        fmap (!! m) $
-                        solveODEIVPUncertainValueExactTime_PicardIterations
-                            sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
-                                delta
-                                    (odeivp tStart modeAfterEvent $ 
-                                        makeFnVecFromInitialValues componentNames 
-                                            $ getRangeVec $ 
-                                                wrapFnVecAsBox effEval invariantAfterEvent $
-                                                    fnVecAtEvent)
+                        (maybeFnVec, maybeGivenUpOrInconsistent)
                         where
+                        maybeGivenUpOrInconsistent =
+                            case (maybeInitialValue_A, maybeFnVec) of
+                                (Nothing, _) -> Just EventInconsistent
+                                (_, Nothing) -> Just EventGivenUp
+                                _ -> Nothing
+                        maybeFnVec =
+                            do
+                            fnVecAfterEvent <- fmap (!! m) $ maybeFnVecIterationsAfterEvent
+                            let cleanedFnVecAfterEvent = restoreUnaffectedComponents $ map removeAllVarsButT $ fnVecAfterEvent
+                            prunedFnVecAfterEvent <- wrapFnVecAsBox effEval invariantAfterEvent cleanedFnVecAfterEvent 
+                            return $ restoreUnaffectedComponents $  prunedFnVecAfterEvent
+                        maybeFnVecIterationsAfterEvent =
+                            do
+                            initialValue_A <- maybeInitialValue_A 
+                            solveODEIVPUncertainValueExactTime_PicardIterations
+                                sizeLimits effCompose effInteg effInclFn effAddFn effAddFnDom effDom
+                                    delta
+                                        (odeivp tStart modeAfterEvent $ 
+                                            makeFnVecFromInitialValues componentNames initialValue_A) 
+                        maybeInitialValue_A =
+                            do
+                            fnVecAtEvent <- maybeFnVecAtEventAfterReset
+                            fnVecAtEventIsectDom <- wrapFnVecAsBox effEval invariantAfterEvent fnVecAtEvent
+                            return $ getRangeVec fnVecAtEventIsectDom 
+                                    
                         Just invariantAfterEvent = Map.lookup modeAfterEvent modeInvariants  
                         restoreUnaffectedComponents fnVecAfterEvent =
                             zipWith pick affectedComponents $ zip fnVecAfterEvent fnVecBeforeEvent
@@ -335,10 +358,13 @@ solveHybridIVP_UsingPicardAndEventTree
                         evalAtPointOutEff effEval (getDomainBox fn) fn
     
                 eventKindAffectCompsAndPruneList =
-                    map (\(eventKind,(_,affectedComps,pruneFn)) -> (eventKind,affectedComps,pruneFn)) $ 
-                        Map.toList $ possibleOrCertainFirstEventsMap
+                    map lookupSpec eventList
+                    where
+                    lookupSpec eventKind =
+                        case Map.lookup eventKind eventSpecMap of
+                            Nothing -> error $ "event " ++ show eventKind ++ " not defined"
+                            Just (_, _, affectedComps, pruneFn) -> (eventKind, affectedComps, pruneFn)
 
-        eventModeSwitchesAndResetFunctions = hybsys_eventModeSwitchesAndResetFunctions hybsys
         modeInvariants = hybsys_modeInvariants hybsys
 
     odeivp t0End mode makeInitValueFnVec =
@@ -365,65 +391,57 @@ detectEventsWithoutLocalisation ::
     =>
     EvaluationEffortIndicator f 
     ->
-    Map.Map HybSysEventKind ([Bool], [f] -> f, [Domain f] -> Maybe Bool, resetMap) 
-    -> 
+    Map.Map HybSysEventKind (targetMode, resetMap, [Bool], Domain f -> [Domain f] -> Maybe [Domain f]) 
+    ->
+    ([Domain f] -> Maybe [Domain f])
+    ->
     (Domain f, Domain f) 
     -> 
     [f] 
     -> 
-    Map.Map HybSysEventKind (Bool, [Bool], resetMap)
-detectEventsWithoutLocalisation effEval eventSpecMap (tStart,tEnd) fnVecBeforeEvent =
-    Map.fromAscList $
-        catMaybes $ 
-            map detectEvent $
-                Map.toAscList eventSpecMap
+    LocateDipResult (Domain f) HybSysEventKind
+detectEventsWithoutLocalisation effEval eventSpecMap modeInvariant (tStart,tEnd) fnVecBeforeEvent =
+    examineEventsOnDom 
+        eventsNotRuledOutOnDom
+        invariantCertainlyViolatedOnDom
+        invariantIndecisiveThroughoutDom
+        (tStart,tEnd)
     where
-    detectEvent (eventType, (affectedComps, makeZeroCrossingFn, otherCond, pruneFn)) =
-        case examineDipOnDom 
-                otherConditionOnDom 
-                dipFnPositiveOnDom
-                dipFnNegativeOnDom
-                dipFnEnclosesZeroOnDom
-                (tStart,tEnd) of
-            LDResNone -> Nothing
-            LDResSome LDResDipCertain _ _ -> Just (eventType, (True, affectedComps, pruneFn))
-            _ -> Just (eventType, (False, affectedComps, pruneFn))
+    eventSpecList = Map.toList eventSpecMap 
+    eventsNotRuledOutOnDom d =
+        Set.fromList $ map fst $ filter maybeActiveOnD eventSpecList
         where
-        otherConditionOnDom d =
-            otherCond fnVecBeforeEventOnD
-            where
-            fnVecBeforeEventOnD = map (evalAtPointOutEff effEval boxD) fnVecBeforeEvent
-            boxD = fromList [(tVar, d)]
-        dipFnPositiveOnDom d =
-            dipFnOnD >? (zero d)
-            where
-            dipFn = makeZeroCrossingFn fnVecBeforeEvent
-            dipFnOnD = evalAtPointOutEff effEval boxD dipFn
-            boxD = fromList [(tVar, d)]
-        dipFnNegativeOnDom d =
-            dipFnOnD <? (zero d)
-            where
-            dipFn = makeZeroCrossingFn fnVecBeforeEvent
-            dipFnOnD = evalAtPointOutEff effEval boxD dipFn
-            boxD = fromList [(tVar, d)]
-        dipFnEnclosesZeroOnDom _ = Nothing
-        [(tVar,_)] = toAscList $ getDomainBox sampleFn
-        (sampleFn : _) = fnVecBeforeEvent
+        maybeActiveOnD (_, (_, _, _, pruneUsingTheGuard)) =
+            case pruneUsingTheGuard d fnVecBeforeEventOnD of
+                Nothing -> False
+                _ -> True
+        fnVecBeforeEventOnD = map (evalAtPointOutEff effEval boxD) fnVecBeforeEvent
+        boxD = fromList [(tVar, d)]
+    invariantCertainlyViolatedOnDom d =
+        case modeInvariant fnVecBeforeEventOnD of
+            Nothing -> True
+            _ -> False
+        where
+        fnVecBeforeEventOnD = map (evalAtPointOutEff effEval boxD) fnVecBeforeEvent
+        boxD = fromList [(tVar, d)]
+    invariantIndecisiveThroughoutDom d =
+        False -- TODO
+    [(tVar,_)] = toAscList $ getDomainBox sampleFn
+    (sampleFn : _) = fnVecBeforeEvent
             
         
 wrapFnVecAsBox ::
     (CanEvaluate f, HasConstFns f) 
     =>
     EvaluationEffortIndicator f -> 
-    ([Domain f] -> [Domain f]) -> 
+    ([Domain f] -> Maybe [Domain f]) -> 
     [f] -> 
-    [f]
+    Maybe [f]
 wrapFnVecAsBox effEval transformVec fnVec =
-    result
+    do
+    resultVec <- transformVec rangeVec
+    return $ map (newConstFnFromSample sampleFn) $ resultVec 
     where
-    result =
-        map (newConstFnFromSample sampleFn) $ transformVec rangeVec
-
     rangeVec = map (evalAtPointOutEff effEval dombox) fnVec         
     dombox = getDomainBox sampleFn
     (sampleFn : _) = fnVec
@@ -431,7 +449,8 @@ wrapFnVecAsBox effEval transformVec fnVec =
 data EventInfo f
     = EventNextSure (HybSysMode, [f]) (Map.Map HybSysEventKind (EventInfo f)) -- at least one
     | EventNextMaybe (HybSysMode, [f]) (Map.Map HybSysEventKind (EventInfo f)) -- possibly none
-    | EventFixedPoint (HybSysMode, [f]) -- been there before
+    | EventFixedPoint (HybSysMode, [f]) -- reaches only states that have been considered by a parent node
+    | EventInconsistent -- the mode invariant is definitely broken
     | EventGivenUp -- eg when tree has become too large or the ODE solver gave up
     | EventTODO (HybSysMode, [f]) -- to capture intermediate states during breadth-first search 
     
@@ -446,6 +465,8 @@ showEventInfo ::
     String -> ((HybSysMode, [f]) -> String) -> EventInfo f -> String
 showEventInfo prefix showState (EventTODO state) =
     prefix ++ "EventTODO " ++ showState state
+showEventInfo prefix _showState EventInconsistent =
+    prefix ++ "EventInconsistent"
 showEventInfo prefix _showState EventGivenUp =
     prefix ++ "EventGivenUp"
 showEventInfo prefix showState (EventFixedPoint state) =
