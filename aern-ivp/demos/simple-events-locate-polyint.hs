@@ -88,21 +88,21 @@ main =
     hSetBuffering stdout LineBuffering
     args <- getArgs
     case length args of
-        2 -> writeCSV args
-        7 -> runOnce args
+        3 -> writeCSV args
+        8 -> runOnce args
         _ -> usage
         
 usage :: IO ()
 usage =
     do
-    putStrLn "Usage A: simple-events <ivp name> <output file name>"
-    putStrLn "Usage B: simple-events <ivp name> <maxDeg> <minStepDepth> <maxStepDepth> <True|False-plot enclosures?> <True|False-print bisection tree?> <maxEvalSplitSize>"
+    putStrLn "Usage A: simple-events <ivp name> <end time> <output file name>"
+    putStrLn "Usage B: simple-events <ivp name> <end time> <maxDeg> <minStepDepth> <maxStepDepth> <True|False-plot enclosures?> <True|False-print bisection tree?> <maxEvalSplitSize>"
 
 
 {--- END OF HYBRID SYSTEM DEFINITIONS ---}
 
 runOnce :: [String] -> IO ()
-runOnce [ivpName, maxDegS, depthS, minDepthS, shouldPlotStepsS, shouldShowStepsS, maxSplitSizeS] =
+runOnce [ivpName, maxDegS, endTimeS, depthS, minDepthS, shouldPlotStepsS, shouldShowStepsS, maxSplitSizeS] =
     do
     let maxDeg = read maxDegS :: Int
     let depth = read depthS :: Int
@@ -113,10 +113,11 @@ runOnce [ivpName, maxDegS, depthS, minDepthS, shouldPlotStepsS, shouldShowStepsS
     _ <- solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxDeg, depth, minDepth, maxSplitSize)
     return ()
     where
-    ivp = ivpByNameReportError ivpName sampleFn
+    ivp = ivpByNameReportError ivpName endTimeDbl sampleFn
+    endTimeDbl = read endTimeS :: Double
 
 writeCSV :: [String] -> IO ()
-writeCSV [ivpName, outputFileName] =
+writeCSV [ivpName, endTimeS, outputFileName] =
     do
     isClash <- doesFileExist outputFileName
     case isClash of
@@ -128,7 +129,8 @@ writeCSV [ivpName, outputFileName] =
                 writeCSVheader handle
                 mapM_ (runSolverMeasureTimeMSwriteLine handle) paramCombinations
     where
-    ivp = ivpByNameReportError ivpName sampleFn
+    ivp = ivpByNameReportError ivpName endTimeDbl sampleFn
+    endTimeDbl = read endTimeS :: Double
     paramCombinations = 
         [(maxDegree, depth) | 
             maxDegree <- [0..10], depth <- [0,5..60]]

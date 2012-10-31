@@ -52,7 +52,7 @@ import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 import Numeric.AERN.Basics.Consistency
 
 import qualified Data.Map as Map
---import qualified Data.Set as Set
+import qualified Data.Set as Set
 import qualified Data.List as List
 import Data.Maybe (catMaybes)
 import Control.Monad (liftM2)
@@ -175,7 +175,9 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
                 Map.mapWithKey filterInvariantsVec st
                 where
                 filterInvariantsVec mode vec =
-                    invariant vec
+                    case invariant vec of
+                        Just res -> res
+                        _ -> error $ "mode invariant failed on a value passed between two segments"
                     where
                     Just invariant =
                         Map.lookup mode modeInvariants
@@ -433,60 +435,88 @@ solveHybridIVP_SplitNearEvents
                 dipInformation =
                     locateFirstDipAmongMultipleFns
                         minStepSize
-                        eventDetectionInfoMap 
+                        eventsNotRuledOutOnDom
+                        invariantCertainlyViolatedOnDom
+                        invariantIndecisiveThroughoutDom
                         (tStart, tEnd)
-                eventDetectionInfoMap =
-                    Map.map makeDetectionInfo eventSpecMap
+                eventsNotRuledOutOnDom d =
+                    Set.fromList $ map fst $ filter maybeActiveOnD eventSpecList
+                    where
+                    maybeActiveOnD (_, (_, _, _, pruneUsingTheGuard)) =
+                        case checkConditionOnBisectedFunction guardIsExcluded d of
+                            Just True -> False
+                            Nothing -> True
+                        where
+                        guardIsExcluded valueVec = 
+                            case pruneUsingTheGuard d valueVec of
+                                Nothing -> Just True
+                                _ -> Nothing  
+                invariantCertainlyViolatedOnDom d =
+                        case checkConditionOnBisectedFunction invariantIsFalse d of
+                            Just True -> True
+                            Nothing -> False
+                        where
+                        invariantIsFalse valueVec = 
+                            case modeInvariant valueVec of
+                                Nothing -> Just True
+                                _ -> Nothing  
+                invariantIndecisiveThroughoutDom d =
+                    False -- TODO
+                    
+                eventSpecList = Map.toList eventSpecMap 
                 eventSpecMap = hybsys_eventSpecification hybsys mode
-                makeDetectionInfo (_, makeDipFn, otherCond, _) =
-                    (otherConditionOnDom, dipFnPositiveOnDom, dipFnNegativeOnDom, dipFnEnclosesZeroOnDom)
-                    where                    
-                    otherConditionOnDom =
-                        checkConditionOnBisectedFunction id otherCond
-                    dipFnNegativeOnDom =
-                        checkConditionOnBisectedFunction makeDipFnAsList (\[x] -> x <? (zero x))
-                    dipFnPositiveOnDom =
-                        checkConditionOnBisectedFunction makeDipFnAsList (\[x] -> (zero x) <? x)
-                    dipFnEnclosesZeroOnDom dom =
-                        liftM2 (&&)
-                            (checkConditionOnBisectedFunction makeDipFnLEAsList leqZero dom)
-                            (checkConditionOnBisectedFunction makeDipFnREAsList geqZero dom)
+                Just modeInvariant =
+                    Map.lookup mode modeInvariants
+                modeInvariants = hybsys_modeInvariants $ hybivp_system hybivp
+                
+                checkConditionOnBisectedFunction valueCondition dom =
+                    bisectionInfoCheckCondition effDom condition bisectionInfo (tStart, tEnd) dom
+                    where
+                    condition (Nothing, _) = Nothing
+                    condition (Just (fns,_), _) = 
+                        valueCondition $ map eval fns
+                    eval fn = evalAtPointOutEff effEval boxD fn
                         where
-                        leqZero [x]=
-                            x <=? (zero x)
-                        geqZero [x]=
-                            (zero x) <=? x
-                    makeDipFnAsList :: [f] -> [f]
-                    makeDipFnAsList fns = [makeDipFn fns]
-                    makeDipFnLEAsList fns = [dipFnLE]
-                        where
-                        (dipFnLE, _) = 
-                            RefOrd.getEndpointsOutWithDefaultEffort $ 
-                                eliminateAllVarsButT $ makeDipFn fns
-                    makeDipFnREAsList fns = [dipFnRE]
-                        where
-                        (_, dipFnRE) = 
-                            RefOrd.getEndpointsOutWithDefaultEffort $ 
-                                eliminateAllVarsButT $ makeDipFn fns
-                    eliminateAllVarsButT fn =
-                        pEvalAtPointOutEff effPEval domboxNoT fn
-                        where
-                        domboxNoT = removeVar tVar dombox
-                        dombox = getDomainBox fn
-                    checkConditionOnBisectedFunction functionCalculation valueCondition dom =
-                        bisectionInfoCheckCondition effDom condition bisectionInfo (tStart, tEnd) dom
-                        where
-                        condition (Nothing, _) = Nothing
-                        condition (Just (fns,_), _) = 
-                            valueCondition $
-                                map eval $ 
-                                    functionCalculation fns
-                        eval fn = evalAtPointOutEff effEval boxD fn
-                            where
-                            boxD = insertVar tVar dom boxFn
-                            boxFn = getDomainBox fn
---        noEventsSolutionModeMap ::
---            Map.Map HybSysMode (BisectionInfo solvingInfoODESegment (solvingInfoODESegment, prec))
+                        boxD = insertVar tVar dom boxFn
+                        boxFn = getDomainBox fn
+--                makeDetectionInfo (_, _, _, pruneGuard) =
+--                    ()
+--                    (otherConditionOnDom, dipFnPositiveOnDom, dipFnNegativeOnDom, dipFnEnclosesZeroOnDom)
+--                    where                    
+--                    otherConditionOnDom =
+--                        checkConditionOnBisectedFunction id otherCond
+--                    dipFnNegativeOnDom =
+--                        checkConditionOnBisectedFunction makeDipFnAsList (\[x] -> x <? (zero x))
+--                    dipFnPositiveOnDom =
+--                        checkConditionOnBisectedFunction makeDipFnAsList (\[x] -> (zero x) <? x)
+--                    dipFnEnclosesZeroOnDom dom =
+--                        liftM2 (&&)
+--                            (checkConditionOnBisectedFunction makeDipFnLEAsList leqZero dom)
+--                            (checkConditionOnBisectedFunction makeDipFnREAsList geqZero dom)
+--                        where
+--                        leqZero [x]=
+--                            x <=? (zero x)
+--                        geqZero [x]=
+--                            (zero x) <=? x
+--                    makeDipFnAsList :: [f] -> [f]
+--                    makeDipFnAsList fns = [makeDipFn fns]
+--                    makeDipFnLEAsList fns = [dipFnLE]
+--                        where
+--                        (dipFnLE, _) = 
+--                            RefOrd.getEndpointsOutWithDefaultEffort $ 
+--                                eliminateAllVarsButT $ makeDipFn fns
+--                    makeDipFnREAsList fns = [dipFnRE]
+--                        where
+--                        (_, dipFnRE) = 
+--                            RefOrd.getEndpointsOutWithDefaultEffort $ 
+--                                eliminateAllVarsButT $ makeDipFn fns
+--                    eliminateAllVarsButT fn =
+--                        pEvalAtPointOutEff effPEval domboxNoT fn
+--                        where
+--                        domboxNoT = removeVar tVar dombox
+--                        dombox = getDomainBox fn
+----        noEventsSolutionModeMap ::
+----            Map.Map HybSysMode (BisectionInfo solvingInfoODESegment (solvingInfoODESegment, prec))
         noEventsSolutionModeMap =
             Map.mapWithKey solve initialStateModeMap
             where

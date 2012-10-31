@@ -86,15 +86,17 @@ locateFirstDipAmongMultipleFns ::
      Show dom, Show eventId)
     =>
     dom  {-^ minimum step size -} ->
-    Map.Map eventId
-        ((dom -> Maybe Bool), {-^ whether other reset conditions are true/false on the given point/area -} 
-         (dom -> Maybe Bool), {-^ whether dip function is positive on the given point/area -}
-         (dom -> Maybe Bool), {-^ whether dip function is negative on the given point/area -}
-         (dom -> Maybe Bool) {-^ whether dip function encloses zero on the given point/area -}
-        ) {-^ detection information for each type of event -} -> 
+    (dom -> Set.Set eventId) {-^ the events that are certainly excluded on the given point/area -} -> 
+    (dom -> Bool) {-^ whether the mode invariant is certainly violated on the given point/area -} ->
+    (dom -> Bool) {-^ whether the enclosure information is degenerate on the given point/area -} ->
     (dom, dom) {-^ domain to search over -} -> 
     LocateDipResult dom eventId
-locateFirstDipAmongMultipleFns stepLimit eventDetectionInfoMap (tStart, tEnd) =
+locateFirstDipAmongMultipleFns 
+    stepLimit 
+    eventsCertainlyInactiveOnDom
+    invariantCertainlyViolatedOnDom
+    invariantIndecisiveThroughoutDom
+    (tStart, tEnd) =
 --    unsafePrint
 --    (
 --        "locateFirstDipAmongMultipleFns:"
@@ -124,52 +126,40 @@ locateFirstDipAmongMultipleFns stepLimit eventDetectionInfoMap (tStart, tEnd) =
                     LDResSome LDResDipPoorEnclosure _ _ -> resD 
                         -- splitting will not give more information because the enclosure is too poor
                     _ -> combineLocateDipResults resL resR
-        resD
-            | Set.null possibleEventsSet = LDResNone
-            | otherwise = 
-                LDResSome certainty d possibleEventsSet
-            where
-            certainty = foldl combineLocateDipCertainties LDResDipPoorEnclosure certainties
-            certainties = map ldresEventCertainty $ Map.elems possibleEventsMap
-            possibleEventsSet = Map.keysSet possibleEventsMap
-            possibleEventsMap = Map.filter (not . isLDResNone) resDMap
-        resDMap = Map.map examineOne eventDetectionInfoMap
-            where
-            examineOne (otherConditionOnDom, dipFnPositiveOnDom, dipFnNegativeOnDom, dipFnEnclosesZeroOnDom) =
-                examineDipOnDom otherConditionOnDom dipFnPositiveOnDom dipFnNegativeOnDom dipFnEnclosesZeroOnDom d 
+        resD =
+            examineEventsOnDom
+                eventsCertainlyInactiveOnDom
+                invariantCertainlyViolatedOnDom
+                invariantIndecisiveThroughoutDom
+                d
         size = dRE <-> dLE
         resL = locateBySplitting (dLE, dM)
         resR = locateBySplitting (dM, dRE)
         (dM, _) = RefOrd.getEndpointsOutWithDefaultEffort $ (dLE <+> dRE) </>| (2 :: Int) 
     
     
-examineDipOnDom :: 
+examineEventsOnDom :: 
     (RefOrd.IntervalLike dom)
     =>
-    (dom -> Maybe Bool) {-^ whether other reset conditions are true/false on the given point/area -} -> 
-    (dom -> Maybe Bool) {-^ whether dip function is positive on the given point/area -} -> 
-    (dom -> Maybe Bool) {-^ whether dip function is negative on the given point/area -} ->
-    (dom -> Maybe Bool) {-^ whether dip function enclosure contains zero on the given point/area -} ->
+    (dom -> Set.Set eventId) {-^ the events that are certainly excluded on the given point/area -} -> 
+    (dom -> Bool) {-^ whether the mode invariant is certainly violated on the given point/area -} ->
+    (dom -> Bool) {-^ whether the enclosure information is degenerate on the given point/area -} ->
     (dom, dom) -> 
-    LocateDipResult dom ()
-examineDipOnDom 
-        otherConditionOnDom 
-        dipFnPositiveOnDom 
-        dipFnNegativeOnDom 
-        dipFnEnclosesZeroOnDom 
+    LocateDipResult dom eventId
+examineEventsOnDom 
+        eventsNotRuledOutOnDom
+        invariantCertainlyViolatedOnDom
+        invariantIndecisiveThroughoutDom
         (dLE, dRE) =
-    case (dipFnPositiveOnDom d, dipFnNegativeOnDom dRE, dipFnEnclosesZeroOnDom d, otherConditionOnDom d) of
-        (Just True, _, _, _) -> LDResNone -- no dip
-        (_, _, _, Just False) -> LDResNone -- other condition definitely false
-        (_, Just True, _, Just True) -> LDResSome LDResDipCertain (dLE, dRE) Set.empty
-            -- dip must have occured within d because the fn is below 0 in the end 
-            -- and the other condition also holds on the whole of d, 
-            --   so it held also at the time of the dip
-        (_, _, Just True, _) -> LDResSome LDResDipPoorEnclosure (dLE, dRE) Set.empty
-        _ -> LDResSome LDResDipMaybe (dLE, dRE) Set.empty
+    case (Set.null eventsNotRuledOutOnD, invariantCertainlyViolatedOnDom dRE, invariantIndecisiveThroughoutDom d) of
+        (True, _, _) -> LDResNone -- no event
+        (_, True, _) -> LDResSome LDResDipCertain (dLE, dRE) eventsNotRuledOutOnD
+        (_, _, True) -> LDResSome LDResDipPoorEnclosure (dLE, dRE) eventsNotRuledOutOnD
+        _ -> LDResSome LDResDipMaybe (dLE, dRE) eventsNotRuledOutOnD
             -- in all other cases, we declare that we don't know for sure
     where
     d = RefOrd.fromEndpointsOutWithDefaultEffort (dLE, dRE)
+    eventsNotRuledOutOnD = eventsNotRuledOutOnDom d
     
     
 data LocateDipResult dom eventId =

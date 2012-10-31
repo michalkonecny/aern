@@ -51,6 +51,9 @@ import Control.Concurrent.STM
 
 import qualified Data.Map as Map
 
+import Numeric.AERN.Misc.Debug
+_ = unsafePrint
+
 plotODEIVPBisectionEnclosures :: 
     (Var f ~ String,
      CanEvaluate f,
@@ -218,11 +221,12 @@ plotHybIVPBisectionEnclosures ::
     ) 
     =>
     ArithInOut.RoundedRealEffortIndicator (Domain f)
+    -> Bool 
     -> Domain f
     -> HybridIVP f
     -> BisectionInfo (t, t1, [(HybSysMode, EventInfo f)]) splitReason
     -> IO ()
-plotHybIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
+plotHybIVPBisectionEnclosures effCF shouldShowEventTreeEnclosures plotMinSegSize ivp bisectionInfo =
     do
     _ <- Gtk.unsafeInitGUIForThreadedRTS
     fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
@@ -245,33 +249,63 @@ plotHybIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
         addV fn = (fn, tVar)
     (fns, fnNames, segNames) = 
         aggregateSequencesOfTinySegments fnsAndNames 
-    fnsAndNames = 
-        map getFnsFromSegInfo $ bisectionInfoGetLeafSegInfoSequence bisectionInfo
+    fnsAndNames =
+        concat $ map maybeAggregateSegment fnAndNameVectors
         where
+        maybeAggregateSegment fnAndNameVectorsInSegment
+            | shouldShowEventTreeEnclosures = fnAndNameVectorsInSegment
+            | otherwise = 
+                case fnAndNameVectorsInSegment of
+                    (_ : _ : _) -> [numberFnVec unionAllVectors ""]
+                    _ -> fnAndNameVectorsInSegment
+            where
+            unionAllVectors =
+--                unsafePrint (
+--                    "unionAllVectors:"
+--                    ++ "\n nameVectorsInSegment = " ++ show nameVectorsInSegment 
+--                    ++ "\n fnVectorsInSegment = " ++ show fnVectorsInSegment 
+--                    ++ "\n rangeVectors = " ++ 
+--                        (concat $ map ("\n    " ++) (map show $ concat rangeVectors)) 
+--                    ++ "\n unifiedRangeVector = " ++ show unifiedRangeVector 
+--                )$
+                result
+                where
+                result = map (newConstFnFromSample sampleFnInSegment) unifiedRangeVector
+                unifiedRangeVector = foldl1 (zipWith (</\>)) rangeVectors 
+                rangeVectors = map (map getRange) fnVectorsInSegment
+                fnVectorsInSegment@((sampleFnInSegment : _) : _) = map (map fst) fnAndNameVectorsInSegment
+                nameVectorsInSegment = map (map snd) fnAndNameVectorsInSegment
+                getRange fn =
+                    evalAtPointOutEff effEval2 dombox fn
+                    where
+                    dombox = getDomainBox fn
+                effEval2 = evaluationDefaultEffort sampleFnInSegment
+        fnAndNameVectors =
+            map getFnsFromSegInfo $ bisectionInfoGetLeafSegInfoSequence bisectionInfo
         getFnsFromSegInfo (_,_,modeEventInfos) =
             concat $ map getFnsFromMEI modeEventInfos
         getFnsFromMEI (HybSysMode modeName, eventInfo) =
             collectFns modeName eventInfo
         collectFns namePrefix (EventNextSure (_, fnVec) eventMap) =
-            (numberFnVec fnVec namePrefix) ++
+            [numberFnVec fnVec (namePrefix ++ ".")] ++
             (concat $ map perEvent $ toAscList eventMap)
             where
             perEvent (HybSysEventKind eventName, subEventInfo) =
                 collectFns (namePrefix ++ "!" ++ eventName) subEventInfo
         collectFns namePrefix (EventNextMaybe (_, fnVec) eventMap) =
-            (numberFnVec fnVec namePrefix) ++
+            [numberFnVec fnVec (namePrefix ++ ".")] ++
             (concat $ map perEvent $ toAscList eventMap)
             where
             perEvent (HybSysEventKind eventName, subEventInfo) =
                 collectFns (namePrefix ++ "?" ++ eventName) subEventInfo
         collectFns namePrefix (EventFixedPoint (_, fnVec)) =
-            (numberFnVec fnVec namePrefix)
+            [numberFnVec fnVec (namePrefix ++ ".")]
         collectFns _ _ = 
             []
         numberFnVec fnVec namePrefix =
             zipWith addName fnVec componentNames
             where
-            addName fn compName = (fn, namePrefix ++ "." ++ compName)
+            addName fn compName = (fn, namePrefix ++ compName)
     fnmeta = 
         (FV.defaultFnMetaData sampleFn)
         {
@@ -363,8 +397,8 @@ plotHybIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
         take (length list) activityCycle 
         where
         activityCycle = cycle $ map snd $ zip componentNames $ 
-            True : (repeat True) 
---            True : (repeat False) 
+--            True : (repeat True) 
+            True : (repeat False) 
 --            True : False : False : True : (repeat False) 
 --            True : False : False : False : True : (repeat False) 
     
@@ -373,8 +407,8 @@ plotHybIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
         where
         colourCycle = cycle $ map snd $ 
             zip componentNames 
-                (cycle [blue, green, red, black])
---                (cycle [black]) 
+--                (cycle [blue, green, red, black])
+                (cycle [black]) 
 
 plotHybIVPListEnclosures :: 
     (Var f ~ String,
@@ -532,8 +566,8 @@ plotHybIVPListEnclosures effCF _plotMinSegSize ivp segmentsInfo =
         where
         colourCycle = cycle $ map snd $ 
             zip componentNames 
-                (cycle [blue, green, red, black])
---                (cycle [black])
+--                (cycle [blue, green, red, black])
+                (cycle [black])
 
 black = FV.defaultFnPlotStyle
 blue = FV.defaultFnPlotStyle 
