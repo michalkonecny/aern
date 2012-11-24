@@ -68,6 +68,7 @@ ivpByNameMap sampleFn =
 --        ("expDec-resetOn34", ivpExpDecay_resetOn34 sampleFn),
 --        ("springMass-resetOnce", ivpSpringMass_resetTHalf sampleFn),
 --        ("springMass-resetOn34", ivpSpringMass_resetOn34 sampleFn),
+        ("pendulumDampened", ivpDampenedPendulum sampleFn),
         ("bouncingBall", ivpBouncingBall sampleFn),
         ("bouncingBallEnergy", ivpBouncingBallEnergy sampleFn),
         ("bouncingBallFloorRise", ivpBouncingBallFloorRise sampleFn),
@@ -455,6 +456,61 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
 --    toDom = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
+
+ivpDampenedPendulum :: 
+    (Var f ~ String,
+     HasConstFns f,
+     Neg f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedReal (Domain f),
+     HasConsistency (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     Show (Domain f)
+    )
+    => 
+    f -> 
+    HybridIVP f
+ivpDampenedPendulum (sampleFn :: f) =
+    ivp
+    where
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x","v"],
+            hybsys_modeFields = Map.fromList [(modeMove, odeMove)],
+            hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
+            hybsys_eventSpecification = eventSpecMap
+        }
+    modeMove = HybSysMode "move"
+    odeMove :: [f] -> [f]
+    odeMove [x,v] = [v, ((-0.5 :: Double) |<*> v) <-> x]
+--    invariantMove = id
+    invariantMove [x,v] = Just [x,v]
+
+    eventSpecMap _mode = Map.empty
+    ivp :: HybridIVP f
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = toDom 0,
+            hybivp_tEnd = toDom 1,
+            hybivp_initialStateEnclosure = 
+                Map.singleton modeMove initValues,
+            hybivp_maybeExactStateAtTEnd = Nothing
+        }
+    description =
+        "x''=-1.5x'-x"
+        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
+        ++ ", v(" ++ show tStart ++ ") = " ++ show initV
+    initValues@[initX, initV] = [toDom 1, toDom 0] :: [Domain f]
+    tStart = hybivp_tStart ivp
+    z = toDom 0
+    toDom = dblToReal sampleDom
+    sampleDom = getSampleDomValue sampleFn
 
 
 ivpBouncingBall :: 

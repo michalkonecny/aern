@@ -10,15 +10,17 @@ import Numeric.AERN.IVP.Specification.Hybrid
 --import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Solver.Bisection
 import Numeric.AERN.IVP.Solver.Events.Aggregate
+import Numeric.AERN.IVP.Solver.Events.Bisection
 import Numeric.AERN.IVP.Solver.Events.SplitNearEvents
-import Numeric.AERN.IVP.Plot.UsingFnView (plotHybIVPListEnclosures)
+import Numeric.AERN.IVP.Plot.UsingFnView 
+    (plotHybIVPBisectionEnclosures, plotHybIVPListEnclosures)
 
 import Numeric.AERN.Poly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
---import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 import qualified Numeric.AERN.DoubleBasis.Interval as CF
@@ -49,11 +51,16 @@ import qualified Data.Map as Map
 
 import System.IO
 import System.Environment
-import System.Directory
-import System.CPUTime
-import System.Timeout
+--import System.Directory
+--import System.CPUTime
+--import System.Timeout
 
+--import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
+--import Numeric.AERN.RmToRn.Plot.CairoDrawable
+
+--import qualified Graphics.UI.Gtk as Gtk
 --import qualified Control.Concurrent as Concurrent
+--import Control.Concurrent.STM
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint -- stop the unused warning
@@ -76,116 +83,48 @@ main =
     hSetBuffering stdout LineBuffering
     args <- getArgs
     case length args of
-        3 -> writeCSV args
-        8 -> runOnce args
+        9 -> runOnce args
         _ -> usage
         
 usage :: IO ()
 usage =
     do
-    putStrLn "Usage A: simple-events <ivp name> <end time> <output file name>"
-    putStrLn "Usage B: simple-events <ivp name> <end time> <maxDeg> <minStepSize> <True|False-print steps?> <maxEvalSplitSize>"
+--    putStrLn "Usage A: simple-events [locate|bisect] [evtree|pwl] <ivp name> <end time> <output file name>"
+    putStrLn "Usage: simple-events [locate|bisect] [evtree|pwl] <ivp name> <end time> <maxDeg> <maxUnitSplitDepth> <minUnitSplitDepth> <True|False-plot steps?> <maxEvalSplitSize>"
 
+data TopLevelStrategy =
+    TopLevelBisect | TopLevelLocate
 
-{--- END OF HYBRID SYSTEM DEFINITIONS ---}
+topLevelStrategyFromS :: String -> TopLevelStrategy
+topLevelStrategyFromS "bisect" = TopLevelBisect
+topLevelStrategyFromS "locate" = TopLevelLocate
+topLevelStrategyFromS s = error $ "unknown top level strategy: " ++ s 
+
+data BasicStepType =
+    BasicStepEvTree | BasicStepPWL
+
+basicStepTypeFromS :: String -> BasicStepType
+basicStepTypeFromS "evtree" = BasicStepEvTree 
+basicStepTypeFromS "pwl" = BasicStepPWL 
+basicStepTypeFromS s = error $ "unknown basic step type: " ++ s 
 
 runOnce :: [String] -> IO ()
-runOnce [ivpName, endTimeS, maxDegS, depthS, minDepthS, shouldPlotStepsS, shouldShowStepsS, maxSplitSizeS] =
+runOnce [topLevelStrategyS, basicStepTypeS, ivpName, endTimeS, maxDegS, depthS, minDepthS, shouldPlotStepsS, maxSplitSizeS] =
     do
+    putStrLn $ hybivp_description ivp
     let maxDeg = read maxDegS :: Int
     let depth = read depthS :: Int
     let minDepth = read minDepthS :: Int
     let maxSplitSize = read maxSplitSizeS :: Int
-    let shouldShowSteps = read shouldShowStepsS :: Bool
     let shouldPlotSteps = read shouldPlotStepsS :: Bool
-    _ <- solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxDeg, depth, minDepth, maxSplitSize)
+    let topLevelStrategy = topLevelStrategyFromS topLevelStrategyS
+    let basicStepType = basicStepTypeFromS basicStepTypeS
+    solveEventsPrintSteps topLevelStrategy basicStepType shouldPlotSteps ivp (maxDeg, depth, minDepth, maxSplitSize)
     return ()
     where
     ivp = ivpByNameReportError ivpName endTimeDbl samplePoly
     endTimeDbl = read endTimeS :: Double
     
-
-writeCSV :: [String] -> IO ()
-writeCSV [ivpName, endTimeS, outputFileName] =
-    do
-    isClash <- doesFileExist outputFileName
-    case isClash of
-        True -> putStrLn $ "file " ++ outputFileName ++ " exists"
-        False ->
-            withFile outputFileName WriteMode $ \ handle ->
-                do
-                hSetBuffering handle LineBuffering
-                writeCSVheader handle
-                mapM_ (runSolverMeasureTimeMSwriteLine handle) paramCombinations
-    where
-    ivp = ivpByNameReportError ivpName endTimeDbl samplePoly
-    endTimeDbl = read endTimeS :: Double
-    paramCombinations = 
-        [(maxDegree, depth) | 
-            maxDegree <- [0..10], depth <- [0,5..60]]
---            maxDegree <- [0..10], depth <- [0..5]]
-    writeCSVheader handle =
-        do
-        hPutStrLn handle $ "ivp: " ++ description
---        hPutStrLn handle $ "polynomial degree, min step size (2^(-n)), time (microseconds), error upper bound at t=1, error at t = 1"
-        hPutStrLn handle $ "polynomial degree, min step size (2^(-n)), time (microseconds), error at t = 1"
-    runSolverMeasureTimeMSwriteLine handle (maxDegree, depth) =
-        do
-        resultsAndTimes <- mapM solveAndMeasure ([1..1] :: [Int])
-        let ((result, _) : _)  = resultsAndTimes
-        let averageTime = average $ map snd resultsAndTimes
-        hPutStrLn handle $ makeCSVLine ((result, averageTime), (maxDegree, depth))
-        where
-        average list = (2 * (sum list) + n) `div` (2 * n)
-            where
-            n = fromIntegral $ length list
-        solveAndMeasure _ =
-            do
-            starttime <- getCPUTime
-            maybeSolverResult <- timeout (10 * oneMinuteInMicroS) $ solveEventsPrintSteps False False ivp (maxDegree, depth, minDepth, 4*maxDegree*maxDegree)
-            endtime <- getCPUTime
-            let solverResult = tweakSolverResult maybeSolverResult 
-            return $ (solverResult, (endtime - starttime) `div` 1000000000)
-            where
-            tweakSolverResult (Just solverResult2) = solverResult2
-            tweakSolverResult Nothing = (Nothing, undefined)
---            oneHourInMicroS = 60 * oneMinuteInMicroS
-            oneMinuteInMicroS = 60 * oneSecondInMicroS
-            oneSecondInMicroS = 1000000
-        minDepth = 1
-    
-    description = hybivp_description ivp
-    maybeStateExact = hybivp_maybeExactStateAtTEnd ivp
-    makeCSVLine (((maybeState, _), execTimeMS), (maxDegree, depth)) =
-        show maxDegree ++ "," 
-        ++ show depth ++ ","
-        ++ show execTimeMS ++ ","
---        ++ enclosureErrorBoundS ++ ","
-        ++ enclosureErrorS
-        where
-        enclosureErrorS =
-            case maybeState of
-                Nothing -> show "no solution"
-                Just stateOut ->
-                    case maybeStateExact of
-                        Just stateExact -> 
-                                computeDiff stateOut stateExact
-                        _ -> show "exact solution not known"
-                where
-                computeDiff stateOut stateOther = 
-                    removeBracks $
-                    show $ measureImprovementState sampleCf effCf stateOut stateOther
---                        snd $ RefOrd.getEndpointsOutWithDefaultEffort $ 
-----                            foldl1 min $ -- assuming that the components are interdependent - some may be bad due to dependency errors in the projection 
---                            foldl1 max $ 
---                                zipWith (CF.<->) (map CF.width vecOut) (map CF.width vecOther)
-        removeBracks ('<': rest1 ) =
-            reverse $ removeR $ reverse rest1
-            where
-            removeR ('>' : rest2 ) = rest2
-    effCf = ArithInOut.roundedRealDefaultEffort sampleCf
---    effImprCf = imprecisionDefaultEffort sampleCf
-
 refinesVec :: [CF] -> [CF] -> Bool
 refinesVec vec1 vec2 =
     and $ zipWith refines vec1 vec2
@@ -196,45 +135,31 @@ refines a1 a2 =
 --    tolerance = 2 ^^ (-50)
 
 solveEventsPrintSteps :: 
-    (
-     solvingInfoODESegment ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])),
-     solvingInfoODE ~ BisectionInfo solvingInfoODESegment (solvingInfoODESegment, Maybe CF),
-     solvingInfoEvents ~ (CF, Maybe (HybridSystemUncertainState CF), EventInfo Poly)
-    )
-    =>
-    Bool
-    ->
+--    (solvingInfo ~ (CF, Maybe (HybridSystemUncertainState CF), [(HybSysMode, EventInfo Poly)]))
+--    =>
+--    (
+--     solvingInfoODESegment ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])),
+--     solvingInfoODE ~ BisectionInfo solvingInfoODESegment (solvingInfoODESegment, Maybe CF),
+--     solvingInfoEvents ~ (CF, Maybe (HybridSystemUncertainState CF), EventInfo Poly)
+--    )
+--    =>
+    TopLevelStrategy ->
+    BasicStepType ->
     Bool
     ->
     HybridIVP Poly 
     -> 
     (Int, Int, Int, Int) 
     -> 
-    IO 
-    (
-        Maybe (HybridSystemUncertainState CF)
-    ,
-        [(
-            CF
-            -- end time of this segment (including the event resolution sub-segment)  
-         ,
-            Maybe (HybridSystemUncertainState CF)
-         ,
-            Map.Map HybSysMode 
-                (
-                    solvingInfoODE,
-                    Maybe (HybridSystemUncertainState CF),
-                    Maybe solvingInfoEvents
-                )
-         )
-        ]
-    )
-solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthParam, minDepthParam, maxSplitSizeParam) =
+    IO ()
+solveEventsPrintSteps 
+        topLevelStrategy basicStepType
+        shouldPlotSteps 
+        ivp (maxdegParam, depthParam, minDepthParam, maxSplitSizeParam) =
     do
-    putStrLn "--------------------------------------------------------"
-    putStrLn "demo of simulation based on (Konecny, Taha, Duracz 2012)" 
-    putStrLn "with experimental splitting guided by event localisation"
-    putStrLn "--------------------------------------------------------"
+    putStrLn "---------------------------------------------------------"
+    putStrLn "enclosure semantics based on (Konecny, Taha, Duracz 2012)" 
+    putStrLn "---------------------------------------------------------"
     putStrLn $ "solving: " ++ description
     putStrLn "-------------------------------------------------"
     putStrLn $ "maxdeg = " ++ show maxdeg
@@ -250,13 +175,24 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
             putStrLn "(almost) exact result = "
             putStr $ showState "   " (tEnd, Just exactResult)
         _ -> return ()
-
     putStrLn "----------  steps: ---------------------------"
-    _ <- printStepsInfo (1::Int) segmentsInfo
-
+    case topLevelStrategy of
+        TopLevelBisect -> 
+            do
+            _ <- printStepsInfoBisect (1:: Int) bisectionInfo
+            return ()
+        TopLevelLocate -> 
+            do
+            _ <- printStepsInfoLocate (1:: Int) segmentsInfo
+            return ()
     putStrLn "----------  step summary: -----------------------"
-    putStrLn $ "number of atomic segments = " ++ (show $ length segmentsInfo)
-    putStrLn $ "smallest segment size: " ++ (show smallestSegSize)  
+    putStrLn $ "number of atomic segments = " ++ 
+        case topLevelStrategy of
+            TopLevelBisect ->
+                (show $ bisectionInfoCountLeafs bisectionInfo)
+            TopLevelLocate ->
+                (show $ length segmentsInfo)
+    putStrLn $ "smallest segment size: " ++ (show smallestSegSize) 
         
     putStrLn "----------  result: -----------------------------"
     putStr $ showState ">>> " (tEnd, maybeEndState)
@@ -267,14 +203,25 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
     putStrLn $ "event count = " ++ show eventCount
     putStrLn "-------------------------------------------------"
 
-    case shouldPlotSteps of
-        False -> return ()
-        True -> plotHybIVPListEnclosures effCf (2^^(-12 :: Int) :: CF) ivp segmentsInfo
-
-    return (maybeEndState, segmentsInfo)
+    case (shouldPlotSteps, topLevelStrategy) of
+        (False, _) -> return ()
+        (_, TopLevelBisect) -> plotHybIVPBisectionEnclosures effCf False (2^^(-8 :: Int) :: CF) ivp bisectionInfo
+        (_, TopLevelLocate) -> plotHybIVPListEnclosures effCf (2^^(-12 :: Int) :: CF) ivp segmentsInfo
+    return ()
+--    return (maybeEndState, segmentsInfo)
+--    return (maybeEndState, bisectionInfo)
     where
-    (maybeEndState, segmentsInfo) =
-        solveHybridIVP
+    maybeEndState = case topLevelStrategy of
+        TopLevelBisect -> maybeEndStateBisect
+        TopLevelLocate -> maybeEndStateLocate
+    (maybeEndStateBisect, bisectionInfo) =
+        solveHybridIVPBisect
+            sizeLimits effCf substSplitSizeLimit
+                delta m minStepSize maxStepSize splitImprovementThreshold
+                    "t0" 
+                        ivp
+    (maybeEndStateLocate, segmentsInfo) =
+        solveHybridIVPLocate
             sizeLimits effCf substSplitSizeLimit
                 delta m minStepSize maxStepSize splitImprovementThreshold
                     "t0" 
@@ -283,13 +230,15 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
     delta = 1
     maxdeg = maxdegParam
     maxsize = 500
-    m = 20
+    m = 100
+--    m = 20
     substSplitSizeLimit = maxSplitSizeParam -- 2^t0maxdeg
 --    minStepSizeExp = -4 :: Int
     minStepSizeExp = - depthParam
     minStepSize = 2^^minStepSizeExp
     maxStepSizeExp = - minDepthParam
     maxStepSize = 2^^maxStepSizeExp
+--        fst $ RefOrd.getEndpointsOutWithDefaultEffort $ 10^^(-3::Int)
     splitImprovementThreshold = 2^^(-48 :: Int)
     
     -- auxiliary:
@@ -329,7 +278,35 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
             wOut = CF.width valueOut     
             wIn = CF.width valueIn     
     
-    eventCount =
+    eventCount = case topLevelStrategy of
+        TopLevelBisect -> eventCountBisect
+        TopLevelLocate -> eventCountLocate
+    smallestSegSize = case topLevelStrategy of
+        TopLevelBisect -> smallestSegSizeBisect  
+        TopLevelLocate -> smallestSegSizeLocate  
+    eventCountBisect =
+        aux bisectionInfo
+        where
+        aux (BisectionNoSplit (_,_,modeEventInfoList)) 
+            | null modeEventInfoList = error "solveEventsPrintSteps: BisectionNoSplit with empty modeEventInfoList" 
+            | otherwise = foldl1 (CF.</\>) $ map (eventInfoCountEvents 0 effCf . snd) modeEventInfoList
+        aux (BisectionSplit _ left Nothing) =
+            aux left
+        aux (BisectionSplit _ left (Just right)) =
+            (aux left) CF.<+> (aux right)
+    (smallestSegSizeBisect, _) =
+        aux tStart (tEnd CF.<-> tStart) bisectionInfo
+        where
+        aux tPrev tSmallestSoFar (BisectionNoSplit (tNow,_,_)) =
+            (CF.minOut tSmallestSoFar (tNow CF.<-> tPrev), tNow)
+        aux tPrev tSmallestSoFar (BisectionSplit _ left Nothing) =
+            aux tPrev tSmallestSoFar left
+        aux tPrev tSmallestSoFar (BisectionSplit _ left (Just right)) =
+            aux tPrevL tSmallestSoFarL right
+            where
+            (tSmallestSoFarL, tPrevL) =
+                aux tPrev tSmallestSoFar left
+    eventCountLocate =
         foldl (<+>) 0 $ map getSegmentEventCount segmentsInfo
         where
         getSegmentEventCount (_, Nothing, _) =  -- something failed on this segment 
@@ -339,7 +316,7 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
         getModeEventCount (_, _, Nothing) = 0 -- no events here
         getModeEventCount (_, _, Just (_, _, eventInfo)) = 
             eventInfoCountEvents 0 effCf eventInfo
-    smallestSegSize =
+    smallestSegSizeLocate =
         aux tStart (tEnd CF.<-> tStart) segmentsInfo
         where
         aux _tPrev tSmallestSoFar [] = tSmallestSoFar
@@ -351,11 +328,22 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
             
     showStepInfo (n, t) =
         "step " ++ show n ++ ": t = " ++ show t
-    printStepsInfo _ [] = return ()
-    printStepsInfo n ((t,_,_) : rest) =
+    printStepsInfoBisect n (BisectionNoSplit (t, _maybeState, _modeEventInfoList)) =
         do
         putStrLn $ showStepInfo (n, t)
-        printStepsInfo (n+1) rest
+        return $ n + 1
+    printStepsInfoBisect n (BisectionSplit _ left maybeRight) =
+        do
+        n2 <- printStepsInfoBisect n left
+        case maybeRight of
+            Just right -> printStepsInfoBisect n2 right
+            Nothing -> return $ n2 + 1
+    printStepsInfoLocate _ [] = return ()
+    printStepsInfoLocate n ((t,_,_) : rest) =
+        do
+        putStrLn $ showStepInfo (n, t)
+        printStepsInfoLocate (n+1) rest
+        
     showState indent (t, maybeState) =
         indent ++ "mode(" ++ show t ++ ") ∊ " ++ modesS ++ "\n" ++
         (unlines $ map (showComponent indent) $ zip componentNames valueSs)
@@ -373,28 +361,107 @@ solveEventsPrintSteps shouldPlotSteps shouldShowSteps ivp (maxdegParam, depthPar
                      replicate (length componentNames) "<no result computed>")
         showValue valueOut =
             show valueOut 
-        
-    showSegInfo indent (t, maybeState, modeSolvingInfoMap) =
-        maybeEventsCountS
-        ++ (showState indent (t, maybeState))
+--    showSegInfoBisect indent (t, maybeState, modeEventInfoList) =
+--        maybeEventsCountS ++
+--        indent ++ "mode(" ++ show t ++ ") ∊ " ++ modesS ++ "\n" ++
+--        (unlines $ map (showComponent indent) $ zip componentNames valueSs)
 --        ++ (unlines $ map showModeEventInfo modeEventInfoList)
-        where
-        eventInfoList = map getEventInfo $ filter hasEventInfo $ Map.elems modeSolvingInfoMap
-        hasEventInfo (_, _, Nothing) = False
-        hasEventInfo _ = True
-        getEventInfo (_, _, Just eventInfo) = eventInfo
-        maybeEventsCountS 
-            | null eventInfoList = ""
-            | otherwise =
-                indent ++ "events on this time segment: " ++ eventsS ++ "\n" 
-        eventsS =
-            show $
-            foldl1 (CF.</\>) $ map (eventInfoCountEvents 0 effCf) eventInfoList 
+--        where
+--        maybeEventsCountS =
+--            case modeEventInfoList of
+--                [] -> ""
+--                _ ->  indent ++ "events on this time segment: " ++ eventsS ++ "\n" 
+--        eventsS =
+--            show $
+--            foldl1 (CF.</\>) $ map (eventInfoCountEvents 0 effCf . snd) modeEventInfoList 
 --        showModeEventInfo (mode, eventInfo) =
 --            indent ++ "events assuming mode at the start of segment = " ++ show mode ++ ":\n" ++
 --            showEventInfo (indent ++ "  ") (show . fst) eventInfo
+--        showComponent indent2 (name, valueS) =
+--            indent2 ++ name ++ "("  ++ show t ++ ") ∊ " ++ valueS
+--        (modesS, valueSs) =
+--            case maybeState of
+--                Just state ->
+--                    (show modeSet, map showValue values)
+--                    where
+--                    (modeSet, values) = getHybridStateUnion effJoinCf state
+--                _ ->
+--                    ("<no result computed>", 
+--                     replicate (length componentNames) "<no result computed>")
+--        showValue valueOut =
+--            show valueOut 
+----            ++ "(err<=" ++ show err ++ ")"
+----            ++ "; valueIn = " ++ show valueIn
+----            where
+----            err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
+----            wOut = CF.width valueOut     
+----            wIn = CF.width valueIn     
+--    showSegInfoLocate indent (t, maybeState, modeSolvingInfoMap) =
+--        maybeEventsCountS
+--        ++ (showState indent (t, maybeState))
+----        ++ (unlines $ map showModeEventInfo modeEventInfoList)
+--        where
+--        eventInfoList = map getEventInfo $ filter hasEventInfo $ Map.elems modeSolvingInfoMap
+--        hasEventInfo (_, _, Nothing) = False
+--        hasEventInfo _ = True
+--        getEventInfo (_, _, Just eventInfo) = eventInfo
+--        maybeEventsCountS 
+--            | null eventInfoList = ""
+--            | otherwise =
+--                indent ++ "events on this time segment: " ++ eventsS ++ "\n" 
+--        eventsS =
+--            show $
+--            foldl1 (CF.</\>) $ map (eventInfoCountEvents 0 effCf) eventInfoList 
+----        showModeEventInfo (mode, eventInfo) =
+----            indent ++ "events assuming mode at the start of segment = " ++ show mode ++ ":\n" ++
+----            showEventInfo (indent ++ "  ") (show . fst) eventInfo
 
-solveHybridIVP ::
+solveHybridIVPBisect ::
+    (solvingInfo ~ (CF, Maybe (HybridSystemUncertainState CF), [(HybSysMode, EventInfo Poly)]))
+    =>
+    SizeLimits Poly -> 
+    ArithInOut.RoundedRealEffortIndicator CF ->
+    Int -> 
+    CF ->
+    Int ->
+    CF ->
+    CF ->
+    CF ->
+    Var Poly ->
+    HybridIVP Poly 
+    ->
+    (
+     Maybe (HybridSystemUncertainState CF)
+    ,
+     BisectionInfo solvingInfo (solvingInfo, Maybe CF)
+    )
+solveHybridIVPBisect 
+        sizeLimits effCf substSplitSizeLimit
+            delta m minStepSize maxStepSize splitImprovementThreshold 
+                t0Var
+                    hybivp
+    =
+    result
+    where
+    result =
+        solveHybridIVP_UsingPicardAndEventTree_Bisect
+            sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effCf
+                delta m t0Var minStepSize maxStepSize splitImprovementThreshold
+                    hybivp
+
+--    effSizeLims = effCf
+    effCompose = (effCf, Int1To10 substSplitSizeLimit)
+    effEval = (effCf, Int1To10 substSplitSizeLimit)
+    effPEval = (effCf, Int1To10 substSplitSizeLimit)
+    effInteg = effCf
+    effAddFn = effCf
+    effMultFn = effCf
+--    effMultFn = effCf
+    effAddFnDom =
+        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effInclFn = ((Int1To1000 0, (effCf, Int1To10 20)), ())
+
+solveHybridIVPLocate ::
     (
      solvingInfoODESegment ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])),
      solvingInfoODE ~ BisectionInfo solvingInfoODESegment (solvingInfoODESegment, Maybe CF),
@@ -430,7 +497,7 @@ solveHybridIVP ::
          )
         ]
     )
-solveHybridIVP 
+solveHybridIVPLocate
         sizeLimits effCf substSplitSizeLimit
             delta m minStepSize maxStepSize splitImprovementThreshold 
                 t0Var

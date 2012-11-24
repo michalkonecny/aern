@@ -194,7 +194,8 @@ plotODEIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
         take (length list) activityCycle 
         where
         activityCycle = cycle $ map snd $ zip componentNames $ 
-            True : (repeat True) 
+--            True : (repeat True) 
+            (concat $ repeat [True, False]) 
 --            True : (repeat False) 
 --            True : False : False : True : (repeat False) 
 --            True : False : False : False : True : (repeat False) 
@@ -204,7 +205,7 @@ plotODEIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
         where
         colourCycle = cycle $ map snd $ 
             zip componentNames 
-                (cycle [blue, green, red, black])
+                (cycle [blue, green, red])
 --                (cycle [black]) 
 
 plotHybIVPBisectionEnclosures :: 
