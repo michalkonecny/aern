@@ -124,11 +124,13 @@ ivpByNameMap ::
 ivpByNameMap sampleFn =
     Map.fromList
     [
-        ("ivpExpDecay-ev-et", ivpExpDecay_ev_et sampleFn),
-        ("ivpExpDecay-uv-et", ivpExpDecay_uv_et sampleFn),
-        ("ivpSpringMass-ev-et", ivpSpringMass_ev_et sampleFn),
-        ("ivpSpringMass-uv-et", ivpSpringMass_uv_et sampleFn),
-        ("ivpSpringMassAir-ev-et", ivpSpringMassAir_ev_et sampleFn),
+        ("ivpExpDecay-ev", ivpExpDecay_ev sampleFn),
+        ("ivpExpDecay-uv", ivpExpDecay_uv sampleFn),
+        ("ivpSpringMass-ev", ivpSpringMass_ev sampleFn),
+        ("ivpSpringMass-uv", ivpSpringMass_uv sampleFn),
+        ("ivpSpringMassAir-ev", ivpSpringMassAir_ev sampleFn),
+        ("ivpCubicSpringMass-triple", ivpCubicSpringMass_triple sampleFn),
+        ("ivpCubicSpringMass-monoCheck", ivpCubicSpringMass_monoCheck sampleFn),
         ("ivpFallAir-ishii", ivpFallAir_ishii sampleFn),
         ("ivpLorenz-ishii", ivpLorenz_ishii sampleFn),
         ("ivpRoessler", ivpRoessler sampleFn),
@@ -136,7 +138,7 @@ ivpByNameMap sampleFn =
     ]
 
 
-ivpExpDecay_ev_et ::
+ivpExpDecay_ev ::
     (Var f ~ String,
      HasConstFns f,
      HasProjections f,
@@ -147,7 +149,7 @@ ivpExpDecay_ev_et ::
     )
     => 
     f -> ODEIVP f
-ivpExpDecay_ev_et sampleFn =
+ivpExpDecay_ev sampleFn =
     ivp
     where
     ivp =
@@ -172,7 +174,7 @@ ivpExpDecay_ev_et sampleFn =
     toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
-ivpExpDecay_uv_et :: 
+ivpExpDecay_uv :: 
     (Var f ~ String,
      HasConstFns f,
      HasProjections f,
@@ -183,7 +185,7 @@ ivpExpDecay_uv_et ::
     )
     => 
     f -> ODEIVP f
-ivpExpDecay_uv_et sampleFn =
+ivpExpDecay_uv sampleFn =
     ivp
     where
     ivp =
@@ -210,7 +212,7 @@ ivpExpDecay_uv_et sampleFn =
     toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
-ivpSpringMass_ev_et :: 
+ivpSpringMass_ev :: 
     (Var f ~ String,
      HasConstFns f,
      HasProjections f,
@@ -221,7 +223,7 @@ ivpSpringMass_ev_et ::
     )
     => 
     f -> ODEIVP f
-ivpSpringMass_ev_et sampleFn =
+ivpSpringMass_ev sampleFn =
     ivp
     where
     ivp =
@@ -248,7 +250,7 @@ ivpSpringMass_ev_et sampleFn =
     toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
-ivpSpringMass_uv_et :: 
+ivpSpringMass_uv :: 
     (Var f ~ String,
      HasConstFns f,
      HasProjections f,
@@ -259,7 +261,7 @@ ivpSpringMass_uv_et ::
     )
     => 
     f -> ODEIVP f
-ivpSpringMass_uv_et sampleFn =
+ivpSpringMass_uv sampleFn =
     ivp
     where
     ivp =
@@ -296,7 +298,7 @@ ivpSpringMass_uv_et sampleFn =
     toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
-ivpSpringMassAir_ev_et :: 
+ivpSpringMassAir_ev :: 
     (Var f ~ String,
      HasConstFns f,
      HasProjections f,
@@ -308,7 +310,7 @@ ivpSpringMassAir_ev_et ::
     )
     => 
     f -> ODEIVP f
-ivpSpringMassAir_ev_et sampleFn =
+ivpSpringMassAir_ev sampleFn =
     ivp
     where
     ivp =
@@ -334,6 +336,102 @@ ivpSpringMassAir_ev_et sampleFn =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
+    lrDom = dbldblToReal sampleDom
+    toDom = dblToReal sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+
+ivpCubicSpringMass_triple :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpCubicSpringMass_triple sampleFn =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x1' = x2 + a*x1, x2' = -x1^3 + a*(x2-x1), a = 0.001",
+            odeivp_field = fieldAll6,
+            odeivp_componentNames = ["x", "x'", "y", "y'", "z", "z'"],
+            odeivp_tVar = "t",
+            odeivp_tStart = toDom 0,
+            odeivp_t0End = toDom 0,
+            odeivp_tEnd = toDom 1,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing
+        }
+    fieldAll6 [x,x',y,y',z,z'] = concat $ map field [[x,x'], [y,y'], [z,z']]
+    field [x,x'] = 
+        [x' <+> (a <*> x),
+         (neg  $ x <*> x <*> x) <+> (a <*> (x' <-> x))]
+        where
+        aD = 0.001 :: Double
+        a = newConstFnFromSample x $ toDom aD
+    initialValues = map toDom $ [1,1,1,0,1,-1]
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
+--    lrDom = dbldblToReal sampleDom
+    toDom = dblToReal sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+ivpCubicSpringMass_monoCheck :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpCubicSpringMass_monoCheck sampleFn =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x1' = x2 + a*x1, x2' = -x1^3 + a*(x2-x1), a = 0.001",
+            odeivp_field = field,
+            odeivp_componentNames = ["x1", "x2", "x1d1", "x2d1", "x1d2", "x2d2"],
+            odeivp_tVar = "t",
+            odeivp_tStart = toDom 0,
+            odeivp_t0End = toDom 0,
+            odeivp_tEnd = toDom 1,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing
+        }
+    field [x1,x2,x1d1,x2d1,x1d2,x2d2] =
+        [x2 <+> (a <*> x1),
+         (neg  $ x1 <*> x1 <*> x1) <+> (a <*> (x2 <-> x1))]
+        ++
+        [x2d1 <+> (a <*> x1d1),
+         (neg  $ three <*> x1 <*> x1 <*> x1d1) <+> (a <*> (x2d1 <-> x1d1))]
+        ++
+        [x2d2 <+> (a <*> x1d2),
+         (neg  $ three <*> x1 <*> x1 <*> x1d2) <+> (a <*> (x2d2 <-> x1d2))]
+        where
+        aD = 0.001 :: Double
+        a = newConstFnFromSample x1 $ toDom aD
+        three = newConstFnFromSample x1 $ toDom 3
+    initialValues = 
+        [toDom 1, (-1) `lrDom` 1
+         ,toDom 1, toDom 0
+         ,toDom 0, toDom 1
+        ]
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
     lrDom = dbldblToReal sampleDom
     toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
