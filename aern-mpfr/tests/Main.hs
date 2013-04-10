@@ -91,9 +91,9 @@ testsMI =
        ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Integer", sampleI),
        ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Rational", sampleR),
        ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Double", sampleD)
-       ,
-       ArithInOut.testsInOutExp ("MI", sampleMI),
-       ArithInOut.testsInOutSqrt ("MI", sampleMI) unPositiveMI
+--       ,
+--       ArithInOut.testsInOutExp ("MI", sampleMI),
+--       ArithInOut.testsInOutSqrt ("MI", sampleMI) unPositiveMI
     ]
 
 areaM = areaWhole sampleM

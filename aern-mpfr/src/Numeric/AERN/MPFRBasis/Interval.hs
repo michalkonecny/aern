@@ -225,7 +225,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultE
   (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),(>^<),
   piIn,eIn,absIn,expIn,sqrtIn)
  
-import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis()
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis(asIntervalElementaryFromBasis)
 
 import Numeric.AERN.RealArithmetic.Basis.MPFR(MPFR)
 
@@ -528,25 +528,25 @@ eIn = RARORODE.eIn
 absOut :: MI -> MI
 absOut = RARORODE.absOut
 
----- | Outward rounded exponential
---expOut :: MI -> MI
---expOut = RARORODE.expOut
---
----- | Outward rounded square root
---sqrtOut :: MI -> MI
---sqrtOut = RARORODE.sqrtOut
+-- | Outward rounded exponential
+expOut :: MI -> MI
+expOut = asIntervalElementaryFromBasis $ RARORODE.expOut
+
+-- | Outward rounded square root
+sqrtOut :: MI -> MI
+sqrtOut = asIntervalElementaryFromBasis $ RARORODE.sqrtOut
 
 -- | Inward rounded absolute value
 absIn :: MI -> MI
 absIn = RARORODE.absIn
 
----- | Inward rounded exponential
---expIn :: MI -> MI
---expIn = RARORODE.expIn
---
----- | Inward rounded square root
---sqrtIn :: MI -> MI
---sqrtIn = RARORODE.sqrtIn
+-- | Inward rounded exponential
+expIn :: MI -> MI
+expIn = asIntervalElementaryFromBasis $ RARORODE.expIn
+
+-- | Inward rounded square root
+sqrtIn :: MI -> MI
+sqrtIn = asIntervalElementaryFromBasis $ RARORODE.sqrtIn
 
 newtype PositiveMI = PositiveMI { unPositiveMI :: MI }
 
