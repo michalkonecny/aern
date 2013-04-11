@@ -186,11 +186,11 @@ module Numeric.AERN.MPFRBasis.Interval
 
     -- ** Access functions
     getEndpoints,fromEndpoints,
+    getPrec, M.Precision,
 
     -- ** Base type
     Interval(..),
-    MPFR,
-    M.Precision
+    MPFR
 )
 where
 
@@ -282,6 +282,13 @@ fromEndpoints = BI.fromEndpoints
 
 sampleMI :: MI
 sampleMI = Interval 0 0
+
+getPrec :: MI -> M.Precision
+getPrec x = precL `min` precR 
+    where
+    precL = M.getPrec l 
+    precR = M.getPrec r 
+    (l,r) = getEndpoints x
 
 fromDouble :: M.Precision -> Double -> MI
 fromDouble prec dbl = fromEndpoints (l,r)
