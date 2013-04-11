@@ -23,6 +23,7 @@ module Numeric.AERN.MPFRBasis.Interval
     
     -- ** associated operations
     width, bisect,
+    fromDouble, doubleBounds,
 
     -- * Order relations
     -- | 
@@ -144,7 +145,8 @@ module Numeric.AERN.MPFRBasis.Interval
     
     -- ** Elementary functions
     absOut,
-    RARORODE.expOut,RARORODE.sqrtOut,
+    expOut,
+    sqrtOut,
 
     -- * Inward rounded operations 
 
@@ -177,7 +179,8 @@ module Numeric.AERN.MPFRBasis.Interval
     
     -- ** Elementary functions
     absIn,
-    RARORODE.expIn,RARORODE.sqrtIn,
+    expIn,
+    sqrtIn,
 
     -- * Low level facilities
 
@@ -187,7 +190,7 @@ module Numeric.AERN.MPFRBasis.Interval
     -- ** Base type
     Interval(..),
     MPFR,
-    Precision
+    M.Precision
 )
 where
 
@@ -229,7 +232,7 @@ import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis(asIntervalElemen
 
 import Numeric.AERN.RealArithmetic.Basis.MPFR(MPFR)
 
-import Data.Number.MPFR (Precision)
+import qualified Data.Number.MPFR as M
 
 import Numeric.AERN.RealArithmetic.Interval.MPFR(width, bisect)
 
@@ -279,6 +282,18 @@ fromEndpoints = BI.fromEndpoints
 
 sampleMI :: MI
 sampleMI = Interval 0 0
+
+fromDouble :: M.Precision -> Double -> MI
+fromDouble prec dbl = fromEndpoints (l,r)
+    where
+    l = M.fromDouble M.Down prec dbl
+    r = M.fromDouble M.Up prec dbl
+
+doubleBounds :: MI -> (Double, Double)
+doubleBounds (Interval l r) = (lD, rD)
+    where
+    lD = M.toDouble M.Down l
+    rD = M.toDouble M.Up r
 
 least :: MI
 least = BNO.least sampleMI
