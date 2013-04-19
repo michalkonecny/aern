@@ -29,6 +29,7 @@ Library
         stm >= 2.1.2.1 && < 2.5,
         filepath >= 1.1.0.4 && < 1.4,
         directory >= 1.0.1.1 && < 1.2,
+        mtl >= 2.1 && < 2.2,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-realfn == 0.5.*,
@@ -36,16 +37,17 @@ Library
   exposed-modules:  
         Numeric.AERN.IVP.Examples.Hybrid.Simple,
         Numeric.AERN.IVP.Examples.ODE.Simple,
+        Numeric.AERN.IVP.Plot.UsingFnView,
         Numeric.AERN.IVP.Solver.Bisection,
-        Numeric.AERN.IVP.Solver.Events.Aggregate,
         Numeric.AERN.IVP.Solver.Events.Bisection,
+        Numeric.AERN.IVP.Solver.Events.EventTree,
         Numeric.AERN.IVP.Solver.Events.Locate,
+        Numeric.AERN.IVP.Solver.Events.PWL,
         Numeric.AERN.IVP.Solver.Events.SplitNearEvents,
         Numeric.AERN.IVP.Solver.Picard.UncertainValue,
         Numeric.AERN.IVP.Solver.ShrinkWrap,
         Numeric.AERN.IVP.Specification.Hybrid,
-        Numeric.AERN.IVP.Specification.ODE,
-        Numeric.AERN.IVP.Plot.UsingFnView
+        Numeric.AERN.IVP.Specification.ODE
 
 executable simple-uv-et-polyint
   build-depends:   

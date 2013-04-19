@@ -22,7 +22,7 @@ module Numeric.AERN.IVP.Solver.Events.Bisection
 )
 where
 
-import Numeric.AERN.IVP.Solver.Events.Aggregate
+import Numeric.AERN.IVP.Solver.Events.EventTree
 
 import Numeric.AERN.IVP.Specification.Hybrid
 import Numeric.AERN.IVP.Solver.Bisection

@@ -22,7 +22,7 @@ module Numeric.AERN.IVP.Plot.UsingFnView
 where
 
 import Numeric.AERN.IVP.Solver.Bisection
-import Numeric.AERN.IVP.Solver.Events.Aggregate
+import Numeric.AERN.IVP.Solver.Events.EventTree
 import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Specification.Hybrid
 
