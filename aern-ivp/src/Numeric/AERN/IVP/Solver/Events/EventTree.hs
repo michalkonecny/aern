@@ -4,8 +4,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-    Module      :  Numeric.AERN.IVP.Solver.Events.Aggregate
-    Description :  hybrid system simulation  
+    Module      :  Numeric.AERN.IVP.Solver.Events.EventTree
+    Description :  hybrid system simulation step using event trees  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -13,10 +13,10 @@
     Stability   :  experimental
     Portability :  portable
     
-    Hybrid system simulation.
+    Hybrid system simulation step using event trees.
 -}
 
-module Numeric.AERN.IVP.Solver.Events.Aggregate
+module Numeric.AERN.IVP.Solver.Events.EventTree
 --(
 --)
 where

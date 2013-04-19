@@ -23,7 +23,7 @@ module Numeric.AERN.IVP.Solver.Events.SplitNearEvents
 where
 
 import Numeric.AERN.IVP.Solver.Events.Locate
-import Numeric.AERN.IVP.Solver.Events.Aggregate
+import Numeric.AERN.IVP.Solver.Events.EventTree
 import Numeric.AERN.IVP.Solver.Picard.UncertainValue
 
 import Numeric.AERN.IVP.Specification.Hybrid

@@ -23,9 +23,6 @@ where
 import Numeric.AERN.RmToRn.Domain
 --import Numeric.AERN.RmToRn.New
 
-import qualified Data.Set as Set
-import qualified Data.Map as Map
-
 --import Numeric.AERN.RmToRn.Evaluation
 --import Numeric.AERN.RmToRn.Integration
 --
@@ -34,15 +31,17 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 --
---import qualified Numeric.AERN.NumericOrder as NumOrd
---import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import qualified Numeric.AERN.NumericOrder as NumOrd
+import Numeric.AERN.NumericOrder.OpsDefaultEffort
 --
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 --import Numeric.AERN.Misc.Debug
 
-
+import qualified Data.Set as Set
+import qualified Data.Map as Map
+import qualified Data.List as List
 
 data HybridIVP f =
     HybridIVP
@@ -122,6 +121,54 @@ mergeHybridStates effJoin state1 state2 =
     mergeValues values1 values2 =
         let ?joinmeetEffort = effJoin in
         zipWith (</\>) values1 values2
+
+differenceHybridStates ::
+    (RefOrd.PartialComparison dom, RefOrd.IntervalLike dom)
+    =>
+    RefOrd.PartialCompareEffortIndicator dom ->
+    HybridSystemUncertainState dom ->
+    HybridSystemUncertainState dom ->
+    HybridSystemUncertainState dom
+differenceHybridStates effComp state1 (state2 :: HybridSystemUncertainState dom) =    
+    Map.differenceWith diffValues state1 state2
+    where
+    diffValues values1 values2 =
+        case List.findIndices (== False) containmentFlags of
+            [] -> 
+                Nothing 
+                -- values1 fully inside values2 - the difference is empty
+            [ixOnlyNoncontainment] ->
+                Just $ differenceOneComponent ixOnlyNoncontainment values1 values2
+            _ -> 
+                Just values1
+                -- more than one component is not fully covered by values2; 
+                -- the box hull of the difference is equal to the original box
+        where
+        containmentFlags =
+            map (== Just True) $        
+            let ?pCompareEffort = effComp in
+            zipWith (|>=?) values1 (values2 :: [dom])
+        differenceOneComponent ix (h1:t1) (h2:t2)
+            | ix == 0 = (diffValue h1 h2) : t1
+            | otherwise = h1 : (differenceOneComponent (ix - 1) t1 t2)
+            where
+            diffValue value1 value2 
+                | cuttingFromRight = 
+                    RefOrd.fromEndpointsOutWithDefaultEffort (value1L, value2L)
+                | cuttingFromLeft = 
+                    RefOrd.fromEndpointsOutWithDefaultEffort (value2R, value1R)
+                | otherwise =
+                    value1
+                where
+                cuttingFromLeft = 
+                    let ?pCompareEffort = effComp in
+                    (value1 |<=? value2R) == Just True
+                cuttingFromRight = 
+                    let ?pCompareEffort = effComp in
+                    (value1 |<=? value2L) == Just True
+                (value1L, value1R) = RefOrd.getEndpointsOutWithDefaultEffort value1
+                (value2L, value2R) = RefOrd.getEndpointsOutWithDefaultEffort value2
+                
 
 getHybridStateUnion ::
     (RefOrd.RoundedLattice dom)
