@@ -26,7 +26,6 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion as UpDnConversion
 
@@ -67,9 +66,9 @@ propConvertMonotoneFromNumOrd ::
     (ConvertEffortIndicator t1 t2, NumOrd.PartialCompareEffortIndicator t2) ->  
     NumOrd.LEPair t1 -> Bool
 propConvertMonotoneFromNumOrd sample1 sample2 (effortFrom, effortComp) (NumOrd.LEPair (a, b)) = 
-    (trueOrNothing $ let ?pCompareEffort = effortComp in aOut <=? bOut)
+    (trueOrNothing $ let (<=?) = NumOrd.pLeqEff effortComp in aOut <=? bOut)
     &&
-    (trueOrNothing $ let ?pCompareEffort = effortComp in aIn <=? bIn)
+    (trueOrNothing $ let (<=?) = NumOrd.pLeqEff effortComp in aIn <=? bIn)
     where
     aOut = convertOutEff effortFrom sample2 a 
     aIn = convertInEff effortFrom sample2 a 
@@ -87,7 +86,7 @@ propConvertRoundTripNumOrd ::
     t1 -> Bool
 propConvertRoundTripNumOrd sample1 sample2 (effortComp, effortFrom, effortTo) a =
     (defined maDn && defined maUp) ===>
-    let ?pCompareEffort = effortComp in
+    let (<=?) = NumOrd.pLeqEff effortComp in
     case (aDnOut <=? a, a <=? aUpOut) of
        (Just False, _) -> printErrorDetail
        (_, Just False) -> printErrorDetail

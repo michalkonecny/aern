@@ -31,10 +31,9 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 --import Numeric.AERN.RealArithmetic.ExactOps
 
 --import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 --import Numeric.AERN.Basics.Consistency
 
@@ -135,7 +134,7 @@ locateFirstDipAmongMultipleFns
         size = dRE <-> dLE
         resL = locateBySplitting (dLE, dM)
         resR = locateBySplitting (dM, dRE)
-        (dM, _) = RefOrd.getEndpointsOutWithDefaultEffort $ (dLE <+> dRE) </>| (2 :: Int) 
+        (dM, _) = RefOrd.getEndpointsOut $ (dLE <+> dRE) </>| (2 :: Int) 
     
     
 examineEventsOnDom :: 
@@ -158,7 +157,7 @@ examineEventsOnDom
         _ -> LDResSome LDResDipMaybe (dLE, dRE) eventsNotRuledOutOnD
             -- in all other cases, we declare that we don't know for sure
     where
-    d = RefOrd.fromEndpointsOutWithDefaultEffort (dLE, dRE)
+    d = RefOrd.fromEndpointsOut (dLE, dRE)
     eventsNotRuledOutOnD = eventsNotRuledOutOnDom d
     
     

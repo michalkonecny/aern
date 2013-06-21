@@ -23,8 +23,6 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
-import Numeric.AERN.RefinementOrder.InPlace.OpsImplicitEffort
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 
@@ -46,8 +44,8 @@ expOutThinArg ::
     t {-^ @exp(x)@ -}
 expOutThinArg eff
         degr x =
-    let ?pCompareEffort = effortRefinement in
-    let ?joinmeetEffort = effortMeet in
+    let (|>=?) = RefOrd.pGeqEff effortRefinement in
+    let (</\>) = RefOrd.meetOutEff effortMeet in
     let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField in
     -- infinities not handled well by the Taylor formula,
     -- treat them as special cases, adding also 0 for efficiency:
@@ -87,7 +85,6 @@ expOutThinArg eff
             Just xDn -> (xDn, False)
             _ -> (error "internal error in expOutThinArg", True)
     expOutViaTaylorForXScaledNearZero =
-        let ?joinmeetEffort = effortMeet in
         let ?addInOutEffort = ArithInOut.fldEffortAdd x effortField in
         let ?multInOutEffort = ArithInOut.fldEffortMult x effortField in
         let ?intPowerInOutEffort = ArithInOut.fldEffortPow x effortField in
@@ -127,6 +124,8 @@ expOutThinArg eff
                         recipEDn </\> (one x)
                     _ -> -- near or crossing zero:
                         recipEDn </\> eUp
+                where
+                (</\>) = RefOrd.meetOutEff effortMeet
             eUp =
                 ArithInOut.convertOutEff effortFromDouble sample (2.718281829 :: Double)
             recipEDn =
@@ -159,8 +158,8 @@ expOutThinArgInPlace
     let effortCompare = ArithInOut.rrEffortNumComp sample eff
     let effortToInt = ArithInOut.rrEffortToInt sample eff
     let effortFromDouble = ArithInOut.rrEffortFromDouble sample eff
-    let ?pCompareEffort = effortRefinement
-    let ?joinmeetEffort = effortMeet
+    let (|>=?) = RefOrd.pGeqEff effortRefinement
+    let (</\>) = RefOrd.meetOutEff effortMeet
     let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField
     let ?multInOutEffort = ArithInOut.fldEffortMult x effortField
     let ?intPowerInOutEffort = ArithInOut.fldEffortPow x effortField
@@ -239,6 +238,8 @@ expOutThinArgInPlace
                             recipEDn </\> (one x)
                         _ -> -- near or crossing zero:
                             recipEDn </\> eUp
+                    where
+                    (</\>) = RefOrd.meetOutEff $ ArithInOut.rrEffortJoinMeet sample eff
                 eUp =
                     ArithInOut.convertOutEff effortFromDouble sample (2.718281829 :: Double)
                 recipEDn =

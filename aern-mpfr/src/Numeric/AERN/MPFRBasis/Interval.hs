@@ -201,18 +201,14 @@ import qualified Numeric.AERN.Basics.Interval as BI
   (getEndpoints,fromEndpoints)
 
 import qualified Numeric.AERN.NumericOrder as BNO
-  (least,greatest)
-
-import qualified Numeric.AERN.NumericOrder.OpsDefaultEffort as BNOODE
-  ((==?),(<==>?),(</=>?),
+  (least,greatest,
+   (==?),(<==>?),(</=>?),
    (<?),(>?),(<=?),(>=?),
    minOut,maxOut,minIn,maxIn)
 
 import qualified Numeric.AERN.RefinementOrder as BRO
-  (bottom,top,(⊥),(⊤))
-
-import qualified Numeric.AERN.RefinementOrder.OpsDefaultEffort as BROODE
-  ((|==?),(|<==>?),(|</=>?),
+  (bottom,top,(⊥),(⊤),
+   (|==?),(|<==>?),(|</=>?),
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
    (</\>),(<\/>),(<\/>?),(<⊓>),(<⊔>),(<⊔>?),
    (>/\<),(>\/<),(>⊓<),(>⊔<))
@@ -310,47 +306,47 @@ greatest = BNO.greatest sampleMI
 
 -- | Partial equality
 (==?) :: MI -> MI -> Maybe Bool
-(==?) = (BNOODE.==?) 
+(==?) = (BNO.==?) 
 
 -- | Partial `is comparable to`
 (<==>?) :: MI -> MI -> Maybe Bool
-(<==>?) = (BNOODE.<==>?)
+(<==>?) = (BNO.<==>?)
 
 -- | Partial `is not comparable to`
 (</=>?) :: MI -> MI -> Maybe Bool
-(</=>?) = (BNOODE.</=>?)
+(</=>?) = (BNO.</=>?)
 
 -- | Partial `strictly less than`
 (<?) :: MI -> MI -> Maybe Bool
-(<?) = (BNOODE.<?)
+(<?) = (BNO.<?)
 
 -- | Partial `strictly greater than`
 (>?) :: MI -> MI -> Maybe Bool
-(>?) = (BNOODE.>?)
+(>?) = (BNO.>?)
 
 -- | Partial `less than or equal to`
 (<=?) :: MI -> MI -> Maybe Bool
-(<=?) = (BNOODE.<=?)
+(<=?) = (BNO.<=?)
 
 -- | Partial `greater than or equal to`
 (>=?) :: MI -> MI -> Maybe Bool
-(>=?) = (BNOODE.>=?)
+(>=?) = (BNO.>=?)
  
 -- | Outward rounded minimum
 minOut :: MI -> MI -> MI
-minOut = BNOODE.minOut
+minOut = BNO.minOut
 
 -- | Outward rounded maximum
 maxOut :: MI -> MI -> MI
-maxOut = BNOODE.maxOut
+maxOut = BNO.maxOut
 
 -- | Inward rounded minimum
 minIn :: MI -> MI -> MI
-minIn = BNOODE.minIn
+minIn = BNO.minIn
 
 -- | Inward rounded maximum
 maxIn :: MI -> MI -> MI
-maxIn = BNOODE.maxIn
+maxIn = BNO.maxIn
 
 bottom :: MI
 bottom = BRO.bottom sampleMI
@@ -368,87 +364,87 @@ top = BRO.top sampleMI
 
 -- | Partial equality
 (|==?) :: MI -> MI -> Maybe Bool
-(|==?) = (BROODE.|==?)
+(|==?) = (BRO.|==?)
 
 -- | Partial `is comparable to`
 (|<==>?) :: MI -> MI -> Maybe Bool
-(|<==>?) = (BROODE.|<==>?)
+(|<==>?) = (BRO.|<==>?)
 
 -- | Partial `is not comparable to`
 (|</=>?) :: MI -> MI -> Maybe Bool
-(|</=>?) = (BROODE.|</=>?)
+(|</=>?) = (BRO.|</=>?)
 
 -- | Partial `strictly below`
 (|<?) :: MI -> MI -> Maybe Bool
-(|<?) = (BROODE.|<?)
+(|<?) = (BRO.|<?)
 
 -- | Partial `strictly above`
 (|>?) :: MI -> MI -> Maybe Bool
-(|>?) = (BROODE.|>?)
+(|>?) = (BRO.|>?)
 
 -- | Partial `below or equal to`
 (|<=?) :: MI -> MI -> Maybe Bool
-(|<=?) = (BROODE.|<=?)
+(|<=?) = (BRO.|<=?)
 
 -- | Partial `above or equal to`
 (|>=?) :: MI -> MI -> Maybe Bool
-(|>=?) = (BROODE.|>=?)
+(|>=?) = (BRO.|>=?)
 
 {-| Convenience Unicode notation for '|<?' -}
 (⊏?) :: MI -> MI -> Maybe Bool
-(⊏?) = (BROODE.⊏?)
+(⊏?) = (BRO.⊏?)
 
 {-| Convenience Unicode notation for '|<=?' -}
 (⊑?) :: MI -> MI -> Maybe Bool
-(⊑?) = (BROODE.⊑?)
+(⊑?) = (BRO.⊑?)
 
 {-| Convenience Unicode notation for '|>=?' -}
 (⊒?) :: MI -> MI -> Maybe Bool
-(⊒?) = (BROODE.⊒?)
+(⊒?) = (BRO.⊒?)
 
 {-| Convenience Unicode notation for '|>?' -}
 (⊐?) :: MI -> MI -> Maybe Bool 
-(⊐?) = (BROODE.⊐?)
+(⊐?) = (BRO.⊐?)
 
 -- | Outward rounded meet
 (</\>) :: MI -> MI -> MI
-(</\>) = (BROODE.</\>)
+(</\>) = (BRO.</\>)
 
 -- | Outward rounded join
 (<\/>) :: MI -> MI -> MI
-(<\/>) = (BROODE.<\/>)
+(<\/>) = (BRO.<\/>)
 
 -- | Inward rounded meet
 (>/\<) :: MI -> MI -> MI
-(>/\<) = (BROODE.>/\<)
+(>/\<) = (BRO.>/\<)
 
 -- | Inward rounded join
 (>\/<) :: MI -> MI -> MI
-(>\/<) = (BROODE.>\/<)
+(>\/<) = (BRO.>\/<)
 
 {-| Convenience Unicode notation for '</\>' -}
 (<⊓>) :: MI -> MI -> MI
-(<⊓>) = (BROODE.<⊓>)
+(<⊓>) = (BRO.<⊓>)
 
 {-| Convenience Unicode notation for '<\/>' -}
 (<⊔>) :: MI -> MI -> MI
-(<⊔>) = (BROODE.<⊔>)
+(<⊔>) = (BRO.<⊔>)
 
 {-| Convenience Unicode notation for '>/\<' -}
 (>⊓<) :: MI -> MI -> MI
-(>⊓<) = (BROODE.>⊓<)
+(>⊓<) = (BRO.>⊓<)
 
 {-| Convenience Unicode notation for '>\/<' -}
 (>⊔<) :: MI -> MI -> MI
-(>⊔<) = (BROODE.>⊔<)
+(>⊔<) = (BRO.>⊔<)
  
 -- | Partial outward rounded join
 (<\/>?) :: MI -> MI -> Maybe MI
-(<\/>?) = (BROODE.<\/>?)
+(<\/>?) = (BRO.<\/>?)
 
 {-| Convenience Unicode notation for '<\/>?' -}
 (<⊔>?) :: MI -> MI -> Maybe MI 
-(<⊔>?) = (BROODE.<⊔>?)
+(<⊔>?) = (BRO.<⊔>?)
 
 -- | Outward rounded addition
 (<+>) :: MI -> MI -> MI

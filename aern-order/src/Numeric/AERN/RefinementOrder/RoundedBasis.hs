@@ -35,6 +35,7 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+infixr 2 <\/>?, >\/<?, <⊔>?, >⊔<? 
 
 {-|
     A type with outward-rounding lattice operations.
@@ -50,6 +51,31 @@ class
 class (RoundedBasisEffort t) => RoundedBasis t where
     partialJoinOutEff :: PartialJoinEffortIndicator t -> t -> t -> Maybe t
     partialJoinInEff :: PartialJoinEffortIndicator t -> t -> t -> Maybe t
+
+-- | Partial outward rounded join with default effort
+partialJoinOut :: (RoundedBasis t) => t -> t -> Maybe t
+partialJoinOut a = partialJoinOutEff (partialJoinDefaultEffort a) a
+
+-- | Partial outward rounded join with default effort
+(<\/>?) :: (RoundedBasis t) => t -> t -> Maybe t
+(<\/>?) = partialJoinOut 
+
+{-| Convenience Unicode notation for '<\/>?' -}
+(<⊔>?) :: (RoundedBasis t) => t -> t -> Maybe t 
+(<⊔>?) = (<\/>?)
+
+-- | Partial outward rounded join with default effort
+partialJoinIn :: (RoundedBasis t) => t -> t -> Maybe t
+partialJoinIn a = partialJoinInEff (partialJoinDefaultEffort a) a
+
+-- | Partial inward rounded join with default effort
+(>\/<?) :: (RoundedBasis t) => t -> t -> Maybe t
+(>\/<?) = partialJoinIn
+
+{-| Convenience Unicode notation for '>\/<?' -}
+(>⊔<?) :: (RoundedBasis t) => t -> t -> Maybe t
+(>⊔<?) = (>\/<?)
+
 
 -- properties of RoundedBasis
 propRoundedBasisComparisonCompatible :: 

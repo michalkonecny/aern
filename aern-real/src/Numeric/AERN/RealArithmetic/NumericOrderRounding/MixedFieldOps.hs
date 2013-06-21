@@ -1,7 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps
     Description :  rounded basic arithmetic operations mixing 2 types
@@ -27,7 +26,6 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.RealArithmetic.Laws 
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Control.Exception
 import Data.Maybe
@@ -258,8 +256,8 @@ mixedDivUpEffByConversion ::
       NumOrd.PartialCompareEffortIndicator t)) ->
     t -> tn -> t
 mixedDivUpEffByConversion (effDiv, effConv, (effMinmax, effComp)) d n =
-    let ?pCompareEffort = effComp in
-    case (nDn >=? (zero d), nUp <=? (zero d)) of
+    let (<=?) = NumOrd.pLeqEff effComp in
+    case ((zero d) <=? nDn, nUp <=? (zero d)) of
         (Just True, _) -> normalResult 
         (_, Just True) -> normalResult
         _ -> plusInfinity d -- b is too close to zero
@@ -288,8 +286,8 @@ mixedDivDnEffByConversion ::
       NumOrd.PartialCompareEffortIndicator t)) ->
     t -> tn -> t
 mixedDivDnEffByConversion (effDiv, effConv, (effMinmax, effComp)) d n = 
-    let ?pCompareEffort = effComp in
-    case (nDn >=? (zero d), nUp <=? (zero d)) of
+    let (<=?) = NumOrd.pLeqEff effComp in
+    case ((zero d) <=? nDn, nUp <=? (zero d)) of
         (Just True, _) -> normalResult 
         (_, Just True) -> normalResult
         _ -> minusInfinity d -- b is too close to zero

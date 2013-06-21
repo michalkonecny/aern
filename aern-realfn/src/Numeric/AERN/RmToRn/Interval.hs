@@ -107,7 +107,7 @@ instance
     where
     newProjection sizeLims dombox vars = Interval l r
         where
-        (l,r) = RefOrd.getEndpointsOutWithDefaultEffort p
+        (l,r) = RefOrd.getEndpointsOut p
         p = newProjection sizeLims dombox vars
 
 instance
@@ -118,7 +118,7 @@ instance
     where
     newConstFn sizeLims dombox value = Interval l r
         where
-        (l,r) = RefOrd.getEndpointsOutWithDefaultEffort p
+        (l,r) = RefOrd.getEndpointsOut p
         p = newConstFn sizeLims dombox value
 
 instance 
@@ -204,7 +204,7 @@ instance
     where
     type EvalOps (Interval f) = EvalOps f
     evalOtherType evalOps valuesBox (Interval l r) =
-        RefOrd.fromEndpointsOutWithDefaultEffort $ (lN, rN)
+        RefOrd.fromEndpointsOut $ (lN, rN)
         where
         lN = evalOtherType evalOps valuesBox l
         rN = evalOtherType evalOps valuesBox r
@@ -215,7 +215,7 @@ instance
     CanEvaluateOtherTypeInner (Interval f)
     where
     evalOtherTypeInner evalOps valuesBox (Interval l r) =
-        RefOrd.fromEndpointsInWithDefaultEffort $ (lN, rN)
+        RefOrd.fromEndpointsIn $ (lN, rN)
         where
         lN = evalOtherTypeInner evalOps valuesBox l
         rN = evalOtherTypeInner evalOps valuesBox r

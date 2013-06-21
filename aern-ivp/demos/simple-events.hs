@@ -238,7 +238,7 @@ solveEventsPrintSteps
     minStepSize = 2^^minStepSizeExp
     maxStepSizeExp = - minDepthParam
     maxStepSize = 2^^maxStepSizeExp
---        fst $ RefOrd.getEndpointsOutWithDefaultEffort $ 10^^(-3::Int)
+--        fst $ RefOrd.getEndpointsOut $ 10^^(-3::Int)
     splitImprovementThreshold = 2^^(-48 :: Int)
     
     -- auxiliary:
@@ -274,7 +274,7 @@ solveEventsPrintSteps
         getError (valueIn, valueOut) =
             err
             where
-            err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
+            err = snd $ RefOrd.getEndpointsOut $ wOut CF.<-> wIn
             wOut = CF.width valueOut     
             wIn = CF.width valueIn     
     
@@ -393,7 +393,7 @@ solveEventsPrintSteps
 ----            ++ "(err<=" ++ show err ++ ")"
 ----            ++ "; valueIn = " ++ show valueIn
 ----            where
-----            err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
+----            err = snd $ RefOrd.getEndpointsOut $ wOut CF.<-> wIn
 ----            wOut = CF.width valueOut     
 ----            wIn = CF.width valueIn     
 --    showSegInfoLocate indent (t, maybeState, modeSolvingInfoMap) =
@@ -539,7 +539,7 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
     newConstFn cfg dombox sampleCf
     where
     domsLE = 
-        map (fst . RefOrd.getEndpointsOutWithDefaultEffort) doms
+        map (fst . RefOrd.getEndpointsOut) doms
     dombox = fromList $ zip vars doms 
     cfg =
         IntPolyCfg

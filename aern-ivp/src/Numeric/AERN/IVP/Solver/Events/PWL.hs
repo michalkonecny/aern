@@ -41,7 +41,6 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 
@@ -125,7 +124,7 @@ solveHybridIVP_UsingPicardAndPWL
     sampleDom = tStart
     tStart = hybivp_tStart hybivp
     tEnd = hybivp_tEnd hybivp
-    tDom = RefOrd.fromEndpointsOutWithDefaultEffort (tStart, tEnd)
+    tDom = RefOrd.fromEndpointsOut (tStart, tEnd)
     tVar = hybivp_tVar hybivp
     hybsys = hybivp_system hybivp
     componentNames = hybsys_componentNames hybsys

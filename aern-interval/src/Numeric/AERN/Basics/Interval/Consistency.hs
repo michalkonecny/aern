@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Basics.Interval.Basics
     Description :  consistency instances for intervals 
@@ -32,7 +31,6 @@ import Numeric.AERN.Basics.Interval.Basics
 import Numeric.AERN.Basics.Consistency
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 
 import Test.QuickCheck

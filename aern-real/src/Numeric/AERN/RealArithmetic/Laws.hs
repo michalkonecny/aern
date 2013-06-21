@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams, RankNTypes #-}
+{-# LANGUAGE RankNTypes #-}
 {-|
     Module      :  Numeric.AERN.Basics.Laws.Relation
     Description :  common properties of arithmetic operations arbitrarily-little rounded  
@@ -32,9 +32,8 @@ import Data.Maybe
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
-import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
+import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Exception

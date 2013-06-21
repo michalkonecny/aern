@@ -12,8 +12,6 @@ Stability:      experimental
 Category:       Data, Math
 Synopsis:       numeric and refinement order on approximations of exact entities
 Tested-with:
-                GHC==6.12.3,
-                GHC==7.2.2,
                 GHC==7.4.2
 Description:
  Type-classes abstracting various kinds of approximations for exact entities:
@@ -56,24 +54,11 @@ Library
         test-framework >= 0.3.3 && < 0.7, 
         test-framework-quickcheck2 >= 0.2 && < 0.3
     
-  Other-modules:
-                Numeric.AERN.NumericOrder.Arbitrary,
-                Numeric.AERN.NumericOrder.Arbitrary.Linear,
-                Numeric.AERN.NumericOrder.Extrema,
-                Numeric.AERN.NumericOrder.InPlace.RefinementRoundedLattice,
-                Numeric.AERN.NumericOrder.InPlace.RoundedLattice,
-                Numeric.AERN.NumericOrder.PartialComparison,
-                Numeric.AERN.NumericOrder.RefinementRoundedLattice,
-                Numeric.AERN.NumericOrder.RoundedLattice,
-                Numeric.AERN.RefinementOrder.Arbitrary,
-                Numeric.AERN.RefinementOrder.Extrema,
-                Numeric.AERN.RefinementOrder.InPlace.RoundedBasis,
-                Numeric.AERN.RefinementOrder.InPlace.RoundedLattice,
-                Numeric.AERN.RefinementOrder.IntervalLike,
-                Numeric.AERN.RefinementOrder.PartialComparison,
-                Numeric.AERN.RefinementOrder.RoundedBasis,
-                Numeric.AERN.RefinementOrder.RoundedLattice
   exposed-modules:
+                  Numeric.AERN.NumericOrder,
+                  Numeric.AERN.NumericOrder.Operators,
+                  Numeric.AERN.RefinementOrder,
+                  Numeric.AERN.RefinementOrder.Operators,
                   Numeric.AERN.Basics.Arbitrary,
                   Numeric.AERN.Basics.Bench,
                   Numeric.AERN.Basics.Consistency,
@@ -93,17 +78,24 @@ Library
                   Numeric.AERN.Misc.Debug,
                   Numeric.AERN.Misc.List,
                   Numeric.AERN.Misc.Maybe,
-                  Numeric.AERN.Misc.QuickCheck,
-                  Numeric.AERN.NumericOrder,
-                  Numeric.AERN.NumericOrder.InPlace.OpsDefaultEffort,
-                  Numeric.AERN.NumericOrder.InPlace.OpsImplicitEffort,
-                  Numeric.AERN.NumericOrder.OpsDefaultEffort,
-                  Numeric.AERN.NumericOrder.OpsImplicitEffort,
-                  Numeric.AERN.RefinementOrder,
-                  Numeric.AERN.RefinementOrder.InPlace.OpsDefaultEffort,
-                  Numeric.AERN.RefinementOrder.InPlace.OpsImplicitEffort,
-                  Numeric.AERN.RefinementOrder.OpsDefaultEffort,
-                  Numeric.AERN.RefinementOrder.OpsImplicitEffort
+                  Numeric.AERN.Misc.QuickCheck
+  Other-modules:
+                Numeric.AERN.NumericOrder.Arbitrary,
+                Numeric.AERN.NumericOrder.Arbitrary.Linear,
+                Numeric.AERN.NumericOrder.Extrema,
+                Numeric.AERN.NumericOrder.InPlace.RefinementRoundedLattice,
+                Numeric.AERN.NumericOrder.InPlace.RoundedLattice,
+                Numeric.AERN.NumericOrder.PartialComparison,
+                Numeric.AERN.NumericOrder.RefinementRoundedLattice,
+                Numeric.AERN.NumericOrder.RoundedLattice,
+                Numeric.AERN.RefinementOrder.Arbitrary,
+                Numeric.AERN.RefinementOrder.Extrema,
+                Numeric.AERN.RefinementOrder.InPlace.RoundedBasis,
+                Numeric.AERN.RefinementOrder.InPlace.RoundedLattice,
+                Numeric.AERN.RefinementOrder.IntervalLike,
+                Numeric.AERN.RefinementOrder.PartialComparison,
+                Numeric.AERN.RefinementOrder.RoundedBasis,
+                Numeric.AERN.RefinementOrder.RoundedLattice
 
 Executable toolAERN-bench-csv-to-gnuplot
   hs-source-dirs: tools

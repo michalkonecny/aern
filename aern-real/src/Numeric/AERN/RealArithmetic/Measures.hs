@@ -1,7 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Measures
     Description :  measures of quality for approximations
@@ -19,7 +18,6 @@ module Numeric.AERN.RealArithmetic.Measures where
 import {-# Source #-} Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
@@ -57,7 +55,7 @@ propDistanceTriangular ::
     (AddEffortIndicator (Distance t)) ->     
     t -> t -> t -> Bool
 propDistanceTriangular _ effortDist effortComp effortAdd e1 e2 e3 =
-    let ?pCompareEffort = effortComp in 
+    let (>=?) = NumOrd.pGeqEff effortComp in 
     let (<+>) = addOutEff effortAdd in 
         let
         d12 = distanceBetweenEff effortDist e1 e2
@@ -105,9 +103,7 @@ propImprecisionDecreasesWithRefinement ::
     (NumOrd.PartialCompareEffortIndicator (Imprecision t)) -> 
     RefOrd.LEPair t -> Bool
 propImprecisionDecreasesWithRefinement _ effortImpr effortComp (RefOrd.LEPair (e1,e2)) =
-    let 
-    ?pCompareEffort = effortComp 
-    in
+    let (>=?) = NumOrd.pGeqEff effortComp in
     case (imprecisionOfEff effortImpr e1) >=? (imprecisionOfEff effortImpr e2) of
         Nothing -> True
         Just b -> b
@@ -153,8 +149,7 @@ iterateUntilAccurate ::
     (eff -> t) {-^ the function to compute -} -> 
     [(eff,t)] {-^ the efforts that were tried and the corresponding results -}
 iterateUntilAccurate iterLimit maxImprecision initEff fn =
-    let ?pCompareEffort = NumOrd.pCompareDefaultEffort maxImprecision in -- needed for ghc 6.12
-      stopWhenAccurate $ 
+    stopWhenAccurate $ 
         take iterLimit $ 
             zip efforts (map fn efforts)
     where
@@ -166,8 +161,7 @@ iterateUntilAccurate iterLimit maxImprecision initEff fn =
         | otherwise = (eff, result) : (stopWhenAccurate rest)
         where
         accurateEnough =
-            let ?pCompareEffort = NumOrd.pCompareDefaultEffort maxImprecision in
-            (resultImprecision <=? maxImprecision) == Just True
+            (maxImprecision NumOrd.>=? resultImprecision) == Just True
         resultImprecision =
             imprecisionOfEff effImpr result
         effImpr =

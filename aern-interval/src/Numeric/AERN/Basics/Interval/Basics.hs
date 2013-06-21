@@ -28,7 +28,6 @@ import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.PartialOrdering
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Control.DeepSeq
 

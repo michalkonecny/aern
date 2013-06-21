@@ -315,7 +315,7 @@ fnDefsExpMx2 maxdeg _otherParams = (fns, fnmeta)
 
 constructCF :: Double -> Double -> CF
 constructCF l r =
-    RefOrd.fromEndpointsOutWithDefaultEffort (cf0 <+>| l, cf0 <+>| r)
+    RefOrd.fromEndpointsOut (cf0 <+>| l, cf0 <+>| r)
 cf0 :: CF
 cf0 = 0
     

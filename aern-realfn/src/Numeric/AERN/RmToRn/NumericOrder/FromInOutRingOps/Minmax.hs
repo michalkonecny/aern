@@ -39,7 +39,6 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 ----import Numeric.AERN.RefinementOrder.InPlace.OpsImplicitEffort
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Exception
 import Control.Exception
@@ -311,7 +310,7 @@ maxZeroDnUp
          (_effRingT, effFldTDF))
         degree
         a =
-    let ?pCompareEffort = effCompDF in
+    let (<=?) = NumOrd.pLeqEff effCompDF in
     case (bounded, maybeaDn, c0 <=? aDn, maybeaUp, aUp <=? c0) of
         (_,Nothing, _,_,_) -> 
             throw $ AERNException $ "maxZeroDnUp called for an unbounded value: " ++ show a
@@ -360,11 +359,11 @@ maxZeroDnUp
         let ?multInOutEffort = effMultDF in
         errUpUnit <*> aWidth
     maxCUp = 
-        snd $ RefOrd.getEndpointsOutWithDefaultEffort maxCUpPre
+        snd $ RefOrd.getEndpointsOut maxCUpPre
     (maxCUpPre, errUpUnit) = 
         hillbaseApproxUp effCompDF effRingF effMultFDF effRealDF effEvalOpsDF x c degree
     maxCDn = 
-        fst $ RefOrd.getEndpointsOutWithDefaultEffort maxCDnPre
+        fst $ RefOrd.getEndpointsOut maxCDnPre
     maxCDnPre =
         hillbaseApproxDn effGetEDF effCompDF effRingF effMultFDF effRealDF effEvalOpsDF x c dInit degree
         where
@@ -435,7 +434,6 @@ hillbaseApproxUp effComp effRingF effMultFDF effRealDF effEvalOps x c n =
     (result, errUp)
     where
     result =
-        let ?pCompareEffort = effComp in
         let ?addInOutEffort = effAddDF in
         let ?multInOutEffort = effMultF in
         let ?mixedMultInOutEffort = effMultDFI in
@@ -461,10 +459,12 @@ hillbaseApproxUp effComp effRingF effMultFDF effRealDF effEvalOps x c n =
         where
         bernstein = bernsteinOut (effRingF, effRealDF, effMultFDF) x n p 
         fOfpOverN =
-            fst $ RefOrd.getEndpointsOutWithDefaultEffort fOfpOverNPre
+            fst $ RefOrd.getEndpointsOut fOfpOverNPre
         fOfpOverNPre -- = maxOutEff effMinmax c0 $ pOverN <-> c
             | (pOverN <? c) == Just True = c
             | otherwise = pOverN
+            where
+            (<?) = NumOrd.pLessEff effComp
         pOverN = (c1 <*>| p) </>| n
     c1 = one sampleDF
     sampleDF = getSampleDomValue x
@@ -519,7 +519,6 @@ hillbaseApproxDn effGetE effComp effRingF effMultFDF effRealDF effEvalOps x c dI
     findDWithBelowCAtC $ findDWithAboveCAtC dInit
     where
     findDWithAboveCAtC d =
-        let ?pCompareEffort = effComp in
         case (fnAtCRE <=? c) of
             Just False -> d
             _ -> findDWithAboveCAtC newD
@@ -560,6 +559,7 @@ hillbaseApproxDn effGetE effComp effRingF effMultFDF effRealDF effEvalOps x c dI
     sampleDF = getSampleDomValue x
     effAddDF = ArithInOut.fldEffortAdd sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
     effMultDFDbl = ArithInOut.mxfldEffortMult sampleDF (1::Double) $ ArithInOut.rrEffortDoubleMixedField sampleDF effRealDF
+    (<=?) = NumOrd.pLeqEff effComp
 
 {-| 
   Compute an upper Bernstein approximation of the function @max(c-l-x(d-l)/c,x-r-(1-x)(d-r)/(1-c))@ over @[0,1]@,
@@ -618,7 +618,7 @@ hillbaseApproxDnD effComp effRingF effMultFDF effRealDF x c n d =
         where
         bernstein = bernsteinOut (effRingF, effRealDF, effMultFDF) x n p
         fOfpOverN =
-            snd $ RefOrd.getEndpointsOutWithDefaultEffort fOfpOverNPre
+            snd $ RefOrd.getEndpointsOut fOfpOverNPre
         fOfpOverNPre
             | (pOverN <? c) == Just True =
                 cMinusL <-> (pOverN <*> dMinusLOverC)
@@ -659,6 +659,7 @@ hillbaseApproxDnD effComp effRingF effMultFDF effRealDF x c n d =
     effPowDF = ArithInOut.fldEffortPow sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
     effDivDF = ArithInOut.fldEffortDiv sampleDF $ ArithInOut.rrEffortField sampleDF effRealDF
 
+    (<?) = NumOrd.pLessEff effComp
 
     
     

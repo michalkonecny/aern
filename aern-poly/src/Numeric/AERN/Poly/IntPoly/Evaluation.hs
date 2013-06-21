@@ -49,10 +49,8 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
@@ -245,15 +243,15 @@ coeffPolyEvalOpsOut eff depth sample =
         let ?multInOutEffort = effMult in
         let ?intPowerInOutEffort = effPwr in
         let ?addInOutEffort = effAdd in
-        let ?pCompareEffort = effComp in
-        let ?joinmeetEffort = effJoin in
+        let (<=?) = NumOrd.pLeqEff effComp in
+        let (</\>) = RefOrd.meetOutEff effJoin in
         let ?mixedDivInOutEffort = effDivInt in -- needed for ghc 6.12
         PolyEvalOps (zero sample) (<+>) (<*>) (<^>) id (const Nothing) depth $
             Just $ PolyEvalMonoOps
                 result -- outer rounded ops = itself
                 (<=?)
-                RefOrd.getEndpointsOutWithDefaultEffort
-                RefOrd.fromEndpointsOutWithDefaultEffort
+                RefOrd.getEndpointsOut
+                RefOrd.fromEndpointsOut
                 isDefinitelyExact
                 split
                 (uncurry (</\>))
@@ -265,9 +263,9 @@ coeffPolyEvalOpsOut eff depth sample =
         (isExactEff $ ArithInOut.rrEffortImprecision a eff) a == Just True
     split val = (val1, val2)
         where
-        val1 = RefOrd.fromEndpointsOutWithDefaultEffort (valL, valM)
-        val2 = RefOrd.fromEndpointsOutWithDefaultEffort (valM, valR)
-        (valL, valR) = RefOrd.getEndpointsOutWithDefaultEffort val
+        val1 = RefOrd.fromEndpointsOut (valL, valM)
+        val2 = RefOrd.fromEndpointsOut (valM, valR)
+        (valL, valR) = RefOrd.getEndpointsOut val
         valM =
             let ?mixedDivInOutEffort = effDivInt in
             let ?addInOutEffort = effAdd in
@@ -278,7 +276,7 @@ coeffPolyEvalOpsOut eff depth sample =
         w = 
             let ?addInOutEffort = effAdd in
             valR <-> valL
-        (valL, valR) = RefOrd.getEndpointsOutWithDefaultEffort val
+        (valL, valR) = RefOrd.getEndpointsOut val
         
     effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
     effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
@@ -494,7 +492,7 @@ evalPolyMono evalDirect opsV valuesG pOrig@(IntPoly cfg _)
     
     direct = evalDirect valuesG pOrig
     
-    (pL, pR) = RefOrd.getEndpointsOutWithDefaultEffort pOrig
+    (pL, pR) = RefOrd.getEndpointsOut pOrig
     maybeResultL = maybeResultForP pL
     maybeResultR = maybeResultForP pR
     maybeResultForP p =

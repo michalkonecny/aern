@@ -32,7 +32,7 @@ import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Arbitrary
 --import qualified Numeric.AERN.NumericOrder as NumOrd
 --import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+import Numeric.AERN.RefinementOrder.Operators
 
 --import Numeric.AERN.RealArithmetic.Measures
 --import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn

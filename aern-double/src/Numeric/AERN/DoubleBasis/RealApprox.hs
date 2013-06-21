@@ -144,18 +144,14 @@ import Numeric.AERN.Basics.Interval
   (Interval(..))
 
 import qualified Numeric.AERN.NumericOrder as BNO
-  (least,greatest)
-
-import qualified Numeric.AERN.NumericOrder.OpsDefaultEffort as BNOODE
-  ((==?),(<==>?),(</=>?),
+  (least,greatest,
+   (==?),(<==>?),(</=>?),
    (<?),(>?),(<=?),(>=?),
    minOut,maxOut,minIn,maxIn)
 
 import qualified Numeric.AERN.RefinementOrder as BRO
-  (bottom,top,(⊥),(⊤))
-
-import qualified Numeric.AERN.RefinementOrder.OpsDefaultEffort as BROODE
-  ((|==?),(|<==>?),(|</=>?),
+  (bottom,top,(⊥),(⊤),
+   (|==?),(|<==>?),(|</=>?),
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
    (</\>),(<\/>?),(<⊓>),(<⊔>?))
 
@@ -197,47 +193,47 @@ infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
 
 -- | Partial equality
 (==?) :: RealApprox -> RealApprox -> Maybe Bool
-(==?) = (BNOODE.==?) 
+(==?) = (BNO.==?) 
 
 -- | Partial `is comparable to`
 (<==>?) :: RealApprox -> RealApprox -> Maybe Bool
-(<==>?) = (BNOODE.<==>?)
+(<==>?) = (BNO.<==>?)
 
 -- | Partial `is not comparable to`
 (</=>?) :: RealApprox -> RealApprox -> Maybe Bool
-(</=>?) = (BNOODE.</=>?)
+(</=>?) = (BNO.</=>?)
 
 -- | Partial `strictly less than`
 (<?) :: RealApprox -> RealApprox -> Maybe Bool
-(<?) = (BNOODE.<?)
+(<?) = (BNO.<?)
 
 -- | Partial `strictly greater than`
 (>?) :: RealApprox -> RealApprox -> Maybe Bool
-(>?) = (BNOODE.>?)
+(>?) = (BNO.>?)
 
 -- | Partial `less than or equal to`
 (<=?) :: RealApprox -> RealApprox -> Maybe Bool
-(<=?) = (BNOODE.<=?)
+(<=?) = (BNO.<=?)
 
 -- | Partial `greater than or equal to`
 (>=?) :: RealApprox -> RealApprox -> Maybe Bool
-(>=?) = (BNOODE.>=?)
+(>=?) = (BNO.>=?)
  
 -- | Outward rounded minimum
 minOut :: RealApprox -> RealApprox -> RealApprox
-minOut = BNOODE.minOut
+minOut = BNO.minOut
 
 -- | Outward rounded maximum
 maxOut :: RealApprox -> RealApprox -> RealApprox
-maxOut = BNOODE.maxOut
+maxOut = BNO.maxOut
 
 -- | Inward rounded minimum
 minIn :: RealApprox -> RealApprox -> RealApprox
-minIn = BNOODE.minIn
+minIn = BNO.minIn
 
 -- | Inward rounded maximum
 maxIn :: RealApprox -> RealApprox -> RealApprox
-maxIn = BNOODE.maxIn
+maxIn = BNO.maxIn
 
 bottom :: RealApprox
 bottom = BRO.bottom sampleRealApprox
@@ -259,63 +255,63 @@ infixr 2 <\/>?, <⊔>?
 
 -- | Partial equality
 (|==?) :: RealApprox -> RealApprox -> Maybe Bool
-(|==?) = (BROODE.|==?)
+(|==?) = (BRO.|==?)
 
 -- | Partial `is comparable to`
 (|<==>?) :: RealApprox -> RealApprox -> Maybe Bool
-(|<==>?) = (BROODE.|<==>?)
+(|<==>?) = (BRO.|<==>?)
 
 -- | Partial `is not comparable to`
 (|</=>?) :: RealApprox -> RealApprox -> Maybe Bool
-(|</=>?) = (BROODE.|</=>?)
+(|</=>?) = (BRO.|</=>?)
 
 -- | Partial `strictly below`
 (|<?) :: RealApprox -> RealApprox -> Maybe Bool
-(|<?) = (BROODE.|<?)
+(|<?) = (BRO.|<?)
 
 -- | Partial `strictly above`
 (|>?) :: RealApprox -> RealApprox -> Maybe Bool
-(|>?) = (BROODE.|>?)
+(|>?) = (BRO.|>?)
 
 -- | Partial `below or equal to`
 (|<=?) :: RealApprox -> RealApprox -> Maybe Bool
-(|<=?) = (BROODE.|<=?)
+(|<=?) = (BRO.|<=?)
 
 -- | Partial `above or equal to`
 (|>=?) :: RealApprox -> RealApprox -> Maybe Bool
-(|>=?) = (BROODE.|>=?)
+(|>=?) = (BRO.|>=?)
 
 {-| Convenience Unicode notation for '|<?' -}
 (⊏?) :: RealApprox -> RealApprox -> Maybe Bool
-(⊏?) = (BROODE.⊏?)
+(⊏?) = (BRO.⊏?)
 
 {-| Convenience Unicode notation for '|<=?' -}
 (⊑?) :: RealApprox -> RealApprox -> Maybe Bool
-(⊑?) = (BROODE.⊑?)
+(⊑?) = (BRO.⊑?)
 
 {-| Convenience Unicode notation for '|>=?' -}
 (⊒?) :: RealApprox -> RealApprox -> Maybe Bool
-(⊒?) = (BROODE.⊒?)
+(⊒?) = (BRO.⊒?)
 
 {-| Convenience Unicode notation for '|>?' -}
 (⊐?) :: RealApprox -> RealApprox -> Maybe Bool 
-(⊐?) = (BROODE.⊐?)
+(⊐?) = (BRO.⊐?)
 
 -- | Outward rounded meet
 (</\>) :: RealApprox -> RealApprox -> RealApprox
-(</\>) = (BROODE.</\>)
+(</\>) = (BRO.</\>)
 
 {-| Convenience Unicode notation for '</\>' -}
 (<⊓>) :: RealApprox -> RealApprox -> RealApprox
-(<⊓>) = (BROODE.<⊓>)
+(<⊓>) = (BRO.<⊓>)
 
 -- | Partial outward rounded join
 (<\/>?) :: RealApprox -> RealApprox -> Maybe RealApprox
-(<\/>?) = (BROODE.<\/>?)
+(<\/>?) = (BRO.<\/>?)
 
 {-| Convenience Unicode notation for '<\/>?' -}
 (<⊔>?) :: RealApprox -> RealApprox -> Maybe RealApprox 
-(<⊔>?) = (BROODE.<⊔>?)
+(<⊔>?) = (BRO.<⊔>?)
 
 infixl 6 <+>, <->
 infixl 7 <*>

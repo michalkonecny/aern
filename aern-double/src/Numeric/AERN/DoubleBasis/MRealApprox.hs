@@ -98,11 +98,10 @@ where
 import Numeric.AERN.Basics.Mutable
   (CanBeMutable(..),OpMutable2,OpMutable1,OpPartialMutable2,OpMutableNonmut,OpNonmut)
 
-import qualified Numeric.AERN.NumericOrder.InPlace.OpsDefaultEffort as BNOIPODE
+import qualified Numeric.AERN.NumericOrder as BNO
   (minOutInPlace,maxOutInPlace)
 
-import Numeric.AERN.RefinementOrder
-import qualified Numeric.AERN.RefinementOrder.InPlace.OpsDefaultEffort as BROIPODE
+import qualified Numeric.AERN.RefinementOrder as BRO
   (meetOutInPlace,(</\>=),(<⊓>=),
    partialJoinOutInPlace)
 
@@ -160,23 +159,23 @@ type MRealApprox = Mutable RealApprox
 
 -- | Outward rounded in-place minimum
 minOutInPlace :: OpMutable2 RealApprox s
-minOutInPlace = BNOIPODE.minOutInPlace
+minOutInPlace = BNO.minOutInPlace
 
 -- | Outward rounded in-place maximum
 maxOutInPlace :: OpMutable2 RealApprox s
-maxOutInPlace = BNOIPODE.maxOutInPlace
+maxOutInPlace = BNO.maxOutInPlace
 
 -- | Outward rounded in-place meet
 meetOutInPlace :: OpMutable2 RealApprox s
-meetOutInPlace = BROIPODE.meetOutInPlace
+meetOutInPlace = BRO.meetOutInPlace
 
 -- | Outward rounded meet assignment
 (</\>=) :: OpMutable1 RealApprox s
-(</\>=) = (BROIPODE.</\>=)
+(</\>=) = (BRO.</\>=)
 
 -- | Partial outward rounded in-place join
 partialJoinOutInPlace :: OpPartialMutable2 RealApprox s
-partialJoinOutInPlace = BROIPODE.partialJoinOutInPlace
+partialJoinOutInPlace = BRO.partialJoinOutInPlace
 
 {-| Convenience Unicode notation for '</\>=' -}
 (<⊓>=) :: OpMutable1 RealApprox s

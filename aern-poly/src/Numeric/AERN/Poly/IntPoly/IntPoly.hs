@@ -26,10 +26,10 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures (HasImprecision(..), HasDistance(..))
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsDefaultEffort ((|==?))
+import Numeric.AERN.RefinementOrder.Operators ((|==?))
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort ((<=?))
+import Numeric.AERN.NumericOrder.Operators ((<=?))
 
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.Consistency
@@ -334,7 +334,7 @@ makeCoeffsConsistentOut poly =
         | (coeffL <=? coeffR) == Just True = coeff
         | otherwise = coeffL
         where
-        (coeffL, coeffR) = RefOrd.getEndpointsOutWithDefaultEffort coeff
+        (coeffL, coeffR) = RefOrd.getEndpointsOut coeff
 
 {-| 
     Swaps the consistency of all coefficients.

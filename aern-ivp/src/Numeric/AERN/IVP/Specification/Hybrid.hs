@@ -32,10 +32,9 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 --
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 --
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 --import Numeric.AERN.Misc.Debug
 
@@ -119,8 +118,9 @@ mergeHybridStates effJoin state1 state2 =
     Map.unionWith mergeValues state1 state2
     where
     mergeValues values1 values2 =
-        let ?joinmeetEffort = effJoin in
         zipWith (</\>) values1 values2
+        where
+        (</\>) = RefOrd.meetOutEff effJoin
 
 differenceHybridStates ::
     (RefOrd.PartialComparison dom, RefOrd.IntervalLike dom)
@@ -146,17 +146,18 @@ differenceHybridStates effComp state1 (state2 :: HybridSystemUncertainState dom)
         where
         containmentFlags =
             map (== Just True) $        
-            let ?pCompareEffort = effComp in
             zipWith (|>=?) values1 (values2 :: [dom])
+            where
+            (|>=?) = RefOrd.pGeqEff effComp
         differenceOneComponent ix (h1:t1) (h2:t2)
             | ix == 0 = (diffValue h1 h2) : t1
             | otherwise = h1 : (differenceOneComponent (ix - 1) t1 t2)
             where
             diffValue value1 value2 
                 | cuttingFromRight = 
-                    RefOrd.fromEndpointsOutWithDefaultEffort (value1L, value2L)
+                    RefOrd.fromEndpointsOut (value1L, value2L)
                 | cuttingFromLeft = 
-                    RefOrd.fromEndpointsOutWithDefaultEffort (value2R, value1R)
+                    RefOrd.fromEndpointsOut (value2R, value1R)
                 | otherwise =
                     value1
                 where
@@ -166,9 +167,9 @@ differenceHybridStates effComp state1 (state2 :: HybridSystemUncertainState dom)
                 cuttingFromRight = 
                     let ?pCompareEffort = effComp in
                     (value1 |<=? value2L) == Just True
-                (value1L, value1R) = RefOrd.getEndpointsOutWithDefaultEffort value1
-                (value2L, value2R) = RefOrd.getEndpointsOutWithDefaultEffort value2
-                
+                (value1L, value1R) = RefOrd.getEndpointsOut value1
+                (value2L, value2R) = RefOrd.getEndpointsOut value2
+                (|<=?) = RefOrd.pLeqEff effComp
 
 getHybridStateUnion ::
     (RefOrd.RoundedLattice dom)
@@ -182,8 +183,9 @@ getHybridStateUnion effJoin state =
     (modes, valueVecs) =
         unzip $ Map.toAscList state
     mergeValues values1 values2 =
-        let ?joinmeetEffort = effJoin in
         zipWith (</\>) values1 values2
+        where
+        (</\>) = RefOrd.meetOutEff effJoin
     
 measureImprovementState :: 
       (HasImprecision dom,

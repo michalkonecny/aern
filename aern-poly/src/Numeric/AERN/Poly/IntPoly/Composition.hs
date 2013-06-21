@@ -107,8 +107,8 @@ polyPolyEvalOps effCmp@(_,(effCf, Int1To10 maxSplitDepth)) sampleP sampleCf =
             Just $ PolyEvalMonoOps
                 result
                 (<=?)
-                RefOrd.getEndpointsOutWithDefaultEffort
-                RefOrd.fromEndpointsOutWithDefaultEffort
+                RefOrd.getEndpointsOut
+                RefOrd.fromEndpointsOut
                 isDefinitelyExact
                 split
                 join
@@ -118,9 +118,9 @@ polyPolyEvalOps effCmp@(_,(effCf, Int1To10 maxSplitDepth)) sampleP sampleCf =
                 effCf
     split val = (val1, val2)
         where
-        val1 = RefOrd.fromEndpointsOutWithDefaultEffort (valL, valM)
-        val2 = RefOrd.fromEndpointsOutWithDefaultEffort (valM, valR)
-        (valL, valR) = RefOrd.getEndpointsOutWithDefaultEffort val
+        val1 = RefOrd.fromEndpointsOut (valL, valM)
+        val2 = RefOrd.fromEndpointsOut (valM, valR)
+        (valL, valR) = RefOrd.getEndpointsOut val
         valM =
             let (<+>) = ArithInOut.addOutEff effCf in
             let (</>|) = ArithInOut.mixedDivOutEff effDivIntCf in
@@ -218,11 +218,11 @@ instance
 --   -> 
 --   (t1 -> t2)
 --performEndpointWiseWithDefaultEffort fn p =
---    RefOrd.fromEndpointsOutWithDefaultEffort (resL, resR)
+--    RefOrd.fromEndpointsOut (resL, resR)
 --    where
 --    resL = fn pL
 --    resR = fn pR
---    (pL, pR) = RefOrd.getEndpointsOutWithDefaultEffort p
+--    (pL, pR) = RefOrd.getEndpointsOut p
      
         
 -- TODO: the following functions should be made independent of IntPoly and moved to aern-realfn        

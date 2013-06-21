@@ -36,6 +36,9 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+infixr 3 </\>, >/\<, <⊓>, >⊓< 
+infixr 2 <\/>, >\/<, <⊔>, >⊔< 
+
 {-|
     A type with outward-rounding lattice operations.
 -}
@@ -48,10 +51,59 @@ class
     joinmeetDefaultEffort :: t -> JoinMeetEffortIndicator t
 
 class (RoundedLatticeEffort t) => RoundedLattice t where
-    joinInEff :: JoinMeetEffortIndicator t -> t -> t -> t
     joinOutEff :: JoinMeetEffortIndicator t -> t -> t -> t
-    meetInEff :: JoinMeetEffortIndicator t -> t -> t -> t
+    joinInEff :: JoinMeetEffortIndicator t -> t -> t -> t
     meetOutEff :: JoinMeetEffortIndicator t -> t -> t -> t
+    meetInEff :: JoinMeetEffortIndicator t -> t -> t -> t
+
+-- | Outward rounded join with default effort
+joinOut :: (RoundedLattice t) => t -> t -> t
+joinOut a = joinOutEff (joinmeetDefaultEffort a) a 
+
+-- | Outward rounded join with default effort
+(<\/>) :: (RoundedLattice t) => t -> t -> t 
+(<\/>) = joinOut 
+
+{-| Convenience Unicode notation for '<\/>' -}
+(<⊔>) :: (RoundedLattice t) => t -> t -> t
+(<⊔>) = (<\/>)
+
+-- | Inward rounded join with default effort
+joinIn :: (RoundedLattice t) => t -> t -> t
+joinIn a = joinInEff (joinmeetDefaultEffort a) a 
+
+-- | Inward rounded join with default effort
+(>\/<) :: (RoundedLattice t) => t -> t -> t
+(>\/<) = joinIn 
+
+{-| Convenience Unicode notation for '>\/<' -}
+(>⊔<) :: (RoundedLattice t) => t -> t -> t
+(>⊔<) = (>\/<)
+
+-- | Outward rounded meet with default effort
+meetOut :: (RoundedLattice t) => t -> t -> t
+meetOut a = meetOutEff (joinmeetDefaultEffort a) a 
+
+-- | Outward rounded meet with default effort
+(</\>) :: (RoundedLattice t) => t -> t -> t
+(</\>) = meetOut 
+
+{-| Convenience Unicode notation for '</\>' -}
+(<⊓>) :: (RoundedLattice t) => t -> t -> t
+(<⊓>) = (</\>)
+
+-- | Inward rounded meet with default effort
+meetIn :: (RoundedLattice t) => t -> t -> t
+meetIn a = meetInEff (joinmeetDefaultEffort a) a 
+
+-- | Inward rounded meet with default effort
+(>/\<) :: (RoundedLattice t) => t -> t -> t
+(>/\<) = meetIn 
+
+{-| Convenience Unicode notation for '>/\<' -}
+(>⊓<) :: (RoundedLattice t) => t -> t -> t
+(>⊓<) = (>/\<)
+
 
 -- properties of RoundedLattice
 

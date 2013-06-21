@@ -37,10 +37,10 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
-import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+import Numeric.AERN.RefinementOrder.Operators
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Interval
@@ -70,7 +70,7 @@ instance
     Ord (Interval e)
     where
     compare i1 i2 =
-        case NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort i1) i1 i2 of 
+        case NumOrd.pCompare i1 i2 of 
             Just EQ -> Prelude.EQ
             Just LT -> Prelude.LT
             Just GT -> Prelude.GT
@@ -82,8 +82,8 @@ instance
                     ++ "\n consider replacing with ops defined at NumericOrder.OpsDefaultEffort"
                     ++ "\n                                  or at NumericOrder.OpsImplicitEffort"
                     ++ "\n                 or with NumericOrder.pCompareEff"
-    max i1 i2 = maxOut i1 i2
-    min i1 i2 = minOut i1 i2
+    max i1 i2 = NumOrd.maxOut i1 i2
+    min i1 i2 = NumOrd.minOut i1 i2
 
 instance 
     (ArithUpDn.Convertible Integer e, 

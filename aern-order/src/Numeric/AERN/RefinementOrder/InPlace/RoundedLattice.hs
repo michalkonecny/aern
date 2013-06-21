@@ -40,6 +40,9 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+infixr 3 </\>=, >/\<=, <⊓>=, >⊓<= 
+infixr 2 <\/>=, >\/<=, <⊔>=, >⊔<= 
+
 {-|
     A type with directed-rounding lattice operations.
 -}
@@ -51,6 +54,55 @@ class
     joinOutInPlaceEff :: OpMutable2Eff (JoinMeetEffortIndicator t) t s
     meetInInPlaceEff :: OpMutable2Eff (JoinMeetEffortIndicator t) t s
     meetOutInPlaceEff :: OpMutable2Eff (JoinMeetEffortIndicator t) t s
+    
+-- | Outward rounded in-place meet with default effort
+meetOutInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
+meetOutInPlace = mutable2EffToMutable2 meetOutInPlaceEff joinmeetDefaultEffort 
+
+-- | Outward rounded meet assignment with default effort
+(</\>=) :: (RoundedLatticeInPlace t) => OpMutable1 t s
+(</\>=) = mutable2ToMutable1 meetOutInPlace
+
+{-| Convenience Unicode notation for '</\>=' -}
+(<⊓>=) :: (RoundedLatticeInPlace t) => OpMutable1 t s
+(<⊓>=) = (</\>=)
+
+-- | Inward rounded in-place meet with default effort
+meetInInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
+meetInInPlace = mutable2EffToMutable2 meetInInPlaceEff joinmeetDefaultEffort 
+
+-- | Inward rounded meet assignment with default effort
+(>/\<=) :: (RoundedLatticeInPlace t) => OpMutable1 t s
+(>/\<=) = mutable2ToMutable1 meetInInPlace
+
+{-| Convenience Unicode notation for '>/\<=' -}
+(>⊓<=) :: (RoundedLatticeInPlace t) => OpMutable1 t s
+(>⊓<=) = (>/\<=)
+
+-- | Outward rounded in-place join with default effort
+joinOutInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
+joinOutInPlace = mutable2EffToMutable2 joinOutInPlaceEff joinmeetDefaultEffort 
+
+-- | Outward rounded join assignment with default effort
+(<\/>=) :: (RoundedLatticeInPlace t) => OpMutable1 t s
+(<\/>=) = mutable2ToMutable1 joinOutInPlace
+
+{-| Convenience Unicode notation for '<\/>=' -}
+(<⊔>=) :: (RoundedLatticeInPlace t) => OpMutable1 t s
+(<⊔>=) = (<\/>=)
+
+-- | Inward rounded in-place join with default effort
+joinInInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
+joinInInPlace = mutable2EffToMutable2 joinInInPlaceEff joinmeetDefaultEffort 
+
+-- | Inward rounded join assignment with default effort
+(>\/<=) :: (RoundedLatticeInPlace t) => OpMutable1 t s
+(>\/<=) = mutable2ToMutable1 joinInInPlace
+
+{-| Convenience Unicode notation for '>\/<=' -}
+(>⊔<=) :: (RoundedLatticeInPlace t) => OpMutable1 t s
+(>⊔<=) = (>\/<=)
+    
     
 joinOutInPlaceEffFromPure, 
  meetOutInPlaceEffFromPure :: 

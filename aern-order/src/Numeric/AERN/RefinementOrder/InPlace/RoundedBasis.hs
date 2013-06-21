@@ -38,6 +38,7 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+infixr 2 <\/>?=, >\/<?=, <⊔>?=, >⊔<?= 
 
 {-|
     A type with outward-rounding lattice operations.
@@ -47,6 +48,28 @@ class (RoundedBasisEffort t, CanBeMutable t) =>
     where
     partialJoinOutInPlaceEff :: OpPartialMutable2Eff (PartialJoinEffortIndicator t) t s 
     partialJoinInInPlaceEff :: OpPartialMutable2Eff (PartialJoinEffortIndicator t) t s 
+
+-- | Partial outward rounded in-place join with default effort
+partialJoinOutInPlace :: (RoundedBasisInPlace t) => OpPartialMutable2 t s
+partialJoinOutInPlace = 
+    partialMutable2EffToPartialMutable2 partialJoinOutInPlaceEff partialJoinDefaultEffort 
+-- | Partial outward rounded in-place join with default effort
+(<\/>?=) :: (RoundedBasisInPlace t) => OpPartialMutable2 t s
+(<\/>?=) = partialJoinOutInPlace
+-- | Partial outward rounded in-place join with default effort
+(<⊔>?=) :: (RoundedBasisInPlace t) => OpPartialMutable2 t s
+(<⊔>?=) = partialJoinOutInPlace
+
+-- | Partial inward rounded in-place join with default effort
+partialJoinInInPlace :: (RoundedBasisInPlace t) => OpPartialMutable2 t s
+partialJoinInInPlace = 
+    partialMutable2EffToPartialMutable2 partialJoinInInPlaceEff partialJoinDefaultEffort
+-- | Partial inward rounded in-place join with default effort
+(>\/<?=) :: (RoundedBasisInPlace t) => OpPartialMutable2 t s
+(>\/<?=) = partialJoinInInPlace
+-- | Partial inward rounded in-place join with default effort
+(>⊔<?=) :: (RoundedBasisInPlace t) => OpPartialMutable2 t s
+(>⊔<?=) = partialJoinInInPlace
 
 partialJoinOutInPlaceEffFromPure :: 
     (CanBeMutable t, RoundedBasis t) => 

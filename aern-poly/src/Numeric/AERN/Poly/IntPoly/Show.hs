@@ -29,7 +29,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 --import Numeric.AERN.RealArithmetic.Measures (HasImprecision(..))
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsDefaultEffort ((|==?))
+import Numeric.AERN.RefinementOrder.Operators ((|==?))
 
 import Numeric.AERN.Basics.ShowInternals
 --import Numeric.AERN.Basics.Exception

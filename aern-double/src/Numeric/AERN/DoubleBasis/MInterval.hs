@@ -155,11 +155,11 @@ where
 import Numeric.AERN.Basics.Mutable
   (CanBeMutable(..),OpMutable2,OpMutable1,OpPartialMutable2,OpMutableNonmut,OpNonmut)
 
-import qualified Numeric.AERN.NumericOrder.InPlace.OpsDefaultEffort as BNOIPODE
+import qualified Numeric.AERN.NumericOrder as BNO
   (minOutInPlace,maxOutInPlace,
    minInInPlace,maxInInPlace)
 
-import qualified Numeric.AERN.RefinementOrder.InPlace.OpsDefaultEffort as BROIPODE
+import qualified Numeric.AERN.RefinementOrder as BRO
   (meetOutInPlace,(</\>=),(<⊓>=),
    joinOutInPlace,(<\/>=),(<⊔>=),
    partialJoinOutInPlace,
@@ -169,8 +169,6 @@ import qualified Numeric.AERN.RefinementOrder.InPlace.OpsDefaultEffort as BROIPO
 
 import Numeric.AERN.RealArithmetic.Basis.Double()
 import Numeric.AERN.RealArithmetic.Interval.Mutable()
-
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as NumOrd
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
   (RoundedMixedAddInPlace(..),RoundedMixedMultiplyInPlace(..),RoundedMixedDivideInPlace(..))
@@ -229,59 +227,59 @@ type MDI = Mutable DI
 
 -- | Outward rounded in-place minimum
 minOutInPlace :: OpMutable2 DI s
-minOutInPlace = BNOIPODE.minOutInPlace
+minOutInPlace = BNO.minOutInPlace
 
 -- | Outward rounded in-place maximum
 maxOutInPlace :: OpMutable2 DI s
-maxOutInPlace = BNOIPODE.maxOutInPlace
+maxOutInPlace = BNO.maxOutInPlace
 
 -- | Inward rounded in-place minimum
 minInInPlace :: OpMutable2 DI s
-minInInPlace = BNOIPODE.minInInPlace
+minInInPlace = BNO.minInInPlace
 
 -- | Inward rounded in-place maximum
 maxInInPlace :: OpMutable2 DI s
-maxInInPlace = BNOIPODE.maxInInPlace
+maxInInPlace = BNO.maxInInPlace
 
 -- | Outward rounded in-place meet
 meetOutInPlace :: OpMutable2 DI s
-meetOutInPlace = BROIPODE.meetOutInPlace
+meetOutInPlace = BRO.meetOutInPlace
 
 -- | Outward rounded meet assignment
 (</\>=) :: OpMutable1 DI s
-(</\>=) = (BROIPODE.</\>=)
+(</\>=) = (BRO.</\>=)
 
 -- | Inward rounded in-place meet
 meetInInPlace :: OpMutable2 DI s
-meetInInPlace = BROIPODE.meetInInPlace
+meetInInPlace = BRO.meetInInPlace
 
 -- | Inward rounded meet assignment
 (>/\<=) :: OpMutable1 DI s
-(>/\<=) = (BROIPODE.>/\<=)
+(>/\<=) = (BRO.>/\<=)
 
 -- | Outward rounded in-place join
 joinOutInPlace :: OpMutable2 DI s
-joinOutInPlace = BROIPODE.joinOutInPlace
+joinOutInPlace = BRO.joinOutInPlace
 
 -- | Outward rounded join assignment
 (<\/>=) :: OpMutable1 DI s
-(<\/>=) = (BROIPODE.<\/>=)
+(<\/>=) = (BRO.<\/>=)
 
 -- | Inward rounded in-place join
 joinInInPlace :: OpMutable2 DI s
-joinInInPlace = BROIPODE.joinInInPlace 
+joinInInPlace = BRO.joinInInPlace 
 
 -- | Inward rounded join assignment
 (>\/<=) :: OpMutable1 DI s
-(>\/<=) = (BROIPODE.>\/<=)
+(>\/<=) = (BRO.>\/<=)
 
 -- | Partial outward rounded in-place join
 partialJoinOutInPlace :: OpPartialMutable2 DI s
-partialJoinOutInPlace = BROIPODE.partialJoinOutInPlace
+partialJoinOutInPlace = BRO.partialJoinOutInPlace
 
 -- | Partial inward rounded in-place join
 partialJoinInInPlace :: OpPartialMutable2 DI s
-partialJoinInInPlace = BROIPODE.partialJoinInInPlace
+partialJoinInInPlace = BRO.partialJoinInInPlace
 
 {-| Convenience Unicode notation for '<\/>=' -}
 (<⊔>=) :: OpMutable1 DI s

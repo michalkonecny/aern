@@ -138,7 +138,7 @@ findRoot (prec, effFn) fn leftEndpoint rightEndpoint =
 --            &&
 --            ((x <? r) == Just True)
 --        getLeftEndpoint x =
---            fst $ RefOrd.getEndpointsOutWithDefaultEffort x
+--            fst $ RefOrd.getEndpointsOut x
     
 data Sign = Positive | Negative
 
