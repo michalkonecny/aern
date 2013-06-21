@@ -44,15 +44,16 @@ class
     getEndpointsOutEff :: (GetEndpointsEffortIndicator t) -> t -> (t,t)
     fromEndpointsInEff :: (FromEndpointsEffortIndicator t) -> (t,t) -> t 
     fromEndpointsOutEff :: (FromEndpointsEffortIndicator t) -> (t,t) -> t 
-    -- versions  with default effort - can be optimised:
-    getEndpointsInWithDefaultEffort :: (IntervalLike t) => t -> (t,t)
-    getEndpointsInWithDefaultEffort a = getEndpointsInEff (getEndpointsDefaultEffort a) a
-    getEndpointsOutWithDefaultEffort :: (IntervalLike t) => t -> (t,t)
-    getEndpointsOutWithDefaultEffort a = getEndpointsOutEff (getEndpointsDefaultEffort a) a
-    fromEndpointsInWithDefaultEffort :: (IntervalLike t) => (t,t) -> t
-    fromEndpointsInWithDefaultEffort p@(l,r) = fromEndpointsInEff (fromEndpointsDefaultEffort l) p
-    fromEndpointsOutWithDefaultEffort :: (IntervalLike t) => (t,t) -> t
-    fromEndpointsOutWithDefaultEffort p@(l,r) = fromEndpointsOutEff (fromEndpointsDefaultEffort l) p
+
+-- versions  with default effort
+getEndpointsIn :: (IntervalLike t) => t -> (t,t)
+getEndpointsIn a = getEndpointsInEff (getEndpointsDefaultEffort a) a
+getEndpointsOut :: (IntervalLike t) => t -> (t,t)
+getEndpointsOut a = getEndpointsOutEff (getEndpointsDefaultEffort a) a
+fromEndpointsIn :: (IntervalLike t) => (t,t) -> t
+fromEndpointsIn p@(l,r) = fromEndpointsInEff (fromEndpointsDefaultEffort l) p
+fromEndpointsOut :: (IntervalLike t) => (t,t) -> t
+fromEndpointsOut p@(l,r) = fromEndpointsOutEff (fromEndpointsDefaultEffort l) p
     
 propEndpointsFromGet :: 
     (IntervalLike t, Show t, 

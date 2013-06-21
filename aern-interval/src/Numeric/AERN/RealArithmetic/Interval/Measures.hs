@@ -32,7 +32,6 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 
 instance (HasDistance e, ArithInOut.RoundedAdd (Distance e)) => 
@@ -70,16 +69,14 @@ instance
         effortMeet = RefOrd.joinmeetDefaultEffort d
         d = distanceBetweenEff effortDist l r
     imprecisionOfEff (effortDist, effortMeet, effortConsistency) i@(Interval l r) =
-        let 
-        ?joinmeetEffort = effortMeet
-        in
         case (isConsistentEff effortConsistency i) of
             Just True -> dist
             Just False -> neg dist
             Nothing -> dist <⊓> (neg dist)
-        where 
+        where
+        (<⊓>) = RefOrd.meetOutEff effortMeet
         dist = distanceBetweenEff effortDist l r
-    isExactEff eff@(effortDist, effortMeet, effortConsistency) i =
+    isExactEff _eff@(_effortDist, _effortMeet, effortConsistency) i =
         case (isConsistentEff effortConsistency i, isAntiConsistentEff effortConsistency i) of
             (Just True, Just True) -> Just True
             (Just False, _) -> Just False

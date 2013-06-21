@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
@@ -25,7 +24,6 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.PartialOrdering
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Numeric.AERN.Misc.Bool
 import Numeric.AERN.Misc.Maybe
@@ -58,7 +56,7 @@ propConvertMonotone ::
 propConvertMonotone sample1 sample2 (effortConvert, effortComp2) (NumOrd.LEPair (a1, a2)) =
     (defined ma1Dn && defined ma2Up) ===>
     (trueOrNothing $ 
-        let ?pCompareEffort = effortComp2 in
+        let (<=?) = NumOrd.pLeqEff effortComp2 in
         a1Dn <=? a2Up)
     where
     ma1Dn = convertDnEff effortConvert sample2 a1 
@@ -75,7 +73,7 @@ propConvertRoundTrip ::
     t1 -> Bool
 propConvertRoundTrip sample1 sample2 (effortComp, effortFrom2, effortTo2) a =
     (defined maDn2 && defined maDn && defined maUp2 && defined maUp) ===>
-    let ?pCompareEffort = effortComp in
+    let (<=?) = NumOrd.pLeqEff effortComp in
     case (aDn <=? a, a <=? aUp) of
        (Just False, _) -> False
        (_, Just False) -> False

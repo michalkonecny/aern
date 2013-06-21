@@ -219,7 +219,7 @@ parametriseThickFunctions effAddFn effMultFn componentNames fnVec =
         (fnL <*> compVar) <+> (fnR <*> (c1 <-> compVar)) -- thinning
         where
         compVar = makeVar compName
-        (fnL, fnR) = RefOrd.getEndpointsOutWithDefaultEffort fnWithNewVars
+        (fnL, fnR) = RefOrd.getEndpointsOut fnWithNewVars
         fnWithNewVars =
             addVariablesFront newVarDoms fn
         
@@ -234,7 +234,7 @@ parametriseThickFunctions effAddFn effMultFn componentNames fnVec =
     newVarDoms =
         (zip componentNames $ repeat unitDom)
         where
-        unitDom = RefOrd.fromEndpointsOutWithDefaultEffort (zero sampleDom, one sampleDom)
+        unitDom = RefOrd.fromEndpointsOut (zero sampleDom, one sampleDom)
     
     sampleFnIncoming : _ = fnVec
     sampleDom = getSampleDomValue sampleFnIncoming
@@ -285,16 +285,16 @@ evalAtEndTimeOutInFn effEval tVar tEnd (fnOut, fnIn) =
     valueOut =
         evalAtPointOutEff effEval endTimeArea fnOut
     valueIn =
-        RefOrd.fromEndpointsOutWithDefaultEffort (valueRL, valueLR)
+        RefOrd.fromEndpointsOut (valueRL, valueLR)
     (_, valueLR) =
-        RefOrd.getEndpointsOutWithDefaultEffort valueBelowR
+        RefOrd.getEndpointsOut valueBelowR
     (valueRL, _) =
-        RefOrd.getEndpointsOutWithDefaultEffort valueAboveL
+        RefOrd.getEndpointsOut valueAboveL
     valueBelowR =
         evalAtPointInEff effEval endTimeArea fnBelowR
     valueAboveL =
         evalAtPointInEff effEval endTimeArea fnAboveL
-    (fnAboveL, fnBelowR) = RefOrd.getEndpointsOutWithDefaultEffort fnIn
+    (fnAboveL, fnBelowR) = RefOrd.getEndpointsOut fnIn
 --    endTimeArea :: DomainBox f
     endTimeArea = insertVar tVar tEnd $ getDomainBox fnOut
 

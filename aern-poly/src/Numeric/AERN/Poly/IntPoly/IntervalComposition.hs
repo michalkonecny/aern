@@ -131,8 +131,8 @@ intpolyPolyEvalOps (effRing, effCmp@(_,(effCf, Int1To10 maxSplitDepth))) sampleP
             Just $ PolyEvalMonoOps
                 result
                 (<=?)
-                RefOrd.getEndpointsOutWithDefaultEffort
-                RefOrd.fromEndpointsOutWithDefaultEffort
+                RefOrd.getEndpointsOut
+                RefOrd.fromEndpointsOut
                 isDefinitelyExact
                 split
                 join
@@ -142,9 +142,9 @@ intpolyPolyEvalOps (effRing, effCmp@(_,(effCf, Int1To10 maxSplitDepth))) sampleP
                 effCf
     split val = (val1, val2)
         where
-        val1 = RefOrd.fromEndpointsOutWithDefaultEffort (valL, valM)
-        val2 = RefOrd.fromEndpointsOutWithDefaultEffort (valM, valR)
-        (valL, valR) = RefOrd.getEndpointsOutWithDefaultEffort val
+        val1 = RefOrd.fromEndpointsOut (valL, valM)
+        val2 = RefOrd.fromEndpointsOut (valM, valR)
+        (valL, valR) = RefOrd.getEndpointsOut val
         valM =
             let (<+>) = ArithInOut.addOutEff (ArithInOut.ringEffortAdd samplePI effRing) in
             let (<*>) = ArithInOut.multOutEff (ArithInOut.ringEffortMult samplePI effRing) in

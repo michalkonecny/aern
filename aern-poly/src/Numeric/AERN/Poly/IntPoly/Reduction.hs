@@ -43,11 +43,9 @@ import Numeric.AERN.RealArithmetic.Measures
 
 import Numeric.AERN.Basics.Consistency
 
-import qualified Numeric.AERN.NumericOrder.OpsDefaultEffort as NumOrdDefEffort
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+--import Numeric.AERN.RefinementOrder.Operators
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.Basics.PartialOrdering as PartialOrdering
@@ -263,7 +261,7 @@ reduceTermsCountWithOps (+) (*) (^) getImpr varDoms maxSize terms
             where
             notConst = or $ map (/= 0) degrees
             tooSmall =
-                (evalTermRangeWidth (reverse degrees) cf NumOrdDefEffort.<? tresholdSmallestAllowed) == Just True
+                (evalTermRangeWidth (reverse degrees) cf NumOrd.<? tresholdSmallestAllowed) == Just True
 
 reduceMarkedTerms ::
     (Show var, Show cf) =>

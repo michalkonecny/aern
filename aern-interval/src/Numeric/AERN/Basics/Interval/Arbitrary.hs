@@ -25,7 +25,7 @@ import Numeric.AERN.Basics.Arbitrary
 import Numeric.AERN.Basics.Interval.Basics
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 
 instance 
     (NumOrd.ArbitraryOrderedTuple e,

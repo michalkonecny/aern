@@ -167,7 +167,7 @@ instance
             newVars = vars ++ (ipolycfg_vars cfg)
             newDomsLE = domsLE ++ (ipolycfg_domsLE cfg)
             newDomsLZ = domsLZ ++ (ipolycfg_domsLZ cfg)
-            domsLE = map (fst . RefOrd.getEndpointsOutWithDefaultEffort) doms
+            domsLE = map (fst . RefOrd.getEndpointsOut) doms
             domsLZ = zipWith (<->) doms domsLE
         termsWithNewVars = addVars vars
             where
@@ -190,7 +190,7 @@ instance
             newVars = (ipolycfg_vars cfg) ++ vars
             newDomsLE = (ipolycfg_domsLE cfg) ++ domsLE
             newDomsLZ = (ipolycfg_domsLZ cfg) ++ domsLZ
-            domsLE = map (fst . RefOrd.getEndpointsOutWithDefaultEffort) doms
+            domsLE = map (fst . RefOrd.getEndpointsOut) doms
             domsLZ = zipWith (<->) doms domsLE
         termsWithNewVars = addVarsToAllTerms terms
             where

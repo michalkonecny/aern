@@ -27,7 +27,6 @@ import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Numeric.AERN.Misc.Debug
 
@@ -175,8 +174,8 @@ propSqrtSquare sample initEffort (NumOrd.UniformlyOrderedSingleton e1) =
         | otherwise = zero sample
         where
         sqrtE1DefinitelyPositive =
-            let ?pCompareEffort = effCompare in
-            case sqrtE1 >=? zero sample of (Just r) -> r; _ -> False
+            case zero sample <=? sqrtE1  of (Just r) -> r; _ -> False
+        (<=?) = NumOrd.pLeqEff effCompare
         (*.) = multDnEff effMult
         sqrtE1 = sqrtDnEff effSqrt e1
     expr2Up _ = e1

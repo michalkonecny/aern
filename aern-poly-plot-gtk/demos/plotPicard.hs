@@ -25,7 +25,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 --import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+import Numeric.AERN.RefinementOrder.Operators
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
@@ -421,6 +421,6 @@ doms1P = [constructCF 0 1] ++ initValuesSpringMass_uv
 
 constructCF :: Double -> Double -> CF
 constructCF l r =
-    RefOrd.fromEndpointsOutWithDefaultEffort (cf0 <+>| l, cf0 <+>| r)
+    RefOrd.fromEndpointsOut (cf0 <+>| l, cf0 <+>| r)
 cf0 = 0 :: CF
     

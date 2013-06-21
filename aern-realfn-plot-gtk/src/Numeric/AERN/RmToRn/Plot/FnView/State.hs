@@ -148,12 +148,12 @@ updateCentreByRatio effReal (ratX, ratY) state =
             shiftX a =
                 let ?addInOutEffort = effAdd in
                 let ?mixedMultInOutEffort = effMultDbl in 
-                fst $ RefOrd.getEndpointsOutWithDefaultEffort $ 
+                fst $ RefOrd.getEndpointsOut $ 
                     a <-> (ratX |<*> fnDomWidth)
             shiftY a = 
                 let ?addInOutEffort = effAdd in
                 let ?mixedMultInOutEffort = effMultDbl in
-                fst $ RefOrd.getEndpointsOutWithDefaultEffort $ 
+                fst $ RefOrd.getEndpointsOut $ 
                     a <-> (ratY |<*> fnRangeHeight)
             fnDomWidth = 
                 let ?addInOutEffort = effAdd in

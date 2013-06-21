@@ -74,7 +74,8 @@ _ = unsafePrint -- stop the unused warning
 
 type CF = CF.DI
 type FnEndpt = IntPoly String CF
-type Fn = Interval FnEndpt
+--type Fn = Interval FnEndpt
+type Fn = FnEndpt
 
 sampleCf :: CF
 sampleCf = 0
@@ -186,7 +187,7 @@ writeCSV [ivpName, endTimeS, outputFileName] =
                 computeDiff stateOut stateOther = 
                     removeBracks $
                     show $ measureImprovementState sampleCf effCf stateOut stateOther
---                        snd $ RefOrd.getEndpointsOutWithDefaultEffort $ 
+--                        snd $ RefOrd.getEndpointsOut $ 
 ----                            foldl1 min $ -- assuming that the components are interdependent - some may be bad due to dependency errors in the projection 
 --                            foldl1 max $ 
 --                                zipWith (CF.<->) (map CF.width vecOut) (map CF.width vecOther)
@@ -293,7 +294,7 @@ solveEventsPrintSteps shouldPlotSteps _shouldShowSteps ivp (maxdegParam, depthPa
     -- parameters:
     delta = 1
     maxdeg = maxdegParam
-    maxsize = 500
+    maxsize = 50
     m = 20
     substSplitSizeLimit = maxSplitSizeParam -- 2^t0maxdeg
 --    minStepSizeExp = -4 :: Int
@@ -336,7 +337,7 @@ solveEventsPrintSteps shouldPlotSteps _shouldShowSteps ivp (maxdegParam, depthPa
         getError (valueIn, valueOut) =
             err
             where
-            err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
+            err = snd $ RefOrd.getEndpointsOut $ wOut CF.<-> wIn
             wOut = CF.width valueOut     
             wIn = CF.width valueIn     
     
@@ -480,7 +481,7 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
     newConstFn cfg dombox sampleCf
     where
     domsLE = 
-        map (fst . RefOrd.getEndpointsOutWithDefaultEffort) doms
+        map (fst . RefOrd.getEndpointsOut) doms
     dombox = fromList $ zip vars doms 
     cfg =
         IntPolyCfg

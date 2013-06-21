@@ -45,10 +45,8 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.Misc.IntegerArithmetic
 
 --import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
---import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Graphics.Rendering.Cairo as Cairo
 import qualified Graphics.UI.Gtk as Gtk
@@ -307,8 +305,9 @@ pickAFewDyadicBetween sampleDom effReal a b =
     Just sizeDnI = ArithUpDn.convertDnEff effToInteger 0 size
 
     sizeBelowOne =
-        let ?pCompareEffort = effComp in
         (size <? c1) == Just True
+        where
+        (<?) = NumOrd.pLessEff effComp
     sizeRecip = 
         let ?divInOutEffort = effDiv in
         c1 </> size

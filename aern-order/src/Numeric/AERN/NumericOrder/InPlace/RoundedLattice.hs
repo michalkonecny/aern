@@ -52,6 +52,23 @@ class
     minUpInPlaceEff :: OpMutable2Eff (MinmaxEffortIndicator t) t s
     minDnInPlaceEff :: OpMutable2Eff (MinmaxEffortIndicator t) t s
     
+-- | Downward rounded in-place minimum with default effort
+minDnInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
+minDnInPlace = mutable2EffToMutable2 minDnInPlaceEff minmaxDefaultEffort
+
+-- | Upward rounded in-place minimum with default effort
+minUpInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
+minUpInPlace = mutable2EffToMutable2 minUpInPlaceEff minmaxDefaultEffort
+
+-- | Downward rounded in-place maximum with default effort
+maxDnInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
+maxDnInPlace = mutable2EffToMutable2 maxDnInPlaceEff minmaxDefaultEffort
+
+-- | Upward rounded in-place maximum with default effort
+maxUpInPlace :: (RoundedLatticeInPlace t) => OpMutable2 t s
+maxUpInPlace = mutable2EffToMutable2 maxUpInPlaceEff minmaxDefaultEffort
+
+    
 maxUpInPlaceEffFromPure, 
  maxDnInPlaceEffFromPure, 
  minUpInPlaceEffFromPure,

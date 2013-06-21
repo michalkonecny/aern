@@ -44,10 +44,9 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 
@@ -363,8 +362,9 @@ solveHybridIVP_SplitNearEvents
                     _ -> Just $ Map.singleton mode values
                 where
                 values = 
-                    let ?joinmeetEffort = effJoinMeet in
                     foldl1 (zipWith (<\/>)) valuesVariants
+                    where
+                    (<\/>) = RefOrd.joinOutEff effJoinMeet
                 valuesVariants = catMaybes valuesMaybeVariants
                 [valuesMaybeVariants] = 
                     bisectionInfoEvalFn effDom evalFnsAtTEventsR noEventsSolution (tStart, tEnd) t
@@ -503,12 +503,12 @@ solveHybridIVP_SplitNearEvents
 --                    makeDipFnLEAsList fns = [dipFnLE]
 --                        where
 --                        (dipFnLE, _) = 
---                            RefOrd.getEndpointsOutWithDefaultEffort $ 
+--                            RefOrd.getEndpointsOut $ 
 --                                eliminateAllVarsButT $ makeDipFn fns
 --                    makeDipFnREAsList fns = [dipFnRE]
 --                        where
 --                        (_, dipFnRE) = 
---                            RefOrd.getEndpointsOutWithDefaultEffort $ 
+--                            RefOrd.getEndpointsOut $ 
 --                                eliminateAllVarsButT $ makeDipFn fns
 --                    eliminateAllVarsButT fn =
 --                        pEvalAtPointOutEff effPEval domboxNoT fn
@@ -548,9 +548,9 @@ solveHybridIVP_SplitNearEvents
 --            where
 --            (tStartPlusMaxStep, _) =
 --                let ?addInOutEffort = effAdd in
---                RefOrd.getEndpointsOutWithDefaultEffort $ 
+--                RefOrd.getEndpointsOut $ 
 --                tStart <+> maxStepSize
---        tDom = RefOrd.fromEndpointsOutWithDefaultEffort (tStart, tEnd)
+--        tDom = RefOrd.fromEndpointsOut (tStart, tEnd)
         initialStateModeMap = hybivp_initialStateEnclosure hybivp
         hybsys = hybivp_system hybivp
         componentNames = hybsys_componentNames hybsys

@@ -29,10 +29,10 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 --import Numeric.AERN.RealArithmetic.ExactOps
 
 --import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+import Numeric.AERN.RefinementOrder.Operators
 
 import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.ShowInternals
@@ -169,7 +169,7 @@ writeCSV ivp outputFileName shouldWrap =
                 computeMaxDiff vecOut vecOther = 
                     removeBracks $
                     show $ 
-                        snd $ RefOrd.getEndpointsOutWithDefaultEffort $ 
+                        snd $ RefOrd.getEndpointsOut $ 
                             foldl1 max $ zipWith (CF.<->) (map CF.width vecOut) (map CF.width vecOther)
         removeBracks ('<': rest1 ) =
             reverse $ removeR $ reverse rest1
@@ -313,7 +313,7 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, ma
 --            ++ "(err<=" ++ show err ++ ")" 
 --            ++ "; valueIn = " ++ show valueIn
 --            where
---            err = snd $ RefOrd.getEndpointsOutWithDefaultEffort $ wOut CF.<-> wIn
+--            err = snd $ RefOrd.getEndpointsOut $ wOut CF.<-> wIn
 --            wOut = CF.width valueOut     
 --            wIn = CF.width valueIn     
     showSplitReason indent (segInfo, (Just improvement)) =
@@ -391,7 +391,7 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
     newConstFn cfg dombox sampleCf
     where
     domsLE = 
-        map (fst . RefOrd.getEndpointsOutWithDefaultEffort) doms
+        map (fst . RefOrd.getEndpointsOut) doms
     dombox = fromList $ zip vars doms 
     cfg =
         IntPolyCfg

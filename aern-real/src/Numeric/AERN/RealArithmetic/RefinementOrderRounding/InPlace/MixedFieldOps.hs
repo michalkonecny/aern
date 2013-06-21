@@ -34,7 +34,6 @@ import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Control.Monad.ST
 import Control.Exception

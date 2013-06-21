@@ -50,7 +50,6 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.RealArithmetic.Laws
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Test.QuickCheck

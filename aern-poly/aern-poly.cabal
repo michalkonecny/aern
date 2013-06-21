@@ -11,8 +11,7 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       arbitrary precision real interval arithmetic
-Tested-with:    GHC==6.12.3,
-                GHC==7.2.2,
+Tested-with:    
                 GHC==7.4.2
 Description:    Multi-variate polynomials with in-out-rounded point-wise arithmetic
     and common operations for continous functions, including evalution,

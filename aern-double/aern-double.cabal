@@ -12,8 +12,6 @@ Stability:      experimental
 Category:       Data, Math
 Synopsis:       arbitrary precision real interval arithmetic
 Tested-with:
-                GHC==6.12.3,
-                GHC==7.2.2,
                 GHC==7.4.2
 Description:
     This package provides bindings and tests for using machine 'Double'

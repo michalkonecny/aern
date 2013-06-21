@@ -26,7 +26,7 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.PartialOrdering
 
 import Numeric.AERN.Basics.Interval.Basics
-import Numeric.AERN.Basics.Interval.Consistency
+import Numeric.AERN.Basics.Interval.Consistency ()
 import Numeric.AERN.Basics.Interval.Mutable
 
 import Numeric.AERN.Misc.List
@@ -35,7 +35,6 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder 
         (PartialCompareEffortIndicator,
          MinmaxInOutEffortIndicator)
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import Test.QuickCheck
 

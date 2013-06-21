@@ -21,15 +21,14 @@ import Prelude hiding (EQ, LT, GT)
 
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Arbitrary
-import Numeric.AERN.Basics.Effort 
 import Numeric.AERN.Basics.PartialOrdering
 
 import Numeric.AERN.Basics.Interval.Basics
 import Numeric.AERN.Basics.Interval.Mutable
-import Numeric.AERN.Basics.Interval.NumericOrder
+import Numeric.AERN.Basics.Interval.NumericOrder ()
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder
         (
@@ -66,8 +65,6 @@ instance
         --           Interval lr rl here would break this property
         --   in this case no rounding occurs - Out and In versions must be the same
     fromEndpointsOutEff _ (Interval ll lr, Interval rl rr) = (Interval ll rr)
-    fromEndpointsInWithDefaultEffort (Interval ll lr, Interval rl rr) = (Interval ll rr) 
-    fromEndpointsOutWithDefaultEffort (Interval ll lr, Interval rl rr) = (Interval ll rr) 
 
 instance 
     (NumOrd.PartialComparison e) => 

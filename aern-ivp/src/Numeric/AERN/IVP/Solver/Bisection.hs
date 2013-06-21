@@ -63,10 +63,9 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 
@@ -548,6 +547,7 @@ solveODEIVPByBisectingT0
         directComputationFailed =
             case maybeDirectResult of Just _ -> False; _ -> True
         
+        (</\>) = RefOrd.meetOutEff effJoinDom
         splitOnceComputation = -- needed only to decide whether splitting is benefitial, the result is then discarded
             case solver odeivpL of
                 (Just endValuesLOut, _) -> 
@@ -556,7 +556,6 @@ solveODEIVPByBisectingT0
                             Just endValuesOut
                             where
                             endValuesOut =
-                                let ?joinmeetEffort = effJoinDom in
                                 zipWith (</\>) endValuesLOut endValuesROut
                         _ -> Nothing
                     where
@@ -777,6 +776,8 @@ bisectionInfoEvalFn effDom evalFn bisectionInfo bisectionDom domG =
         domR =
             let ?joinmeetEffort = effJoinMeet in
             dom <\/> (dM </\> dR)
+    (</\>) = RefOrd.meetOutEff effJoinMeet
+    (<\/>) = RefOrd.joinOutEff effJoinMeet
     effComp = ArithInOut.rrEffortNumComp sampleDom effDom
     effJoinMeet = ArithInOut.rrEffortJoinMeet sampleDom effDom
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
@@ -843,6 +844,6 @@ getMidPoint ::
 getMidPoint effAddDom effDivDomInt l r =             
     let ?addInOutEffort = effAddDom in
     let ?mixedDivInOutEffort = effDivDomInt in
-    fst $ RefOrd.getEndpointsOutWithDefaultEffort $
+    fst $ RefOrd.getEndpointsOut $
     (l <+> r) </>| (2 :: Int)
         

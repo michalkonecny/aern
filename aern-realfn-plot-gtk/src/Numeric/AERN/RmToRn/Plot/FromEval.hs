@@ -36,7 +36,6 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.RmToRn.Interval
@@ -215,6 +214,8 @@ cairoDrawFnFromEval
         dom <\/> (vdomLO </\> vdomHI)
         where
         (_,_,vdomLO, vdomHI) = getVisibleDomExtents coordSystem
+        (<\/>) = RefOrd.joinOutEff effJoinMeet
+        (</\>) = RefOrd.meetOutEff effJoinMeet
     dom =
         case lookupVar dombox plotVar of 
             Just dom -> dom

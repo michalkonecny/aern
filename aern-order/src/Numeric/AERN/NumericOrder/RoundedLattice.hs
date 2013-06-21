@@ -39,6 +39,14 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+class
+    (EffortIndicator (MinmaxEffortIndicator t))
+    => 
+    RoundedLatticeEffort t 
+    where
+    type MinmaxEffortIndicator t
+    minmaxDefaultEffort :: t -> MinmaxEffortIndicator t
+
 {-|
     A type with directed-rounding lattice operations.
 -}
@@ -48,13 +56,18 @@ class (RoundedLatticeEffort t) => RoundedLattice t where
     minUpEff :: MinmaxEffortIndicator t -> t -> t -> t
     minDnEff :: MinmaxEffortIndicator t -> t -> t -> t
 
-class
-    (EffortIndicator (MinmaxEffortIndicator t))
-    => 
-    RoundedLatticeEffort t 
-    where
-    type MinmaxEffortIndicator t
-    minmaxDefaultEffort :: t -> MinmaxEffortIndicator t
+-- default-effort variants:
+{-|
+    Rounded lattice operation using default effort.
+-}
+minUp :: (RoundedLattice t) => t -> t -> t
+minUp a = minUpEff (minmaxDefaultEffort a) a
+minDn :: (RoundedLattice t) => t -> t -> t
+minDn a = minDnEff (minmaxDefaultEffort a) a
+maxUp :: (RoundedLattice t) => t -> t -> t
+maxUp a = maxUpEff (minmaxDefaultEffort a) a
+maxDn :: (RoundedLattice t) => t -> t -> t
+maxDn a = maxDnEff (minmaxDefaultEffort a) a
 
 propRoundedLatticeComparisonCompatible :: 
     (PartialComparison t, RoundedLattice t) => 

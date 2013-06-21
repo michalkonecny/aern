@@ -110,6 +110,6 @@ doms = [(0 </\> 1)]
 
 constructCF :: Double -> Double -> CF
 constructCF l r =
-    RefOrd.fromEndpointsOutWithDefaultEffort (cf0 <+>| l, cf0 <+>| r)
+    RefOrd.fromEndpointsOut (cf0 <+>| l, cf0 <+>| r)
 cf0 = 0 :: CF
     

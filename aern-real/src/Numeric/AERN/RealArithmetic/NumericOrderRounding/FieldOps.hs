@@ -50,7 +50,6 @@ import Numeric.AERN.Basics.Exception (HasLegalValues)
 import Numeric.AERN.RealArithmetic.Laws 
 import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Test.QuickCheck
 import Test.Framework (testGroup, Test)

@@ -35,10 +35,10 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 --import Numeric.AERN.RealArithmetic.Measures
 
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+--import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
@@ -136,7 +136,7 @@ shrinkWrap effComp effEval effDeriv effAddFn effAbsFn effMinmaxFn effDivFnInt ef
             let ?mixedDivInOutEffort = effDivFnInt in
             (fnL <+> fnR) </>| (2 :: Int)
         (fnL, fnR) = 
-            RefOrd.getEndpointsOutWithDefaultEffort fn
+            RefOrd.getEndpointsOut fn
         dombox = getDomainBox fn 
 
     effMinmax = 
@@ -226,7 +226,7 @@ _getDomainDelta2 effComp effEval effDeriv effAbsFn effMinmaxFn effAddFnDom effMu
 --                ++ "\n maxSlope = " ++ show maxSlope
 --                ++ "\n fnDelta = " ++ show fnDelta
 --        ) $
-        snd $ RefOrd.getEndpointsOutWithDefaultEffort $
+        snd $ RefOrd.getEndpointsOut $
         fnDelta
         where
         fnDelta = 
@@ -238,11 +238,11 @@ _getDomainDelta2 effComp effEval effDeriv effAbsFn effMinmaxFn effAddFnDom effMu
             foldl1 maxDn slopes
             where
             maxDn slope1 slope2 =
-                fst $ RefOrd.getEndpointsOutWithDefaultEffort $
+                fst $ RefOrd.getEndpointsOut $
                     NumOrd.maxOutEff effMinmaxFn slope1 slope2
         slopes = map getSlope vars
         getSlope var =
-            fst $ RefOrd.getEndpointsOutWithDefaultEffort $
+            fst $ RefOrd.getEndpointsOut $
                 ArithInOut.absOutEff effAbsFn $
                     fakePartialDerivativeOutEff effDeriv fnWithOldDelta var
         fnWithOldDelta =
@@ -327,7 +327,7 @@ getDomainDelta1 effComp effEval effDeriv  _effAbsFn _effMinmaxFn effAddFnDom eff
 --                ++ "\n maxSlope = " ++ show maxSlope
 --                ++ "\n fnDelta = " ++ show fnDelta
 --        ) $
-        snd $ RefOrd.getEndpointsOutWithDefaultEffort $
+        snd $ RefOrd.getEndpointsOut $
         fnDelta
         where
         fnDelta = 
@@ -403,7 +403,7 @@ zoomDomainsInterpretationBy effComp effAddFnDom effMultFnDom effDom delta fn =
         w = 
             let ?addInOutEffort = effAdd in
             r <-> l
-        (l,r) = RefOrd.getEndpointsOutWithDefaultEffort dom
+        (l,r) = RefOrd.getEndpointsOut dom
     dombox = getDomainBox fn
     sampleDom = getSampleDomValue fn
     effAdd = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom

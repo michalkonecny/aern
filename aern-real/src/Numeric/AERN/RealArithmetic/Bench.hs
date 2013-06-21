@@ -15,7 +15,7 @@
 module Numeric.AERN.RealArithmetic.Bench where
 
 import Numeric.AERN.Basics.Consistency
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 

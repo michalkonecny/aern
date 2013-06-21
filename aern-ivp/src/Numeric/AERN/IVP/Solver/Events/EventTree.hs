@@ -41,7 +41,6 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 
@@ -122,7 +121,7 @@ solveHybridIVP_UsingPicardAndEventTree
     sampleDom = tStart
     tStart = hybivp_tStart hybivp
     tEnd = hybivp_tEnd hybivp
-    tDom = RefOrd.fromEndpointsOutWithDefaultEffort (tStart, tEnd)
+    tDom = RefOrd.fromEndpointsOut (tStart, tEnd)
     tVar = hybivp_tVar hybivp
     hybsys = hybivp_system hybivp
     componentNames = hybsys_componentNames hybsys
@@ -258,7 +257,7 @@ solveHybridIVP_UsingPicardAndEventTree
                 stateIncludedIn (mode1, fnVec1) (mode2, fnVec2) 
                     | mode1 /= mode2 = False
                     | otherwise =
-                        let ?pCompareEffort = effInclFn in
+                        let (|<=?) = RefOrd.pLeqEff effInclFn in
                         and $ map (== Just True) $ zipWith (|<=?) fnVec2 fnVec1 
                 maybeNodeCountNew
                     | givenUp2 = Nothing

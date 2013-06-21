@@ -36,6 +36,8 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>?, ⊏?, ⊑?, ⊒?, ⊐?
+
 {-|
     A type with semi-decidable equality and partial order
 -}
@@ -45,10 +47,11 @@ class
     PartialComparison t 
     where
     type PartialCompareEffortIndicator t
+    pCompareDefaultEffort :: t -> PartialCompareEffortIndicator t
+    
     pCompareEff :: PartialCompareEffortIndicator t -> t -> t -> Maybe PartialOrdering
     pCompareInFullEff :: PartialCompareEffortIndicator t -> t -> t -> PartialOrderingPartialInfo
     pCompareInFullEff eff a b = partialOrdering2PartialInfo $ pCompareEff eff a b 
-    pCompareDefaultEffort :: t -> PartialCompareEffortIndicator t
     
     -- | Partial equality
     pEqualEff :: (PartialCompareEffortIndicator t) -> t -> t -> Maybe Bool
@@ -76,6 +79,87 @@ class
         fmap not $ pOrdInfNC $ pCompareInFullEff effort a b
     pIncomparableEff effort a b =
         pOrdInfNC $ pCompareInFullEff effort a b
+
+-- | Partial comparison with default effort
+pCompare :: (PartialComparison t) => t -> t -> Maybe PartialOrdering
+pCompare a = pCompareEff (pCompareDefaultEffort a) a
+
+-- | Partial comparison with default effort
+pCompareInFull :: (PartialComparison t) => t -> t -> PartialOrderingPartialInfo
+pCompareInFull a = pCompareInFullEff (pCompareDefaultEffort a) a
+
+-- | Partial `is comparable to` with default effort
+pComparable :: (PartialComparison t) => t -> t -> Maybe Bool
+pComparable a = pComparableEff (pCompareDefaultEffort a) a
+
+-- | Partial `is comparable to` with default effort
+(|<==>?) :: (PartialComparison t) => t -> t -> Maybe Bool
+(|<==>?) = pComparable
+
+-- | Partial `is not comparable to` with default effort
+pIncomparable :: (PartialComparison t) => t -> t -> Maybe Bool
+pIncomparable a = pIncomparableEff (pCompareDefaultEffort a) a
+
+-- | Partial `is not comparable to` with default effort
+(|</=>?) :: (PartialComparison t) => t -> t -> Maybe Bool
+(|</=>?) = pIncomparable
+
+-- | Partial equality with default effort
+pEqual :: (PartialComparison t) => t -> t -> Maybe Bool
+pEqual a = pEqualEff (pCompareDefaultEffort a) a
+
+-- | Partial equality with default effort
+(|==?) :: (PartialComparison t) => t -> t -> Maybe Bool
+(|==?) = pEqual
+
+-- | Partial `strictly less than` with default effort
+pLess :: (PartialComparison t) => t -> t -> Maybe Bool
+pLess a = pLessEff (pCompareDefaultEffort a) a
+
+-- | Partial `strictly below` with default effort
+(|<?) :: (PartialComparison t) => t -> t -> Maybe Bool
+(|<?) = pLess
+
+{-| Convenience Unicode notation for '|<?' -}
+(⊏?) :: (PartialComparison t) => t -> t -> Maybe Bool
+(⊏?) = (|<?)
+
+-- | Partial `less than or equal to` with default effort
+pLeq :: (PartialComparison t) => t -> t -> Maybe Bool
+pLeq a = pLeqEff (pCompareDefaultEffort a) a
+
+-- | Partial `below or equal to` with default effort
+(|<=?) :: (PartialComparison t) => t -> t -> Maybe Bool 
+(|<=?) = pLeq
+
+
+-- | Partial `strictly greater than` with default effort
+pGreater :: (PartialComparison t) => t -> t -> Maybe Bool
+pGreater a = pGreaterEff (pCompareDefaultEffort a) a
+
+-- | Partial `strictly above` with default effort
+(|>?) :: (PartialComparison t) => t -> t -> Maybe Bool 
+(|>?) = pGreater
+
+{-| Convenience Unicode notation for '|>?' -}
+(⊐?) :: (PartialComparison t) => t -> t -> Maybe Bool
+(⊐?) = (|>?)
+
+{-| Convenience Unicode notation for '|<=?' -}
+(⊑?) :: (PartialComparison t) => t -> t -> Maybe Bool
+(⊑?) = (|<=?)
+
+-- | Partial `greater than or equal to` with default effort
+pGeq :: (PartialComparison t) => t -> t -> Maybe Bool
+pGeq a = pGeqEff (pCompareDefaultEffort a) a
+
+-- | Partial `above or equal to` with default effort
+(|>=?) :: (PartialComparison t) => t -> t -> Maybe Bool 
+(|>=?) = pGeq
+
+{-| Convenience Unicode notation for '|>=?' -}
+(⊒?) :: (PartialComparison t) => t -> t -> Maybe Bool
+(⊒?) = (|>=?)
 
 
 propPartialComparisonReflexiveEQ :: 

@@ -155,11 +155,11 @@ where
 import Numeric.AERN.Basics.Mutable
   (CanBeMutable(..),OpMutable2,OpMutable1,OpPartialMutable2,OpMutableNonmut,OpNonmut)
 
-import qualified Numeric.AERN.NumericOrder.InPlace.OpsDefaultEffort as BNOIPODE
+import qualified Numeric.AERN.NumericOrder as BNO
   (minOutInPlace,maxOutInPlace,
    minInInPlace,maxInInPlace)
 
-import qualified Numeric.AERN.RefinementOrder.InPlace.OpsDefaultEffort as BROIPODE
+import qualified Numeric.AERN.RefinementOrder as BRO
   (meetOutInPlace,(</\>=),(<⊓>=),
    joinOutInPlace,(<\/>=),(<⊔>=),
    partialJoinOutInPlace,
@@ -229,59 +229,59 @@ type MRealIntervalApprox = Mutable RealIntervalApprox
 
 -- | Outward rounded in-place minimum
 minOutInPlace :: OpMutable2 RealIntervalApprox s
-minOutInPlace = BNOIPODE.minOutInPlace
+minOutInPlace = BNO.minOutInPlace
 
 -- | Outward rounded in-place maximum
 maxOutInPlace :: OpMutable2 RealIntervalApprox s
-maxOutInPlace = BNOIPODE.maxOutInPlace
+maxOutInPlace = BNO.maxOutInPlace
 
 -- | Inward rounded in-place minimum
 minInInPlace :: OpMutable2 RealIntervalApprox s
-minInInPlace = BNOIPODE.minInInPlace
+minInInPlace = BNO.minInInPlace
 
 -- | Inward rounded in-place maximum
 maxInInPlace :: OpMutable2 RealIntervalApprox s
-maxInInPlace = BNOIPODE.maxInInPlace
+maxInInPlace = BNO.maxInInPlace
 
 -- | Outward rounded in-place meet
 meetOutInPlace :: OpMutable2 RealIntervalApprox s
-meetOutInPlace = BROIPODE.meetOutInPlace
+meetOutInPlace = BRO.meetOutInPlace
 
 -- | Outward rounded meet assignment
 (</\>=) :: OpMutable1 RealIntervalApprox s
-(</\>=) = (BROIPODE.</\>=)
+(</\>=) = (BRO.</\>=)
 
 -- | Inward rounded in-place meet
 meetInInPlace :: OpMutable2 RealIntervalApprox s
-meetInInPlace = BROIPODE.meetInInPlace
+meetInInPlace = BRO.meetInInPlace
 
 -- | Inward rounded meet assignment
 (>/\<=) :: OpMutable1 RealIntervalApprox s
-(>/\<=) = (BROIPODE.>/\<=)
+(>/\<=) = (BRO.>/\<=)
 
 -- | Outward rounded in-place join
 joinOutInPlace :: OpMutable2 RealIntervalApprox s
-joinOutInPlace = BROIPODE.joinOutInPlace
+joinOutInPlace = BRO.joinOutInPlace
 
 -- | Outward rounded join assignment
 (<\/>=) :: OpMutable1 RealIntervalApprox s
-(<\/>=) = (BROIPODE.<\/>=)
+(<\/>=) = (BRO.<\/>=)
 
 -- | Inward rounded in-place join
 joinInInPlace :: OpMutable2 RealIntervalApprox s
-joinInInPlace = BROIPODE.joinInInPlace 
+joinInInPlace = BRO.joinInInPlace 
 
 -- | Inward rounded join assignment
 (>\/<=) :: OpMutable1 RealIntervalApprox s
-(>\/<=) = (BROIPODE.>\/<=)
+(>\/<=) = (BRO.>\/<=)
 
 -- | Partial outward rounded in-place join
 partialJoinOutInPlace :: OpPartialMutable2 RealIntervalApprox s
-partialJoinOutInPlace = BROIPODE.partialJoinOutInPlace
+partialJoinOutInPlace = BRO.partialJoinOutInPlace
 
 -- | Partial inward rounded in-place join
 partialJoinInInPlace :: OpPartialMutable2 RealIntervalApprox s
-partialJoinInInPlace = BROIPODE.partialJoinInInPlace
+partialJoinInInPlace = BRO.partialJoinInInPlace
 
 {-| Convenience Unicode notation for '<\/>=' -}
 (<⊔>=) :: OpMutable1 RealIntervalApprox s

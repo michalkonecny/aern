@@ -37,10 +37,10 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
 --import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+import Numeric.AERN.RefinementOrder.Operators
 
 
 import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
@@ -180,13 +180,13 @@ plotODEIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
                     sizeLimits = getSizeLimits fn         
                     dombox = getDomainBox fn
                     
-            aggrDom = RefOrd.fromEndpointsOutWithDefaultEffort (tStartFirstSeg, tEndLastAggrSeg) 
+            aggrDom = RefOrd.fromEndpointsOut (tStartFirstSeg, tEndLastAggrSeg) 
             (tStartFirstSeg, _) = getTVarDomEndpoints fn1FirstSeg
             (_, tEndLastAggrSeg) = getTVarDomEndpoints fn1LastAggrSeg
             (segNoLastAggrSeg, ((fn1LastAggrSeg,_) : _)) = last smallSegmentsToAggregate 
             getTVarDomEndpoints fn =
                 case lookupVar (getDomainBox fn) tVar of 
-                    Just tDom -> RefOrd.getEndpointsOutWithDefaultEffort tDom 
+                    Just tDom -> RefOrd.getEndpointsOut tDom 
             (fnsFirstSeg, fnNamesFirstSeg) = unzip fnsNamesFirstSeg
         aggrNewSegm prevFns prevFnNames prevSegNames _ =
             (reverse prevFns, reverse prevFnNames, reverse prevSegNames)
@@ -249,7 +249,7 @@ plotHybIVPBisectionEnclosures effCF shouldShowEventTreeEnclosures plotMinSegSize
         where
         addV fn = (fn, tVar)
     (fns, fnNames, segNames) = 
-        aggregateSequencesOfTinySegments fnsAndNames 
+        aggregateSequencesOfTinySegments effEval componentNames tVar plotMinSegSize fnsAndNames 
     fnsAndNames =
         concat $ map maybeAggregateSegment fnAndNameVectors
         where
@@ -334,66 +334,6 @@ plotHybIVPBisectionEnclosures effCF shouldShowEventTreeEnclosures plotMinSegSize
         }
         where
         domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
-    aggregateSequencesOfTinySegments fnsAndNames2 = aggrNewSegm [] [] [] $ zip ([1..]::[Int]) fnsAndNames2
-        where
-        aggrNewSegm 
-                prevFns prevFnNames prevSegNames 
-                segs@((segNoFirstSeg, fnsNamesFirstSeg@((fn1FirstSeg,_) : _)) : restSegs)
-            | noAggregation =
-                aggrNewSegm 
-                    (fnsFirstSeg : prevFns) 
-                    (fnNamesFirstSeg : prevFnNames) 
-                    (("segment " ++ show segNoFirstSeg) : prevSegNames) 
-                    restSegs 
-            | otherwise =
-                aggrNewSegm
-                    (fnsAggregated : prevFns) 
-                    (fnNamesAggregated : prevFnNames) 
-                    (("segments " ++ show segNoFirstSeg ++ "-" ++ show segNoLastAggrSeg) : prevSegNames) 
-                    restSegsAfterAggr
-            where
-            noAggregation = length smallSegmentsToAggregate <= 1
-            (smallSegmentsToAggregate, restSegsAfterAggr) = 
-                span segEndsBeforeLimit segs
-                where
-                segEndsBeforeLimit (_, ((fn1ThisSeg,_) : _)) =
-                    (tEndThisSeg <=? tAggrLimit) == Just True
-                    where
-                    (_, tEndThisSeg) = getTVarDomEndpoints fn1ThisSeg
-                    tAggrLimit = tStartFirstSeg <+> plotMinSegSize
-            fnNamesAggregated =
-                map (++ "(aggr)") componentNames
-            fnsAggregated =
-                foldl1 (zipWith (</\>)) $
-                    chunksOf (length componentNames) $
-                        map makeConstFnOverAggrDom $
-                            concat $ map getFnsFromSeg smallSegmentsToAggregate
-                where
-                chunksOf _ [] = []
-                chunksOf n list = firstN : (chunksOf n rest)
-                    where
-                    (firstN, rest) = splitAt n list
-                getFnsFromSeg (_, fnsNames) = map fst fnsNames
-                makeConstFnOverAggrDom fn =
-                    newConstFn sizeLimitsNew domboxNew range
-                    where
-                    domboxNew = fromList [(tVar, aggrDom)]
-                    sizeLimitsNew =
-                        adjustSizeLimitsToVarsAndDombox fn [tVar] domboxNew sizeLimits
-                    range = evalAtPointOutEff effEval dombox fn
-                    sizeLimits = getSizeLimits fn         
-                    dombox = getDomainBox fn
-                    
-            aggrDom = RefOrd.fromEndpointsOutWithDefaultEffort (tStartFirstSeg, tEndLastAggrSeg) 
-            (tStartFirstSeg, _) = getTVarDomEndpoints fn1FirstSeg
-            (_, tEndLastAggrSeg) = getTVarDomEndpoints fn1LastAggrSeg
-            (segNoLastAggrSeg, ((fn1LastAggrSeg,_) : _)) = last smallSegmentsToAggregate 
-            getTVarDomEndpoints fn =
-                case lookupVar (getDomainBox fn) tVar of 
-                    Just tDom -> RefOrd.getEndpointsOutWithDefaultEffort tDom 
-            (fnsFirstSeg, fnNamesFirstSeg) = unzip fnsNamesFirstSeg
-        aggrNewSegm prevFns prevFnNames prevSegNames _ =
-            (reverse prevFns, reverse prevFnNames, reverse prevSegNames)
     whichActive list =
         take (length list) activityCycle 
         where
@@ -410,6 +350,70 @@ plotHybIVPBisectionEnclosures effCF shouldShowEventTreeEnclosures plotMinSegSize
             zip componentNames 
 --                (cycle [blue, green, red, black])
                 (cycle [black]) 
+
+
+aggregateSequencesOfTinySegments effEval componentNames tVar plotMinSegSize fnsAndNames2 
+    = aggrNewSegm [] [] [] $ zip ([1..]::[Int]) fnsAndNames2
+    where
+    aggrNewSegm 
+            prevFns prevFnNames prevSegNames 
+            segs@((segNoFirstSeg, fnsNamesFirstSeg@((fn1FirstSeg,_) : _)) : restSegs)
+        | noAggregation =
+            aggrNewSegm 
+                (fnsFirstSeg : prevFns) 
+                (fnNamesFirstSeg : prevFnNames) 
+                (("segment " ++ show segNoFirstSeg) : prevSegNames) 
+                restSegs 
+        | otherwise =
+            aggrNewSegm
+                (fnsAggregated : prevFns) 
+                (fnNamesAggregated : prevFnNames) 
+                (("segments " ++ show segNoFirstSeg ++ "-" ++ show segNoLastAggrSeg) : prevSegNames) 
+                restSegsAfterAggr
+        where
+        noAggregation = length smallSegmentsToAggregate <= 1
+        (smallSegmentsToAggregate, restSegsAfterAggr) = 
+            span segEndsBeforeLimit segs
+            where
+            segEndsBeforeLimit (_, ((fn1ThisSeg,_) : _)) =
+                (tEndThisSeg <=? tAggrLimit) == Just True
+                where
+                (_, tEndThisSeg) = getTVarDomEndpoints fn1ThisSeg
+                tAggrLimit = tStartFirstSeg <+> plotMinSegSize
+        fnNamesAggregated =
+            map (++ "(aggr)") componentNames
+        fnsAggregated =
+            foldl1 (zipWith (</\>)) $
+                chunksOf (length componentNames) $
+                    map makeConstFnOverAggrDom $
+                        concat $ map getFnsFromSeg smallSegmentsToAggregate
+            where
+            chunksOf _ [] = []
+            chunksOf n list = firstN : (chunksOf n rest)
+                where
+                (firstN, rest) = splitAt n list
+            getFnsFromSeg (_, fnsNames) = map fst fnsNames
+            makeConstFnOverAggrDom fn =
+                newConstFn sizeLimitsNew domboxNew range
+                where
+                domboxNew = fromList [(tVar, aggrDom)]
+                sizeLimitsNew =
+                    adjustSizeLimitsToVarsAndDombox fn [tVar] domboxNew sizeLimits
+                range = evalAtPointOutEff effEval dombox fn
+                sizeLimits = getSizeLimits fn         
+                dombox = getDomainBox fn
+                
+        aggrDom = RefOrd.fromEndpointsOut (tStartFirstSeg, tEndLastAggrSeg) 
+        (tStartFirstSeg, _) = getTVarDomEndpoints fn1FirstSeg
+        (_, tEndLastAggrSeg) = getTVarDomEndpoints fn1LastAggrSeg
+        (segNoLastAggrSeg, ((fn1LastAggrSeg,_) : _)) = last smallSegmentsToAggregate 
+        getTVarDomEndpoints fn =
+            case lookupVar (getDomainBox fn) tVar of 
+                Just tDom -> RefOrd.getEndpointsOut tDom 
+        (fnsFirstSeg, fnNamesFirstSeg) = unzip fnsNamesFirstSeg
+    aggrNewSegm prevFns prevFnNames prevSegNames _ =
+        (reverse prevFns, reverse prevFnNames, reverse prevSegNames)
+
 
 plotHybIVPListEnclosures :: 
     (Var f ~ String,
@@ -557,8 +561,8 @@ plotHybIVPListEnclosures effCF _plotMinSegSize ivp segmentsInfo =
         take (length list) activityCycle 
         where
         activityCycle = cycle $ map snd $ zip componentNames $ 
-            True : (repeat True)
---            True : (repeat False) 
+--            True : (repeat True)
+            True : (repeat False) 
 --            True : False : False : True : (repeat False) 
 --            True : False : False : False : True : (repeat False) 
     

@@ -36,7 +36,6 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder (IntervalLike(..))
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 ----import Numeric.AERN.RefinementOrder.InPlace.OpsImplicitEffort
 
 
@@ -203,8 +202,6 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
             let ?divInOutEffort = effDivDom in
             let ?mixedAddInOutEffort = effAddFnDFn in
             let ?mixedMultInOutEffort = effMultFnDFn in
-            let ?pCompareEffort = effRefComp in
-            let ?joinmeetEffort = effJoin in
             NumOrd.forcedLinearArbitraryTupleRelatedBy
                 arbitraryFnFromSequence 
                 pickAndShiftGetSorted
@@ -288,6 +285,8 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
                         | otherwise
                             = one range 
                         where
+                        (⊒?) = RefOrd.pGeqEff effRefComp
+                        (</\>) = RefOrd.meetOutEff effJoin
                         z = zero range
                     rangeWidth = rangeR <-> rangeL
                     (rangeL, rangeR) = RefOrd.getEndpointsOutEff effGetEndptsDom range

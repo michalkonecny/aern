@@ -251,14 +251,14 @@ instance
         case getConstantIfPolyConstant p of
             Just c -> 
                 newConstFnFromSample p $ 
-                    snd $ RefOrd.getEndpointsOutWithDefaultEffort $ 
+                    snd $ RefOrd.getEndpointsOut $ 
                         ArithInOut.absOutEff effAbsDom c
             _ -> NumOrd.maxUpEff effMinmax p (neg p)
     absDnEff (effMinmax, effAbsDom) p =
         case getConstantIfPolyConstant p of
             Just c -> 
                 newConstFnFromSample p $ 
-                    fst $ RefOrd.getEndpointsOutWithDefaultEffort $ 
+                    fst $ RefOrd.getEndpointsOut $ 
                         ArithInOut.absOutEff effAbsDom c
             _ -> NumOrd.maxDnEff effMinmax p (neg p)
 
@@ -490,7 +490,7 @@ getX sizeLimits@(IntPolyCfg vars _ _ sample md ms) =
         IntPolyCfg [var] [unit] [zero sample] sample md ms
     dombox = fromList $ cfg2vardomains cfg
     unit =
-        RefOrd.fromEndpointsOutWithDefaultEffort (zero sample, one sample)
+        RefOrd.fromEndpointsOut (zero sample, one sample)
     
 getDegree :: Int -> IntPoly var cf -> Int
 getDegree degreeMinusOne (IntPoly cfg _) =

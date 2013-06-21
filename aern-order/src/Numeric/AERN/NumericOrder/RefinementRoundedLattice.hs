@@ -17,6 +17,7 @@
 module Numeric.AERN.NumericOrder.RefinementRoundedLattice 
 (
     RefinementRoundedLattice(..),
+    minOut, maxOut, minIn, maxIn,
     RefinementRoundedLatticeEffort(..),
     testsRefinementRoundedLattice, 
     testsRefinementRoundedLatticeDistributive,
@@ -47,6 +48,14 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+class
+    (EffortIndicator (MinmaxInOutEffortIndicator t))
+    => 
+    RefinementRoundedLatticeEffort t 
+    where
+    type MinmaxInOutEffortIndicator t
+    minmaxInOutDefaultEffort :: t -> MinmaxInOutEffortIndicator t
+
 {-|
     A type with refinement rounding numerical order lattice operations.
 -}
@@ -56,13 +65,21 @@ class (RefinementRoundedLatticeEffort t) => RefinementRoundedLattice t where
     minInEff :: MinmaxInOutEffortIndicator t -> t -> t -> t
     minOutEff :: MinmaxInOutEffortIndicator t -> t -> t -> t
 
-class
-    (EffortIndicator (MinmaxInOutEffortIndicator t))
-    => 
-    RefinementRoundedLatticeEffort t 
-    where
-    type MinmaxInOutEffortIndicator t
-    minmaxInOutDefaultEffort :: t -> MinmaxInOutEffortIndicator t
+-- | Outward rounded minimum with default effort
+minOut :: (RefinementRoundedLattice t) => t -> t -> t
+minOut a = minOutEff (minmaxInOutDefaultEffort a) a
+
+-- | Outward rounded maximum with default effort
+maxOut :: (RefinementRoundedLattice t) => t -> t -> t
+maxOut a = maxOutEff (minmaxInOutDefaultEffort a) a
+
+-- | Inward rounded minimum with default effort
+minIn :: (RefinementRoundedLattice t) => t -> t -> t
+minIn a = minInEff (minmaxInOutDefaultEffort a) a
+
+-- | Inward rounded maximum with default effort
+maxIn :: (RefinementRoundedLattice t) => t -> t -> t
+maxIn a = maxInEff (minmaxInOutDefaultEffort a) a
 
 propRefinementRoundedLatticeJoinIdempotent :: 
     (RefOrd.PartialComparison t, RefinementRoundedLattice t, Show t, HasLegalValues t) => 

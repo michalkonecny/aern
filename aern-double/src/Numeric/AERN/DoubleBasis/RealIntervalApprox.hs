@@ -208,18 +208,14 @@ import qualified Numeric.AERN.Basics.Interval as BI
   (getEndpoints,fromEndpoints)
 
 import qualified Numeric.AERN.NumericOrder as BNO
-  (least,greatest)
-
-import qualified Numeric.AERN.NumericOrder.OpsDefaultEffort as BNOODE
-  ((==?),(<==>?),(</=>?),
+  (least,greatest,
+   (==?),(<==>?),(</=>?),
    (<?),(>?),(<=?),(>=?),
    minOut,maxOut,minIn,maxIn)
 
 import qualified Numeric.AERN.RefinementOrder as BRO
-  (bottom,top,(⊥),(⊤))
-
-import qualified Numeric.AERN.RefinementOrder.OpsDefaultEffort as BROODE
-  ((|==?),(|<==>?),(|</=>?),
+  (bottom,top,(⊥),(⊤),
+   (|==?),(|<==>?),(|</=>?),
    (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
    (</\>),(<\/>),(<\/>?),(<⊓>),(<⊔>),(<⊔>?),
    (>/\<),(>\/<),(>\/<?),(>⊓<),(>⊔<),(>⊔<?))
@@ -302,47 +298,47 @@ infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
 
 -- | Partial equality
 (==?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(==?) = (BNOODE.==?) 
+(==?) = (BNO.==?) 
 
 -- | Partial `is comparable to`
 (<==>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(<==>?) = (BNOODE.<==>?)
+(<==>?) = (BNO.<==>?)
 
 -- | Partial `is not comparable to`
 (</=>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(</=>?) = (BNOODE.</=>?)
+(</=>?) = (BNO.</=>?)
 
 -- | Partial `strictly less than`
 (<?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(<?) = (BNOODE.<?)
+(<?) = (BNO.<?)
 
 -- | Partial `strictly greater than`
 (>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(>?) = (BNOODE.>?)
+(>?) = (BNO.>?)
 
 -- | Partial `less than or equal to`
 (<=?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(<=?) = (BNOODE.<=?)
+(<=?) = (BNO.<=?)
 
 -- | Partial `greater than or equal to`
 (>=?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(>=?) = (BNOODE.>=?)
+(>=?) = (BNO.>=?)
  
 -- | Outward rounded minimum
 minOut :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
-minOut = BNOODE.minOut
+minOut = BNO.minOut
 
 -- | Outward rounded maximum
 maxOut :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
-maxOut = BNOODE.maxOut
+maxOut = BNO.maxOut
 
 -- | Inward rounded minimum
 minIn :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
-minIn = BNOODE.minIn
+minIn = BNO.minIn
 
 -- | Inward rounded maximum
 maxIn :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
-maxIn = BNOODE.maxIn
+maxIn = BNO.maxIn
 
 bottom :: RealIntervalApprox
 bottom = BRO.bottom sampleRealIntervalApprox
@@ -364,95 +360,95 @@ infixr 2 <\/>?, <\/>, >\/<, <⊔>?, <⊔>, >⊔<
 
 -- | Partial equality
 (|==?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(|==?) = (BROODE.|==?)
+(|==?) = (BRO.|==?)
 
 -- | Partial `is comparable to`
 (|<==>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(|<==>?) = (BROODE.|<==>?)
+(|<==>?) = (BRO.|<==>?)
 
 -- | Partial `is not comparable to`
 (|</=>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(|</=>?) = (BROODE.|</=>?)
+(|</=>?) = (BRO.|</=>?)
 
 -- | Partial `strictly below`
 (|<?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(|<?) = (BROODE.|<?)
+(|<?) = (BRO.|<?)
 
 -- | Partial `strictly above`
 (|>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(|>?) = (BROODE.|>?)
+(|>?) = (BRO.|>?)
 
 -- | Partial `below or equal to`
 (|<=?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(|<=?) = (BROODE.|<=?)
+(|<=?) = (BRO.|<=?)
 
 -- | Partial `above or equal to`
 (|>=?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(|>=?) = (BROODE.|>=?)
+(|>=?) = (BRO.|>=?)
 
 {-| Convenience Unicode notation for '|<?' -}
 (⊏?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(⊏?) = (BROODE.⊏?)
+(⊏?) = (BRO.⊏?)
 
 {-| Convenience Unicode notation for '|<=?' -}
 (⊑?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(⊑?) = (BROODE.⊑?)
+(⊑?) = (BRO.⊑?)
 
 {-| Convenience Unicode notation for '|>=?' -}
 (⊒?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool
-(⊒?) = (BROODE.⊒?)
+(⊒?) = (BRO.⊒?)
 
 {-| Convenience Unicode notation for '|>?' -}
 (⊐?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe Bool 
-(⊐?) = (BROODE.⊐?)
+(⊐?) = (BRO.⊐?)
 
 -- | Outward rounded meet
 (</\>) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
-(</\>) = (BROODE.</\>)
+(</\>) = (BRO.</\>)
 
 -- | Outward rounded join
 (<\/>) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
-(<\/>) = (BROODE.<\/>)
+(<\/>) = (BRO.<\/>)
 
 -- | Inward rounded meet
 (>/\<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
-(>/\<) = (BROODE.>/\<)
+(>/\<) = (BRO.>/\<)
 
 -- | Inward rounded join
 (>\/<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
-(>\/<) = (BROODE.>\/<)
+(>\/<) = (BRO.>\/<)
 
 {-| Convenience Unicode notation for '</\>' -}
 (<⊓>) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
-(<⊓>) = (BROODE.<⊓>)
+(<⊓>) = (BRO.<⊓>)
 
 {-| Convenience Unicode notation for '<\/>' -}
 (<⊔>) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
-(<⊔>) = (BROODE.<⊔>)
+(<⊔>) = (BRO.<⊔>)
 
 {-| Convenience Unicode notation for '>/\<' -}
 (>⊓<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
-(>⊓<) = (BROODE.>⊓<)
+(>⊓<) = (BRO.>⊓<)
 
 {-| Convenience Unicode notation for '>\/<' -}
 (>⊔<) :: RealIntervalApprox -> RealIntervalApprox -> RealIntervalApprox
-(>⊔<) = (BROODE.>⊔<)
+(>⊔<) = (BRO.>⊔<)
  
 -- | Partial outward rounded join
 (<\/>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe RealIntervalApprox
-(<\/>?) = (BROODE.<\/>?)
+(<\/>?) = (BRO.<\/>?)
 
 {-| Convenience Unicode notation for '<\/>?' -}
 (<⊔>?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe RealIntervalApprox 
-(<⊔>?) = (BROODE.<⊔>?)
+(<⊔>?) = (BRO.<⊔>?)
 
 -- | Partial outward rounded join
 (>\/<?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe RealIntervalApprox
-(>\/<?) = (BROODE.>\/<?)
+(>\/<?) = (BRO.>\/<?)
 
 {-| Convenience Unicode notation for '>\/<?' -}
 (>⊔<?) :: RealIntervalApprox -> RealIntervalApprox -> Maybe RealIntervalApprox
-(>⊔<?) = (BROODE.>⊔<?)
+(>⊔<?) = (BRO.>⊔<?)
 
 
 infixl 6 <+>, >+<, <->, >-<

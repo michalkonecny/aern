@@ -42,10 +42,9 @@ import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Exception
@@ -189,7 +188,7 @@ measureResultImprecision effAddDom resVec =
     result
     where
     result =
-        snd $ RefOrd.getEndpointsOutWithDefaultEffort $
+        snd $ RefOrd.getEndpointsOut $
         let ?addInOutEffort = effAddDom in
         foldl1 (<+>) imprVec
     imprVec = map perComp resVec
@@ -197,7 +196,7 @@ measureResultImprecision effAddDom resVec =
         let ?addInOutEffort = effAddDom in
         resR <-> resL
         where
-        (resL, resR) = RefOrd.getEndpointsOutWithDefaultEffort res
+        (resL, resR) = RefOrd.getEndpointsOut res
 
 measureFunctionImprecision :: 
     (RefOrd.IntervalLike (Domain f), 
@@ -228,7 +227,7 @@ measureFunctionImprecision effEval effAddFn effAddDom fnVec =
     result
     where
     result =
-        snd $ RefOrd.getEndpointsOutWithDefaultEffort $
+        snd $ RefOrd.getEndpointsOut $
         let ?addInOutEffort = effAddDom in
         foldl1 (<+>) imprVec
     imprVec = map perComp fnVec
@@ -236,7 +235,7 @@ measureFunctionImprecision effEval effAddFn effAddDom fnVec =
         let ?addInOutEffort = effAddFn in
         getRange effEval $ fnR <-> fnL
         where
-        (fnL, fnR) = RefOrd.getEndpointsOutWithDefaultEffort fn
+        (fnL, fnR) = RefOrd.getEndpointsOut fn
 
 getRange ::
     (CanEvaluate f) 
@@ -349,7 +348,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard
             isExact dom =
                 (domL ==? domR) == Just True
                 where
-                (domL, domR) = RefOrd.getEndpointsOutWithDefaultEffort dom
+                (domL, domR) = RefOrd.getEndpointsOut dom
             domains = map snd $ toAscList $ getDomainBox fn
             (fn : _) = fns 
         shrinkWrappedParamValuesAtTEnd =
@@ -447,7 +446,7 @@ solveODEIVPUncertainValueExactTime_PicardIterations
         odeivp_makeInitialValueFnVec odeivp sizeLimits tVar timeDomain
     
     timeDomain =
-        RefOrd.fromEndpointsOutWithDefaultEffort (tStart, tEnd)
+        RefOrd.fromEndpointsOut (tStart, tEnd)
 
     effJoinDom = ArithInOut.rrEffortJoinMeet sampleDom effDom
     sampleDom = tStart
@@ -460,8 +459,9 @@ solveODEIVPUncertainValueExactTime_PicardIterations
             let ?mixedAddInOutEffort = effAddFnDom in
             fn <+>| wideningInterval 
         wideningInterval =
-            let ?joinmeetEffort = effJoinDom in
             (neg delta) </\> delta
+            where
+            (</\>) = RefOrd.meetOutEff effJoinDom
     findEnclosure maxIter = aux 0 
         where
         aux iterNo (fn1Vec : fn2Vec : rest)
@@ -485,8 +485,9 @@ solveODEIVPUncertainValueExactTime_PicardIterations
                         aux (iterNo + 1) (fn2Vec : rest)
             where
             fn2RefinesFn1 =
-                let ?pCompareEffort = effInclFn in
                 and $ map (== (Just True)) $ zipWith (|<=?) fn1Vec fn2Vec
+                where
+                (|<=?) = RefOrd.pLeqEff effInclFn
         aux _ _  =
             Nothing
 --            error "aern-picard: solveUncertainValueExactTime failed to find enclosure"
