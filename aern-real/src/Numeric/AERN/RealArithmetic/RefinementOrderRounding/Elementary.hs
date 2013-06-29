@@ -56,6 +56,15 @@ class (RoundedExponentiationEffort t) => RoundedExponentiation t where
     expInEff :: (ExpEffortIndicator t) -> t -> t
     expOutEff :: (ExpEffortIndicator t) -> t -> t
 
+-- | Inward rounded exponential with default effort
+expIn :: (RoundedExponentiation t) => t -> t
+expIn d = expInEff (expDefaultEffort d) d
+
+-- | Outward rounded exponential with default effort
+expOut :: (RoundedExponentiation t) => t -> t
+expOut d = expOutEff (expDefaultEffort d) d
+
+
 -- | @e^a*e^(-a) = 1@
 propExpOfNegRecip ::
     (RefOrd.PartialComparison t,
@@ -160,6 +169,14 @@ class
 class (RoundedSquareRootEffort t) => RoundedSquareRoot t where
     sqrtInEff :: (SqrtEffortIndicator t) -> t -> t
     sqrtOutEff :: (SqrtEffortIndicator t) -> t -> t
+
+-- | Inward rounded square root with default effort
+sqrtIn :: (RoundedSquareRoot t) => t -> t
+sqrtIn d = sqrtInEff (sqrtDefaultEffort d) d
+
+-- | Outward rounded square root with default effort
+sqrtOut :: (RoundedSquareRoot t) => t -> t
+sqrtOut d = sqrtOutEff (sqrtDefaultEffort d) d
 
 propSqrtSquare ::
     (RefOrd.PartialComparison t,

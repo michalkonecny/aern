@@ -32,7 +32,7 @@ import Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
 import Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 import Test.QuickCheck
 

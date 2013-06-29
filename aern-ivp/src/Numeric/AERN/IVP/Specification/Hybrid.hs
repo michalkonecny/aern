@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.IVP.Specification.Hybrid
@@ -27,7 +26,6 @@ import Numeric.AERN.RmToRn.Domain
 --import Numeric.AERN.RmToRn.Integration
 --
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 --
@@ -162,10 +160,8 @@ differenceHybridStates effComp state1 (state2 :: HybridSystemUncertainState dom)
                     value1
                 where
                 cuttingFromLeft = 
-                    let ?pCompareEffort = effComp in
                     (value1 |<=? value2R) == Just True
                 cuttingFromRight = 
-                    let ?pCompareEffort = effComp in
                     (value1 |<=? value2L) == Just True
                 (value1L, value1R) = RefOrd.getEndpointsOut value1
                 (value2L, value2R) = RefOrd.getEndpointsOut value2
@@ -200,7 +196,6 @@ measureImprovementState ::
 measureImprovementState sampleDom effDom state1 state2
     | newModeInState2 = neg (one sampleDom) -- =-1 serious deterioration
     | otherwise = 
-        let ?mixedAddInOutEffort = effAddDomInt in
         modeCountDecreaseInState2 |<+> improvement 
     where
     newModeInState2 = 
@@ -208,19 +203,20 @@ measureImprovementState sampleDom effDom state1 state2
     modeCountDecreaseInState2 = 
         Map.size $ Map.difference state1 state2
     improvement =
-        let ?addInOutEffort = effAddDom in
         Map.fold (<+>) (zero sampleDom) improvementsPerModeMap
     improvementsPerModeMap =
         Map.intersectionWith measureImprovementVec state1 state2
 
     measureImprovementVec vec1 vec2 = 
-        let ?addInOutEffort = effAddDom in
         foldl1 (<+>) improvements
         where
         improvements = map measureImprovement $ zip vec1 vec2
     measureImprovement (encl1, encl2) =
-        let ?addInOutEffort = effAddDom in
         (imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
+
+    (<+>) = ArithInOut.addOutEff effAddDom
+    (<->) = ArithInOut.subtrOutEff effAddDom
+    (|<+>) = flip $ ArithInOut.mixedAddOutEff effAddDomInt
 
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effAddDomInt = 

@@ -2,7 +2,6 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.IVP.Plot.PicardView.State
     Description :  internal state of the PicardView application
@@ -31,10 +30,8 @@ import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Misc.Debug
 
@@ -85,8 +82,6 @@ mkInitialEnclosures ::
     [Domain f] ->
     [f]
 mkInitialEnclosures sampleF effReal initialVals =
-    let ?addInOutEffort = effAdd in
-    let ?joinmeetEffort = effJoinMeet in
     map mkInitEncl initialVals
     where
     mkInitEncl initialVal =
@@ -94,6 +89,9 @@ mkInitialEnclosures sampleF effReal initialVals =
         where
         c1 = one sampleDom
         cm11 = (neg c1) </\> c1
+
+    (</\>) = RefOrd.meetOutEff effJoinMeet
+    (<+>) = ArithInOut.addOutEff effAdd
 
     effJoinMeet = ArithInOut.rrEffortJoinMeet sampleDom effReal
     effAdd =

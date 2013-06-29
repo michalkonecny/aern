@@ -1,7 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE NoMonoLocalBinds #-}
 
 {-|
@@ -43,6 +42,10 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+infixl 6 <+>|=, >+<|=
+infixl 7 <*>|=, >*<|=
+infixl 7 </>|=, >/<|=
+
 class (RoundedMixedAddEffort t tn, CanBeMutable t) => 
     RoundedMixedAddInPlace t tn 
     where
@@ -50,6 +53,27 @@ class (RoundedMixedAddEffort t tn, CanBeMutable t) =>
         OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
     mixedAddOutInPlaceEff :: 
         OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
+
+-- | Inward rounded in-place mixed addition with default effort
+mixedAddInInPlace :: (RoundedMixedAddInPlace t tn) => 
+    OpMutableNonmut t tn s
+mixedAddInInPlace =
+    mixedEffToMutableNonmut mixedAddInInPlaceEff mixedAddDefaultEffort
+
+-- | Inward rounded additive scalar action assignment with default effort
+(>+<|=) :: (RoundedMixedAddInPlace t tn) => OpNonmut t tn s
+(>+<|=) = mutableNonmutToNonmut mixedAddInInPlace
+
+-- | Outward rounded in-place mixed addition with default effort
+mixedAddOutInPlace :: (RoundedMixedAddInPlace t tn) =>
+    OpMutableNonmut t tn s
+mixedAddOutInPlace =
+    mixedEffToMutableNonmut mixedAddOutInPlaceEff mixedAddDefaultEffort
+
+-- | Outward rounded additive scalar action assignment with default effort
+(<+>|=) :: (RoundedMixedAddInPlace t tn) => OpNonmut t tn s
+(<+>|=) = mutableNonmutToNonmut mixedAddOutInPlace
+
 
 mixedAddInInPlaceEffFromPure,
  mixedAddOutInPlaceEffFromPure ::
@@ -120,6 +144,26 @@ class (RoundedMixedMultiplyEffort t tn, CanBeMutable t) =>
     mixedMultOutInPlaceEff :: 
         OpMutableNonmutEff (MixedMultEffortIndicator t tn) t tn s
 
+-- | Inward rounded in-place mixed multiplication with default effort
+mixedMultInInPlace :: (RoundedMixedMultiplyInPlace t tn) => 
+    OpMutableNonmut t tn s
+mixedMultInInPlace =
+    mixedEffToMutableNonmut mixedMultInInPlaceEff mixedMultDefaultEffort
+
+-- | Inward rounded multiplicative scalar action assignment with default effort
+(>*<|=) :: (RoundedMixedMultiplyInPlace t tn) => OpNonmut t tn s
+(>*<|=) = mutableNonmutToNonmut mixedMultInInPlace
+
+-- | Outward rounded in-place mixed multiplication with default effort
+mixedMultOutInPlace :: (RoundedMixedMultiplyInPlace t tn) => 
+    OpMutableNonmut t tn s
+mixedMultOutInPlace =
+    mixedEffToMutableNonmut mixedMultOutInPlaceEff mixedMultDefaultEffort
+
+-- | Outward rounded multiplicative scalar action assignment with default effort
+(<*>|=) :: (RoundedMixedMultiplyInPlace t tn) => OpNonmut t tn s
+(<*>|=) = mutableNonmutToNonmut mixedMultOutInPlace
+
 mixedMultInInPlaceEffFromPure,
  mixedMultOutInPlaceEffFromPure ::
     (CanBeMutable t, RoundedMixedMultiply t tn) =>
@@ -186,6 +230,26 @@ class (RoundedMixedDivideEffort t tn, CanBeMutable t) =>
         OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
     mixedDivOutInPlaceEff :: 
         OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
+
+-- | Inward rounded in-place mixed reciprocal action with default effort
+mixedDivInInPlace :: (RoundedMixedDivideInPlace t tn) => 
+    OpMutableNonmut t tn s
+mixedDivInInPlace =
+    mixedEffToMutableNonmut mixedDivInInPlaceEff mixedDivDefaultEffort
+
+-- | Inward rounded multiplicative scalar reciprocal action assignment with default effort
+(>/<|=) :: (RoundedMixedDivideInPlace t tn) => OpNonmut t tn s
+(>/<|=) = mutableNonmutToNonmut mixedDivOutInPlace
+
+-- | Outward rounded in-place mixed reciprocal action with default effort
+mixedDivOutInPlace :: (RoundedMixedDivideInPlace t tn) => 
+    OpMutableNonmut t tn s
+mixedDivOutInPlace =
+    mixedEffToMutableNonmut mixedDivOutInPlaceEff mixedDivDefaultEffort
+
+-- | Outward rounded multiplicative scalar reciprocal action assignment with default effort
+(</>|=) :: (RoundedMixedDivideInPlace t tn) => OpNonmut t tn s
+(</>|=) = mutableNonmutToNonmut mixedDivOutInPlace
 
 mixedDivInInPlaceEffFromPure,
  mixedDivOutInPlaceEffFromPure ::

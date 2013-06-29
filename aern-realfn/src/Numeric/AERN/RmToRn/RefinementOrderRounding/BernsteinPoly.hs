@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.RefinementOrderRounding.BernsteinPoly
@@ -21,7 +20,6 @@ import Numeric.AERN.RmToRn.New
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import Numeric.AERN.Misc.IntegerArithmetic
 
@@ -55,16 +53,11 @@ bernsteinOut (effRing, effDom, effMMult) x n p =
     result
     where
     result = 
-        let ?addInOutEffort = effAdd in
-        let ?multInOutEffort = effMult in
-        let ?mixedMultInOutEffort = effMMult in
-        let ?intPowerInOutEffort = effPow in
-        (binomialOut) |<*>
-            ((x<^>p) <*> ((c1 <-> x)<^>(n-p)))
+        (binomialOut) .<*>~
+            ((x ~<^> p) ~<*>~ ((c1 ~<->~ x) ~<^> (n-p)))
     binomialOut 
         | 0 <= p && p <= n =
-            let ?divInOutEffort = effDivD in
-            productNdownP </> factorialP
+            productNdownP .</>. factorialP
         | otherwise = 
             error $ 
                 "bernsteinOut called with illegal parameters:" 
@@ -72,16 +65,24 @@ bernsteinOut (effRing, effDom, effMMult) x n p =
                 ++ "\n p = " ++ show p 
         where
         factorialP = 
-            let ?mixedMultInOutEffort = effMultIntD in
-            foldl (<*>|) (one sampleD) [2..p]
+            foldl (.<*>|) (one sampleD) [2..p]
         productNdownP = 
-            let ?mixedMultInOutEffort = effMultIntD in
-            foldl (<*>|) (one sampleD) [(n-p+1)..n]
+            foldl (.<*>|) (one sampleD) [(n-p+1)..n]
 
+    c1 = (one sampleF)
     sampleF = x
     sampleD = getSampleDomValue sampleF
-    c1 = (one sampleF)
 --    sampleCf = getSampleDomValue sampleF
+
+--    (~<+>~) = ArithInOut.addOutEff effAdd
+    (~<->~) = ArithInOut.subtrOutEff effAdd
+    (~<*>~) = ArithInOut.multOutEff effMult
+    (~<^>) = ArithInOut.powerToNonnegIntOutEff effPow
+    (.<*>~) = flip $ ArithInOut.mixedMultOutEff effMMult
+
+    (.</>.) = ArithInOut.divOutEff effDivD
+    (.<*>|) = ArithInOut.mixedMultOutEff effMultIntD
+
     effAdd = ArithInOut.ringEffortAdd sampleF effRing
     effMult = ArithInOut.ringEffortMult sampleF effRing
     effPow = ArithInOut.ringEffortPow sampleF effRing

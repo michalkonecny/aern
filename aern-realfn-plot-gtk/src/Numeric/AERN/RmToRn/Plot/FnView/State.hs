@@ -2,7 +2,6 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Plot.FnView.State
     Description :  internal state of a FnView widget
@@ -28,10 +27,8 @@ import Numeric.AERN.RmToRn.Plot.Params
 import Numeric.AERN.RmToRn.Domain
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Misc.Debug
 
@@ -146,31 +143,30 @@ updateCentreByRatio effReal (ratX, ratY) state =
             where
             (cX,cY) = favstPanCentre state
             shiftX a =
-                let ?addInOutEffort = effAdd in
-                let ?mixedMultInOutEffort = effMultDbl in 
                 fst $ RefOrd.getEndpointsOut $ 
                     a <-> (ratX |<*> fnDomWidth)
             shiftY a = 
-                let ?addInOutEffort = effAdd in
-                let ?mixedMultInOutEffort = effMultDbl in
                 fst $ RefOrd.getEndpointsOut $ 
                     a <-> (ratY |<*> fnRangeHeight)
             fnDomWidth = 
-                let ?addInOutEffort = effAdd in
                 r <-> l
             fnRangeHeight = 
-                let ?addInOutEffort = effAdd in
                 lo <-> hi
             coordSystem =
                 CoordSystemLinear 
                     (Rectangle 
                         (shiftY hi) (shiftY lo) 
                         (shiftX l) (shiftX r))
-            sampleDom = cX
+
+            (<->) = ArithInOut.subtrOutEff effAdd
+            (|<*>) = flip $ ArithInOut.mixedMultOutEff effMultDbl
+
             effAdd =
                 ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effReal
             effMultDbl =
                 ArithInOut.mxfldEffortMult sampleDom (1::Double) $ ArithInOut.rrEffortDoubleMixedField sampleDom effReal
+
+            sampleDom = cX
             
     
 updateFnActive :: 
@@ -203,19 +199,18 @@ linearCoordsWithZoom effReal zoomPercent fnExtents@(fnHI, fnLO, fnL, fnR) =
     linearCoordsWithZoomAndCentre effReal zoomPercent (cX,cY) fnExtents
     where
     cX = 
-        let ?addInOutEffort = effAdd in
-        let ?mixedDivInOutEffort = effDivInt in
         (fnL <+> fnR) </>| (2 :: Int) 
     cY = 
-        let ?addInOutEffort = effAdd in
-        let ?mixedDivInOutEffort = effDivInt in
         (fnLO <+> fnHI) </>| (2 :: Int) 
-    sampleDom = fnL
+
+    (<+>) = ArithInOut.addOutEff effAdd
+    (</>|) = ArithInOut.mixedDivOutEff effDivInt
     effAdd =
         ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effReal
     effDivInt =
         ArithInOut.mxfldEffortDiv sampleDom (1::Int) $ 
             ArithInOut.rrEffortIntMixedField sampleDom effReal
+    sampleDom = fnL
 
 linearCoordsWithZoomAndCentre ::
     (ArithInOut.RoundedReal t)
@@ -230,34 +225,28 @@ linearCoordsWithZoomAndCentre effReal zoomPercent (cX,cY) (fnHI, fnLO, fnL, fnR)
     CoordSystemLinear $ Rectangle hi lo l r
     where
     hi = 
-        let ?addInOutEffort = effAdd in
         cY <+> heighHalf
     lo = 
-        let ?addInOutEffort = effAdd in
         cY <-> heighHalf
     l = 
-        let ?addInOutEffort = effAdd in
         cX <-> widthHalf
     r = 
-        let ?addInOutEffort = effAdd in
         cX <+> widthHalf
     heighHalf = 
-        let ?mixedMultInOutEffort = effMultDbl in
         zoomRatio |<*> fnHeightHalf
     widthHalf = 
-        let ?mixedMultInOutEffort = effMultDbl in
         zoomRatio |<*> fnWidthHalf
     zoomRatio = 100 / zoomPercent
     fnWidthHalf = 
-        let ?addInOutEffort = effAdd in
-        let ?mixedDivInOutEffort = effDivInt in
         (fnR <-> fnL) </>| (2 :: Int)
     fnHeightHalf = 
-        let ?addInOutEffort = effAdd in
-        let ?mixedDivInOutEffort = effDivInt in
         (fnHI <-> fnLO) </>| (2 :: Int)
 
-    sampleDom = cX
+    (<+>) = ArithInOut.addOutEff effAdd
+    (<->) = ArithInOut.subtrOutEff effAdd
+    (|<*>) = flip $ ArithInOut.mixedMultOutEff effMultDbl
+    (</>|) = ArithInOut.mixedDivOutEff effDivInt
+
     effAdd =
         ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effReal
     effMultDbl =
@@ -266,6 +255,7 @@ linearCoordsWithZoomAndCentre effReal zoomPercent (cX,cY) (fnHI, fnLO, fnL, fnR)
     effDivInt =
         ArithInOut.mxfldEffortDiv sampleDom (1::Int) $ 
             ArithInOut.rrEffortIntMixedField sampleDom effReal
+    sampleDom = cX
 
     
 listUpdate :: Int -> a -> [a] -> [a]

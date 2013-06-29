@@ -2,7 +2,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.Floating
@@ -34,7 +33,7 @@ import Numeric.AERN.RealArithmetic.Interval.SpecialConst ()
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import Numeric.AERN.RefinementOrder.Operators
@@ -99,7 +98,7 @@ instance
     negate = neg
     (+) = (<+>)
     (*) = (<*>)
-    abs = absOut
+    abs = ArithInOut.absOut
     fromInteger n = 
         result
         where
@@ -152,6 +151,6 @@ instance
      ArithInOut.RoundedSquareRoot (Interval e)) =>
     Floating (Interval e)
     where
-    pi = piOut
-    exp = expOut
-    sqrt = sqrtOut
+    pi = error $ "AERN: Floating instance of Interval data type: for the pi constant use piOut or piIn with a sample value parameter to determine the precision from."
+    exp = ArithInOut.expOut
+    sqrt = ArithInOut.sqrtOut

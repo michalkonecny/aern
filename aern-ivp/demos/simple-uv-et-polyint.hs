@@ -30,7 +30,7 @@ import Numeric.AERN.RealArithmetic.Interval ()
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal)
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 --import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.NumericOrder as NumOrd

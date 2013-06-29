@@ -2,7 +2,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -42,7 +41,6 @@ import Numeric.AERN.RmToRn.New
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
     (AddEffortIndicator, MixedAddEffortIndicator)
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
 --import Numeric.AERN.RealArithmetic.Measures
@@ -80,10 +78,9 @@ instance
     where
     addOutEff eff (IntPoly cfg terms1) (IntPoly _ terms2) =
         reducePolyTermCountOut eff $ 
-            IntPoly cfg $
-                let ?addInOutEffort = effAdd in
-                addTerms (<+>) terms1 terms2
+            IntPoly cfg $ addTerms (<+>) terms1 terms2
         where
+        (<+>) = ArithInOut.addOutEff effAdd
         effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
         sample = ipolycfg_sample_cf cfg
     addInEff =

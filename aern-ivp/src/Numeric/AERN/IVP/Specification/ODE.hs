@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.IVP.Specification.ODE
@@ -26,14 +25,13 @@ import Numeric.AERN.RmToRn.Evaluation
 --import Numeric.AERN.RmToRn.Integration
 --
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 --
 --import qualified Numeric.AERN.NumericOrder as NumOrd
---import Numeric.AERN.NumericOrder.OpsDefaultEffort
+--import Numeric.AERN.NumericOrder.Operators
 --
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+--import Numeric.AERN.RefinementOrder.Operators
 
 import Numeric.AERN.Basics.Consistency
 
@@ -214,9 +212,7 @@ parametriseThickFunctions effAddFn effMultFn componentNames fnVec =
     map parametriseFn $ zip componentNames fnVec
     where
     parametriseFn (compName, fn) =
-        let ?addInOutEffort = effAddFn in
-        let ?multInOutEffort = effMultFn in
-        (fnL <*> compVar) <+> (fnR <*> (c1 <-> compVar)) -- thinning
+        (fnL ~<*>~ compVar) ~<+>~ (fnR ~<*>~ (c1 ~<->~ compVar)) -- thinning
         where
         compVar = makeVar compName
         (fnL, fnR) = RefOrd.getEndpointsOut fnWithNewVars
@@ -236,6 +232,10 @@ parametriseThickFunctions effAddFn effMultFn componentNames fnVec =
         where
         unitDom = RefOrd.fromEndpointsOut (zero sampleDom, one sampleDom)
     
+    (~<+>~) = ArithInOut.addOutEff effAddFn
+    (~<->~) = ArithInOut.subtrOutEff effAddFn
+    (~<*>~) = ArithInOut.multOutEff effMultFn
+
     sampleFnIncoming : _ = fnVec
     sampleDom = getSampleDomValue sampleFnIncoming
 

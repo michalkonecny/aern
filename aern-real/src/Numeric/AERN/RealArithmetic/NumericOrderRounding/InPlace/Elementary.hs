@@ -37,6 +37,15 @@ class (RoundedExponentiation t, CanBeMutable t) => RoundedExponentiationInPlace 
     expUpInPlaceEff :: OpMutable1Eff (ExpEffortIndicator t) t s
     expDnInPlaceEff :: OpMutable1Eff (ExpEffortIndicator t) t s
 
+-- | Upward rounded in-place exponential with default effort
+expUpInPlace :: (RoundedExponentiationInPlace t) => OpMutable1 t s
+expUpInPlace = mutable1EffToMutable1 expUpInPlaceEff expDefaultEffort 
+
+-- | Downward rounded in-place exponential with default effort
+expDnInPlace :: (RoundedExponentiationInPlace t) => OpMutable1 t s
+expDnInPlace = mutable1EffToMutable1 expDnInPlaceEff expDefaultEffort 
+
+
 expUpInPlaceEffFromPure,
  expDnInPlaceEffFromPure ::
     (CanBeMutable t, RoundedExponentiation t) =>
@@ -89,6 +98,14 @@ testsUpDnExpInPlace (name, sample) =
 class (RoundedSquareRoot t, CanBeMutable t) => RoundedSquareRootInPlace t where
     sqrtUpInPlaceEff :: OpMutable1Eff (SqrtEffortIndicator t) t s
     sqrtDnInPlaceEff :: OpMutable1Eff (SqrtEffortIndicator t) t s
+
+-- | Upward rounded in-place square root with default effort
+sqrtUpInPlace :: (RoundedSquareRootInPlace t) => OpMutable1 t s
+sqrtUpInPlace = mutable1EffToMutable1 sqrtUpInPlaceEff sqrtDefaultEffort 
+
+-- | Downward rounded in-place square root with default effort
+sqrtDnInPlace :: (RoundedSquareRootInPlace t) => OpMutable1 t s
+sqrtDnInPlace = mutable1EffToMutable1 sqrtDnInPlaceEff sqrtDefaultEffort 
 
 sqrtUpInPlaceEffFromPure,
  sqrtDnInPlaceEffFromPure ::

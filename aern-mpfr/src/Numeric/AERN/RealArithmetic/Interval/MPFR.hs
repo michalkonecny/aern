@@ -29,7 +29,7 @@ import Numeric.AERN.RealArithmetic.Basis.MPFR.FieldOps
 import Numeric.AERN.RealArithmetic.Basis.MPFR.ExactOps
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 import Test.QuickCheck
 

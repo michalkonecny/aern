@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
@@ -35,7 +34,6 @@ import Numeric.AERN.RmToRn.Integration
 import Numeric.AERN.RmToRn.Differentiation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
@@ -189,14 +187,15 @@ measureResultImprecision effAddDom resVec =
     where
     result =
         snd $ RefOrd.getEndpointsOut $
-        let ?addInOutEffort = effAddDom in
         foldl1 (<+>) imprVec
     imprVec = map perComp resVec
     perComp res =
-        let ?addInOutEffort = effAddDom in
         resR <-> resL
         where
         (resL, resR) = RefOrd.getEndpointsOut res
+    (<+>) = ArithInOut.addOutEff effAddDom
+    (<->) = ArithInOut.subtrOutEff effAddDom
+
 
 measureFunctionImprecision :: 
     (RefOrd.IntervalLike (Domain f), 
@@ -228,14 +227,15 @@ measureFunctionImprecision effEval effAddFn effAddDom fnVec =
     where
     result =
         snd $ RefOrd.getEndpointsOut $
-        let ?addInOutEffort = effAddDom in
-        foldl1 (<+>) imprVec
+        foldl1 (.<+>.) imprVec
     imprVec = map perComp fnVec
     perComp fn =
-        let ?addInOutEffort = effAddFn in
-        getRange effEval $ fnR <-> fnL
+        getRange effEval $ fnR ~<->~ fnL
         where
         (fnL, fnR) = RefOrd.getEndpointsOut fn
+
+    (.<+>.) = ArithInOut.addOutEff effAddDom
+    (~<->~) = ArithInOut.subtrOutEff effAddFn
 
 getRange ::
     (CanEvaluate f) 
@@ -252,7 +252,6 @@ solveODEIVPUncertainValueExactTime_UsingPicard ::
      CanEvaluate f,
      CanPartiallyEvaluate f,
      CanCompose f,
-     CanChangeSizeLimits f,
      HasProjections f,
      HasConstFns f,
      RefOrd.IntervalLike f,
@@ -381,8 +380,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard
                 aux (iterNo + 1) hImprecision t
             where
             notMuchImprovement = 
-                let ?addInOutEffort = effAddDom in
-                (prevImprecision <-> hImprecision <=? splitImprovementThreshold) == Just True  
+                (prevImprecision .<->. hImprecision <=? splitImprovementThreshold) == Just True  
             hImprecision = measureFunctionImprecision effEval effAddFn effAddDom h
             hAtTEnd = fst $ evalAtEndTimeVec effEval tVar tEnd h
     maybeIterations :: Maybe [[f]]
@@ -392,6 +390,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard
                 delta
                     odeivp
     tEnd = odeivp_tEnd odeivp
+    (.<->.) = ArithInOut.subtrOutEff effAddDom
                 
 solveODEIVPUncertainValueExactTime_PicardIterations ::
     (CanAddVariables f,
@@ -455,13 +454,10 @@ solveODEIVPUncertainValueExactTime_PicardIterations
     initialAttemptFns =
         map widenFn initialValuesFnVec
         where
-        widenFn fn =
-            let ?mixedAddInOutEffort = effAddFnDom in
-            fn <+>| wideningInterval 
-        wideningInterval =
-            (neg delta) </\> delta
-            where
-            (</\>) = RefOrd.meetOutEff effJoinDom
+        widenFn fn = fn ~<+>. ((neg delta) </\> delta) 
+
+        (~<+>.) = ArithInOut.mixedAddOutEff effAddFnDom
+        (</\>) = RefOrd.meetOutEff effJoinDom
     findEnclosure maxIter = aux 0 
         where
         aux iterNo (fn1Vec : fn2Vec : rest)
@@ -507,10 +503,10 @@ solveODEIVPUncertainValueExactTime_PicardIterations
         resultPic
         where
         resultPic =
-            let ?addInOutEffort = effAddFn in 
-            zipWith (<+>) primitFn initialValuesFnVec
+            zipWith (~<+>~) primitFn initialValuesFnVec
         primitFn = map picardFn xdvec
         xdvec = field xvec
         picardFn xdi =
             primitiveFunctionOutEff effInteg xdi tVar
+        (~<+>~) = ArithInOut.addOutEff effAddFn
 

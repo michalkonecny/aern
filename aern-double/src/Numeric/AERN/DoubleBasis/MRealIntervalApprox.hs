@@ -173,10 +173,8 @@ import Numeric.AERN.RealArithmetic.Interval.Mutable()
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as NumOrd
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
-  (RoundedMixedAddInPlace(..),RoundedMixedMultiplyInPlace(..),RoundedMixedDivideInPlace(..))
-
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort as RARORIPODE
-  (addOutInPlace,(<+>=),
+  (RoundedMixedAddInPlace(..),RoundedMixedMultiplyInPlace(..),RoundedMixedDivideInPlace(..),
+   addOutInPlace,(<+>=),
    subtrOutInPlace,(<->=),
    multOutInPlace,(<*>=),
    divOutInPlace,(</>=),
@@ -301,161 +299,161 @@ partialJoinInInPlace = BRO.partialJoinInInPlace
 
 -- | Inward rounded in-place addition
 addInInPlace :: OpMutable2 RealIntervalApprox s
-addInInPlace = RARORIPODE.addInInPlace
+addInInPlace = RAROR.addInInPlace
 
 -- | Inward rounded addition assignment
 (>+<=) :: OpMutable1 RealIntervalApprox s
-(>+<=) = (RARORIPODE.>+<=)
+(>+<=) = (RAROR.>+<=)
 
 -- | Outward rounded in-place addition
 addOutInPlace :: OpMutable2 RealIntervalApprox s
-addOutInPlace = RARORIPODE.addOutInPlace
+addOutInPlace = RAROR.addOutInPlace
 
 -- | Outward rounded addition assignment
 (<+>=) :: OpMutable1 RealIntervalApprox s
-(<+>=) = (RARORIPODE.<+>=)
+(<+>=) = (RAROR.<+>=)
 
 -- | Inward rounded in-place subtraction
 subtrInInPlace :: OpMutable2 RealIntervalApprox s
-subtrInInPlace = RARORIPODE.subtrInInPlace
+subtrInInPlace = RAROR.subtrInInPlace
 
 -- | Inward rounded subtraction assignment
 (>-<=) :: OpMutable1 RealIntervalApprox s
-(>-<=) = (RARORIPODE.>-<=)
+(>-<=) = (RAROR.>-<=)
 
 -- | Outward rounded in-place subtraction
 subtrOutInPlace :: OpMutable2 RealIntervalApprox s
-subtrOutInPlace = RARORIPODE.subtrOutInPlace
+subtrOutInPlace = RAROR.subtrOutInPlace
 
 -- | Outward rounded subtraction assignment
 (<->=) :: OpMutable1 RealIntervalApprox s
-(<->=) = (RARORIPODE.<->=)
+(<->=) = (RAROR.<->=)
 
 -- | Inward rounded in-place absolute value
 absInInPlace :: OpMutable1 RealIntervalApprox s
-absInInPlace = RARORIPODE.absInInPlace 
+absInInPlace = RAROR.absInInPlace 
 
 -- | Outward rounded in-place absolute value
 absOutInPlace :: OpMutable1 RealIntervalApprox s
-absOutInPlace = RARORIPODE.absOutInPlace 
+absOutInPlace = RAROR.absOutInPlace 
 
 -- | Inward rounded in-place multiplication
 multInInPlace :: OpMutable2 RealIntervalApprox s
-multInInPlace = RARORIPODE.multInInPlace
+multInInPlace = RAROR.multInInPlace
 
 -- | Inward rounded multiplication assignment
 (>*<=) :: OpMutable1 RealIntervalApprox s
-(>*<=) = (RARORIPODE.>*<=)
+(>*<=) = (RAROR.>*<=)
 
 -- | Outward rounded in-place multiplication
 multOutInPlace :: OpMutable2 RealIntervalApprox s
-multOutInPlace = RARORIPODE.multOutInPlace
+multOutInPlace = RAROR.multOutInPlace
 
 -- | Outward rounded multiplication assignment
 (<*>=) :: OpMutable1 RealIntervalApprox s
-(<*>=) = (RARORIPODE.<*>=)
+(<*>=) = (RAROR.<*>=)
 
 -- | Inward rounded in-place power
 powerToNonnegIntInInPlace :: OpMutableNonmut RealIntervalApprox Int s
-powerToNonnegIntInInPlace = RARORIPODE.powerToNonnegIntInInPlace
+powerToNonnegIntInInPlace = RAROR.powerToNonnegIntInInPlace
 
 -- | Inward rounded in-place power assignment
 (>^<=) :: OpNonmut RealIntervalApprox Int s
-(>^<=) = (RARORIPODE.>^<=)
+(>^<=) = (RAROR.>^<=)
 
 -- | Outward rounded in-place power
 powerToNonnegIntOutInPlace :: OpMutableNonmut RealIntervalApprox Int s
-powerToNonnegIntOutInPlace = RARORIPODE.powerToNonnegIntOutInPlace
+powerToNonnegIntOutInPlace = RAROR.powerToNonnegIntOutInPlace
 
 -- | Inward rounded in-place power assignment
 (<^>=) :: OpNonmut RealIntervalApprox Int s
-(<^>=) = (RARORIPODE.<^>=)
+(<^>=) = (RAROR.<^>=)
 
 -- | Inward rounded in-place division
 divInInPlace :: OpMutable2 RealIntervalApprox s
-divInInPlace = RARORIPODE.divInInPlace
+divInInPlace = RAROR.divInInPlace
 
 -- | Inward rounded division assignment
 (>/<=) :: OpMutable1 RealIntervalApprox s
-(>/<=) = (RARORIPODE.>/<=)
+(>/<=) = (RAROR.>/<=)
 
 -- | Outward rounded in-place division
 divOutInPlace :: OpMutable2 RealIntervalApprox s
-divOutInPlace = RARORIPODE.divOutInPlace
+divOutInPlace = RAROR.divOutInPlace
 
 -- | Outward rounded division assignment
 (</>=) :: OpMutable1 RealIntervalApprox s
-(</>=) = (RARORIPODE.</>=)
+(</>=) = (RAROR.</>=)
 
 -- | Inward rounded in-place mixed addition
 mixedAddInInPlace :: (RAROR.RoundedMixedAddInPlace RealIntervalApprox tn) => 
     OpMutableNonmut RealIntervalApprox tn s
-mixedAddInInPlace = RARORIPODE.mixedAddInInPlace
+mixedAddInInPlace = RAROR.mixedAddInInPlace
 
 -- | Inward rounded additive scalar action assignment
 (>+<|=) :: (RAROR.RoundedMixedAddInPlace RealIntervalApprox tn) => OpNonmut RealIntervalApprox tn s
-(>+<|=) = (RARORIPODE.>+<|=)
+(>+<|=) = (RAROR.>+<|=)
 
 -- | Outward rounded in-place mixed addition
 mixedAddOutInPlace :: (RAROR.RoundedMixedAddInPlace RealIntervalApprox tn) =>
     OpMutableNonmut RealIntervalApprox tn s
-mixedAddOutInPlace = RARORIPODE.mixedAddOutInPlace
+mixedAddOutInPlace = RAROR.mixedAddOutInPlace
 
 -- | Outward rounded additive scalar action assignment
 (<+>|=) :: (RAROR.RoundedMixedAddInPlace RealIntervalApprox tn) => OpNonmut RealIntervalApprox tn s
-(<+>|=) = (RARORIPODE.<+>|=)
+(<+>|=) = (RAROR.<+>|=)
 
 -- | Inward rounded in-place mixed multiplication
 mixedMultInInPlace :: (RAROR.RoundedMixedMultiplyInPlace RealIntervalApprox tn) => 
     OpMutableNonmut RealIntervalApprox tn s
-mixedMultInInPlace = RARORIPODE.mixedMultInInPlace
+mixedMultInInPlace = RAROR.mixedMultInInPlace
 
 -- | Inward rounded multiplicative scalar action assignment
 (>*<|=) :: (RAROR.RoundedMixedMultiplyInPlace RealIntervalApprox tn) => OpNonmut RealIntervalApprox tn s
-(>*<|=) = (RARORIPODE.>*<|=)
+(>*<|=) = (RAROR.>*<|=)
 
 -- | Outward rounded in-place mixed multiplication
 mixedMultOutInPlace :: (RAROR.RoundedMixedMultiplyInPlace RealIntervalApprox tn) => 
     OpMutableNonmut RealIntervalApprox tn s
-mixedMultOutInPlace = RARORIPODE.mixedMultOutInPlace
+mixedMultOutInPlace = RAROR.mixedMultOutInPlace
 
 -- | Outward rounded multiplicative scalar action assignment
 (<*>|=) :: (RAROR.RoundedMixedMultiplyInPlace RealIntervalApprox tn) => OpNonmut RealIntervalApprox tn s
-(<*>|=) = (RARORIPODE.<*>|=)
+(<*>|=) = (RAROR.<*>|=)
 
 -- | Inward rounded in-place mixed reciprocal action
 mixedDivInInPlace :: (RAROR.RoundedMixedDivideInPlace RealIntervalApprox tn) => 
     OpMutableNonmut RealIntervalApprox tn s
-mixedDivInInPlace = RARORIPODE.mixedDivInInPlace
+mixedDivInInPlace = RAROR.mixedDivInInPlace
 
 -- | Inward rounded multiplicative scalar reciprocal action assignment
 (>/<|=) :: (RAROR.RoundedMixedDivideInPlace RealIntervalApprox tn) => OpNonmut RealIntervalApprox tn s
-(>/<|=) = (RARORIPODE.>/<|=)
+(>/<|=) = (RAROR.>/<|=)
 
 -- | Outward rounded in-place mixed reciprocal action
 mixedDivOutInPlace :: (RAROR.RoundedMixedDivideInPlace RealIntervalApprox tn) => 
     OpMutableNonmut RealIntervalApprox tn s
-mixedDivOutInPlace = RARORIPODE.mixedDivOutInPlace
+mixedDivOutInPlace = RAROR.mixedDivOutInPlace
 
 -- | Outward rounded multiplicative scalar reciprocal action assignment
 (</>|=) :: (RAROR.RoundedMixedDivideInPlace RealIntervalApprox tn) => OpNonmut RealIntervalApprox tn s
-(</>|=) = (RARORIPODE.</>|=)
+(</>|=) = (RAROR.</>|=)
 
 -- | Inward rounded in-place exponential
 expInInPlace :: OpMutable1 RealIntervalApprox s
-expInInPlace = RARORIPODE.expInInPlace 
+expInInPlace = RAROR.expInInPlace 
 
 -- | Outward rounded in-place exponential
 expOutInPlace :: OpMutable1 RealIntervalApprox s
-expOutInPlace = RARORIPODE.expOutInPlace 
+expOutInPlace = RAROR.expOutInPlace 
 
 -- | Inward rounded in-place square root
 sqrtInInPlace :: OpMutable1 RealIntervalApprox s
-sqrtInInPlace = RARORIPODE.sqrtInInPlace 
+sqrtInInPlace = RAROR.sqrtInInPlace 
 
 -- | Outward rounded in-place square root
 sqrtOutInPlace :: OpMutable1 RealIntervalApprox s
-sqrtOutInPlace = RARORIPODE.sqrtOutInPlace 
+sqrtOutInPlace = RAROR.sqrtOutInPlace 
 
 expOutInPlaceIters, sqrtOutInPlaceIters,
  expInInPlaceIters, sqrtInInPlaceIters :: Int -> OpMutable1 RealIntervalApprox s

@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
@@ -29,8 +28,6 @@ import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
---import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
@@ -189,19 +186,12 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
                 fn <- arbitraryFnFromSequence
                 return [fn]
         ([i1,i2], [((i1a,i2a),[NC])]) ->
-            let ?addInOutEffort = effAddDom in
-            let ?mixedAddInOutEffort = effAddFnDFn in
             Just $
                 do
                 fn1 <- arbitraryFnFromSequence
                 fn2 <- arbitraryFnFromSequence
                 return $ ensureOverlap [fn1, fn2]
         _ ->
-            let ?addInOutEffort = effAddDom in
-            let ?multInOutEffort = effMulDom in
-            let ?divInOutEffort = effDivDom in
-            let ?mixedAddInOutEffort = effAddFnDFn in
-            let ?mixedMultInOutEffort = effMultFnDFn in
             NumOrd.forcedLinearArbitraryTupleRelatedBy
                 arbitraryFnFromSequence 
                 pickAndShiftGetSorted
@@ -213,6 +203,14 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
              (effAddFn, effMultFn), 
              (effAddFnDFn, effMultFnDFn))
             fnSequence fixedRandSeqQuantityOfSize area
+
+    (.</>.) = ArithInOut.divOutEff effDivDom
+    (.<*>.) = ArithInOut.multOutEff effMulDom
+    (.<+>.) = ArithInOut.addOutEff effAddDom
+    (.<->.) = ArithInOut.subtrOutEff effAddDom
+    (~<+>.) = ArithInOut.mixedAddOutEff effAddFnDFn
+    (~<*>.) = ArithInOut.mixedMultOutEff effMultFnDFn
+
     sampleDom = getSampleDomValue sampleFn
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effMulDom = ArithInOut.fldEffortMult sampleDom $ ArithInOut.rrEffortField sampleDom effDom
@@ -222,7 +220,7 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
     
     ensureOverlap fns@[fn1,fn2] = [fn1,fn2Shifted]
         where
-        fn2Shifted = fn2 <+>| ((evalAtPt fn1) <-> (evalAtPt fn2))
+        fn2Shifted = fn2 ~<+>. ((evalAtPt fn1) .<->. (evalAtPt fn2))
         pt = getSampleFromInsideDomainBox fn1 domainBox 
         sampleDom = getSampleDomValue fn1
         domainBox = getDomainBox fn1
@@ -250,14 +248,14 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
                     =
                     (fnTr, (lowerTr, upperTr)) : (pick (n-1) (fnTr, lowerTr, upperTr) rest) 
                 where
-                fnPrevTrCp = fnPrev <+>| distCp
-                upperPrevTrCp = upperPrev <+> distCp
+                fnPrevTrCp = fnPrev ~<+>. distCp
+                upperPrevTrCp = upperPrev .<+>. distCp
                 distCp = one sampleDom
-                fnTr = fn <+>| dist
-                upperPrevTr = upperPrev <+> dist
-                upperTr = upper <+> dist
-                lowerTr = lower <+> dist
-                dist = (upperPrev <-> lower) <+> (one sampleDom) 
+                fnTr = fn ~<+>. dist
+                upperPrevTr = upperPrev .<+>. dist
+                upperTr = upper .<+>. dist
+                lowerTr = lower .<+>. dist
+                dist = (upperPrev .<->. lower) .<+>. (one sampleDom) 
                 sampleDom = snd $ head $ toAscList $ getDomainBox fn
                 
             fnBounds@(first:rest) = map addBounds list
@@ -273,7 +271,7 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
                     Just range -> map (shrink range) list
                 where
                 shrink range (fn,_) =
-                    (fn <*>| scalingFactor) <+>| shift
+                    (fn ~<*>. scalingFactor) ~<+>. shift
                     where
                     scalingFactor 
                         | ((z </\> listWidth) ⊒? (z </\> rangeWidth)) == Just True
@@ -281,19 +279,19 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
                             = one range
                         | (z ⊒? listWidth) == Just False
                             -- ie no division by zero
-                            = rangeWidth </> listWidth
+                            = rangeWidth .</>. listWidth
                         | otherwise
                             = one range 
                         where
                         (⊒?) = RefOrd.pGeqEff effRefComp
                         (</\>) = RefOrd.meetOutEff effJoin
                         z = zero range
-                    rangeWidth = rangeR <-> rangeL
+                    rangeWidth = rangeR .<->. rangeL
                     (rangeL, rangeR) = RefOrd.getEndpointsOutEff effGetEndptsDom range
-                    shift = rangeL <-> (listL <*> scalingFactor)
+                    shift = rangeL .<->. (listL .<*>. scalingFactor)
                 (_, (listL,_)) = head list 
                 (_, (_,listR)) = last list
-                listWidth = listR <-> listL 
+                listWidth = listR .<->. listL 
 
 fnSequence fixedRandSeqQuantityOfSize sampleFn = 
     fixedRandSeq fixedRandSeqQuantityOfSize $ 
@@ -326,9 +324,6 @@ arbitraryFn
         (effAddFn, effMultFn, effMultFnDFn, effGetEndptsDom) 
         (sampleFn :: fn)
     =
-    let ?multInOutEffort = effMultFn in
-    let ?addInOutEffort = effAddFn in
-    let ?mixedMultInOutEffort = effMultFnDFn in
     sized $ \size ->
     do
     -- choose polynomial generation parameters:
@@ -344,7 +339,7 @@ arbitraryFn
     let _ = sampleDom : coeffs
 --    unsafePrint ("arbitraryFn: size = " ++ show size) $
     return $ 
-        foldl1 (<+>) $ zipWith (<*>|) powerTerms coeffs
+        foldl1 (~<+>~) $ zipWith (~<*>.) powerTerms coeffs
     where
     getEndpoint [a] = fst $ RefOrd.getEndpointsOutEff effGetEndptsDom a
     bounded a = excludesInfinity a 
@@ -357,12 +352,17 @@ arbitraryFn
             dg <- choose (1,degree)
             let remainingVarFns = take (n-1) varFns ++ drop (n+1) varFns
             restFn <- arbitraryPowerTerm remainingVarFns (degree - dg)
-            let varFnPwr = foldl1 (<*>) $ replicate dg varFn 
-            return $ varFnPwr <*> restFn -- rounding direction irrelevant
+            let varFnPwr = foldl1 (~<*>~) $ replicate dg varFn 
+            return $ varFnPwr ~<*>~ restFn -- rounding direction irrelevant
     sizeLimits = getSizeLimits sampleFn
     sampleDom = getSampleDomValue sampleFn
     box = getDomainBox sampleFn
     vars :: [Var fn]
     vars = getVars box
+    
+    (~<*>~) = ArithInOut.multOutEff effMultFn
+    (~<+>~) = ArithInOut.addOutEff effAddFn
+    (~<*>.) = ArithInOut.mixedMultOutEff effMultFnDFn
+    
 
         

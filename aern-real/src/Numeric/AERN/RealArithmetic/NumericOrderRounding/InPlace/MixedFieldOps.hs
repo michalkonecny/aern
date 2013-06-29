@@ -1,7 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE RankNTypes #-}
 
 {-# LANGUAGE NoMonoLocalBinds #-}
@@ -49,6 +48,28 @@ class (RoundedMixedAddEffort t tn, CanBeMutable t) => RoundedMixedAddInPlace t t
         OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
     mixedAddDnInPlaceEff :: 
         OpMutableNonmutEff (MixedAddEffortIndicator t tn) t tn s
+
+
+-- | Upward rounded in-place mixed addition with default effort
+mixedAddUpInPlace :: (RoundedMixedAddInPlace t tn) => 
+    OpMutableNonmut t tn s
+mixedAddUpInPlace =
+    mixedEffToMutableNonmut mixedAddUpInPlaceEff mixedAddDefaultEffort
+
+-- | Upward rounded additive scalar action assignment with default effort
+(+^|=) :: (RoundedMixedAddInPlace t tn) => OpNonmut t tn s
+(+^|=) = mutableNonmutToNonmut mixedAddUpInPlace
+
+-- | Downward rounded in-place mixed addition with default effort
+mixedAddDnInPlace :: (RoundedMixedAddInPlace t tn) =>
+    OpMutableNonmut t tn s
+mixedAddDnInPlace =
+    mixedEffToMutableNonmut mixedAddDnInPlaceEff mixedAddDefaultEffort
+
+-- | Downward rounded additive scalar action assignment with default effort
+(+.|=) :: (RoundedMixedAddInPlace t tn) => OpNonmut t tn s
+(+.|=) = mutableNonmutToNonmut mixedAddDnInPlace
+
 
 mixedAddUpInPlaceEffFromPure,
  mixedAddDnInPlaceEffFromPure ::
@@ -151,6 +172,27 @@ class (RoundedMixedMultiplyEffort t tn, CanBeMutable t) => RoundedMixedMultiplyI
     mixedMultDnInPlaceEff :: 
         OpMutableNonmutEff (MixedMultEffortIndicator t tn) t tn s
 
+-- | Upward rounded in-place mixed multiplication with default effort
+mixedMultUpInPlace :: (RoundedMixedMultiplyInPlace t tn) => 
+    OpMutableNonmut t tn s
+mixedMultUpInPlace =
+    mixedEffToMutableNonmut mixedMultUpInPlaceEff mixedMultDefaultEffort
+
+-- | Upward rounded multiplicative scalar action assignment with default effort
+(*^|=) :: (RoundedMixedMultiplyInPlace t tn) => OpNonmut t tn s
+(*^|=) = mutableNonmutToNonmut mixedMultUpInPlace
+
+-- | Downward rounded in-place mixed multiplication with default effort
+mixedMultDnInPlace :: (RoundedMixedMultiplyInPlace t tn) => 
+    OpMutableNonmut t tn s
+mixedMultDnInPlace =
+    mixedEffToMutableNonmut mixedMultDnInPlaceEff mixedMultDefaultEffort
+
+-- | Downward rounded multiplicative scalar action assignment with default effort
+(*.|=) :: (RoundedMixedMultiplyInPlace t tn) => OpNonmut t tn s
+(*.|=) = mutableNonmutToNonmut mixedMultDnInPlace
+
+
 mixedMultUpInPlaceEffFromPure,
  mixedMultDnInPlaceEffFromPure ::
     (CanBeMutable t, RoundedMixedMultiply t tn) =>
@@ -223,6 +265,27 @@ class (RoundedMixedDivide t tn, CanBeMutable t) => RoundedMixedDivideInPlace t t
         OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
     mixedDivDnInPlaceEff :: 
         OpMutableNonmutEff (MixedDivEffortIndicator t tn) t tn s
+
+-- | Upward rounded in-place mixed reciprocal action with default effort
+mixedDivUpInPlace :: (RoundedMixedDivideInPlace t tn) => 
+    OpMutableNonmut t tn s
+mixedDivUpInPlace =
+    mixedEffToMutableNonmut mixedDivUpInPlaceEff mixedDivDefaultEffort
+
+-- | Upward rounded multiplicative scalar reciprocal action assignment with default effort
+(/^|=) :: (RoundedMixedDivideInPlace t tn) => OpNonmut t tn s
+(/^|=) = mutableNonmutToNonmut mixedDivUpInPlace
+
+-- | Downward rounded in-place mixed reciprocal action with default effort
+mixedDivDnInPlace :: (RoundedMixedDivideInPlace t tn) => 
+    OpMutableNonmut t tn s
+mixedDivDnInPlace =
+    mixedEffToMutableNonmut mixedDivDnInPlaceEff mixedDivDefaultEffort
+
+-- | Downward rounded multiplicative scalar reciprocal action assignment with default effort
+(/.|=) :: (RoundedMixedDivideInPlace t tn) => OpNonmut t tn s
+(/.|=) = mutableNonmutToNonmut mixedDivDnInPlace
+
 
 mixedDivUpInPlaceEffFromPure,
  mixedDivDnInPlaceEffFromPure ::

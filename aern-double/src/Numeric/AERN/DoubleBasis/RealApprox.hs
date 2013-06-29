@@ -158,12 +158,11 @@ import qualified Numeric.AERN.RefinementOrder as BRO
 import Numeric.AERN.RealArithmetic.Interval()
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
-  (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..))
+  (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..),
+   (<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
+   piOut,eOut,absOut,expOut,sqrtOut
+  )
 
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort as RARORODE
- ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
-  piOut,eOut,absOut,expOut,sqrtOut)
- 
 import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
   (expOutIters, sqrtOutIters)
 
@@ -326,63 +325,63 @@ infixl 7 </>|
 
 -- | Outward rounded addition
 (<+>) :: RealApprox -> RealApprox -> RealApprox
-(<+>) = (RARORODE.<+>)
+(<+>) = (RAROR.<+>)
 
 -- | Outward rounded subtraction
 (<->) :: RealApprox -> RealApprox -> RealApprox
-(<->) = (RARORODE.<->)
+(<->) = (RAROR.<->)
 
 -- | Outward rounded multiplication
 (<*>) :: RealApprox -> RealApprox -> RealApprox
-(<*>) = (RARORODE.<*>)
+(<*>) = (RAROR.<*>)
 
 -- | Outward rounded division
 (</>) :: RealApprox -> RealApprox -> RealApprox
-(</>) = (RARORODE.</>)
+(</>) = (RAROR.</>)
 
 -- | Outward rounded additive scalar left action
 (|<+>) :: RAROR.RoundedMixedAdd RealApprox tn => tn -> RealApprox -> RealApprox
-(|<+>) = (RARORODE.|<+>)
+(|<+>) = (RAROR.|<+>)
 
 -- | Outward rounded additive scalar right action
 (<+>|) :: RAROR.RoundedMixedAdd RealApprox tn => RealApprox -> tn -> RealApprox
-(<+>|) = (RARORODE.<+>|)
+(<+>|) = (RAROR.<+>|)
 
 -- | Outward rounded multiplicative scalar left action
 (|<*>) :: RAROR.RoundedMixedMultiply RealApprox tn => tn -> RealApprox -> RealApprox
-(|<*>) = (RARORODE.|<*>)
+(|<*>) = (RAROR.|<*>)
 
 -- | Outward rounded multiplicative scalar right action
 (<*>|) :: RAROR.RoundedMixedMultiply RealApprox tn => RealApprox -> tn -> RealApprox
-(<*>|) = (RARORODE.<*>|)
+(<*>|) = (RAROR.<*>|)
 
 -- | Outward rounded multiplicative scalar reciprocal right action
 (</>|) :: RAROR.RoundedMixedDivide RealApprox tn => RealApprox -> tn -> RealApprox
-(</>|) = (RARORODE.</>|)
+(</>|) = (RAROR.</>|)
 
 -- | Outward rounded power
 (<^>) :: RealApprox -> Int -> RealApprox
-(<^>) = (RARORODE.<^>)
+(<^>) = (RAROR.<^>)
 
 -- | Outward rounded pi
 piOut :: RealApprox
-piOut = RARORODE.piOut 
+piOut = RAROR.piOut 0 
 
 -- | Outward rounded e
 eOut :: RealApprox
-eOut = RARORODE.eOut 
+eOut = RAROR.eOut 0
 
 -- | Outward rounded absolute value
 absOut :: RealApprox -> RealApprox
-absOut = RARORODE.absOut
+absOut = RAROR.absOut
 
 -- | Outward rounded exponential
 expOut :: RealApprox -> RealApprox
-expOut = RARORODE.expOut
+expOut = RAROR.expOut
 
 -- | Outward rounded square root
 sqrtOut :: RealApprox -> RealApprox
-sqrtOut = RARORODE.sqrtOut
+sqrtOut = RAROR.sqrtOut
 
 expOutIters :: Int -> RealApprox -> RealApprox
 expOutIters = RAIEFFO.expOutIters

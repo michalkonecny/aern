@@ -34,6 +34,12 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+infixr 6 |+., |+^
+infixl 6 +.|, +^|
+infixr 7 |*., |*^
+infixl 7 *.|, *^|
+infixl 7 /.|, /^|
+
 class
     (EffortIndicator (MixedAddEffortIndicator t tn))
     => 
@@ -45,6 +51,23 @@ class
 class (RoundedMixedAddEffort t tn) => RoundedMixedAdd t tn where
     mixedAddUpEff :: MixedAddEffortIndicator t tn -> t -> tn -> t
     mixedAddDnEff :: MixedAddEffortIndicator t tn -> t -> tn -> t
+
+mixedAddUp :: (RoundedMixedAdd t tn) => t -> tn -> t
+mixedAddUp a b = mixedAddUpEff (mixedAddDefaultEffort a b) a b
+
+(+^|) :: (RoundedMixedAdd t tn) => t -> tn -> t
+(+^|) = mixedAddUp
+(|+^) :: (RoundedMixedAdd t tn) => tn -> t -> t
+(|+^) = flip mixedAddUp
+
+mixedAddDn :: (RoundedMixedAdd t tn) => t -> tn -> t
+mixedAddDn a b = mixedAddDnEff (mixedAddDefaultEffort a b) a b
+
+(+.|) :: (RoundedMixedAdd t tn) => t -> tn -> t
+(+.|) = mixedAddDn
+(|+.) :: (RoundedMixedAdd t tn) => tn -> t -> t
+(|+.) = flip mixedAddDn
+
 
 {- tools to easily make a RoundedMixedAdd instance 
    via the composition of conversion and homogeneous addition -}
@@ -128,6 +151,23 @@ class
 class (RoundedMixedMultiplyEffort t tn) => RoundedMixedMultiply t tn where
     mixedMultUpEff :: MixedMultEffortIndicator t tn -> t -> tn -> t
     mixedMultDnEff :: MixedMultEffortIndicator t tn -> t -> tn -> t
+
+
+mixedMultUp :: (RoundedMixedMultiply t tn) => t -> tn -> t
+mixedMultUp a b = mixedMultUpEff (mixedMultDefaultEffort a b) a b
+
+(*^|) :: (RoundedMixedMultiply t tn) => t -> tn -> t
+(*^|) = mixedMultUp
+(|*^) :: (RoundedMixedMultiply t tn) => tn -> t -> t
+(|*^) = flip mixedMultUp
+
+mixedMultDn :: (RoundedMixedMultiply t tn) => t -> tn -> t
+mixedMultDn a b = mixedMultDnEff (mixedMultDefaultEffort a b) a b
+
+(*.|) :: (RoundedMixedMultiply t tn) => t -> tn -> t
+(*.|) = mixedMultDn
+(|*.) :: (RoundedMixedMultiply t tn) => tn -> t -> t
+(|*.) = flip mixedMultDn
 
 {- tools to easily make a RoundedMixedMultiply instance 
    via the composition of conversion and homogeneous addition -}
@@ -227,6 +267,19 @@ class
 class (RoundedMixedDivideEffort t tn) => RoundedMixedDivide t tn where
     mixedDivUpEff :: MixedDivEffortIndicator t tn -> t -> tn -> t
     mixedDivDnEff :: MixedDivEffortIndicator t tn -> t -> tn -> t
+
+mixedDivUp :: (RoundedMixedDivide t tn) => t -> tn -> t
+mixedDivUp a b = mixedDivUpEff (mixedDivDefaultEffort a b) a b
+
+(/^|) :: (RoundedMixedDivide t tn) => t -> tn -> t
+(/^|) = mixedDivUp
+
+mixedDivDn :: (RoundedMixedDivide t tn) => t -> tn -> t
+mixedDivDn a b = mixedDivDnEff (mixedDivDefaultEffort a b) a b
+
+(/.|) :: (RoundedMixedDivide t tn) => t -> tn -> t
+(/.|) = mixedDivDn
+
 
 {- tools to easily make a RoundedMixedDivide instance 
    via the composition of conversion and homogeneous addition -}

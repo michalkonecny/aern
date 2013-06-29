@@ -45,6 +45,12 @@ class
     convertUpEff :: ConvertEffortIndicator t1 t2 -> t2 -> t1 -> Maybe t2
     convertDnEff :: ConvertEffortIndicator t1 t2 -> t2 -> t1 -> Maybe t2
 
+convertUp :: (Convertible t1 t2) => t2 -> t1 -> Maybe t2
+convertUp a b = convertUpEff (convertDefaultEffort b a) a b
+
+convertDn :: (Convertible t1 t2) => t2 -> t1 -> Maybe t2
+convertDn a b = convertDnEff (convertDefaultEffort b a) a b
+
 propConvertMonotone ::
     (Convertible t1 t2, 
      NumOrd.ArbitraryOrderedTuple t1, 

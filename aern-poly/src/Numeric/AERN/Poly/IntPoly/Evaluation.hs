@@ -41,7 +41,6 @@ import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn 
 --import Numeric.AERN.RealArithmetic.NumericOrderRounding (ConvertEffortIndicator) -- needed for ghc 6.12
 
@@ -151,9 +150,8 @@ instance
         | otherwise =
             evalPolyOnIntervalOut effCf maxSplitDepth valsLZ p
         where
-        valsLZ =
-            let ?addInOutEffort = effAdd in 
-            valsMapToValuesLZ (<->) cfg valsMap
+        valsLZ = valsMapToValuesLZ (<->) cfg valsMap
+        (<->) = ArithInOut.subtrOutEff effAdd
         effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample effCf
         sample = ipolycfg_sample_cf cfg
         
@@ -163,9 +161,8 @@ instance
         | otherwise =
             evalPolyOnIntervalIn effCf maxSplitDepth valsLZ p
         where
-        valsLZ = 
-            let ?addInOutEffort = effAdd in 
-            valsMapToValuesLZ (>-<) cfg valsMap
+        valsLZ = valsMapToValuesLZ (>-<) cfg valsMap
+        (>-<) = ArithInOut.subtrInEff effAdd
         effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample effCf
         sample = ipolycfg_sample_cf cfg
     
@@ -240,12 +237,6 @@ coeffPolyEvalOpsOut eff depth sample =
     result
     where
     result =
-        let ?multInOutEffort = effMult in
-        let ?intPowerInOutEffort = effPwr in
-        let ?addInOutEffort = effAdd in
-        let (<=?) = NumOrd.pLeqEff effComp in
-        let (</\>) = RefOrd.meetOutEff effJoin in
-        let ?mixedDivInOutEffort = effDivInt in -- needed for ghc 6.12
         PolyEvalOps (zero sample) (<+>) (<*>) (<^>) id (const Nothing) depth $
             Just $ PolyEvalMonoOps
                 result -- outer rounded ops = itself
@@ -266,18 +257,22 @@ coeffPolyEvalOpsOut eff depth sample =
         val1 = RefOrd.fromEndpointsOut (valL, valM)
         val2 = RefOrd.fromEndpointsOut (valM, valR)
         (valL, valR) = RefOrd.getEndpointsOut val
-        valM =
-            let ?mixedDivInOutEffort = effDivInt in
-            let ?addInOutEffort = effAdd in
-            (valL <+> valR) </>| (2 :: Int)
+        valM = (valL <+> valR) </>| (2 :: Int)
     getWidthAsDouble val = wD
         where
         Just wD = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort val (0::Double)) 0 w
-        w = 
-            let ?addInOutEffort = effAdd in
-            valR <-> valL
+        w = valR <-> valL
         (valL, valR) = RefOrd.getEndpointsOut val
         
+    (<=?) = NumOrd.pLeqEff effComp
+    (</\>) = RefOrd.meetOutEff effJoin
+    
+    (<+>) = ArithInOut.addOutEff effAdd
+    (<->) = ArithInOut.subtrOutEff effAdd
+    (<*>) = ArithInOut.multOutEff effMult
+    (<^>) = ArithInOut.powerToNonnegIntOutEff effPwr
+    (</>|) = ArithInOut.mixedDivOutEff effDivInt
+
     effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
     effPwr = ArithInOut.fldEffortPow sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff

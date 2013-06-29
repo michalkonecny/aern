@@ -1,5 +1,4 @@
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.IntPoly
     Description :  datatype of polynomials and related structure functions  

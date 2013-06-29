@@ -32,7 +32,7 @@ import Numeric.AERN.RmToRn.Evaluation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal)
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 import Numeric.AERN.RealArithmetic.ExactOps
 

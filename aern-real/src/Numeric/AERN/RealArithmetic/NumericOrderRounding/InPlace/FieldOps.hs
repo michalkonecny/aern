@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE RankNTypes #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps
@@ -56,6 +55,23 @@ class (RoundedAddEffort t, CanBeMutable t) => RoundedAddInPlace t where
     addUpInPlaceEff :: OpMutable2Eff (AddEffortIndicator t) t s
     addDnInPlaceEff :: OpMutable2Eff (AddEffortIndicator t) t s
 
+-- | Upward rounded in-place addition with default effort
+addUpInPlace :: (RoundedAddInPlace t) => OpMutable2 t s
+addUpInPlace = mutable2EffToMutable2 addUpInPlaceEff addDefaultEffort
+
+-- | Upward rounded addition assignment with default effort
+(+^=) :: (RoundedAddInPlace t) => OpMutable1 t s
+(+^=) = mutable2ToMutable1 addUpInPlace
+
+-- | Downward rounded in-place addition with default effort
+addDnInPlace :: (RoundedAddInPlace t) => OpMutable2 t s
+addDnInPlace = mutable2EffToMutable2 addDnInPlaceEff addDefaultEffort 
+
+-- | Downward rounded addition assignment with default effort
+(+.=) :: (RoundedAddInPlace t) => OpMutable1 t s
+(+.=) = mutable2ToMutable1 addDnInPlace
+
+
 addUpInPlaceEffFromPure,
  addDnInPlaceEffFromPure ::
     (CanBeMutable t, RoundedAdd t) =>
@@ -110,6 +126,22 @@ class (RoundedAddInPlace t,  NegInPlace t) => RoundedSubtrInPlace t where
         negInPlace bbM bM
         addDnInPlaceEff effort rM aM bbM
 
+-- | Upward rounded in-place subtraction with default effort
+subtrUpInPlace :: (RoundedSubtrInPlace t) => OpMutable2 t s
+subtrUpInPlace = mutable2EffToMutable2 subtrUpInPlaceEff addDefaultEffort
+
+-- | Upward rounded subtraction assignment with default effort
+(-^=) :: (RoundedSubtrInPlace t) => OpMutable1 t s
+(-^=) = mutable2ToMutable1 subtrUpInPlace
+
+-- | Downward rounded in-place subtraction with default effort
+subtrDnInPlace :: (RoundedSubtrInPlace t) => OpMutable2 t s
+subtrDnInPlace = mutable2EffToMutable2 subtrDnInPlaceEff addDefaultEffort
+
+-- | Downward rounded subtraction assignment with default effort
+(-.=) :: (RoundedSubtrInPlace t) => OpMutable1 t s
+(-.=) = mutable2ToMutable1 subtrDnInPlace
+
 propUpDnSubtrInPlace ::
     (NumOrd.PartialComparison t, 
      RoundedSubtrInPlace t, RoundedSubtr t, 
@@ -141,6 +173,14 @@ propUpDnSubtrInPlace sample initEffort (NumOrd.UniformlyOrderedPair (e1, e2)) =
 class (RoundedAbsEffort t, CanBeMutable t) => RoundedAbsInPlace t where
     absUpInPlaceEff :: OpMutable1Eff (AbsEffortIndicator t) t s
     absDnInPlaceEff :: OpMutable1Eff (AbsEffortIndicator t) t s
+
+-- | Upward rounded in-place absolute value with default effort
+absUpInPlace :: (RoundedAbsInPlace t) => OpMutable1 t s
+absUpInPlace = mutable1EffToMutable1 absUpInPlaceEff absDefaultEffort 
+
+-- | Downward rounded in-place absolute value with default effort
+absDnInPlace :: (RoundedAbsInPlace t) => OpMutable1 t s
+absDnInPlace = mutable1EffToMutable1 absDnInPlaceEff absDefaultEffort 
 
 absUpInPlaceEffFromPure,
  absDnInPlaceEffFromPure ::
@@ -182,6 +222,22 @@ propUpDnAbsInPlace sample initEffort (NumOrd.UniformlyOrderedSingleton e1) =
 class (RoundedMultiplyEffort t, CanBeMutable t) => RoundedMultiplyInPlace t where
     multUpInPlaceEff :: OpMutable2Eff (MultEffortIndicator t) t s
     multDnInPlaceEff :: OpMutable2Eff (MultEffortIndicator t) t s
+
+-- | Upward rounded in-place multiplication with default effort
+multUpInPlace :: (RoundedMultiplyInPlace t) => OpMutable2 t s
+multUpInPlace = mutable2EffToMutable2 multUpInPlaceEff multDefaultEffort
+
+-- | Upward rounded multiplication assignment with default effort
+(*^=) :: (RoundedMultiplyInPlace t) => OpMutable1 t s
+(*^=) = mutable2ToMutable1 multUpInPlace
+
+-- | Downward rounded in-place multiplication with default effort
+multDnInPlace :: (RoundedMultiplyInPlace t) => OpMutable2 t s
+multDnInPlace = mutable2EffToMutable2 multDnInPlaceEff multDefaultEffort
+
+-- | Downward rounded multiplication assignment with default effort
+(*.=) :: (RoundedMultiplyInPlace t) => OpMutable1 t s
+(*.=) = mutable2ToMutable1 multDnInPlace
 
 multUpInPlaceEffFromPure,
  multDnInPlaceEffFromPure ::
@@ -236,6 +292,7 @@ class (RoundedPowerNonnegToNonnegIntEffort t, CanBeMutable t) =>
     -- in such cases override this implementation with the ...fromMult implementation below
     -- for improved efficiency
 
+
 powerNonnegToNonnegIntUpInPlaceEffFromPure,
  powerNonnegToNonnegIntDnInPlaceEffFromPure ::
     (CanBeMutable t, RoundedPowerNonnegToNonnegInt t) =>
@@ -274,6 +331,27 @@ class (RoundedPowerToNonnegIntEffort t, CanBeMutable t) =>
         OpMutableNonmutEff (PowerToNonnegIntEffortIndicator t) t Int s
     powerToNonnegIntDnInPlaceEff ::
         OpMutableNonmutEff (PowerToNonnegIntEffortIndicator t) t Int s
+
+-- | Upward rounded in-place power with default effort
+powerToNonnegIntUpInPlace :: (RoundedPowerToNonnegIntInPlace t) => 
+    OpMutableNonmut t Int s
+powerToNonnegIntUpInPlace = 
+    mutableNonmutEffToMutableNonmut powerToNonnegIntUpInPlaceEff powerToNonnegIntDefaultEffort
+
+-- | Upward rounded in-place power assignment with default effort
+(^^=) :: (RoundedPowerToNonnegIntInPlace t) => OpNonmut t Int s
+(^^=) = mutableNonmutToNonmut powerToNonnegIntUpInPlace
+
+-- | Downward rounded in-place power with default effort
+powerToNonnegIntDnInPlace :: (RoundedPowerToNonnegIntInPlace t) => 
+    OpMutableNonmut t Int s
+powerToNonnegIntDnInPlace = 
+    mutableNonmutEffToMutableNonmut powerToNonnegIntDnInPlaceEff powerToNonnegIntDefaultEffort
+
+-- | Upward rounded in-place power assignment with default effort
+(^.=) :: (RoundedPowerToNonnegIntInPlace t) => OpNonmut t Int s
+(^.=) = mutableNonmutToNonmut powerToNonnegIntDnInPlace
+
 
 powerToNonnegIntUpInPlaceEffFromPure,
  powerToNonnegIntDnInPlaceEffFromPure ::
@@ -342,6 +420,32 @@ class (HasOne t, RoundedDivideEffort t, CanBeMutable t) =>
         a <- unsafeReadMutable aM
         oneM <- unsafeMakeMutable (one a)
         divDnInPlaceEff effort resM oneM aM
+
+-- | Upward rounded in-place division with default effort
+divUpInPlace :: (RoundedDivideInPlace t) => OpMutable2 t s
+divUpInPlace = mutable2EffToMutable2 divUpInPlaceEff divDefaultEffort
+
+-- | Upward rounded division assignment with default effort
+(/^=) :: (RoundedDivideInPlace t) => OpMutable1 t s
+(/^=) = mutable2ToMutable1 divUpInPlace
+
+-- | Downward rounded in-place division with default effort
+divDnInPlace :: (RoundedDivideInPlace t) => OpMutable2 t s
+divDnInPlace = mutable2EffToMutable2 divDnInPlaceEff divDefaultEffort
+
+-- | Downward rounded division assignment with default effort
+(/.=) :: (RoundedDivideInPlace t) => OpMutable1 t s
+(/.=) = mutable2ToMutable1 divDnInPlace
+
+-- | Upward rounded in-place reciprocal with default effort
+recipUpInPlace :: (RoundedDivideInPlace t) => OpMutable1 t s
+recipUpInPlace = mutable1EffToMutable1 recipUpInPlaceEff divDefaultEffort
+
+-- | Downward rounded in-place reciprocal with default effort
+recipDnInPlace :: (RoundedDivideInPlace t) => OpMutable1 t s
+recipDnInPlace = mutable1EffToMutable1 recipDnInPlaceEff divDefaultEffort
+
+
 
 divUpInPlaceEffFromPure,
  divDnInPlaceEffFromPure ::

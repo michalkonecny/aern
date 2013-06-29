@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps
     Description :  rounded basic arithmetic operations  
@@ -16,26 +15,6 @@
     This module is hidden and reexported via its parent NumericOrderRounding. 
 -}
 module Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps 
-(
-    RoundedAdd(..),RoundedAddEffort(..), RoundedSubtr(..), 
-    testsUpDnAdd, testsUpDnSubtr,
-    RoundedAbs(..), RoundedAbsEffort(..), 
-    testsUpDnAbs, absUpUsingCompMax, absDnUsingCompMax,
-    RoundedMultiply(..), RoundedMultiplyEffort(..), testsUpDnMult,
-    RoundedPowerNonnegToNonnegInt(..), RoundedPowerNonnegToNonnegIntEffort(..),
-    PowerNonnegToNonnegIntEffortIndicatorFromMult, 
-    powerNonnegToNonnegIntDefaultEffortFromMult,
-    powerNonnegToNonnegIntUpEffFromMult,
-    powerNonnegToNonnegIntDnEffFromMult,
-    RoundedPowerToNonnegInt(..), RoundedPowerToNonnegIntEffort(..), testsUpDnIntPower, 
-    PowerToNonnegIntEffortIndicatorFromMult, 
-    powerToNonnegIntDefaultEffortFromMult,
-    powerToNonnegIntUpEffFromMult,
-    powerToNonnegIntDnEffFromMult,
-    RoundedDivide(..), RoundedDivideEffort(..), testsUpDnDiv,
-    RoundedRingEffort(..), RoundedFieldEffort(..),
-    RoundedRing(..), RoundedField(..)
-)
 where
 
 import Prelude hiding (EQ, LT, GT)
@@ -57,6 +36,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import Data.Maybe
 
+infixl 6 +., +^, -., -^
+infixl 7 *., *^
+--infixl 8 ^., ^^
+infixl 7 /., /^
+
 class
     (EffortIndicator (AddEffortIndicator t))
     => 
@@ -68,6 +52,18 @@ class
 class (RoundedAddEffort t) => RoundedAdd t where
     addUpEff :: AddEffortIndicator t -> t -> t -> t
     addDnEff :: AddEffortIndicator t -> t -> t -> t
+
+addUp :: (RoundedAdd t) => t -> t -> t
+addUp a = addUpEff (addDefaultEffort a) a
+
+(+^) :: (RoundedAdd t) => t -> t -> t
+(+^) = addUp
+
+addDn :: (RoundedAdd t) => t -> t -> t
+addDn a = addDnEff (addDefaultEffort a) a
+
+(+.) :: (RoundedAdd t) => t -> t -> t
+(+.) = addDn
 
 propUpDnAddZero ::
     (NumOrd.PartialComparison t, RoundedAdd t, HasZero t,
@@ -120,6 +116,19 @@ class (RoundedAdd t, Neg t) => RoundedSubtr t where
     subtrDnEff :: (AddEffortIndicator t) -> t -> t -> t
     subtrUpEff effort a b = addUpEff effort a (neg b)
     subtrDnEff effort a b = addDnEff effort a (neg b)
+
+subtrUp :: (RoundedSubtr t) => t -> t -> t
+subtrUp a = subtrUpEff (addDefaultEffort a) a
+
+(-^) :: (RoundedSubtr t) => t -> t -> t
+(-^) = subtrUp
+
+subtrDn :: (RoundedSubtr t) => t -> t -> t
+subtrDn a = subtrDnEff (addDefaultEffort a) a
+
+(-.) :: (RoundedSubtr t) => t -> t -> t
+(-.) = addDn
+
 
 propUpDnSubtrElim ::
     (NumOrd.PartialComparison t, RoundedSubtr t, HasZero t,
@@ -176,6 +185,13 @@ class
 class (RoundedAbsEffort t) => RoundedAbs t where
     absUpEff :: (AbsEffortIndicator t) -> t -> t
     absDnEff :: (AbsEffortIndicator t) -> t -> t
+
+absUp :: (RoundedAbs t) => t -> t
+absUp a = absUpEff (absDefaultEffort a) a
+
+absDn :: (RoundedAbs t) => t -> t
+absDn a = absDnEff (absDefaultEffort a) a
+
 
 absUpUsingCompMax ::
     (HasZero t, Neg t, 
@@ -251,6 +267,19 @@ class
 class (RoundedMultiplyEffort t) => RoundedMultiply t where
     multUpEff :: MultEffortIndicator t -> t -> t -> t
     multDnEff :: MultEffortIndicator t -> t -> t -> t
+
+multUp :: (RoundedMultiply t) => t -> t -> t
+multUp a = multUpEff (multDefaultEffort a) a
+
+(*^) :: (RoundedMultiply t) => t -> t -> t
+(*^) = multUp
+
+multDn :: (RoundedMultiply t) => t -> t -> t
+multDn a = multDnEff (multDefaultEffort a) a
+
+(*.) :: (RoundedMultiply t) => t -> t -> t
+(*.) = multDn
+
 
 propUpDnMultOne ::
     (NumOrd.PartialComparison t, RoundedMultiply t, HasOne t,
@@ -361,7 +390,7 @@ testsUpDnMult (name, sample) =
             testProperty "distributes over +" (propUpDnMultDistributesOverAdd sample)
         ]
 
--- simpler versions assuming the argument is non-negative:
+-- simpler versions of integer power assuming the base is non-negative:
 class
     (EffortIndicator (PowerNonnegToNonnegIntEffortIndicator t))
     => 
@@ -383,7 +412,8 @@ class (RoundedPowerNonnegToNonnegIntEffort t) =>
         t {-^ @x@ (assumed >=0) -} -> 
         Int {-^ @n@ (assumed >=0)-} -> 
         t {-^ @x^n@ rounded down -}
-        
+
+
 -- functions providing an implementation derived from rounded multiplication: 
         
 type PowerNonnegToNonnegIntEffortIndicatorFromMult t =
@@ -406,7 +436,7 @@ powerNonnegToNonnegIntDnEffFromMult ::
 powerNonnegToNonnegIntDnEffFromMult effMult e n =
     powerFromMult (one e) (multDnEff effMult) e n
 
--- now not assuming the argument is non-negative:
+-- general integer power, ie not assuming the base is non-negative:
 class
     (EffortIndicator (PowerToNonnegIntEffortIndicator t))
     => 
@@ -431,6 +461,13 @@ class
         t {-^ @x@ -} -> 
         Int {-^ @n@ (assumed >=0)-} -> 
         t {-^ @x^n@ rounded down -}
+
+powerToNonnegIntUp :: (RoundedPowerToNonnegInt t) => t -> Int -> t
+powerToNonnegIntUp a = powerToNonnegIntUpEff (powerToNonnegIntDefaultEffort a) a
+
+powerToNonnegIntDn :: (RoundedPowerToNonnegInt t) => t -> Int -> t
+powerToNonnegIntDn a = powerToNonnegIntDnEff (powerToNonnegIntDefaultEffort a) a
+
 
 -- functions providing an implementation derived from rounded multiplication: 
 
@@ -579,6 +616,24 @@ class (HasOne t, RoundedDivideEffort t) => RoundedDivide t where
     recipDnEff :: DivEffortIndicator t -> t -> t
     recipUpEff eff a = divUpEff eff (one a) a
     recipDnEff eff a = divDnEff eff (one a) a
+
+divUp :: (RoundedDivide t) => t -> t -> t
+divUp a = divUpEff (divDefaultEffort a) a
+
+(/^) :: (RoundedDivide t) => t -> t -> t
+(/^) = divUp
+
+divDn :: (RoundedDivide t) => t -> t -> t
+divDn a = divDnEff (divDefaultEffort a) a
+
+(/.) :: (RoundedDivide t) => t -> t -> t
+(/.) = divDn
+
+recipUp :: (RoundedDivide t) => t -> t
+recipUp a = recipUpEff (divDefaultEffort a) a
+
+recipDn :: (RoundedDivide t) => t -> t
+recipDn a = recipDnEff (divDefaultEffort a) a
 
 propUpDnDivElim ::
     (NumOrd.PartialComparison t, RoundedDivide t, HasOne t, HasZero t,

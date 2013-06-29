@@ -1,6 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 {-|
@@ -29,7 +28,6 @@ import Numeric.AERN.Poly.IntPoly.New ()
 import Numeric.AERN.RmToRn.Differentiation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Data.IntMap as IntMap
@@ -63,11 +61,8 @@ diffPolyOut ::
     IntPoly var cf ->
     IntPoly var cf
 diffPolyOut effCf var (IntPoly cfg poly) =
-    let ?mixedMultInOutEffort = effMult in -- needed for ghc 6.12
     IntPoly cfg $ dp cfg poly
     where
-    effMult = ArithInOut.mxfldEffortMult sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
-    sampleCf = ipolycfg_sample_cf cfg
     dp _cfg (IntPolyC _val) = IntPolyC $ zero sampleCf
     dp _cfg (IntPolyV x polys)
         | var == x = IntPolyV x $ polysMultiples
@@ -77,8 +72,6 @@ diffPolyOut effCf var (IntPoly cfg poly) =
             map diffTerms $
                 IntMap.toAscList $ IntMap.delete 0 polys
         diffTerms (n,terms) =
---            let (<*>|) = ArithInOut.mixedMultOutEff effMult in
-            let ?mixedMultInOutEffort = effMult in
             (n - 1, termsMapCoeffs (<*>| n) terms)
     dp cfg2 (IntPolyV x polys)
         =
@@ -86,4 +79,8 @@ diffPolyOut effCf var (IntPoly cfg poly) =
             IntPolyV x $ IntMap.map (dp cfgR) polys
         where
         cfgR = cfgRemFirstVar cfg2 
+
+    (<*>|) = ArithInOut.mixedMultOutEff effMult
+    effMult = ArithInOut.mxfldEffortMult sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
+    sampleCf = ipolycfg_sample_cf cfg
         
