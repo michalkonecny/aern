@@ -11,9 +11,7 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       support for solving ODE IVPs using the interval polynomial Picard operator
-Tested-with:    GHC==6.12.3,
-                GHC==7.2.2,
-                GHC==7.4.2
+Tested-with:    GHC==7.4.2
 Description:    Support for solving ODE IVPs using the interval polynomial Picard operator.
     .
     Includes several example solvers.

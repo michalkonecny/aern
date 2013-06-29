@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
@@ -56,6 +55,13 @@ class
         t2 {-^ sample value of the target type -} -> 
         t1 -> 
         t2
+
+
+convertIn :: (Convertible t1 t2) => t2 -> t1 -> t2
+convertIn a b = convertInEff (convertDefaultEffort b a) a b
+
+convertOut :: (Convertible t1 t2) => t2 -> t1 -> t2
+convertOut a b = convertOutEff (convertDefaultEffort b a) a b
 
 propConvertMonotoneFromNumOrd ::
     (Convertible t1 t2, 

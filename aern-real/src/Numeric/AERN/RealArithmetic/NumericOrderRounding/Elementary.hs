@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary
     Description :  support for various common elementary functions
@@ -45,6 +44,13 @@ class
 class (RoundedExponentiationEffort t) => RoundedExponentiation t where
     expUpEff :: (ExpEffortIndicator t) -> t -> t
     expDnEff :: (ExpEffortIndicator t) -> t -> t
+
+expUp :: (RoundedExponentiation t) => t -> t
+expUp a = expUpEff (expDefaultEffort a) a
+
+expDn :: (RoundedExponentiation t) => t -> t
+expDn a = expDnEff (expDefaultEffort a) a
+
 
 -- | @e^a*e^(-a) = 1@
 propExpOfNegRecip ::
@@ -144,6 +150,12 @@ class
 class (RoundedSquareRootEffort t) => RoundedSquareRoot t where
     sqrtUpEff :: (SqrtEffortIndicator t) -> t -> t
     sqrtDnEff :: (SqrtEffortIndicator t) -> t -> t
+
+sqrtUp :: (RoundedSquareRoot t) => t -> t
+sqrtUp a = sqrtUpEff (sqrtDefaultEffort a) a
+
+sqrtDn :: (RoundedSquareRoot t) => t -> t
+sqrtDn a = sqrtDnEff (sqrtDefaultEffort a) a
 
 propSqrtSquare ::
     (NumOrd.PartialComparison t, 

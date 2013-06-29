@@ -1,6 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.New
@@ -28,7 +27,7 @@ import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd

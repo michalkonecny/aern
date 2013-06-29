@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.SpecialConst
     Description :  support for common constants such as pi
@@ -19,18 +18,8 @@
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.SpecialConst where
 
 import Numeric.AERN.Basics.Effort
---import Numeric.AERN.Basics.Exception
---import Numeric.AERN.Basics.ShowInternals
---import Numeric.AERN.RealArithmetic.Laws
---import Numeric.AERN.RealArithmetic.Measures
---import qualified Numeric.AERN.NumericOrder as NumOrd
---import Numeric.AERN.NumericOrder.OpsImplicitEffort
---
+
 --import Numeric.AERN.Misc.Debug
---
---import Test.QuickCheck
---import Test.Framework (testGroup, Test)
---import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 class 
     (EffortIndicator (SpecialConstEffortIndicator t))
@@ -46,4 +35,19 @@ class (RoundedSpecialConstEffort t) => RoundedSpecialConst t where
     eInEff :: (SpecialConstEffortIndicator t) -> t
     eOutEff :: (SpecialConstEffortIndicator t) -> t
 
+-- | Inward rounded pi with default effort
+piIn :: (RoundedSpecialConst t) => t -> t
+piIn sample = piInEff (specialConstDefaultEffort sample)
+
+-- | Outward rounded pi with default effort
+piOut :: (RoundedSpecialConst t) => t -> t
+piOut sample = piOutEff (specialConstDefaultEffort sample)
+
+-- | Inward rounded e with default effort
+eIn :: (RoundedSpecialConst t) => t -> t
+eIn sample = eInEff (specialConstDefaultEffort sample)
+
+-- | Outward rounded e with default effort
+eOut :: (RoundedSpecialConst t) => t -> t
+eOut sample = eOutEff (specialConstDefaultEffort sample)
 

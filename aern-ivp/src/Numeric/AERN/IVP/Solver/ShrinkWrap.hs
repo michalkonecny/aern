@@ -1,6 +1,5 @@
 --{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
@@ -31,7 +30,6 @@ import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RmToRn.Differentiation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 import Numeric.AERN.RealArithmetic.ExactOps
 --import Numeric.AERN.RealArithmetic.Measures
 
@@ -97,8 +95,7 @@ shrinkWrap effComp effEval effDeriv effAddFn effAbsFn effMinmaxFn effDivFnInt ef
         | otherwise =
             Just $ map zoomDomains $ map snd wAndfnMs
     threshold =
-        let ?addInOutEffort = effAdd in 
-        maxW <+> maxW -- <+> maxW <+> maxW
+        maxW .<+>. maxW -- <+> maxW <+> maxW
     maxW = foldl1 (NumOrd.maxOutEff effMinmax) ws
     ws = map fst wAndfnMs
     
@@ -123,22 +120,25 @@ shrinkWrap effComp effEval effDeriv effAddFn effAbsFn effMinmaxFn effDivFnInt ef
         (w, fnM)
         where 
         w =
-            let ?mixedDivInOutEffort = effDivDomInt in
-            wDbl </>| (2 :: Int)
+            wTimesTwo .</>| (2 :: Int)
 --            let ?addInOutEffort = effAddFn in
 --            (evalAtPointOutEff effEval dombox $ fnR <-> fnL) </>| (2 :: Int) 
             
-        wDbl =
-            let ?addInOutEffort = effAddFn in
-            evalAtPointOutEff effEval dombox $ fnR <-> fnL 
+        wTimesTwo =
+            evalAtPointOutEff effEval dombox $ fnR ~<->~ fnL 
         fnM =
-            let ?addInOutEffort = effAddFn in
-            let ?mixedDivInOutEffort = effDivFnInt in
-            (fnL <+> fnR) </>| (2 :: Int)
+            (fnL ~<+>~ fnR) ~</>| (2 :: Int)
         (fnL, fnR) = 
             RefOrd.getEndpointsOut fn
         dombox = getDomainBox fn 
 
+    (.<+>.) = ArithInOut.addOutEff effAdd
+    (.</>|) = ArithInOut.mixedDivOutEff effDivDomInt
+
+    (~<+>~) = ArithInOut.addOutEff effAddFn
+    (~<->~) = ArithInOut.subtrOutEff effAddFn
+    (~</>|) = ArithInOut.mixedDivOutEff effDivFnInt
+    
     effMinmax = 
         ArithInOut.rrEffortMinmaxInOut sampleDom effDom
     effAdd = 
@@ -230,8 +230,7 @@ _getDomainDelta2 effComp effEval effDeriv effAbsFn effMinmaxFn effAddFnDom effMu
         fnDelta
         where
         fnDelta = 
-            let ?divInOutEffort = effDiv in
-            w </> maxSlope 
+            w .</>. maxSlope 
         maxSlope =
             evalAtPointOutEff effEval dombox maxSlopeFn
         maxSlopeFn =
@@ -248,6 +247,8 @@ _getDomainDelta2 effComp effEval effDeriv effAbsFn effMinmaxFn effAddFnDom effMu
         fnWithOldDelta =
             zoomDomainsInterpretationBy effComp effAddFnDom effMultFnDom effDom oldDelta fn
     
+    (.</>.) = ArithInOut.divOutEff effDiv
+
     effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDom effDom
 --    effAbs = ArithInOut.rrEffortAbs sampleDom effDom
     effDiv = ArithInOut.fldEffortDiv sampleDom $ ArithInOut.rrEffortField sampleDom effDom
@@ -330,9 +331,7 @@ getDomainDelta1 effComp effEval effDeriv  _effAbsFn _effMinmaxFn effAddFnDom eff
         snd $ RefOrd.getEndpointsOut $
         fnDelta
         where
-        fnDelta = 
-            let ?divInOutEffort = effDiv in
-            w </> maxSlope 
+        fnDelta = w .</>. maxSlope 
         maxSlope = foldl1 (NumOrd.maxOutEff effMinmax) slopes 
         slopes = map getSlope derivatives
         fnWithOldDelta =
@@ -345,6 +344,8 @@ getDomainDelta1 effComp effEval effDeriv  _effAbsFn _effMinmaxFn effAddFnDom eff
         getDeriv var =
             fakePartialDerivativeOutEff effDeriv fnWithOldDelta var
     
+    (.</>.) = ArithInOut.divOutEff effDiv
+
     effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDom effDom
     effAbs = ArithInOut.rrEffortAbs sampleDom effDom
     effDiv = ArithInOut.fldEffortDiv sampleDom $ ArithInOut.rrEffortField sampleDom effDom
@@ -386,27 +387,25 @@ zoomDomainsInterpretationBy effComp effAddFnDom effMultFnDom effDom delta fn =
     expansionBox =
         fromAscList $ map makeExpansion $ toAscList dombox
     makeExpansion (var, dom) =
-        let ?mixedAddInOutEffort = effAddFnDom in
-        let ?mixedMultInOutEffort = effMultFnDom in
-        (var, (varFn <*>| slope) <+>| shift)
+        (var, (varFn ~<*>. slope) ~<+>. shift)
         where
         varFn = newProjectionFromSample fn var
-        slope = 
-            let ?addInOutEffort = effAdd in
-            let ?divInOutEffort = effDiv in
-            (one sampleDom) <+> ((delta <+> delta) </> w)
-        shift = 
-            let ?addInOutEffort = effAdd in
-            let ?divInOutEffort = effDiv in
-            let ?multInOutEffort = effMult in
-            (neg delta) <*> ((l <+> r) </> w)
-        w = 
-            let ?addInOutEffort = effAdd in
-            r <-> l
+        slope = (one sampleDom) .<+>. ((delta .<+>. delta) .</>. w)
+        shift = (neg delta) .<*>. ((l .<+>. r) .</>. w)
+        w = r .<->. l
         (l,r) = RefOrd.getEndpointsOut dom
     dombox = getDomainBox fn
-    sampleDom = getSampleDomValue fn
+    
+    (.<+>.) = ArithInOut.addOutEff effAdd
+    (.<->.) = ArithInOut.subtrOutEff effAdd
+    (.<*>.) = ArithInOut.multOutEff effMult
+    (.</>.) = ArithInOut.divOutEff effDiv
+
+    (~<+>.) = ArithInOut.mixedAddOutEff effAddFnDom
+    (~<*>.) = ArithInOut.mixedMultOutEff effMultFnDom
+    
     effAdd = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effMult = ArithInOut.fldEffortMult sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDiv = ArithInOut.fldEffortDiv sampleDom $ ArithInOut.rrEffortField sampleDom effDom
+    sampleDom = getSampleDomValue fn
     

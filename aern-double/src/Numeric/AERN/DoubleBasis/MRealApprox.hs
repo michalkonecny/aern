@@ -111,10 +111,8 @@ import Numeric.AERN.RealArithmetic.Interval.Mutable()
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as NumOrd
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
-  (RoundedMixedAddInPlace(..),RoundedMixedMultiplyInPlace(..),RoundedMixedDivideInPlace(..))
-
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsDefaultEffort as RARORIPODE
-  (addOutInPlace,(<+>=),
+  (RoundedMixedAddInPlace(..),RoundedMixedMultiplyInPlace(..),RoundedMixedDivideInPlace(..),
+   addOutInPlace,(<+>=),
    subtrOutInPlace,(<->=),
    multOutInPlace,(<*>=),
    divOutInPlace,(</>=),
@@ -124,7 +122,8 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.Ops
    mixedAddOutInPlace,(<+>|=),
    mixedMultOutInPlace,(<*>|=),
    mixedDivOutInPlace,(</>|=),
-   powerToNonnegIntOutInPlace,(<^>=))
+   powerToNonnegIntOutInPlace,(<^>=)
+  )
 
 import qualified Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps as RAIMEFFO
     (expOutInPlaceIters, sqrtOutInPlaceIters)
@@ -183,82 +182,82 @@ partialJoinOutInPlace = BRO.partialJoinOutInPlace
 
 -- | Outward rounded in-place addition
 addOutInPlace :: OpMutable2 RealApprox s
-addOutInPlace = RARORIPODE.addOutInPlace
+addOutInPlace = RAROR.addOutInPlace
 
 -- | Outward rounded addition assignment
 (<+>=) :: OpMutable1 RealApprox s
-(<+>=) = (RARORIPODE.<+>=)
+(<+>=) = (RAROR.<+>=)
 
 -- | Outward rounded in-place subtraction
 subtrOutInPlace :: OpMutable2 RealApprox s
-subtrOutInPlace = RARORIPODE.subtrOutInPlace
+subtrOutInPlace = RAROR.subtrOutInPlace
 
 -- | Outward rounded subtraction assignment
 (<->=) :: OpMutable1 RealApprox s
-(<->=) = (RARORIPODE.<->=)
+(<->=) = (RAROR.<->=)
 
 -- | Outward rounded in-place absolute value
 absOutInPlace :: OpMutable1 RealApprox s
-absOutInPlace = RARORIPODE.absOutInPlace 
+absOutInPlace = RAROR.absOutInPlace 
 
 -- | Outward rounded in-place multiplication
 multOutInPlace :: OpMutable2 RealApprox s
-multOutInPlace = RARORIPODE.multOutInPlace
+multOutInPlace = RAROR.multOutInPlace
 
 -- | Outward rounded multiplication assignment
 (<*>=) :: OpMutable1 RealApprox s
-(<*>=) = (RARORIPODE.<*>=)
+(<*>=) = (RAROR.<*>=)
 
 -- | Outward rounded in-place power
 powerToNonnegIntOutInPlace :: OpMutableNonmut RealApprox Int s
-powerToNonnegIntOutInPlace = RARORIPODE.powerToNonnegIntOutInPlace
+powerToNonnegIntOutInPlace = RAROR.powerToNonnegIntOutInPlace
 
 -- | Inward rounded in-place power assignment
 (<^>=) :: OpNonmut RealApprox Int s
-(<^>=) = (RARORIPODE.<^>=)
+(<^>=) = (RAROR.<^>=)
 
 -- | Outward rounded in-place division
 divOutInPlace :: OpMutable2 RealApprox s
-divOutInPlace = RARORIPODE.divOutInPlace
+divOutInPlace = RAROR.divOutInPlace
 
 -- | Outward rounded division assignment
 (</>=) :: OpMutable1 RealApprox s
-(</>=) = (RARORIPODE.</>=)
+(</>=) = (RAROR.</>=)
 
 -- | Outward rounded in-place mixed addition
 mixedAddOutInPlace :: (RAROR.RoundedMixedAddInPlace RealApprox tn) =>
     OpMutableNonmut RealApprox tn s
-mixedAddOutInPlace = RARORIPODE.mixedAddOutInPlace
+mixedAddOutInPlace = RAROR.mixedAddOutInPlace
 
 -- | Outward rounded additive scalar action assignment
 (<+>|=) :: (RAROR.RoundedMixedAddInPlace RealApprox tn) => OpNonmut RealApprox tn s
-(<+>|=) = (RARORIPODE.<+>|=)
+(<+>|=) = (RAROR.<+>|=)
 
 -- | Outward rounded in-place mixed multiplication
 mixedMultOutInPlace :: (RAROR.RoundedMixedMultiplyInPlace RealApprox tn) => 
     OpMutableNonmut RealApprox tn s
-mixedMultOutInPlace = RARORIPODE.mixedMultOutInPlace
+mixedMultOutInPlace = RAROR.mixedMultOutInPlace
 
 -- | Outward rounded multiplicative scalar action assignment
 (<*>|=) :: (RAROR.RoundedMixedMultiplyInPlace RealApprox tn) => OpNonmut RealApprox tn s
-(<*>|=) = (RARORIPODE.<*>|=)
+(<*>|=) = (RAROR.<*>|=)
 
 -- | Outward rounded in-place mixed reciprocal action
 mixedDivOutInPlace :: (RAROR.RoundedMixedDivideInPlace RealApprox tn) => 
     OpMutableNonmut RealApprox tn s
-mixedDivOutInPlace = RARORIPODE.mixedDivOutInPlace
+mixedDivOutInPlace = RAROR.mixedDivOutInPlace
 
 -- | Outward rounded multiplicative scalar reciprocal action assignment
 (</>|=) :: (RAROR.RoundedMixedDivideInPlace RealApprox tn) => OpNonmut RealApprox tn s
-(</>|=) = (RARORIPODE.</>|=)
+(</>|=) = (RAROR.</>|=)
 
 -- | Outward rounded in-place exponential
 expOutInPlace :: OpMutable1 RealApprox s
-expOutInPlace = RARORIPODE.expOutInPlace 
+expOutInPlace = RAROR.expOutInPlace 
 
 -- | Outward rounded in-place square root
 sqrtOutInPlace :: OpMutable1 RealApprox s
-sqrtOutInPlace = RARORIPODE.sqrtOutInPlace 
+sqrtOutInPlace = RAROR.sqrtOutInPlace 
 
 expOutInPlaceIters, sqrtOutInPlaceIters :: Int -> OpMutable1 RealApprox s
 expOutInPlaceIters = RAIMEFFO.expOutInPlaceIters

@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE RankNTypes #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.FieldOps
@@ -53,9 +52,31 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 import Control.Monad.ST
 import Data.Maybe
 
+infixl 6 <+>=, >+<=, <->=, >-<=
+infixl 7 <*>=, >*<=
+infixl 8 <^>=, >^<=
+infixl 7 </>=, >/<=
+
 class (RoundedAddEffort t, CanBeMutable t) => RoundedAddInPlace t where
     addInInPlaceEff :: OpMutable2Eff (AddEffortIndicator t) t s
     addOutInPlaceEff :: OpMutable2Eff (AddEffortIndicator t) t s
+
+-- | Inward rounded in-place addition
+addInInPlace :: (RoundedAddInPlace t) => OpMutable2 t s
+addInInPlace = mutable2EffToMutable2 addInInPlaceEff addDefaultEffort
+
+-- | Inward rounded addition assignment
+(>+<=) :: (RoundedAddInPlace t) => OpMutable1 t s
+(>+<=) = mutable2ToMutable1 addInInPlace
+
+-- | Outward rounded in-place addition
+addOutInPlace :: (RoundedAddInPlace t) => OpMutable2 t s
+addOutInPlace = mutable2EffToMutable2 addOutInPlaceEff addDefaultEffort 
+
+-- | Outward rounded addition assignment
+(<+>=) :: (RoundedAddInPlace t) => OpMutable1 t s
+(<+>=) = mutable2ToMutable1 addOutInPlace
+
 
 addInInPlaceEffFromPure,
  addOutInPlaceEffFromPure ::
@@ -102,6 +123,23 @@ class (RoundedAddInPlace t, NegInPlace t) => RoundedSubtrInPlace t where
         negInPlace bbM bM
         addOutInPlaceEff effort rM aM bbM
 
+-- | Inward rounded in-place subtraction
+subtrInInPlace :: (RoundedSubtrInPlace t) => OpMutable2 t s
+subtrInInPlace = mutable2EffToMutable2 subtrInInPlaceEff addDefaultEffort
+
+-- | Inward rounded subtraction assignment
+(>-<=) :: (RoundedSubtrInPlace t) => OpMutable1 t s
+(>-<=) = mutable2ToMutable1 subtrInInPlace
+
+-- | Outward rounded in-place subtraction
+subtrOutInPlace :: (RoundedSubtrInPlace t) => OpMutable2 t s
+subtrOutInPlace = mutable2EffToMutable2 subtrOutInPlaceEff addDefaultEffort
+
+-- | Outward rounded subtraction assignment
+(<->=) :: (RoundedSubtrInPlace t) => OpMutable1 t s
+(<->=) = mutable2ToMutable1 subtrOutInPlace
+
+
 propInOutSubtrInPlace ::
     (RefOrd.PartialComparison t, 
      RoundedSubtrInPlace t, 
@@ -125,6 +163,14 @@ class (RoundedAbs t, CanBeMutable t) => RoundedAbsInPlace t where
     absInInPlaceEff = pureToMutable1Eff absInEff 
     absOutInPlaceEff = pureToMutable1Eff absOutEff 
 
+-- | Inward rounded in-place absolute value
+absInInPlace :: (RoundedAbsInPlace t) => OpMutable1 t s
+absInInPlace = mutable1EffToMutable1 absInInPlaceEff absDefaultEffort 
+
+-- | Outward rounded in-place absolute value
+absOutInPlace :: (RoundedAbsInPlace t) => OpMutable1 t s
+absOutInPlace = mutable1EffToMutable1 absOutInPlaceEff absDefaultEffort 
+
 propInOutAbsInPlace ::
     (RefOrd.PartialComparison t, RoundedAbsInPlace t, Neg t,
      Show t, HasLegalValues t) 
@@ -143,6 +189,23 @@ propInOutAbsInPlace sample initEffort (RefOrd.UniformlyOrderedSingleton e) =
 class (RoundedMultiplyEffort t, CanBeMutable t) => RoundedMultiplyInPlace t where
     multInInPlaceEff :: OpMutable2Eff (MultEffortIndicator t) t s
     multOutInPlaceEff :: OpMutable2Eff (MultEffortIndicator t) t s
+
+-- | Inward rounded in-place multiplication
+multInInPlace :: (RoundedMultiplyInPlace t) => OpMutable2 t s
+multInInPlace = mutable2EffToMutable2 multInInPlaceEff multDefaultEffort
+
+-- | Inward rounded multiplication assignment
+(>*<=) :: (RoundedMultiplyInPlace t) => OpMutable1 t s
+(>*<=) = mutable2ToMutable1 multInInPlace
+
+-- | Outward rounded in-place multiplication
+multOutInPlace :: (RoundedMultiplyInPlace t) => OpMutable2 t s
+multOutInPlace = mutable2EffToMutable2 multOutInPlaceEff multDefaultEffort
+
+-- | Outward rounded multiplication assignment
+(<*>=) :: (RoundedMultiplyInPlace t) => OpMutable1 t s
+(<*>=) = mutable2ToMutable1 multOutInPlace
+
 
 multInInPlaceEffFromPure,
  multOutInPlaceEffFromPure ::
@@ -195,6 +258,26 @@ class (RoundedPowerToNonnegIntEffort t, CanBeMutable t) =>
         OpMutableNonmutEff (PowerToNonnegIntEffortIndicator t) t Int s
     powerToNonnegIntOutInPlaceEff ::
         OpMutableNonmutEff (PowerToNonnegIntEffortIndicator t) t Int s
+
+-- | Inward rounded in-place power
+powerToNonnegIntInInPlace :: (RoundedPowerToNonnegIntInPlace t) => 
+    OpMutableNonmut t Int s
+powerToNonnegIntInInPlace = 
+    mutableNonmutEffToMutableNonmut powerToNonnegIntInInPlaceEff powerToNonnegIntDefaultEffort
+
+-- | Inward rounded in-place power assignment
+(>^<=) :: (RoundedPowerToNonnegIntInPlace t) => OpNonmut t Int s
+(>^<=) = mutableNonmutToNonmut powerToNonnegIntInInPlace
+
+-- | Outward rounded in-place power
+powerToNonnegIntOutInPlace :: (RoundedPowerToNonnegIntInPlace t) => 
+    OpMutableNonmut t Int s
+powerToNonnegIntOutInPlace = 
+    mutableNonmutEffToMutableNonmut powerToNonnegIntOutInPlaceEff powerToNonnegIntDefaultEffort
+
+-- | Inward rounded in-place power assignment
+(<^>=) :: (RoundedPowerToNonnegIntInPlace t) => OpNonmut t Int s
+(<^>=) = mutableNonmutToNonmut powerToNonnegIntOutInPlace
 
 powerToNonnegIntInInPlaceEffFromPure,
  powerToNonnegIntOutInPlaceEffFromPure ::
@@ -250,6 +333,31 @@ class (HasOne t, RoundedDivideEffort t, CanBeMutable t) => RoundedDivideInPlace 
         sample <- unsafeReadMutable aM
         oneM <- unsafeMakeMutable (one sample)
         divOutInPlaceEff effort resM oneM aM
+
+-- | Inward rounded in-place division
+divInInPlace :: (RoundedDivideInPlace t) => OpMutable2 t s
+divInInPlace = mutable2EffToMutable2 divInInPlaceEff divDefaultEffort
+
+-- | Inward rounded division assignment
+(>/<=) :: (RoundedDivideInPlace t) => OpMutable1 t s
+(>/<=) = mutable2ToMutable1 divInInPlace
+
+-- | Outward rounded in-place division
+divOutInPlace :: (RoundedDivideInPlace t) => OpMutable2 t s
+divOutInPlace = mutable2EffToMutable2 divOutInPlaceEff divDefaultEffort
+
+-- | Outward rounded division assignment
+(</>=) :: (RoundedDivideInPlace t) => OpMutable1 t s
+(</>=) = mutable2ToMutable1 divOutInPlace
+
+-- | Inward rounded in-place reciprocal with default effort
+recipInInPlace :: (RoundedDivideInPlace t) => OpMutable1 t s
+recipInInPlace = mutable1EffToMutable1 recipInInPlaceEff divDefaultEffort
+
+-- | Outward rounded in-place reciprocal with default effort
+recipOutInPlace :: (RoundedDivideInPlace t) => OpMutable1 t s
+recipOutInPlace = mutable1EffToMutable1 recipOutInPlaceEff divDefaultEffort
+
 
 divInInPlaceEffFromPure,
  divOutInPlaceEffFromPure ::

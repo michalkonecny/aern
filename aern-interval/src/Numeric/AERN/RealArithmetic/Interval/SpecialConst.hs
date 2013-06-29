@@ -2,7 +2,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.SpecialConst
     Description :  common constants such as pi

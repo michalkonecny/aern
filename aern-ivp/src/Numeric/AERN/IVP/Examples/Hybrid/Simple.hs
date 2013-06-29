@@ -23,7 +23,7 @@ import Numeric.AERN.RmToRn.New
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal)
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
@@ -630,7 +630,7 @@ ivpBouncingBallEnergy (sampleFn :: f) =
         rNN <- makeNonneg r
         -- |v| = sqrt(r - 2gx):
         vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
-        let absV = sqrtOut vSqr1
+        let absV = ArithInOut.sqrtOut vSqr1
         vNew <- isect v ((neg absV) </\> absV)
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
@@ -812,7 +812,7 @@ ivpBouncingBallRiseFallEnergy (sampleFn :: f) =
         vNN <- makeNonneg v
         -- v = sqrt(r - 2gx):
         vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
-        let v1 = sqrtOut vSqr1
+        let v1 = ArithInOut.sqrtOut vSqr1
         vNew <- isect v v1
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
@@ -829,7 +829,7 @@ ivpBouncingBallRiseFallEnergy (sampleFn :: f) =
         vNP <- makeNonpos v
         -- v = sqrt(r - 2gx):
         vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
-        let v1 = neg $ sqrtOut vSqr1
+        let v1 = neg $ ArithInOut.sqrtOut vSqr1
         vNew <- isect v v1
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
@@ -1004,7 +1004,7 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
         rNN <- makeNonneg r
         -- |xv-yv| = sqrt(r - 2g(x-y)):
         xvMyvSqr <- makeNonneg $ rNN <-> ((toDom 20) <*> xMyNN)
-        let xvMyvAbs = sqrtOut xvMyvSqr
+        let xvMyvAbs = ArithInOut.sqrtOut xvMyvSqr
         xvNew <- isect xv ((neg xvMyvAbs </\> xvMyvAbs) <+> yv) 
         -- x-y = (r - (xv-yv)^2) / 2g:
         let xvMyv = xv <-> yv
@@ -1202,7 +1202,7 @@ ivpBouncingBallAirEnergy (sampleFn :: f) =
         vNN <- makeNonneg v
         -- v = sqrt(r - 2gx):
         vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
-        let v1 = sqrtOut vSqr1
+        let v1 = ArithInOut.sqrtOut vSqr1
         vNew <- isect v v1
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
@@ -1219,7 +1219,7 @@ ivpBouncingBallAirEnergy (sampleFn :: f) =
         vNP <- makeNonpos v
         -- v = sqrt(r - 2gx):
         vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
-        let v1 = neg $ sqrtOut vSqr1
+        let v1 = neg $ ArithInOut.sqrtOut vSqr1
         vNew <- isect v v1
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
@@ -1405,7 +1405,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
         rNN <- makeNonneg r
         -- |v| = sqrt(r - 2gx):
         vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
-        let absV = sqrtOut vSqr1
+        let absV = ArithInOut.sqrtOut vSqr1
         vNew <- isect v ((neg absV) </\> absV)
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v

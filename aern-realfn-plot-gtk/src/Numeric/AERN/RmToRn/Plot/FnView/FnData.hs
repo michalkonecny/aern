@@ -3,7 +3,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Plot.FnView.FnData
     Description :  data for controlling the functions shown
@@ -29,10 +28,8 @@ import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 
 {-|
@@ -143,14 +140,14 @@ getDefaultCentre effReal fnmeta =
     (cX,cY)
     where
     cX =
-        let ?mixedDivInOutEffort = effDivInt in
-        let ?addInOutEffort = effAdd in
         (fnL <+> fnR) </>| (2 :: Int) 
     cY = 
-        let ?mixedDivInOutEffort = effDivInt in
-        let ?addInOutEffort = effAdd in
         (fnLO <+> fnHI) </>| (2 :: Int)
     (fnLO, fnHI, fnL, fnR) = getFnExtents fnmeta
+
+    (<+>) = ArithInOut.addOutEff effAdd
+    (</>|) = ArithInOut.mixedDivOutEff effDivInt
+
     effDivInt =
         ArithInOut.mxfldEffortDiv sampleDom (1::Int) $ ArithInOut.rrEffortIntMixedField sampleDom effReal
     effAdd =

@@ -1,4 +1,3 @@
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ExistentialQuantification #-}
 
 module Main where
@@ -14,10 +13,10 @@ import Numeric.AERN.RefinementOrder.Operators
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
-import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.NumericOrderRounding.Operators
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 import Numeric.AERN.RealArithmetic.Basis.MPFR
 import Numeric.AERN.RealArithmetic.Interval.MPFR
@@ -43,34 +42,35 @@ main =
 
 shouldShowInternals = (30,False)
 
+precision :: Precision
+precision = 100
+
+sample :: MI
+sample = ArithInOut.addOutEff precision 0 0
+
 inftyMinusInftyOut :: MI
 inftyMinusInftyOut =
-    let ?addDefaultEffort = 100 in
-    plusInfinity sampleMI <-> plusInfinity sampleMI
+    plusInfinity sample <-> plusInfinity sample
 
 zeroOverZeroOut :: MI
 zeroOverZeroOut =
-    let ?divDefaultEffort = 100 in
-    zero sampleMI </> zero sampleMI
+    zero sample </> zero sample
 
 zeroOverZeroIn :: MI
 zeroOverZeroIn =
-    let ?divDefaultEffort = 100 in
-    zero sampleMI >/< zero sampleMI
+    zero sample >/< zero sample
 
 oneOverZeroOut :: MI
 oneOverZeroOut =
-    let ?divDefaultEffort = 100 in
-    one sampleMI </> zero sampleMI
+    one sample </> zero sample
 
 oneOverZeroIn :: MI
 oneOverZeroIn =
-    let ?divDefaultEffort = 100 in
-    one sampleMI >/< zero sampleMI
+    one sample >/< zero sample
 
 exp1efforts :: [MI]
 exp1efforts =
-    map (\n -> ArithInOut.expOutEff (expEffort n) (one sampleMI)) [1..20]
+    map (\n -> ArithInOut.expOutEff (expEffort n) (one sample)) [1..20]
     
 exp3efforts :: [MI]
 exp3efforts =
@@ -91,7 +91,7 @@ exp1000efforts =
 three, ten, hundred, thousand :: MI
 
 [three, ten, hundred, thousand] = 
-    map (ArithInOut.convertOutEff 100 sampleMI) ([3,10,100,1000] :: [Int])
+    map (ArithInOut.convertOutEff precision sample) ([3,10,100,1000] :: [Int])
 
     
 expEffort n =

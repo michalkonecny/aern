@@ -1,5 +1,4 @@
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.Config
     Description :  configuration parameters of polynomial arithmetic
@@ -21,13 +20,12 @@ where
 import Numeric.AERN.RmToRn.Domain (GeneratableVariables(..))
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+--import Numeric.AERN.RefinementOrder.Operators
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
---import Numeric.AERN.NumericOrder.OpsDefaultEffort
+--import Numeric.AERN.NumericOrder.Operators
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Consistency
@@ -58,9 +56,9 @@ domToDomLZLE effGetE effCF dom =
     (domLZ, domLE)
     where
     (domLE, _) = RefOrd.getEndpointsOutEff effGetE dom
-    domLZ = 
-        let ?addInOutEffort = effAdd in
-        dom <-> domLE
+    domLZ = dom <-> domLE
+        
+    (<->) = ArithInOut.subtrOutEff effAdd
     effAdd = 
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCF
     sampleCf = dom
@@ -87,9 +85,9 @@ domLZLEToDom ::
 domLZLEToDom effCF domLZ domLE =
     dom
     where
-    dom = 
-        let ?addInOutEffort = effAdd in
-        domLZ <+> domLE
+    dom = domLZ <+> domLE
+
+    (<+>) = ArithInOut.addOutEff effAdd
     effAdd = 
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCF
     sampleCf = dom

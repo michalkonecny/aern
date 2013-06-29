@@ -1,7 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Basis.Polynomial.IntPoly.Reduction
@@ -36,7 +35,6 @@ import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
@@ -119,11 +117,11 @@ reduceTermsTermCountOut ::
     IntPolyTerms var cf -> 
     IntPolyTerms var cf
 reduceTermsTermCountOut effCf cfg terms =
-    let ?addInOutEffort = effAdd in
-    let ?multInOutEffort = effMult in
-    let ?intPowerInOutEffort = effPow in
     reduceTermsCountWithOps (<+>) (<*>) (<^>) (imprecisionOfEff effImpr) varDoms maxSize terms
     where
+    (<+>) = ArithInOut.addOutEff effAdd
+    (<*>) = ArithInOut.multOutEff effMult
+    (<^>) = ArithInOut.powerToNonnegIntOutEff effPow
     effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effMult = ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effPow = ArithInOut.fldEffortPow sampleCf $ ArithInOut.rrEffortField sampleCf effCf
@@ -157,11 +155,11 @@ reduceTermsDegreeOut ::
     IntPolyTerms var cf -> 
     IntPolyTerms var cf
 reduceTermsDegreeOut effCf cfg terms =
-    let ?addInOutEffort = effAdd in
-    let ?multInOutEffort = effMult in
-    let ?intPowerInOutEffort = effPow in
     reduceTermsDegreeWithOps (<+>) (<*>) (<^>) varDoms maxDeg terms
     where
+    (<+>) = ArithInOut.addOutEff effAdd
+    (<*>) = ArithInOut.multOutEff effMult
+    (<^>) = ArithInOut.powerToNonnegIntOutEff effPow
     effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effMult = ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effPow = ArithInOut.fldEffortPow sampleCf $ ArithInOut.rrEffortField sampleCf effCf

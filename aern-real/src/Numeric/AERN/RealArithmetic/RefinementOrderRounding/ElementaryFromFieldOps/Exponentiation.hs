@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
     Description :  implementation of in/out rounded exponentiation
@@ -16,11 +15,8 @@
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation where
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
-import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
@@ -44,15 +40,14 @@ expOutThinArg ::
     t {-^ @exp(x)@ -}
 expOutThinArg eff
         degr x =
-    let (|>=?) = RefOrd.pGeqEff effortRefinement in
-    let (</\>) = RefOrd.meetOutEff effortMeet in
-    let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField in
     -- infinities not handled well by the Taylor formula,
     -- treat them as special cases, adding also 0 for efficiency:
-    case (xTooBig, xTooLow, x |>=? (zero x)) of
-        (True, _, _) -> x </\> (plusInfinity x) -- x almost oo
-        (_, True, _) -> (zero x) </\> ((one x) </> (neg x)) -- x almost -oo
-        (_, _, Just True) -> one x -- x = 0
+    case (xTooBig, xTooLow, x |>=? (zero sample)) of
+        (True, _, _) -> 
+            x </\> (plusInfinity sample) -- x almost oo
+        (_, True, _) ->
+            (zero sample) </\> ((one sample) </> (neg x)) -- x almost -oo
+        (_, _, Just True) -> one sample -- x = 0
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
             expOutViaTaylorForXScaledNearZero
         _ -> -- not equal to infinity but not excluding infinity:
@@ -65,33 +60,19 @@ expOutThinArg eff
 --                ++ "\n excludesMinusInfinity x = " ++ show (excludesMinusInfinity x)
 --                ++ "\n excludesPlusInfinity x = " ++ show (excludesPlusInfinity x)
 --            ) $
-            (zero x) </\> (plusInfinity x)
+            (zero sample) </\> (plusInfinity sample)
              -- this is always a valid outer approx
     where
-    effortField = ArithInOut.rrEffortField sample eff
-    effortMixedField = ArithInOut.rrEffortIntMixedField sample eff
-    effortMeet = ArithInOut.rrEffortJoinMeet sample eff
-    effortRefinement = ArithInOut.rrEffortRefComp sample eff
-    effortCompare = ArithInOut.rrEffortNumComp sample eff
-    effortToInt = ArithInOut.rrEffortToInt sample eff
-    effortFromDouble = ArithInOut.rrEffortFromDouble sample eff
-    sample = x
+
     (xUp, xTooBig) =
-        case ArithUpDn.convertUpEff effortToInt (0 :: Int) x of
+        case ArithUpDn.convertUpEff effortToInt sampleI x of
             Just xUp -> (xUp, False)
             _ -> (error "internal error in expOutThinArg", True)
     (xDn, xTooLow) =
-        case ArithUpDn.convertDnEff effortToInt (0 :: Int) x of
+        case ArithUpDn.convertDnEff effortToInt sampleI x of
             Just xDn -> (xDn, False)
             _ -> (error "internal error in expOutThinArg", True)
     expOutViaTaylorForXScaledNearZero =
-        let ?addInOutEffort = ArithInOut.fldEffortAdd x effortField in
-        let ?multInOutEffort = ArithInOut.fldEffortMult x effortField in
-        let ?intPowerInOutEffort = ArithInOut.fldEffortPow x effortField in
-        let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField in
-        let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd x xUp effortMixedField in
-        let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult x xUp effortMixedField in
-        let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv x xUp effortMixedField in
         (expOutViaTaylor degr (x </>| n)) <^> n
         where
         n = -- x / n must fall inside [-1,1] 
@@ -111,7 +92,7 @@ expOutThinArg eff
             where
             teResult 
                 | steps > 0 =
-                    (x </>| i) <*> ((1::Int) |<+> (te (steps - 1) (i + 1)))
+                    (x </>| i) <*> (1 |<+> (te (steps - 1) (i + 1)))
                 | steps == 0 = 
                     errorBound
             errorBound = 
@@ -124,12 +105,36 @@ expOutThinArg eff
                         recipEDn </\> (one x)
                     _ -> -- near or crossing zero:
                         recipEDn </\> eUp
-                where
-                (</\>) = RefOrd.meetOutEff effortMeet
             eUp =
                 ArithInOut.convertOutEff effortFromDouble sample (2.718281829 :: Double)
             recipEDn =
                 ArithInOut.convertOutEff effortFromDouble sample (0.367879440 :: Double)
+
+    (|>=?) = RefOrd.pGeqEff effortRefinement
+    (</\>) = RefOrd.meetOutEff effortMeet
+    (</>) = ArithInOut.divOutEff divInOutEffort
+    (<*>) = ArithInOut.multOutEff multInOutEffort
+    (<^>) = ArithInOut.powerToNonnegIntOutEff intPowerInOutEffort
+    (</>|) = ArithInOut.mixedDivOutEff mixedDivInOutEffort
+    (|<+>) = flip $ ArithInOut.mixedAddOutEff mixedAddInOutEffort
+
+    addInOutEffort = ArithInOut.fldEffortAdd x effortField
+    multInOutEffort = ArithInOut.fldEffortMult x effortField
+    intPowerInOutEffort = ArithInOut.fldEffortPow x effortField
+    divInOutEffort = ArithInOut.fldEffortDiv x effortField
+    mixedAddInOutEffort = ArithInOut.mxfldEffortAdd x xUp effortMixedField
+    mixedMultInOutEffort = ArithInOut.mxfldEffortMult x xUp effortMixedField
+    mixedDivInOutEffort = ArithInOut.mxfldEffortDiv x xUp effortMixedField
+    
+    effortField = ArithInOut.rrEffortField sample eff
+    effortMixedField = ArithInOut.rrEffortIntMixedField sample eff
+    effortMeet = ArithInOut.rrEffortJoinMeet sample eff
+    effortRefinement = ArithInOut.rrEffortRefComp sample eff
+    effortCompare = ArithInOut.rrEffortNumComp sample eff
+    effortToInt = ArithInOut.rrEffortToInt sample eff
+    effortFromDouble = ArithInOut.rrEffortFromDouble sample eff
+    sample = x
+    sampleI = 0 :: Int
 
 expOutThinArgInPlace ::
     (ArithInOut.RoundedRealInPlace t) =>
@@ -158,14 +163,16 @@ expOutThinArgInPlace
     let effortCompare = ArithInOut.rrEffortNumComp sample eff
     let effortToInt = ArithInOut.rrEffortToInt sample eff
     let effortFromDouble = ArithInOut.rrEffortFromDouble sample eff
+    let divInOutEffort = ArithInOut.fldEffortDiv x effortField
+    let multInOutEffort = ArithInOut.fldEffortMult x effortField
+    let intPowerInOutEffort = ArithInOut.fldEffortPow x effortField
+    let mixedAddInOutEffort = ArithInOut.mxfldEffortAdd x degr effortMixedField
+    let mixedDivInOutEffort = ArithInOut.mxfldEffortDiv x degr effortMixedField
+
     let (|>=?) = RefOrd.pGeqEff effortRefinement
     let (</\>) = RefOrd.meetOutEff effortMeet
-    let ?divInOutEffort = ArithInOut.fldEffortDiv x effortField
-    let ?multInOutEffort = ArithInOut.fldEffortMult x effortField
-    let ?intPowerInOutEffort = ArithInOut.fldEffortPow x effortField
-    let ?mixedAddInOutEffort = ArithInOut.mxfldEffortAdd x degr effortMixedField
-    let ?mixedDivInOutEffort = ArithInOut.mxfldEffortDiv x degr effortMixedField
-
+    let (</>) = ArithInOut.divOutEff $ divInOutEffort
+    
     -- compute integer bounds on x if possible: 
     let (xUp, xTooBig) =
           case ArithUpDn.convertUpEff effortToInt (0::Int) x of
@@ -184,12 +191,12 @@ expOutThinArgInPlace
         (_, _, Just True) -> unsafeWriteMutable resM (one x) -- x = 0
         _ | excludesPlusInfinity x && excludesMinusInfinity x ->
             -- the main case where Taylor is used:
-            expOutViaTaylorForXScaledNearZero effortField effortMixedField effortCompare effortFromDouble resM xUp xDn xMNA
+            expOutViaTaylorForXScaledNearZero x effortField effortMixedField effortCompare effortFromDouble resM xUp xDn xMNA
         _ -> -- not equal to infinity but not excluding infinity:
             unsafeWriteMutable resM ((zero x) </\> (plusInfinity x))
              -- this is always a valid outer approx
     where
-    expOutViaTaylorForXScaledNearZero effortField effortMixedField effortCompare effortFromDouble resM xUp xDn xM =
+    expOutViaTaylorForXScaledNearZero sample effortField effortMixedField effortCompare effortFromDouble resM xUp xDn xM =
         -- assuming no aliasing between xM and resM
     
         -- set various effort indicators for the following block using implicit parameters: 
@@ -200,6 +207,13 @@ expOutThinArgInPlace
         where
         n = -- x / n must fall inside [-1,1] 
             (abs xUp) `max` (abs xDn)
+        
+        (</>|=) = mutableNonmutToNonmut $ ArithInOut.mixedDivOutInPlaceEff effortMixedDiv 
+        effortMixedDiv = ArithInOut.mxfldEffortDiv sample n effortMixedField
+        
+        (<^>=) = mutableNonmutToNonmut $ ArithInOut.powerToNonnegIntOutInPlaceEff effPower
+        effPower = ArithInOut.fldEffortPow sample effortField
+        
     expOutViaTaylor effortField effortMixedField effortCompare effortFromDouble resM degr xM = -- assuming x inside [-1,1]
         -- assuming no aliasing between xM and resM
     
@@ -208,11 +222,15 @@ expOutThinArgInPlace
         x <- unsafeReadMutable xM
         -- unsafe is OK because we do not write into xM and it does not alias with resM
         
-        let ?addInOutEffort = ArithInOut.fldEffortAdd x effortField
-        let ?mixedMultInOutEffort = ArithInOut.mxfldEffortMult x oneI effortMixedField
         te resM degr oneI x xM -- res := x + x^2/2 + ...
-        resM <+>|= oneI -- res := res + 1
+        addOneToResM x
         where
+        addOneToResM x =
+            do
+            resM <+>|= oneI -- res := res + 1
+            where
+            (<+>|=) = mutableNonmutToNonmut $ ArithInOut.mixedAddOutInPlaceEff effortMixedAdd 
+            effortMixedAdd = ArithInOut.mxfldEffortAdd x oneI effortMixedField
         oneI :: Int
         oneI = 1
         te resM steps i x xM
@@ -229,19 +247,26 @@ expOutThinArgInPlace
                 unsafeWriteMutable resM ithDerivBound
                 resM </>|= i
                 resM <*>= xM
-                where
-                ithDerivBound =
-                    case (pNonnegNonposEff effortCompare x) of
-                        (Just True, _) -> -- x >= 0:
-                            (one x) </\> eUp
-                        (_, Just True) -> -- x <= 0:
-                            recipEDn </\> (one x)
-                        _ -> -- near or crossing zero:
-                            recipEDn </\> eUp
-                    where
-                    (</\>) = RefOrd.meetOutEff $ ArithInOut.rrEffortJoinMeet sample eff
-                eUp =
-                    ArithInOut.convertOutEff effortFromDouble sample (2.718281829 :: Double)
-                recipEDn =
-                    ArithInOut.convertOutEff effortFromDouble sample (0.367879440 :: Double)
-                sample = x
+            where
+            ithDerivBound =
+                case (pNonnegNonposEff effortCompare x) of
+                    (Just True, _) -> -- x >= 0:
+                        (one x) </\> eUp
+                    (_, Just True) -> -- x <= 0:
+                        recipEDn </\> (one x)
+                    _ -> -- near or crossing zero:
+                        recipEDn </\> eUp
+            eUp =
+                ArithInOut.convertOutEff effortFromDouble sample (2.718281829 :: Double)
+            recipEDn =
+                ArithInOut.convertOutEff effortFromDouble sample (0.367879440 :: Double)
+                
+            (</\>) = RefOrd.meetOutEff $ ArithInOut.rrEffortJoinMeet sample eff
+            (<+>|=) = mutableNonmutToNonmut $ ArithInOut.mixedAddOutInPlaceEff effortMixedAdd 
+            (</>|=) = mutableNonmutToNonmut $ ArithInOut.mixedDivOutInPlaceEff effortMixedDiv 
+            effortMixedAdd = ArithInOut.mxfldEffortAdd sample i effortMixedField
+            effortMixedDiv = ArithInOut.mxfldEffortDiv sample i effortMixedField
+            (<*>=) = mutable2ToMutable1 $ ArithInOut.multOutInPlaceEff effortMult 
+            effortMult = ArithInOut.fldEffortMult sample effortField
+                
+            sample = x

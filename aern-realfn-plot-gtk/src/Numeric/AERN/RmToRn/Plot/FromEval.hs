@@ -1,7 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Plot.FromEval
     Description :  plotting on gtk canvas using evaluation at some points
@@ -28,12 +27,10 @@ import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
---import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
@@ -181,23 +178,16 @@ cairoDrawFnFromEval
                 (domLO, domHI) = 
                     RefOrd.getEndpointsOutEff effGetE visibleDom
                 ithPt i =
-                    let ?addInOutEffort = effAdd in
-                    let ?mixedMultInOutEffort = effMultInt in
-                    let ?mixedDivInOutEffort = effDivInt in
                     ((domLO <*>| (segCnt - i)) <+> (domHI <*>| i)) </>| segCnt
                 segCnt =
-                    let ?addInOutEffort = effAdd in
-                    let ?mixedMultInOutEffort = effMultInt in
                     getSegmentCount segPerUnit coordSystem visibleDom 
                         -- in hsreals this was dom instead of visibleDom 
                 getSegmentCount segPerUnit coordSystem dom = 
 --                        unsafePrint ("cairoDrawFnFromEval: getSegmentCount: dom = " ++ show dom ++ " domWidthScreen = " ++ show domWidthScreen) $
-                    let ?mixedMultInOutEffort = effMultInt in
                     case ArithUpDn.convertUpEff effToInt 0 (segPerUnit |<*> domWidthScreen) of
                         Just cnt -> (cnt :: Int)
                     where
                     domWidthScreen = 
-                        let ?addInOutEffort = effAdd in
                         NumOrd.minOutEff effMinmax c1 $ domHIScreen <-> domLOScreen
                     (domLOScreen, _) = 
                         translateToCoordSystem effReal coordSystem (domLO, c1)
@@ -210,12 +200,9 @@ cairoDrawFnFromEval
         _ -> return ()
     where
     visibleDom = 
-        let ?joinmeetEffort = effJoinMeet in
         dom <\/> (vdomLO </\> vdomHI)
         where
         (_,_,vdomLO, vdomHI) = getVisibleDomExtents coordSystem
-        (<\/>) = RefOrd.joinOutEff effJoinMeet
-        (</\>) = RefOrd.meetOutEff effJoinMeet
     dom =
         case lookupVar dombox plotVar of 
             Just dom -> dom
@@ -228,9 +215,13 @@ cairoDrawFnFromEval
     segPerUnit = cnvprmSamplesPerUnit canvasParams
 --    activeDimensions = cnvprmPlotDimensions canvasParams
     
-    sampleF = fn
-    sampleDF = dom
-    sampleI = 1 :: Int
+    (<\/>) = RefOrd.joinOutEff effJoinMeet
+    (</\>) = RefOrd.meetOutEff effJoinMeet
+    (<+>) = ArithInOut.addOutEff effAdd
+    (<->) = ArithInOut.subtrOutEff effAdd
+    (<*>|) = ArithInOut.mixedMultOutEff effMultInt
+    (|<*>) = flip $ ArithInOut.mixedMultOutEff effMultInt
+    (</>|) = ArithInOut.mixedDivOutEff effDivInt
     
     effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDF effReal
     effJoinMeet = ArithInOut.rrEffortJoinMeet sampleDF effReal
@@ -241,5 +232,9 @@ cairoDrawFnFromEval
         ArithInOut.mxfldEffortMult sampleDF sampleI $ ArithInOut.rrEffortIntMixedField sampleDF effReal
     effDivInt =
         ArithInOut.mxfldEffortDiv sampleDF sampleI $ ArithInOut.rrEffortIntMixedField sampleDF effReal
+    
+    sampleF = fn
+    sampleDF = dom
+    sampleI = 1 :: Int
     
     

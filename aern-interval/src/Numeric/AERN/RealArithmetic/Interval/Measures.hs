@@ -1,7 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.Measures
     Description :  distance and imprecision for intervals
@@ -28,7 +27,6 @@ import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Consistency
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
@@ -46,11 +44,11 @@ instance (HasDistance e, ArithInOut.RoundedAdd (Distance e)) =>
         effortAdd = ArithInOut.addDefaultEffort d 
         d = distanceBetweenEff effortDist l r
     distanceBetweenEff (effortDist, effortAdd) (Interval l1 r1) (Interval l2 r2) =
-        let ?addInOutEffort = effortAdd in
         distL <+> distR
         where
         distL = distanceBetweenEff effortDist l1 l2
         distR = distanceBetweenEff effortDist r1 r2
+        (<+>) = ArithInOut.addOutEff effortAdd
     
 instance 
     (HasDistance e, RefOrd.RoundedLattice (Distance e), Neg (Distance e), 

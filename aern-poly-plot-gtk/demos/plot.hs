@@ -18,7 +18,7 @@ import Numeric.AERN.RealArithmetic.Interval ()
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps ()
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 import Numeric.AERN.RealArithmetic.ExactOps
 

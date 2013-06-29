@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.NumericOrder.InPlace.RefinementRoundedLattice
     Description :  numeric-order lattices with refinement-rounded in-place operations  

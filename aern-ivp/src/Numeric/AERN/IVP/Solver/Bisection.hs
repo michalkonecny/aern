@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 --{-# LANGUAGE ScopedTypeVariables #-}
 {-|
@@ -58,7 +57,6 @@ import Numeric.AERN.RmToRn.Evaluation
 import Numeric.AERN.RmToRn.Integration
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 --import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
@@ -149,11 +147,9 @@ solveHybridIVPByBisectingT
         tEnd = hybivp_tEnd hybivp
         
         belowStepSize =
-            let ?addInOutEffort = effAddDom in
-            ((tEnd <-> tStart) >? minStepSize) /= Just True
+            ((tEnd .<->. tStart) >? minStepSize) /= Just True
         aboveMaxStepSize =
-            let ?addInOutEffort = effAddDom in
-            ((tEnd <-> tStart) <? maxStepSize) /= Just True
+            ((tEnd .<->. tStart) <? maxStepSize) /= Just True
 
         directComputation =
 --            unsafePrint
@@ -218,6 +214,8 @@ solveHybridIVPByBisectingT
                 (Just directResult, Just splitOnceResult) -> 
                     Just $ measureImprovementState sampleDom effDom directResult splitOnceResult
                 _ -> Nothing
+
+    (.<->.) = ArithInOut.subtrOutEff effAddDom
 
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDivDomInt = 
@@ -338,6 +336,8 @@ solveODEIVPByBisectingT
     result
     where
     result = splitSolve odeivpG
+
+    (.<->.) = ArithInOut.subtrOutEff effAddDom
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDivDomInt = 
         ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
@@ -377,11 +377,9 @@ solveODEIVPByBisectingT
         tEnd = odeivp_tEnd odeivp
         
         belowStepSize =
-            let ?addInOutEffort = effAddDom in
-            ((tEnd <-> tStart) >? minStepSize) /= Just True
+            ((tEnd .<->. tStart) >? minStepSize) /= Just True
         aboveMaxStepSize =
-            let ?addInOutEffort = effAddDom in
-            ((tEnd <-> tStart) <? maxStepSize) /= Just True
+            ((tEnd .<->. tStart) <? maxStepSize) /= Just True
 
         directComputation =
             case maybeDirectResult of
@@ -450,8 +448,7 @@ solveODEIVPByBisectingT
 --                ++ "\n  imprecision1 = " ++ show imprecision1 
 --                ++ "\n  imprecision2 = " ++ show imprecision2 
 --            ) $
-            let ?addInOutEffort = effAddDom in
-            Just $ imprecision1 <-> imprecision2
+            Just $ imprecision1 .<->. imprecision2
             where
             imprecision1 = measureResultImprecision res1
             imprecision2 = measureResultImprecision res2
@@ -509,6 +506,9 @@ solveODEIVPByBisectingT0
     =
     splitSolve odeivpG
     where
+    (</\>) = RefOrd.meetOutEff effJoinDom
+    (.<->.) = ArithInOut.subtrOutEff effAddDom
+
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
     effDivDomInt = 
         ArithInOut.mxfldEffortDiv sampleDom (1 :: Int) $ 
@@ -538,8 +538,7 @@ solveODEIVPByBisectingT0
         
         belowStepSize =
 --            unsafePrintReturn ("belowStepSize = ") $
-            let ?addInOutEffort = effAddDom in
-            ((t0End <-> tStart) >? minStepSize) /= Just True
+            ((t0End .<->. tStart) >? minStepSize) /= Just True
 
         directComputation =
             (maybeDirectResult, BisectionNoSplit ((tEnd, maybeDirectResult), directInfo))
@@ -547,7 +546,6 @@ solveODEIVPByBisectingT0
         directComputationFailed =
             case maybeDirectResult of Just _ -> False; _ -> True
         
-        (</\>) = RefOrd.meetOutEff effJoinDom
         splitOnceComputation = -- needed only to decide whether splitting is benefitial, the result is then discarded
             case solver odeivpL of
                 (Just endValuesLOut, _) -> 
@@ -574,7 +572,6 @@ solveODEIVPByBisectingT0
                             (Just endValuesOut, BisectionSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL (Just infoR))
                             where
                             endValuesOut =
-                                let ?joinmeetEffort = effJoinDom in
                                 zipWith (</\>) endValuesLOut endValuesROut
                         (Nothing, infoR) ->
                             (Nothing, BisectionSplit (((tEnd, maybeDirectResult), directInfo), maybeSplitImprovement) infoL (Just infoR))
@@ -606,13 +603,11 @@ solveODEIVPByBisectingT0
             improvements <- sequence $ zipWith measureImprovement vec1 vec2
             Just $ foldl1 (NumOrd.minOutEff effMinmax) improvements
         measureImprovement encl1 encl2 =
-            let ?addInOutEffort = effAddDom in
-            let ?pCompareEffort = effRefComp in
             do
 --            refines <- encl1 |<=? encl2
 --            case refines of
 --                True -> 
-                    Just $ (imprecisionOfEff effImpr encl1) <-> (imprecisionOfEff effImpr encl2)
+                    Just $ (imprecisionOfEff effImpr encl1) .<->. (imprecisionOfEff effImpr encl2)
 --                False -> Nothing 
 
 data BisectionInfo segInfo splitReason
@@ -709,13 +704,10 @@ bisectionInfoCheckCondition effDom condition bisectionInfo bisectionDom dom =
         where
         resultUsingInfo = condition info
         domNotInL =
-            let ?pCompareEffort = effComp in 
             (dM <? dom) == Just True
         domNotInR =
-            let ?pCompareEffort = effComp in 
             (dom <? dM) == Just True
         domInsideBothLR = 
-            let ?pCompareEffort = effComp in 
             (dom ==? dM) == Just True
         dM = 
             getMidPoint effAddDom effDivDomInt dL dR 
@@ -755,13 +747,10 @@ bisectionInfoEvalFn effDom evalFn bisectionInfo bisectionDom domG =
             auxLeft ++ auxRight
         where
         domNotInL =
-            let ?pCompareEffort = effComp in 
             (dM <? dom) == Just True
         domNotInR =
-            let ?pCompareEffort = effComp in 
             (dom <? dM) == Just True
         domInsideBothLR = 
-            let ?pCompareEffort = effComp in 
             (dom ==? dM) == Just True
         dM = 
             getMidPoint effAddDom effDivDomInt dL dR 
@@ -771,10 +760,8 @@ bisectionInfoEvalFn effDom evalFn bisectionInfo bisectionDom domG =
                 Nothing -> []
                 Just right-> aux (dM, dR) right domR
         domL = 
-            let ?joinmeetEffort = effJoinMeet in
             dom <\/> (dL </\> dM)
         domR =
-            let ?joinmeetEffort = effJoinMeet in
             dom <\/> (dM </\> dR)
     (</\>) = RefOrd.meetOutEff effJoinMeet
     (<\/>) = RefOrd.joinOutEff effJoinMeet
@@ -842,8 +829,10 @@ getMidPoint ::
     -> 
     dom -> dom -> dom
 getMidPoint effAddDom effDivDomInt l r =             
-    let ?addInOutEffort = effAddDom in
-    let ?mixedDivInOutEffort = effDivDomInt in
     fst $ RefOrd.getEndpointsOut $
     (l <+> r) </>| (2 :: Int)
+    where
+    (<+>) = ArithInOut.addOutEff effAddDom
+    (</>|) = ArithInOut.mixedDivOutEff effDivDomInt 
+    
         

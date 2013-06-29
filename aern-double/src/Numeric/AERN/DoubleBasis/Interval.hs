@@ -225,13 +225,11 @@ import qualified Numeric.AERN.RefinementOrder as BRO
 import Numeric.AERN.RealArithmetic.Interval()
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR 
-  (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..))
-
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort as RARORODE
- ((<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
-  piOut,eOut,absOut,expOut,sqrtOut,
-  (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),(>^<),
-  piIn,eIn,absIn,expIn,sqrtIn)
+  (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..),
+   (<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
+   piOut,eOut,absOut,expOut,sqrtOut,
+   (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),(>^<),
+   piIn,eIn,absIn,expIn,sqrtIn)
  
 import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
     (expOutIters, expInIters, sqrtOutIters, sqrtInIters)
@@ -445,123 +443,123 @@ top = BRO.top sampleDI
 
 -- | Outward rounded addition
 (<+>) :: DI -> DI -> DI
-(<+>) = (RARORODE.<+>)
+(<+>) = (RAROR.<+>)
 
 -- | Outward rounded subtraction
 (<->) :: DI -> DI -> DI
-(<->) = (RARORODE.<->)
+(<->) = (RAROR.<->)
 
 -- | Outward rounded multiplication
 (<*>) :: DI -> DI -> DI
-(<*>) = (RARORODE.<*>)
+(<*>) = (RAROR.<*>)
 
 -- | Outward rounded division
 (</>) :: DI -> DI -> DI
-(</>) = (RARORODE.</>)
+(</>) = (RAROR.</>)
 
 -- | Inward rounded addition
 (>+<) :: DI -> DI -> DI
-(>+<) = (RARORODE.>+<)
+(>+<) = (RAROR.>+<)
 
 -- | Inward rounded subtraction
 (>-<) :: DI -> DI -> DI
-(>-<) = (RARORODE.>-<)
+(>-<) = (RAROR.>-<)
 
 -- | Inward rounded multiplication
 (>*<) :: DI -> DI -> DI
-(>*<) = (RARORODE.>*<)
+(>*<) = (RAROR.>*<)
 
 -- | Inward rounded division
 (>/<) :: DI -> DI -> DI
-(>/<) = (RARORODE.>/<)
+(>/<) = (RAROR.>/<)
 
 -- | Outward rounded additive scalar left action
 (|<+>) :: RAROR.RoundedMixedAdd DI tn => tn -> DI -> DI
-(|<+>) = (RARORODE.|<+>)
+(|<+>) = (RAROR.|<+>)
 
 -- | Inward rounded additive scalar left action
 (|>+<) :: RAROR.RoundedMixedAdd DI tn => tn -> DI -> DI
-(|>+<) = (RARORODE.|>+<)
+(|>+<) = (RAROR.|>+<)
 
 -- | Outward rounded additive scalar right action
 (<+>|) :: RAROR.RoundedMixedAdd DI tn => DI -> tn -> DI
-(<+>|) = (RARORODE.<+>|)
+(<+>|) = (RAROR.<+>|)
 
 -- | Inward rounded additive scalar right action
 (>+<|) :: RAROR.RoundedMixedAdd DI tn => DI -> tn -> DI
-(>+<|) = (RARORODE.>+<|)
+(>+<|) = (RAROR.>+<|)
 
 -- | Outward rounded multiplicative scalar left action
 (|<*>) :: RAROR.RoundedMixedMultiply DI tn => tn -> DI -> DI
-(|<*>) = (RARORODE.|<*>)
+(|<*>) = (RAROR.|<*>)
 
 -- | Inward rounded multiplicative scalar left action
 (|>*<) :: RAROR.RoundedMixedMultiply DI tn => tn -> DI -> DI
-(|>*<) = (RARORODE.|>*<)
+(|>*<) = (RAROR.|>*<)
 
 -- | Outward rounded multiplicative scalar right action
 (<*>|) :: RAROR.RoundedMixedMultiply DI tn => DI -> tn -> DI
-(<*>|) = (RARORODE.<*>|)
+(<*>|) = (RAROR.<*>|)
 
 -- | Inward rounded multiplicative scalar right action
 (>*<|) :: RAROR.RoundedMixedMultiply DI tn => DI -> tn -> DI
-(>*<|) = (RARORODE.>*<|)
+(>*<|) = (RAROR.>*<|)
 
 -- | Outward rounded multiplicative scalar reciprocal right action
 (</>|) :: RAROR.RoundedMixedDivide DI tn => DI -> tn -> DI
-(</>|) = (RARORODE.</>|)
+(</>|) = (RAROR.</>|)
 
 -- | Inward rounded multiplicative scalar reciprocal right action
 (>/<|) :: RAROR.RoundedMixedDivide DI tn => DI -> tn -> DI  
-(>/<|) = (RARORODE.>/<|)
+(>/<|) = (RAROR.>/<|)
 
 -- | Outward rounded power
 (<^>) :: DI -> Int -> DI
-(<^>) = (RARORODE.<^>)
+(<^>) = (RAROR.<^>)
 
 -- | Inward rounded power
 (>^<) :: DI -> Int -> DI
-(>^<) = (RARORODE.>^<)
+(>^<) = (RAROR.>^<)
 
 -- | Outward rounded pi
 piOut :: DI
-piOut = RARORODE.piOut 
+piOut = RAROR.piOut 0
 
 -- | Outward rounded e
 eOut :: DI
-eOut = RARORODE.eOut 
+eOut = RAROR.eOut 0
 
 -- | Inward rounded pi
 piIn :: DI
-piIn = RARORODE.piIn 
+piIn = RAROR.piIn 0
 
 -- | Inward rounded e
 eIn :: DI
-eIn = RARORODE.eIn 
+eIn = RAROR.eIn 0
 
 -- | Outward rounded absolute value
 absOut :: DI -> DI
-absOut = RARORODE.absOut
+absOut = RAROR.absOut
 
 -- | Outward rounded exponential
 expOut :: DI -> DI
-expOut = RARORODE.expOut
+expOut = RAROR.expOut
 
 -- | Outward rounded square root
 sqrtOut :: DI -> DI
-sqrtOut = RARORODE.sqrtOut
+sqrtOut = RAROR.sqrtOut
 
 -- | Inward rounded absolute value
 absIn :: DI -> DI
-absIn = RARORODE.absIn
+absIn = RAROR.absIn
 
 -- | Inward rounded exponential
 expIn :: DI -> DI
-expIn = RARORODE.expIn
+expIn = RAROR.expIn
 
 -- | Inward rounded square root
 sqrtIn :: DI -> DI
-sqrtIn = RARORODE.sqrtIn
+sqrtIn = RAROR.sqrtIn
 
 expOutIters :: Int -> DI -> DI
 expOutIters = RAIEFFO.expOutIters

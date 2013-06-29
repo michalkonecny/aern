@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
@@ -17,22 +16,6 @@
     This module is hidden and reexported via its parent RefinementOrderRounding. 
 -}
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps 
-(
-    RoundedAdd(..), RoundedAddEffort(..), RoundedSubtr(..), 
-    testsInOutAdd, testsInOutSubtr,
-    RoundedAbs(..), RoundedAbsEffort(..),
-    testsInOutAbs,  absInUsingCompMax, absOutUsingCompMax,
-    RoundedMultiply(..), RoundedMultiplyEffort(..), testsInOutMult,
-    RoundedPowerToNonnegInt(..), RoundedPowerToNonnegIntEffort(..), 
-    testsInOutIntPower,
-    PowerToNonnegIntEffortIndicatorFromMult, powerToNonnegIntDefaultEffortFromMult,
-    powerToNonnegIntInEffFromMult, powerToNonnegIntOutEffFromMult,
-    RoundedDivide(..), RoundedDivideEffort(..), testsInOutDiv,
-    RoundedRingEffort(..), RoundedFieldEffort(..),
-    RoundedRing(..), RoundedField(..)
---    ,
---    FieldOpsEffortIndicator(..), fieldOpsDefaultEffort
-)
 where
 
 import Prelude hiding (EQ, LT, GT)
@@ -58,6 +41,11 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 import Data.Maybe
 
+infixl 6 <+>, >+<, <->, >-<
+infixl 7 <*>, >*<
+infixl 8 <^>, >^<
+infixl 7 </>, >/<
+
 class
     (EffortIndicator (AddEffortIndicator t))
     => 
@@ -69,6 +57,22 @@ class
 class (RoundedAddEffort t) => RoundedAdd t where
     addInEff :: AddEffortIndicator t -> t -> t -> t
     addOutEff :: AddEffortIndicator t -> t -> t -> t
+
+-- | Inward rounded addition with default effort
+addIn :: (RoundedAdd t) => t -> t -> t
+addIn a = addInEff (addDefaultEffort a) a
+
+-- | Inward rounded addition with default effort
+(>+<) :: (RoundedAdd t) => t -> t -> t
+(>+<) = addIn
+
+-- | Outward rounded addition with default effort
+addOut :: (RoundedAdd t) => t -> t -> t
+addOut a = addOutEff (addDefaultEffort a) a
+
+-- | Outward rounded addition with default effort
+(<+>) :: (RoundedAdd t) => t -> t -> t
+(<+>) = addOut
 
 --propAddRefIsotone _ effortDist
 
@@ -140,6 +144,23 @@ class (RoundedAdd t, Neg t) => RoundedSubtr t where
     subtrInEff effort a b = addInEff effort a (neg b)
     subtrOutEff effort a b = addOutEff effort a (neg b)
 
+-- | Inward rounded subtraction with default effort
+subtrIn :: (RoundedSubtr t) => t -> t -> t
+subtrIn d = subtrInEff (addDefaultEffort d) d
+
+-- | Inward rounded subtraction with default effort
+(>-<) :: (RoundedSubtr t) => t -> t -> t
+(>-<) = subtrIn
+
+-- | Outward rounded subtraction with default effort
+subtrOut :: (RoundedSubtr t) => t -> t -> t
+subtrOut d = subtrOutEff (addDefaultEffort d) d
+
+-- | Outward rounded subtraction with default effort
+(<->) :: (RoundedSubtr t) => t -> t -> t
+(<->) = subtrOut
+
+
 propInOutSubtrElim ::
     (RefOrd.PartialComparison t, RoundedSubtr t, HasZero t,
      Show t, HasLegalValues t) 
@@ -210,6 +231,15 @@ class
 class (RoundedAbsEffort t) => RoundedAbs t where
     absInEff :: (AbsEffortIndicator t) -> t -> t
     absOutEff :: (AbsEffortIndicator t) -> t -> t
+
+-- | Inward rounded absolute value with default effort
+absIn :: (RoundedAbs t) => t -> t
+absIn d = absInEff (absDefaultEffort d) d
+
+-- | Outward rounded absolute value with default effort
+absOut :: (RoundedAbs t) => t -> t
+absOut d = absOutEff (absDefaultEffort d) d
+
 
 absOutUsingCompMax ::
     (HasZero t, Neg t, 
@@ -305,6 +335,23 @@ class
 class (RoundedMultiplyEffort t) => RoundedMultiply t where
     multInEff :: MultEffortIndicator t -> t -> t -> t
     multOutEff :: MultEffortIndicator t -> t -> t -> t
+
+-- | Inward rounded multiplication with default effort
+multIn :: (RoundedMultiply t) => t -> t -> t
+multIn a = multInEff (multDefaultEffort a) a
+
+-- | Inward rounded multiplication with default effort
+(>*<) :: (RoundedMultiply t) => t -> t -> t
+(>*<) = multIn
+
+-- | Outward rounded multiplication with default effort
+multOut :: (RoundedMultiply t) => t -> t -> t
+multOut a = multOutEff (multDefaultEffort a) a
+
+-- | Outward rounded multiplication with default effort
+(<*>) :: (RoundedMultiply t) => t -> t -> t
+(<*>) = multOut
+
 
 propInOutMultRefIsotone ::
     (RefOrd.PartialComparison t, RoundedMultiply t, 
@@ -408,6 +455,23 @@ class (RoundedPowerToNonnegIntEffort t) => RoundedPowerToNonnegInt t where
         t {-^ @x@ -} -> 
         Int {-^ @n@ (assumed >=0)-} -> 
         t {-^ @x^n@ rounded outwards -}
+
+-- | Inward rounded integer power with default effort
+powerToNonnegIntIn :: (RoundedPowerToNonnegInt t) => t -> Int -> t
+powerToNonnegIntIn a = powerToNonnegIntInEff (powerToNonnegIntDefaultEffort a) a
+
+-- | Inward rounded integer power with default effort
+(>^<) :: (RoundedPowerToNonnegInt t) => t -> Int -> t 
+(>^<) = powerToNonnegIntIn
+
+-- | Outward rounded integer power with default effort
+powerToNonnegIntOut :: (RoundedPowerToNonnegInt t) => t -> Int -> t
+powerToNonnegIntOut a = powerToNonnegIntOutEff (powerToNonnegIntDefaultEffort a) a
+
+-- | Outward rounded integer power with default effort
+(<^>) :: (RoundedPowerToNonnegInt t) => t -> Int -> t
+(<^>) = powerToNonnegIntOut
+
 
 -- functions providing an implementation derived from rounded multiplication: 
         
@@ -514,6 +578,27 @@ class (HasOne t, RoundedDivideEffort t) => RoundedDivide t where
     recipInEff eff a = divInEff eff (one a) a
     recipOutEff eff a = divOutEff eff (one a) a
 
+-- | Inward rounded division with default effort
+divIn :: (RoundedDivide t) => t -> t -> t
+divIn a = divInEff (divDefaultEffort a) a
+
+-- | Inward rounded division with default effort
+(>/<) :: (RoundedDivide t) => t -> t -> t
+(>/<) = divIn
+
+-- | Outward rounded division with default effort
+divOut :: (RoundedDivide t) => t -> t -> t
+divOut a = divOutEff (divDefaultEffort a) a
+
+-- | Outward rounded division with default effort
+(</>) :: (RoundedDivide t) => t -> t -> t
+(</>) = divOut
+
+recipIn :: (RoundedDivide t) => t -> t
+recipIn a = recipInEff (divDefaultEffort a) a
+
+recipOut :: (RoundedDivide t) => t -> t
+recipOut a = recipOutEff (divDefaultEffort a) a
 
 propInOutDivRefIsotone ::
     (RefOrd.PartialComparison t, RoundedDivide t, 

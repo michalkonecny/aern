@@ -4,7 +4,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE ImplicitParams #-}
 #ifdef GLADE_DIR
 #else
 #define GLADE_DIR "./"
@@ -38,7 +37,6 @@ import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
@@ -255,14 +253,12 @@ pickAFewDyadicBetween ::
     t ->
     [(t,String)]
 pickAFewDyadicBetween sampleDom effReal a b =
-    let ?mixedMultInOutEffort = effMultInteger in -- ghc 6.12.3 needs this line but >=7.2.2 not
     map mkPt [aCount..bCount]
     where
     mkPt count =
         (value, text)
         where
         value = 
-            let ?mixedMultInOutEffort = effMultInteger in
             count |<*> partitionBase
         text =
             case logOfSizeIMinusOne of
@@ -275,16 +271,12 @@ pickAFewDyadicBetween sampleDom effReal a b =
     aCount, bCount :: Integer
     Just aCount =
         ArithUpDn.convertUpEff effToInteger 0 $
-            let ?divInOutEffort = effDiv in
             a </> partitionBase
     Just bCount = 
         ArithUpDn.convertDnEff effToInteger 0 $
-            let ?divInOutEffort = effDiv in
             b </> partitionBase
     
     partitionBase =
-        let ?divInOutEffort = effDiv in
-        let ?intPowerInOutEffort = effPow in
         case logOfSizeIMinusOne < 0 of
             True ->
                 c1 </> (c2 <^> (negate logOfSizeIMinusOne))
@@ -304,21 +296,22 @@ pickAFewDyadicBetween sampleDom effReal a b =
     Just sizeRecipUpI = ArithUpDn.convertUpEff effToInteger 0 sizeRecip
     Just sizeDnI = ArithUpDn.convertDnEff effToInteger 0 size
 
-    sizeBelowOne =
-        (size <? c1) == Just True
-        where
-        (<?) = NumOrd.pLessEff effComp
-    sizeRecip = 
-        let ?divInOutEffort = effDiv in
-        c1 </> size
-    size = 
-        let ?addInOutEffort = effAdd in 
-        b <-> a
+    sizeBelowOne = (size <? c1) == Just True
+        
+    sizeRecip = c1 </> size
+    size = b <-> a
 
     c1 = one sampleDom
-    c2 = 
-        let ?addInOutEffort = effAdd in 
-        c1 <+> c1
+    c2 = c1 <+> c1
+
+    (<?) = NumOrd.pLessEff effComp
+    
+    (<+>) = ArithInOut.addOutEff effAdd
+    (<->) = ArithInOut.subtrOutEff effAdd
+    (</>) = ArithInOut.divOutEff effDiv
+    (<^>) = ArithInOut.powerToNonnegIntOutEff effPow
+    (|<*>) = flip $ ArithInOut.mixedMultOutEff effMultInteger
+
     effPow =
         ArithInOut.fldEffortPow sampleDom $ ArithInOut.rrEffortField sampleDom effReal
     effAdd =

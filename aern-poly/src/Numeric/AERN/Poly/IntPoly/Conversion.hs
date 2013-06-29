@@ -1,6 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE ImplicitParams        #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeFamilies          #-}
@@ -37,7 +36,7 @@ import           Numeric.AERN.RealArithmetic.NumericOrderRounding
                                                                                        (ConvertEffortIndicator)
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding                     as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding                  as ArithInOut
-import           Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import           Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 import           Numeric.AERN.RealArithmetic.ExactOps
 

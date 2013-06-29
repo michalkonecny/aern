@@ -1,4 +1,3 @@
-{-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE DeriveDataTypeable   #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Plot.Params
@@ -30,12 +29,10 @@ where
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 --import Data.Typeable
 --import Data.Generics.Basics
@@ -169,18 +166,22 @@ translateToCoordSystem eff csys pt@(x,y) =
 --        CoordSystemLogSqueeze ->
 --            ((logSqueeze 0.5 x) * scale, (logSqueeze 0.5 y) * scale)
         CoordSystemLinear (Rectangle t b l r) ->
-            let ?addInOutEffort = effAdd in
-            let ?divInOutEffort = effDiv in
             ((linTransform l r x), 
              (linTransform b t y))
     where
     linTransform x0 x1 x =
         (x <-> x0) </> (x1 <-> x0)
+
+    (<->) = ArithInOut.subtrOutEff effAdd
+    (</>) = ArithInOut.divOutEff effDiv
+
     effAdd =
         ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     effDiv =
         ArithInOut.fldEffortDiv sample $ ArithInOut.rrEffortField sample eff
     sample = x
+    
+    
     
 --    logSqueeze v1 =
 --        (\x -> (x + 1) /2) . (normalise v1) . logScale
@@ -213,24 +214,22 @@ normalise ::
     t
 normalise eff v1 x
     | v1ok && x < c0 = 
-        let ?addInOutEffort = effAdd in
-        let ?divInOutEffort = effDiv in
         (a</>(a <-> x)) <-> c1
     | v1ok = 
-        let ?addInOutEffort = effAdd in
-        let ?divInOutEffort = effDiv in
         c1 <-> (a</>(a <+> x))
     where
-    a < b = 
-        (NumOrd.pLessEff effComp a b) == Just True
     v1ok = 
         c0 < v1 && v1 < c1
     a = 
-        let ?addInOutEffort = effAdd in
-        let ?divInOutEffort = effDiv in
         (c1 <-> v1) </> v1
     c0 = zero sample
     c1 = one sample
+
+    a < b = 
+        (NumOrd.pLessEff effComp a b) == Just True
+    (<+>) = ArithInOut.addOutEff effAdd
+    (<->) = ArithInOut.subtrOutEff effAdd
+    (</>) = ArithInOut.divOutEff effDiv
 
     sample = x
     effComp =

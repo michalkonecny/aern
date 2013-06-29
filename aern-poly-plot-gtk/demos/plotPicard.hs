@@ -20,7 +20,7 @@ import qualified Numeric.AERN.DoubleBasis.Interval as CF
 
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 --import Numeric.AERN.RealArithmetic.ExactOps
 

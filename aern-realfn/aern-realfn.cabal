@@ -11,8 +11,7 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       arbitrary precision real function arithmetic
-Tested-with:
-                GHC==7.4.2
+Tested-with:    GHC==7.4.2
 Description:
     Type classes abstracting typical operations for m-ary continuous real functions
     such as evaluation, composition, integration and automatic differentiation.  

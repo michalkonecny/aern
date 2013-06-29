@@ -2,7 +2,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE ImplicitParams #-}
 {-|
     Module      :  Numeric.AERN.RefinementOrderRounding.MixedFieldOps
     Description :  rounded basic arithmetic operations mixing 2 types
@@ -34,6 +33,12 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+infixr 6 |<+>, |>+<
+infixl 6 <+>|, >+<|
+infixr 7 |<*>, |>*<
+infixl 7 <*>|, >*<|
+infixl 7 </>|, >/<|
+
 class
     (EffortIndicator (MixedAddEffortIndicator t tn))
     => 
@@ -45,6 +50,31 @@ class
 class (RoundedMixedAddEffort t tn) => RoundedMixedAdd t tn where
     mixedAddInEff :: MixedAddEffortIndicator t tn -> t -> tn -> t
     mixedAddOutEff :: MixedAddEffortIndicator t tn -> t -> tn -> t
+
+-- | Inward rounded additive scalar left action with default effort
+mixedAddIn :: (RoundedMixedAdd t tn) => t -> tn -> t
+mixedAddIn a b = mixedAddInEff (mixedAddDefaultEffort a b) a b
+
+-- | Inward rounded additive scalar left action with default effort
+(|>+<) :: (RoundedMixedAdd t tn) => tn -> t -> t
+(|>+<) = flip mixedAddIn
+
+-- | Inward rounded additive scalar right action with default effort
+(>+<|) :: (RoundedMixedAdd t tn) => t -> tn -> t
+(>+<|) = mixedAddIn
+
+-- | Outward rounded additive scalar left action with default effort
+mixedAddOut :: (RoundedMixedAdd t tn) => t -> tn -> t
+mixedAddOut a b = mixedAddOutEff (mixedAddDefaultEffort a b) a b
+
+-- | Outward rounded additive scalar left action with default effort
+(|<+>) :: (RoundedMixedAdd t tn) => tn -> t -> t
+(|<+>) = flip mixedAddOut
+
+-- | Outward rounded additive scalar right action with default effort
+(<+>|) :: (RoundedMixedAdd t tn) => t -> tn -> t
+(<+>|) = mixedAddOut
+
 
 -- The following would prevent one from defining a generic instance
 -- for an interval based on its endpoints: 
@@ -123,6 +153,32 @@ class (RoundedMixedMultiplyEffort t tn) =>  RoundedMixedMultiply t tn where
     mixedMultInEff :: MixedMultEffortIndicator t tn -> t -> tn -> t
     mixedMultOutEff :: MixedMultEffortIndicator t tn -> t -> tn -> t
 
+
+-- | Inward rounded scaling left action with default effort
+mixedMultIn :: (RoundedMixedMultiply t tn) => t -> tn -> t
+mixedMultIn a b = mixedMultInEff (mixedMultDefaultEffort a b) a b
+
+-- | Inward rounded scaling left action with default effort
+(|>*<) :: (RoundedMixedMultiply t tn) => tn -> t -> t
+(|>*<) = flip mixedMultIn
+
+-- | Inward rounded scaling right action with default effort
+(>*<|) :: (RoundedMixedMultiply t tn) => t -> tn -> t
+(>*<|) = mixedMultIn
+
+-- | Outward rounded scaling left action with default effort
+mixedMultOut :: (RoundedMixedMultiply t tn) => t -> tn -> t
+mixedMultOut a b = mixedMultOutEff (mixedMultDefaultEffort a b) a b
+
+-- | Outward rounded scaling left action with default effort
+(|<*>) :: (RoundedMixedMultiply t tn) => tn -> t -> t
+(|<*>) = flip mixedMultOut
+
+-- | Outward rounded scaling right action with default effort
+(<*>|) :: (RoundedMixedMultiply t tn) => t -> tn -> t
+(<*>|) = mixedMultOut
+
+
 mixedMultDefaultEffortByConversion d n = 
         (multDefaultEffort d, convertDefaultEffort n d)
 
@@ -186,6 +242,22 @@ class
 class (RoundedMixedDivideEffort t tn) => RoundedMixedDivide t tn where
     mixedDivInEff :: MixedDivEffortIndicator t tn -> t -> tn -> t
     mixedDivOutEff :: MixedDivEffortIndicator t tn -> t -> tn -> t
+
+-- | Inward rounded reciprocal scaling right action with default effort
+mixedDivIn :: (RoundedMixedDivide t tn) => t -> tn -> t
+mixedDivIn a b = mixedDivInEff (mixedDivDefaultEffort a b) a b
+
+-- | Inward rounded reciprocal scaling right action with default effort
+(>/<|) :: (RoundedMixedDivide t tn) => t -> tn -> t
+(>/<|) = mixedDivIn
+
+-- | Outward rounded reciprocal scaling right action with default effort
+mixedDivOut :: (RoundedMixedDivide t tn) => t -> tn -> t
+mixedDivOut a b = mixedDivOutEff (mixedDivDefaultEffort a b) a b
+
+-- | Outward rounded reciprocal scaling right action with default effort
+(</>|) :: (RoundedMixedDivide t tn) => t -> tn -> t
+(</>|) = mixedDivOut
 
 mixedDivDefaultEffortByConversion d n = 
         (divDefaultEffort d, convertDefaultEffort n d)

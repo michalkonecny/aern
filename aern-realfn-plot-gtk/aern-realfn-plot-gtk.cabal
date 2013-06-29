@@ -11,8 +11,7 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       cairo/gtk plotting of real function approximations
-Tested-with:
-                GHC==7.4.2
+Tested-with:    GHC==7.4.2
 Description:
     A type class for cairo-plottable real function approximations
     and a gtk widget for plotting and interactively inspecting
