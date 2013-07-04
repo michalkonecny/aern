@@ -184,7 +184,7 @@ makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames
         initValFnWithNewVars -- just adding a time variable
         where
         initValFnWithNewVars =
-            changeSizeLimitsOut effSizeLims sizeLimits $
+            changeSizeLimitsOutEff effSizeLims sizeLimits $
                 addVariablesFront newVarDoms initValFn
     newVarDoms =
         [(t0Var, t0Domain)] -- ++ (zip componentNames $ repeat unitDom)

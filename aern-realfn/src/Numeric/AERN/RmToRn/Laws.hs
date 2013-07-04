@@ -26,10 +26,10 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Arbitrary
 
-import Numeric.AERN.Misc.QuickCheck
+--import Numeric.AERN.Misc.QuickCheck
 import Numeric.AERN.Misc.Debug
-import Numeric.AERN.Misc.Bool
-import Numeric.AERN.Misc.Maybe
+--import Numeric.AERN.Misc.Bool
+--import Numeric.AERN.Misc.Maybe
 
 import Test.Framework (Test, testGroup)
 import Test.Framework.Providers.QuickCheck2 (testProperty)

@@ -34,8 +34,8 @@ import Numeric.AERN.RmToRn.Domain
 {-|
     An approximate derivative of an approximated function.
     
-    This can be instantiated only for datatypes that enclose alongside the value 
-    also the partial derivatives using automatic differentiation or other similar technique.
+    This can be instantiated only for datatypes that explicitly enclose, alongside the value, 
+    the partial derivatives of the function, using automatic differentiation or other similar technique.
     The operations in this class then simply pick the appropriate partial
     derivative out of the structure. 
 -}
@@ -56,6 +56,21 @@ class RoundedDerivative f
         (Var f) {-^ variable @x@ in the domain box of @f@ -} -> 
         f {-^ inner approximation of the partial derivative @df/dx@ -}
     
+partialDerivativeOut ::
+        RoundedDerivative f => 
+        f {-^ approximation of a function @f@ -} -> 
+        (Var f) {-^ variable @x@ in the domain box of @f@ -} -> 
+        f {-^ outer approximation of the partial derivative @df/dx@ -}
+partialDerivativeOut fn var =   
+    partialDerivativeOutEff (derivativeDefaultEffort fn) fn var
+
+partialDerivativeIn ::
+        RoundedDerivative f => 
+        f {-^ approximation of a function @f@ -} -> 
+        (Var f) {-^ variable @x@ in the domain box of @f@ -} -> 
+        f {-^ outer approximation of the partial derivative @df/dx@ -}
+partialDerivativeIn fn var =   
+    partialDerivativeInEff (derivativeDefaultEffort fn) fn var
 
 {-|
     An approximate derivative of a function approximation.
@@ -95,4 +110,22 @@ class RoundedFakeDerivative f
         f {-^ approximation of a function @f@ -} -> 
         (Var f) {-^ variable @x@ in the domain box of @f@ -} -> 
         f {-^ inner approximation of the partial derivative @df/dx@ -}
+    
+fakePartialDerivativeOut ::
+        RoundedFakeDerivative f => 
+        f {-^ approximation of a function @f@ -} -> 
+        (Var f) {-^ variable @x@ in the domain box of @f@ -} -> 
+        f {-^ outer approximation of the partial derivative @df/dx@ -}
+fakePartialDerivativeOut fn var =   
+    fakePartialDerivativeOutEff (fakeDerivativeDefaultEffort fn) fn var
+    
+fakePartialDerivativeIn ::
+        RoundedFakeDerivative f => 
+        f {-^ approximation of a function @f@ -} -> 
+        (Var f) {-^ variable @x@ in the domain box of @f@ -} -> 
+        f {-^ outer approximation of the partial derivative @df/dx@ -}
+fakePartialDerivativeIn fn var =   
+    fakePartialDerivativeInEff (fakeDerivativeDefaultEffort fn) fn var
+
+    
     

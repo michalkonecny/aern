@@ -32,8 +32,20 @@ class
     where
     type SizeLimitsChangeEffort f
     sizeLimitsChangeDefaultEffort :: f -> SizeLimitsChangeEffort f
-    changeSizeLimitsOut :: SizeLimitsChangeEffort f -> SizeLimits f -> f -> f
-    changeSizeLimitsIn :: SizeLimitsChangeEffort f -> SizeLimits f -> f -> f
+    changeSizeLimitsOutEff :: SizeLimitsChangeEffort f -> SizeLimits f -> f -> f
+    changeSizeLimitsInEff :: SizeLimitsChangeEffort f -> SizeLimits f -> f -> f
+
+changeSizeLimitsOut :: 
+    CanChangeSizeLimits f => 
+    SizeLimits f -> f -> f
+changeSizeLimitsOut limits a =
+    changeSizeLimitsOutEff (sizeLimitsChangeDefaultEffort a) limits a 
+
+changeSizeLimitsIn :: 
+    CanChangeSizeLimits f => 
+    SizeLimits f -> f -> f
+changeSizeLimitsIn limits a =
+    changeSizeLimitsInEff (sizeLimitsChangeDefaultEffort a) limits a 
 
 class (HasDomainBox f, HasSizeLimits f) => HasProjections f where
     newProjection :: 

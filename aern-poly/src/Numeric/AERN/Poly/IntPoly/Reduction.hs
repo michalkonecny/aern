@@ -66,10 +66,10 @@ instance
         ArithInOut.RoundedRealEffortIndicator cf
     sizeLimitsChangeDefaultEffort p =
         ArithInOut.roundedRealDefaultEffort $ getSampleDomValue p
-    changeSizeLimitsOut effCf cfgNew _p@(IntPoly cfgOld terms) =
+    changeSizeLimitsOutEff effCf cfgNew _p@(IntPoly cfgOld terms) =
 --        unsafePrintReturn
 --        (
---            "IntPoly changeSizeLimitsOut:"
+--            "IntPoly changeSizeLimitsOutEff:"
 --            ++ "\n p = " ++ show _p
 --            ++ "\n old cfg = " ++ show _cfgOld
 --            ++ "\n new cfg = " ++ show cfg
@@ -88,8 +88,8 @@ instance
             reduceTermsDegreeOut effCf cfg $
                 reduceTermsTermCountOut effCf cfg $
                     terms
-    changeSizeLimitsIn =
-        error "aern-poly: changeSizeLimitsIn not available for IntPoly" 
+    changeSizeLimitsInEff =
+        error "aern-poly: changeSizeLimitsInEff not available for IntPoly" 
 
 
 reducePolyTermCountOut ::
