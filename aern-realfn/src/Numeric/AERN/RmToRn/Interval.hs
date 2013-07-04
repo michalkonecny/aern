@@ -82,22 +82,22 @@ instance
     sizeLimitsChangeDefaultEffort (Interval l _) = 
         (sizeLimitsChangeDefaultEffort l,
          RefOrd.getEndpointsDefaultEffort l)
-    changeSizeLimitsOut (eff, effGetE) sizeLims (Interval l r) = (Interval lN rN)
+    changeSizeLimitsOutEff (eff, effGetE) sizeLims (Interval l r) = (Interval lN rN)
         where
         (lN, _) = 
             RefOrd.getEndpointsOutEff effGetE $
-                changeSizeLimitsOut eff sizeLims l
+                changeSizeLimitsOutEff eff sizeLims l
         (_, rN) = 
             RefOrd.getEndpointsOutEff effGetE $
-                changeSizeLimitsOut eff sizeLims r
-    changeSizeLimitsIn (eff, effGetE) sizeLims (Interval l r) = (Interval lN rN)
+                changeSizeLimitsOutEff eff sizeLims r
+    changeSizeLimitsInEff (eff, effGetE) sizeLims (Interval l r) = (Interval lN rN)
         where
         (lN, _) = 
             RefOrd.getEndpointsInEff effGetE $
-                changeSizeLimitsIn eff sizeLims l
+                changeSizeLimitsInEff eff sizeLims l
         (_, rN) = 
             RefOrd.getEndpointsInEff effGetE $
-                changeSizeLimitsIn eff sizeLims r
+                changeSizeLimitsInEff eff sizeLims r
 
 instance 
     (HasProjections f,

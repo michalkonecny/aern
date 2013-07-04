@@ -59,9 +59,9 @@ main =
     putStrLn $ "(x + y)^2 = " 
                     ++ (showP $ (x <+> y) <^> 2)
     putStrLn $ "(x + y)^2[size 1] = " 
-                    ++ (showP $ changeSizeLimitsOut eff cfgSize1 $ (x <+> y) <^> 2)
+                    ++ (showP $ changeSizeLimitsOutEff eff cfgSize1 $ (x <+> y) <^> 2)
     putStrLn $ "2(x + y + 2)[size 1] = " 
-                    ++ (showP $ changeSizeLimitsOut eff cfgSize1 $ twoBxPyP2)
+                    ++ (showP $ changeSizeLimitsOutEff eff cfgSize1 $ twoBxPyP2)
     putStrLn "structure changes:"
     putStrLn $ "2(x + y + 2) [new vars z1,z2 at the front] = " 
                     ++ (showP $ addVariablesFront (zip ["z1","z2"] doms) twoBxPyP2)

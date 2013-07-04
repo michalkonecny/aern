@@ -76,6 +76,22 @@ class
         f {-^ function @f@ -} -> 
         (Domain f) {-^ approximated range of @f@ over @A@ -}
     
+evalAtPointOut ::
+        CanEvaluate f => 
+        (DomainBox f) {-^ a sub-domain @A@ where to evaluate -} -> 
+        f {-^ function @f@ -} -> 
+        (Domain f) {-^ approximated range of @f@ over @A@ -}
+evalAtPointOut dombox f =
+    evalAtPointOutEff (evaluationDefaultEffort f) dombox f
+    
+evalAtPointIn ::
+        CanEvaluate f => 
+        (DomainBox f) {-^ a sub-domain @A@ where to evaluate -} -> 
+        f {-^ function @f@ -} -> 
+        (Domain f) {-^ approximated range of @f@ over @A@ -}
+evalAtPointIn dombox f =
+    evalAtPointInEff (evaluationDefaultEffort f) dombox f
+    
 class 
     (HasDomainBox f,
      EffortIndicator (PartialEvaluationEffortIndicator f)) 
@@ -94,6 +110,22 @@ class
         (DomainBox f) {-^ values for some of the variables in @f@ -} -> 
         f {-^ function @f@ -} -> 
         f {-^ approximation of the specialised function in the remaning, unevaluated, variables -}
+    
+pEvalAtPointOut ::
+        CanPartiallyEvaluate f => 
+        (DomainBox f) {-^ a sub-domain @A@ where to evaluate -} -> 
+        f {-^ function @f@ -} -> 
+        f {-^ approximation of the specialised function in the remaning, unevaluated, variables -}
+pEvalAtPointOut dombox f =
+    pEvalAtPointOutEff (partialEvaluationDefaultEffort f) dombox f
+    
+pEvalAtPointIn ::
+        CanPartiallyEvaluate f => 
+        (DomainBox f) {-^ a sub-domain @A@ where to evaluate -} -> 
+        f {-^ function @f@ -} -> 
+        f {-^ approximation of the specialised function in the remaning, unevaluated, variables -}
+pEvalAtPointIn dombox f =
+    pEvalAtPointInEff (partialEvaluationDefaultEffort f) dombox f
     
 {-
     Properties and tests of CanEvaluate are in the Laws module
@@ -138,10 +170,10 @@ class
         f {-^ a function @f@ with domain @D@ -} -> 
         f {-^ an approximation of the composition of function @f@ with the given functions -}
     composeVarOutEff eff var value fn =  -- default
-        composeVarsOutEff eff valueMap fn
+        composeVarsOutEff eff valueBox fn
         where
-        valueMap = insertVar var value var2selfMap
-        var2selfMap = fromAscList $ zip vars projections
+        valueBox = insertVar var value var2selfBox
+        var2selfBox = fromAscList $ zip vars projections
         (vars, _) = unzip $ toAscList $ getDomainBox fn
         projections = map (newProjectionFromSample value) vars 
     composeVarInEff ::
@@ -151,10 +183,57 @@ class
         f {-^ a function @f@ with domain @D@ -} -> 
         f {-^ an approximation of the composition of function @f@ with the given functions -}
     composeVarInEff eff var value fn =  -- default
-        composeVarsInEff eff valueMap fn
+        composeVarsInEff eff valueBox fn
         where
-        valueMap = insertVar var value var2selfMap
-        var2selfMap = fromAscList $ zip vars projections
+        valueBox = insertVar var value var2selfBox
+        var2selfBox = fromAscList $ zip vars projections
         (vars, _) = unzip $ toAscList $ getDomainBox fn
         projections = map (newProjectionFromSample value) vars 
+        
+composeVarsOut ::
+        CanCompose f => 
+        (VarBox f f) 
+            {-^ 
+                For some variables, a function with domain @D'@.
+                The domain @D'@ must include the dimensions of @D@ that
+                are not to be substituted by another value according to this box.  
+            -} 
+        -> 
+        f {-^ a function @f@ with domain @D@ -} -> 
+        f {-^ an approximation of the composition of function @f@ with the given functions -}
+composeVarsOut valueBox fn =
+    composeVarsOutEff (compositionDefaultEffort fn) valueBox fn
+        
+composeVarsIn ::
+        CanCompose f => 
+        (VarBox f f) 
+            {-^ 
+                For some variables, a function with domain @D'@.
+                The domain @D'@ must include the dimensions of @D@ that
+                are not to be substituted by another value according to this box.  
+            -} 
+        -> 
+        f {-^ a function @f@ with domain @D@ -} -> 
+        f {-^ an approximation of the composition of function @f@ with the given functions -}
+composeVarsIn valueBox fn =
+    composeVarsInEff (compositionDefaultEffort fn) valueBox fn
+
+composeVarOut ::
+        CanCompose f => 
+        (Var f) {-^ variable @v@ -} -> 
+        f {-^ a function with domain @D'@ to substitute for variable @v@  -} -> 
+        f {-^ a function @f@ with domain @D@ -} -> 
+        f {-^ an approximation of the composition of function @f@ with the given functions -}
+composeVarOut var value fn =
+    composeVarOutEff (compositionDefaultEffort fn) var value fn
+
+composeVarIn ::
+        CanCompose f => 
+        (Var f) {-^ variable @v@ -} -> 
+        f {-^ a function with domain @D'@ to substitute for variable @v@  -} -> 
+        f {-^ a function @f@ with domain @D@ -} -> 
+        f {-^ an approximation of the composition of function @f@ with the given functions -}
+composeVarIn var value fn =
+    composeVarInEff (compositionDefaultEffort fn) var value fn
+        
         

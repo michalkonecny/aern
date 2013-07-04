@@ -32,4 +32,20 @@ class RoundedIntegration f where
         (Var f) {-^ variable @x@ in the domain box of @f@ with values in @[l,r]@ -} -> 
         f {-^ primitive function of @f(x,...)@ by @x@ with @f(l,...) = 0@ -}
 
-
+primitiveFunctionOut ::
+        RoundedIntegration f => 
+        f {-^ function @f@ -} -> 
+        (Var f) {-^ variable @x@ in the domain box of @f@ with values in @[l,r]@ -} -> 
+        f {-^ primitive function of @f(x,...)@ by @x@ with @f(l,...) = 0@ -}
+primitiveFunctionOut fn var =
+    primitiveFunctionOutEff (integrationDefaultEffort fn) fn var
+    
+primitiveFunctionIn ::
+        RoundedIntegration f => 
+        f {-^ function @f@ -} -> 
+        (Var f) {-^ variable @x@ in the domain box of @f@ with values in @[l,r]@ -} -> 
+        f {-^ primitive function of @f(x,...)@ by @x@ with @f(l,...) = 0@ -}
+primitiveFunctionIn fn var =
+    primitiveFunctionInEff (integrationDefaultEffort fn) fn var
+    
+    
