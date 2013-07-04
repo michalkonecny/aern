@@ -49,8 +49,8 @@ import Numeric.AERN.Basics.Effort
 
 {-|
    An aggregate class collecting together all functionality
-   normally expected from up/down rounded approximations to
-   real numbers such as the floating point numbers.
+   normally expected from inward/outward rounded approximations to
+   real numbers such as real intervals with floating-point endpoints.
    
    It also provides a single aggregate effort indicator type
    from which effort indicators for all the rounded operations can
