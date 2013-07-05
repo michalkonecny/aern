@@ -35,6 +35,7 @@ Library
         aern-real == 0.5.*,
         aern-interval == 0.5.*
   exposed-modules:
+                  Numeric.AERN.RmToRn,
                   Numeric.AERN.RmToRn.Differentiation,
                   Numeric.AERN.RmToRn.Domain,
                   Numeric.AERN.RmToRn.Evaluation,

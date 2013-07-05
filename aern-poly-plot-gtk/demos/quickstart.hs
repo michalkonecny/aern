@@ -2,9 +2,9 @@
     Code accompanying the quick start tutorial on
     using AERN to produce tight enclosures for real functions.
     
-    WARNING: This module currently does not compile.
-    It is intended that this module will compile after
-    AERN has been refactored to be easier to use.
+    WARNING: This module is under construction.
+    It is intended that this module will demonstrate
+    how AERN has been refactored to be easier to use.
     This module draft serves as source of requirements
     for the changes. 
 -}
@@ -13,10 +13,10 @@ module Main where
 {----- AERN imports -----}
 
 -- intervals with Double endpoints:
-import Numeric.AERN.RealArithmetic.Interval.Double (DI)
+import Numeric.AERN.RealArithmetic.Interval.Double (DI, Interval)
 
 -- interval-coefficient polynomials:
-import Numeric.AERN.RmToRn.Interval.IntPoly (IntPoly)
+import Numeric.AERN.Poly.IntPoly (IntPoly)
 
 -- abstract approximate order operations:
 import qualified Numeric.AERN.NumericOrder as NumOrd
@@ -44,24 +44,25 @@ type PI = Interval Poly
 
 main =
     do
-    putStrLn $ "x = " ++ show x
+    return () -- TODO
+--    putStrLn $ "x = " ++ show x
 
-x = newProjection sizeLimits dombox "x" :: PI
-c0 = newConstFn sizeLimits dombox 0 :: PI
-c1 = newConstFn sizeLimits dombox 1 :: PI
-
-dombox = Map.fromList $ zip vars doms
-
-vars = ["x"]
-
-doms :: [(DI, DI)]
-doms = [(0, 1)]
-
-sizeLimits =
-    IntPolySizeLimits
-        {
-            ipolylimits_maxdeg = 10,
-            ipolylimits_maxsize = 20
-        }
+--x = newProjection sizeLimits dombox "x" :: PI
+--c0 = newConstFn sizeLimits dombox 0 :: PI
+--c1 = newConstFn sizeLimits dombox 1 :: PI
+--
+--dombox = Map.fromList $ zip vars doms
+--
+--vars = ["x"]
+--
+--doms :: [(DI, DI)]
+--doms = [(0, 1)]
+--
+--sizeLimits =
+--    IntPolySizeLimits
+--        {
+--            ipolylimits_maxdeg = 10,
+--            ipolylimits_maxsize = 20
+--        }
 
     
