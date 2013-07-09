@@ -43,6 +43,7 @@ import           Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RefinementOrder                                         as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
+import           Numeric.AERN.Basics.SizeLimits
 import           Numeric.AERN.Basics.Consistency
 
 import qualified Data.IntMap                                                          as IntMap
@@ -107,7 +108,7 @@ instance
      ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
      HasAntiConsistency cf,
      ArithUpDn.Convertible cf t,
-     Show cf)
+     Show cf,  Show (SizeLimits cf))
     =>
     ArithUpDn.Convertible (IntPoly var cf) t
     where

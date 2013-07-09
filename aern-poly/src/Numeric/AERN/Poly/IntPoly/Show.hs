@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.Show
     Description :  formatting functions  
@@ -31,6 +32,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.Operators ((|==?))
 
 import Numeric.AERN.Basics.ShowInternals
+import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.Exception
 --import Numeric.AERN.Basics.Consistency
 
@@ -39,7 +41,7 @@ import qualified Data.IntMap as IntMap
 import Data.List (intercalate)
 
 instance 
-    (Show var, Show cf, ArithInOut.RoundedReal cf) => 
+    (Show var, Show cf, Show (SizeLimits cf), ArithInOut.RoundedReal cf) => 
     Show (IntPoly var cf)
     where
     show p
@@ -48,7 +50,7 @@ instance
 --        "IntPoly{" ++ showPoly show show p ++ "; " ++ show cfg ++ "; " ++ show terms ++ "}" 
 
 instance
-    (Show var, Show cf, ShowInternals cf,
+    (Show var, Show cf, ShowInternals cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf,
      HasZero cf, RefOrd.PartialComparison cf) 
     =>
@@ -64,7 +66,7 @@ instance
         showCf = showInternals cfIndicator
     
 showPolyInternals :: 
-    (Show cf, Show var, ArithInOut.RoundedReal cf) 
+    (Show cf, Show (SizeLimits cf), Show var, ArithInOut.RoundedReal cf) 
     =>
     (cf -> String) -> Bool -> Bool -> IntPoly var cf 
     -> 

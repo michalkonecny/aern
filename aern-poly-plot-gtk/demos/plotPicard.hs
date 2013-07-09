@@ -7,10 +7,7 @@ import Numeric.AERN.Poly.IntPoly.Plot ()
 import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
 import Numeric.AERN.RmToRn.Plot.CairoDrawable
 
-import Numeric.AERN.RmToRn.New
-import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.Evaluation
-import Numeric.AERN.RmToRn.Integration
+import Numeric.AERN.RmToRn
 
 --import Numeric.AERN.RealArithmetic.Basis.Double
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
@@ -30,16 +27,17 @@ import Numeric.AERN.RefinementOrder.Operators
 import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
+--import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.Consistency
 --import Numeric.AERN.Basics.ShowInternals
 
 import qualified Graphics.UI.Gtk as Gtk
 
-import qualified Control.Concurrent as Concurrent
+--import qualified Control.Concurrent as Concurrent
 import Control.Concurrent.STM
 
 import qualified Data.Map as Map
-import qualified Data.List as List
+--import qualified Data.List as List
 
 import System.Environment
 
@@ -51,6 +49,7 @@ type CF = CF.DI
 type FnEndPt = IntPoly String CF
 type Fn = Interval FnEndPt
 
+main :: IO ()
 main =
     do
 --    hSetBuffering stdout LineBuffering
@@ -59,11 +58,11 @@ main =
     let iters = (read itersS) :: Int
     
     -- enable multithreaded GUI:
-    Gtk.unsafeInitGUIForThreadedRTS
+    _ <- Gtk.unsafeInitGUIForThreadedRTS
     let (fns, fnmeta) = getFns ivpName maxdeg iters
     fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
     fnMetaTV <- atomically $ newTVar $ fnmeta
-    FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
+    _ <- FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
 --    Concurrent.forkIO $ signalFn fnMetaTV
     Gtk.mainGUI
     
@@ -73,6 +72,7 @@ addPlotVar fns =
     where
     addV fn = (fn, tVar)
     
+getFns :: String -> Int -> Int -> ([[Fn]], FV.FnMetaData Fn)
 getFns "exp-uv" maxdeg iters = 
     (fnsExp_uv maxdeg iters, fnmetaExp iters)
 
@@ -85,9 +85,11 @@ getFns "smass-ev" maxdeg iters =
 getFns "smass-uv" maxdeg iters = 
     (fnsSpringMass_uv maxdeg iters, fnmetaSpringMass iters)
     
+   
 --getFns "smass-b" maxdeg iters = 
 --    (fnsSpringMass_b maxdeg iters, fnmetaSpringMass_b 1)
     
+getFns name _ _ = error $ "unknown IVP " ++ show name
 
 --showP p = showPoly id show p -- ++ " [" ++ show p ++ "]"
 
@@ -95,6 +97,7 @@ getFns "smass-uv" maxdeg iters =
 ---------------------------------
 fieldExp :: [Fn] -> [Fn]
 fieldExp [x] = [(-1 :: Int) |<*> x]
+fieldExp _ = error "fieldExp"
 
 initValuesExp_uv :: [CF]
 initValuesExp_uv = [(-1) </\> 1]
@@ -138,14 +141,14 @@ fnmetaExp iters =
 fnsExp_uv :: Int -> Int -> [[Fn]]
 fnsExp_uv maxdeg iters = 
     [
-        concat $ take iters $ enclosures maxdeg
+        concat $ take iters $ enclosures
     ]
     where
-    enclosures maxdeg = 
+    enclosures = 
         iterate (picardOp fieldExp $ initValsFns) initialApprox
         where
         initValsFns =
-            map (newConstFn (cfg1D maxdeg) dombox1) initValuesExp_uv
+            map (newConstFn (limitsD maxdeg) varDoms) initValuesExp_uv
         initialApprox =
             map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 
@@ -161,40 +164,44 @@ fnsExp_uvp maxdeg iters =
     ]
     where
     result = map removeParams resultWithParams 
-    resultWithParams = concat $ take iters $ enclosures maxdeg
+    resultWithParams = concat $ take iters $ enclosures
     removeParams fn = 
-        pEvalAtPointOutEff (partialEvaluationDefaultEffort fn) dombox1P1Only fn
-    enclosures maxdeg = 
+        pEvalAtPointOutEff (partialEvaluationDefaultEffort fn) domboxP1Only fn
+    enclosures = 
         iterate (picardOp fieldExp $ initValsFns) initialApprox
         where
         initValsFns =
             map initValsFn paramVars1
         initValsFn paramVar =
-            newProjection (cfg1P1D maxdeg) dombox1P1 paramVar
+            newProjection (limitsD maxdeg) varDomsP1 paramVar
         initialApprox =
             map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 
 fnsExp_uvp_mono :: Int -> Int -> [[CF.Interval Fn]]
 fnsExp_uvp_mono maxdeg iters = 
     [
-        concat $ take iters $ enclosures maxdeg
+        concat $ take iters $ enclosures
     ]
     where
-    enclosures maxdeg =
-        zipWith (zipWith CF.Interval) (enclosures [-1]) (enclosures [1])
+    enclosures =
+        zipWith (zipWith CF.Interval) (enclosuresFromInit [-1]) (enclosuresFromInit [1])
         where 
-        enclosures initVals =
+        enclosuresFromInit initVals =
             iterate (picardOp fieldExp $ initValsFns) initialApprox
             where
             initValsFns =
-                map (newConstFn (cfg1D maxdeg) dombox1) initVals
+                map (newConstFn (limitsD maxdeg) varDoms) initVals
             initialApprox =
                 map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 
 ---------------------------------
+fieldSpringMass :: 
+    ArithInOut.RoundedMixedMultiply t Int =>
+    [t] -> [t]
 fieldSpringMass [x,x'] = [x',(-1 :: Int) |<*> x]
 --fieldSpringMass [x,x'] = [x',(-4 :: Int) |<*> x]
 --fieldSpringMass [x,x'] = [x',((-4 :: Int) |<*> x) <+> (x' <*> x' </>| (4::Int))]
+fieldSpringMass _ = error "fieldSpringMass"
 
 initValuesSpringMass_ev :: [CF]
 initValuesSpringMass_ev = [1,0]
@@ -202,6 +209,9 @@ initValuesSpringMass_ev = [1,0]
 initValuesSpringMass_uv :: [CF]
 initValuesSpringMass_uv = [0 </\> 1,0]
 
+fnmetaSpringMass :: 
+    Num (Domain f) =>
+    Int -> FV.FnMetaData f
 fnmetaSpringMass iters = 
     (FV.defaultFnMetaData sampleFn)
     {
@@ -237,12 +247,15 @@ fnmetaSpringMass iters =
             }
     }
 
+black :: FV.FnPlotStyle
+blue :: FV.FnPlotStyle
 black = FV.defaultFnPlotStyle
 blue = FV.defaultFnPlotStyle 
     { 
         FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
         FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
     } 
+green :: FV.FnPlotStyle
 green = FV.defaultFnPlotStyle 
     { 
         FV.styleOutlineColour = Just (0.1,0.8,0.1,1), 
@@ -252,63 +265,63 @@ green = FV.defaultFnPlotStyle
 fnsSpringMass_ev :: Int -> Int -> [[Fn]]
 fnsSpringMass_ev maxdeg iters = 
     [
-        concat $ take iters $ enclosures maxdeg
+        concat $ take iters $ enclosures
     ]
     where
-    enclosures maxdeg = 
+    enclosures = 
         iterate (picardOp fieldSpringMass $ initValsFns) initialApprox
         where
         initValsFns =
-            map (newConstFn (cfg1D maxdeg) dombox1) initValuesSpringMass_ev
+            map (newConstFn (limitsD maxdeg) varDoms) initValuesSpringMass_ev
         initialApprox =
             map (<+>| (constructCF (-0.5) 0.5)) initValsFns
     
 fnsSpringMass_uv :: Int -> Int -> [[Fn]]
 fnsSpringMass_uv maxdeg iters = 
     [
-        concat $ take iters $ enclosures maxdeg
+        concat $ take iters $ enclosures
     ]
     where
-    enclosures maxdeg = 
+    enclosures = 
         iterate (picardOp fieldSpringMass $ initValsFns) initialApprox
         where
         initValsFns =
-            map (newConstFn (cfg1D maxdeg) dombox1) initValuesSpringMass_uv
+            map (newConstFn (limitsD maxdeg) varDoms) initValuesSpringMass_uv
         initialApprox =
             map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 
 fnsSpringMass_uvp_mono :: Int -> Int -> [[CF.Interval Fn]]
 fnsSpringMass_uvp_mono maxdeg iters = 
     [
-        concat $ take iters $ enclosures maxdeg
+        concat $ take iters $ enclosures
     ]
     where
-    enclosures maxdeg =
-        zipWith (zipWith CF.Interval) (enclosures [0,0]) (enclosures [1,0])
+    enclosures =
+        zipWith (zipWith CF.Interval) (enclosuresFromInit [0,0]) (enclosuresFromInit [1,0])
         where 
-        enclosures initVals =
+        enclosuresFromInit initVals =
             iterate (picardOp fieldSpringMass $ initValsFns) initialApprox
             where
             initValsFns =
-                map (newConstFn (cfg1D maxdeg) dombox1) initVals
+                map (newConstFn (limitsD maxdeg) varDoms) initVals
             initialApprox =
                 map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 
 fnsSpringMass_uvp :: Int -> Int -> [[Fn]]
 fnsSpringMass_uvp maxdeg iters = 
     [
-        map removeParams $ concat $ take iters $ enclosures maxdeg
+        map removeParams $ concat $ take iters $ enclosures
     ]
     where
     removeParams fn = 
-        pEvalAtPointOutEff (partialEvaluationDefaultEffort fn) dombox1P2Only fn
-    enclosures maxdeg = 
+        pEvalAtPointOutEff (partialEvaluationDefaultEffort fn) domboxP2Only fn
+    enclosures = 
         iterate (picardOp fieldSpringMass $ initValsFns) initialApprox
         where
         initValsFns =
             map initValsFn paramVars2
         initValsFn paramVar =
-            newProjection (cfg1P2D maxdeg) dombox1P2 paramVar
+            newProjection (limitsD maxdeg) varDomsP2 paramVar
         initialApprox =
             map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 
@@ -329,9 +342,10 @@ picardOp field y0 yPrev =
 --c1,c0,x,c01,c10,cHalf,cHalf1,cOneOver16,cSevenOver16,cOneMinusOneOver16, sampleFn :: Fn
 
 sampleFnEndpt :: FnEndPt
-sampleFnEndpt = newProjection cfg1 dombox1 "x"
+sampleFnEndpt = newProjection limits varDoms "x"
+
 sampleFn :: Fn
-sampleFn = newProjection cfg1 dombox1 "x"
+sampleFn = newProjection limits varDoms "x"
 
 --xD maxdeg = newProjection (cfgD maxdeg) dombox "x"
 --c0 = newConstFn cfg dombox 0
@@ -345,76 +359,76 @@ sampleFn = newProjection cfg1 dombox1 "x"
 --c10 = newConstFn cfg dombox $ 1 <\/> 0
 
 ----effCF = (100, (100,())) -- MPFR
+effCF :: ArithInOut.RoundedRealEffortIndicator CF
 effCF = ArithInOut.roundedRealDefaultEffort (0:: CF)
 
+effEval :: EvaluationEffortIndicator Fn
 effEval = evaluationDefaultEffort sampleFn
+effNumComp :: NumOrd.PartialCompareEffortIndicator Fn
 effNumComp = NumOrd.pCompareDefaultEffort sampleFn
+effRefComp :: RefOrd.PartialCompareEffortIndicator Fn
 effRefComp = RefOrd.pCompareDefaultEffort sampleFn
+minmaxInOutEff :: NumOrd.MinmaxInOutEffortIndicator Fn
 minmaxInOutEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 sampleFnEndpt
+effDrawFn :: CairoDrawFnEffortIndicator Fn
 effDrawFn = cairoDrawFnDefaultEffort sampleFn
+effInteg :: IntegrationEffortIndicator Fn
 effInteg = integrationDefaultEffort sampleFn
 --
 --
 --evalOpsOutCf = evalOpsOut effCF x (0::CF)
 
-cfg1 = cfg1D 10
-cfg1D maxdeg =
-    IntPolyCfg
+limits :: IntPolySizeLimits CF
+limits = limitsD 10
+limitsD :: Int -> IntPolySizeLimits CF
+limitsD maxdeg =
+    IntPolySizeLimits
         {
-            ipolycfg_vars = vars,
-            ipolycfg_domsLZ = doms1LZ,
-            ipolycfg_domsLE = doms1LE,
-            ipolycfg_sample_cf = 0 :: CF,
-            ipolycfg_maxdeg = maxdeg,
-            ipolycfg_maxsize = 100
-        }
+            ipolylimits_cf_limits = (),
+            ipolylimits_maxdeg = maxdeg,
+            ipolylimits_maxsize = 100
+        } 
 
-cfg1P1D maxdeg =
-    IntPolyCfg
-        {
-            ipolycfg_vars = vars ++ paramVars1,
-            ipolycfg_domsLZ = doms1PLZ,
-            ipolycfg_domsLE = doms1PLE,
-            ipolycfg_sample_cf = 0 :: CF,
-            ipolycfg_maxdeg = maxdeg,
-            ipolycfg_maxsize = 100
-        }
+dombox :: DomainBox Fn
+dombox = Map.fromList varDoms
+domboxP1 :: DomainBox Fn
+domboxP1 = Map.fromList varDomsP1
+domboxP1Only :: DomainBox Fn
+domboxP1Only = Map.fromList varDomsP1Only
+domboxP2 :: DomainBox Fn
+domboxP2 = Map.fromList varDomsP2
+domboxP2Only :: DomainBox Fn
+domboxP2Only = Map.fromList varDomsP2Only
 
-cfg1P2D maxdeg =
-    IntPolyCfg
-        {
-            ipolycfg_vars = vars ++ paramVars2,
-            ipolycfg_domsLZ = doms1PLZ,
-            ipolycfg_domsLE = doms1PLE,
-            ipolycfg_sample_cf = 0 :: CF,
-            ipolycfg_maxdeg = maxdeg,
-            ipolycfg_maxsize = 100
-        }
+varDoms :: [(Var Fn, CF)]
+varDoms = zip vars doms
+varDomsP1 :: [(Var Fn, CF)]
+varDomsP1 = zip (vars ++ paramVars1) (doms ++ domsP1Only)
+varDomsP1Only :: [(Var Fn, CF)]
+varDomsP1Only = zip paramVars1 domsP1Only
+varDomsP2 :: [(Var Fn, CF)]
+varDomsP2 = zip (vars ++ paramVars2) (doms ++ domsP2Only)
+varDomsP2Only :: [(Var Fn, CF)]
+varDomsP2Only = zip paramVars2 domsP2Only  -- initValuesSpringMass_uv
 
-dombox1 = Map.fromList $ zip ["t"] doms1
-dombox1P1 = Map.fromList $ zip ("t" : paramVars1) doms1P
-dombox1P1Only = Map.fromList $ zip paramVars1 [constructCF (-1) 1] -- initValuesSpringMass_uv
-dombox1P2 = Map.fromList $ zip ("t" : paramVars2) doms1P
-dombox1P2Only = Map.fromList $ zip paramVars2 [constructCF 0 1,0] -- initValuesSpringMass_uv
-
-tVar = "t"
+vars :: [Var Fn]
 vars = [tVar]
+tVar :: Var Fn
+tVar = "t"
+
+doms :: [CF]
+doms = [constructCF 0 1]
+
+paramVars1 :: [Var Fn]
 paramVars1 = ["xi"]
+paramVars2 :: [Var Fn]
 paramVars2 = ["xi", "x'i"]
 
-doms1LE :: [CF]
-doms1LZ = [constructCF 0 1]
-doms1LZ :: [CF]
-doms1LE = [constructCF 0 0]
-doms1 :: [CF]
-doms1 = [constructCF 0 1]
+domsP1Only :: [CF]
+domsP1Only = [constructCF (-1) 1] -- [[-1,1]]
 
-doms1PLE :: [CF]
-doms1PLZ = [constructCF 0 1, constructCF 0 1, 0]
-doms1PLZ :: [CF]
-doms1PLE = [0, 0, 0]
-doms1P :: [CF]
-doms1P = [constructCF 0 1] ++ initValuesSpringMass_uv
+domsP2Only :: [CF]
+domsP2Only = [0] -- [[0,1], 0]
 
 --segs = [CF]
 --segs = 
@@ -422,5 +436,6 @@ doms1P = [constructCF 0 1] ++ initValuesSpringMass_uv
 constructCF :: Double -> Double -> CF
 constructCF l r =
     RefOrd.fromEndpointsOut (cf0 <+>| l, cf0 <+>| r)
-cf0 = 0 :: CF
+cf0 :: CF
+cf0 = 0
     

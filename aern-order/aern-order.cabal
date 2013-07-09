@@ -11,8 +11,7 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       numeric and refinement order on approximations of exact entities
-Tested-with:
-                GHC==7.4.2
+Tested-with:    GHC==7.4.2
 Description:
  Type-classes abstracting various kinds of approximations for exact entities:
  .   
@@ -63,6 +62,7 @@ Library
                   Numeric.AERN.Basics.Bench,
                   Numeric.AERN.Basics.Consistency,
                   Numeric.AERN.Basics.Effort,
+                  Numeric.AERN.Basics.SizeLimits,
                   Numeric.AERN.Basics.Exception,
                   Numeric.AERN.Basics.Laws.Operation,
                   Numeric.AERN.Basics.Laws.OperationRelation,

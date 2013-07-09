@@ -27,23 +27,23 @@ import Data.Number.MPFR (MPFR)
 import Data.Number.MPFR.Instances.Up ()
 
 instance RoundedExponentiationEffort MPFR where
-    type ExpEffortIndicator MPFR = M.Precision 
-    expDefaultEffort = M.getPrec
+    type ExpEffortIndicator MPFR = ()
+    expDefaultEffort _ = ()
 
 instance RoundedExponentiation MPFR where
-    expUpEff prec d1 = 
-        M.exp M.Up prec d1
-    expDnEff prec d1 =
-        M.exp M.Down prec d1
+    expUpEff _ d1 = 
+        M.exp M.Up (M.getPrec d1) d1
+    expDnEff _ d1 =
+        M.exp M.Down (M.getPrec d1) d1
 
 instance RoundedSquareRootEffort MPFR where
-    type SqrtEffortIndicator MPFR = M.Precision 
-    sqrtDefaultEffort = M.getPrec
+    type SqrtEffortIndicator MPFR = () 
+    sqrtDefaultEffort _ = ()
 
 instance RoundedSquareRoot MPFR where
-    sqrtUpEff prec d1 = 
-        M.sqrt M.Up prec d1
-    sqrtDnEff prec d1 =
-        M.sqrt M.Down prec d1
+    sqrtUpEff _ d1 = 
+        M.sqrt M.Up (M.getPrec d1) d1
+    sqrtDnEff _ d1 =
+        M.sqrt M.Down (M.getPrec d1) d1
 
 

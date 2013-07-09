@@ -41,6 +41,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
+import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 
 --import Data.Maybe (catMaybes)
@@ -596,7 +597,7 @@ eventInfoCountEvents sampleD effD eventInfo =
 --                where
 --                [res] = fst $ evalAtEndTimeVec effEval tVar tSample [f]
 --    tSamples = map getTDom tSampleBoxes
---    tSampleBoxes = getNSamplesFromDomainBox sampleF domboxTOnly n
+--    tSampleBoxes = getNSamplesFromInsideDomainBox sampleF domboxTOnly n
 --    domboxTOnly = fromList [(tVar, tDom)]
 --    tDom = getTDom dombox
 --    getTDom box = 

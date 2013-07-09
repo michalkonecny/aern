@@ -28,6 +28,8 @@ import Numeric.AERN.NumericOrder
         (PartialCompareEffortIndicator,
          MinmaxEffortIndicator)
 
+import Numeric.AERN.Basics.SizeLimits
+
 import qualified Data.Number.MPFR as M
 import Data.Number.MPFR (MPFR)
 import Data.Number.MPFR.Instances.Up
@@ -48,6 +50,19 @@ sampleM = 0
 
 nanM :: MPFR
 nanM = 0/0
+
+instance HasSizeLimits MPFR where
+    type SizeLimits MPFR = M.Precision
+    getSizeLimits a = M.getPrec a
+    defaultSizeLimits _a = 100
+       
+instance CanChangeSizeLimits MPFR where
+    type SizeLimitsChangeEffort MPFR = ()
+    sizeLimitsChangeDefaultEffort _ = ()
+    changeSizeLimitsDnEff _ prec a = M.set M.Down prec a
+    changeSizeLimitsUpEff _ prec a = M.set M.Up prec a
+    changeSizeLimitsOutEff = error $ "AERN: changeSizeLimitsOutEff not defined for MPFR"
+    changeSizeLimitsInEff = error $ "AERN: changeSizeLimitsInEff not defined for MPFR"
 
 instance NumOrd.HasLeast MPFR where
     least _ = - 1/0
@@ -90,6 +105,7 @@ instance NumOrd.RoundedLattice MPFR where
 --    minUpEff [effort] e1 e2 = NumOrd.min e1 e2 + (1/(convert effort))
 --    minDnEff [effort] e1 e2 = NumOrd.min e1 e2 - (1/(convert effort))
 --    minmaxDefaultEffort _ = [10]
+
 
 
 instance Arbitrary MPFR where

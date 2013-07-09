@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.IntPoly
     Description :  datatype of polynomials and related structure functions  
@@ -30,6 +31,7 @@ import Numeric.AERN.RefinementOrder.Operators ((|==?))
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.Operators ((<=?))
 
+import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.Consistency
 
@@ -271,7 +273,7 @@ termsNormalise poly =
             degree == 0 || (not $ termsIsZero subTerms)  
 
 instance
-    (HasLegalValues cf, Show cf, 
+    (HasLegalValues cf, Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf,
      HasConsistency cf,
      Show var, Ord var) 
@@ -282,7 +284,7 @@ instance
         maybeGetProblemForTerms cfg terms
     
 maybeGetProblemForTerms :: 
-    (HasLegalValues cf, Show cf, 
+    (HasLegalValues cf, Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf,
      HasConsistency cf,
      Show var, Ord var) 

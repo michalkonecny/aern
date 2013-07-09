@@ -149,11 +149,11 @@ instance Convertible Rational MPFR where
         
 positiveRational2MPFRUp prec r =        
         case (convertUpEff prec 0 $ numerator r, convertDnEff prec 0 $ denominator r) of
-            (Just num, Just den) -> Just $ divUpEff prec num den
+            (Just num, Just den) -> Just $ divUpEff () num den
             _ -> Nothing
 positiveRational2MPFRDn prec r =
         case (convertDnEff prec 0 $ numerator r, convertUpEff prec 0 $ denominator r) of
-            (Just num, Just den) -> Just $ divDnEff prec num den
+            (Just num, Just den) -> Just $ divDnEff () num den
             _ -> Nothing
 
 instance Convertible MPFR Rational where

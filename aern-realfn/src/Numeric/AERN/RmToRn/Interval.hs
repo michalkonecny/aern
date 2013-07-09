@@ -33,6 +33,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.ShowInternals
+import Numeric.AERN.Basics.SizeLimits
 
 instance
     (HasDomainBox f)
@@ -45,7 +46,7 @@ instance
     getSampleDomValue (Interval l _) = getSampleDomValue l
     defaultDomSplit (Interval l _) = defaultDomSplit l
     getDomainBox (Interval l _) = getDomainBox l
-    getNSamplesFromDomainBox (Interval l _) = getNSamplesFromDomainBox l
+    getNSamplesFromInsideDomainBox (Interval l _) = getNSamplesFromInsideDomainBox l
     getSampleFromInsideDomainBox (Interval l _) = getSampleFromInsideDomainBox l
     
     
@@ -59,46 +60,6 @@ instance
          lN = adjustDomain l var dom
          rN = adjustDomain r var dom
     
-instance 
-    (HasSizeLimits f)
-    =>
-    (HasSizeLimits (Interval f))
-    where
-    type SizeLimits (Interval f) = SizeLimits f 
-    getSizeLimits (Interval l _) = getSizeLimits l
-    defaultSizeLimits (Interval l _) = defaultSizeLimits l
-    adjustSizeLimitsToVarsAndDombox (Interval l _) vars dombox sizeLims =
-        adjustSizeLimitsToVarsAndDombox l vars dombox sizeLims
-
-instance
-    (CanChangeSizeLimits f,
-     RefOrd.IntervalLike f) 
-    =>
-    (CanChangeSizeLimits (Interval f)) 
-    where
-    type SizeLimitsChangeEffort (Interval f) = 
-        (SizeLimitsChangeEffort f,
-         RefOrd.GetEndpointsEffortIndicator f)
-    sizeLimitsChangeDefaultEffort (Interval l _) = 
-        (sizeLimitsChangeDefaultEffort l,
-         RefOrd.getEndpointsDefaultEffort l)
-    changeSizeLimitsOutEff (eff, effGetE) sizeLims (Interval l r) = (Interval lN rN)
-        where
-        (lN, _) = 
-            RefOrd.getEndpointsOutEff effGetE $
-                changeSizeLimitsOutEff eff sizeLims l
-        (_, rN) = 
-            RefOrd.getEndpointsOutEff effGetE $
-                changeSizeLimitsOutEff eff sizeLims r
-    changeSizeLimitsInEff (eff, effGetE) sizeLims (Interval l r) = (Interval lN rN)
-        where
-        (lN, _) = 
-            RefOrd.getEndpointsInEff effGetE $
-                changeSizeLimitsInEff eff sizeLims l
-        (_, rN) = 
-            RefOrd.getEndpointsInEff effGetE $
-                changeSizeLimitsInEff eff sizeLims r
-
 instance 
     (HasProjections f,
      RefOrd.IntervalLike f)

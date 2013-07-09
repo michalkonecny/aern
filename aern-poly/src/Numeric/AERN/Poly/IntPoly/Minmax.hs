@@ -64,6 +64,7 @@ import Numeric.AERN.RefinementOrder
 
 --import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 
 import Test.QuickCheck (Arbitrary)
@@ -473,23 +474,22 @@ instance
     meetInEff =
         error "aern-poly: inner-rounded meet not defined for IntPoly"
 
+{-|
+    Take a sample polynomial with at least one variable in its domain
+    and return the univariate polynomial \x : [0,1] -> x.  
+-}
 getX ::
-    (ArithInOut.RoundedReal (Domain f),
-     RefOrd.IntervalLike (Domain f),
-     HasProjections f,
-     SizeLimits f ~ IntPolyCfg (Var f) (Domain f)) 
+    (Ord var, Show var, 
+     Show cf, HasConsistency cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf) 
     =>
-    IntPolyCfg (Var f) (Domain f) -> f
-getX sizeLimits@(IntPolyCfg vars _ _ sample md ms) =
-    newProjection cfg dombox var
+    (IntPoly var cf) -> (IntPoly var cf)
+getX (IntPoly (IntPolyCfg vars _ _ sample limits) _) =
+    newProjection limits [(var, unit)] var
     where
-    _ = [sizeLimits, cfg] -- , getSizeLimits sampleT]
     var = head vars
-    cfg =
-        IntPolyCfg [var] [unit] [zero sample] sample md ms
-    dombox = fromList $ cfg2vardomains cfg
-    unit =
-        RefOrd.fromEndpointsOut (zero sample, one sample)
+    unit = RefOrd.fromEndpointsOut (zero sample, one sample)
     
 getDegree :: Int -> IntPoly var cf -> Int
 getDegree degreeMinusOne (IntPoly cfg _) =

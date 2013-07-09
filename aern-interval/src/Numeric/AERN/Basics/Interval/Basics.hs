@@ -26,6 +26,7 @@ import Prelude hiding (EQ, LT, GT)
 
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.PartialOrdering
+import Numeric.AERN.Basics.SizeLimits
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 
@@ -45,7 +46,7 @@ data Interval e =
 instance (ShowInternals e, NumOrd.PartialComparison e) => (ShowInternals (Interval e))
     where
     type ShowInternalsIndicator (Interval e) = ShowInternalsIndicator e
-    defaultShowIndicator (Interval l r) = defaultShowIndicator l
+    defaultShowIndicator (Interval l _r) = defaultShowIndicator l
     showInternals indicator (Interval l r) =
         case (NumOrd.pCompareEff (NumOrd.pCompareDefaultEffort l) l r) of
             Just EQ -> "<" ++ showL ++ ">"
@@ -65,6 +66,27 @@ instance (ShowInternals e, NumOrd.PartialComparison e) => (Show (Interval e))
     where
     show i = showInternals (defaultShowIndicator i) i
 
+instance (HasSizeLimits e) => HasSizeLimits (Interval e)
+    where
+    type SizeLimits (Interval e) = SizeLimits e
+    getSizeLimits (Interval l _r) = getSizeLimits l
+    defaultSizeLimits (Interval l _r) = defaultSizeLimits l
+    
+instance (CanChangeSizeLimits e) => CanChangeSizeLimits (Interval e)
+    where
+    type SizeLimitsChangeEffort (Interval e) = SizeLimitsChangeEffort e
+    sizeLimitsChangeDefaultEffort (Interval l _r) = sizeLimitsChangeDefaultEffort l
+    changeSizeLimitsOutEff eff newSizeLimits (Interval l r) = 
+        Interval 
+            (changeSizeLimitsDnEff eff newSizeLimits l) 
+            (changeSizeLimitsUpEff eff newSizeLimits r)
+    changeSizeLimitsInEff eff newSizeLimits (Interval l r) = 
+        Interval 
+            (changeSizeLimitsUpEff eff newSizeLimits l) 
+            (changeSizeLimitsDnEff eff newSizeLimits r)
+    changeSizeLimitsDnEff = error $ "AERN: changeSizeLimitsDnEff not defined for type Interval."
+    changeSizeLimitsUpEff = error $ "AERN: changeSizeLimitsUpEff not defined for type Interval."
+
 instance (NFData e) => NFData (Interval e) where
     rnf (Interval l r) =
         rnf l `seq` rnf r `seq` () 
@@ -79,10 +101,13 @@ getEndpoints (Interval l r) = (l, r)
 fromEndpoints :: (t,t) -> Interval t
 fromEndpoints (l,r) = Interval l r 
 
+mapBothEndpoints :: (t -> e) -> Interval t -> Interval e
 mapBothEndpoints f (Interval l r) = Interval (f l) (f r)
 
+mapEachEndpoint :: (t -> e) -> (t -> e) -> Interval t -> Interval e
 mapEachEndpoint fl fh (Interval l r) = Interval (fl l) (fh r)
 
+mapEndpointPair :: ((t, t) -> (e, e)) -> Interval t -> Interval e
 mapEndpointPair f (Interval l r) = 
     Interval fl fr
     where

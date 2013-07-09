@@ -43,9 +43,9 @@ class
     => 
     HasDomainBox f 
     where
-    type Var f
-    type Domain f
-    type VarBox f :: * -> *
+    type Var f -- ^ type representing variables that span the rectangular domain of the function
+    type Domain f -- ^ type of real (interval) approximations used for both domain and range of the function
+    type VarBox f :: * -> * -- ^ container type indexed by variables
     getSampleDomValue :: f -> Domain f
     defaultDomSplit ::
         f {-^ dummy parameter that aids typechecking -} -> 
@@ -53,12 +53,23 @@ class
         (Domain f, Domain f) 
             {-^ A partition of size 2 of the given area. 
                 The two parts may overlap. -}
+    getVarDoms :: 
+        f {-^ a function @f@ -} -> 
+        [(Var f, Domain f)] 
+            {-^ the domain of definition of @f@, 
+                usually explicitly encoded inside @f@ -}
     getDomainBox :: 
         f {-^ a function @f@ -} -> 
         DomainBox f 
             {-^ the domain of definition of @f@, 
                 usually explicitly encoded inside @f@ -}
-    getNSamplesFromDomainBox ::
+    getSampleFromInsideDomainBox ::
+        f {-^ dummy parameter that aids typechecking -} -> 
+        (DomainBox f) {-^ @dom@ -} -> 
+        DomainBox f 
+            {-^ a point (ie thin boxe) inside @dom@, 
+                ie not on the boundary -}
+    getNSamplesFromInsideDomainBox ::
         f {-^ dummy parameter that aids typechecking -} -> 
         (DomainBox f) {-^ @dom@ -} -> 
         Int {-^ @n@ -} -> 
@@ -66,12 +77,6 @@ class
             {-^ a list of @n@ points (ie thin boxes) in @dom@, 
                 relatively well interspersed over @dom@, 
                 typically including some points on the boundary -}
-    getSampleFromInsideDomainBox ::
-        f {-^ dummy parameter that aids typechecking -} -> 
-        (DomainBox f) {-^ @dom@ -} -> 
-        DomainBox f 
-            {-^ a point (ie thin boxe) inside @dom@, 
-                ie not on the boundary -}
 
 
 defaultDomSplitUsingEndpointsDefaultEffort dom =
@@ -93,15 +98,15 @@ defaultDomSplitUsingEndpointsEff (effFromE, effGetE, effAdd, effIntDiv) dom =
         (domLE <+> domRE) </>| (2::Int)
     (domLE, domRE) = RefOrd.getEndpointsOutEff effGetE dom
 
-getNSamplesFromDomainBoxUsingEndpointsDefaultEffort dom =
-    getNSamplesFromDomainBoxUsingEndpointsEff effGetE
+getNSamplesFromInsideDomainBoxUsingEndpointsDefaultEffort dom =
+    getNSamplesFromInsideDomainBoxUsingEndpointsEff effGetE
     where
     effGetE = RefOrd.getEndpointsDefaultEffort dom
 --    effFromE = RefOrd.fromEndpointsDefaultEffort dom
 --    effAdd = ArithInOut.addDefaultEffort dom
 --    effIntDiv = ArithInOut.mixedDivDefaultEffort dom (1 :: Int)
     
-getNSamplesFromDomainBoxUsingEndpointsEff 
+getNSamplesFromInsideDomainBoxUsingEndpointsEff 
         effGetE
         sampleF
         dombox n =

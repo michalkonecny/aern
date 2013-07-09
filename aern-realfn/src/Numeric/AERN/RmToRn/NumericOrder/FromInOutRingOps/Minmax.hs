@@ -40,6 +40,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.Basics.Exception
 import Control.Exception
 --import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.Mutable
 --import Numeric.AERN.RealArithmetic.ExactOps
 
@@ -150,11 +151,11 @@ maxUpEffFromRingOps ::
      ArithInOut.RoundedMixedMultiply f (Domain f)) 
     =>
     f ->
-    (SizeLimits f -> f) ->
+    (f -> f) {- ^ Given a sample function, return the function \x:[0,1] -> x of the same type. -} ->
     MinmaxEffortIndicatorFromRingOps f t ->
-    Int {- ^ degree of Bernstein approximations (must be > 1) -} ->
+    Int {- ^ degree of Bernstein approximations; must be > 1 -} ->
     t -> t -> (t, t)
-maxUpEffFromRingOps _ getX eff@(_, _, _, (effRing, effFieldTDF)) degree a b =
+maxUpEffFromRingOps sampleF getX eff@(_, _, _, (effRing, effFieldTDF)) degree a b =
     (upper, upperShiftedBelow)
     where
     upperShiftedBelow =
@@ -162,7 +163,7 @@ maxUpEffFromRingOps _ getX eff@(_, _, _, (effRing, effFieldTDF)) degree a b =
     upper =
         a #<+># maxBMinusAUp 
     ((_, maxBMinusAUp), errUp) = 
-        maxZeroDnUp getX eff degree $ b #<-># a
+        maxZeroDnUp sampleF getX eff degree $ b #<-># a
 
     (#<+>#) = ArithInOut.addOutEff effAddT
     (#<->#) = ArithInOut.subtrOutEff effAddT
@@ -194,12 +195,12 @@ maxDnEffFromRingOps ::
      ArithInOut.RoundedMixedMultiply f (Domain f)) 
     =>
     f ->
-    (SizeLimits f -> f) ->
+    (f -> f) {- ^ Given a sample function, return the function \x:[0,1] -> x of the same type. -} ->
     MinmaxEffortIndicatorFromRingOps f t -> 
     Int {- ^ degree of Bernstein approximations (must be > 1) -} ->
     t -> t -> t
-maxDnEffFromRingOps _ getX eff@(_, _, _, (effRing, _)) degree a b =
-    a #<+># (fst $ fst $ maxZeroDnUp getX eff degree $ b #<-># a)
+maxDnEffFromRingOps sampleF getX eff@(_, _, _, (effRing, _)) degree a b =
+    a #<+># (fst $ fst $ maxZeroDnUp sampleF getX eff degree $ b #<-># a)
     where
     (#<+>#) = ArithInOut.addOutEff effAddT
     (#<->#) = ArithInOut.subtrOutEff effAddT
@@ -227,7 +228,7 @@ minUpEffFromRingOps ::
      ArithInOut.RoundedMixedMultiply f (Domain f)) 
     =>
     f ->
-    (SizeLimits f -> f) ->
+    (f -> f) {- ^ Given a sample function, return the function \x:[0,1] -> x of the same type. -} ->
     MinmaxEffortIndicatorFromRingOps f t -> 
     Int {- ^ degree of Bernstein approximations (must be > 1) -} ->
     t -> t -> t
@@ -255,7 +256,7 @@ minDnEffFromRingOps ::
      ArithInOut.RoundedMixedMultiply f (Domain f)) 
     =>
     f ->
-    (SizeLimits f -> f) ->
+    (f -> f) {- ^ Given a sample function, return the function \x:[0,1] -> x of the same type. -} ->
     MinmaxEffortIndicatorFromRingOps f t -> 
     Int {- ^ degree of Bernstein approximations (must be > 1) -} ->
     t -> t -> (t, t)
@@ -285,7 +286,8 @@ maxZeroDnUp ::
      ArithInOut.RoundedRing f,
      ArithInOut.RoundedMixedMultiply f (Domain f)) 
     =>
-    (SizeLimits f -> f) ->
+    f ->
+    (f -> f) {- ^ Given a sample function, return the function \x:[0,1] -> x of the same type. -} ->
     MinmaxEffortIndicatorFromRingOps f t ->
     Int {- ^ degree of Bernstein approximations (must be > 1) -} ->
     t -> 
@@ -303,7 +305,7 @@ maxZeroDnUp ::
     * transform r' back to the range of a to get the result r 
 -}
 maxZeroDnUp
-        getX
+        sampleF getX
         ((effTToDom, effRealDF, effGetEDF), 
          (effEvalOpsT, effEvalOpsDF), 
          (effRingF, effMultFDF, sizeLimits), 
@@ -338,8 +340,7 @@ maxZeroDnUp
             ((viaBernsteinDn, viaBernsteinUp), errUp)
     where
     sampleT = a
-    sampleF = x
-    x = getX sizeLimits
+    x = getX sampleF
     sampleDF = getSampleDomValue x
     maybeaUp = ArithUpDn.convertUpEff effTToDom sampleDF a
     maybeaDn = ArithUpDn.convertDnEff effTToDom sampleDF a

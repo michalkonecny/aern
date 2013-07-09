@@ -42,6 +42,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
+import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 
 import qualified Data.Map as Map

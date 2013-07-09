@@ -41,6 +41,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.ShowInternals
 
 --import Data.List (intercalate)
@@ -535,20 +536,15 @@ solveHybridIVPLocate
 makeSampleWithVarsDoms :: 
      Int -> Int -> [Var Poly] -> [CF] -> Poly
 makeSampleWithVarsDoms maxdeg maxsize vars doms =
-    newConstFn cfg dombox sampleCf
+    newConstFn sizeLimits varDoms sampleCf
     where
-    domsLE = 
-        map (fst . RefOrd.getEndpointsOut) doms
-    dombox = fromList $ zip vars doms 
-    cfg =
-        IntPolyCfg
+    varDoms = zip vars doms 
+    sizeLimits =
+        IntPolySizeLimits
         {
-            ipolycfg_vars = vars,
-            ipolycfg_domsLZ = zipWith (CF.<->) doms domsLE,
-            ipolycfg_domsLE = domsLE,
-            ipolycfg_sample_cf = sampleCf,
-            ipolycfg_maxdeg = maxdeg,
-            ipolycfg_maxsize = maxsize
+            ipolylimits_cf_limits = defaultSizeLimits sampleCf,
+            ipolylimits_maxdeg = maxdeg,
+            ipolylimits_maxsize = maxsize
         }
      
     

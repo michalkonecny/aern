@@ -19,10 +19,7 @@ module Numeric.AERN.IVP.Specification.ODE
 --)
 where
 
-import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.New
-import Numeric.AERN.RmToRn.Evaluation
---import Numeric.AERN.RmToRn.Integration
+import Numeric.AERN.RmToRn
 --
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.ExactOps
@@ -34,6 +31,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.Operators
 
 import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.SizeLimits
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -104,13 +102,9 @@ makeFnVecFromInitialValues componentNames initialValues sizeLimits t0Var t0Domai
     initialValuesFnVec =
         map initialValueFn componentNames
     initialValueFn = 
-        newProjection sizeLimitsAdjusted dombox
-    sizeLimitsAdjusted =
-        adjustSizeLimitsToVarsAndDombox sampleF vars dombox sizeLimits
-    sampleF = initialValueFn t0Var 
-    vars = t0Var : componentNames
-    dombox =
-        fromList $ (t0Var, t0Domain) : zip componentNames initialValues
+        newProjection sizeLimits varDoms
+    varDoms =
+        (t0Var, t0Domain) : zip componentNames initialValues
 
 parameteriseInitialValues ::
      (Show f, Show (Domain f), Show (Var f),
@@ -137,13 +131,9 @@ parameteriseInitialValues sizeLimits componentNames initialValues =
     initialValuesFnVec =
         map initialValueFn componentNames
     initialValueFn = 
-        newProjection sizeLimitsAdjusted dombox
-    sizeLimitsAdjusted =
-        adjustSizeLimitsToVarsAndDombox sampleF vars dombox sizeLimits
-    sampleF = initialValueFn sampleVar  
-    vars@(sampleVar : _) = componentNames
-    dombox =
-        fromList $ zip componentNames initialValues
+        newProjection sizeLimits varDoms
+    varDoms =
+        zip componentNames initialValues
 
 
 makeFnVecFromParamInitialValuesOut ::

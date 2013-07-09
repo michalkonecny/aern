@@ -54,8 +54,12 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.SizeLimits
 
 import Numeric.AERN.Misc.Debug
+
+import qualified Data.Set as Set
+
 _ = unsafePrint
 
 --import qualified Data.IntMap as IntMap
@@ -66,7 +70,7 @@ instance
      ArithInOut.RoundedReal cf, 
      HasAntiConsistency cf,
      RefOrd.IntervalLike cf, 
-     Show cf,
+     Show cf, Show (SizeLimits cf),
      Show (Imprecision cf),
      NumOrd.PartialComparison (Imprecision cf))
     =>
@@ -81,9 +85,12 @@ instance
         where
         sampleCf = getSampleDomValue sampleP
     
-
+{-|
+    Operations for evaluating a polynomial in which each
+    variable is evaluated to a polynomial.
+-}
 polyPolyEvalOps ::
-    (Ord var, Show var, Show cf,
+    (Ord var, Show var, Show cf, Show (SizeLimits cf),
      RefOrd.IntervalLike cf, 
      ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
@@ -139,7 +146,7 @@ polyPolyEvalOps effCmp@(_,(effCf, Int1To10 maxSplitDepth)) sampleP sampleCf =
         
 instance 
     (Ord var, Show var, 
-     Show cf,
+     Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf, 
      HasAntiConsistency cf,
      Show (Imprecision cf),
@@ -158,7 +165,7 @@ instance
 
 instance
     (Ord var, Show var, 
-     Show cf,
+     Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf, 
      HasAntiConsistency cf,
      Show (Imprecision cf),
@@ -180,15 +187,21 @@ instance
                     evalValuesBoxAscList
         evalValuesBoxAscList = 
             toAscList evalValuesBox
-        (substitutedVars, _) = 
-            unzip evalValuesBoxAscList
         getVarComposeValue (var,value) =
-            (var, newConstFn cfgWithoutEvalVars domboxWithoutEvalVars value)
+            (var, newConstFn limits varDomsWithoutEvalVars value)
         cfgWithoutEvalVars =
-            foldl (flip cfgRemVar) cfg substitutedVars
-        domboxWithoutEvalVars =
-            foldl (flip removeVar) dombox substitutedVars
-        dombox = getDomainBox p
+            cfgAdjustDomains varsWithoutEvalVars domsWithoutEvalVars cfg 
+        (varsWithoutEvalVars, domsWithoutEvalVars) = 
+            unzip varDomsWithoutEvalVars
+        varDomsWithoutEvalVars =
+            filter notSubstitutedVarDom varDoms
+            where
+            notSubstitutedVarDom (var, _) =
+                not $ Set.member var substitutedVarsSet
+        substitutedVarsSet = 
+            Set.fromList $ fst $ unzip evalValuesBoxAscList
+        varDoms = getVarDoms p
+        limits = ipolycfg_limits cfg
     pEvalAtPointInEff effComp evalValuesBox p@(IntPoly cfg _) =
         composeVarsInEff effComp composeBox p
         where
@@ -198,15 +211,20 @@ instance
                     evalValuesBoxAscList
         evalValuesBoxAscList = 
             toAscList evalValuesBox
-        (substitutedVars, _) = 
-            unzip evalValuesBoxAscList
         getVarComposeValue (var,value) =
-            (var, newConstFn cfgWithoutEvalVars domboxWithoutEvalVars value)
+            (var, newConstFn limits varDomsWithoutEvalVars value)
         cfgWithoutEvalVars =
-            foldl (flip cfgRemVar) cfg substitutedVars
-        domboxWithoutEvalVars =
-            foldl (flip removeVar) dombox substitutedVars
-        dombox = getDomainBox p
+            cfgAdjustDomains varsWithoutEvalVars domsWithoutEvalVars cfg 
+        (varsWithoutEvalVars, domsWithoutEvalVars) = unzip varDomsWithoutEvalVars
+        varDomsWithoutEvalVars =
+            filter notSubstitutedVarDom varDoms
+            where
+            notSubstitutedVarDom (var, _) =
+                not $ Set.member var substitutedVarsSet
+        substitutedVarsSet = 
+            Set.fromList $ fst $ unzip evalValuesBoxAscList
+        varDoms = getVarDoms p
+        limits = ipolycfg_limits cfg
 
 ---- TODO: move this function to aern-order
 --performEndpointWiseWithDefaultEffort ::
@@ -227,7 +245,7 @@ instance
 -- TODO: the following functions should be made independent of IntPoly and moved to aern-realfn        
 polyComposeVarsOutEff ::
     (Ord var, Show var, 
-     Show cf,
+     Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf, 
      HasAntiConsistency cf,
      Show (Imprecision cf),
@@ -269,7 +287,7 @@ polyComposeVarsOutEff eff substBox p@(IntPoly cfg _) =
 
 polyComposeVarsInEff ::
     (Ord var, Show var, 
-     Show cf,
+     Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf, 
      HasAntiConsistency cf,
      Show (Imprecision cf),

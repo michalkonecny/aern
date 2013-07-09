@@ -20,6 +20,7 @@ import Numeric.AERN.RealArithmetic.NumericOrderRounding
 
 import qualified Data.Number.MPFR as M
 import Data.Number.MPFR (MPFR)
+import Data.Number.MPFR.Instances.Up
 
 instance  
     RoundedSpecialConstEffort MPFR

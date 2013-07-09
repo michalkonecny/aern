@@ -25,6 +25,7 @@ import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.ShowInternals
+import Numeric.AERN.Basics.SizeLimits
 
 import Control.Concurrent
 
@@ -46,7 +47,7 @@ precision :: Precision
 precision = 100
 
 sample :: MI
-sample = ArithInOut.addOutEff precision 0 0
+sample = changeSizeLimitsDnEff () precision 0
 
 inftyMinusInftyOut :: MI
 inftyMinusInftyOut =

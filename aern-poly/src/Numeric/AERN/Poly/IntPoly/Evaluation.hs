@@ -51,6 +51,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 
+import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 
@@ -63,7 +64,7 @@ import Numeric.AERN.Misc.Debug
 _ = unsafePrint
 
 instance 
-    (Ord var, Show var, Show cf,
+    (Ord var, Show var, Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf,
      HasConsistency cf)
@@ -84,7 +85,7 @@ instance
         cfV = polyEvalCoeff ops
 
 instance 
-    (Ord var, Show var, Show cf,
+    (Ord var, Show var, Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf,
      HasAntiConsistency cf)
@@ -129,7 +130,7 @@ valsMapToValuesLZ subtractCf cfg valsMap =
                 ++ "\n valsMap = " ++ show valsMap 
      
 instance
-    (Ord var, Show var, Show cf,
+    (Ord var, Show var, Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf, 
      HasAntiConsistency cf, 
      RefOrd.IntervalLike cf)
@@ -181,7 +182,7 @@ instance
     (Ord var, Show var,
      ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
      HasConsistency cf, 
-     Show cf)
+     Show cf, Show (SizeLimits cf))
     =>
     HasEvalOps (IntPoly var cf) cf
     where
@@ -283,7 +284,7 @@ coeffPolyEvalOpsOut eff depth sample =
 
 
 instance 
-    (Ord var, Show var, Show cf,
+    (Ord var, Show var, Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf, 
      HasAntiConsistency cf, 
      RefOrd.IntervalLike cf)
@@ -361,7 +362,7 @@ evalPolyOnIntervalOut, evalPolyOnIntervalIn ::
     (Ord var, Show var, 
      ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf, 
      HasAntiConsistency cf, 
-     Show cf) 
+     Show cf, Show (SizeLimits cf)) 
     => 
     ArithInOut.RoundedRealEffortIndicator cf 
     ->
@@ -442,7 +443,7 @@ evalPolyMono ::
      ArithInOut.RoundedReal cf, 
      RefOrd.IntervalLike cf,
      HasConsistency cf,
-     Show cf, Show val) 
+     Show cf, Show (SizeLimits cf), Show val) 
     =>
     ([val] -> IntPoly var cf -> val) -- ^ direct evaluator (typically, @evalPolyDirect opsV@) 
     ->

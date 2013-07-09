@@ -41,7 +41,7 @@ import Numeric.AERN.RefinementOrder.Operators
 
 import Test.Framework (defaultMain, Test)
 
-import qualified Data.Map as Map
+--import qualified Data.Map as Map
 
 --type CF = Interval MPFR
 type CF = Interval Double
@@ -76,28 +76,25 @@ sampleR :: Rational
 sampleR = 1
 
 samplePoly :: Poly
-samplePoly = newConstFn cfg dombox 0
+samplePoly = newConstFn limits varDoms 0
 
-cfg :: IntPolyCfg String CF
-cfg =
-    IntPolyCfg
-        {
-            ipolycfg_vars = vars,
-            ipolycfg_domsLZ = doms,
-            ipolycfg_domsLE = replicate (length vars) 0,
-            ipolycfg_sample_cf = 0 :: CF,
-            ipolycfg_maxdeg = 4,
-            ipolycfg_maxsize = 30
-        }
+limits :: IntPolySizeLimits CF
+limits =
+    IntPolySizeLimits
+    {
+        ipolylimits_cf_limits = (),
+        ipolylimits_maxdeg = 4,
+        ipolylimits_maxsize = 30
+    } 
 
-dombox :: DomainBox Poly
-dombox = Map.fromList $ zip vars doms
+varDoms :: [(Var Poly, CF)]
+varDoms = zip vars doms
+
+vars :: [Var Poly]
+vars = ["x", "y"]
 
 doms :: [CF]
-vars :: [Var Poly]
-
 doms = [(0 </\> 1), 0 </\> 1]
-vars = ["x", "y"]
 
 --doms = [(0 </\> 1)]
 --vars = ["x"]

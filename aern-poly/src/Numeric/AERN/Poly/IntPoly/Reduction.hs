@@ -39,6 +39,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
+import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 
 
@@ -66,7 +67,7 @@ instance
         ArithInOut.RoundedRealEffortIndicator cf
     sizeLimitsChangeDefaultEffort p =
         ArithInOut.roundedRealDefaultEffort $ getSampleDomValue p
-    changeSizeLimitsOutEff effCf cfgNew _p@(IntPoly cfgOld terms) =
+    changeSizeLimitsOutEff effCf limitsNew _p@(IntPoly cfgOld terms) =
 --        unsafePrintReturn
 --        (
 --            "IntPoly changeSizeLimitsOutEff:"
@@ -80,9 +81,7 @@ instance
         cfg =
             cfgOld
             {
-                ipolycfg_maxsize = ipolycfg_maxsize cfgNew
-            ,
-                ipolycfg_maxdeg = ipolycfg_maxdeg cfgNew
+                ipolycfg_limits = limitsNew
             }
         termsReduced =
             reduceTermsDegreeOut effCf cfg $

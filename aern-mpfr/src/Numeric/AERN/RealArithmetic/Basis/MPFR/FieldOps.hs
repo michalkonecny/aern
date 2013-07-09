@@ -36,16 +36,16 @@ import Data.Number.MPFR.Instances.Up
 import qualified Data.Number.MPFR.Mutable as MM
 
 instance RoundedAddEffort MPFR where
-    type AddEffortIndicator MPFR = M.Precision 
-    addDefaultEffort = M.getPrec
+    type AddEffortIndicator MPFR = ()
+    addDefaultEffort _ = ()
 
 instance RoundedAdd MPFR where
-    addUpEff prec d1 d2 = 
+    addUpEff _ d1 d2 = 
         detectNaNUp ("addition " ++ show d1 ++ " +^ " ++ show d2 ) $ 
-            M.add M.Up prec d1 d2
-    addDnEff prec d1 d2 =
+            M.add M.Up (M.getPrec d1) d1 d2
+    addDnEff _ d1 d2 =
         detectNaNDn ("addition " ++ show d1 ++ " +. " ++ show d2 ) $ 
-            M.add M.Down prec d1 d2
+            M.add M.Down (M.getPrec d1) d1 d2
     
 instance RoundedSubtr MPFR
 
@@ -58,78 +58,78 @@ instance RoundedAbs MPFR where
     absUpEff _ = abs
 
 instance RoundedMultiplyEffort MPFR where
-    type MultEffortIndicator MPFR = M.Precision 
-    multDefaultEffort = M.getPrec
+    type MultEffortIndicator MPFR = () 
+    multDefaultEffort _ = ()
 
 instance RoundedMultiply MPFR where
-    multUpEff prec d1 d2 = 
+    multUpEff _ d1 d2 = 
 --        unsafePrintReturn
 --        (
 --            "MPFR multiplication UP with prec = " ++ show prec 
 --            ++ " " ++ show d1 ++ " * " ++ show d2 ++ " = " 
 --        ) $
         detectNaNUp ("multiplication " ++ show d1 ++ " *^ " ++ show d2 ) $ 
-            M.mul M.Up prec d1 d2
-    multDnEff prec d1 d2 = 
+            M.mul M.Up (M.getPrec d1) d1 d2
+    multDnEff _ d1 d2 = 
 --        unsafePrintReturn
 --        (
 --            "MPFR multiplication DOWN with prec = " ++ show prec 
 --            ++ " " ++ show d1 ++ " * " ++ show d2 ++ " = " 
 --        ) $
         detectNaNDn ("multiplication " ++ show d1 ++ " *. " ++ show d2 ) $ 
-            M.mul M.Down prec d1 d2
+            M.mul M.Down (M.getPrec d1) d1 d2
 
 
 instance RoundedPowerNonnegToNonnegIntEffort MPFR where
-    type PowerNonnegToNonnegIntEffortIndicator MPFR = M.Precision
-    powerNonnegToNonnegIntDefaultEffort = M.getPrec
+    type PowerNonnegToNonnegIntEffortIndicator MPFR = ()
+    powerNonnegToNonnegIntDefaultEffort _ = ()
 
 instance RoundedPowerNonnegToNonnegInt MPFR where
-    powerNonnegToNonnegIntUpEff prec x n =
-        M.powi M.Up prec x n 
-    powerNonnegToNonnegIntDnEff prec x n = 
-        M.powi M.Down prec x n 
+    powerNonnegToNonnegIntUpEff _ x n =
+        M.powi M.Up (M.getPrec x) x n 
+    powerNonnegToNonnegIntDnEff _ x n = 
+        M.powi M.Down (M.getPrec x) x n 
 
 instance RoundedPowerToNonnegIntEffort MPFR where
-    type PowerToNonnegIntEffortIndicator MPFR = M.Precision 
-    powerToNonnegIntDefaultEffort = M.getPrec 
+    type PowerToNonnegIntEffortIndicator MPFR = ()
+    powerToNonnegIntDefaultEffort _ = ()
 
 instance RoundedPowerToNonnegInt MPFR where
-    powerToNonnegIntUpEff prec x n =
-        M.powi M.Up prec x n 
-    powerToNonnegIntDnEff prec x n = 
-        M.powi M.Down prec x n 
+    powerToNonnegIntUpEff _ x n =
+        M.powi M.Up (M.getPrec x) x n 
+    powerToNonnegIntDnEff _ x n = 
+        M.powi M.Down (M.getPrec x) x n 
 
 instance RoundedDivideEffort MPFR where
-    type DivEffortIndicator MPFR = M.Precision 
-    divDefaultEffort = M.getPrec
+    type DivEffortIndicator MPFR = ()
+    divDefaultEffort _ = ()
 
 instance RoundedDivide MPFR where
-    divUpEff prec d1 d2 = 
+    divUpEff _ d1 d2 = 
         detectNaNUp ("division " ++ show d1 ++ " *^ " ++ show d2 ) $ 
-            M.div M.Up prec d1 d2
-    divDnEff prec d1 d2 = 
+            M.div M.Up (M.getPrec d1) d1 d2
+    divDnEff _ d1 d2 = 
         detectNaNDn ("division " ++ show d1 ++ " *. " ++ show d2 ) $ 
-            M.div M.Down prec d1 d2
+            M.div M.Down (M.getPrec d1) d1 d2
 
 instance RoundedRingEffort MPFR
     where
-    type RingOpsEffortIndicator MPFR = M.Precision
-    ringOpsDefaultEffort = M.getPrec
-    ringEffortAdd _ = id
-    ringEffortMult _ = id
-    ringEffortPow _ = id
+    type RingOpsEffortIndicator MPFR = ()
+    ringOpsDefaultEffort _ = ()
+    ringEffortAdd _ _ = ()
+    ringEffortMult _ _ = ()
+    ringEffortPow _ _ = ()
 
 instance RoundedRing MPFR
 
 instance RoundedFieldEffort MPFR
     where
-    type FieldOpsEffortIndicator MPFR = M.Precision
-    fieldOpsDefaultEffort = M.getPrec
-    fldEffortAdd _ = id
-    fldEffortMult _ = id
-    fldEffortPow _ = id
-    fldEffortDiv _ = id
+    type FieldOpsEffortIndicator MPFR = ()
+    fieldOpsDefaultEffort _ = ()
+    fldEffortAdd _ _ = ()
+    fldEffortMult _ _ = ()
+    fldEffortPow _ _ = ()
+    fldEffortDiv _ _ = ()
 
 instance RoundedField MPFR
     

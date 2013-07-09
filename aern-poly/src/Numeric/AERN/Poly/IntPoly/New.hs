@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.New
     Description :  creating constant and single-variable polynomials  
@@ -33,11 +33,12 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
+import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
-import Data.List (elemIndex)
+--import Data.List (elemIndex)
 
 {-- Basic function-approximation specific ops --}
 
@@ -50,7 +51,8 @@ instance
     type (Domain (IntPoly var cf)) = cf
     type (Var (IntPoly var cf)) = var
     type (VarBox (IntPoly var cf)) = Map.Map var
-    getSampleDomValue (IntPoly cfg _) = ipolycfg_sample_cf cfg
+    getSampleDomValue (IntPoly cfg _) = 
+        ipolycfg_sample_cf cfg
     defaultDomSplit _ =
         defaultDomSplitUsingEndpointsDefaultEffort
     getDomainBox (IntPoly cfg _) = Map.fromList $ zip vars doms
@@ -59,8 +61,10 @@ instance
         doms = zipWith (<+>) domsLE domsLZ
         domsLZ = ipolycfg_domsLZ cfg
         domsLE = ipolycfg_domsLE cfg
-    getNSamplesFromDomainBox sampleP@(IntPoly cfg _) dombox n =
-        getNSamplesFromDomainBoxUsingEndpointsDefaultEffort sampleDom sampleP dombox n
+    getVarDoms (IntPoly cfg _) = 
+        cfg2vardomains cfg
+    getNSamplesFromInsideDomainBox sampleP@(IntPoly cfg _) dombox n =
+        getNSamplesFromInsideDomainBoxUsingEndpointsDefaultEffort sampleDom sampleP dombox n
         where
         sampleDom = ipolycfg_sample_cf cfg
     getSampleFromInsideDomainBox sampleP@(IntPoly cfg _) dombox =
@@ -80,11 +84,20 @@ instance
         IntPoly adjustedCfg terms
         where
         adjustedCfg =
-            adjustSizeLimitsToVarsAndDombox poly vars adjustedDombox cfg
+--            adjustSizeLimitsToVarsAndDombox poly vars adjustedDombox cfg
+            cfgAdjustDomains vars domains cfg
+            where
+            domains =
+                map getDomain vars
+            getDomain var2 =
+                case lookupVar adjustedDombox var2 of
+                    Just dom -> dom
+                    Nothing ->
+                        error $ 
+                            "aern-poly: IntPoly adjustSizeLimitsToVarsAndDombox: variable "
+                            ++ show var2 ++ " not in the given domain box"
         vars = ipolycfg_vars cfg
-        adjustedDombox =
-            insertVar var newDom dombox
-        dombox = getDomainBox poly
+        adjustedDombox = insertVar var newDom $ getDomainBox poly
 
 instance
     (Ord var, Show var,
@@ -93,21 +106,24 @@ instance
     => 
     (HasSizeLimits (IntPoly var cf))
     where
-    type (SizeLimits (IntPoly var cf)) = IntPolyCfg var cf
-    defaultSizeLimits = getSizeLimits 
-    getSizeLimits (IntPoly cfg _) = cfg
-    adjustSizeLimitsToVarsAndDombox _ vars dombox cfg =
-        cfgAdjustDomains vars domains cfg
+    type (SizeLimits (IntPoly var cf)) = IntPolySizeLimits cf
+    defaultSizeLimits (IntPoly cfg _) = 
+        IntPolySizeLimits (defaultSizeLimits cf) default_maxdeg default_maxsize
         where
-        domains =
-            map getDomain vars
-        getDomain var =
-            case lookupVar dombox var of
-                Just dom -> dom
-                Nothing ->
-                    error $ 
-                        "aern-poly: IntPoly adjustSizeLimitsToVarsAndDombox: variable "
-                        ++ show var ++ " not in the given domain box"
+        cf = ipolycfg_sample_cf cfg 
+    getSizeLimits (IntPoly cfg _) = ipolycfg_limits cfg
+--    adjustSizeLimitsToVarsAndDombox _ vars dombox cfg =
+--        cfgAdjustDomains vars domains cfg
+--        where
+--        domains =
+--            map getDomain vars
+--        getDomain var =
+--            case lookupVar dombox var of
+--                Just dom -> dom
+--                Nothing ->
+--                    error $ 
+--                        "aern-poly: IntPoly adjustSizeLimitsToVarsAndDombox: variable "
+--                        ++ show var ++ " not in the given domain box"
 
 instance 
     (Ord var, Show var, Show cf, 
@@ -116,16 +132,19 @@ instance
      RefOrd.IntervalLike cf) => 
     (HasConstFns (IntPoly var cf))
     where
-    newConstFn cfg dombox value = 
-        IntPoly cfgD $ mkConstTerms value vars
+    newConstFn limits varDoms value = 
+        IntPoly cfg $ mkConstTerms value vars
         where
-        cfgD = cfgAdjustDomains vars domains cfg
-        domains = 
-            case (sequence $ map (lookupVar dombox) vars) of
-                Just ds -> ds
-                Nothing ->
-                    error "aern-poly: IntPoly newProjection: incompatible domain box"
-        vars = ipolycfg_vars cfg
+        cfg = 
+            cfgAdjustDomains vars domains $
+                defaultIntPolyCfg sampleCF limits
+--        domains = 
+--            case (sequence $ map (lookupVar dombox) vars) of
+--                Just ds -> ds
+--                Nothing ->
+--                    error "aern-poly: IntPoly newProjection: incompatible domain box"
+        (vars, domains) = unzip varDoms
+        sampleCF = value
 
 mkConstTerms ::
     (HasConsistency cf, Show cf)
@@ -199,7 +218,7 @@ instance
                 IntPolyV var $ IntMap.map addVarsToAllTerms powers
              
 instance
-    (Ord var, Show var, Show cf,
+    (Ord var, Show var, Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf)
     =>        
@@ -229,6 +248,7 @@ instance
         renameOneOccurrenceInList _ =
             error $
                 "variable " ++ show oldVar ++ " not in " ++ show p
+
 instance 
     (Ord var, Show var,  Show cf,
      HasConsistency cf,
@@ -236,17 +256,13 @@ instance
      RefOrd.IntervalLike cf) => 
     (HasProjections (IntPoly var cf))
     where
-    newProjection cfg dombox var =
-        IntPoly cfgD $ mkProjTerms cfgD var vars domsLE
+    newProjection limits varDoms var =
+        IntPoly cfg $ mkProjTerms cfg var vars domsLE
         where
-        domsLE = ipolycfg_domsLE cfgD
-        cfgD = cfgAdjustDomains vars domains cfg
-        domains = 
-            case sequence $ map (lookupVar dombox) vars of
-                Just ds -> ds
-                Nothing ->
-                    error "aern-poly: IntPoly newProjection: incompatible domain box"
-        vars = ipolycfg_vars cfg
+        domsLE = ipolycfg_domsLE cfg
+        cfg = cfgAdjustDomains vars domains $ defaultIntPolyCfg sampleCF limits
+        (sampleCF : _)  = domains
+        (vars, domains) = unzip varDoms
         
 mkProjTerms :: 
     (Eq var, Show var, Show cf, HasOne cf, 

@@ -31,6 +31,7 @@ import Prelude hiding ((+))
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Reduction
+import Numeric.AERN.Poly.IntPoly.New
 
 import Numeric.AERN.RmToRn.New
 --import Numeric.AERN.RmToRn.Domain
@@ -173,9 +174,10 @@ addTermsConst (+|) cfg (IntPolyV x polys) constant =
     where
     oldConstPoly =
         case IntMap.lookup 0 polys of
-            Nothing -> intpoly_terms $ newConstFn cfgR undefined $ zero sampleCf
+            Nothing -> mkConstTerms (zero sampleCf) varsR
             Just p -> p
     newConstPoly = addTermsConst (+|) cfgR oldConstPoly constant
+    varsR = ipolycfg_vars cfg
     cfgR = cfgRemFirstVar cfg
     sampleCf = ipolycfg_sample_cf cfg
         
