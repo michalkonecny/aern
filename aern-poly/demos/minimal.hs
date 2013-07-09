@@ -2,10 +2,7 @@ module Main where
 
 import Numeric.AERN.Poly.IntPoly
 
-import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.New
-import Numeric.AERN.RmToRn.Evaluation
-import Numeric.AERN.RmToRn.Integration
+import Numeric.AERN.RmToRn
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
@@ -24,13 +21,14 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.ShowInternals
 
-import System.IO
+--import System.IO
 
-import qualified Data.Map as Map
+--import qualified Data.Map as Map
 --import qualified Data.List as List
 
 import Numeric.AERN.Misc.Debug
@@ -59,31 +57,31 @@ main =
     putStrLn $ "(x + y)^2 = " 
                     ++ (showP $ (x <+> y) <^> 2)
     putStrLn $ "(x + y)^2[size 1] = " 
-                    ++ (showP $ changeSizeLimitsOutEff eff cfgSize1 $ (x <+> y) <^> 2)
+                    ++ (showP $ changeSizeLimitsOutEff eff limitsSize1 $ (x <+> y) <^> 2)
     putStrLn $ "2(x + y + 2)[size 1] = " 
-                    ++ (showP $ changeSizeLimitsOutEff eff cfgSize1 $ twoBxPyP2)
+                    ++ (showP $ changeSizeLimitsOutEff eff limitsSize1 $ twoBxPyP2)
     putStrLn "structure changes:"
     putStrLn $ "2(x + y + 2) [new vars z1,z2 at the front] = " 
                     ++ (showP $ addVariablesFront (zip ["z1","z2"] doms) twoBxPyP2)
     putStrLn $ "2(x + y + 2) [new vars z1,z2 at the back] = " 
                     ++ (showP $ addVariablesBack (zip ["z1","z2"] doms) twoBxPyP2)
     putStrLn "evaluation:"
-    putStrLn $ "((x+y)^2)evalOut1[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 1) dombox $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut2[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 2) dombox $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut3[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 3) dombox $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut4[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 4) dombox $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut5[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 5) dombox $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut6[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 6) dombox $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut7[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 7) dombox $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut8[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 8) dombox $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut9[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 9) dombox $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut10[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 10) dombox $ (x <+> y) <^> 2)
---    putStrLn $ "((x+y)^2)evalIn[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointInEff eff dombox $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut1[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 1) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut2[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 2) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut3[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 3) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut4[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 4) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut5[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 5) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut6[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 6) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut7[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 7) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut8[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 8) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut9[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 9) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut10[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 10) wholeDomain $ (x <+> y) <^> 2)
+--    putStrLn $ "((x+y)^2)evalIn[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointInEff eff wholeDomain $ (x <+> y) <^> 2)
     putStrLn "partial evaluation:"
     putStrLn $ "((x+y)^2)evalOut[x=1] = " ++ (show $ pEvalAtPointOutEff effComp (fromList [("x",1)]) $ (x <+> y) <^> 2)
     putStrLn $ "((x+y)^2)evalOut[y=1] = " ++ (show $ pEvalAtPointOutEff effComp (fromList [("y",1)]) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut[x=[-1,1]] = " ++ (show $ pEvalAtPointOutEff effComp domboxNoY $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut[y=[-1,1]] = " ++ (show $ pEvalAtPointOutEff effComp domboxNoX $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut[x=[-1,1]] = " ++ (show $ pEvalAtPointOutEff effComp wholeDomainNoY $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut[y=[-1,1]] = " ++ (show $ pEvalAtPointOutEff effComp wholeDomainNoX $ (x <+> y) <^> 2)
     putStrLn "composition:"
     putStrLn $ "(x+y)^2 = " ++ (showP $ (x <+> y) <^> 2)
     
@@ -182,31 +180,31 @@ showPPair ::
 showPPair (p1,p2) = "(" ++ showP p1 ++ "," ++ showP p2 ++ ")" 
 
 x :: Poly
-x = newProjection cfg dombox "x"
+x = newProjection limits varDoms "x"
 y :: Poly
-y = newProjection cfg dombox "y"
+y = newProjection limits varDoms "y"
 
 yNoX :: Poly
-yNoX = newProjection cfgNoX dombox "y"
+yNoX = newProjection limits varDomsNoX "y"
 
 xNoY :: Poly
-xNoY = newProjection cfgNoY dombox "x"
+xNoY = newProjection limits varDomsNoY "x"
 
 c0 :: Poly
-c0 = newConstFn cfg dombox 0
+c0 = newConstFn limits varDoms 0
 
 c1 :: Poly
-c1 = newConstFn cfg dombox 1
+c1 = newConstFn limits varDoms 1
 
 cHalf :: Poly
-cHalf = newConstFn cfg dombox 0.5
+cHalf = newConstFn limits varDoms 0.5
 
 c15Over16 :: Poly
-c15Over16 = newConstFn cfg dombox $ 15/16
+c15Over16 = newConstFn limits varDoms $ 15/16
 
---cOneOver16 = newConstFn cfg dombox $ 0.5^4
+--cOneOver16 = newConstFn limits varDoms $ 0.5^4
 c01 :: Poly
-c01 = newConstFn cfg dombox $ 0 </\> 1
+c01 = newConstFn limits varDoms $ 0 </\> 1
 
 xPy :: Poly
 xPy = x <+> y
@@ -256,75 +254,56 @@ numCompare ::
 numCompare a b =
     NumOrd.pCompareInFullEff (NumOrd.pCompareDefaultEffort a) a b
 
-cfg :: IntPolyCfg String CF
-cfg =
-    IntPolyCfg
-        {
-            ipolycfg_vars = vars,
-            ipolycfg_domsLZ = domsLZ ,
-            ipolycfg_domsLE = domsLE,
-            ipolycfg_sample_cf = 0 :: CF,
-            ipolycfg_maxdeg = 4,
-            ipolycfg_maxsize = 30
-        }
+limits :: IntPolySizeLimits CF
+limits =
+    IntPolySizeLimits
+    {
+        ipolylimits_cf_limits = (),
+        ipolylimits_maxdeg = 4,
+        ipolylimits_maxsize = 30
+    } 
 
-cfgNoX :: IntPolyCfg String CF
-cfgNoX = cfgRemFirstVar cfg
+limitsDeg0 :: IntPolySizeLimits CF
+limitsDeg0 = limits { ipolylimits_maxdeg = 0 }
 
-cfgNoY :: IntPolyCfg String CF
-cfgNoY = 
-    cfg
-        {
-            ipolycfg_vars = take 1 vars,
-            ipolycfg_domsLZ = take 1 domsLZ,
-            ipolycfg_domsLE = take 1 domsLE
-        }
+limitsDeg1 :: IntPolySizeLimits CF
+limitsDeg1 = limits { ipolylimits_maxdeg = 1 }
 
-cfgDeg0 :: IntPolyCfg String CF
-cfgDeg0 = cfg { ipolycfg_maxdeg = 0 }
+limitsSize1 :: IntPolySizeLimits CF
+limitsSize1 = limits { ipolylimits_maxsize = 1 }
 
-cfgDeg1 :: IntPolyCfg String CF
-cfgDeg1 = cfg { ipolycfg_maxdeg = 1 }
+limitsSize2 :: IntPolySizeLimits CF
+limitsSize2 = limits { ipolylimits_maxsize = 2 }
 
-cfgSize1 :: IntPolyCfg String CF
-cfgSize1 = cfg { ipolycfg_maxsize = 1 }
+limitsSize3 :: IntPolySizeLimits CF
+limitsSize3 = limits { ipolylimits_maxsize = 3 }
 
-cfgSize2 :: IntPolyCfg String CF
-cfgSize2 = cfg { ipolycfg_maxsize = 2 }
+varDoms :: [(Var Poly, CF)]
+varDoms = zip vars doms
 
-cfgSize3 :: IntPolyCfg String CF
-cfgSize3 = cfg { ipolycfg_maxsize = 3 }
+varDomsNoX :: [(Var Poly, CF)]
+varDomsNoX = drop 1 varDoms 
 
-cfgXTiny :: IntPolyCfg String CF
-cfgXTiny = cfg { ipolycfg_domsLZ = domsXTiny }
+varDomsNoY :: [(Var Poly, CF)]
+varDomsNoY = take 1 varDoms
 
-cfgXTinySize1 :: IntPolyCfg String CF
-cfgXTinySize1 = cfgXTiny { ipolycfg_maxsize = 1 }
-
-cfgXTinySize2 :: IntPolyCfg String CF
-cfgXTinySize2 = cfgXTiny { ipolycfg_maxsize = 2 }
-
-dombox :: DomainBox Poly
-dombox = Map.fromList $ zip vars doms
-
-domboxNoX :: DomainBox Poly
-domboxNoX = Map.fromList $ drop 1 $ zip vars doms
-
-domboxNoY :: DomainBox Poly
-domboxNoY = Map.fromList $ take 1 $ zip vars doms
+varDomsXTiny :: [(Var Poly, CF)]
+varDomsXTiny = zip vars domsXTiny 
 
 vars :: [Var Poly]
 vars = ["x", "y"]
 
 doms :: [CF]
-doms = zipWith (<+>) domsLE domsLZ
-
-domsLZ :: [CF]
-domsLZ = [0 </\> 2, 0 </\> 2]
-
-domsLE :: [CF]
-domsLE = [-1, -1]
+doms = [(-1) </\> 1, (-1) </\> 1]
 
 domsXTiny :: [CF]
 domsXTiny = [(0 </\> 0.0625), ((-1) </\> 1)]
 
+wholeDomain :: DomainBox Poly
+wholeDomain = fromList varDoms
+
+wholeDomainNoX :: DomainBox Poly
+wholeDomainNoX = fromList varDomsNoX
+
+wholeDomainNoY :: DomainBox Poly
+wholeDomainNoY = fromList varDomsNoY

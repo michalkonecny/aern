@@ -42,6 +42,7 @@ import Numeric.AERN.NumericOrder.Operators
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.Operators
 
+import Numeric.AERN.Basics.SizeLimits
 
 import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
 import Numeric.AERN.RmToRn.Plot.CairoDrawable
@@ -171,11 +172,8 @@ plotODEIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
                     (firstN, rest) = splitAt n list
                 getFnsFromSeg (_, fnsNames) = map fst fnsNames
                 makeConstFnOverAggrDom fn =
-                    newConstFn sizeLimitsNew domboxNew range
+                    newConstFn sizeLimits [(tVar, aggrDom)] range
                     where
-                    domboxNew = fromList [(tVar, aggrDom)]
-                    sizeLimitsNew =
-                        adjustSizeLimitsToVarsAndDombox fn [tVar] domboxNew sizeLimits
                     range = evalAtPointOutEff effEval dombox fn
                     sizeLimits = getSizeLimits fn         
                     dombox = getDomainBox fn
@@ -394,13 +392,10 @@ aggregateSequencesOfTinySegments effEval componentNames tVar plotMinSegSize fnsA
                 (firstN, rest) = splitAt n list
             getFnsFromSeg (_, fnsNames) = map fst fnsNames
             makeConstFnOverAggrDom fn =
-                newConstFn sizeLimitsNew domboxNew range
+                newConstFn sizeLimits [(tVar, aggrDom)] range
                 where
-                domboxNew = fromList [(tVar, aggrDom)]
-                sizeLimitsNew =
-                    adjustSizeLimitsToVarsAndDombox fn [tVar] domboxNew sizeLimits
-                range = evalAtPointOutEff effEval dombox fn
                 sizeLimits = getSizeLimits fn         
+                range = evalAtPointOutEff effEval dombox fn
                 dombox = getDomainBox fn
                 
         aggrDom = RefOrd.fromEndpointsOut (tStartFirstSeg, tEndLastAggrSeg) 

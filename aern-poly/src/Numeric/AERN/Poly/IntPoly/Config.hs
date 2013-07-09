@@ -1,7 +1,9 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.Config
-    Description :  configuration parameters of polynomial arithmetic
+    Description :  Extra data kept with each interval polynomial.
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -9,7 +11,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Configuration parameters of polynomial arithmetic.
+    Extra data kept with each interval polynomial.
 -}
 
 module Numeric.AERN.Poly.IntPoly.Config
@@ -28,6 +30,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.Operators
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 
 import Test.QuickCheck (Arbitrary, arbitrary, vectorOf)
@@ -40,11 +43,38 @@ data IntPolyCfg var cf =
         ipolycfg_domsLZ :: [cf], -- domain of each variable - shifted so that the left endpoint is 0
         ipolycfg_domsLE :: [cf], -- the left endpoint of the domain for all variables
         ipolycfg_sample_cf :: cf,  -- sample coefficient (used only for type inference)
-        ipolycfg_maxdeg :: Int, -- maximum degree of each term
-        ipolycfg_maxsize :: Int -- maximum term count
+        ipolycfg_limits :: IntPolySizeLimits cf
     }
 
-domToDomLZLE ::
+defaultIntPolyCfg :: cf -> IntPolySizeLimits cf -> IntPolyCfg var cf
+defaultIntPolyCfg sampleCf limits =
+    IntPolyCfg [] [] [] sampleCf limits
+
+data IntPolySizeLimits cf =
+    IntPolySizeLimits
+    {
+        ipolylimits_cf_limits :: SizeLimits cf,
+        ipolylimits_maxdeg :: Int, -- maximum degree of each term
+        ipolylimits_maxsize :: Int -- maximum term count
+    }
+
+defaultIntPolySizeLimits :: SizeLimits cf -> IntPolySizeLimits cf
+defaultIntPolySizeLimits cf_limist =
+    IntPolySizeLimits cf_limist default_maxdeg default_maxsize
+
+default_maxdeg :: Int
+default_maxdeg = 3
+default_maxsize :: Int
+default_maxsize = 50
+
+ipolycfg_maxdeg :: IntPolyCfg var cf -> Int
+ipolycfg_maxdeg = ipolylimits_maxdeg . ipolycfg_limits
+
+ipolycfg_maxsize :: IntPolyCfg var cf -> Int
+ipolycfg_maxsize = ipolylimits_maxsize . ipolycfg_limits
+
+
+domToDomLZLEEff ::
     (ArithInOut.RoundedReal cf, 
      RefOrd.IntervalLike cf)
     =>
@@ -52,7 +82,7 @@ domToDomLZLE ::
     (ArithInOut.RoundedRealEffortIndicator cf) -> 
     cf -> 
     (cf, cf)
-domToDomLZLE effGetE effCF dom =
+domToDomLZLEEff effGetE effCF dom =
     (domLZ, domLE)
     where
     (domLE, _) = RefOrd.getEndpointsOutEff effGetE dom
@@ -63,26 +93,26 @@ domToDomLZLE effGetE effCF dom =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCF
     sampleCf = dom
 
-domToDomLZLEWithDefaultEffort ::
+domToDomLZLE ::
     (ArithInOut.RoundedReal cf, 
      RefOrd.IntervalLike cf)
     =>
     cf -> 
     (cf, cf)
-domToDomLZLEWithDefaultEffort dom =
-    domToDomLZLE effGetE effCF dom
+domToDomLZLE dom =
+    domToDomLZLEEff effGetE effCF dom
     where
     effCF = ArithInOut.roundedRealDefaultEffort dom
     effGetE = RefOrd.getEndpointsDefaultEffort dom 
 
-domLZLEToDom ::
+domLZLEToDomEff ::
     (ArithInOut.RoundedReal cf)
     =>
     (ArithInOut.RoundedRealEffortIndicator cf) -> 
     cf -> 
     cf ->
     cf
-domLZLEToDom effCF domLZ domLE =
+domLZLEToDomEff effCF domLZ domLE =
     dom
     where
     dom = domLZ <+> domLE
@@ -92,14 +122,14 @@ domLZLEToDom effCF domLZ domLE =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCF
     sampleCf = dom
 
-domLZLEToDomWithDefaultEffort ::
+domLZLEToDom ::
     (ArithInOut.RoundedReal cf)
     =>
     cf -> 
     cf ->
     cf
-domLZLEToDomWithDefaultEffort domLZ domLE =
-    domLZLEToDom effCF domLZ domLE
+domLZLEToDom domLZ domLE =
+    domLZLEToDomEff effCF domLZ domLE
     where
     effCF = ArithInOut.roundedRealDefaultEffort domLZ
      
@@ -133,6 +163,7 @@ cfgRemVar var cfg =
             Just pos -> pos
             Nothing -> error $ "aern-poly: cfgRemVar: var not in cfg"
     vars = ipolycfg_vars cfg
+
 cfgAdjustDomains ::
     (ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf)
@@ -147,8 +178,8 @@ cfgAdjustDomains vars newDomains cfg =
     }
     where
     (newDomsLZ, newDomsLE)
-        = unzip $ map domToDomLZLEWithDefaultEffort newDomains
-    
+        = unzip $ map domToDomLZLE newDomains
+   
 cfg2vardomains :: 
      ArithInOut.RoundedReal cf 
      =>
@@ -162,44 +193,52 @@ cfg2vardomains cfg =
     domsLZ = ipolycfg_domsLZ cfg
     domsLE = ipolycfg_domsLE cfg
     domains =
-        zipWith domLZLEToDomWithDefaultEffort domsLZ domsLE
+        zipWith domLZLEToDom domsLZ domsLE
     
 instance 
-    (Show var, Show cf, ArithInOut.RoundedReal cf) 
+    (Show var, Show cf, ArithInOut.RoundedReal cf, Show (SizeLimits cf)) 
     =>
     Show (IntPolyCfg var cf)
     where
-    show (IntPolyCfg vars domsLZ domsLE sampleCf maxdeg maxsize) 
+    show (IntPolyCfg vars domsLZ domsLE sampleCf limits) 
         = 
-        "cfg{" ++ (show $ zip vars doms) ++ ";" ++ show maxdeg ++ "/" ++ show maxsize ++ "}"
+        "cfg{" ++ (show $ zip vars doms) ++ ";" ++ show limits ++ "}"
         where
-        doms = zipWith (domLZLEToDom effCF) domsLZ domsLE
+        doms = zipWith (domLZLEToDomEff effCF) domsLZ domsLE
         effCF = ArithInOut.roundedRealDefaultEffort sampleCf
+
+instance 
+    (Show (SizeLimits cf)) 
+    =>
+    Show (IntPolySizeLimits cf)
+    where
+    show (IntPolySizeLimits cfLimits maxdeg maxsize) =
+         "cf:" ++ show cfLimits ++ "/dg:" ++ show maxdeg ++ "/sz:" ++ show maxsize
 
 instance
     (RefOrd.IntervalLike cf, 
      ArithInOut.RoundedReal cf, HasAntiConsistency cf,
      NumOrd.PartialComparison cf, 
-     Arbitrary cf, GeneratableVariables var) 
+     Arbitrary cf, Arbitrary (SizeLimits cf), GeneratableVariables var) 
     =>
     (Arbitrary (IntPolyCfg var cf))
     where
     arbitrary =
         do
         Int1To10 arity <- arbitrary
-        Int1To10 maxdeg <- arbitrary
-        Int1To1000 maxsizeRaw <- arbitrary
+        limits <- arbitrary
         sampleCfs <- vectorOf (50 * arity) arbitrary 
             -- probability that too many of these are anti-consistent is negligible
         efforts <- arbitrary
-        return $ mkCfg arity maxdeg maxsizeRaw sampleCfs efforts
+        return $ mkCfg arity limits sampleCfs efforts
         where
-        mkCfg arity maxdeg maxsizeRaw sampleCfs (effConsistency, effGetE, effCF) =
+        mkCfg arity limits sampleCfs (effConsistency, effGetE, effCF) =
             IntPolyCfg
-                vars domsLZ domsLE (head sampleCfs) maxdeg (max 2 maxsizeRaw)
+                vars domsLZ domsLE sampleCf limits
             where
+            sampleCf = head sampleCfs
             vars = getNVariables arity
-            (domsLZ, domsLE) = unzip $ map (domToDomLZLE effGetE effCF) doms
+            (domsLZ, domsLE) = unzip $ map (domToDomLZLEEff effGetE effCF) doms
             doms = 
                 take arity $ filter notAntiConsistent sampleCfs
                 -- domain intervals must not be anti-contistent (in particular not singletons)
@@ -214,30 +253,43 @@ instance
 --                        _ -> False
              
 instance
-    (Show var, Show cf,
+    (Arbitrary (SizeLimits cf)) 
+    =>
+    (Arbitrary (IntPolySizeLimits cf))
+    where
+    arbitrary =
+        do
+        cfLimits <- arbitrary
+        Int1To10 maxdeg <- arbitrary
+        Int1To1000 maxsizeRaw <- arbitrary
+        return $ IntPolySizeLimits cfLimits maxdeg (max 2 maxsizeRaw)
+
+instance
+    (Show cf,
      RefOrd.IntervalLike cf, 
      ArithInOut.RoundedReal cf, 
      HasAntiConsistency cf, 
-     NumOrd.PartialComparison cf, 
-     Arbitrary cf, GeneratableVariables var)
+     NumOrd.PartialComparison cf,
+     EffortIndicator (SizeLimits cf), 
+     Arbitrary cf)
     =>
-    (EffortIndicator (IntPolyCfg var cf))
+    (EffortIndicator (IntPolySizeLimits cf))
     where
-    effortIncrementVariants (IntPolyCfg vars domsLZ domsLE sample maxdeg maxsize) =
-        map recreateCfg $ effortIncrementVariants (Int1To10 maxdeg, Int1To1000 maxsize)
+    effortIncrementVariants (IntPolySizeLimits cfLimits maxdeg maxsize) =
+        map recreateLimits $ effortIncrementVariants (Int1To10 maxdeg, Int1To1000 maxsize)
         where
-        recreateCfg (Int1To10 md, Int1To1000 ms) =
-            IntPolyCfg vars domsLZ domsLE sample md ms 
-    effortIncrementSequence (IntPolyCfg vars domsLZ domsLE sample maxdeg maxsize) =
-        map recreateCfg $ effortIncrementSequence (Int1To10 maxdeg, Int1To1000 maxsize)
+        recreateLimits (Int1To10 md, Int1To1000 ms) =
+            IntPolySizeLimits cfLimits md ms 
+    effortIncrementSequence (IntPolySizeLimits cfLimits maxdeg maxsize) =
+        map recreateLimits $ effortIncrementSequence (Int1To10 maxdeg, Int1To1000 maxsize)
         where
-        recreateCfg (Int1To10 md, Int1To1000 ms) =
-            IntPolyCfg vars domsLZ domsLE sample md ms
+        recreateLimits (Int1To10 md, Int1To1000 ms) =
+            IntPolySizeLimits cfLimits md ms 
     effortRepeatIncrement 
-            (IntPolyCfg vars domsLZ domsLE sample maxdeg1 maxsize1, 
-             IntPolyCfg _ _ _ _ maxdeg2 maxsize2)
+            (IntPolySizeLimits cfLimits1 maxdeg1 maxsize1, 
+             IntPolySizeLimits cfLimits2 maxdeg2 maxsize2)
         =
-        IntPolyCfg vars domsLZ domsLE sample md ms
+        IntPolySizeLimits (effortRepeatIncrement (cfLimits1, cfLimits2)) md ms
         where
         Int1To10 md = effortRepeatIncrement (Int1To10 maxdeg1, Int1To10 maxdeg2)  
         Int1To1000 ms = effortRepeatIncrement (Int1To1000 maxsize1, Int1To1000 maxsize2)  

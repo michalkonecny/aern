@@ -25,6 +25,8 @@ import Numeric.AERN.Basics.PartialOrdering
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder (MinmaxEffortIndicator)
 
+import Numeric.AERN.Basics.SizeLimits
+
 import Numeric.AERN.Misc.List
 import Numeric.AERN.Misc.Debug
 
@@ -35,6 +37,19 @@ sampleD = 0
 
 nanD :: Double
 nanD = 0/0
+
+instance HasSizeLimits Double where
+    type SizeLimits Double = ()
+    getSizeLimits _ = ()
+    defaultSizeLimits _ = ()
+       
+instance CanChangeSizeLimits Double where
+    type SizeLimitsChangeEffort Double = ()
+    sizeLimitsChangeDefaultEffort _ = ()
+    changeSizeLimitsDnEff _ _ d = d
+    changeSizeLimitsUpEff _ _ d = d
+    changeSizeLimitsOutEff = error $ "AERN: changeSizeLimitsOutEff not defined for Double"
+    changeSizeLimitsInEff = error $ "AERN: changeSizeLimitsInEff not defined for Double"
 
 instance NumOrd.HasLeast Double where
     least _ = - 1/0
@@ -54,8 +69,3 @@ instance NumOrd.RoundedLattice Double where
     minUpEff _ a b = Prelude.min a b
     minDnEff = NumOrd.minUpEff 
     
-
-
-
-       
-

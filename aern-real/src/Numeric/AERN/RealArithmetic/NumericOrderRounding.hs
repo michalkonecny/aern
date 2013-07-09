@@ -43,6 +43,7 @@ import Numeric.AERN.NumericOrder
 import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.SizeLimits
 
 {-|
    An aggregate class collecting together all functionality
@@ -67,6 +68,8 @@ class
      RoundedMixedField t Integer, 
      RoundedMixedField t Double, 
      RoundedMixedField t Rational,
+     HasSizeLimits t, CanChangeSizeLimits t,
+     EffortIndicator (SizeLimits t),
      EffortIndicator (RoundedRealEffortIndicator t))
     => 
     RoundedReal t

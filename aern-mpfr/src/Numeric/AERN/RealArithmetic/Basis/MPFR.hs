@@ -59,7 +59,7 @@ instance RoundedReal M.MPFR where
     roundedRealDefaultEffort _ = 100
     rrEffortComp _ _ = ()
     rrEffortMinmax _ _ = ()
-    rrEffortDistance _ p = p
+    rrEffortDistance _ p = ()
     rrEffortToInt _ _ = ()
     rrEffortFromInt _ p = p
     rrEffortToInteger _ _ = ()
@@ -69,11 +69,11 @@ instance RoundedReal M.MPFR where
     rrEffortToRational _ _ = ()
     rrEffortFromRational _ p = p
     rrEffortAbs _ _ = ()
-    rrEffortField _ p = p
-    rrEffortIntMixedField _ p = p
-    rrEffortIntegerMixedField _ p = p
-    rrEffortDoubleMixedField _ p = p
-    rrEffortRationalMixedField _ p = p
+    rrEffortField _ p = ()
+    rrEffortIntMixedField _ _ = ()
+    rrEffortIntegerMixedField _ _ = ()
+    rrEffortDoubleMixedField _ _ = ()
+    rrEffortRationalMixedField _ _ = ()
     
 instance HasLegalValues M.MPFR where
     maybeGetProblem d 

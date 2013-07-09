@@ -40,6 +40,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.Operators
 
 --import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.ShowInternals
 
 --import Data.List (intercalate)
@@ -401,20 +402,15 @@ solveIVPWithUncertainValue
 makeSampleWithVarsDoms :: 
      Int -> Int -> [Var Fn] -> [CF] -> Fn
 makeSampleWithVarsDoms maxdeg maxsize vars doms =
-    newConstFn cfg dombox sampleCf
+    newConstFn sizeLimits varDoms sampleCf
     where
-    domsLE = 
-        map (fst . RefOrd.getEndpointsOut) doms
-    dombox = fromList $ zip vars doms 
-    cfg =
-        IntPolyCfg
+    varDoms = zip vars doms 
+    sizeLimits =
+        IntPolySizeLimits
         {
-            ipolycfg_vars = vars,
-            ipolycfg_domsLZ = zipWith (CF.<->) doms domsLE,
-            ipolycfg_domsLE = domsLE,
-            ipolycfg_sample_cf = sampleCf,
-            ipolycfg_maxdeg = maxdeg,
-            ipolycfg_maxsize = maxsize
+            ipolylimits_cf_limits = defaultSizeLimits sampleCf,
+            ipolylimits_maxdeg = maxdeg,
+            ipolylimits_maxsize = maxsize
         }
 
 
@@ -454,18 +450,15 @@ testShrinkWrap =
         where
         eps = 0.125
     c1 :: Fn
-    c1 = newConstFn cfg dombox (1 :: CF)
-    dombox = fromList [("t", unitDom),  ("s", unitDom)]
+    c1 = newConstFn sizeLimits varDoms (1 :: CF)
+    varDoms = [("t", unitDom),  ("s", unitDom)]
     unitDom = (-1) CF.</\> 1
-    cfg =
-        IntPolyCfg
+    sizeLimits =
+        IntPolySizeLimits
         {
-            ipolycfg_vars = ["t","s"],
-            ipolycfg_domsLZ = [0 CF.</\> 2, 0 CF.</\> 2],
-            ipolycfg_domsLE = [-1,-1],
-            ipolycfg_sample_cf = 0 :: CF,
-            ipolycfg_maxdeg = 3,
-            ipolycfg_maxsize = 1000
+            ipolylimits_cf_limits = defaultSizeLimits sampleCf,
+            ipolylimits_maxdeg = 3,
+            ipolylimits_maxsize = 1000
         }
     effCf = ArithInOut.roundedRealDefaultEffort sampleCf
     effEval = evaluationDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)

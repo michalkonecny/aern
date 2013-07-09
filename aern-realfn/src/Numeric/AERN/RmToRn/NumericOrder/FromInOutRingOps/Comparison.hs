@@ -101,7 +101,7 @@ pCompareFunFromRingOps (n, effAdd, effCompDom, effEval) f1 f2 =
     ngtD = hasFalse $ map pOrdInfGT domPointsInfos
     domPointsInfos =
         map compareOver domPoints
-    domPoints = getNSamplesFromDomainBox sampleF dombox n
+    domPoints = getNSamplesFromInsideDomainBox sampleF dombox n
 
 hasFalse :: [(Maybe Bool)] -> Bool
 hasFalse (Just False : _) = True

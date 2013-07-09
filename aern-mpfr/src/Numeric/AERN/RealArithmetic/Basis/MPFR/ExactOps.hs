@@ -26,14 +26,14 @@ instance HasSampleFromContext MPFR where
     sampleFromContext = 0
 
 instance HasZero MPFR where
-    zero _ = 0
+    zero sample = M.set M.Near (M.getPrec sample) 0
     
 instance HasOne MPFR where
-    one _ = 1
+    one sample = M.set M.Near (M.getPrec sample) 1
     
 instance HasInfinities MPFR where
-    plusInfinity _ = 1/0
-    minusInfinity _ = -1/0
+    plusInfinity sample = M.set M.Near (M.getPrec sample) $ 1/0
+    minusInfinity sample = M.set M.Near (M.getPrec sample)  $ -1/0
     excludesPlusInfinity a = (a /= plusInfinity a)
     excludesMinusInfinity a = (a /= minusInfinity a)
     

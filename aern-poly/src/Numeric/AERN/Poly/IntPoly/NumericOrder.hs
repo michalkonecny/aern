@@ -52,6 +52,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Arbitrary
 
@@ -61,7 +62,7 @@ import Test.QuickCheck
 
 instance
     (Ord var, Show var, 
-     Show cf, 
+     Show cf, Show (SizeLimits cf), 
      ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
      NumOrd.PartialComparison (Imprecision cf), 
@@ -130,7 +131,8 @@ instance
         
 instance
     (Show var, Ord var,
-     Show cf, RefOrd.ArbitraryOrderedTuple cf, RefOrd.IntervalLike cf,
+     Show cf, Show (SizeLimits cf), 
+     RefOrd.ArbitraryOrderedTuple cf, RefOrd.IntervalLike cf,
      ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
      ArithInOut.RoundedMixedMultiply cf cf,
@@ -165,7 +167,8 @@ instance
 
 instance
     (Show var, Ord var,
-     Show cf, RefOrd.ArbitraryOrderedTuple cf, RefOrd.IntervalLike cf,
+     Show cf, Show (SizeLimits cf),
+     RefOrd.ArbitraryOrderedTuple cf, RefOrd.IntervalLike cf,
      ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
      ArithInOut.RoundedMixedMultiply cf cf,

@@ -41,6 +41,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
+import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 
 --import Data.Maybe (catMaybes)

@@ -41,6 +41,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 
 --import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.Mutable
+import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Consistency
 
@@ -330,7 +331,7 @@ arbitraryFn
     degree <- choose (0,2 + (size `div` 7))
     constrTerms <- choose (1,3 + size)
     -- start building the result polynomial, first creating variables:
-    varFns <- mapM (\v -> return $ newProjection sizeLimits box v) vars
+    varFns <- mapM (\v -> return $ newProjection sizeLimits varDoms v) vars
     -- now multiplying variables in various powers:  
     powerTerms <- mapM (const $ arbitraryPowerTerm varFns degree) [1..constrTerms]
     -- and combining them as a linear combination:
@@ -345,7 +346,7 @@ arbitraryFn
     bounded a = excludesInfinity a 
     arbitraryPowerTerm varFns degree
         | null varFns || degree == 0 
-            = return $ newConstFn sizeLimits box $ one sampleDom
+            = return $ newConstFn sizeLimits varDoms $ one sampleDom
         | otherwise = 
             do
             (n,varFn) <- elements $ zip [0..] varFns
@@ -356,9 +357,9 @@ arbitraryFn
             return $ varFnPwr ~<*>~ restFn -- rounding direction irrelevant
     sizeLimits = getSizeLimits sampleFn
     sampleDom = getSampleDomValue sampleFn
-    box = getDomainBox sampleFn
+    varDoms = getVarDoms sampleFn
     vars :: [Var fn]
-    vars = getVars box
+    (vars, _) = unzip varDoms
     
     (~<*>~) = ArithInOut.multOutEff effMultFn
     (~<+>~) = ArithInOut.addOutEff effAddFn

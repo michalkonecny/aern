@@ -62,8 +62,8 @@ instance RoundedMixedFieldInPlace MPFR Int
 
 instance RoundedMixedAddInPlace MPFR Integer
     where
-    mixedAddUpInPlaceEff = mixedAddUpInPlaceEffByConversion
-    mixedAddDnInPlaceEff = mixedAddDnInPlaceEffByConversion
+    mixedAddUpInPlaceEff = mixedAddUpInPlaceEffFromPure
+    mixedAddDnInPlaceEff = mixedAddDnInPlaceEffFromPure
 
 instance RoundedMixedMultiplyInPlace MPFR Integer
     where
@@ -80,8 +80,8 @@ instance RoundedMixedFieldInPlace MPFR Integer
 
 instance RoundedMixedAddInPlace MPFR Rational
     where
-    mixedAddUpInPlaceEff = mixedAddUpInPlaceEffByConversion
-    mixedAddDnInPlaceEff = mixedAddDnInPlaceEffByConversion
+    mixedAddUpInPlaceEff = mixedAddUpInPlaceEffFromPure
+    mixedAddDnInPlaceEff = mixedAddDnInPlaceEffFromPure
 
 instance RoundedMixedMultiplyInPlace MPFR Rational
     where

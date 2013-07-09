@@ -142,29 +142,27 @@ fnDefsMinmax maxdeg otherParams = (fns, fnmeta)
           NumOrd.maxOutEff effMinmaxInOut (x) cOneMinusOneOver16
          ]
         ]
-    cfg =
-        IntPolyCfg
-            {
-                ipolycfg_vars = vars,
-                ipolycfg_domsLZ = doms,
-                ipolycfg_domsLE = replicate (length vars) 0,
-                ipolycfg_sample_cf = 0 :: CF,
-                ipolycfg_maxdeg = maxdeg,
-                ipolycfg_maxsize = 1000
-            }
-    
-    dombox = Map.fromList $ zip vars doms
+    limits :: IntPolySizeLimits CF
+    limits =
+        IntPolySizeLimits
+        {
+            ipolylimits_cf_limits = (),
+            ipolylimits_maxdeg = maxdeg,
+            ipolylimits_maxsize = 1000
+        } 
+
+    varDoms = zip vars doms
     vars = ["x"]
     doms = [constructCF 0 1]
 
-    x = newProjection cfg dombox "x" :: Fn
---    c0 = newConstFn cfg dombox 0 :: Fn
---    c1 = newConstFn cfg dombox 1 :: Fn
---    cHalf = newConstFn cfg dombox 0.5 :: Fn
---    cHalf1 = newConstFn cfg dombox $ 0.5 </\> 1 :: Fn
-    cOneOver16 = newConstFn cfg dombox $ 0.5^(4::Int) :: Fn
-    cSevenOver16 = newConstFn cfg dombox $ 7 * 0.5^(4::Int) :: Fn
-    cOneMinusOneOver16 = newConstFn cfg dombox $ 15 * 0.5^(4::Int) :: Fn
+    x = newProjection limits varDoms "x" :: Fn
+--    c0 = newConstFn limits varDoms 0 :: Fn
+--    c1 = newConstFn limits varDoms 1 :: Fn
+--    cHalf = newConstFn limits varDoms 0.5 :: Fn
+--    cHalf1 = newConstFn limits varDoms $ 0.5 </\> 1 :: Fn
+    cOneOver16 = newConstFn limits varDoms $ 0.5^(4::Int) :: Fn
+    cSevenOver16 = newConstFn limits varDoms $ 7 * 0.5^(4::Int) :: Fn
+    cOneMinusOneOver16 = newConstFn limits varDoms $ 15 * 0.5^(4::Int) :: Fn
     
     effMinmaxInOut =
         case maybeBernsteinDegree of
@@ -176,7 +174,7 @@ fnDefsMinmax maxdeg otherParams = (fns, fnmeta)
             [] -> Nothing
             bernsteinDegS : _ -> Just (read bernsteinDegS)
     sampleFn = x 
-    sampleFnEndpt = newProjection cfg dombox "x" :: FnEndpt
+    sampleFnEndpt = newProjection limits varDoms "x" :: FnEndpt
 
 fnDefsMult1 :: Int -> [String] -> ([[Fn]], FV.FnMetaData Fn)
 fnDefsMult1 maxdeg _otherParams = (fns, fnmeta)
@@ -240,24 +238,22 @@ fnDefsMult1 maxdeg _otherParams = (fns, fnmeta)
         c0E <+>|
         (constructCF (-1) (1))
 
-    cfg =
-        IntPolyCfg
-            {
-                ipolycfg_vars = vars,
-                ipolycfg_domsLZ = doms,
-                ipolycfg_domsLE = replicate (length vars) 0,
-                ipolycfg_sample_cf = 0 :: CF,
-                ipolycfg_maxdeg = maxdeg,
-                ipolycfg_maxsize = 1000
-            }
+    x = newProjection limits varDoms "x" :: Fn
+    c0 = newConstFn limits varDoms 0 :: Fn
+    
+    xE = newProjection limits varDoms "x" :: FnEndpt
+    c0E = newConstFn limits varDoms 0 :: FnEndpt
+    
+    limits :: IntPolySizeLimits CF
+    limits =
+        IntPolySizeLimits
+        {
+            ipolylimits_cf_limits = (),
+            ipolylimits_maxdeg = maxdeg,
+            ipolylimits_maxsize = 1000
+        } 
 
-    x = newProjection cfg dombox "x" :: Fn
-    c0 = newConstFn cfg dombox 0 :: Fn
-    
-    xE = newProjection cfg dombox "x" :: FnEndpt
-    c0E = newConstFn cfg dombox 0 :: FnEndpt
-    
-    dombox = Map.fromList $ zip vars doms
+    varDoms = zip vars doms
     vars = ["x"]
     doms = [constructCF 0 1]
 
@@ -294,20 +290,18 @@ fnDefsExpMx2 maxdeg _otherParams = (fns, fnmeta)
         (neg (x <*> x)) <+>| (1.5::Double)
 --        x
 
-    x = newProjection cfg dombox "x" :: Fn
+    x = newProjection limits varDoms "x" :: Fn
     
-    cfg =
-        IntPolyCfg
-            {
-                ipolycfg_vars = vars,
-                ipolycfg_domsLZ = doms,
-                ipolycfg_domsLE = replicate (length vars) 0,
-                ipolycfg_sample_cf = 0 :: CF,
-                ipolycfg_maxdeg = maxdeg,
-                ipolycfg_maxsize = 1000
-            }
+    limits :: IntPolySizeLimits CF
+    limits =
+        IntPolySizeLimits
+        {
+            ipolylimits_cf_limits = (),
+            ipolylimits_maxdeg = maxdeg,
+            ipolylimits_maxsize = 1000
+        } 
 
-    dombox = Map.fromList $ zip vars doms
+    varDoms = zip vars doms
     vars = ["x"]
     doms = [constructCF (-1) 1]
     

@@ -60,13 +60,14 @@ import Numeric.AERN.Basics.Interval (refordPCompareInFullIntervalsEff)
 
 import Numeric.AERN.Basics.PartialOrdering
 --import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 
 --import Numeric.AERN.Misc.Debug
 
 instance
     (Ord var, Show var, 
-     Show cf, 
+     Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
      NumOrd.PartialComparison (Imprecision cf), 
