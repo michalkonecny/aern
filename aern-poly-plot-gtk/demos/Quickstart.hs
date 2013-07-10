@@ -8,12 +8,12 @@
     This module draft serves as source of requirements
     for the changes. 
 -}
-module Main where
+module Quickstart where
 
 {----- AERN imports -----}
 
 -- Doubles as interval endpoints:
-import Numeric.AERN.RealArithmetic.Basis.Double () 
+import Numeric.AERN.RealArithmetic.Basis.Double ()
 
 -- intervals with Double endpoints:
 import Numeric.AERN.RealArithmetic.Interval.Double (DI, Interval)

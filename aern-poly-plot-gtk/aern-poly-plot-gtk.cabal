@@ -57,6 +57,8 @@ executable plot
         aern-realfn-plot-gtk == 0.5.*,
         aern-poly == 0.5.*,
         aern-poly-plot-gtk == 0.5.*
+  other-modules:
+    Quickstart
 
 executable plotPicard
   hs-source-dirs:  demos
