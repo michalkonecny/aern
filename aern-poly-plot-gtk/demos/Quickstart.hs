@@ -29,7 +29,11 @@ import Numeric.AERN.RefinementOrder.Operators ((</\>))
 
 -- abstract approximate real arithmetic operations:
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((<+>), (<*>), (<^>), (>+<), (>*<), (>^<))
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators 
+    ((<+>), (<*>), (<^>), -- outer-rounded
+     (<+>|), (<*>|), (</>|), -- outer-rounded mixed type
+     (>+<), (>^<) -- inner-rounded
+    )
 --import Numeric.AERN.RealArithmetic.ExactOps
 
 -- interval-specific versions of some real operations:
@@ -105,7 +109,36 @@ nonexample15 :: PI
 nonexample15 = (x + 1) -- incompatible domains!
 
 example16 :: PI
-example16 = ArithInOut.expOut x
+example16 = (x <+>| (1 :: Int)) -- scalar shifting (mixed-type arithmetic)
+
+example17 :: PI
+example17 = (x </>| (2 :: Int)) -- scalar division
+
+example18 :: PI
+example18 = (x <*>| (0.5 :: Rational)) -- scaling
+
+{----- some elementary functions -----}
+
+example21 :: PI
+example21 = ArithInOut.expOut x
+
+example22 :: PI
+example22 = ArithInOut.expOut $ ArithInOut.expOut x
+
+nonexample23 :: PI
+nonexample23 = ArithInOut.sqrtOut x -- includes sqrt of negative numbers
+
+example24 :: PI
+example24 = ArithInOut.sqrtOut $ x + c1 + c1
+-- TODO: implement rudimentary division as interval sqrt needs it
+
+{----- interval functions -----}
+
+-- TODO
+
+{----- inner-rounding -----}
+
+-- TODO
 
 --example40 :: PI
 --example40 = ((x >+< c1) >^< 4) -- inner rounding
