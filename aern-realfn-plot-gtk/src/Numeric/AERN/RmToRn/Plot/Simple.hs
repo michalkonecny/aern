@@ -25,6 +25,8 @@ import Numeric.AERN.RmToRn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
+import qualified Numeric.AERN.RefinementOrder as RefOrd
+
 import qualified Graphics.UI.Gtk as Gtk
 import Control.Concurrent.STM
 
@@ -51,6 +53,8 @@ plotFns fnGroups =
     where
     ((sampleFn :_) :_) = fns 
     sampleCF = getSampleDomValue sampleFn
+    _varDoms@((var, dom) : _) = getVarDoms sampleFn
+    (domL, domR) = RefOrd.getEndpointsOut dom
     effDrawFn = cairoDrawFnDefaultEffort sampleFn
     effEval = evaluationDefaultEffort sampleFn
     effCF = ArithInOut.roundedRealDefaultEffort sampleCF
@@ -63,7 +67,10 @@ plotFns fnGroups =
         {
             FV.dataFnGroupNames = groupNames,
             FV.dataFnNames = fnNames,
-            FV.dataFnStyles = map mkStyles fns
+            FV.dataFnStyles = map mkStyles fns,
+            FV.dataDomName = show var,
+            FV.dataDomL = domL,
+            FV.dataDomR = domR
         }
         where
         mkStyles fs = map snd $ zip fs colours
