@@ -62,6 +62,11 @@ type V = String
 
 {----- constructing basic functions -----}
 
+{-
+    To make the following plotting code work, the file FnView.glade
+    has to be available in the current directory.  The master copy of this file
+    is in the root folder of the aern-realfn-plot-gtk package.
+-}
 samplePlot :: IO ()
 samplePlot = plotFns [("basic fns", [("(\\x.x)", x),("(\\x.1)", c1),("(\\x.x+1)", example10)])]
 
