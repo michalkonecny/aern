@@ -28,6 +28,11 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import qualified Graphics.UI.Gtk as Gtk
 import Control.Concurrent.STM
 
+{-|
+    To make the following plotting code work, the file FnView.glade
+    has to be available in the current directory.  The master copy of this file
+    is in the root folder of the aern-realfn-plot-gtk package.
+-}
 plotFns ::
     (RoundedRealFn f, 
      CairoDrawableFn f,
