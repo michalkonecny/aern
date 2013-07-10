@@ -35,6 +35,7 @@ Library
         aern-interval == 0.5.*,
         aern-realfn == 0.5.*
   exposed-modules:       
+        Numeric.AERN.RmToRn.Plot.Simple
         Numeric.AERN.RmToRn.Plot.Params
         Numeric.AERN.RmToRn.Plot.CairoDrawable
         Numeric.AERN.RmToRn.Plot.FromEval
