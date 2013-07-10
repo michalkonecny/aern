@@ -121,4 +121,9 @@ instance HasInfinities Double where
     excludesPlusInfinity a = (a /= (plusInfinity a))
     excludesMinusInfinity a = (a /= (minusInfinity a))
     
-
+instance HasSampleFromContext Char 
+    where 
+    sampleFromContext = 'S'
+instance HasSampleFromContext t => HasSampleFromContext [t] 
+    where 
+    sampleFromContext = [sampleFromContext]

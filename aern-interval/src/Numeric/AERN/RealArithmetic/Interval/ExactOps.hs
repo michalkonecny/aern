@@ -21,6 +21,11 @@ import Numeric.AERN.Basics.Interval
 import qualified Numeric.AERN.NumericOrder as NumOrd 
 import Numeric.AERN.RealArithmetic.ExactOps
 
+instance (HasSampleFromContext e) => HasSampleFromContext (Interval e) where
+    sampleFromContext = Interval sampleE sampleE
+        where
+        sampleE = sampleFromContext
+
 instance  (HasZero e, NumOrd.PartialComparison e) => HasZero (Interval e) where
     zero (Interval sampleE _) = Interval z z
         where

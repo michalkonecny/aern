@@ -53,6 +53,21 @@ import qualified Data.Map                                                       
 
 {-- Basic function-approximation specific ops --}
 
+instance
+    (HasSampleFromContext cf,
+     HasSampleFromContext var,
+     Ord var, Show var, Show cf, 
+     RefOrd.IntervalLike cf, 
+     ArithInOut.RoundedReal cf, 
+     HasConsistency cf)
+    =>
+    HasSampleFromContext (IntPoly var cf)
+    where
+    sampleFromContext = 
+        newConstFn sizeLimits [(sampleFromContext, sampleCf)] sampleCf
+        where
+        sizeLimits = defaultIntPolySizeLimits (defaultSizeLimits sampleCf) 
+        sampleCf = sampleFromContext
 
 instance
     (Ord var, Show var, Show cf,

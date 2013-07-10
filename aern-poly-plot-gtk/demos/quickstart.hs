@@ -12,11 +12,14 @@ module Main where
 
 {----- AERN imports -----}
 
+-- Doubles as interval endpoints:
+import Numeric.AERN.RealArithmetic.Basis.Double () 
+
 -- intervals with Double endpoints:
 import Numeric.AERN.RealArithmetic.Interval.Double (DI, Interval)
 
 -- interval-coefficient polynomials:
-import Numeric.AERN.Poly.IntPoly (IntPoly)
+import Numeric.AERN.Poly.IntPoly (IntPoly, IntPolySizeLimits(..), defaultIntPolySizeLimits)
 
 -- abstract approximate order operations:
 import qualified Numeric.AERN.NumericOrder as NumOrd
@@ -27,6 +30,7 @@ import Numeric.AERN.RefinementOrder.Operators
 -- abstract approximate real arithmetic operations:
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
+import Numeric.AERN.RealArithmetic.ExactOps
 
 -- abstract function processing operations:
 import Numeric.AERN.RmToRn
@@ -42,27 +46,34 @@ type Poly = IntPoly String DI
 type PI = Interval Poly
     -- polynomial intervals
 
+main :: IO ()
 main =
     do
-    return () -- TODO
---    putStrLn $ "x = " ++ show x
+    putStrLn $ "x + 1 = " ++ show (x + c1)
 
---x = newProjection sizeLimits dombox "x" :: PI
---c0 = newConstFn sizeLimits dombox 0 :: PI
---c1 = newConstFn sizeLimits dombox 1 :: PI
---
---dombox = Map.fromList $ zip vars doms
---
---vars = ["x"]
---
---doms :: [(DI, DI)]
---doms = [(0, 1)]
---
---sizeLimits =
---    IntPolySizeLimits
---        {
---            ipolylimits_maxdeg = 10,
---            ipolylimits_maxsize = 20
---        }
+x :: PI
+x = newProjection sizeLimits varDoms "x"
+c0 :: PI
+c0 = newConstFn sizeLimits varDoms 0
+c1 :: PI
+c1 = newConstFn sizeLimits varDoms 1
+
+varDoms :: [(Var Poly, DI)]
+varDoms = zip vars doms
+
+vars :: [Var Poly]
+vars = ["x"]
+
+doms :: [DI]
+doms = [0 </\> 1]
+
+
+sizeLimits :: IntPolySizeLimits DI
+sizeLimits =
+    (defaultIntPolySizeLimits ()) 
+        {
+            ipolylimits_maxdeg = 3,
+            ipolylimits_maxsize = 40
+        }
 
     
