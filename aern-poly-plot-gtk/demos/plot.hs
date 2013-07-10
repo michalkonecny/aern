@@ -6,9 +6,7 @@ import Numeric.AERN.Poly.IntPoly.Plot ()
 import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
 import Numeric.AERN.RmToRn.Plot.CairoDrawable
 
-import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.New
-import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
@@ -85,8 +83,7 @@ addPlotVar fns =
     addV fn = (fn, plotVar)
         where
         (plotVar : _) = vars
-        vars = map fst $ toAscList dombox
-        dombox = getDomainBox fn   
+        vars = map fst $ getVarDoms fn   
 
 getFnDefs :: String -> Int -> [String] -> Maybe ([[Fn]], FV.FnMetaData Fn)
 getFnDefs exampleName maxdeg otherParams =

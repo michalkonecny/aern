@@ -20,6 +20,7 @@ import Numeric.AERN.RealArithmetic.Interval.Double (DI, Interval)
 
 -- interval-coefficient polynomials:
 import Numeric.AERN.Poly.IntPoly (IntPoly, IntPolySizeLimits(..))
+import Numeric.AERN.Poly.IntPoly.Plot ()
 
 -- abstract approximate order operations:
 --import qualified Numeric.AERN.NumericOrder as NumOrd
@@ -42,6 +43,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 -- abstract function processing operations:
 import Numeric.AERN.RmToRn (newConstFn, newProjection)
+import Numeric.AERN.RmToRn.Plot.Simple (plotFns)
 
 {----- non-AERN imports -----}
 
@@ -59,6 +61,9 @@ type V = String
     -- variables
 
 {----- constructing basic functions -----}
+
+samplePlot :: IO ()
+samplePlot = plotFns [("basic fns", [("(\\x.x)", x),("(\\x.1)", c1),("(\\x.x+1)", example10)])]
 
 {-| The identity @\x:[0,1] -> x@.  This is a simple example of a projection.  -}
 x :: PI

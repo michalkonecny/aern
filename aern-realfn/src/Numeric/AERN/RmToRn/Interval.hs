@@ -21,19 +21,18 @@ module Numeric.AERN.RmToRn.Interval where
 
 import Numeric.AERN.Basics.Interval
 
-import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.New
-import Numeric.AERN.RmToRn.Evaluation
-import Numeric.AERN.RmToRn.Integration
-import Numeric.AERN.RmToRn.Differentiation
+import Numeric.AERN.RmToRn
+
+--import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
+--import Numeric.AERN.RefinementOrder.Operators
 
 import Numeric.AERN.Basics.ShowInternals
-import Numeric.AERN.Basics.SizeLimits
+--import Numeric.AERN.Basics.SizeLimits
 
 instance
     (HasDomainBox f)
@@ -46,6 +45,7 @@ instance
     getSampleDomValue (Interval l _) = getSampleDomValue l
     defaultDomSplit (Interval l _) = defaultDomSplit l
     getDomainBox (Interval l _) = getDomainBox l
+    getVarDoms (Interval l _) = getVarDoms l
     getNSamplesFromInsideDomainBox (Interval l _) = getNSamplesFromInsideDomainBox l
     getSampleFromInsideDomainBox (Interval l _) = getSampleFromInsideDomainBox l
     
@@ -256,4 +256,26 @@ instance
         (lN, _) = RefOrd.getEndpointsInEff effGetE $ fakePartialDerivativeInEff effDeriv l var 
         (_, rN) = RefOrd.getEndpointsInEff effGetE $ fakePartialDerivativeInEff effDeriv r var
         
-        
+instance
+    (
+        ArithInOut.RoundedReal (Interval f),
+        HasEvalOps f (Interval f),
+        CanEvaluate f,
+        CanEvaluateOtherTypeInner f,
+        RefOrd.IntervalLike f, 
+        HasProjections f,
+        HasConstFns f,
+        NumOrd.PartialComparison f,
+        RoundedIntegration f,
+        ArithInOut.RoundedReal (Domain f),
+        RefOrd.IntervalLike (Domain f),
+        HasVarValue (VarBox f (Interval f)) (Var f) (Interval f),
+        GeneratableVariables (Var f),
+        ShowInternals f   
+    )
+    =>
+    RoundedRealFn (Interval f)
+    where
+    -- TODO
+    
+    
