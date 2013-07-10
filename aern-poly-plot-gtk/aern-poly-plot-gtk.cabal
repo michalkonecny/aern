@@ -33,7 +33,8 @@ library
         aern-realfn == 0.5.*,
         aern-realfn-plot-gtk == 0.5.*,
         aern-poly == 0.5.*
-  exposed-modules: Numeric.AERN.Poly.IntPoly.Plot
+  exposed-modules: 
+        Numeric.AERN.Poly.IntPoly.Plot
 
 executable plot
   hs-source-dirs:  demos
@@ -79,25 +80,4 @@ executable plotPicard
         aern-poly == 0.5.*,
         aern-poly-plot-gtk == 0.5.*
 
-executable quickstart
-  hs-source-dirs:  demos
-  ghc-options:     -Wall -rtsopts
-  main-is:         quickstart.hs
-  Build-Depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        random >= 1.0 && < 1.1,
-        gtk >= 0.12.0 && < 0.13,
-        cairo >= 0.12.0 && < 0.13,
-        stm >= 2.1.2.1 && < 2.5,
-        filepath >= 1.1.0.4 && < 1.4,
-        directory >= 1.0.1.1 && < 1.2,
-        aern-order == 0.5.*,
-        aern-real == 0.5.*,
-        aern-interval == 0.5.*,
-        aern-double == 0.5.*,
-        aern-mpfr == 0.5.*,
-        aern-realfn == 0.5.*,
-        aern-realfn-plot-gtk == 0.5.*,
-        aern-poly == 0.5.*,
-        aern-poly-plot-gtk == 0.5.*
 
