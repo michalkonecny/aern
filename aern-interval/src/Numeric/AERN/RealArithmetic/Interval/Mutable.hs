@@ -15,15 +15,14 @@
 
 module Numeric.AERN.RealArithmetic.Interval.Mutable
 (
-    module Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps,
-    module Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps,
-    module Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps
+    module Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
 )
 where
 
-import Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps
-import Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps
-import Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps
+import Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps ()
+import Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps ()
+import Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps ()
+import Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
@@ -35,7 +34,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.RealArithmetic.Interval
+import Numeric.AERN.RealArithmetic.Interval ()
 
 instance
     (ArithUpDn.RoundedRealInPlace e, NumOrd.HasExtrema e,

@@ -126,7 +126,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
   )
 
 import qualified Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps as RAIMEFFO
-    (expOutInPlaceIters, sqrtOutInPlaceIters)
+    (intervalExpOutInPlaceIters, intervalSqrtOutInPlaceIters)
 
 import Numeric.AERN.DoubleBasis.RealApprox (RealApprox)
 import Control.Monad.ST (runST)
@@ -260,5 +260,5 @@ sqrtOutInPlace :: OpMutable1 RealApprox s
 sqrtOutInPlace = RAROR.sqrtOutInPlace 
 
 expOutInPlaceIters, sqrtOutInPlaceIters :: Int -> OpMutable1 RealApprox s
-expOutInPlaceIters = RAIMEFFO.expOutInPlaceIters
-sqrtOutInPlaceIters = RAIMEFFO.sqrtOutInPlaceIters
+expOutInPlaceIters = RAIMEFFO.intervalExpOutInPlaceIters
+sqrtOutInPlaceIters = RAIMEFFO.intervalSqrtOutInPlaceIters

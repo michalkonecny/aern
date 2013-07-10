@@ -25,16 +25,16 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Interval ()
+import Numeric.AERN.RealArithmetic.Interval.FieldOps ()
 
 import Numeric.AERN.Basics.Interval
 --import Numeric.AERN.Basics.Consistency
 --import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Basics.Mutable
+--import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Exception
 
 import Control.Exception (throw)
-import Control.Monad.ST (ST)
+--import Control.Monad.ST (ST)
 
 sqrtOutThinArg ::
     (HasZero e, HasOne e, Show e,
@@ -117,10 +117,10 @@ sqrtOutThinArg
     x1 *. x2 = ArithUpDn.multDnEff effortMult x1 x2
     recipUp x1 = ArithUpDn.recipUpEff effortDiv x1
     recipDn x1 = ArithUpDn.recipDnEff effortDiv x1
-    n |+^ x = ArithUpDn.mixedAddUpEff effortAddInt x (n :: Int)
-    n |+. x = ArithUpDn.mixedAddDnEff effortAddInt x  (n :: Int)
-    x /^| n = ArithUpDn.mixedDivUpEff effortDivInt x  (n :: Int)
-    x /.| n = ArithUpDn.mixedDivDnEff effortDivInt x  (n :: Int)
+    n |+^ x2 = ArithUpDn.mixedAddUpEff effortAddInt x2 (n :: Int)
+    n |+. x2 = ArithUpDn.mixedAddDnEff effortAddInt x2  (n :: Int)
+    x1 /^| n = ArithUpDn.mixedDivUpEff effortDivInt x1  (n :: Int)
+    x1 /.| n = ArithUpDn.mixedDivDnEff effortDivInt x1  (n :: Int)
     
     effortAdd = ArithUpDn.fldEffortAdd x effortField
     effortMult = ArithUpDn.fldEffortMult x effortField

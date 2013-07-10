@@ -231,7 +231,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
   )
  
 import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
-    (expOutIters, expInIters, sqrtOutIters, sqrtInIters)
+    (intervalExpOutIters, intervalExpInIters, intervalSqrtOutIters, intervalSqrtInIters)
 
 import Numeric.AERN.RealArithmetic.Basis.Double()
 
@@ -582,16 +582,16 @@ sqrtIn :: RealIntervalApprox -> RealIntervalApprox
 sqrtIn = RAROR.sqrtIn
 
 expOutIters :: Int -> RealIntervalApprox -> RealIntervalApprox
-expOutIters = RAIEFFO.expOutIters
+expOutIters = RAIEFFO.intervalExpOutIters
 
 sqrtOutIters :: Int -> RealIntervalApprox -> RealIntervalApprox
-sqrtOutIters = RAIEFFO.sqrtOutIters
+sqrtOutIters = RAIEFFO.intervalSqrtOutIters
 
 expInIters :: Int -> RealIntervalApprox -> RealIntervalApprox
-expInIters = RAIEFFO.expInIters
+expInIters = RAIEFFO.intervalExpInIters
 
 sqrtInIters :: Int -> RealIntervalApprox -> RealIntervalApprox
-sqrtInIters = RAIEFFO.sqrtInIters
+sqrtInIters = RAIEFFO.intervalSqrtInIters
 
 newtype PositiveRealIntervalApprox = 
     PositiveRealIntervalApprox 

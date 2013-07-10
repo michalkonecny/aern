@@ -16,14 +16,14 @@
 -}
 
 module Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
-    (expOutInPlaceIters, expInInPlaceIters, sqrtOutInPlaceIters, sqrtInInPlaceIters) 
+    (intervalExpOutInPlaceIters, intervalExpInInPlaceIters, intervalSqrtOutInPlaceIters, intervalSqrtInInPlaceIters) 
 where
 
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
 
-import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt
+--import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
@@ -31,11 +31,11 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Interval
+--import Numeric.AERN.RealArithmetic.Interval
 import Numeric.AERN.RealArithmetic.Measures
 
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.Consistency
+--import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 
 import Numeric.AERN.Basics.Mutable
@@ -83,7 +83,7 @@ instance
                 effortTaylor 
                 (MInterval rM rM)
 
-expOutInPlaceIters, expInInPlaceIters ::
+intervalExpOutInPlaceIters, intervalExpInInPlaceIters ::
     (CanBeMutable e, 
      ArithInOut.RoundedRealInPlace (Interval e),
      -- MK has no idea why the following three are not automatically deduced from the above...
@@ -94,14 +94,14 @@ expOutInPlaceIters, expInInPlaceIters ::
     ) 
     => 
     Int -> OpMutable1 (Interval e) s 
-expOutInPlaceIters n resM iM =
+intervalExpOutInPlaceIters n resM iM =
     do
     i <- unsafeReadMutable iM
-    ArithInOut.expOutInPlaceEff (expDefaultEffortWithIters i n) resM iM
-expInInPlaceIters n resM iM =
+    ArithInOut.expOutInPlaceEff (intervalExpDefaultEffortWithIters i n) resM iM
+intervalExpInInPlaceIters n resM iM =
     do
     i <- unsafeReadMutable iM
-    ArithInOut.expInInPlaceEff (expDefaultEffortWithIters i n) resM iM
+    ArithInOut.expInInPlaceEff (intervalExpDefaultEffortWithIters i n) resM iM
 
 instance
     (CanBeMutable e, Show e,
@@ -166,7 +166,7 @@ instance
 --                effortNewton 
 --                rM
             
-sqrtOutInPlaceIters, sqrtInInPlaceIters ::
+intervalSqrtOutInPlaceIters, intervalSqrtInInPlaceIters ::
     (CanBeMutable e, Show e,
      ArithUpDn.RoundedFieldInPlace e,
      ArithUpDn.RoundedMixedFieldInPlace e Int,
@@ -180,12 +180,12 @@ sqrtOutInPlaceIters, sqrtInInPlaceIters ::
      NumOrd.RoundedLatticeInPlace e) 
     =>
     Int -> OpMutable1 (Interval e) s 
-sqrtOutInPlaceIters n resM iM =
+intervalSqrtOutInPlaceIters n resM iM =
     do
     i <- unsafeReadMutable iM
-    ArithInOut.sqrtOutInPlaceEff (sqrtDefaultEffortWithIters i n) resM iM
-sqrtInInPlaceIters n resM iM =
+    ArithInOut.sqrtOutInPlaceEff (intervalSqrtDefaultEffortWithIters i n) resM iM
+intervalSqrtInInPlaceIters n resM iM =
     do
     i <- unsafeReadMutable iM
-    ArithInOut.sqrtInInPlaceEff (sqrtDefaultEffortWithIters i n) resM iM
+    ArithInOut.sqrtInInPlaceEff (intervalSqrtDefaultEffortWithIters i n) resM iM
             

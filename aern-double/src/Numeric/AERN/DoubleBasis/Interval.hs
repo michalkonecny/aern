@@ -232,7 +232,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
    piIn,eIn,absIn,expIn,sqrtIn)
  
 import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
-    (expOutIters, expInIters, sqrtOutIters, sqrtInIters)
+    (intervalExpOutIters, intervalExpInIters, intervalSqrtOutIters, intervalSqrtInIters)
 
 import Numeric.AERN.RealArithmetic.Basis.Double()
 
@@ -562,16 +562,16 @@ sqrtIn :: DI -> DI
 sqrtIn = RAROR.sqrtIn
 
 expOutIters :: Int -> DI -> DI
-expOutIters = RAIEFFO.expOutIters
+expOutIters = RAIEFFO.intervalExpOutIters
 
 sqrtOutIters :: Int -> DI -> DI
-sqrtOutIters = RAIEFFO.sqrtOutIters
+sqrtOutIters = RAIEFFO.intervalSqrtOutIters
 
 expInIters :: Int -> DI -> DI
-expInIters = RAIEFFO.expInIters
+expInIters = RAIEFFO.intervalExpInIters
 
 sqrtInIters :: Int -> DI -> DI
-sqrtInIters = RAIEFFO.sqrtInIters
+sqrtInIters = RAIEFFO.intervalSqrtInIters
 
 newtype PositiveDI = PositiveDI { unPositiveDI :: DI }
 
