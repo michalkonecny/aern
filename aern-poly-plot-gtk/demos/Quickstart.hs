@@ -27,6 +27,7 @@ import Numeric.AERN.Poly.IntPoly.Plot ()
 --import Numeric.AERN.NumericOrder.Operators
 --import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.Operators ((</\>))
+import Numeric.AERN.Basics.SizeLimits (changeSizeLimitsOut)
 
 -- abstract approximate real arithmetic operations:
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
@@ -67,8 +68,8 @@ type V = String
     has to be available in the current directory.  The master copy of this file
     is in the root folder of the aern-realfn-plot-gtk package.
 -}
-samplePlot :: IO ()
-samplePlot = plotFns [("basic fns", [("(\\x.x)", x),("(\\x.1)", c1),("(\\x.x+1)", example10)])]
+basicFnPlot :: IO ()
+basicFnPlot = plotFns [("basic fns", [("(\\x.x)", x),("(\\x.1)", c1)])]
 
 {-| The identity @\x:[0,1] -> x@.  This is a simple example of a projection.  -}
 x :: PI
@@ -109,6 +110,9 @@ example11 = (x <*> x) -- outer-rounded multiplication
 example12 :: PI
 example12 = x <^> 2 -- outer-rounded power with natural exponent
 
+basicArithPlot :: IO ()
+basicArithPlot = plotFns [("arith", [("(\\x.x+1)", x <+> c1),("(\\x.x^2)", x <^> 2)])]
+
 example13 :: PI
 example13 = (x <+>| (1 :: Int)) -- scalar shifting (mixed-type arithmetic)
 
@@ -120,6 +124,15 @@ example15 = (x <*>| (0.5 :: Rational)) -- scaling
 
 example16 :: PI
 example16 = (((x </>| (2 :: Int)) <+> c1) <^> 4 ) -- rounding in action
+
+example16E :: PI
+example16E = (((changeSizeLimitsOut sizeLimitsD4 $ x </>| (2 :: Int)) <+> c1) <^> 4 ) -- same as above but without rounding
+
+sizeLimitsD4 :: IntPolySizeLimits DI
+sizeLimitsD4 = sizeLimits { ipolylimits_maxdeg = 4 }
+
+roundingPlot :: IO ()
+roundingPlot = plotFns [("outer rounding", [("rounded", example16),("exact", example16E)])]
 
 example17 :: PI
 example17 = (x + c1) -- Num instance is synonymous to outer-rounded operations
