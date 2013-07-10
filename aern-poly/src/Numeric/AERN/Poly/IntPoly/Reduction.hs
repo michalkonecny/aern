@@ -89,7 +89,12 @@ instance
                     terms
     changeSizeLimitsInEff =
         error "aern-poly: changeSizeLimitsInEff not available for IntPoly" 
-
+    changeSizeLimitsUpEff effCf limitsNew p =
+        snd $ RefOrd.getEndpointsOut $
+            changeSizeLimitsOutEff effCf limitsNew p
+    changeSizeLimitsDnEff effCf limitsNew p =
+        fst $ RefOrd.getEndpointsOut $
+            changeSizeLimitsOutEff effCf limitsNew p
 
 reducePolyTermCountOut ::
     (Show var,
