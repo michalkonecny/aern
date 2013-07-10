@@ -15,8 +15,8 @@
 -}
 
 module Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps 
-(expDefaultEffortWithIters, expOutIters, expInIters,
- sqrtDefaultEffortWithIters, sqrtOutIters, sqrtInIters)
+(intervalExpDefaultEffortWithIters, intervalExpOutIters, intervalExpInIters,
+ intervalSqrtDefaultEffortWithIters, intervalSqrtOutIters, intervalSqrtInIters)
 where
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
@@ -35,7 +35,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Interval
+import Numeric.AERN.RealArithmetic.Interval.FieldOps
 import Numeric.AERN.RealArithmetic.Measures
 
 import Numeric.AERN.Basics.Interval
@@ -57,16 +57,16 @@ instance
     where
     type ExpEffortIndicator (Interval e) = 
         (ArithInOut.RoundedRealEffortIndicator (Interval e), Int1To10)
-    expDefaultEffort i@(Interval l r) =
+    expDefaultEffort i =
         (ArithInOut.roundedRealDefaultEffort i, Int1To10 10)
 
-expDefaultEffortWithIters ::
+intervalExpDefaultEffortWithIters ::
     (ArithInOut.RoundedReal (Interval e))
     => 
     (Interval e) -> 
     Int -> 
     ArithInOut.ExpEffortIndicator (Interval e)
-expDefaultEffortWithIters  i@(Interval l r) n =
+intervalExpDefaultEffortWithIters  i@(Interval l r) n =
     (ArithInOut.roundedRealDefaultEffort i, Int1To10 n)
 
 
@@ -114,7 +114,7 @@ instance
                 effortTaylor 
                 (Interval r r)
 
-expOutIters, expInIters ::
+intervalExpOutIters, intervalExpInIters ::
     (ArithInOut.RoundedReal (Interval e), 
      -- MK has no idea why the following three are not automatically deduced from the above...
      ArithUpDn.RoundedReal e,
@@ -126,8 +126,8 @@ expOutIters, expInIters ::
      NumOrd.HasExtrema e)
     => 
     Int -> (Interval e) -> (Interval e)
-expOutIters n i = ArithInOut.expOutEff (expDefaultEffortWithIters i n) i
-expInIters n i = ArithInOut.expInEff (expDefaultEffortWithIters i n) i
+intervalExpOutIters n i = ArithInOut.expOutEff (intervalExpDefaultEffortWithIters i n) i
+intervalExpInIters n i = ArithInOut.expInEff (intervalExpDefaultEffortWithIters i n) i
 
 instance 
     (ArithUpDn.RoundedMixedFieldEffort e Int,
@@ -161,7 +161,7 @@ instance
         sampleI = 1 :: Int
         sampleD = 1 :: Double
 
-sqrtDefaultEffortWithIters ::
+intervalSqrtDefaultEffortWithIters ::
     (ArithUpDn.RoundedMixedFieldEffort e Int,
      ArithUpDn.RoundedFieldEffort e, 
      ArithUpDn.Convertible e Double,
@@ -171,7 +171,7 @@ sqrtDefaultEffortWithIters ::
     (Interval e) -> 
     Int -> 
     ArithInOut.SqrtEffortIndicator (Interval e)
-sqrtDefaultEffortWithIters i@(Interval l r) n =
+intervalSqrtDefaultEffortWithIters i@(Interval l r) n =
         ((ArithUpDn.fieldOpsDefaultEffort l, 
           ArithUpDn.mixedFieldOpsDefaultEffort l sampleI)
         ,
@@ -237,7 +237,7 @@ instance
                 effortConv 
                 effortNewton 
 
-sqrtOutIters, sqrtInIters ::
+intervalSqrtOutIters, intervalSqrtInIters ::
     (ArithUpDn.RoundedMixedField e Int,
      ArithUpDn.RoundedField e, 
      ArithUpDn.Convertible e Double,
@@ -247,6 +247,6 @@ sqrtOutIters, sqrtInIters ::
      Show e)
     =>
     Int -> (Interval e) -> (Interval e) 
-sqrtOutIters n i = ArithInOut.sqrtOutEff (sqrtDefaultEffortWithIters i n) i
-sqrtInIters n i = ArithInOut.sqrtInEff (sqrtDefaultEffortWithIters i n) i
+intervalSqrtOutIters n i = ArithInOut.sqrtOutEff (intervalSqrtDefaultEffortWithIters i n) i
+intervalSqrtInIters n i = ArithInOut.sqrtInEff (intervalSqrtDefaultEffortWithIters i n) i
                 

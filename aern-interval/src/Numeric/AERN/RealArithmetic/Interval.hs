@@ -17,7 +17,11 @@
 -}
 
 module Numeric.AERN.RealArithmetic.Interval
-()
+(
+    -- This module re-exports mainly type class instances;
+    -- The following module has some auxiliary functions:
+    module  Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
+)
 where
 
 import Numeric.AERN.RealArithmetic.Interval.ExactOps ()
@@ -28,6 +32,7 @@ import Numeric.AERN.RealArithmetic.Interval.FieldOps ()
 import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps ()
 import Numeric.AERN.RealArithmetic.Interval.SpecialConst ()
 import Numeric.AERN.RealArithmetic.Interval.Floating ()
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn

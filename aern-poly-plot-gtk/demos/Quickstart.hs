@@ -32,6 +32,9 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((<+>), (<*>), (<^>), (>+<), (>*<), (>^<))
 --import Numeric.AERN.RealArithmetic.ExactOps
 
+-- interval-specific versions of some real operations:
+--import Numeric.AERN.RealArithmetic.Interval (intervalExpDefaultEffortWithIters, intervalSqrtDefaultEffortWithIters)
+
 
 -- abstract function processing operations:
 import Numeric.AERN.RmToRn (newConstFn, newProjection)
@@ -101,9 +104,9 @@ example14 = (x + c1) ^ 4 -- Num instance is synonymous to outer-rounded operatio
 nonexample15 :: PI
 nonexample15 = (x + 1) -- incompatible domains!
 
---example16 :: PI
---example16 = ArithInOut.expOut x
---
+example16 :: PI
+example16 = ArithInOut.expOut x
+
 --example40 :: PI
 --example40 = ((x >+< c1) >^< 4) -- inner rounding
 
