@@ -110,22 +110,22 @@ example12 :: PI
 example12 = x <^> 2 -- outer-rounded power with natural exponent
 
 example13 :: PI
-example13 = ((x <+> c1) <^> 4 ) -- rounding in action
+example13 = (x <+>| (1 :: Int)) -- scalar shifting (mixed-type arithmetic)
 
 example14 :: PI
-example14 = (x + c1) ^ 4 -- Num instance is synonymous to outer-rounded operations
+example14 = (x </>| (2 :: Int)) -- scalar division
 
-nonexample15 :: PI
-nonexample15 = (x + 1) -- incompatible domains!
+example15 :: PI
+example15 = (x <*>| (0.5 :: Rational)) -- scaling
 
 example16 :: PI
-example16 = (x <+>| (1 :: Int)) -- scalar shifting (mixed-type arithmetic)
+example16 = (((x </>| (2 :: Int)) <+> c1) <^> 4 ) -- rounding in action
 
 example17 :: PI
-example17 = (x </>| (2 :: Int)) -- scalar division
+example17 = (x + c1) -- Num instance is synonymous to outer-rounded operations
 
-example18 :: PI
-example18 = (x <*>| (0.5 :: Rational)) -- scaling
+nonexample18 :: PI
+nonexample18 = (x + 1) -- incompatible domains!
 
 {----- some elementary functions -----}
 
