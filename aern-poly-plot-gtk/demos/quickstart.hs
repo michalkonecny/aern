@@ -19,7 +19,7 @@ import Numeric.AERN.RealArithmetic.Basis.Double ()
 import Numeric.AERN.RealArithmetic.Interval.Double (DI, Interval)
 
 -- interval-coefficient polynomials:
-import Numeric.AERN.Poly.IntPoly (IntPoly, IntPolySizeLimits(..), defaultIntPolySizeLimits)
+import Numeric.AERN.Poly.IntPoly (IntPoly, IntPolySizeLimits(..))
 
 -- abstract approximate order operations:
 --import qualified Numeric.AERN.NumericOrder as NumOrd
@@ -39,7 +39,7 @@ import Numeric.AERN.RmToRn (newConstFn, newProjection)
 
 --import qualified Data.Map as Map
 
-{----- definitions -----}
+{----- type definitions -----}
 
 type PI = Interval Poly
     -- polynomial intervals
@@ -50,17 +50,17 @@ type Poly = IntPoly V DI
 type V = String
     -- variables
 
-main :: IO ()
-main =
-    do
-    putStrLn $ "x + 1 = " ++ show (x + c1)
+{----- the first functions -----}
 
+{-| The identity @\x:[0,1] -> x@.  This is a simple example of a projection.  -}
 x :: PI
 x = newProjection sizeLimits varDoms "x"
 
+{-| The constant function @\x:[0,1] -> 1@. -}
 c1 :: PI
 c1 = newConstFn sizeLimits varDoms 1
 
+{-| encoding of the domain box -}
 varDoms :: [(V, DI)]
 varDoms = zip vars doms
 
@@ -70,10 +70,12 @@ vars = ["x"]
 doms :: [DI]
 doms = [0 </\> 1]
 
+{-| example size limits for polynomials -}
 sizeLimits :: IntPolySizeLimits DI
 sizeLimits =
-    (defaultIntPolySizeLimits ()) 
+    IntPolySizeLimits 
         {
+            ipolylimits_cf_limits = (),
             ipolylimits_maxdeg = 3,
             ipolylimits_maxsize = 40
         }
