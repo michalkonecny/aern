@@ -36,8 +36,11 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.RealArithmetic.Interval ()
 
+import Numeric.AERN.Basics.ShowInternals
+
 instance
-    (ArithUpDn.RoundedRealInPlace e, NumOrd.HasExtrema e,
+    (ShowInternals e,
+     ArithUpDn.RoundedRealInPlace e, NumOrd.HasExtrema e,
      ArithInOut.RoundedField (Distance e), 
      Neg (Distance e),
      RefOrd.RoundedLattice (Distance e)) => 

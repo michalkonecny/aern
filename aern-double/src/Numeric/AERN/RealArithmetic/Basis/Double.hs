@@ -42,6 +42,7 @@ instance RoundedReal Double where
     rrEffortComp _ _ = ()
     rrEffortMinmax _ _ = ()
     rrEffortDistance _ _ = ()
+    rrEffortToSelf _ _ = ()
     rrEffortToInt _ _ = ()
     rrEffortFromInt _ _ = ()
     rrEffortToInteger _ _ = ()

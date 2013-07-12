@@ -62,6 +62,7 @@ import Numeric.AERN.RefinementOrder
     -- ^^^ needed for ghc 6.12
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
+import Numeric.AERN.Basics.Interval
 --import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.SizeLimits
@@ -75,25 +76,25 @@ _ = unsafePrint
 instance
     (Ord var,
      GeneratableVariables var,
-     HasAntiConsistency cf, 
-     Arbitrary cf, 
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,
-     ArithUpDn.Convertible cf cf,
-     ArithInOut.RoundedMixedField cf cf,
-     NumOrd.RefinementRoundedLatticeEffort cf,
+     HasAntiConsistency (Interval e), 
+     Arbitrary (Interval e), 
+     ArithInOut.RoundedReal (Interval e),
+     RefOrd.IntervalLike (Interval e),
+     ArithUpDn.Convertible (Interval e) (Interval e),
+     ArithInOut.RoundedMixedField (Interval e) (Interval e),
+     NumOrd.RefinementRoundedLatticeEffort (Interval e),
      Show var,
-     Show cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf))
+     Show (Interval e),
+     Show (Imprecision (Interval e)),
+     NumOrd.PartialComparison (Imprecision (Interval e)))
     =>
-    NumOrd.RoundedLatticeEffort (IntPoly var cf)
+    NumOrd.RoundedLatticeEffort (IntPoly var (Interval e))
     where
-    type MinmaxEffortIndicator (IntPoly var cf) =
-        (MinmaxEffortIndicatorFromRingOps (IntPoly var cf) (IntPoly var cf),
-         NumOrd.MinmaxInOutEffortIndicator cf,
+    type MinmaxEffortIndicator (IntPoly var (Interval e)) =
+        (MinmaxEffortIndicatorFromRingOps (IntPoly var (Interval e)) (IntPoly var (Interval e)),
+         NumOrd.MinmaxInOutEffortIndicator (Interval e),
          Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
-         RefOrd.GetEndpointsEffortIndicator (IntPoly var cf))
+         RefOrd.GetEndpointsEffortIndicator (IntPoly var (Interval e)))
     minmaxDefaultEffort f@(IntPoly cfg _) =
         (defaultMinmaxEffortIndicatorFromRingOps f f,
          NumOrd.minmaxInOutDefaultEffort sampleDom,
@@ -134,19 +135,19 @@ minmaxUpDnDefaultEffortIntPolyWithBezierDegree degree f =
 instance
     (Ord var,
      GeneratableVariables var,
-     HasAntiConsistency cf, 
-     Arbitrary cf, 
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,
-     ArithUpDn.Convertible cf cf,
-     ArithInOut.RoundedMixedField cf cf,
-     NumOrd.RefinementRoundedLattice cf,
+     HasAntiConsistency (Interval e), 
+     Arbitrary (Interval e), 
+     ArithInOut.RoundedReal (Interval e),
+     RefOrd.IntervalLike (Interval e),
+     ArithUpDn.Convertible (Interval e) (Interval e),
+     ArithInOut.RoundedMixedField (Interval e) (Interval e),
+     NumOrd.RefinementRoundedLattice (Interval e),
      Show var,
-     Show cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf))
+     Show (Interval e),
+     Show (Imprecision (Interval e)),
+     NumOrd.PartialComparison (Imprecision (Interval e)))
     =>
-    NumOrd.RoundedLattice (IntPoly var cf)
+    NumOrd.RoundedLattice (IntPoly var (Interval e))
     where
     maxUpEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne, effGetE) a b =
 --        unsafePrint 
@@ -205,28 +206,22 @@ instance
 instance
     (Ord var,
      GeneratableVariables var,
-     HasAntiConsistency cf, 
-     Arbitrary cf, 
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,
-     ArithUpDn.Convertible cf cf,
-     ArithInOut.RoundedMixedField cf cf,
+     HasAntiConsistency (Interval e), 
+     Arbitrary (Interval e), 
+     ArithInOut.RoundedReal (Interval e),
+     RefOrd.IntervalLike (Interval e),
+     ArithUpDn.Convertible (Interval e) (Interval e),
+     ArithInOut.RoundedMixedField (Interval e) (Interval e),
      Show var,
-     Show cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf))
+     Show (Interval e),
+     Show (Imprecision (Interval e)),
+     NumOrd.PartialComparison (Imprecision (Interval e)))
     =>
-    ArithUpDn.RoundedAbsEffort (IntPoly var cf)
+    ArithUpDn.RoundedAbsEffort (IntPoly var (Interval e))
     where
-#if (__GLASGOW_HASKELL__ >= 704)
-    type AbsEffortIndicator (IntPoly var cf) =
-        (NumOrd.MinmaxEffortIndicator (IntPoly var cf),
-         ArithInOut.AbsEffortIndicator cf)
-#else
-    type ArithUpDn.AbsEffortIndicator (IntPoly var cf) =
-        (NumOrd.MinmaxEffortIndicator (IntPoly var cf),
-         ArithInOut.AbsEffortIndicator cf)
-#endif
+    type AbsEffortIndicator (IntPoly var (Interval e)) =
+        (NumOrd.MinmaxEffortIndicator (IntPoly var (Interval e)),
+         ArithInOut.AbsEffortIndicator (Interval e))
     absDefaultEffort p =
         (NumOrd.minmaxDefaultEffort p,
          ArithInOut.absDefaultEffort $ getSampleDomValue p)
@@ -234,18 +229,18 @@ instance
 instance
     (Ord var,
      GeneratableVariables var,
-     HasAntiConsistency cf, 
-     Arbitrary cf, 
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,
-     ArithUpDn.Convertible cf cf,
-     ArithInOut.RoundedMixedField cf cf,
+     HasAntiConsistency (Interval e), 
+     Arbitrary (Interval e), 
+     ArithInOut.RoundedReal (Interval e),
+     RefOrd.IntervalLike (Interval e),
+     ArithUpDn.Convertible (Interval e) (Interval e),
+     ArithInOut.RoundedMixedField (Interval e) (Interval e),
      Show var,
-     Show cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf))
+     Show (Interval e),
+     Show (Imprecision (Interval e)),
+     NumOrd.PartialComparison (Imprecision (Interval e)))
     =>
-    ArithUpDn.RoundedAbs (IntPoly var cf)
+    ArithUpDn.RoundedAbs (IntPoly var (Interval e))
     where
     absUpEff (effMinmax, effAbsDom) p =
         case getConstantIfPolyConstant p of
@@ -266,24 +261,24 @@ instance
 instance
     (Ord var,
      GeneratableVariables var,
-     HasAntiConsistency cf, 
-     Arbitrary cf, 
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,
-     ArithUpDn.Convertible cf cf,
-     ArithInOut.RoundedMixedField cf cf,
+     HasAntiConsistency (Interval e), 
+     Arbitrary (Interval e), 
+     ArithInOut.RoundedReal (Interval e),
+     RefOrd.IntervalLike (Interval e),
+     ArithUpDn.Convertible (Interval e) (Interval e),
+     ArithInOut.RoundedMixedField (Interval e) (Interval e),
      Show var,
-     Show cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf))
+     Show (Interval e),
+     Show (Imprecision (Interval e)),
+     NumOrd.PartialComparison (Imprecision (Interval e)))
     =>
-    NumOrd.RefinementRoundedLatticeEffort (IntPoly var cf)
+    NumOrd.RefinementRoundedLatticeEffort (IntPoly var (Interval e))
     where
-    type MinmaxInOutEffortIndicator (IntPoly var cf) =
-        (MinmaxEffortIndicatorFromRingOps (IntPoly var cf) (IntPoly var cf),
+    type MinmaxInOutEffortIndicator (IntPoly var (Interval e)) =
+        (MinmaxEffortIndicatorFromRingOps (IntPoly var (Interval e)) (IntPoly var (Interval e)),
          Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
-         RefOrd.GetEndpointsEffortIndicator (IntPoly var cf),
-         RefOrd.FromEndpointsEffortIndicator (IntPoly var cf))
+         RefOrd.GetEndpointsEffortIndicator (IntPoly var (Interval e)),
+         RefOrd.FromEndpointsEffortIndicator (IntPoly var (Interval e)))
 
     minmaxInOutDefaultEffort f@(IntPoly cfg _) =
         (defaultMinmaxEffortIndicatorFromRingOps f f, 
@@ -330,18 +325,18 @@ minmaxInOutDefaultEffortIntPolyWithBezierDegree degree f =
 instance
     (Ord var,
      GeneratableVariables var,
-     HasAntiConsistency cf, 
-     Arbitrary cf, 
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,
-     ArithUpDn.Convertible cf cf,
-     ArithInOut.RoundedMixedField cf cf,
+     HasAntiConsistency (Interval e), 
+     Arbitrary (Interval e), 
+     ArithInOut.RoundedReal (Interval e),
+     RefOrd.IntervalLike (Interval e),
+     ArithUpDn.Convertible (Interval e) (Interval e),
+     ArithInOut.RoundedMixedField (Interval e) (Interval e),
      Show var,
-     Show cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf))
+     Show (Interval e),
+     Show (Imprecision (Interval e)),
+     NumOrd.PartialComparison (Imprecision (Interval e)))
     =>
-    NumOrd.RefinementRoundedLattice (IntPoly var cf)
+    NumOrd.RefinementRoundedLattice (IntPoly var (Interval e))
     where
     maxOutEff (effMinmax,Int1To10 degreeMinusOne,effGetE,effFromE) a b =
         result
@@ -372,28 +367,22 @@ instance
 instance
     (Ord var,
      GeneratableVariables var,
-     HasAntiConsistency cf, 
-     Arbitrary cf, 
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,
-     ArithUpDn.Convertible cf cf,
-     ArithInOut.RoundedMixedField cf cf,
+     HasAntiConsistency (Interval e), 
+     Arbitrary (Interval e), 
+     ArithInOut.RoundedReal (Interval e),
+     RefOrd.IntervalLike (Interval e),
+     ArithUpDn.Convertible (Interval e) (Interval e),
+     ArithInOut.RoundedMixedField (Interval e) (Interval e),
      Show var,
-     Show cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf))
+     Show (Interval e),
+     Show (Imprecision (Interval e)),
+     NumOrd.PartialComparison (Imprecision (Interval e)))
     =>
-    ArithInOut.RoundedAbsEffort (IntPoly var cf)
+    ArithInOut.RoundedAbsEffort (IntPoly var (Interval e))
     where
-#if (__GLASGOW_HASKELL__ >= 704)
-    type AbsEffortIndicator (IntPoly var cf) =
-        (NumOrd.MinmaxInOutEffortIndicator (IntPoly var cf),
-         ArithInOut.AbsEffortIndicator cf)
-#else
-    type ArithInOut.AbsEffortIndicator (IntPoly var cf) =
-        (NumOrd.MinmaxInOutEffortIndicator (IntPoly var cf),
-         ArithInOut.AbsEffortIndicator cf)
-#endif
+    type AbsEffortIndicator (IntPoly var (Interval e)) =
+        (NumOrd.MinmaxInOutEffortIndicator (IntPoly var (Interval e)),
+         ArithInOut.AbsEffortIndicator (Interval e))
     absDefaultEffort p =
         (NumOrd.minmaxInOutDefaultEffort p,
          ArithInOut.absDefaultEffort $ getSampleDomValue p)
@@ -401,18 +390,18 @@ instance
 instance
     (Ord var,
      GeneratableVariables var,
-     HasAntiConsistency cf, 
-     Arbitrary cf, 
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,
-     ArithUpDn.Convertible cf cf,
-     ArithInOut.RoundedMixedField cf cf,
+     HasAntiConsistency (Interval e), 
+     Arbitrary (Interval e), 
+     ArithInOut.RoundedReal (Interval e),
+     RefOrd.IntervalLike (Interval e),
+     ArithUpDn.Convertible (Interval e) (Interval e),
+     ArithInOut.RoundedMixedField (Interval e) (Interval e),
      Show var,
-     Show cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf))
+     Show (Interval e),
+     Show (Imprecision (Interval e)),
+     NumOrd.PartialComparison (Imprecision (Interval e)))
     =>
-    ArithInOut.RoundedAbs (IntPoly var cf)
+    ArithInOut.RoundedAbs (IntPoly var (Interval e))
     where
     absOutEff (effMinmax, effAbsDom) p =
         case getConstantIfPolyConstant p of

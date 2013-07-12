@@ -34,55 +34,137 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Control.Monad.ST (ST)
 
+{---- mixed in-place addition ----}
 
-instance (ArithUpDn.RoundedMixedAddInPlace t tn, CanBeMutable t) => 
-    RoundedMixedAddInPlace (Interval t) tn
+instance (ArithUpDn.RoundedMixedAddInPlace t Integer, CanBeMutable t) => 
+    RoundedMixedAddInPlace (Interval t) Integer
     where
-    mixedAddInInPlaceEff eff (MInterval resL resR) (MInterval aL aR) n =
-        do
-        ArithUpDn.mixedAddUpInPlaceEff eff resL aL n
-        ArithUpDn.mixedAddDnInPlaceEff eff resR aR n
-    mixedAddOutInPlaceEff eff (MInterval resL resR) (MInterval aL aR) n =
-        do
-        ArithUpDn.mixedAddDnInPlaceEff eff resL aL n
-        ArithUpDn.mixedAddUpInPlaceEff eff resR aR n
+    mixedAddInInPlaceEff = mixedAddInInPlaceEffGeneric
+    mixedAddOutInPlaceEff = mixedAddOutInPlaceEffGeneric
 
-instance    
-    (ArithUpDn.RoundedMixedMultiplyInPlace e tn,
+instance (ArithUpDn.RoundedMixedAddInPlace t Int, CanBeMutable t) => 
+    RoundedMixedAddInPlace (Interval t) Int
+    where
+    mixedAddInInPlaceEff = mixedAddInInPlaceEffGeneric
+    mixedAddOutInPlaceEff = mixedAddOutInPlaceEffGeneric
+
+instance (ArithUpDn.RoundedMixedAddInPlace t Rational, CanBeMutable t) => 
+    RoundedMixedAddInPlace (Interval t) Rational
+    where
+    mixedAddInInPlaceEff = mixedAddInInPlaceEffGeneric
+    mixedAddOutInPlaceEff = mixedAddOutInPlaceEffGeneric
+
+instance (ArithUpDn.RoundedMixedAddInPlace t Double, CanBeMutable t) => 
+    RoundedMixedAddInPlace (Interval t) Double
+    where
+    mixedAddInInPlaceEff = mixedAddInInPlaceEffGeneric
+    mixedAddOutInPlaceEff = mixedAddOutInPlaceEffGeneric
+
+mixedAddInInPlaceEffGeneric, mixedAddOutInPlaceEffGeneric :: 
+  ArithUpDn.RoundedMixedAddInPlace t tn 
+  =>
+  ArithUpDn.MixedAddEffortIndicator t tn
+  -> Mutable (Interval t) s
+  -> Mutable (Interval t) s
+  -> tn
+  -> ST s ()
+mixedAddInInPlaceEffGeneric eff (MInterval resL resR) (MInterval aL aR) n =
+    do
+    ArithUpDn.mixedAddUpInPlaceEff eff resL aL n
+    ArithUpDn.mixedAddDnInPlaceEff eff resR aR n
+mixedAddOutInPlaceEffGeneric eff (MInterval resL resR) (MInterval aL aR) n =
+    do
+    ArithUpDn.mixedAddDnInPlaceEff eff resL aL n
+    ArithUpDn.mixedAddUpInPlaceEff eff resR aR n
+
+{---- mixed in-place multiplication ----}
+
+instance
+    (ArithUpDn.RoundedMixedMultiplyInPlace e Integer,
      NumOrd.RoundedLatticeInPlace e,
      HasZero e,  NumOrd.PartialComparison e,  
-     HasZero tn,  NumOrd.PartialComparison tn,  
+     HasZero Integer,  NumOrd.PartialComparison Integer,  
      CanBeMutable e) => 
-    RoundedMixedMultiplyInPlace (Interval e) tn
+    RoundedMixedMultiplyInPlace (Interval e) Integer
     where
-    mixedMultInInPlaceEff  
-            ((effortCompS,effortCompE), effortMinmax, effortMult)
-            r i1 s =
-        do
-        (Interval l _) <- readMutable i1
-        multiplySingletonAndIntervalInPlace
-            (pNonnegNonposEff effortCompS)
-            (pNonnegNonposEff effortCompE)
-            (ArithUpDn.mixedMultUpInPlaceEff effortMult) 
-            (ArithUpDn.mixedMultDnInPlaceEff effortMult)
-            (NumOrd.maxUpInPlaceEff effortMinmax)
-            (NumOrd.minDnInPlaceEff effortMinmax)
-            (zero l) (zero l)
-            r s i1
-    mixedMultOutInPlaceEff 
-            ((effortCompS,effortCompE), effortMinmax, effortMult)
-            r i1 s =
-        do
-        (Interval l _) <- readMutable i1
-        multiplySingletonAndIntervalInPlace
-            (pNonnegNonposEff effortCompS)
-            (pNonnegNonposEff effortCompE)
-            (ArithUpDn.mixedMultDnInPlaceEff effortMult) 
-            (ArithUpDn.mixedMultUpInPlaceEff effortMult)
-            (NumOrd.minDnInPlaceEff effortMinmax)
-            (NumOrd.maxUpInPlaceEff effortMinmax)
-            (zero l) (zero l)
-            r s i1
+    mixedMultInInPlaceEff = mixedMultInInPlaceEffGeneric
+    mixedMultOutInPlaceEff = mixedMultOutInPlaceEffGeneric
+    
+    
+instance
+    (ArithUpDn.RoundedMixedMultiplyInPlace e Int,
+     NumOrd.RoundedLatticeInPlace e,
+     HasZero e,  NumOrd.PartialComparison e,  
+     HasZero Int,  NumOrd.PartialComparison Int,  
+     CanBeMutable e) => 
+    RoundedMixedMultiplyInPlace (Interval e) Int
+    where
+    mixedMultInInPlaceEff = mixedMultInInPlaceEffGeneric
+    mixedMultOutInPlaceEff = mixedMultOutInPlaceEffGeneric
+    
+instance
+    (ArithUpDn.RoundedMixedMultiplyInPlace e Rational,
+     NumOrd.RoundedLatticeInPlace e,
+     HasZero e,  NumOrd.PartialComparison e,  
+     HasZero Rational,  NumOrd.PartialComparison Rational,  
+     CanBeMutable e) => 
+    RoundedMixedMultiplyInPlace (Interval e) Rational
+    where
+    mixedMultInInPlaceEff = mixedMultInInPlaceEffGeneric
+    mixedMultOutInPlaceEff = mixedMultOutInPlaceEffGeneric
+    
+instance
+    (ArithUpDn.RoundedMixedMultiplyInPlace e Double,
+     NumOrd.RoundedLatticeInPlace e,
+     HasZero e,  NumOrd.PartialComparison e,  
+     HasZero Double,  NumOrd.PartialComparison Double,  
+     CanBeMutable e) => 
+    RoundedMixedMultiplyInPlace (Interval e) Double
+    where
+    mixedMultInInPlaceEff = mixedMultInInPlaceEffGeneric
+    mixedMultOutInPlaceEff = mixedMultOutInPlaceEffGeneric
+
+mixedMultInInPlaceEffGeneric, mixedMultOutInPlaceEffGeneric :: 
+   (NumOrd.PartialComparison e, NumOrd.PartialComparison tn,
+    NumOrd.RoundedLatticeInPlace e, HasZero tn, HasZero e,
+    ArithUpDn.RoundedMixedMultiplyInPlace e tn) 
+   =>
+   ((NumOrd.PartialCompareEffortIndicator tn,
+     NumOrd.PartialCompareEffortIndicator e),
+    NumOrd.MinmaxEffortIndicator e,
+    ArithUpDn.MixedMultEffortIndicator e tn)
+   -> Mutable (Interval e) s
+   -> Mutable (Interval e) s
+   -> tn
+   -> ST s ()
+mixedMultInInPlaceEffGeneric
+        ((effortCompS,effortCompE), effortMinmax, effortMult)
+        r i1 s =
+    do
+    (Interval l _) <- readMutable i1
+    multiplySingletonAndIntervalInPlace
+        (pNonnegNonposEff effortCompS)
+        (pNonnegNonposEff effortCompE)
+        (ArithUpDn.mixedMultUpInPlaceEff effortMult) 
+        (ArithUpDn.mixedMultDnInPlaceEff effortMult)
+        (NumOrd.maxUpInPlaceEff effortMinmax)
+        (NumOrd.minDnInPlaceEff effortMinmax)
+        (zero l) (zero l)
+        r s i1
+mixedMultOutInPlaceEffGeneric
+        ((effortCompS,effortCompE), effortMinmax, effortMult)
+        r i1 s =
+    do
+    (Interval l _) <- readMutable i1
+    multiplySingletonAndIntervalInPlace
+        (pNonnegNonposEff effortCompS)
+        (pNonnegNonposEff effortCompE)
+        (ArithUpDn.mixedMultDnInPlaceEff effortMult) 
+        (ArithUpDn.mixedMultUpInPlaceEff effortMult)
+        (NumOrd.minDnInPlaceEff effortMinmax)
+        (NumOrd.maxUpInPlaceEff effortMinmax)
+        (zero l) (zero l)
+        r s i1
 
 multiplySingletonAndIntervalInPlace ::
     (CanBeMutable e, HasZero e) =>
@@ -183,70 +265,108 @@ multiplySingletonAndIntervalInPlace
         assignMutable lResM temp3
         return temp1
     
+{---- mixed in-place division ----}
+    
 instance    
-    (ArithUpDn.RoundedMixedDivideInPlace e tn,
+    (ArithUpDn.RoundedMixedDivideInPlace e Integer,
      NumOrd.RoundedLatticeInPlace e,
      HasZero e,  HasInfinities e, NumOrd.PartialComparison e,  
-     HasZero tn,  NumOrd.PartialComparison tn,  
+     HasZero Integer,  NumOrd.PartialComparison Integer,  
      CanBeMutable e) => 
-    RoundedMixedDivideInPlace (Interval e) tn
+    RoundedMixedDivideInPlace (Interval e) Integer
     where
-    mixedDivInInPlaceEff  
-            ((effortCompS,effortCompE), effortMinmax, effortDiv)
-            r i1 s =
-        do
-        (Interval l _) <- readMutable i1
-        multiplySingletonAndIntervalInPlace
-            (pNonnegNonposEff effortCompS)
-            (pNonnegNonposEff effortCompE)
-            (ArithUpDn.mixedDivUpInPlaceEff effortDiv) 
-            (ArithUpDn.mixedDivDnInPlaceEff effortDiv)
-            (NumOrd.maxUpInPlaceEff effortMinmax)
-            (NumOrd.minDnInPlaceEff effortMinmax)
-            (plusInfinity l) (minusInfinity l)
-            r s i1
-    mixedDivOutInPlaceEff 
-            ((effortCompS,effortCompE), effortMinmax, effortDiv)
-            r i1 s =
-        do
-        (Interval l _) <- readMutable i1
-        multiplySingletonAndIntervalInPlace
-            (pNonnegNonposEff effortCompS)
-            (pNonnegNonposEff effortCompE)
-            (ArithUpDn.mixedDivDnInPlaceEff effortDiv) 
-            (ArithUpDn.mixedDivUpInPlaceEff effortDiv)
-            (NumOrd.minDnInPlaceEff effortMinmax)
-            (NumOrd.maxUpInPlaceEff effortMinmax)
-            (minusInfinity l) (plusInfinity l)
-            r s i1
+    mixedDivInInPlaceEff = mixedDivInInPlaceEffGeneric
+    mixedDivOutInPlaceEff = mixedDivOutInPlaceEffGeneric
 
---instance 
---    (RoundedDivideInPlace (Interval e),
---     -- MK has no idea why the following four need to be stated;
---     --    they should be inferred from the one above automatically...
---     ArithUpDn.RoundedMultiplyEffort e, 
---     ArithUpDn.RoundedDivideEffort e,  
---     NumOrd.PartialComparison e, 
---     NumOrd.RoundedLatticeEffort e,
---     --
---     Convertible tn (Interval e)) 
---    => 
---    RoundedMixedDivideInPlace (Interval e) tn 
---    where
---    mixedDivInInPlaceEff = mixedDivInInPlaceEffByConversion
---    mixedDivOutInPlaceEff = mixedDivOutInPlaceEffByConversion
+instance    
+    (ArithUpDn.RoundedMixedDivideInPlace e Int,
+     NumOrd.RoundedLatticeInPlace e,
+     HasZero e,  HasInfinities e, NumOrd.PartialComparison e,  
+     HasZero Int,  NumOrd.PartialComparison Int,  
+     CanBeMutable e) => 
+    RoundedMixedDivideInPlace (Interval e) Int
+    where
+    mixedDivInInPlaceEff = mixedDivInInPlaceEffGeneric
+    mixedDivOutInPlaceEff = mixedDivOutInPlaceEffGeneric
+
+instance    
+    (ArithUpDn.RoundedMixedDivideInPlace e Rational,
+     NumOrd.RoundedLatticeInPlace e,
+     HasZero e,  HasInfinities e, NumOrd.PartialComparison e,  
+     HasZero Rational,  NumOrd.PartialComparison Rational,  
+     CanBeMutable e) => 
+    RoundedMixedDivideInPlace (Interval e) Rational
+    where
+    mixedDivInInPlaceEff = mixedDivInInPlaceEffGeneric
+    mixedDivOutInPlaceEff = mixedDivOutInPlaceEffGeneric
+
+instance    
+    (ArithUpDn.RoundedMixedDivideInPlace e Double,
+     NumOrd.RoundedLatticeInPlace e,
+     HasZero e,  HasInfinities e, NumOrd.PartialComparison e,  
+     HasZero Double,  NumOrd.PartialComparison Double,  
+     CanBeMutable e) => 
+    RoundedMixedDivideInPlace (Interval e) Double
+    where
+    mixedDivInInPlaceEff = mixedDivInInPlaceEffGeneric
+    mixedDivOutInPlaceEff = mixedDivOutInPlaceEffGeneric
+
+
+mixedDivInInPlaceEffGeneric, mixedDivOutInPlaceEffGeneric :: 
+  (NumOrd.PartialComparison e, NumOrd.PartialComparison tn,
+   NumOrd.RoundedLatticeInPlace e, HasZero tn, HasZero e,
+   HasInfinities e,
+   ArithUpDn.RoundedMixedDivideInPlace e tn) 
+  =>
+  ((NumOrd.PartialCompareEffortIndicator tn,
+    NumOrd.PartialCompareEffortIndicator e),
+   NumOrd.MinmaxEffortIndicator e,
+   ArithUpDn.MixedDivEffortIndicator e tn)
+  -> Mutable (Interval e) s
+  -> Mutable (Interval e) s
+  -> tn
+  -> ST s ()
+mixedDivInInPlaceEffGeneric
+        ((effortCompS,effortCompE), effortMinmax, effortDiv)
+        r i1 s =
+    do
+    (Interval l _) <- readMutable i1
+    multiplySingletonAndIntervalInPlace
+        (pNonnegNonposEff effortCompS)
+        (pNonnegNonposEff effortCompE)
+        (ArithUpDn.mixedDivUpInPlaceEff effortDiv) 
+        (ArithUpDn.mixedDivDnInPlaceEff effortDiv)
+        (NumOrd.maxUpInPlaceEff effortMinmax)
+        (NumOrd.minDnInPlaceEff effortMinmax)
+        (plusInfinity l) (minusInfinity l)
+        r s i1
+mixedDivOutInPlaceEffGeneric
+        ((effortCompS,effortCompE), effortMinmax, effortDiv)
+        r i1 s =
+    do
+    (Interval l _) <- readMutable i1
+    multiplySingletonAndIntervalInPlace
+        (pNonnegNonposEff effortCompS)
+        (pNonnegNonposEff effortCompE)
+        (ArithUpDn.mixedDivDnInPlaceEff effortDiv) 
+        (ArithUpDn.mixedDivUpInPlaceEff effortDiv)
+        (NumOrd.minDnInPlaceEff effortMinmax)
+        (NumOrd.maxUpInPlaceEff effortMinmax)
+        (minusInfinity l) (plusInfinity l)
+        r s i1
+
 
 instance 
-    (ArithUpDn.RoundedMixedRingInPlace e tn,
-     NumOrd.PartialComparison tn,
-     HasZero tn,
+    (ArithUpDn.RoundedMixedRingInPlace e Integer,
+     NumOrd.PartialComparison Integer,
+     HasZero Integer,
      HasZero e, 
      NumOrd.PartialComparison e, 
      NumOrd.RoundedLatticeInPlace e) => 
-    RoundedMixedRingInPlace (Interval e) tn
+    RoundedMixedRingInPlace (Interval e) Integer
 
 instance 
-    (ArithUpDn.RoundedMixedFieldInPlace e tn,
+    (ArithUpDn.RoundedMixedFieldInPlace e Integer,
      RoundedDivideInPlace (Interval e),
      -- MK has no idea why the following four need to be stated;
      --    they should be inferred from the one above automatically...
@@ -255,10 +375,90 @@ instance
      NumOrd.PartialComparison e, 
      NumOrd.RoundedLatticeEffort e,
      --
-     Convertible tn (Interval e),
-     NumOrd.PartialComparison tn,
-     HasZero tn,
+     Convertible Integer (Interval e),
+     NumOrd.PartialComparison Integer,
+     HasZero Integer,
      HasZero e, HasInfinities e,
      NumOrd.RoundedLatticeInPlace e) => 
-    RoundedMixedFieldInPlace (Interval e) tn
+    RoundedMixedFieldInPlace (Interval e) Integer
+
+instance 
+    (ArithUpDn.RoundedMixedRingInPlace e Int,
+     NumOrd.PartialComparison Int,
+     HasZero Int,
+     HasZero e, 
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLatticeInPlace e) => 
+    RoundedMixedRingInPlace (Interval e) Int
+
+instance 
+    (ArithUpDn.RoundedMixedFieldInPlace e Int,
+     RoundedDivideInPlace (Interval e),
+     -- MK has no idea why the following four need to be stated;
+     --    they should be inferred from the one above automatically...
+     ArithUpDn.RoundedMultiplyEffort e, 
+     ArithUpDn.RoundedDivideEffort e,  
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLatticeEffort e,
+     --
+     Convertible Int (Interval e),
+     NumOrd.PartialComparison Int,
+     HasZero Int,
+     HasZero e, HasInfinities e,
+     NumOrd.RoundedLatticeInPlace e) => 
+    RoundedMixedFieldInPlace (Interval e) Int
+
+instance 
+    (ArithUpDn.RoundedMixedRingInPlace e Rational,
+     NumOrd.PartialComparison Rational,
+     HasZero Rational,
+     HasZero e, 
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLatticeInPlace e) => 
+    RoundedMixedRingInPlace (Interval e) Rational
+
+instance 
+    (ArithUpDn.RoundedMixedFieldInPlace e Rational,
+     RoundedDivideInPlace (Interval e),
+     -- MK has no idea why the following four need to be stated;
+     --    they should be inferred from the one above automatically...
+     ArithUpDn.RoundedMultiplyEffort e, 
+     ArithUpDn.RoundedDivideEffort e,  
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLatticeEffort e,
+     --
+     Convertible Rational (Interval e),
+     NumOrd.PartialComparison Rational,
+     HasZero Rational,
+     HasZero e, HasInfinities e,
+     NumOrd.RoundedLatticeInPlace e) => 
+    RoundedMixedFieldInPlace (Interval e) Rational
+
+instance 
+    (ArithUpDn.RoundedMixedRingInPlace e Double,
+     NumOrd.PartialComparison Double,
+     HasZero Double,
+     HasZero e, 
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLatticeInPlace e) => 
+    RoundedMixedRingInPlace (Interval e) Double
+
+instance 
+    (ArithUpDn.RoundedMixedFieldInPlace e Double,
+     RoundedDivideInPlace (Interval e),
+     -- MK has no idea why the following four need to be stated;
+     --    they should be inferred from the one above automatically...
+     ArithUpDn.RoundedMultiplyEffort e, 
+     ArithUpDn.RoundedDivideEffort e,  
+     NumOrd.PartialComparison e, 
+     NumOrd.RoundedLatticeEffort e,
+     --
+     Convertible Double (Interval e),
+     NumOrd.PartialComparison Double,
+     HasZero Double,
+     HasZero e, HasInfinities e,
+     NumOrd.RoundedLatticeInPlace e) => 
+    RoundedMixedFieldInPlace (Interval e) Double
+
+
     

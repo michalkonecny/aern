@@ -28,9 +28,9 @@ import Numeric.AERN.Poly.IntPoly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Conversion ()
 import Numeric.AERN.Poly.IntPoly.Addition ()
 import Numeric.AERN.Poly.IntPoly.Multiplication ()
+import Numeric.AERN.Poly.IntPoly.Division ()
 
---import Numeric.AERN.RmToRn.New
-import Numeric.AERN.RmToRn.Domain
+import Numeric.AERN.RmToRn
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
@@ -54,11 +54,15 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.Measures
 --import Numeric.AERN.RealArithmetic.Auxiliary
 
+--import Numeric.AERN.RealArithmetic.Interval
+
 import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsImplicitEffort
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
+import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Consistency
 
 --import Numeric.AERN.Misc.Debug
@@ -234,23 +238,23 @@ instance
     ArithUpDn.RoundedRing (IntPoly var cf)
 
 
-{----- mock up/dn division -----}    
+{----- up/dn division -----}    
 
 instance
---    (ArithInOut.RoundedReal cf,
---     RefOrd.IntervalLike cf) 
---    => 
+    (Ord var, Show var, Show cf, HasAntiConsistency cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf) 
+    => 
     ArithUpDn.RoundedDivideEffort (IntPoly var cf) 
     where
-    type DivEffortIndicator (IntPoly var cf) = ()
---        (ArithInOut.DivEffortIndicator (IntPoly var cf), 
---         RefOrd.GetEndpointsEffortIndicator cf) 
-    divDefaultEffort _ = ()
---    p@(IntPoly cfg _) = 
---        (ArithInOut.addDefaultEffort p,
---         RefOrd.getEndpointsDefaultEffort sampleCf)
---        where
---        sampleCf = ipolycfg_sample_cf cfg
+    type DivEffortIndicator (IntPoly var cf) =
+        (ArithInOut.DivEffortIndicator (IntPoly var cf), 
+         RefOrd.GetEndpointsEffortIndicator cf) 
+    divDefaultEffort p@(IntPoly cfg _) = 
+        (ArithInOut.divDefaultEffort p,
+         RefOrd.getEndpointsDefaultEffort sampleCf)
+        where
+        sampleCf = ipolycfg_sample_cf cfg
 
 instance
     (ArithInOut.RoundedReal cf,
@@ -261,31 +265,31 @@ instance
     =>
     ArithUpDn.RoundedDivide (IntPoly var cf) 
     where
-    divUpEff = 
-        error "aern-poly: IntPoly division not implemented yet"
-    divDnEff = 
-        error "aern-poly: IntPoly division not implemented yet"
+    divUpEff (effOut, effGetE) p1 p2 =
+        snd $ polyGetEndpointsOutEff effGetE $ ArithInOut.divOutEff effOut p1 p2
+    divDnEff (effOut, effGetE) p1 p2 =
+        fst $ polyGetEndpointsOutEff effGetE $ ArithInOut.divOutEff effOut p1 p2
   
 
 instance
-    (Ord var,
+    (Ord var, Show var, Show cf, HasAntiConsistency cf,
      ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedFieldEffort (IntPoly var cf)
     where
     type FieldOpsEffortIndicator (IntPoly var cf) =
-        (ArithInOut.RoundedRealEffortIndicator cf,
+        ((ArithInOut.RoundedRealEffortIndicator cf, Int1To10),
          RefOrd.GetEndpointsEffortIndicator cf)
     fieldOpsDefaultEffort sampleP = 
-        (ArithInOut.roundedRealDefaultEffort sampleCf,
+        (evaluationDefaultEffort sampleP,
          RefOrd.getEndpointsDefaultEffort sampleCf)
         where
         sampleCf = getSampleDomValue sampleP
-    fldEffortAdd _ eff = eff  
-    fldEffortMult _ eff = eff
-    fldEffortPow _ eff = eff
-    fldEffortDiv _ _ = ()
+    fldEffortAdd _ ((effD, _), effGE) = (effD, effGE)  
+    fldEffortMult _ ((effD, _), effGE) = (effD, effGE)
+    fldEffortPow _ ((effD, _), effGE) = (effD, effGE)
+    fldEffortDiv _ (effEval@(effD, _), effGE) = ((effEval, effD), effGE)
   
 instance 
     (ArithInOut.RoundedReal cf,
@@ -298,24 +302,14 @@ instance
 
 {----- mixed addition up/dn via out -----}    
 
-{- 
-    A generic up/dn rounded mixed addition
-    would conflict with the generic instance of mixed addition 
-    e (Interval e) which is used to define the pseudo-mixed addition
-    of (Interval e) (Interval e)
-    
-    We therefore have to make do with a few concrete instances for the common types. 
--}
-
 instance
-    (ArithInOut.RoundedMixedAddEffort cf cf,
-     RefOrd.IntervalLike cf) 
-    => 
-    ArithUpDn.RoundedMixedAddEffort (IntPoly var cf) cf
+    (ArithInOut.RoundedMixedAddEffort (Interval e) (Interval e)) 
+    =>
+    ArithUpDn.RoundedMixedAddEffort (IntPoly var (Interval e)) (Interval e) 
     where
-    type MixedAddEffortIndicator (IntPoly var cf) cf = 
-        (ArithInOut.MixedAddEffortIndicator (IntPoly var cf) cf, 
-         RefOrd.GetEndpointsEffortIndicator cf) 
+    type MixedAddEffortIndicator (IntPoly var (Interval e)) (Interval e) = 
+        (ArithInOut.MixedAddEffortIndicator (IntPoly var (Interval e)) (Interval e), 
+         RefOrd.GetEndpointsEffortIndicator (Interval e)) 
     mixedAddDefaultEffort p@(IntPoly cfg _) sampleOther = 
         (ArithInOut.mixedAddDefaultEffort p sampleOther,
          RefOrd.getEndpointsDefaultEffort sampleCf)
@@ -384,6 +378,21 @@ instance
         sampleCf = ipolycfg_sample_cf cfg
 
 instance
+    (ArithInOut.RoundedMixedAdd (Interval e) (Interval e),
+     ArithInOut.RoundedReal (Interval e),
+     RefOrd.IntervalLike (Interval e),  
+     HasAntiConsistency (Interval e),
+     Ord var, 
+     Show var, Show (Interval e)) 
+    =>
+    ArithUpDn.RoundedMixedAdd (IntPoly var (Interval e)) (Interval e) 
+    where
+    mixedAddUpEff (effOut, effGetE) p1 other =
+        snd $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
+    mixedAddDnEff (effOut, effGetE) p1 other =
+        fst $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
+    
+instance
     (ArithInOut.RoundedMixedAdd cf Int,
      ArithInOut.RoundedReal cf,
      RefOrd.IntervalLike cf,  
@@ -392,21 +401,6 @@ instance
      Show var, Show cf) 
     =>
     ArithUpDn.RoundedMixedAdd (IntPoly var cf) Int 
-    where
-    mixedAddUpEff (effOut, effGetE) p1 other =
-        snd $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
-    mixedAddDnEff (effOut, effGetE) p1 other =
-        fst $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
-    
-instance
-    (ArithInOut.RoundedMixedAdd cf cf,
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,  
-     HasAntiConsistency cf,
-     Ord var, 
-     Show var, Show cf) 
-    =>
-    ArithUpDn.RoundedMixedAdd (IntPoly var cf) cf 
     where
     mixedAddUpEff (effOut, effGetE) p1 other =
         snd $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedAddOutEff effOut p1 other
@@ -463,14 +457,13 @@ instance
 {----- mixed multiplication up/dn via out -----}    
 
 instance
-    (ArithInOut.RoundedMixedMultiplyEffort cf cf,
-     RefOrd.IntervalLike cf) 
+    (ArithInOut.RoundedMixedMultiplyEffort (Interval e) (Interval e)) 
     => 
-    ArithUpDn.RoundedMixedMultiplyEffort (IntPoly var cf) cf 
+    ArithUpDn.RoundedMixedMultiplyEffort (IntPoly var (Interval e)) (Interval e) 
     where
-    type MixedMultEffortIndicator (IntPoly var cf) cf = 
-        (ArithInOut.MixedMultEffortIndicator (IntPoly var cf) cf, 
-         RefOrd.GetEndpointsEffortIndicator cf) 
+    type MixedMultEffortIndicator (IntPoly var (Interval e)) (Interval e) = 
+        (ArithInOut.MixedMultEffortIndicator (IntPoly var (Interval e)) (Interval e), 
+         RefOrd.GetEndpointsEffortIndicator (Interval e)) 
     mixedMultDefaultEffort p@(IntPoly cfg _) sampleOther = 
         (ArithInOut.mixedMultDefaultEffort p sampleOther,
          RefOrd.getEndpointsDefaultEffort sampleCf)
@@ -538,14 +531,14 @@ instance
         sampleCf = ipolycfg_sample_cf cfg
 
 instance
-    (ArithInOut.RoundedMixedMultiply cf cf,
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,  
-     HasAntiConsistency cf,
+    (ArithInOut.RoundedMixedMultiply (Interval e) (Interval e),
+     ArithInOut.RoundedReal (Interval e),
+     RefOrd.IntervalLike (Interval e),  
+     HasAntiConsistency (Interval e),
      Ord var, 
-     Show var, Show cf) 
+     Show var, Show (Interval e)) 
     =>
-    ArithUpDn.RoundedMixedMultiply (IntPoly var cf) cf 
+    ArithUpDn.RoundedMixedMultiply (IntPoly var (Interval e)) (Interval e) 
     where
     mixedMultUpEff (effOut, effGetE) p1 other =
         snd $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedMultOutEff effOut p1 other
@@ -615,15 +608,15 @@ instance
 
 instance
     (Ord var,
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,
-     ArithInOut.RoundedMixedRingEffort cf cf) 
+     ArithInOut.RoundedReal (Interval e),
+     RefOrd.IntervalLike (Interval e),
+     ArithInOut.RoundedMixedRingEffort (Interval e) (Interval e)) 
     => 
-    ArithUpDn.RoundedMixedRingEffort (IntPoly var cf) cf
+    ArithUpDn.RoundedMixedRingEffort (IntPoly var (Interval e)) (Interval e)
     where
-    type MixedRingOpsEffortIndicator (IntPoly var cf) cf =
-        (ArithInOut.MixedRingOpsEffortIndicator cf cf,
-         RefOrd.GetEndpointsEffortIndicator cf)
+    type MixedRingOpsEffortIndicator (IntPoly var (Interval e)) (Interval e) =
+        (ArithInOut.MixedRingOpsEffortIndicator (Interval e) (Interval e),
+         RefOrd.GetEndpointsEffortIndicator (Interval e))
     mixedRingOpsDefaultEffort sampleP other = 
         (ArithInOut.mixedRingOpsDefaultEffort sampleCf other,
          RefOrd.getEndpointsDefaultEffort sampleCf)
@@ -639,15 +632,14 @@ instance
         sampleCf = getSampleDomValue sampleP
 
 instance
-    (ArithInOut.RoundedReal cf,
-     ArithInOut.RoundedMixedRing cf cf,
-     HasAntiConsistency cf,
-     RefOrd.IntervalLike cf,
-     Show var, Ord var, Show cf,
-     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    (ArithInOut.RoundedReal (Interval e),
+     ArithInOut.RoundedMixedRing (Interval e) (Interval e),
+     HasAntiConsistency (Interval e),
+     RefOrd.IntervalLike (Interval e),
+     Show var, Ord var, Show (Interval e),
+     NumOrd.PartialComparison (Imprecision (Interval e)), Show (Imprecision (Interval e)))
     =>
-    ArithUpDn.RoundedMixedRing (IntPoly var cf) cf
-
+    ArithUpDn.RoundedMixedRing (IntPoly var (Interval e)) (Interval e)
 
 instance
     (Ord var,
@@ -794,14 +786,13 @@ instance
 {----- mixed multiplication up/dn via out -----}    
 
 instance
-    (ArithInOut.RoundedMixedDivideEffort cf cf,
-     RefOrd.IntervalLike cf) 
+    (ArithInOut.RoundedMixedDivideEffort (Interval e) (Interval e)) 
     => 
-    ArithUpDn.RoundedMixedDivideEffort (IntPoly var cf) cf 
+    ArithUpDn.RoundedMixedDivideEffort (IntPoly var (Interval e)) (Interval e) 
     where
-    type MixedDivEffortIndicator (IntPoly var cf) cf = 
-        (ArithInOut.MixedDivEffortIndicator (IntPoly var cf) cf, 
-         RefOrd.GetEndpointsEffortIndicator cf) 
+    type MixedDivEffortIndicator (IntPoly var (Interval e)) (Interval e) = 
+        (ArithInOut.MixedDivEffortIndicator (IntPoly var (Interval e)) (Interval e), 
+         RefOrd.GetEndpointsEffortIndicator (Interval e)) 
     mixedDivDefaultEffort p@(IntPoly cfg _) sampleOther = 
         (ArithInOut.mixedDivDefaultEffort p sampleOther,
          RefOrd.getEndpointsDefaultEffort sampleCf)
@@ -809,14 +800,13 @@ instance
         sampleCf = ipolycfg_sample_cf cfg
 
 instance
-    (ArithInOut.RoundedMixedDivide cf cf,
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,  
-     HasAntiConsistency cf,
+    (ArithInOut.RoundedMixedDivide (Interval e) (Interval e),
+     ArithInOut.RoundedReal (Interval e),
+     HasAntiConsistency (Interval e),
      Ord var, 
-     Show var, Show cf) 
+     Show var, Show (Interval e)) 
     =>
-    ArithUpDn.RoundedMixedDivide (IntPoly var cf) cf 
+    ArithUpDn.RoundedMixedDivide (IntPoly var (Interval e)) (Interval e) 
     where
     mixedDivUpEff (effOut, effGetE) p1 other =
         snd $ polyGetEndpointsOutEff effGetE $ ArithInOut.mixedDivOutEff effOut p1 other
@@ -946,15 +936,14 @@ instance
 
 instance
     (Ord var,
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,
-     ArithInOut.RoundedMixedFieldEffort cf cf) 
+     ArithInOut.RoundedReal (Interval e),
+     ArithInOut.RoundedMixedFieldEffort (Interval e) (Interval e)) 
     => 
-    ArithUpDn.RoundedMixedFieldEffort (IntPoly var cf) cf
+    ArithUpDn.RoundedMixedFieldEffort (IntPoly var (Interval e)) (Interval e)
     where
-    type MixedFieldOpsEffortIndicator (IntPoly var cf) cf =
-        (ArithInOut.MixedFieldOpsEffortIndicator cf cf,
-         RefOrd.GetEndpointsEffortIndicator cf)
+    type MixedFieldOpsEffortIndicator (IntPoly var (Interval e)) (Interval e) =
+        (ArithInOut.MixedFieldOpsEffortIndicator (Interval e) (Interval e),
+         RefOrd.GetEndpointsEffortIndicator (Interval e))
     mixedFieldOpsDefaultEffort sampleP other = 
         (ArithInOut.mixedFieldOpsDefaultEffort sampleCf other,
          RefOrd.getEndpointsDefaultEffort sampleCf)
@@ -974,14 +963,13 @@ instance
         sampleCf = getSampleDomValue sampleP
 
 instance
-    (ArithInOut.RoundedReal cf,
-     ArithInOut.RoundedMixedField cf cf,
-     HasAntiConsistency cf,
-     RefOrd.IntervalLike cf,
-     Show var, Ord var, Show cf,
-     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    (ArithInOut.RoundedReal (Interval e),
+     ArithInOut.RoundedMixedField (Interval e) (Interval e),
+     HasAntiConsistency (Interval e),
+     Show var, Ord var, Show (Interval e),
+     NumOrd.PartialComparison (Imprecision (Interval e)), Show (Imprecision (Interval e)))
     =>
-    ArithUpDn.RoundedMixedField (IntPoly var cf) cf
+    ArithUpDn.RoundedMixedField (IntPoly var (Interval e)) (Interval e)
 
 instance
     (Ord var,
@@ -1138,4 +1126,5 @@ instance
      NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
     =>
     ArithUpDn.RoundedMixedField (IntPoly var cf) Double
+        
         

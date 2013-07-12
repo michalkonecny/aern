@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion
     Description :  conversion between approximations and other types  
@@ -119,4 +120,11 @@ testsConvertNumOrd (name1, sample1, name2, sample2) =
         ,
             testProperty "round trip" (propConvertRoundTripNumOrd sample2 sample1)
         ]
+
+instance Convertible t t
+    where
+    type ConvertEffortIndicator t t = ()
+    convertDefaultEffort _ _ = ()
+    convertInEff _ _ x = x
+    convertOutEff _ _ x = x
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps
     Description :  rounded basic arithmetic operations mixing 2 types
@@ -67,6 +68,19 @@ mixedAddDn a b = mixedAddDnEff (mixedAddDefaultEffort a b) a b
 (+.|) = mixedAddDn
 (|+.) :: (RoundedMixedAdd t tn) => tn -> t -> t
 (|+.) = flip mixedAddDn
+
+{- 
+    Warning: The following may lead to overlapping instances.
+-} 
+
+instance (RoundedAddEffort t) => (RoundedMixedAddEffort t t)
+    where
+    type MixedAddEffortIndicator t t = AddEffortIndicator t
+    mixedAddDefaultEffort _ sample = addDefaultEffort sample 
+instance (RoundedAdd t) => (RoundedMixedAdd t t)
+    where
+    mixedAddDnEff = addDnEff
+    mixedAddUpEff = addUpEff
 
 
 {- tools to easily make a RoundedMixedAdd instance 
@@ -168,6 +182,20 @@ mixedMultDn a b = mixedMultDnEff (mixedMultDefaultEffort a b) a b
 (*.|) = mixedMultDn
 (|*.) :: (RoundedMixedMultiply t tn) => tn -> t -> t
 (|*.) = flip mixedMultDn
+
+{- 
+    Warning: The following may lead to overlapping instances.
+-} 
+
+instance (RoundedMultiplyEffort t) => (RoundedMixedMultiplyEffort t t)
+    where
+    type MixedMultEffortIndicator t t = MultEffortIndicator t
+    mixedMultDefaultEffort _ sample = multDefaultEffort sample 
+instance (RoundedMultiply t) => (RoundedMixedMultiply t t)
+    where
+    mixedMultDnEff = multDnEff
+    mixedMultUpEff = multUpEff
+
 
 {- tools to easily make a RoundedMixedMultiply instance 
    via the composition of conversion and homogeneous addition -}
@@ -279,6 +307,19 @@ mixedDivDn a b = mixedDivDnEff (mixedDivDefaultEffort a b) a b
 
 (/.|) :: (RoundedMixedDivide t tn) => t -> tn -> t
 (/.|) = mixedDivDn
+
+{- 
+    Warning: The following may lead to overlapping instances.
+-} 
+
+instance (RoundedDivideEffort t) => (RoundedMixedDivideEffort t t)
+    where
+    type MixedDivEffortIndicator t t = DivEffortIndicator t
+    mixedDivDefaultEffort _ sample = divDefaultEffort sample 
+instance (RoundedDivide t) => (RoundedMixedDivide t t)
+    where
+    mixedDivDnEff = divDnEff
+    mixedDivUpEff = divUpEff
 
 
 {- tools to easily make a RoundedMixedDivide instance 
@@ -419,6 +460,20 @@ class
 class (RoundedMixedAdd t tn, RoundedMixedMultiply t tn, RoundedMixedRingEffort t tn) => 
     RoundedMixedRing t tn
 
+{- 
+    Warning: The following may lead to overlapping instances.
+-} 
+
+instance (RoundedRingEffort t) => (RoundedMixedRingEffort t t)
+    where
+    type MixedRingOpsEffortIndicator t t = RingOpsEffortIndicator t
+    mixedRingOpsDefaultEffort _ sample = ringOpsDefaultEffort sample
+    mxringEffortAdd sample _ eff = ringEffortAdd sample eff
+    mxringEffortMult sample _ eff = ringEffortMult sample eff
+
+instance (RoundedRing t) => (RoundedMixedRing t t)
+
+
 class 
     (RoundedMixedRingEffort t tn, RoundedMixedDivideEffort t tn,
      EffortIndicator (MixedFieldOpsEffortIndicator t tn)) 
@@ -433,4 +488,18 @@ class
 
 class (RoundedMixedRing t tn, RoundedMixedDivide t tn, RoundedMixedFieldEffort t tn) => 
     RoundedMixedField t tn
+    
+{- 
+    Warning: The following may lead to overlapping instances.
+-} 
+    
+instance (RoundedFieldEffort t) => (RoundedMixedFieldEffort t t)
+    where
+    type MixedFieldOpsEffortIndicator t t = FieldOpsEffortIndicator t
+    mixedFieldOpsDefaultEffort _ sample = fieldOpsDefaultEffort sample
+    mxfldEffortAdd sample _ eff = fldEffortAdd sample eff
+    mxfldEffortMult sample _ eff = fldEffortMult sample eff
+    mxfldEffortDiv sample _ eff = fldEffortDiv sample eff
+
+instance (RoundedField t) => (RoundedMixedField t t)
     

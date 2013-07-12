@@ -32,13 +32,32 @@ import Numeric.AERN.Basics.Interval
 
 import Control.Exception
 
+--instance 
+--    (ArithUpDn.Convertible t e, Show t) 
+--    => 
+--    Convertible t (Interval e) 
+--    where
+--    type ConvertEffortIndicator t (Interval e) = 
+--        ArithUpDn.ConvertEffortIndicator t e
+--    convertDefaultEffort i (Interval sampleE _) = ArithUpDn.convertDefaultEffort i sampleE 
+--    convertInEff effort (Interval sampleE _) x =
+--        Interval xUp xDn
+--        where
+--        xUp = convertUpEffException effort sampleE x
+--        xDn = convertDnEffException effort sampleE x
+--    convertOutEff effort (Interval sampleE _) x =
+--        Interval xDn xUp
+--        where
+--        xUp = convertUpEffException effort sampleE x
+--        xDn = convertDnEffException effort sampleE x
+
 instance 
-    (ArithUpDn.Convertible t e, Show t) 
+    (ArithUpDn.Convertible Rational e) 
     => 
-    Convertible t (Interval e) 
+    Convertible Rational (Interval e) 
     where
-    type ConvertEffortIndicator t (Interval e) = 
-        ArithUpDn.ConvertEffortIndicator t e
+    type ConvertEffortIndicator Rational (Interval e) = 
+        ArithUpDn.ConvertEffortIndicator Rational e
     convertDefaultEffort i (Interval sampleE _) = ArithUpDn.convertDefaultEffort i sampleE 
     convertInEff effort (Interval sampleE _) x =
         Interval xUp xDn
@@ -50,6 +69,66 @@ instance
         where
         xUp = convertUpEffException effort sampleE x
         xDn = convertDnEffException effort sampleE x
+
+instance 
+    (ArithUpDn.Convertible Integer e) 
+    => 
+    Convertible Integer (Interval e) 
+    where
+    type ConvertEffortIndicator Integer (Interval e) = 
+        ArithUpDn.ConvertEffortIndicator Integer e
+    convertDefaultEffort i (Interval sampleE _) = ArithUpDn.convertDefaultEffort i sampleE 
+    convertInEff effort (Interval sampleE _) x =
+        Interval xUp xDn
+        where
+        xUp = convertUpEffException effort sampleE x
+        xDn = convertDnEffException effort sampleE x
+    convertOutEff effort (Interval sampleE _) x =
+        Interval xDn xUp
+        where
+        xUp = convertUpEffException effort sampleE x
+        xDn = convertDnEffException effort sampleE x
+
+
+instance 
+    (ArithUpDn.Convertible Int e) 
+    => 
+    Convertible Int (Interval e) 
+    where
+    type ConvertEffortIndicator Int (Interval e) = 
+        ArithUpDn.ConvertEffortIndicator Int e
+    convertDefaultEffort i (Interval sampleE _) = ArithUpDn.convertDefaultEffort i sampleE 
+    convertInEff effort (Interval sampleE _) x =
+        Interval xUp xDn
+        where
+        xUp = convertUpEffException effort sampleE x
+        xDn = convertDnEffException effort sampleE x
+    convertOutEff effort (Interval sampleE _) x =
+        Interval xDn xUp
+        where
+        xUp = convertUpEffException effort sampleE x
+        xDn = convertDnEffException effort sampleE x
+
+instance 
+    (ArithUpDn.Convertible Double e) 
+    => 
+    Convertible Double (Interval e) 
+    where
+    type ConvertEffortIndicator Double (Interval e) = 
+        ArithUpDn.ConvertEffortIndicator Double e
+    convertDefaultEffort i (Interval sampleE _) = ArithUpDn.convertDefaultEffort i sampleE 
+    convertInEff effort (Interval sampleE _) x =
+        Interval xUp xDn
+        where
+        xUp = convertUpEffException effort sampleE x
+        xDn = convertDnEffException effort sampleE x
+    convertOutEff effort (Interval sampleE _) x =
+        Interval xDn xUp
+        where
+        xUp = convertUpEffException effort sampleE x
+        xDn = convertDnEffException effort sampleE x
+
+
 
 convertUpEffException ::
     (Show t1, ArithUpDn.Convertible t1 t2) 

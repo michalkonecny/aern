@@ -33,11 +33,10 @@ import Numeric.AERN.Poly.IntPoly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Reduction
 import Numeric.AERN.Poly.IntPoly.New
 
-import Numeric.AERN.RmToRn.New
+--import Numeric.AERN.RmToRn.New
 --import Numeric.AERN.RmToRn.Domain
 
 --import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
---import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsImplicitEffort
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
@@ -48,10 +47,9 @@ import Numeric.AERN.RealArithmetic.ExactOps
 --import Numeric.AERN.RealArithmetic.Auxiliary
 
 --import qualified Numeric.AERN.NumericOrder as NumOrd
---import Numeric.AERN.NumericOrder.OpsImplicitEffort
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
+import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Consistency
 
 --import Numeric.AERN.Misc.Debug
@@ -132,29 +130,123 @@ negTerms (IntPolyV x polys) =
     
   
 instance
-    (ArithInOut.RoundedMixedAddEffort cf other) => 
-    ArithInOut.RoundedMixedAddEffort (IntPoly var cf) other 
+    (ArithInOut.RoundedMixedAddEffort cf Integer) => 
+    ArithInOut.RoundedMixedAddEffort (IntPoly var cf) Integer 
     where
-    type MixedAddEffortIndicator (IntPoly var cf) other = 
-        ArithInOut.MixedAddEffortIndicator cf other  
+    type MixedAddEffortIndicator (IntPoly var cf) Integer = 
+        ArithInOut.MixedAddEffortIndicator cf Integer  
     mixedAddDefaultEffort (IntPoly cfg _) c = 
         ArithInOut.mixedAddDefaultEffort (ipolycfg_sample_cf cfg) c
 
 instance
     (Ord var, Show var, Show cf,
-     ArithInOut.RoundedMixedAdd cf other,   
+     ArithInOut.RoundedMixedAdd cf Integer,   
      ArithInOut.RoundedReal cf, 
      HasConsistency cf, 
      RefOrd.IntervalLike cf) 
     =>
-    ArithInOut.RoundedMixedAdd (IntPoly var cf) other 
+    ArithInOut.RoundedMixedAdd (IntPoly var cf) Integer 
     where
-    mixedAddOutEff eff (IntPoly cfg terms) a = 
-        IntPoly cfg $ addTermsConst (+|) cfg terms a
-        where
-        (+|) = ArithInOut.mixedAddOutEff eff
-    mixedAddInEff =
-        error "aern-poly: IntPoly does not support inwards-rounded mixed addition" 
+    mixedAddOutEff = mixedAddOutEffGeneric
+    mixedAddInEff = mixedAddInEffGeneric
+    
+instance
+    (ArithInOut.RoundedMixedAddEffort cf Int) => 
+    ArithInOut.RoundedMixedAddEffort (IntPoly var cf) Int 
+    where
+    type MixedAddEffortIndicator (IntPoly var cf) Int = 
+        ArithInOut.MixedAddEffortIndicator cf Int  
+    mixedAddDefaultEffort (IntPoly cfg _) c = 
+        ArithInOut.mixedAddDefaultEffort (ipolycfg_sample_cf cfg) c
+
+instance
+    (Ord var, Show var, Show cf,
+     ArithInOut.RoundedMixedAdd cf Int,   
+     ArithInOut.RoundedReal cf, 
+     HasConsistency cf, 
+     RefOrd.IntervalLike cf) 
+    =>
+    ArithInOut.RoundedMixedAdd (IntPoly var cf) Int 
+    where
+    mixedAddOutEff = mixedAddOutEffGeneric
+    mixedAddInEff = mixedAddInEffGeneric
+    
+instance
+    (ArithInOut.RoundedMixedAddEffort cf Rational) => 
+    ArithInOut.RoundedMixedAddEffort (IntPoly var cf) Rational 
+    where
+    type MixedAddEffortIndicator (IntPoly var cf) Rational = 
+        ArithInOut.MixedAddEffortIndicator cf Rational  
+    mixedAddDefaultEffort (IntPoly cfg _) c = 
+        ArithInOut.mixedAddDefaultEffort (ipolycfg_sample_cf cfg) c
+
+instance
+    (Ord var, Show var, Show cf,
+     ArithInOut.RoundedMixedAdd cf Rational,   
+     ArithInOut.RoundedReal cf, 
+     HasConsistency cf, 
+     RefOrd.IntervalLike cf) 
+    =>
+    ArithInOut.RoundedMixedAdd (IntPoly var cf) Rational 
+    where
+    mixedAddOutEff = mixedAddOutEffGeneric
+    mixedAddInEff = mixedAddInEffGeneric
+    
+instance
+    (ArithInOut.RoundedMixedAddEffort cf Double) => 
+    ArithInOut.RoundedMixedAddEffort (IntPoly var cf) Double 
+    where
+    type MixedAddEffortIndicator (IntPoly var cf) Double = 
+        ArithInOut.MixedAddEffortIndicator cf Double  
+    mixedAddDefaultEffort (IntPoly cfg _) c = 
+        ArithInOut.mixedAddDefaultEffort (ipolycfg_sample_cf cfg) c
+
+instance
+    (Ord var, Show var, Show cf,
+     ArithInOut.RoundedMixedAdd cf Double,   
+     ArithInOut.RoundedReal cf, 
+     HasConsistency cf, 
+     RefOrd.IntervalLike cf) 
+    =>
+    ArithInOut.RoundedMixedAdd (IntPoly var cf) Double 
+    where
+    mixedAddOutEff = mixedAddOutEffGeneric
+    mixedAddInEff = mixedAddInEffGeneric
+    
+instance
+    (ArithInOut.RoundedMixedAddEffort cf (Interval e)) => 
+    ArithInOut.RoundedMixedAddEffort (IntPoly var cf) (Interval e) 
+    where
+    type MixedAddEffortIndicator (IntPoly var cf) (Interval e) = 
+        ArithInOut.MixedAddEffortIndicator cf (Interval e)  
+    mixedAddDefaultEffort (IntPoly cfg _) c = 
+        ArithInOut.mixedAddDefaultEffort (ipolycfg_sample_cf cfg) c
+
+instance
+    (Ord var, Show var, Show cf,
+     ArithInOut.RoundedMixedAdd cf (Interval e),   
+     ArithInOut.RoundedReal cf, 
+     HasConsistency cf, 
+     RefOrd.IntervalLike cf) 
+    =>
+    ArithInOut.RoundedMixedAdd (IntPoly var cf) (Interval e) 
+    where
+    mixedAddOutEff = mixedAddOutEffGeneric
+    mixedAddInEff = mixedAddInEffGeneric
+    
+mixedAddOutEffGeneric, mixedAddInEffGeneric :: 
+    (Ord var, Show cf, Show var, ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf, HasConsistency cf,
+     ArithInOut.RoundedMixedAdd cf t) 
+    =>
+    MixedAddEffortIndicator cf t
+    -> IntPoly var cf -> t -> IntPoly var cf
+mixedAddOutEffGeneric eff (IntPoly cfg terms) a = 
+    IntPoly cfg $ addTermsConst (+|) cfg terms a
+    where
+    (+|) = ArithInOut.mixedAddOutEff eff
+mixedAddInEffGeneric =
+    error "aern-poly: IntPoly does not support inwards-rounded mixed addition" 
 
 addTermsConst :: 
     (Ord var, Show var, Show cf,

@@ -63,12 +63,14 @@ class
      RefOrd.PartialComparison t, RefOrd.RoundedLattice t,
      HasImprecision t, NumOrd.PartialComparison (Imprecision t), RoundedField (Imprecision t), 
      HasDistance t, NumOrd.PartialComparison (Distance t), RoundedField (Distance t),
+     Convertible t t, ArithUpDn.Convertible t t,
      Convertible Int t, ArithUpDn.Convertible t Int,
      Convertible Integer t, ArithUpDn.Convertible t Integer,  
      Convertible Double t, ArithUpDn.Convertible t Double,  
      Convertible Rational t, ArithUpDn.Convertible t Rational,  
      RoundedAbs t,
      RoundedField t,
+     RoundedMixedField t t, 
      RoundedMixedField t Int, 
      RoundedMixedField t Integer, 
      RoundedMixedField t Double, 
@@ -92,6 +94,7 @@ class
     rrEffortDistance :: t -> (RoundedRealEffortIndicator t) -> (DistanceEffortIndicator t)
     rrEffortDistanceComp :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator (Distance t))
     rrEffortDistanceField :: t -> (RoundedRealEffortIndicator t) -> (FieldOpsEffortIndicator (Distance t))
+    rrEffortToSelf :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t t)
     rrEffortToInt :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Int)
     rrEffortFromInt :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Int t)
     rrEffortToInteger :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Integer)
@@ -102,6 +105,7 @@ class
     rrEffortFromRational :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Rational t)
     rrEffortAbs :: t -> (RoundedRealEffortIndicator t) -> (AbsEffortIndicator t)
     rrEffortField :: t -> (RoundedRealEffortIndicator t) -> (FieldOpsEffortIndicator t)
+    rrEffortSelfMixedField :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator t t)
     rrEffortIntMixedField :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator t Int)
     rrEffortIntegerMixedField :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator t Integer)
     rrEffortDoubleMixedField :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator t Double)

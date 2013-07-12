@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion
     Description :  conversion between approximations and other types  
@@ -50,6 +51,7 @@ convertUp a b = convertUpEff (convertDefaultEffort b a) a b
 
 convertDn :: (Convertible t1 t2) => t2 -> t1 -> Maybe t2
 convertDn a b = convertDnEff (convertDefaultEffort b a) a b
+
 
 propConvertMonotone ::
     (Convertible t1 t2, 
@@ -102,4 +104,11 @@ testsConvert (name1, sample1, name2, sample2) =
         ,
             testProperty "round trip" (propConvertRoundTrip sample1 sample2)
         ]
+    
+instance Convertible t t
+    where
+    type ConvertEffortIndicator t t = ()
+    convertDefaultEffort _ _ = ()
+    convertUpEff _ _ x = Just x
+    convertDnEff _ _ x = Just x
     
