@@ -277,7 +277,8 @@ fnDefsExpMx2 maxdeg _otherParams = (fns, fnmeta)
     fns = 
         [
             [
-                mx2,
+                mx2
+                ,
                 ArithInOut.expOutEff effExp mx2
             ]
         ]

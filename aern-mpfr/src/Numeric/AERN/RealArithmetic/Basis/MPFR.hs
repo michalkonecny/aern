@@ -60,6 +60,7 @@ instance RoundedReal M.MPFR where
     rrEffortComp _ _ = ()
     rrEffortMinmax _ _ = ()
     rrEffortDistance _ p = ()
+    rrEffortToSelf _ _ = ()
     rrEffortToInt _ _ = ()
     rrEffortFromInt _ p = p
     rrEffortToInteger _ _ = ()

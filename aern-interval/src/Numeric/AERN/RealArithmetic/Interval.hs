@@ -19,8 +19,9 @@
 module Numeric.AERN.RealArithmetic.Interval
 (
     -- This module re-exports mainly type class instances;
-    -- The following module has some auxiliary functions:
-    module  Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
+    -- The following modules have some auxiliary functions:
+    module Numeric.AERN.RealArithmetic.Interval.MixedFieldOps,
+    module Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 )
 where
 
@@ -29,7 +30,7 @@ import Numeric.AERN.RealArithmetic.Interval.Measures ()
 import Numeric.AERN.RealArithmetic.Interval.UpDnConversion ()
 import Numeric.AERN.RealArithmetic.Interval.Conversion ()
 import Numeric.AERN.RealArithmetic.Interval.FieldOps ()
-import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps ()
+import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
 import Numeric.AERN.RealArithmetic.Interval.SpecialConst ()
 import Numeric.AERN.RealArithmetic.Interval.Floating ()
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
@@ -45,6 +46,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Exception
+import Numeric.AERN.Basics.ShowInternals
 
 instance (HasLegalValues e) => HasLegalValues (Interval e) where
     maybeGetProblem (Interval l r) = 
@@ -56,7 +58,8 @@ instance (HasLegalValues e) => HasLegalValues (Interval e) where
                 Just $ "in the right endpoint of an interval: " ++ problemDescription
 
 instance
-    (ArithUpDn.RoundedReal e, NumOrd.HasExtrema e, 
+    (ShowInternals e, 
+     ArithUpDn.RoundedReal e, NumOrd.HasExtrema e, 
      ArithInOut.RoundedField (Distance e), 
      Neg (Distance e),
      RefOrd.RoundedLattice (Distance e)
@@ -104,6 +107,7 @@ instance
         = (ArithUpDn.rrEffortDistance l effR, effDistJoin, ArithUpDn.rrEffortComp l effR)
     rrEffortImprecisionComp (Interval _ _) (_, (_, effDistComp, _)) = effDistComp
     rrEffortImprecisionField (Interval _ _) (_, (effDistFld, _, _)) = effDistFld
+    rrEffortToSelf _ _ = ()
     rrEffortToInt (Interval l _) (effR,_) = ArithUpDn.rrEffortToInt l effR
     rrEffortFromInt (Interval l _) (effR,_) = ArithUpDn.rrEffortFromInt l effR
     rrEffortToInteger (Interval l _) (effR,_) = ArithUpDn.rrEffortToInteger l effR
@@ -119,6 +123,15 @@ instance
         (ArithUpDn.rrEffortField l effR,
          ArithUpDn.rrEffortComp l effR, 
          ArithUpDn.rrEffortMinmax l effR)
+    rrEffortSelfMixedField (Interval l _) (effR,_) =
+        ((ArithUpDn.rrEffortSelfMixedField l effR, 
+          ArithUpDn.rrEffortComp l effR, 
+          ArithUpDn.rrEffortMinmax l effR),
+         (ArithUpDn.rrEffortComp l effR,
+          ArithUpDn.rrEffortMinmax l effR,
+          ArithUpDn.rrEffortComp l effR
+         )
+        )
     rrEffortIntMixedField (Interval l _) (effR,_) =
         (ArithUpDn.rrEffortIntMixedField l effR,
          (ArithUpDn.rrEffortComp l effR,

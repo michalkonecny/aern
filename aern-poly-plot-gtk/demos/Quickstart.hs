@@ -15,8 +15,8 @@ module Quickstart where
 -- Doubles as interval endpoints:
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 
--- intervals with Double endpoints:
-import Numeric.AERN.RealArithmetic.Interval.Double (DI, Interval)
+-- intervals generic in the type of its endpoints:
+import Numeric.AERN.Basics.Interval
 
 -- interval-coefficient polynomials:
 import Numeric.AERN.Poly.IntPoly (IntPoly, IntPolySizeLimits(..))
@@ -47,19 +47,13 @@ import Numeric.AERN.RmToRn (newConstFn, newProjection)
 import Numeric.AERN.RmToRn.Plot.Simple (plotFns)
 
 {----- non-AERN imports -----}
-
---import qualified Data.Map as Map
+-- none at the moment
 
 {----- type definitions -----}
-
-type PI = Interval Poly
-    -- polynomial intervals
-
+type DI = Interval Double
+type V = String -- names of variables
 type Poly = IntPoly V DI 
-    -- polynomials with V variables and Double interval coefficients
-
-type V = String
-    -- variables
+type PI = Interval Poly
 
 {----- constructing basic functions -----}
 
@@ -67,6 +61,7 @@ type V = String
     To make the following plotting code work, the file FnView.glade
     has to be available in the current directory.  The master copy of this file
     is in the root folder of the aern-realfn-plot-gtk package.
+    (https://aern.googlecode.com/hg/aern-realfn-plot-gtk/FnView.glade)
 -}
 basicFnPlot :: IO ()
 basicFnPlot = plotFns [("basic fns", [("(\\x.x)", x),("(\\x.1)", c1)])]

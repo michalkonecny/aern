@@ -71,22 +71,22 @@ _ = unsafePrint
 
 instance
     (Ord var, Show var, GeneratableVariables var, 
-     ArithInOut.RoundedReal cf, 
-     ArithInOut.RoundedMixedField cf cf,
-     HasAntiConsistency cf,
-     RefOrd.IntervalLike cf, 
-     ArithUpDn.Convertible cf cf,
-     Show cf, Arbitrary cf, 
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf)
+     ArithInOut.RoundedReal (Interval e), 
+     ArithInOut.RoundedMixedField (Interval e) (Interval e),
+     HasAntiConsistency (Interval e),
+     RefOrd.IntervalLike (Interval e), 
+     ArithUpDn.Convertible (Interval e) (Interval e),
+     Show (Interval e), Arbitrary (Interval e), 
+     Show (Imprecision (Interval e)),
+     NumOrd.PartialComparison (Imprecision (Interval e))
     )
     =>
-    HasEvalOps (IntPoly var cf) (Interval (IntPoly var cf))
+    HasEvalOps (IntPoly var (Interval e)) (Interval (IntPoly var (Interval e)))
     where
-    type EvalOpsEffortIndicator (IntPoly var cf) (Interval (IntPoly var cf)) = 
+    type EvalOpsEffortIndicator (IntPoly var (Interval e)) (Interval (IntPoly var (Interval e))) = 
         (
-            ArithInOut.RingOpsEffortIndicator (Interval (IntPoly var cf)),
-            (Int1To1000, (ArithInOut.RoundedRealEffortIndicator cf, Int1To10))
+            ArithInOut.RingOpsEffortIndicator (Interval (IntPoly var (Interval e))),
+            (Int1To1000, (ArithInOut.RoundedRealEffortIndicator (Interval e), Int1To10))
         )
     evalOpsDefaultEffort sampleP samplePI = 
         (
@@ -109,6 +109,7 @@ intpolyPolyEvalOps ::
      HasAntiConsistency cf,
      NumOrd.PartialComparison (Imprecision cf),
      Show (Imprecision cf),
+     NumOrd.RoundedLattice poly,
      poly ~ IntPoly var cf)
     =>
    (

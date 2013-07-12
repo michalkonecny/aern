@@ -164,8 +164,3 @@ instance Convertible MPFR Rational where
         | otherwise = Just $ toRational d
     convertDnEff = convertUpEff
 
-instance Convertible MPFR MPFR where
-    type ConvertEffortIndicator MPFR MPFR = ()
-    convertDefaultEffort _ _ = ()
-    convertUpEff _ _ d = Just d
-    convertDnEff _ _ d = Just d

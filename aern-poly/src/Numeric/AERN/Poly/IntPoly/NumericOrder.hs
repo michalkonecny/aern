@@ -50,6 +50,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 --import Numeric.AERN.Basics.Interval (refordPCompareInFullIntervalsEff)
 
+import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.SizeLimits
@@ -131,24 +132,24 @@ instance
         
 instance
     (Show var, Ord var,
-     Show cf, Show (SizeLimits cf), 
-     RefOrd.ArbitraryOrderedTuple cf, RefOrd.IntervalLike cf,
-     ArithInOut.RoundedReal cf,
-     HasAntiConsistency cf,
-     ArithInOut.RoundedMixedMultiply cf cf,
-     ArithInOut.RoundedMixedAdd cf cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf),
-     Arbitrary (RefOrd.GetEndpointsEffortIndicator cf),
-     Arbitrary (ArithInOut.MixedMultEffortIndicator cf cf),
-     Arbitrary (ArithInOut.MixedAddEffortIndicator cf cf),
-     Arbitrary (ArithInOut.RoundedRealEffortIndicator cf),
-     Arbitrary (ArithInOut.AddEffortIndicator cf)
+     Show (Interval e), Show (SizeLimits (Interval e)), 
+     RefOrd.ArbitraryOrderedTuple (Interval e), RefOrd.IntervalLike (Interval e),
+     ArithInOut.RoundedReal (Interval e),
+     HasAntiConsistency (Interval e),
+     ArithInOut.RoundedMixedMultiply (Interval e) (Interval e),
+     ArithInOut.RoundedMixedAdd (Interval e) (Interval e),
+     Show (Imprecision (Interval e)),
+     NumOrd.PartialComparison (Imprecision (Interval e)),
+     Arbitrary (RefOrd.GetEndpointsEffortIndicator (Interval e)),
+     Arbitrary (ArithInOut.MixedMultEffortIndicator (Interval e) (Interval e)),
+     Arbitrary (ArithInOut.MixedAddEffortIndicator (Interval e) (Interval e)),
+     Arbitrary (ArithInOut.RoundedRealEffortIndicator (Interval e)),
+     Arbitrary (ArithInOut.AddEffortIndicator (Interval e))
     )
     =>
-    ArbitraryWithArea (IntPoly var cf)
+    ArbitraryWithArea (IntPoly var (Interval e))
     where
-    type Area (IntPoly var cf) = Area4FunFromRingOps (IntPoly var cf)
+    type Area (IntPoly var (Interval e)) = Area4FunFromRingOps (IntPoly var (Interval e))
     areaWhole sampleF = areaWhole4FunFromRingOps sampleF
     arbitraryInArea area@(sampleFn,_) =
         do
@@ -167,22 +168,22 @@ instance
 
 instance
     (Show var, Ord var,
-     Show cf, Show (SizeLimits cf),
-     RefOrd.ArbitraryOrderedTuple cf, RefOrd.IntervalLike cf,
-     ArithInOut.RoundedReal cf,
-     HasAntiConsistency cf,
-     ArithInOut.RoundedMixedMultiply cf cf,
-     ArithInOut.RoundedMixedAdd cf cf,
-     Show (Imprecision cf),
-     NumOrd.PartialComparison (Imprecision cf),
-     Arbitrary (RefOrd.GetEndpointsEffortIndicator cf),
-     Arbitrary (ArithInOut.MixedMultEffortIndicator cf cf),
-     Arbitrary (ArithInOut.MixedAddEffortIndicator cf cf),
-     Arbitrary (ArithInOut.RoundedRealEffortIndicator cf),
-     Arbitrary (ArithInOut.AddEffortIndicator cf)
+     Show (Interval e), Show (SizeLimits (Interval e)),
+     RefOrd.ArbitraryOrderedTuple (Interval e), RefOrd.IntervalLike (Interval e),
+     ArithInOut.RoundedReal (Interval e),
+     HasAntiConsistency (Interval e),
+     ArithInOut.RoundedMixedMultiply (Interval e) (Interval e),
+     ArithInOut.RoundedMixedAdd (Interval e) (Interval e),
+     Show (Imprecision (Interval e)),
+     NumOrd.PartialComparison (Imprecision (Interval e)),
+     Arbitrary (RefOrd.GetEndpointsEffortIndicator (Interval e)),
+     Arbitrary (ArithInOut.MixedMultEffortIndicator (Interval e) (Interval e)),
+     Arbitrary (ArithInOut.MixedAddEffortIndicator (Interval e) (Interval e)),
+     Arbitrary (ArithInOut.RoundedRealEffortIndicator (Interval e)),
+     Arbitrary (ArithInOut.AddEffortIndicator (Interval e))
     )
     =>
-    NumOrd.ArbitraryOrderedTuple (IntPoly var cf)
+    NumOrd.ArbitraryOrderedTuple (IntPoly var (Interval e))
     where
     arbitraryTupleRelatedBy = 
         error "AERN internal error: NumOrd.arbitraryTupleRelatedBy not defined for IntPoly"

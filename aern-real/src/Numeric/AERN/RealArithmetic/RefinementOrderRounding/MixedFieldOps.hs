@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
+--{-# LANGUAGE FlexibleInstances #-}
 {-|
     Module      :  Numeric.AERN.RefinementOrderRounding.MixedFieldOps
     Description :  rounded basic arithmetic operations mixing 2 types
@@ -75,10 +75,12 @@ mixedAddOut a b = mixedAddOutEff (mixedAddDefaultEffort a b) a b
 (<+>|) :: (RoundedMixedAdd t tn) => t -> tn -> t
 (<+>|) = mixedAddOut
 
+{- 
+    The following makes sense but it quickly leads to overlapping instances.
+    In particular, there is a conflict with the instance for (Interval e) (Interval e2).
+    To avoid overlapping instances, the instances should be as concrete as possible. 
+-} 
 
--- The following would prevent one from defining a generic instance
--- for an interval based on its endpoints: 
---
 --instance (RoundedAddEffort t) => (RoundedMixedAddEffort t t)
 --    where
 --    type MixedAddEffortIndicator t t = AddEffortIndicator t
@@ -178,6 +180,19 @@ mixedMultOut a b = mixedMultOutEff (mixedMultDefaultEffort a b) a b
 (<*>|) :: (RoundedMixedMultiply t tn) => t -> tn -> t
 (<*>|) = mixedMultOut
 
+{- 
+    The following makes sense but it quickly leads to overlapping instances.
+    To avoid overlapping instances, the instances should be as concrete as possible. 
+-} 
+
+--instance (RoundedMultiplyEffort t) => (RoundedMixedMultiplyEffort t t)
+--    where
+--    type MixedMultEffortIndicator t t = MultEffortIndicator t
+--    mixedMultDefaultEffort _ sample = multDefaultEffort sample 
+--instance (RoundedMultiply t) => (RoundedMixedMultiply t t)
+--    where
+--    mixedMultOutEff = multOutEff
+--    mixedMultInEff = multInEff
 
 mixedMultDefaultEffortByConversion d n = 
         (multDefaultEffort d, convertDefaultEffort n d)
@@ -259,6 +274,20 @@ mixedDivOut a b = mixedDivOutEff (mixedDivDefaultEffort a b) a b
 (</>|) :: (RoundedMixedDivide t tn) => t -> tn -> t
 (</>|) = mixedDivOut
 
+{- 
+    The following makes sense but it quickly leads to overlapping instances.
+    To avoid overlapping instances, the instances should be as concrete as possible. 
+-} 
+
+--instance (RoundedDivideEffort t) => (RoundedMixedDivideEffort t t)
+--    where
+--    type MixedDivEffortIndicator t t = DivEffortIndicator t
+--    mixedDivDefaultEffort _ sample = divDefaultEffort sample 
+--instance (RoundedDivide t) => (RoundedMixedDivide t t)
+--    where
+--    mixedDivOutEff = divOutEff
+--    mixedDivInEff = divInEff
+
 mixedDivDefaultEffortByConversion d n = 
         (divDefaultEffort d, convertDefaultEffort n d)
 
@@ -336,6 +365,21 @@ class
 class (RoundedMixedAdd t tn, RoundedMixedMultiply t tn, RoundedMixedRingEffort t tn) => 
     RoundedMixedRing t tn
 
+{- 
+    The following makes sense but it quickly leads to overlapping instances.
+    To avoid overlapping instances, the instances should be as concrete as possible. 
+-} 
+
+--instance (RoundedRingEffort t) => (RoundedMixedRingEffort t t)
+--    where
+--    type MixedRingOpsEffortIndicator t t = RingOpsEffortIndicator t
+--    mixedRingOpsDefaultEffort _ sample = ringOpsDefaultEffort sample
+--    mxringEffortAdd sample _ eff = ringEffortAdd sample eff
+--    mxringEffortMult sample _ eff = ringEffortMult sample eff
+--
+--instance (RoundedRing t) => (RoundedMixedRing t t)
+
+
 class 
     (RoundedMixedRingEffort t tn, RoundedMixedDivideEffort t tn,
      EffortIndicator (MixedFieldOpsEffortIndicator t tn)) 
@@ -350,4 +394,19 @@ class
         
 class (RoundedMixedRing t tn, RoundedMixedDivide t tn, RoundedMixedFieldEffort t tn) => 
     RoundedMixedField t tn
+        
+{- 
+    The following makes sense but it quickly leads to overlapping instances.
+    To avoid overlapping instances, the instances should be as concrete as possible. 
+-} 
+        
+--instance (RoundedFieldEffort t) => (RoundedMixedFieldEffort t t)
+--    where
+--    type MixedFieldOpsEffortIndicator t t = FieldOpsEffortIndicator t
+--    mixedFieldOpsDefaultEffort _ sample = fieldOpsDefaultEffort sample
+--    mxfldEffortAdd sample _ eff = fldEffortAdd sample eff
+--    mxfldEffortMult sample _ eff = fldEffortMult sample eff
+--    mxfldEffortDiv sample _ eff = fldEffortDiv sample eff
+--
+--instance (RoundedField t) => (RoundedMixedField t t)
         

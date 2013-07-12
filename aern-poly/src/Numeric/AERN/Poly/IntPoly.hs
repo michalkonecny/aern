@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly
@@ -44,6 +45,7 @@ import Numeric.AERN.Poly.IntPoly.Evaluation
 import Numeric.AERN.Poly.IntPoly.Reduction
 import Numeric.AERN.Poly.IntPoly.Addition
 import Numeric.AERN.Poly.IntPoly.Multiplication
+import Numeric.AERN.Poly.IntPoly.Division ()
 import Numeric.AERN.Poly.IntPoly.UpDnField ()
 import Numeric.AERN.Poly.IntPoly.Composition ()
 import Numeric.AERN.Poly.IntPoly.Show
@@ -64,45 +66,47 @@ import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import qualified Numeric.AERN.NumericOrder as NumOrd
 
+import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 
 import Test.QuickCheck.Arbitrary
 
 instance
-    (ArithInOut.RoundedReal cf,
-     ArithUpDn.Convertible Int cf,
-     ArithUpDn.Convertible Integer cf,
-     ArithUpDn.Convertible Rational cf,
-     ArithUpDn.Convertible Double cf,
-     ArithInOut.RoundedMixedField cf cf,
-     ArithUpDn.Convertible cf cf,
-     RefOrd.IntervalLike cf,
-     HasAntiConsistency cf,     
-     Arbitrary cf,
+    (
+     ArithInOut.RoundedReal (Interval e),
+     ArithUpDn.Convertible Int (Interval e),
+     ArithUpDn.Convertible Integer (Interval e),
+     ArithUpDn.Convertible Rational (Interval e),
+     ArithUpDn.Convertible Double (Interval e),
+     ArithInOut.RoundedMixedField (Interval e) (Interval e),
+     ArithUpDn.Convertible (Interval e) (Interval e),
+     RefOrd.IntervalLike (Interval e),
+     HasAntiConsistency (Interval e),     
+     Arbitrary (Interval e),
      GeneratableVariables var, Ord var, Show var,
-     Show cf, Show (Imprecision cf)
+     Show (Interval e), Show (Imprecision (Interval e))
     )
     => 
-    ArithUpDn.RoundedReal (IntPoly var cf) 
+    ArithUpDn.RoundedReal (IntPoly var (Interval e)) 
     where
-    type RoundedRealEffortIndicator (IntPoly var cf) =
+    type RoundedRealEffortIndicator (IntPoly var (Interval e)) =
         (
           (
             (Int1To1000, -- number of samples when looking for counter examples
-             (ArithInOut.RoundedRealEffortIndicator cf, 
+             (ArithInOut.RoundedRealEffortIndicator (Interval e), 
               Int1To10 -- how many segments to split the domain into eg when evaluating
              )
             )
           ,
-            (NumOrd.MinmaxEffortIndicator (IntPoly var cf),
-             ArithInOut.AbsEffortIndicator cf)
+            (NumOrd.MinmaxEffortIndicator (IntPoly var (Interval e)),
+             ArithInOut.AbsEffortIndicator (Interval e))
           )
         ,
-         (RefOrd.GetEndpointsEffortIndicator cf,
-          RefOrd.FromEndpointsEffortIndicator cf)
+         (RefOrd.GetEndpointsEffortIndicator (Interval e),
+          RefOrd.FromEndpointsEffortIndicator (Interval e))
         ,
-         (NumOrd.MinmaxInOutEffortIndicator cf,
+         (NumOrd.MinmaxInOutEffortIndicator (Interval e),
           Int1To10) -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
         ) 
     roundedRealDefaultEffort fn =
@@ -154,7 +158,7 @@ instance
         effFromR = ArithInOut.rrEffortFromRational sampleCf effCf
         sampleCf = getSampleDomValue sampleP
     rrEffortAbs _ ((_, effAbs),_,_) = effAbs
-    rrEffortField _ (((_, (effCf,_)),_),(effGetE, _),_) = (effCf, effGetE)
+    rrEffortField _ (((_, effEval),_),(effGetE, _),_) = (effEval, effGetE)
     rrEffortIntMixedField sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effIntField, effGetE)
         where
         effIntField = ArithInOut.rrEffortIntMixedField sampleCf effCf

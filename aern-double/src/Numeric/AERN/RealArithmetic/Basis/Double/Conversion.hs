@@ -84,12 +84,6 @@ instance Convertible Double Int where
         mdDnInteger = convertDnEff effort (0::Integer) d
         intMin = minBound :: Int
 
-instance Convertible Double Double where
-    type ConvertEffortIndicator Double Double = ()
-    convertDefaultEffort _ _ = ()
-    convertUpEff _ _ d = Just d
-    convertDnEff _ _ d = Just d
-
 instance Convertible Rational Double where
     type ConvertEffortIndicator Rational Double = ()
     convertDefaultEffort _ _ = ()
