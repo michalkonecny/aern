@@ -11,7 +11,7 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       support for solving ODE IVPs using the interval polynomial Picard operator
-Tested-with:    GHC==7.4.2
+Tested-with:    GHC==7.6.3
 Description:    Support for solving ODE IVPs using the interval polynomial Picard operator.
     .
     Includes several example solvers.
@@ -19,14 +19,15 @@ Description:    Support for solving ODE IVPs using the interval polynomial Picar
 Library
   hs-source-dirs:   src
   ghc-options:      -Wall
-  Build-Depends:    base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        random >= 1.0 && < 1.1,
-        gtk >= 0.12.0 && < 0.13,
-        cairo >= 0.12.0 && < 0.13,
-        stm >= 2.1.2.1 && < 2.5,
-        filepath >= 1.1.0.4 && < 1.4,
-        directory >= 1.0.1.1 && < 1.2,
+  Build-Depends:    
+        base >= 4.4,
+        containers >= 0.3,
+        random >= 1.0,
+        gtk >= 0.12.0,
+        cairo >= 0.12.0,
+        stm >= 2.1.2.1,
+        filepath >= 1.1.0.4,
+        directory >= 1.0.1.1,
         mtl >= 2.1 && < 2.2,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
@@ -49,13 +50,13 @@ Library
 
 executable simple-uv-et-polyint
   build-depends:   
-        base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        random >= 1.0 && < 1.1,
-        directory >= 1.0 && < 1.2,
-        gtk >= 0.12.0 && < 0.13,
-        cairo >= 0.12.0 && < 0.13,
-        stm >= 2.1.2.1 && < 2.5,
+        base >= 4.4,
+        containers >= 0.3,
+        random >= 1.0,
+        directory >= 1.0,
+        gtk >= 0.12.0,
+        cairo >= 0.12.0,
+        stm >= 2.1.2.1,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*,
@@ -71,13 +72,13 @@ executable simple-uv-et-polyint
 
 executable simple-uv-et
   build-depends:   
-        base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        random >= 1.0 && < 1.1,
-        directory >= 1.0 && < 1.2,
-        gtk >= 0.12.0 && < 0.13,
-        cairo >= 0.12.0 && < 0.13,
-        stm >= 2.1.2.1 && < 2.5,
+        base >= 4.4,
+        containers >= 0.3,
+        random >= 1.0,
+        directory >= 1.0,
+        gtk >= 0.12.0,
+        cairo >= 0.12.0,
+        stm >= 2.1.2.1,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*,
@@ -92,13 +93,14 @@ executable simple-uv-et
   main-is:         simple-uv-et.hs
 
 executable simple-events-locate-polyint
-  build-depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        random >= 1.0 && < 1.1,
-        directory >= 1.0 && < 1.2,
-        gtk >= 0.12.0 && < 0.13,
-        cairo >= 0.12.0 && < 0.13,
-        stm >= 2.1.2.1 && < 2.5,
+  build-depends:   
+        base >= 4.4,
+        containers >= 0.3,
+        random >= 1.0,
+        directory >= 1.0,
+        gtk >= 0.12.0,
+        cairo >= 0.12.0,
+        stm >= 2.1.2.1,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*,
@@ -113,13 +115,14 @@ executable simple-events-locate-polyint
   main-is:         simple-events-locate-polyint.hs
 
 executable simple-events
-  build-depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        random >= 1.0 && < 1.1,
-        directory >= 1.0 && < 1.2,
-        gtk >= 0.12.0 && < 0.13,
-        cairo >= 0.12.0 && < 0.13,
-        stm >= 2.1.2.1 && < 2.5,
+  build-depends:   
+        base >= 4.4,
+        containers >= 0.3,
+        random >= 1.0,
+        directory >= 1.0,
+        gtk >= 0.12.0,
+        cairo >= 0.12.0,
+        stm >= 2.1.2.1,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-double == 0.5.*,

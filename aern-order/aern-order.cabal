@@ -11,7 +11,7 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       numeric and refinement order on approximations of exact entities
-Tested-with:    GHC==7.4.2
+Tested-with:    GHC==7.6.3
 Description:
  Type-classes abstracting various kinds of approximations for exact entities:
  .   
@@ -44,14 +44,14 @@ source-repository this
 Library
   hs-source-dirs: src
   Build-Depends:
-        base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        QuickCheck >= 2.4 && < 2.5,
-        criterion >= 0.5 && < 0.6,
-        deepseq >= 1.1 && < 1.4,
-        random >= 1.0 && < 1.1,
-        test-framework >= 0.3.3 && < 0.7, 
-        test-framework-quickcheck2 >= 0.2 && < 0.3
+        base >= 4.4,
+        containers >= 0.3,
+        QuickCheck >= 2.4,
+        criterion >= 0.5,
+        deepseq >= 1.1,
+        random >= 1.0,
+        test-framework >= 0.3.3, 
+        test-framework-quickcheck2 >= 0.2
     
   exposed-modules:
                   Numeric.AERN.NumericOrder,
@@ -101,9 +101,9 @@ Executable toolAERN-bench-csv-to-gnuplot
   hs-source-dirs: tools
   main-is: BenchCsvToGnuplot.hs
   build-depends:
-        base == 4.2.* || == 4.4.* || == 4.5.*,
-        directory >= 1.0 && < 1.2,
-        containers >= 0.3 && < 0.5
+        base >= 4.4,
+        directory >= 1.0,
+        containers >= 0.3
 				
 
   

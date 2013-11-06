@@ -11,7 +11,7 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       arbitrary precision real function arithmetic
-Tested-with:    GHC==7.4.2
+Tested-with:    GHC==7.6.3
 Description:
     Type classes abstracting typical operations for m-ary continuous real functions
     such as evaluation, composition, integration and automatic differentiation.  
@@ -25,12 +25,12 @@ Description:
 Library
   hs-source-dirs: src
   Build-Depends:
-        base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        QuickCheck >= 2.4 && < 2.5,
-        test-framework >= 0.3.3 && < 0.7, 
-        test-framework-quickcheck2 >= 0.2 && < 0.3,
-        random >= 1.0.0.2 && < 1.1,
+        base >= 4.4,
+        containers >= 0.3,
+        QuickCheck >= 2.4,
+        test-framework >= 0.3.3, 
+        test-framework-quickcheck2 >= 0.2,
+        random >= 1.0.0.2,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*

@@ -288,6 +288,7 @@ solveEventsPrintSteps shouldPlotSteps _shouldShowSteps ivp (maxdegParam, depthPa
     (maybeEndState, segmentsInfo) =
         solveHybridIVP
             sizeLimits substSplitSizeLimit
+                maxNodes
                 delta m minStepSize maxStepSize splitImprovementThreshold
                     "t0" 
                         ivp
@@ -296,6 +297,7 @@ solveEventsPrintSteps shouldPlotSteps _shouldShowSteps ivp (maxdegParam, depthPa
     maxdeg = maxdegParam
     maxsize = 50
     m = 20
+    maxNodes = 20
     substSplitSizeLimit = maxSplitSizeParam -- 2^t0maxdeg
 --    minStepSizeExp = -4 :: Int
     minStepSizeExp = - depthParam
@@ -415,6 +417,7 @@ solveHybridIVP ::
     =>
     SizeLimits Fn -> 
     Int -> 
+    Int ->
     CF ->
     Int ->
     CF ->
@@ -443,6 +446,7 @@ solveHybridIVP ::
     )
 solveHybridIVP 
         sizeLimits _substSplitSizeLimit
+            maxNodes
             delta m minStepSize maxStepSize splitImprovementThreshold 
                 t0Var
                     hybivp
@@ -454,6 +458,7 @@ solveHybridIVP
             sizeLimits effSizeLims effPEval effCompose effEval effInteg effDeriv effInclFn 
                 effAddFn effMultFn effAbsFn effMinmaxFn 
                 effDivFnInt effAddFnDom effMultFnDom effCf
+                maxNodes
                 delta m t0Var minStepSize maxStepSize splitImprovementThreshold
                     hybivp
 

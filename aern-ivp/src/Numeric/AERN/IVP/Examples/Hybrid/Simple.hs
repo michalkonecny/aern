@@ -965,6 +965,7 @@ ivpBouncingBallFloorRiseEnergy ::
      HasConstFns f,
      Neg f,
      ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMultiply f,
      ArithInOut.RoundedMixedMultiply f Double,
      ArithInOut.RoundedReal (Domain f),
      ArithInOut.RoundedSquareRoot (Domain f),
@@ -981,50 +982,70 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
     system =
         HybridSystem
         {
-            hybsys_componentNames = ["x","xv","y","yv","r"],
+            hybsys_componentNames = ["x","xv","y","yv","yvv", "r"],
             hybsys_modeFields = Map.fromList [(modeMove, odeMove)],
             hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
             hybsys_eventSpecification = eventSpecMap
         }
+    initValues@[initX, initXV, initY, initYV, initYVV, initR] = 
+        [toDom 5, toDom 0, 
+--            toDom 0, toDom 1, toDom 0, toDom 101] -- linear rise
+--            toDom 0, toDom 1, toDom floorRiseAccelD, toDom $ 101] -- quadratic
+            toDom 3.5, toDom 0, toDom 6, toDom 30] -- cubic hill
+                    -- r = 2g(x-y) + (x'-y')^2
     modeMove = HybSysMode "move"
     odeMove :: [f] -> [f]
-    odeMove [x,xv,y,yv,r] = -- TODO
+    odeMove [x,xv,y,yv,yvv,r] =
         [xv, 
          newConstFnFromSample x (toDom $ -10), 
-         yv, 
-         newConstFnFromSample y (toDom $ 1),
-         (-2 :: Double) |<*> (xv <-> yv)]
+         yv,
+         yvv,
+--         newConstFnFromSample yvv (toDom $ 0), -- linear/quadratic (y''' = 0)
+         newConstFnFromSample y (toDom $ -6), -- cubic hill
+         -- r' = 2(x'-y')(g+x''-y'')
+--         newConstFnFromSample r (toDom $ 0) -- linear
+--         (-2 * floorRiseAccelD) |<*> (xv <-> yv) -- quadratic
+         (-2 :: Double) |<*> ((xv <-> yv) <*> yvv) -- cubic
+        ]
 --    invariantMove = id
-    invariantMove [x,xv,y,yv,r] = 
+--    floorRiseAccelD = 1 :: Double 
+--    floorRiseAccelD = -0.375 :: Double 
+--    floorRiseAccelD = -2 :: Double 
+    floorRiseThirdD = -11 :: Double 
+    invariantMove [x,xv,y,yv,yvv,r] = 
         do 
         -- x >= y:
         xMyNN <- makeNonneg $ x <-> y
         let xFromY = xMyNN <+> y  
+        -- r = 2g(x-y) + (x'-y')^2
         -- r >= 0:
         rNN <- makeNonneg r
-        -- |xv-yv| = sqrt(r - 2g(x-y)):
-        xvMyvSqr <- makeNonneg $ rNN <-> ((toDom 20) <*> xMyNN)
-        let xvMyvAbs = ArithInOut.sqrtOut xvMyvSqr
-        xvNew <- isect xv ((neg xvMyvAbs </\> xvMyvAbs) <+> yv) 
-        -- x-y = (r - (xv-yv)^2) / 2g:
+        -- x-y = (r - (x'-y')^2) / 2g:
         let xvMyv = xv <-> yv
         xvMyvSqr2 <- makeNonneg $ xvMyv <*> xvMyv
         let xFromXV = (rNN <-> xvMyvSqr2) </> (toDom 20) <+> y
         xNew <- isect xFromY xFromXV
-        return [xNew,xvNew,y,yv,rNN]
+        -- |x'-y'| = sqrt(r - 2g(x-y)):
+        xvMyvSqr <- makeNonneg $ rNN <-> ((toDom 20) <*> xMyNN)
+        let xvMyvAbs = ArithInOut.sqrtOut xvMyvSqr
+        xvNew <- isect xv ((neg xvMyvAbs </\> xvMyvAbs) <+> yv) 
+        return [xNew,xvNew,y,yv,yvv,rNN]
 
     eventSpecMap _mode =
         Map.singleton eventBounce $
-            (modeMove, resetBounce, [True, True, True, True, True], pruneBounce)
+            (modeMove, resetBounce, [True, True, False, False, False, True], pruneBounce)
     eventBounce = HybSysEventKind "bounce"
-    pruneBounce _ [x,xv,y,yv,r] = 
+    pruneBounce _ [x,xv,y,yv,yvv,r] = 
         do  
         vDiffNP <- makeNonpos $ xv <-> yv 
         _ <- isect x y
-        return [y, vDiffNP <+> yv, y, yv,r]
+        return [y, vDiffNP <+> yv, y, yv,yvv,r]
         
-    resetBounce [x,xv,y,yv,r] = 
-        [x, yv <+> (-0.5 :: Double) |<*> (xv <-> yv), y, yv, (toDomInterval 0 0.25) <*> r]
+    resetBounce [x,xv,y,yv,yvv,r] = 
+        [x, 
+         yv <+> (-0.5 :: Double) |<*> (xv <-> yv), -- x' := y' - (x' - y')/2 
+         y, yv, yvv,
+         (toDomInterval 0 0.25) <*> r] -- r := r/4
     
     ivp :: HybridIVP f
     ivp =
@@ -1041,13 +1062,11 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
         }
     description = 
         "BB-R+"
---        "if x = y && x' <= y' then post(x') = y'-0.5*(x'-y') else x'' = -10, y'' = 1" 
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", x'(" ++ show tStart ++ ") = " ++ show initXV
         ++ "; y(" ++ show tStart ++ ") = " ++ show initY
         ++ ", y'(" ++ show tStart ++ ") = " ++ show initYV
         ++ ", r(" ++ show tStart ++ ") = " ++ show initR
-    initValues@[initX, initXV, initY, initYV, initR] = [toDom 5, toDom 0, toDom 0, toDom 0, toDom 100] :: [Domain f]
     tStart = hybivp_tStart ivp
     z = toDom 0
     toDom = dblToReal sampleDom

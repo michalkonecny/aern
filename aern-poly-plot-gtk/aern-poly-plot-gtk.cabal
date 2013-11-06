@@ -11,7 +11,7 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       support for solving ODE IVPs using the interval polynomial Picard operator
-Tested-with:    GHC==7.4.2
+Tested-with:    GHC==7.6.3
 Description:    Support for interactive plotting of types from aern-poly.
     .
     Includes several example plot executables.
@@ -19,14 +19,15 @@ Description:    Support for interactive plotting of types from aern-poly.
 library
   hs-source-dirs:  src
   ghc-options:     -Wall
-  Build-Depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        random >= 1.0 && < 1.1,
-        gtk >= 0.12.0 && < 0.13,
-        cairo >= 0.12.0 && < 0.13,
-        stm >= 2.1.2.1 && < 2.5,
-        filepath >= 1.1.0.4 && < 1.4,
-        directory >= 1.0.1.1 && < 1.2,
+  Build-Depends:   
+        base >= 4.4,
+        containers >= 0.3,
+        random >= 1.0,
+        gtk >= 0.12.0,
+        cairo >= 0.12.0,
+        stm >= 2.1.2.1,
+        filepath >= 1.1.0.4,
+        directory >= 1.0.1.1,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*,
@@ -40,14 +41,15 @@ executable plot
   hs-source-dirs:  demos
   ghc-options:     -Wall -rtsopts
   main-is:         plot.hs
-  Build-Depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        random >= 1.0 && < 1.1,
-        gtk >= 0.12.0 && < 0.13,
-        cairo >= 0.12.0 && < 0.13,
-        stm >= 2.1.2.1 && < 2.5,
-        filepath >= 1.1.0.4 && < 1.4,
-        directory >= 1.0.1.1 && < 1.2,
+  Build-Depends:   
+        base >= 4.4,
+        containers >= 0.3,
+        random >= 1.0,
+        gtk >= 0.12.0,
+        cairo >= 0.12.0,
+        stm >= 2.1.2.1,
+        filepath >= 1.1.0.4,
+        directory >= 1.0.1.1,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*,
@@ -64,14 +66,15 @@ executable plotPicard
   hs-source-dirs:  demos
   ghc-options:     -Wall -rtsopts
   main-is:         plotPicard.hs
-  Build-Depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        random >= 1.0 && < 1.1,
-        gtk >= 0.12.0 && < 0.13,
-        cairo >= 0.12.0 && < 0.13,
-        stm >= 2.1.2.1 && < 2.5,
-        filepath >= 1.1.0.4 && < 1.4,
-        directory >= 1.0.1.1 && < 1.2,
+  Build-Depends:   
+        base >= 4.4,
+        containers >= 0.3,
+        random >= 1.0,
+        gtk >= 0.12.0,
+        cairo >= 0.12.0,
+        stm >= 2.1.2.1,
+        filepath >= 1.1.0.4,
+        directory >= 1.0.1.1,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*,

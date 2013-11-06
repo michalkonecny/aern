@@ -108,6 +108,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.MixedMultEffortIndicator f (Domain f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
+    Int {-^ maximum number of nodes in an event tree -} -> 
     Domain f {-^ initial widening @delta@ -}  ->
     Int {-^ @m@ -} -> 
     Var f {-^ @t0@ - the initial time variable -} ->
@@ -138,7 +139,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
         sizeLimits effSizeLims effPEval effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
             effDivFnInt effAddFnDom effMultFnDom effDom
-            delta m t0Var minStepSize maxStepSize splitImprovementThreshold
+            maxNodes delta m t0Var minStepSize maxStepSize splitImprovementThreshold
                 hybivpG
     = 
     solve hybivpG
@@ -184,7 +185,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
         (maybeFinalState, modeEventInfoList) = 
             solveHybridIVP_UsingPicardAndEventTree
                 sizeLimits effPEval effCompose effEval effInteg effInclFn effAddFn effMultFn effAddFnDom effDom
-                     20
+                     maxNodes
                         delta m
                             t0Var
                                 hybivp

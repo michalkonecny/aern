@@ -17,9 +17,7 @@ import Numeric.AERN.IVP.Plot.UsingFnView
 import Numeric.AERN.Poly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
-import Numeric.AERN.RmToRn.New
-import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 import qualified Numeric.AERN.DoubleBasis.Interval as CF
@@ -223,15 +221,17 @@ solveEventsPrintSteps
     (maybeEndStateLocate, segmentsInfo) =
         solveHybridIVPLocate
             sizeLimits effCf substSplitSizeLimit
+                maxNodes
                 delta m minStepSize maxStepSize splitImprovementThreshold
                     "t0" 
                         ivp
     -- parameters:
     delta = 1
     maxdeg = maxdegParam
-    maxsize = 500
-    m = 100
+    maxsize = 50
+    m = 200
 --    m = 20
+    maxNodes = 100
     substSplitSizeLimit = maxSplitSizeParam -- 2^t0maxdeg
 --    minStepSizeExp = -4 :: Int
     minStepSizeExp = - depthParam
@@ -471,6 +471,7 @@ solveHybridIVPLocate ::
     SizeLimits Poly -> 
     ArithInOut.RoundedRealEffortIndicator CF ->
     Int -> 
+    Int ->
     CF ->
     Int ->
     CF ->
@@ -499,6 +500,7 @@ solveHybridIVPLocate ::
     )
 solveHybridIVPLocate
         sizeLimits effCf substSplitSizeLimit
+            maxNodes
             delta m minStepSize maxStepSize splitImprovementThreshold 
                 t0Var
                     hybivp
@@ -510,6 +512,7 @@ solveHybridIVPLocate
             sizeLimits effSizeLims effPEval effCompose effEval effInteg effDeriv effInclFn 
                 effAddFn effMultFn effAbsFn effMinmaxFn 
                 effDivFnInt effAddFnDom effMultFnDom effCf
+                maxNodes
                 delta m t0Var minStepSize maxStepSize splitImprovementThreshold
                     hybivp
 

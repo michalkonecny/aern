@@ -63,9 +63,9 @@ source-repository this
 Library
   hs-source-dirs: src
   Build-Depends:
-        base == 4.2.* || == 4.4.* || == 4.5.*,
-        QuickCheck >= 2.4 && < 2.5,
-        ieee-utils >= 0.4 && < 0.5,
+        base >= 4.4,
+        QuickCheck >= 2.4,
+        ieee-utils >= 0.4,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*
@@ -93,11 +93,11 @@ Executable testAERN-Real-Double
   hs-source-dirs: src, tests
   main-is: Main.hs
   Build-Depends:
-        base == 4.2.* || == 4.4.* || == 4.5.*,
-        QuickCheck >= 2.4 && < 2.5,
-        test-framework >= 0.3.3 && < 0.7, 
-        test-framework-quickcheck2 >= 0.2 && < 0.3,
-        ieee-utils >= 0.4 && < 0.5,
+        base >= 4.4,
+        QuickCheck >= 2.4,
+        test-framework >= 0.3.3, 
+        test-framework-quickcheck2 >= 0.2,
+        ieee-utils >= 0.4,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*
@@ -106,12 +106,12 @@ Executable benchAERN-Real-Double
   hs-source-dirs: src, bench
   main-is: Main.hs
   Build-Depends:
-        base == 4.2.* || == 4.4.* || == 4.5.*,
-        QuickCheck >= 2.4 && < 2.5,
-        test-framework >= 0.3.3 && < 0.7, 
-        test-framework-quickcheck2 >= 0.2 && < 0.3,
-        criterion >= 0.5 && < 0.6,
-        ieee-utils >= 0.4 && < 0.5,
+        base >= 4.4,
+        QuickCheck >= 2.4,
+        test-framework >= 0.3.3, 
+        test-framework-quickcheck2 >= 0.2,
+        criterion >= 0.5,
+        ieee-utils >= 0.4,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*
@@ -120,23 +120,11 @@ Executable benchAERN-Real-Double
 --  hs-source-dirs: src, demos
 --  main-is: Quadratic.hs
 --  Build-Depends:
---        base == 4.2.* || == 4.4.* || == 4.5.*,
---        ieee-utils >= 0.4 && < 0.5,
---        QuickCheck >= 2.4 && < 2.5,
---        aern-order == 0.5.*,
---        aern-real == 0.5.*,
---        aern-interval == 0.5.*
---
+
 --Executable demoAERN-Real-Double-Riemann
 --  hs-source-dirs: src, demos
 --  main-is: Riemann.hs
 --  Build-Depends:
---        base == 4.2.* || == 4.4.* || == 4.5.*,
---        ieee-utils >= 0.4 && < 0.5,
---        QuickCheck >= 2.4 && < 2.5,
---        aern-order == 0.5.*,
---        aern-real == 0.5.*,
---        aern-interval == 0.5.*
 --
 --Executable demoAERN-Real-Double-Zero
 --  hs-source-dirs: src, demos
