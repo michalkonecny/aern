@@ -12,7 +12,7 @@ Stability:      experimental
 Category:       Data, Math
 Synopsis:       arbitrary precision real interval arithmetic
 Tested-with:
-                GHC==7.4.2
+                GHC==7.6.3
 Description:
     A concrete implementation for the refinement-order type classes from aern-real in the form
     of interval arithmetic.  The arithmetic supports also anti-consistent
@@ -41,11 +41,11 @@ source-repository this
 Library
   hs-source-dirs: src
   Build-Depends:
-        base == 4.2.* || == 4.4.* || == 4.5.*,
-        QuickCheck >= 2.4 && < 2.5,
-        test-framework >= 0.3.3 && < 0.7, 
-        test-framework-quickcheck2 >= 0.2 && < 0.3,
-        deepseq >= 1.1 && < 1.4,
+        base >= 4.4,
+        QuickCheck >= 2.4,
+        test-framework >= 0.3.3, 
+        test-framework-quickcheck2 >= 0.2,
+        deepseq >= 1.1,
         aern-order == 0.5.*,
         aern-real == 0.5.*
   Exposed-modules:

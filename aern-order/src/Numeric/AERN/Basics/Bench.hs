@@ -20,7 +20,7 @@ import Numeric.AERN.Basics.Effort
 import Control.DeepSeq
 import Criterion
 import Criterion.Config
-import qualified Criterion.MultiMap as M
+--import qualified Criterion.MultiMap as M
 import Test.QuickCheck
 import Test.QuickCheck.Gen
 import System.Random
@@ -35,7 +35,7 @@ criterionConfig name samples =
         cfgSummaryFile = ljust $ name ++ ".csv", 
         cfgSamples = ljust samples, 
         cfgResamples = ljust 200, 
-        cfgPlotSameAxis = ljust True,
+--        cfgPlotSameAxis = ljust True,
         cfgPerformGC = ljust True
 --        ,
 --        cfgPlot = M.singleton KernelDensity (PDF 1024 780) 
@@ -62,7 +62,7 @@ mkBenchSequence1 ::
     (ei -> t -> t) {-^ function to benchmark -} ->
     (Maybe (Area t))  {-^ area in the input space; Nothing means whole space only -} ->
     Int {-^ how many benchmarks to generate -} ->
-    ei -> t -> [Benchmark]
+    ei -> t -> [Benchmark] 
 mkBenchSequence1 mkComment fnEff maybeArea n initEffort sample =
     map mkBench $ zip3 [1..n] efforts inputs
     where

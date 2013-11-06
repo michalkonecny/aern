@@ -11,7 +11,7 @@ Homepage:       http://code.google.com/p/aern/
 Stability:      experimental
 Category:       Data, Math
 Synopsis:       arbitrary precision real interval arithmetic
-Tested-with:    GHC==7.4.2
+Tested-with:    GHC==7.6.3
 Description:    Multi-variate polynomials with in-out-rounded point-wise arithmetic
     and common operations for continous functions, including evalution,
     composition and integration.
@@ -25,9 +25,9 @@ Library
   hs-source-dirs:   src
   ghc-options:      -Wall -rtsopts
   Build-Depends:    
-        base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        QuickCheck >= 2.4 && < 2.5,
+        base >= 4.4,
+        containers >= 0.3,
+        QuickCheck >= 2.4,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*,
@@ -54,11 +54,12 @@ Library
                     Numeric.AERN.Poly.IntPoly.UpDnField
 
 executable testAERN-Poly
-  Build-Depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
-        QuickCheck >= 2.4 && < 2.5,
-        test-framework >= 0.3.3 && < 0.7,
-        test-framework-quickcheck2 >= 0.2 && < 0.3,
+  Build-Depends:   
+        base >= 4.4,
+        containers >= 0.3,
+        QuickCheck >= 2.4,
+        test-framework >= 0.3.3,
+        test-framework-quickcheck2 >= 0.2,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*,
@@ -71,8 +72,9 @@ executable testAERN-Poly
   main-is:         Main.hs
 
 executable minimal
-  build-depends:   base == 4.2.* || == 4.4.* || == 4.5.*,
-        containers >= 0.3 && < 0.5,
+  build-depends:   
+        base >= 4.4,
+        containers >= 0.3,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*,

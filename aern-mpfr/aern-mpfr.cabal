@@ -12,7 +12,7 @@ Stability:      experimental
 Category:       Data, Math
 Synopsis:       arbitrary precision real interval arithmetic
 Tested-with:
-                GHC==7.4.2
+                GHC==7.6.3
 Description:
     This package provides bindings and tests for using arbitrary precision floating-point numbers 
     provided by the library MPFR (via the Haskell library hmpfr)
@@ -46,9 +46,9 @@ Description:
 Library
   hs-source-dirs: src
   Build-Depends:
-        base == 4.2.* || == 4.4.* || == 4.5.*,
-        QuickCheck >= 2.4 && < 2.5,
-        hmpfr >= 0.3.3 && < 0.4,
+        base >= 4.4,
+        QuickCheck >= 2.4,
+        hmpfr >= 0.3.3,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*
@@ -78,11 +78,11 @@ Executable testAERN-Real-MPFR
   hs-source-dirs: src, tests
   main-is: Main.hs
   Build-Depends:
-        base == 4.2.* || == 4.4.* || == 4.5.*,
-        QuickCheck >= 2.4 && < 2.5,
-        test-framework >= 0.3.3 && < 0.7, 
-        test-framework-quickcheck2 >= 0.2 && < 0.3,
-        hmpfr >= 0.3.3 && < 0.4,
+        base >= 4.4,
+        QuickCheck >= 2.4,
+        test-framework >= 0.3.3, 
+        test-framework-quickcheck2 >= 0.2,
+        hmpfr >= 0.3.3,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*
@@ -91,9 +91,9 @@ Executable demoAERN-Real-MPFR-Minimal
   hs-source-dirs: src, demos
   main-is: Minimal.hs
   Build-Depends:
-        base >= 4 && < 5,
-        QuickCheck >= 2.4 && < 2.5,
-        hmpfr >= 0.3.3 && < 0.4,
+        base >= 4.4,
+        QuickCheck >= 2.4,
+        hmpfr >= 0.3.3,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*
