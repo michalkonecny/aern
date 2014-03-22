@@ -1,0 +1,11 @@
+module-template: ! 'module MODULE_NAME where
+
+'
+extensions: {}
+environment: ghc-7.4.2-stable-13.09
+cabal-file: project.cabal
+hidden-packages: ''
+version: 1
+extra-packages: ! 'Hackage: ieee-utils-tempfix 0.4.0.1'
+ghc-args: []
+excluded-modules: []
