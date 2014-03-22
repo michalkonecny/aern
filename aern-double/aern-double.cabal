@@ -65,7 +65,7 @@ Library
   Build-Depends:
         base >= 4.4,
         QuickCheck >= 2.4,
-        ieee-utils >= 0.4,
+        ieee-utils-tempfix >= 0.4,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*
@@ -97,7 +97,7 @@ Executable testAERN-Real-Double
         QuickCheck >= 2.4,
         test-framework >= 0.3.3, 
         test-framework-quickcheck2 >= 0.2,
-        ieee-utils >= 0.4,
+        ieee-utils-tempfix >= 0.4,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*
@@ -111,7 +111,7 @@ Executable benchAERN-Real-Double
         test-framework >= 0.3.3, 
         test-framework-quickcheck2 >= 0.2,
         criterion >= 0.5,
-        ieee-utils >= 0.4,
+        ieee-utils-tempfix >= 0.4,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*
@@ -131,7 +131,7 @@ Executable benchAERN-Real-Double
 --  main-is: Zero.hs
 --  Build-Depends:
 --        base == 4.2.* || == 4.4.* || == 4.5.*,
---        ieee-utils >= 0.4 && < 0.5,
+--        ieee-utils-tempfix >= 0.4 && < 0.5,
 --        QuickCheck >= 2.4 && < 2.5,
 --        aern-order == 0.5.*,
 --        aern-real == 0.5.*,
