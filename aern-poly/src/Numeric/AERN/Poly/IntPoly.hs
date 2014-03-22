@@ -107,7 +107,7 @@ instance
           RefOrd.FromEndpointsEffortIndicator (Interval e))
         ,
          (NumOrd.MinmaxInOutEffortIndicator (Interval e),
-          Int1To10) -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
+          Int1To10) -- (degree of Bernstein approximations) - 1   (the degree must be > 1)
         ) 
     roundedRealDefaultEffort fn =
         (

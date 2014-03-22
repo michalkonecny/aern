@@ -53,7 +53,7 @@ import Numeric.AERN.RefinementOrder
     (PartialCompareEffortIndicator,
      GetEndpointsEffortIndicator,
      FromEndpointsEffortIndicator)
-     -- ^^^ needed for ghc 6.12
+     -- needed for ghc 6.12
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Interval (refordPCompareInFullIntervalsEff)

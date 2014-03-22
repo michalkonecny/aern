@@ -43,9 +43,12 @@ class
     => 
     HasDomainBox f 
     where
-    type Var f -- ^ type representing variables that span the rectangular domain of the function
-    type Domain f -- ^ type of real (interval) approximations used for both domain and range of the function
-    type VarBox f :: * -> * -- ^ container type indexed by variables
+    type Var f 
+        {- type representing variables that span the rectangular domain of the function -}
+    type Domain f 
+        {- type of real (interval) approximations used for both domain and range of the function -}
+    type VarBox f :: * -> * 
+        {- container type indexed by variables -}
     getSampleDomValue :: f -> Domain f
     defaultDomSplit ::
         f {-^ dummy parameter that aids typechecking -} -> 

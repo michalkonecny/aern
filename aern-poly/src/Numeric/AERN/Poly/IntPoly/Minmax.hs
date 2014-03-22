@@ -55,11 +55,11 @@ import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder 
     (MinmaxEffortIndicator, MinmaxInOutEffortIndicator)
-    -- ^^^ needed for ghc 6.12
+    -- needed for ghc 6.12
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder
     (JoinMeetEffortIndicator)
-    -- ^^^ needed for ghc 6.12
+    -- needed for ghc 6.12
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Interval
@@ -93,7 +93,7 @@ instance
     type MinmaxEffortIndicator (IntPoly var (Interval e)) =
         (MinmaxEffortIndicatorFromRingOps (IntPoly var (Interval e)) (IntPoly var (Interval e)),
          NumOrd.MinmaxInOutEffortIndicator (Interval e),
-         Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
+         Int1To10, -- (degree of Bernstein approximations) - 1   (the degree must be > 1)
          RefOrd.GetEndpointsEffortIndicator (IntPoly var (Interval e)))
     minmaxDefaultEffort f@(IntPoly cfg _) =
         (defaultMinmaxEffortIndicatorFromRingOps f f,
@@ -122,7 +122,7 @@ minmaxUpDnDefaultEffortIntPolyWithBezierDegree ::
     f -> 
     (MinmaxEffortIndicatorFromRingOps f f,
      NumOrd.MinmaxInOutEffortIndicator (Domain f),
-     Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
+     Int1To10, -- (degree of Bernstein approximations) - 1   (the degree must be > 1)
      RefOrd.GetEndpointsEffortIndicator f)
 minmaxUpDnDefaultEffortIntPolyWithBezierDegree degree f =
     (defaultMinmaxEffortIndicatorFromRingOps f f,
@@ -276,7 +276,7 @@ instance
     where
     type MinmaxInOutEffortIndicator (IntPoly var (Interval e)) =
         (MinmaxEffortIndicatorFromRingOps (IntPoly var (Interval e)) (IntPoly var (Interval e)),
-         Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
+         Int1To10, -- (degree of Bernstein approximations) - 1   (the degree must be > 1)
          RefOrd.GetEndpointsEffortIndicator (IntPoly var (Interval e)),
          RefOrd.FromEndpointsEffortIndicator (IntPoly var (Interval e)))
 
@@ -313,7 +313,7 @@ minmaxInOutDefaultEffortIntPolyWithBezierDegree ::
     =>
     Int -> (f) -> 
     (MinmaxEffortIndicatorFromRingOps (f) (f),
-     Int1To10, -- ^ (degree of Bernstein approximations) - 1   (the degree must be > 1)
+     Int1To10, -- (degree of Bernstein approximations) - 1   (the degree must be > 1)
      RefOrd.GetEndpointsEffortIndicator (f),
      RefOrd.FromEndpointsEffortIndicator (f))    
 minmaxInOutDefaultEffortIntPolyWithBezierDegree degree f =
