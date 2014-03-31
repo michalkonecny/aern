@@ -55,9 +55,8 @@ main =
     args <- getArgs
     let exampleName : maxdegS : otherParams = args
     let maxdeg = read maxdegS
-    case getFnDefs exampleName maxdeg otherParams of
-        Just fnDefs -> plot fnDefs
-        _ -> error $ "unknown example " ++ exampleName
+    let fnDefs = getFnDefs exampleName maxdeg otherParams
+    plot fnDefs
 
 plot :: ([[Fn]], FV.FnMetaData Fn) -> IO ()
 plot (fns, fnmeta) =
@@ -85,13 +84,19 @@ addPlotVar fns =
         (plotVar : _) = vars
         vars = map fst $ getVarDoms fn   
 
-getFnDefs :: String -> Int -> [String] -> Maybe ([[Fn]], FV.FnMetaData Fn)
+getFnDefs :: String -> Int -> [String] -> ([[Fn]], FV.FnMetaData Fn)
 getFnDefs exampleName maxdeg otherParams =
-    Map.lookup exampleName $ examples maxdeg otherParams
+    case Map.lookup exampleName examplesMap of
+        Just fnDefs -> fnDefs
+        _ -> error $ "unknown example " ++ exampleName ++ ", known examples:\n" ++ unlines (map fst examplesList)
+    where
+    examplesMap = 
+        Map.fromList examplesList
+    examplesList =
+        examples maxdeg otherParams
 
-examples :: Int -> [String] -> Map.Map String ([[Fn]], FV.FnMetaData Fn)
+examples :: Int -> [String] -> [(String, ([[Fn]], FV.FnMetaData Fn))]
 examples maxdeg otherParams =
-    Map.fromList $
     [
         ("minmax", fnDefsMinmax maxdeg otherParams)
     ,
