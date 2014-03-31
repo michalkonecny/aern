@@ -53,17 +53,23 @@ main :: IO ()
 main =
     do
 --    hSetBuffering stdout LineBuffering
-    [ivpName, maxdegS, itersS] <- getArgs
+
+    -- process command-line parameters:
+    args <- getArgs
+    let [ivpName, maxdegS, itersS] = args 
     let maxdeg = (read maxdegS) :: Int
     let iters = (read itersS) :: Int
     
-    -- enable multithreaded GUI:
+    -- enable multithreaded GUIs:
     _ <- Gtk.unsafeInitGUIForThreadedRTS
+    
+    -- set up the function view window:
     let (fns, fnmeta) = getFns ivpName maxdeg iters
     fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
     fnMetaTV <- atomically $ newTVar $ fnmeta
     _ <- FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
---    Concurrent.forkIO $ signalFn fnMetaTV
+    
+    -- fire up the GUI:
     Gtk.mainGUI
     
 addPlotVar :: [[Fn]] -> [[(Fn, String)]]
@@ -73,23 +79,31 @@ addPlotVar fns =
     addV fn = (fn, tVar)
     
 getFns :: String -> Int -> Int -> ([[Fn]], FV.FnMetaData Fn)
-getFns "exp-uv" maxdeg iters = 
-    (fnsExp_uv maxdeg iters, fnmetaExp iters)
+getFns name maxdeg iters =
+    case Map.lookup name functionMap of
+        Just (mkFns, mkFnMeta) ->
+            (mkFns maxdeg iters, mkFnMeta iters)
+        _ ->
+            error $ "unknown IVP " ++ show name ++ ", known IVPs:\n" ++ unlines names 
+    where
+    functionMap = Map.fromList functions 
+    names = map fst functions
+    
+functions :: 
+    [(
+       String
+     ,
+      (Int -> Int -> [[Fn]], Int -> FV.FnMetaData Fn)
+     )
+    ]
+functions =
+    [
+        ("exp-uv", (fnsExp_uv, fnmetaExp)),
+        ("exp-uvp", (fnsExp_uvp, fnmetaExp)),
+        ("smass-ev", (fnsSpringMass_ev, fnmetaSpringMass)),
+        ("smass-uv", (fnsSpringMass_uv, fnmetaSpringMass))
+    ]
 
-getFns "exp-uvp" maxdeg iters = 
-    (fnsExp_uvp maxdeg iters, fnmetaExp iters)
-
-getFns "smass-ev" maxdeg iters = 
-    (fnsSpringMass_ev maxdeg iters, fnmetaSpringMass iters)
-    
-getFns "smass-uv" maxdeg iters = 
-    (fnsSpringMass_uv maxdeg iters, fnmetaSpringMass iters)
-    
-   
---getFns "smass-b" maxdeg iters = 
---    (fnsSpringMass_b maxdeg iters, fnmetaSpringMass_b 1)
-    
-getFns name _ _ = error $ "unknown IVP " ++ show name
 
 --showP p = showPoly id show p -- ++ " [" ++ show p ++ "]"
 
