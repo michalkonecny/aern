@@ -99,7 +99,7 @@ functions ::
     ]
 functions =
     [
---        ("expmirror-exact-initval", functionsExpMirror "ev"),
+        ("expmirror-exact-initval", functionsExpMirror "ev"),
         ("expdwindle-exact-initval", functionsExpDwindle "ev"),
         ("expdwindle-uncertain-initval-naive", functionsExpDwindle "uv"),
         ("expdwindle-uncertain-initval-flow", functionsExpDwindle "uvp"),
@@ -221,6 +221,116 @@ functionsExpDwindle subname =
                     FV.cnvprmSamplesPerUnit = 200
                 }
         }
+
+functionsExpMirror ::
+    String -> (Int -> Int -> Int -> [[Fn]], Int -> FV.FnMetaData Fn)
+functionsExpMirror subname =
+    case subname of
+        "ev" -> (fnsExp_ev, fnmetaExp)
+--        "uv" -> (fnsExp_uv, fnmetaExp)
+--        "uvp" -> (fnsExp_uvp, fnmetaExp)
+        _ -> error "functionsExp: internal error"
+    where
+    fnsExp_ev :: Int -> Int -> Int -> [[Fn]]
+    fnsExp_ev maxdeg maxsize iters = 
+        [
+            concat $ take iters $ enclosures
+        ]
+        where
+        enclosures = 
+            iterate (picardOp fieldExpMirror initValsFns) initialApprox
+            where
+            initValsFns =
+                map (newConstFn (limitsDS maxdeg maxsize) tVarDoms) initValuesExp_ev
+            initialApprox =
+                map (<+>| (constructCF (-0.5) 0.5)) initValsFns
+    
+--    fnsExp_uv :: Int -> Int -> Int -> [[Fn]]
+--    fnsExp_uv maxdeg maxsize iters = 
+--        [
+--            concat $ take iters $ enclosures
+--        ]
+--        where
+--        enclosures = 
+--            iterate (picardOp fieldExp initValsFns) initialApprox
+--            where
+--            initValsFns =
+--                map (newConstFn (limitsDS maxdeg maxsize) tVarDoms) initValuesExp_uv
+--            initialApprox =
+--                map (<+>| (constructCF (-0.5) 0.5)) initValsFns
+--    
+--    fnsExp_uvp :: Int -> Int -> Int -> [[Fn]]
+--    fnsExp_uvp maxdeg maxsize iters =
+--        [
+--            resultWithParams
+--        ]
+--        where
+--        resultWithParams = concat $ take iters $ enclosures
+--        enclosures = 
+--            iterate (picardOp fieldExp initValsFns) initialApprox
+--            where
+--            initValsFns =
+--                map initValsFn paramVars1
+--            initValsFn paramVar =
+--                newProjection (limitsDS maxdeg maxsize) varDomsP1 paramVar
+--            initialApprox =
+--                map (<+>| (constructCF (-0.5) 0.5)) initValsFns
+
+    fieldExpMirror :: [Fn] -> [Fn]
+    fieldExpMirror [y] = [negate $ (ArithInOut.absOutEff effAbs (y <+>| (-1 :: Int))) <+>| (1 :: Int)] -- -(abs(y - 1) + 1)
+    fieldExpMirror _ = error "fieldExpMirror: internal error"
+
+    initValuesExp_uv :: [CF]
+    initValuesExp_uv = [(-1) </\> 1]
+
+    initValuesExp_ev :: [CF]
+    initValuesExp_ev = [2]
+
+    varDomsP1 :: [(Var Fn, CF)]
+    varDomsP1 = zip (tVar : paramVars1) (tDom : domsP1Only)
+    
+    paramVars1 :: [Var Fn]
+    paramVars1 = ["xi"]
+
+    domsP1Only :: [CF]
+    domsP1Only = [constructCF (-1) 1] -- [[-1,1]]
+    
+    fnmetaExp :: Int -> FV.FnMetaData Fn
+    fnmetaExp iters = 
+        (FV.defaultFnMetaData sampleFn)
+        {
+            FV.dataFnGroupNames = ["segment 1"],
+            FV.dataFnNames = 
+                [
+                    concat $ map (\n -> ["x" ++ n]) $ 
+                        map show $ [1..iters]
+                ],
+            FV.dataFnStyles = 
+                [ 
+                    concat $ replicate iters [blue]
+                ]
+            ,
+            FV.dataDefaultActiveFns =
+                [
+                    True : (replicate (iters - 1) False)
+                ]
+            ,
+            FV.dataDomL = 0,
+            FV.dataDomR = 1,
+            FV.dataValLO = -1,
+            FV.dataValHI = 3,
+            FV.dataDefaultEvalPoint = 1,
+            FV.dataDefaultCanvasParams =
+                (FV.defaultCanvasParams (0::CF))
+                {
+                    FV.cnvprmCoordSystem = 
+                        FV.CoordSystemLinear $ 
+                            FV.Rectangle  3 (-1) 0 (1)
+                    ,
+                    FV.cnvprmSamplesPerUnit = 200
+                }
+        }
+
 
 ---------------------------------
 functionsSpringMass :: 
@@ -420,6 +530,8 @@ effRefComp :: RefOrd.PartialCompareEffortIndicator Fn
 effRefComp = RefOrd.pCompareDefaultEffort sampleFn
 minmaxInOutEff :: NumOrd.MinmaxInOutEffortIndicator Fn
 minmaxInOutEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 sampleFnEndpt
+effAbs :: ArithInOut.AbsEffortIndicator Fn
+effAbs = (effNumComp, minmaxInOutEff)
 effDrawFn :: CairoDrawFnEffortIndicator Fn
 effDrawFn = cairoDrawFnDefaultEffort sampleFn
 effInteg :: IntegrationEffortIndicator Fn
