@@ -56,16 +56,17 @@ main =
 
     -- process command-line parameters:
     args <- getArgs
-    let [ivpName, maxdegS, maxsizeS, itersS] = args 
+    let [ivpName, maxdegS, maxsizeS, bezdegS, itersS] = args 
     let maxdeg = (read maxdegS) :: Int
     let maxsize = (read maxsizeS) :: Int
+    let bezdeg = (read bezdegS) :: Int
     let iters = (read itersS) :: Int
     
     -- enable multithreaded GUIs:
     _ <- Gtk.unsafeInitGUIForThreadedRTS
     
     -- set up the function view window:
-    let (fns, fnmeta) = getFns ivpName maxdeg maxsize iters
+    let (fns, fnmeta) = getFns ivpName maxdeg maxsize bezdeg iters
     fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
     fnMetaTV <- atomically $ newTVar $ fnmeta
     _ <- FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
@@ -79,11 +80,11 @@ addPlotVar fns =
     where
     addV fn = (fn, tVar)
     
-getFns :: String -> Int -> Int -> Int -> ([[Fn]], FV.FnMetaData Fn)
-getFns name maxdeg maxsize iters =
+getFns :: String -> Int -> Int -> Int -> Int -> ([[Fn]], FV.FnMetaData Fn)
+getFns name maxdeg maxsize bezdeg iters =
     case Map.lookup name functionMap of
         Just (mkFns, mkFnMeta) ->
-            (mkFns maxdeg maxsize iters, mkFnMeta iters)
+            (mkFns maxdeg maxsize bezdeg iters, mkFnMeta iters)
         _ ->
             error $ "unknown IVP " ++ show name ++ ", known IVPs:\n" ++ unlines names 
     where
@@ -94,7 +95,7 @@ functions ::
     [(
        String
      ,
-      (Int -> Int -> Int -> [[Fn]], Int -> FV.FnMetaData Fn)
+      (Int -> Int -> Int -> Int -> [[Fn]], Int -> FV.FnMetaData Fn)
      )
     ]
 functions =
@@ -114,7 +115,7 @@ functions =
 ---------------------------------
 
 functionsExpDwindle ::
-    String -> (Int -> Int -> Int -> [[Fn]], Int -> FV.FnMetaData Fn)
+    String -> (Int -> Int -> Int -> Int -> [[Fn]], Int -> FV.FnMetaData Fn)
 functionsExpDwindle subname =
     case subname of
         "ev" -> (fnsExp_ev, fnmetaExp)
@@ -122,8 +123,8 @@ functionsExpDwindle subname =
         "uvp" -> (fnsExp_uvp, fnmetaExp)
         _ -> error "functionsExp: internal error"
     where
-    fnsExp_ev :: Int -> Int -> Int -> [[Fn]]
-    fnsExp_ev maxdeg maxsize iters = 
+    fnsExp_ev :: Int -> Int -> Int -> Int -> [[Fn]]
+    fnsExp_ev maxdeg maxsize _bezdeg iters = 
         [
             concat $ take iters $ enclosures
         ]
@@ -136,8 +137,8 @@ functionsExpDwindle subname =
             initialApprox =
                 map (<+>| (constructCF (-0.5) 0.5)) initValsFns
     
-    fnsExp_uv :: Int -> Int -> Int -> [[Fn]]
-    fnsExp_uv maxdeg maxsize iters = 
+    fnsExp_uv :: Int -> Int -> Int -> Int -> [[Fn]]
+    fnsExp_uv maxdeg maxsize _bezdeg iters = 
         [
             concat $ take iters $ enclosures
         ]
@@ -150,8 +151,8 @@ functionsExpDwindle subname =
             initialApprox =
                 map (<+>| (constructCF (-0.5) 0.5)) initValsFns
     
-    fnsExp_uvp :: Int -> Int -> Int -> [[Fn]]
-    fnsExp_uvp maxdeg maxsize iters =
+    fnsExp_uvp :: Int -> Int -> Int -> Int -> [[Fn]]
+    fnsExp_uvp maxdeg maxsize _bezdeg iters =
         [
             resultWithParams
         ]
@@ -185,6 +186,12 @@ functionsExpDwindle subname =
 
     domsP1Only :: [CF]
     domsP1Only = [constructCF (-1) 1] -- [[-1,1]]
+
+    tDom :: CF
+    tDom = constructCF 0 1
+    
+    tVarDoms :: [(Var Fn, CF)]
+    tVarDoms = [(tVar, tDom)]
     
     fnmetaExp :: Int -> FV.FnMetaData Fn
     fnmetaExp iters = 
@@ -223,30 +230,30 @@ functionsExpDwindle subname =
         }
 
 functionsExpMirror ::
-    String -> (Int -> Int -> Int -> [[Fn]], Int -> FV.FnMetaData Fn)
+    String -> (Int -> Int -> Int -> Int -> [[Fn]], Int -> FV.FnMetaData Fn)
 functionsExpMirror subname =
     case subname of
-        "ev" -> (fnsExp_ev, fnmetaExp)
+        "ev" -> (fnsExpMirror_ev, fnmetaExpMirror)
 --        "uv" -> (fnsExp_uv, fnmetaExp)
 --        "uvp" -> (fnsExp_uvp, fnmetaExp)
         _ -> error "functionsExp: internal error"
     where
-    fnsExp_ev :: Int -> Int -> Int -> [[Fn]]
-    fnsExp_ev maxdeg maxsize iters = 
+    fnsExpMirror_ev :: Int -> Int -> Int -> Int -> [[Fn]]
+    fnsExpMirror_ev maxdeg maxsize bezdeg iters = 
         [
             concat $ take iters $ enclosures
         ]
         where
         enclosures = 
-            iterate (picardOp fieldExpMirror initValsFns) initialApprox
+            iterate (picardOp (fieldExpMirror bezdeg) initValsFns) initialApprox
             where
             initValsFns =
                 map (newConstFn (limitsDS maxdeg maxsize) tVarDoms) initValuesExp_ev
             initialApprox =
                 map (<+>| (constructCF (-0.5) 0.5)) initValsFns
     
---    fnsExp_uv :: Int -> Int -> Int -> [[Fn]]
---    fnsExp_uv maxdeg maxsize iters = 
+--    fnsExp_uv :: Int -> Int -> Int -> Int -> [[Fn]]
+--    fnsExp_uv maxdeg maxsize bezdeg iters = 
 --        [
 --            concat $ take iters $ enclosures
 --        ]
@@ -259,8 +266,8 @@ functionsExpMirror subname =
 --            initialApprox =
 --                map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 --    
---    fnsExp_uvp :: Int -> Int -> Int -> [[Fn]]
---    fnsExp_uvp maxdeg maxsize iters =
+--    fnsExp_uvp :: Int -> Int -> Int -> Int -> [[Fn]]
+--    fnsExp_uvp maxdeg maxsize bezdeg iters =
 --        [
 --            resultWithParams
 --        ]
@@ -276,27 +283,41 @@ functionsExpMirror subname =
 --            initialApprox =
 --                map (<+>| (constructCF (-0.5) 0.5)) initValsFns
 
-    fieldExpMirror :: [Fn] -> [Fn]
-    fieldExpMirror [y] = [negate $ (ArithInOut.absOutEff effAbs (y <+>| (-1 :: Int))) <+>| (1 :: Int)] -- -(abs(y - 1) + 1)
-    fieldExpMirror _ = error "fieldExpMirror: internal error"
+    fieldExpMirror :: Int -> [Fn] -> [Fn]
+    fieldExpMirror bd [y] = 
+        [negate $ 
+            (ArithInOut.absOutEff (effAbs bd) (y <+>| (-1 :: Int))) 
+            <+>| (1 :: Int)] -- -(abs(y - 1) + 1)
+    fieldExpMirror _ _ = error "fieldExpMirror: internal error"
 
-    initValuesExp_uv :: [CF]
-    initValuesExp_uv = [(-1) </\> 1]
+--    initValuesExp_uv :: [CF]
+--    initValuesExp_uv = [(-1) </\> 1]
 
     initValuesExp_ev :: [CF]
     initValuesExp_ev = [2]
 
-    varDomsP1 :: [(Var Fn, CF)]
-    varDomsP1 = zip (tVar : paramVars1) (tDom : domsP1Only)
+--    varDomsP1 :: [(Var Fn, CF)]
+--    varDomsP1 = zip (tVar : paramVars1) (tDom : domsP1Only)
+--    
+--    paramVars1 :: [Var Fn]
+--    paramVars1 = ["xi"]
+--
+--    domsP1Only :: [CF]
+--    domsP1Only = [constructCF (-1) 1] -- [[-1,1]]
     
-    paramVars1 :: [Var Fn]
-    paramVars1 = ["xi"]
-
-    domsP1Only :: [CF]
-    domsP1Only = [constructCF (-1) 1] -- [[-1,1]]
+    tDom :: CF
+    tDom = constructCF 0 tEndDbl
     
-    fnmetaExp :: Int -> FV.FnMetaData Fn
-    fnmetaExp iters = 
+    tVarDoms :: [(Var Fn, CF)]
+    tVarDoms = [(tVar, tDom)]
+    
+    tEndDbl :: Double
+    tEndDbl = 1
+    tEnd :: CF
+    tEnd = constructCF tEndDbl tEndDbl
+    
+    fnmetaExpMirror :: Int -> FV.FnMetaData Fn
+    fnmetaExpMirror iters = 
         (FV.defaultFnMetaData sampleFn)
         {
             FV.dataFnGroupNames = ["segment 1"],
@@ -316,25 +337,25 @@ functionsExpMirror subname =
                 ]
             ,
             FV.dataDomL = 0,
-            FV.dataDomR = 1,
+            FV.dataDomR = tEnd,
             FV.dataValLO = -1,
             FV.dataValHI = 3,
-            FV.dataDefaultEvalPoint = 1,
+            FV.dataDefaultEvalPoint = tEnd,
             FV.dataDefaultCanvasParams =
                 (FV.defaultCanvasParams (0::CF))
                 {
                     FV.cnvprmCoordSystem = 
                         FV.CoordSystemLinear $ 
-                            FV.Rectangle  3 (-1) 0 (1)
+                            FV.Rectangle  3 (-1) 0 tEnd
                     ,
-                    FV.cnvprmSamplesPerUnit = 200
+                    FV.cnvprmSamplesPerUnit = 100
                 }
         }
 
 
 ---------------------------------
 functionsSpringMass :: 
-    String -> (Int -> Int -> Int -> [[Fn]], Int -> FV.FnMetaData Fn)
+    String -> (Int -> Int -> Int -> Int -> [[Fn]], Int -> FV.FnMetaData Fn)
 functionsSpringMass subname =
     case subname of
         "ev" -> (fnsSpringMass_ev, fnmetaSpringMass)
@@ -342,8 +363,8 @@ functionsSpringMass subname =
         "uvp" -> (fnsSpringMass_uvp, fnmetaSpringMass)
         _ -> error "functionsSpringMass: internal error"
     where
-    fnsSpringMass_ev :: Int -> Int -> Int -> [[Fn]]
-    fnsSpringMass_ev maxdeg maxsize iters = 
+    fnsSpringMass_ev :: Int -> Int -> Int -> Int -> [[Fn]]
+    fnsSpringMass_ev maxdeg maxsize _bezdeg iters = 
         [
             concat $ take iters $ enclosures
         ]
@@ -356,8 +377,8 @@ functionsSpringMass subname =
             initialApprox =
                 map (<+>| (constructCF (-0.5) 0.5)) initValsFns
         
-    fnsSpringMass_uv :: Int -> Int -> Int -> [[Fn]]
-    fnsSpringMass_uv maxdeg maxsize iters = 
+    fnsSpringMass_uv :: Int -> Int -> Int -> Int -> [[Fn]]
+    fnsSpringMass_uv maxdeg maxsize _bezdeg iters = 
         [
             concat $ take iters $ enclosures
         ]
@@ -370,8 +391,8 @@ functionsSpringMass subname =
             initialApprox =
                 map (<+>| (constructCF (-0.5) 0.5)) initValsFns
     
-    fnsSpringMass_uvp :: Int -> Int -> Int -> [[Fn]]
-    fnsSpringMass_uvp maxdeg maxsize iters = 
+    fnsSpringMass_uvp :: Int -> Int -> Int -> Int -> [[Fn]]
+    fnsSpringMass_uvp maxdeg maxsize _bezdeg iters = 
         [
             map removeParams $ concat $ take iters $ enclosures
         ]
@@ -416,6 +437,13 @@ functionsSpringMass subname =
     domsP2Only :: [CF]
     domsP2Only = [0] -- [[0,1], 0]
 
+    tDom :: CF
+    tDom = constructCF 0 1
+    
+    tVarDoms :: [(Var Fn, CF)]
+    tVarDoms = [(tVar, tDom)]
+    
+
     fnmetaSpringMass :: 
         Num (Domain f) =>
         Int -> FV.FnMetaData f
@@ -457,7 +485,7 @@ functionsSpringMass subname =
 
     
 --    fnsSpringMass_uvp_mono :: Int -> Int -> [[CF.Interval Fn]]
---    fnsSpringMass_uvp_mono maxdeg maxsize iters = 
+--    fnsSpringMass_uvp_mono maxdeg maxsize bezdeg iters = 
 --        [
 --            concat $ take iters $ enclosures
 --        ]
@@ -489,11 +517,7 @@ picardOp field y0 yPrev =
     
 tVar :: Var Fn
 tVar = "t"
-tDom :: CF
-tDom = constructCF 0 1
 
-tVarDoms :: [(Var Fn, CF)]
-tVarDoms = [(tVar, tDom)]
     
 
 
@@ -528,10 +552,10 @@ effNumComp :: NumOrd.PartialCompareEffortIndicator Fn
 effNumComp = NumOrd.pCompareDefaultEffort sampleFn
 effRefComp :: RefOrd.PartialCompareEffortIndicator Fn
 effRefComp = RefOrd.pCompareDefaultEffort sampleFn
-minmaxInOutEff :: NumOrd.MinmaxInOutEffortIndicator Fn
-minmaxInOutEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 sampleFnEndpt
-effAbs :: ArithInOut.AbsEffortIndicator Fn
-effAbs = (effNumComp, minmaxInOutEff)
+minmaxInOutEff :: Int -> NumOrd.MinmaxInOutEffortIndicator Fn
+minmaxInOutEff bd = minmaxUpDnDefaultEffortIntPolyWithBezierDegree bd sampleFnEndpt
+effAbs :: Int -> ArithInOut.AbsEffortIndicator Fn
+effAbs bd = (effNumComp, minmaxInOutEff bd)
 effDrawFn :: CairoDrawFnEffortIndicator Fn
 effDrawFn = cairoDrawFnDefaultEffort sampleFn
 effInteg :: IntegrationEffortIndicator Fn
@@ -541,10 +565,10 @@ effInteg = integrationDefaultEffort sampleFn
 --evalOpsOutCf = evalOpsOut effCF x (0::CF)
 
 sampleFnEndpt :: FnEndPt
-sampleFnEndpt = newProjection limits tVarDoms tVar
+sampleFnEndpt = newProjection limits [("x",1)] "x"
 
 sampleFn :: Fn
-sampleFn = newProjection limits tVarDoms tVar
+sampleFn = newProjection limits  [("x",1)] "x"
 
 {----- colours ---}
 
