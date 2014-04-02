@@ -26,6 +26,7 @@ module Numeric.AERN.RmToRn.Plot.FnView
     FnMetaData (..),
     defaultFnData,
     defaultFnMetaData,
+    simpleFnMetaData,
     new,
     module Numeric.AERN.RmToRn.Plot.Params
 )
