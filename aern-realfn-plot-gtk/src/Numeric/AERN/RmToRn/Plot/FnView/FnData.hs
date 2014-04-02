@@ -132,7 +132,7 @@ defaultFnMetaData sampleF =
     sampleDom = getSampleDomValue sampleF
 
 simpleFnMetaData :: 
-      (fnInfo ~ (String, FnPlotStyle, Bool, fn), 
+      (fnInfo ~ (String, FnPlotStyle, Bool), 
        HasZero (Domain t), HasOne (Domain t), HasDomainBox t) 
       =>
       t
@@ -166,10 +166,9 @@ simpleFnMetaData sampleFn rect samplesPerUnit (groups :: [(String, [fnInfo])]) =
         getGroupContent (_, content) = content
         mapGroupsFns :: (fnInfo -> t) -> [[t]]
         mapGroupsFns f = map (map f . getGroupContent) groups 
-        getFnName (name, _, _, _) = name
-        getFnStyle (_, style, _, _) = style
-        getFnEnabled (_, _, enabled, _) = enabled
---        getFnContent (_, _, _, content) = content
+        getFnName (name, _, _) = name
+        getFnStyle (_, style, _) = style
+        getFnEnabled (_, _, enabled) = enabled
     
 
 getDefaultCentre ::
