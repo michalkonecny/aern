@@ -30,7 +30,7 @@ import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
-import qualified Numeric.AERN.NumericOrder as NumOrd
+--import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
@@ -50,6 +50,7 @@ data FnPlotStyle =
 
 type ColourRGBA = (Double, Double, Double, Double)
 
+defaultFnPlotStyle :: FnPlotStyle
 defaultFnPlotStyle =
     FnPlotStyle
     {
@@ -161,16 +162,17 @@ translateToCoordSystem ::
     CoordSystem t ->
     (t, t) ->
     (t, t)
-translateToCoordSystem eff csys pt@(x,y) =
+translateToCoordSystem eff csys _pt@(x,y) =
     case csys of
---        CoordSystemLogSqueeze ->
+        CoordSystemLogSqueeze _scale ->
+            error "CoordSystemLogSqueeze current not supported."
 --            ((logSqueeze 0.5 x) * scale, (logSqueeze 0.5 y) * scale)
         CoordSystemLinear (Rectangle t b l r) ->
             ((linTransform l r x), 
              (linTransform b t y))
     where
-    linTransform x0 x1 x =
-        (x <-> x0) </> (x1 <-> x0)
+    linTransform x0 x1 x2 =
+        (x2 <-> x0) </> (x1 <-> x0)
 
     (<->) = ArithInOut.subtrOutEff effAdd
     (</>) = ArithInOut.divOutEff effDiv
@@ -201,43 +203,43 @@ getVisibleDomExtents csys =
         CoordSystemLinear (Rectangle t b l r) ->
             (t, b, l, r)
     
-{-|
-    Convert a number from range [-oo,+oo] to
-    range (-1,1), mapping 1 to v1.
--}
-normalise :: 
-    (ArithInOut.RoundedReal t) 
-    =>
-    (ArithInOut.RoundedRealEffortIndicator t) -> 
-    t {-^ v1 -} -> 
-    t {-^ x -} -> 
-    t
-normalise eff v1 x
-    | v1ok && x < c0 = 
-        (a</>(a <-> x)) <-> c1
-    | v1ok = 
-        c1 <-> (a</>(a <+> x))
-    where
-    v1ok = 
-        c0 < v1 && v1 < c1
-    a = 
-        (c1 <-> v1) </> v1
-    c0 = zero sample
-    c1 = one sample
-
-    a < b = 
-        (NumOrd.pLessEff effComp a b) == Just True
-    (<+>) = ArithInOut.addOutEff effAdd
-    (<->) = ArithInOut.subtrOutEff effAdd
-    (</>) = ArithInOut.divOutEff effDiv
-
-    sample = x
-    effComp =
-        ArithInOut.rrEffortNumComp sample eff
-    effAdd =
-        ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
-    effDiv =
-        ArithInOut.fldEffortDiv sample $ ArithInOut.rrEffortField sample eff
+--{-|
+--    Convert a number from range [-oo,+oo] to
+--    range (-1,1), mapping 1 to v1.
+---}
+--normalise :: 
+--    (ArithInOut.RoundedReal t) 
+--    =>
+--    (ArithInOut.RoundedRealEffortIndicator t) -> 
+--    t {-^ v1 -} -> 
+--    t {-^ x -} -> 
+--    t
+--normalise eff v1 x
+--    | v1ok && x < c0 = 
+--        (a</>(a <-> x)) <-> c1
+--    | v1ok = 
+--        c1 <-> (a</>(a <+> x))
+--    where
+--    v1ok = 
+--        c0 < v1 && v1 < c1
+--    a = 
+--        (c1 <-> v1) </> v1
+--    c0 = zero sample
+--    c1 = one sample
+--
+--    a < b = 
+--        (NumOrd.pLessEff effComp a b) == Just True
+--    (<+>) = ArithInOut.addOutEff effAdd
+--    (<->) = ArithInOut.subtrOutEff effAdd
+--    (</>) = ArithInOut.divOutEff effDiv
+--
+--    sample = x
+--    effComp =
+--        ArithInOut.rrEffortNumComp sample eff
+--    effAdd =
+--        ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
+--    effDiv =
+--        ArithInOut.fldEffortDiv sample $ ArithInOut.rrEffortField sample eff
     
 --{-|
 --    Map the range [-oo,oo] to itself with a logarithmic scale.

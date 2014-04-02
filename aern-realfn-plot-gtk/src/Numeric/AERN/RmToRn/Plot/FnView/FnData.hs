@@ -97,6 +97,7 @@ deriving instance
     => 
     (Show (FnMetaData f))
 
+defaultFnData :: FnData f
 defaultFnData =
     FnData
     {
@@ -129,6 +130,47 @@ defaultFnMetaData sampleF =
     }
     where
     sampleDom = getSampleDomValue sampleF
+
+simpleFnMetaData :: 
+      (fnInfo ~ (String, FnPlotStyle, Bool, fn), 
+       HasZero (Domain t), HasOne (Domain t), HasDomainBox t) 
+      =>
+      t
+      -> Rectangle (Domain f)
+      -> Int
+      -> [(String, [fnInfo])]
+      -> FnMetaData f
+simpleFnMetaData sampleFn rect samplesPerUnit (groups :: [(String, [fnInfo])]) =
+        (defaultFnMetaData sampleFn)
+        {
+            dataFnGroupNames = map getGroupName groups,
+            dataFnNames = mapGroupsFns getFnName, 
+            dataFnStyles = mapGroupsFns getFnStyle,
+            dataDefaultActiveFns = mapGroupsFns getFnEnabled,
+            dataDomL = domL,
+            dataDomR = domR,
+            dataValLO = valLO,
+            dataValHI = valHI,
+            dataDefaultEvalPoint = valHI,
+            dataDefaultCanvasParams =
+                (defaultCanvasParams sampleDom)
+                {
+                    cnvprmCoordSystem = CoordSystemLinear rect,
+                    cnvprmSamplesPerUnit = samplesPerUnit
+                }
+        }
+        where
+        (Rectangle valHI valLO domL domR) = rect
+        sampleDom = getSampleDomValue sampleFn
+        getGroupName (name, _) = name
+        getGroupContent (_, content) = content
+        mapGroupsFns :: (fnInfo -> t) -> [[t]]
+        mapGroupsFns f = map (map f . getGroupContent) groups 
+        getFnName (name, _, _, _) = name
+        getFnStyle (_, style, _, _) = style
+        getFnEnabled (_, _, enabled, _) = enabled
+--        getFnContent (_, _, _, content) = content
+    
 
 getDefaultCentre ::
     (ArithInOut.RoundedReal (Domain f))
