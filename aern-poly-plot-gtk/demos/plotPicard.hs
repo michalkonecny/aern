@@ -99,6 +99,8 @@ functions ::
 functions =
     [
         ("expdwindle-exact-initval", functionsExpDwindle "ev"),
+        ("expdwindle-exact-initval-flow", functionsExpDwindle "evp"),
+        ("expdwindle-exact-initval-piecewise", functionsExpDwindle "ev-pw"),
         ("expdwindle-uncertain-initval-naive", functionsExpDwindle "uv"),
         ("expdwindle-uncertain-initval-flow", functionsExpDwindle "uvp"),
         ("expmirror-exact-initval", functionsExpMirror "ev"),
@@ -117,6 +119,8 @@ functionsExpDwindle ::
 functionsExpDwindle subname =
     case subname of
         "ev" -> (fnsExp_ev, fnmetaExp)
+        "evp" -> (fnsExp_evp, fnmetaExp)
+        "ev-pw" -> (fnsExp_ev_pw, fnmetaExp_pw)
         "uv" -> (fnsExp_uv, fnmetaExp)
         "uvp" -> (fnsExp_uvp, fnmetaExp)
         _ -> error "functionsExp: internal error"
@@ -153,25 +157,41 @@ functionsExpDwindle subname =
             initialApprox =
                 map (<+>| (constructCF (-0.5) 0.5)) initValsFns
     
-    fnsExp_uvp :: Int -> Int -> [String] -> [[Fn]]
-    fnsExp_uvp maxdeg maxsize otherArgs =
-        [
-            resultWithParams
-        ]
+    fnsExp_evp :: Int -> Int -> [String] -> [[Fn]]
+    fnsExp_evp maxdeg maxsize otherArgs =
+        picardOnPartitionWrapping 
+            fieldExp
+            paramVars initValuesExp_ev 
+            [tDom] 
+            (limitsDS maxdeg maxsize) iters
         where
         [itersS] = otherArgs
         iters = read itersS
-        resultWithParams = concat $ take iters $ enclosures
-        enclosures = 
-            iterate (picardOp fieldExp initValsFns) initialApprox
-            where
-            initValsFns =
-                map initValsFn paramVars
-            initValsFn paramVar =
-                newProjection (limitsDS maxdeg maxsize) varDomsParam paramVar
-            initialApprox =
-                map (<+>| (constructCF (-0.5) 0.5)) initValsFns
-
+        
+    fnsExp_ev_pw :: Int -> Int -> [String] -> [[Fn]]
+    fnsExp_ev_pw maxdeg maxsize otherArgs =
+        picardOnPartitionWrapping 
+            fieldExp
+            paramVars initValuesExp_ev 
+            (partitionDom tDom bisectDepth)
+            (limitsDS maxdeg maxsize) iters
+        where
+        [itersS, bisectDepthS] = otherArgs
+        iters = read itersS
+        bisectDepth = read bisectDepthS
+        
+        
+    fnsExp_uvp :: Int -> Int -> [String] -> [[Fn]]
+    fnsExp_uvp maxdeg maxsize otherArgs =
+        picardOnPartitionWrapping 
+            fieldExp
+            paramVars initValuesExp_uv 
+            [tDom] 
+            (limitsDS maxdeg maxsize) iters
+        where
+        [itersS] = otherArgs
+        iters = read itersS
+        
     fieldExp :: [Fn] -> [Fn]
     fieldExp [y] = [(-1 :: Int) |<*> y] -- y' = -y
     fieldExp _ = error "fieldExp: internal error"
@@ -182,9 +202,6 @@ functionsExpDwindle subname =
     initValuesExp_uv :: [CF]
     initValuesExp_uv = [(-1) </\> 1]
 
-    varDomsParam :: [(Var Fn, CF)]
-    varDomsParam = tVarDoms ++ zip paramVars initValuesExp_uv
-    
     paramVars :: [Var Fn]
     paramVars = ["yi"]
 
@@ -210,7 +227,94 @@ functionsExpDwindle subname =
                 (repeat blue) --styles
                 (True : repeat False) -- initial activations
         fnNames =
-            map ("y" ++) $ map show [1..iters]
+            map ("y" ++) $ map show ([1..iters] :: [Int])
+
+    fnmetaExp_pw :: [String] -> FV.FnMetaData Fn
+    fnmetaExp_pw otherArgs =
+        FV.simpleFnMetaData
+            sampleFn 
+            (FV.Rectangle  1 (-1) 0 (1)) -- initial plotting region
+            200 -- samplesPerUnit
+            [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
+        where
+        [itersS, bisectDepthS] = otherArgs
+        iters = read itersS
+        bisectDepth :: Int
+        bisectDepth = read bisectDepthS
+        functionInfos =
+            zip3 
+                fnNames 
+                (repeat blue) --styles
+                (True : repeat False) -- initial activations
+        fnNames =
+            map ("y" ++) $ map show ([1..iters] :: [Int])
+
+
+picardOnPartitionWrapping :: 
+    ([Fn] -> [Fn]) -- ^ field
+    -> [Var Fn] -- ^ variables
+    -> [CF] -- ^ initial values
+    -> [CF] -- ^ partition of time
+    -> IntPolySizeLimits CF -- ^ limits on polynomials
+    -> Int -- ^ number of iterations of the Picard operator
+    -> [[Fn]]
+picardOnPartitionWrapping 
+        field 
+        paramVars initValues 
+        partition 
+        limits iters 
+    =
+    fst $
+    foldl picardOnSegment ([],initValues) partition
+    where
+    picardOnSegment (resultsForPrevSegments, segmentInitValues) segment =
+        (resultsForPrevSegments ++ [concat enclosures], nextSegmentInitValues)
+        where
+        nextSegmentInitValues =
+            intersectBoxes $ 
+                map (map evaluateAtEndpoint) $ 
+                    pickOnlySurelyValidEnclosures enclosures
+            where
+            pickOnlySurelyValidEnclosures enclosures2@(y1 : y2 : rest) =
+                if y2InsideY1
+                    then enclosures2 -- all enclosures are valid
+                    else pickOnlySurelyValidEnclosures (y2 : rest) -- drop y1 and try again
+                where
+                y2InsideY1 =
+                    and $ map (== (Just True)) comparisonResults
+                comparisonResults =
+                    zipWith (RefOrd.pLeqEff effRefComp) y1 y2  -- is y1 below y2, ie does y1 enclose y2?
+            pickOnlySurelyValidEnclosures _ =
+                error "Failed to find a certain enclosure, try increasing the number of iterations."
+            evaluateAtEndpoint fn =
+                evalAtPointOutEff effEval (Map.fromList varDomsTEndParams) fn
+            varDomsTEndParams =
+                (tVar, segmentR) : zip paramVars segmentInitValues
+            (_, segmentR) = RefOrd.getEndpointsOut segment
+            intersectBoxes boxes =
+                unsafePrint ("boxes =\n" ++ (unlines $ map show boxes)) $
+                foldl1 (zipWith (RefOrd.<\/>)) boxes 
+        enclosures =
+            take iters $  
+            iterate (picardOp field initValsFns) initialApprox
+            where
+            initialApprox =
+                map (<+>| (constructCF (-0.5) 0.5)) initValsFns
+            initValsFns =
+                map initValsFn paramVars
+            initValsFn paramVar =
+                newProjection limits varDomsTDomParam paramVar
+            varDomsTDomParam =
+                (tVar, segment) : zip paramVars segmentInitValues
+
+partitionDom :: CF -> Int -> [CF]
+partitionDom tDom bisectDepth =
+    (iterate bisectAll [tDom]) !! bisectDepth
+    where
+    bisectAll = concat . map bisectIntoList
+    bisectIntoList a = [aL, aR]
+        where
+        (aL, aR) = CF.bisect Nothing a 
 
 
 functionsExpMirror ::
@@ -243,13 +347,14 @@ functionsExpMirror subname =
     fnsExpMirror_ev_pw :: Int -> Int -> [String] -> [[Fn]]
     fnsExpMirror_ev_pw maxdeg maxsize otherArgs = 
         [
-            concat $ take iters $ enclosures
+            concat $ take iters $ enclosures -- TODO
         ]
         where
         [bezdegS, itersS, bisectDepthS] = otherArgs
         iters = read itersS
         bezdeg = read bezdegS
 --        bisectDepth = read bisectDepthS
+
         enclosures = 
             iterate (picardOp (fieldExpMirror bezdeg) initValsFns) initialApprox
             where
@@ -335,7 +440,7 @@ functionsExpMirror subname =
                 (repeat blue) -- styles 
                 (True : repeat False) -- initial activations  
         fnNames =
-            map ("y" ++) $ map show [1..iters]
+            map ("y" ++) $ map show ([1..iters] :: [Int])
 
     fnmetaExpMirror_pw :: [String] -> FV.FnMetaData Fn
     fnmetaExpMirror_pw otherArgs =
@@ -356,7 +461,7 @@ functionsExpMirror subname =
                 (repeat blue) -- styles 
                 (True : repeat False) -- initial activations  
         fnNames =
-            map ("y" ++) $ map show [1..iters]
+            map ("y" ++) $ map show ([1..iters] :: [Int])
 
 ---------------------------------
 functionsSpringMass :: 
@@ -475,7 +580,7 @@ functionsSpringMass subname =
                 (concat $ repeat [blue, green]) -- styles 
                 (True : True : repeat False) -- initial activations  
         fnNames =
-            concat $ map (\nS -> ["y" ++ nS, "y'" ++ nS]) $ map show [1..iters]
+            concat $ map (\nS -> ["y" ++ nS, "y'" ++ nS]) $ map show ([1..iters] :: [Int])
 
 
     
@@ -524,8 +629,8 @@ cf0 = 0
     
 {--- efforts for various AP functions ---}
 
-limits :: IntPolySizeLimits CF
-limits = limitsD 10
+limitsDefault :: IntPolySizeLimits CF
+limitsDefault = limitsD 10
 limitsD :: Int -> IntPolySizeLimits CF
 limitsD maxdeg = limitsDS maxdeg 100
 limitsDS :: Int -> Int -> IntPolySizeLimits CF
@@ -560,10 +665,10 @@ effInteg = integrationDefaultEffort sampleFn
 --evalOpsOutCf = evalOpsOut effCF x (0::CF)
 
 sampleFnEndpt :: FnEndPt
-sampleFnEndpt = newProjection limits [("x",1)] "x"
+sampleFnEndpt = newProjection limitsDefault [("x",1)] "x"
 
 sampleFn :: Fn
-sampleFn = newProjection limits  [("x",1)] "x"
+sampleFn = newProjection limitsDefault  [("x",1)] "x"
 
 {----- colours ---}
 
