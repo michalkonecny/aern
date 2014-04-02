@@ -45,3 +45,4 @@ Library
         Numeric.AERN.RmToRn.Plot.FnView.Layout
         Numeric.AERN.RmToRn.Plot.FnView.WatchData
         Numeric.AERN.RmToRn.Plot.FnView.Canvas
+  ghc-options:    -Wall
