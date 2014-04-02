@@ -151,7 +151,7 @@ simpleFnMetaData sampleFn rect samplesPerUnit (groups :: [(String, [fnInfo])]) =
             dataDomR = domR,
             dataValLO = valLO,
             dataValHI = valHI,
-            dataDefaultEvalPoint = valHI,
+            dataDefaultEvalPoint = domR,
             dataDefaultCanvasParams =
                 (defaultCanvasParams sampleDom)
                 {
