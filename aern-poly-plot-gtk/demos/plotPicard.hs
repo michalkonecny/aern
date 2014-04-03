@@ -19,7 +19,7 @@ import qualified Numeric.AERN.DoubleBasis.Interval as CF
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
---import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.Operators
@@ -109,6 +109,10 @@ functions =
         ("expmirror-exact-initval-flow", functionsExpMirror "evp"),
         ("expmirror-uncertain-initval-naive", functionsExpMirror "uv"),
         ("expmirror-uncertain-initval-flow", functionsExpMirror "uvp"),
+        ("vanderpol-exact-initval-naive", functionsVanDerPol "ev"),
+        ("vanderpol-exact-initval-flow", functionsVanDerPol "evp"),
+        ("vanderpol-uncertain-initval-naive", functionsVanDerPol "uv"),
+        ("vanderpol-uncertain-initval-flow", functionsVanDerPol "uvp"),
         ("springmass-exact-initval-naive", functionsSpringMass "ev"),
         ("springmass-exact-initval-flow", functionsSpringMass "evp"),
         ("springmass-uncertain-initval-naive", functionsSpringMass "uv"),
@@ -165,6 +169,7 @@ functionsExpDwindle subname =
         FV.simpleFnMetaData
             sampleFn 
             (FV.Rectangle  1 (-1) 0 (1)) -- initial plotting region
+            Nothing
             200 -- samplesPerUnit
             [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
         where
@@ -181,6 +186,7 @@ functionsExpDwindle subname =
             map ("y" ++) $ map show ([1..iters] :: [Int])
 
 
+---------------------------------
 functionsExpMirror ::
     String -> (Int -> Int -> [String] -> ([[Fn]], [CF]), [String] -> FV.FnMetaData Fn)
 functionsExpMirror subname =
@@ -234,6 +240,7 @@ functionsExpMirror subname =
         FV.simpleFnMetaData
             sampleFn 
             (FV.Rectangle  3 (-1) 0 (tEnd)) -- initial plotting region
+            Nothing
             200 -- samplesPerUnit
             [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
         where
@@ -294,12 +301,85 @@ functionsSpringMass subname =
     tDom = constructCF 0 10
 
     fnmetaSpringMass :: 
-        Num (Domain f) =>
+        Fractional (Domain f) =>
         [String] -> FV.FnMetaData f
     fnmetaSpringMass otherArgs = 
         FV.simpleFnMetaData
+            sampleFn
+            (FV.Rectangle  1.125 (-1.125) (-0.5) 10.5) -- initial plotting region
+            Nothing
+            200 -- samplesPerUnit
+            [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
+        where
+        [itersS, bisectDepthS] = otherArgs
+        iters = read itersS
+        bisectDepth :: Int
+        bisectDepth = read bisectDepthS
+        functionInfos =
+            zip3 
+                fnNames
+--                (concat $ repeat [blue, green]) -- styles 
+                (repeat black) -- styles 
+                (reverse $ True : True : replicate (2*iters - 2) False) -- show only the last iteration by default
+        fnNames =
+            concat $ map (\nS -> ["y" ++ nS, "y'" ++ nS]) $ map show ([1..iters] :: [Int])
+    
+---------------------------------
+functionsVanDerPol :: 
+    String -> (Int -> Int -> [String] -> ([[Fn]], [CF]), [String] -> FV.FnMetaData Fn)
+functionsVanDerPol subname =
+    case subname of
+        "ev" -> (fnsVanDerPol False initValuesVanDerPol_ev, fnmetaVanDerPol)
+        "evp" -> (fnsVanDerPol True initValuesVanDerPol_ev, fnmetaVanDerPol)
+        "uv" -> (fnsVanDerPol False initValuesVanDerPol_uv, fnmetaVanDerPol)
+        "uvp" -> (fnsVanDerPol True initValuesVanDerPol_uv, fnmetaVanDerPol)
+        _ -> error "functionsVanDerPol: internal error"
+    where
+    fnsVanDerPol :: Bool -> [CF] -> Int -> Int -> [String] -> ([[Fn]], [CF])
+    fnsVanDerPol useFlow initValues maxdeg maxsize otherArgs = 
+        picardOnPartitionWrapping
+            useFlow
+            fieldVanDerPol 
+            paramVars initValues
+            (partitionDom tDom bisectDepth)
+            (limitsDS maxdeg maxsize) iters
+        where
+        [itersS, bisectDepthS] = otherArgs
+        iters = read itersS
+        bisectDepth = read bisectDepthS
+
+    fieldVanDerPol :: 
+        (ArithInOut.RoundedReal t)
+        =>
+        [t] -> [t]
+    fieldVanDerPol [x,y] = [y,((mu |<*> y) <*> ((1::Double) |<+> (neg x <*> x))) <+> (neg x)]
+    fieldVanDerPol _ = error "fieldVanDerPol"
+    mu = 1 :: Double
+    
+    initValuesVanDerPol_ev :: [CF]
+    initValuesVanDerPol_ev = [1,1]
+    
+    initValuesVanDerPol_uv :: [CF]
+    initValuesVanDerPol_uv = [1 <+> pmDelta,1]
+    pmDelta = constructCF (-delta) delta
+    delta = 0.125
+    
+    paramVars :: [Var Fn]
+    paramVars = ["xi", "yi"]
+    
+    tDom :: CF
+    tDom = constructCF 0 tEndDbl
+    
+    tEndDbl :: Double
+    tEndDbl = 10
+    tEnd :: CF
+    tEnd = constructCF tEndDbl tEndDbl
+
+    fnmetaVanDerPol otherArgs = 
+        FV.simpleFnMetaData
             sampleFn 
-            (FV.Rectangle  2 (-1) 0 10) -- initial plotting region
+            (FV.Rectangle  2 (-2) 0 tEnd) -- initial plotting region
+            Nothing
             200 -- samplesPerUnit
             [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
         where
