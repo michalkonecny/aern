@@ -57,7 +57,8 @@ instance
     type CairoDrawFnEffortIndicator (Interval f) =
         CairoDrawEffortIndicatorFnFromEval (Interval f)
     cairoDrawFnDefaultEffort = cairoDrawFnDefaultEffortFromEval
-    cairoDrawFn = cairoDrawFnFromEval
+    cairoDrawFnGraph = cairoDrawFnGraphFromEval
+    cairoDrawFnParameteric = cairoDrawFnParametericFromEval
     
 type CairoDrawEffortIndicatorFnFromEval f =
     (
@@ -97,7 +98,7 @@ cairoDrawFnDefaultEffortFromEval sampleF =
     where
     sampleDF = getSampleDomValue sampleF
 
-cairoDrawFnFromEval ::
+cairoDrawFnGraphFromEval ::
     (HasAntiConsistency (Domain f),
      CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
@@ -112,7 +113,7 @@ cairoDrawFnFromEval ::
     Var f ->
     f ->
     Render ()
-cairoDrawFnFromEval 
+cairoDrawFnGraphFromEval 
         eff@(effEval, (effReal, effGetE, effConsistency))
         canvasParams toScreenCoords 
         style plotVar fn 
@@ -234,6 +235,112 @@ cairoDrawFnFromEval
         ArithInOut.mxfldEffortDiv sampleDF sampleI $ ArithInOut.rrEffortIntMixedField sampleDF effReal
     
     sampleF = fn
+    sampleDF = dom
+    sampleI = 1 :: Int
+    
+
+
+cairoDrawFnParametericFromEval ::
+    (HasAntiConsistency (Domain f),
+     CanEvaluate f,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     Show (Domain f), Show (Var f), Show (VarBox f (Domain f))
+    )
+    =>
+    CairoDrawEffortIndicatorFnFromEval f ->
+    CanvasParams (Domain f) ->
+    ((Domain f, Domain f) -> (Double, Double)) ->
+    FnPlotStyle ->
+    Var f ->
+    (f,f) ->
+    Render ()
+cairoDrawFnParametericFromEval 
+        eff@(effEval, (effReal, effGetE, effConsistency))
+        canvasParams toScreenCoords 
+        style plotVar (fnX, fnY) 
+    = 
+    plotSampleBoxes
+    where
+    plotSampleBoxes =
+        mapM_ plotValueSample enclosureSamples
+    plotValueSample (xI, yI) =
+        do
+        -- fill the box first:
+        case styleFillColour style of
+            Just (r,g,b,a) ->
+                do
+                setSourceRGBA r g b a
+                boxOutline
+                fill
+            _ -> return ()
+        -- then draw the box outline:
+        case styleOutlineColour style of
+            Just (r,g,b,a) ->
+                do 
+                setSourceRGBA r g b a
+                boxOutline
+                setLineWidth $ styleOutlineThickness style
+                stroke
+            _ -> return ()
+        where
+        boxOutline =
+            do
+            moveToPt corner00
+            mapM_ lineToPt [corner01, corner11, corner10, corner00]
+        corner00 = (x0, y0)
+        corner01 = (x0, y1)
+        corner10 = (x1, y0)
+        corner11 = (x1, y1)
+        (x0, x1) = RefOrd.getEndpointsOutEff effGetE xI
+        (y0, y1) = RefOrd.getEndpointsOutEff effGetE yI
+        moveToPt = usePt moveTo 
+        lineToPt = usePt lineTo 
+        usePt fn pt = fn xD yD
+            where
+            (xC,yC) = translateToCoordSystem effReal coordSystem pt
+            (xD, yD) = toScreenCoords (xC,yC)
+    enclosureSamples =
+        map evalPt $ map mkPt partition
+    mkPt d =
+        insertVar plotVar d dombox
+    evalPt pt =
+        (evalAtPointOutEff effEval pt fnX, evalAtPointOutEff effEval pt fnY) 
+    partition =
+        [domLO] ++ (map ithPt [1..(segCnt -1)]) ++ [domHI]
+        where
+        (domLO, domHI) = 
+            RefOrd.getEndpointsOutEff effGetE dom
+        ithPt i =
+            ((domLO <*>| (segCnt - i)) <+> (domHI <*>| i)) </>| segCnt
+        segCnt = segPerUnit
+    dom =
+        case lookupVar dombox plotVar of 
+            Just dom -> dom
+            _ -> error $ 
+                "aern-realfn-plot-gtk error: plotVar not present in dombox:"
+                ++ "\n  plotVar = " ++ show plotVar 
+                ++ "\n  dombox = " ++ show dombox 
+    dombox = getDomainBox fnX
+    coordSystem = cnvprmCoordSystem canvasParams
+    segPerUnit = cnvprmSamplesPerUnit canvasParams
+--    activeDimensions = cnvprmPlotDimensions canvasParams
+    
+    (<+>) = ArithInOut.addOutEff effAdd
+    (<*>|) = ArithInOut.mixedMultOutEff effMultInt
+    (</>|) = ArithInOut.mixedDivOutEff effDivInt
+    
+    effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDF effReal
+    effJoinMeet = ArithInOut.rrEffortJoinMeet sampleDF effReal
+    effToInt = ArithInOut.rrEffortToInt sampleDF effReal
+    effAdd =
+        ArithInOut.fldEffortAdd sampleDF $ ArithInOut.rrEffortField sampleDF effReal
+    effMultInt =
+        ArithInOut.mxfldEffortMult sampleDF sampleI $ ArithInOut.rrEffortIntMixedField sampleDF effReal
+    effDivInt =
+        ArithInOut.mxfldEffortDiv sampleDF sampleI $ ArithInOut.rrEffortIntMixedField sampleDF effReal
+    
+    sampleF = fnX
     sampleDF = dom
     sampleI = 1 :: Int
     

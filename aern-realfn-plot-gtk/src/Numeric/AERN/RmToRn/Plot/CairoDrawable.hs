@@ -35,12 +35,26 @@ class
         by ranging all other variables over their entire domains and taking
         the union of all the uni-variate functions thus obtained.
      -}
-    cairoDrawFn ::
+    cairoDrawFnGraph ::
         CairoDrawFnEffortIndicator f -> 
         CanvasParams (Domain f) ->
         ((Domain f, Domain f) -> (Double, Double)) {-^ conversion from [0,1]^2 (origin bottom left) to screen coords -} ->
         FnPlotStyle ->
-        Var f ->
+        Var f {-^ the variable to map to the horizontal axis; the remaining variables are all substituted with their full range -} ->
         f -> 
+        Render ()
+    {-|
+        Plot the graph of a uni-variate function on the active cairo canvas.
+        A multi-variate function is transformed into an univariate function
+        by ranging all other variables over their entire domains and taking
+        the union of all the uni-variate functions thus obtained.
+     -}
+    cairoDrawFnParameteric ::
+        CairoDrawFnEffortIndicator f -> 
+        CanvasParams (Domain f) ->
+        ((Domain f, Domain f) -> (Double, Double)) {-^ conversion from [0,1]^2 (origin bottom left) to screen coords -} ->
+        FnPlotStyle ->
+        Var f {-^ the variable to parametrise by; the remaining variables are all substituted with their full range -} ->
+        (f, f) {-^ one function to map to the x axis, one to the y axis -} -> 
         Render ()
 
