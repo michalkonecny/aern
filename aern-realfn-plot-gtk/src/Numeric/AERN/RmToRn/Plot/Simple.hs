@@ -93,15 +93,15 @@ plotFns fnGroups =
             } 
 
     
-    
+
 addPlotVar :: 
     (HasDomainBox f)
     =>
-    [[f]] -> [[(f, Var f)]]
+    [[f]] -> [[(FV.GraphOrParamPlotFn f, Var f)]]
 addPlotVar fns =
     map (map addV) fns
     where
-    addV fn = (fn, plotVar)
+    addV fn = (FV.GraphPlotFn fn, plotVar)
         where
         (plotVar : _) = vars
         vars = map fst $ getVarDoms fn   

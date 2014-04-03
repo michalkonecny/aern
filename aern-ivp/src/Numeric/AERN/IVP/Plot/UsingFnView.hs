@@ -94,7 +94,7 @@ plotODEIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
     
     addPlotVar = map $ map addV
         where
-        addV fn = (fn, tVar)
+        addV fn = (FV.GraphPlotFn fn, tVar)
     (fns, fnNames, segNames) = 
         aggregateSequencesOfTinySegments fnsAndNames 
     fnsAndNames = 
@@ -246,7 +246,7 @@ plotHybIVPBisectionEnclosures effCF shouldShowEventTreeEnclosures plotMinSegSize
     
     addPlotVar = map $ map addV
         where
-        addV fn = (fn, tVar)
+        addV fn = (FV.GraphPlotFn fn, tVar)
     (fns, fnNames, segNames) = 
         aggregateSequencesOfTinySegments effEval componentNames tVar plotMinSegSize fnsAndNames 
     fnsAndNames =
@@ -469,7 +469,7 @@ plotHybIVPListEnclosures effCF _plotMinSegSize ivp segmentsInfo =
     
     addPlotVar = map $ map addV
         where
-        addV fn = (fn, tVar)
+        addV fn = (FV.GraphPlotFn fn, tVar)
     
     (fns, fnNames, groupNames) = 
         unzip3 $

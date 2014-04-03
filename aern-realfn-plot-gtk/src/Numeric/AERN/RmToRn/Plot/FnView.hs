@@ -23,6 +23,7 @@
 module Numeric.AERN.RmToRn.Plot.FnView 
 (
     FnData (..),
+    GraphOrParamPlotFn (..),
     FnMetaData (..),
     defaultFnData,
     defaultFnMetaData,
