@@ -56,7 +56,8 @@ main =
 
     -- process command-line parameters:
     args <- getArgs
-    let ivpName : maxdegS : maxsizeS : otherArgs = args 
+    let ivpName : tEndS : maxdegS : maxsizeS : otherArgs = args 
+    let tEndDbl = (read tEndS) :: Double
     let maxdeg = (read maxdegS) :: Int
     let maxsize = (read maxsizeS) :: Int
     
@@ -64,7 +65,7 @@ main =
     _ <- Gtk.unsafeInitGUIForThreadedRTS
     
     -- compute the enclosures:
-    let ((fns, result), fnmeta) = getFns ivpName maxdeg maxsize otherArgs
+    let ((fns, result), fnmeta) = getFns ivpName tEndDbl maxdeg maxsize otherArgs
     putStrLn $ "result = " ++ show result
 
     -- set up the function view window:
@@ -81,11 +82,11 @@ addPlotVar fns =
     where
     addV fn = (fn, tVar)
     
-getFns :: String -> Int -> Int -> [String] ->(([[Fn]], [CF]), FV.FnMetaData Fn)
-getFns name maxdeg maxsize otherArgs =
+getFns :: String -> Double -> Int -> Int -> [String] ->(([[Fn]], [CF]), FV.FnMetaData Fn)
+getFns name tEndDbl maxdeg maxsize otherArgs =
     case Map.lookup name functionMap of
-        Just (mkFns, mkFnMeta) ->
-            (mkFns maxdeg maxsize otherArgs, mkFnMeta otherArgs)
+        Just mkFns ->
+            mkFns tEndDbl maxdeg maxsize otherArgs
         _ ->
             error $ "unknown IVP " ++ show name ++ ", known IVPs:\n" ++ unlines names 
     where
@@ -96,7 +97,7 @@ functions ::
     [(
        String
      ,
-      (Int -> Int -> [String] -> ([[Fn]], [CF]), [String] -> FV.FnMetaData Fn)
+       Double -> Int -> Int -> [String] -> (([[Fn]], [CF]), FV.FnMetaData Fn)
      )
     ]
 functions =
@@ -115,8 +116,10 @@ functions =
         ("vanderpol-uncertain-initval-flow", functionsVanDerPol "uvp"),
         ("springmass-exact-initval-naive", functionsSpringMass "ev"),
         ("springmass-exact-initval-flow", functionsSpringMass "evp"),
-        ("springmass-uncertain-initval-naive", functionsSpringMass "uv"),
-        ("springmass-uncertain-initval-flow", functionsSpringMass "uvp")
+        ("springmass-uncertain-extrema-naive", functionsSpringMass "ue"),
+        ("springmass-uncertain-extrema-flow", functionsSpringMass "uep"),
+        ("springmass-uncertain-speed-naive", functionsSpringMass "us"),
+        ("springmass-uncertain-speed-flow", functionsSpringMass "usp")
     ]
 
 
@@ -126,31 +129,17 @@ functions =
 ---------------------------------
 
 functionsExpDwindle ::
-    String -> (Int -> Int -> [String] -> ([[Fn]], [CF]), [String] -> FV.FnMetaData Fn)
+    String -> Double -> Int -> Int -> [String] -> (([[Fn]], [CF]), FV.FnMetaData Fn)
 functionsExpDwindle subname =
-    case subname of
-        "ev" -> (fnsExp False initValuesExp_ev, fnmetaExp)
-        "evp" -> (fnsExp True initValuesExp_ev, fnmetaExp)
-        "uv" -> (fnsExp False initValuesExp_uv, fnmetaExp)
-        "uvp" -> (fnsExp True initValuesExp_uv, fnmetaExp)
-        _ -> error "functionsExp: internal error"
+    functionsExpDwindleSub
     where
-    fnsExp :: Bool -> [CF] -> Int -> Int -> [String] -> ([[Fn]], [CF])
-    fnsExp useFlow initValues maxdeg maxsize otherArgs = 
-        picardOnPartitionWrapping
-            useFlow
-            fieldExp
-            paramVars initValues
-            (partitionDom tDom bisectDepth)
-            (limitsDS maxdeg maxsize) iters
-        where
-        [itersS, bisectDepthS] = otherArgs
-        iters = read itersS
-        bisectDepth = read bisectDepthS
-    
-    fieldExp :: [Fn] -> [Fn]
-    fieldExp [y] = [(-1 :: Int) |<*> y] -- y' = -y
-    fieldExp _ = error "fieldExp: internal error"
+    functionsExpDwindleSub =
+        case subname of
+            "ev" -> fnsExp False initValuesExp_ev
+            "evp" -> fnsExp True initValuesExp_ev
+            "uv" -> fnsExp False initValuesExp_uv
+            "uvp" -> fnsExp True initValuesExp_uv
+            _ -> error "functionsExp: internal error"
 
     initValuesExp_ev :: [CF]
     initValuesExp_ev = [1]
@@ -158,58 +147,66 @@ functionsExpDwindle subname =
     initValuesExp_uv :: [CF]
     initValuesExp_uv = [(-1) </\> 1]
 
-    paramVars :: [Var Fn]
-    paramVars = ["yi"]
+    fieldExp :: [Fn] -> [Fn]
+    fieldExp [y] = [(-1 :: Int) |<*> y] -- y' = -y
+    fieldExp _ = error "fieldExp: internal error"
 
-    tDom :: CF
-    tDom = constructCF 0 1
-    
-    fnmetaExp :: [String] -> FV.FnMetaData Fn
-    fnmetaExp otherArgs =
-        FV.simpleFnMetaData
-            sampleFn 
-            (FV.Rectangle  1 (-1) 0 (1)) -- initial plotting region
-            Nothing
-            200 -- samplesPerUnit
-            [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
+    fnsExp useFlow initValues tEndDbl maxdeg maxsize otherArgs =
+        (functions2, fnmeta) 
         where
         [itersS, bisectDepthS] = otherArgs
         iters = read itersS
-        bisectDepth :: Int
         bisectDepth = read bisectDepthS
-        functionInfos =
-            zip3 
-                fnNames 
-                (repeat blue) --styles
-                (reverse $ True : replicate (iters - 1) False) -- show only the last iteration by default
-        fnNames =
-            map ("y" ++) $ map show ([1..iters] :: [Int])
+        tDom = constructCF 0 tEndDbl
+        tEnd = constructCF tEndDbl tEndDbl
+
+        functions2 =
+            picardOnPartitionWrapping
+                useFlow
+                fieldExp
+                paramVars initValues
+                (partitionDom tDom bisectDepth)
+                (limitsDS maxdeg maxsize) iters
+            where
+            paramVars = ["yi"]
+        
+        fnmeta =
+            FV.simpleFnMetaData
+                sampleFn 
+                (FV.Rectangle  1 (-1) 0 (tEnd)) -- initial plotting region
+                Nothing
+                200 -- samplesPerUnit
+                [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
+            where
+            functionInfos =
+                zip3 
+                    fnNames 
+                    (repeat blue) --styles
+                    (reverse $ True : replicate (iters - 1) False) -- show only the last iteration by default
+            fnNames =
+                map ("y" ++) $ map show ([1..iters] :: [Int])
+    
 
 
 ---------------------------------
 functionsExpMirror ::
-    String -> (Int -> Int -> [String] -> ([[Fn]], [CF]), [String] -> FV.FnMetaData Fn)
+    String -> Double -> Int -> Int -> [String] -> (([[Fn]], [CF]), FV.FnMetaData Fn)
 functionsExpMirror subname =
-    case subname of
-        "ev" -> (fnsExpMirror False initValuesExpMirror_ev, fnmetaExpMirror)
-        "evp" -> (fnsExpMirror True initValuesExpMirror_ev, fnmetaExpMirror)
-        "uv" -> (fnsExpMirror False initValuesExpMirror_uv, fnmetaExpMirror)
-        "uvp" -> (fnsExpMirror True initValuesExpMirror_uv, fnmetaExpMirror)
-        _ -> error "functionsExp: internal error"
+    functionsExpMirrorSub
     where
-    fnsExpMirror :: Bool -> [CF] -> Int -> Int -> [String] -> ([[Fn]], [CF])
-    fnsExpMirror useFlow initValues maxdeg maxsize otherArgs = 
-        picardOnPartitionWrapping
-            useFlow
-            (fieldExpMirror bezdeg) 
-            paramVars initValues
-            (partitionDom tDom bisectDepth)
-            (limitsDS maxdeg maxsize) iters
-        where
-        [bezdegS, itersS, bisectDepthS] = otherArgs
-        bezdeg = read bezdegS
-        iters = read itersS
-        bisectDepth = read bisectDepthS
+    functionsExpMirrorSub =
+        case subname of
+            "ev" -> fnsExpMirror False initValuesExpMirror_ev
+            "evp" -> fnsExpMirror True initValuesExpMirror_ev
+            "uv" -> fnsExpMirror False initValuesExpMirror_uv
+            "uvp" -> fnsExpMirror True initValuesExpMirror_uv
+            _ -> error "functionsExp: internal error"
+
+    initValuesExpMirror_ev :: [CF]
+    initValuesExpMirror_ev = [2]
+
+    initValuesExpMirror_uv :: [CF]
+    initValuesExpMirror_uv = [1 </\> 2]
 
     fieldExpMirror :: Int -> [Fn] -> [Fn]
     fieldExpMirror bd [y] = 
@@ -218,144 +215,126 @@ functionsExpMirror subname =
             <+>| (1 :: Int)] -- y' = -(abs(y - 1) + 1)
     fieldExpMirror _ _ = error "fieldExpMirror: internal error"
 
-    initValuesExpMirror_ev :: [CF]
-    initValuesExpMirror_ev = [2]
-
-    initValuesExpMirror_uv :: [CF]
-    initValuesExpMirror_uv = [1 </\> 2]
-
-    paramVars :: [Var Fn]
-    paramVars = ["yi"]
-
-    tDom :: CF
-    tDom = constructCF 0 tEndDbl
-    
-    tEndDbl :: Double
-    tEndDbl = 1
-    tEnd :: CF
-    tEnd = constructCF tEndDbl tEndDbl
-    
-    fnmetaExpMirror :: [String] -> FV.FnMetaData Fn
-    fnmetaExpMirror otherArgs =
-        FV.simpleFnMetaData
-            sampleFn 
-            (FV.Rectangle  3 (-1) 0 (tEnd)) -- initial plotting region
-            Nothing
-            200 -- samplesPerUnit
-            [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
+    fnsExpMirror useFlow initValues tEndDbl maxdeg maxsize otherArgs = 
+        (functions2, fnmeta)
         where
-        [_bezdegS, itersS, bisectDepthS] = otherArgs
+        [bezdegS, itersS, bisectDepthS] = otherArgs
+        bezdeg = read bezdegS
         iters = read itersS
-        bisectDepth :: Int
         bisectDepth = read bisectDepthS
-        functionInfos =
-            zip3 
-                fnNames
-                (repeat blue) -- styles 
-                (reverse $ True : replicate (iters - 1) False) -- show only the last iteration by default
-        fnNames =
-            map ("y" ++) $ map show ([1..iters] :: [Int])
+        tDom = constructCF 0 tEndDbl
+        tEnd = constructCF tEndDbl tEndDbl
+        
+        functions2 =
+            picardOnPartitionWrapping
+                useFlow
+                (fieldExpMirror bezdeg) 
+                paramVars initValues
+                (partitionDom tDom bisectDepth)
+                (limitsDS maxdeg maxsize) iters
+            where
+            paramVars = ["yi"]
+
+        fnmeta :: FV.FnMetaData Fn
+        fnmeta =
+            FV.simpleFnMetaData
+                sampleFn 
+                (FV.Rectangle  2.05 (-0.1) (-0.05) (tEnd+0.05)) -- initial plotting region
+                Nothing
+                200 -- samplesPerUnit
+                [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
+            where
+            functionInfos =
+                zip3 
+                    fnNames
+                    (repeat blue) -- styles 
+                    (reverse $ True : replicate (iters - 1) False) -- show only the last iteration by default
+            fnNames =
+                map ("y" ++) $ map show ([1..iters] :: [Int])
+
+
 
 ---------------------------------
 functionsSpringMass :: 
-    String -> (Int -> Int -> [String] -> ([[Fn]], [CF]), [String] -> FV.FnMetaData Fn)
+    String -> Double -> Int -> Int -> [String] -> (([[Fn]], [CF]), FV.FnMetaData Fn)
 functionsSpringMass subname =
-    case subname of
-        "ev" -> (fnsSpringMass False initValuesSpringMass_ev, fnmetaSpringMass)
-        "evp" -> (fnsSpringMass True initValuesSpringMass_ev, fnmetaSpringMass)
-        "uv" -> (fnsSpringMass False initValuesSpringMass_uv, fnmetaSpringMass)
-        "uvp" -> (fnsSpringMass True initValuesSpringMass_uv, fnmetaSpringMass)
-        _ -> error "functionsSpringMass: internal error"
+    functionsSpringMassSub
     where
-    fnsSpringMass :: Bool -> [CF] -> Int -> Int -> [String] -> ([[Fn]], [CF])
-    fnsSpringMass useFlow initValues maxdeg maxsize otherArgs = 
-        picardOnPartitionWrapping
-            useFlow
-            fieldSpringMass 
-            paramVars initValues
-            (partitionDom tDom bisectDepth)
-            (limitsDS maxdeg maxsize) iters
-        where
-        [itersS, bisectDepthS] = otherArgs
-        iters = read itersS
-        bisectDepth = read bisectDepthS
+    functionsSpringMassSub =
+        case subname of
+            "ev" -> fnsSpringMass False initValuesSpringMass_ev
+            "evp" -> fnsSpringMass True initValuesSpringMass_ev
+            "ue" -> fnsSpringMass False initValuesSpringMass_ue
+            "uep" -> fnsSpringMass True initValuesSpringMass_ue
+            "us" -> fnsSpringMass False initValuesSpringMass_us
+            "usp" -> fnsSpringMass True initValuesSpringMass_us
+            _ -> error "functionsSpringMass: internal error"
+            
+    initValuesSpringMass_ev :: [CF]
+    initValuesSpringMass_ev = [1,0]
+    
+    initValuesSpringMass_ue :: [CF]
+    initValuesSpringMass_ue = [0 </\> 1,0]
 
-    fieldSpringMass :: 
-        ArithInOut.RoundedMixedMultiply t Int =>
-        [t] -> [t]
+    initValuesSpringMass_us :: [CF]
+    initValuesSpringMass_us = [0.5,0 </\> 0.25]
+
     fieldSpringMass [y,y'] = [y',(-1 :: Int) |<*> y]
     --fieldSpringMass [y,y'] = [y',(-4 :: Int) |<*> y]
     --fieldSpringMass [y,y'] = [y',((-4 :: Int) |<*> y) <+> (y' <*> y' </>| (4::Int))]
     fieldSpringMass _ = error "fieldSpringMass"
     
-    initValuesSpringMass_ev :: [CF]
-    initValuesSpringMass_ev = [1,0]
-    
-    initValuesSpringMass_uv :: [CF]
-    initValuesSpringMass_uv = [0 </\> 1,0]
-    
-    paramVars :: [Var Fn]
-    paramVars = ["yi", "y'i"]
-    
-    tDom :: CF
-    tDom = constructCF 0 10
-
-    fnmetaSpringMass :: 
-        Fractional (Domain f) =>
-        [String] -> FV.FnMetaData f
-    fnmetaSpringMass otherArgs = 
-        FV.simpleFnMetaData
-            sampleFn
-            (FV.Rectangle  1.125 (-1.125) (-0.5) 10.5) -- initial plotting region
-            Nothing
-            200 -- samplesPerUnit
-            [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
+    fnsSpringMass useFlow initValues tEndDbl maxdeg maxsize otherArgs = 
+        (functions2, fnmeta)
         where
         [itersS, bisectDepthS] = otherArgs
         iters = read itersS
-        bisectDepth :: Int
         bisectDepth = read bisectDepthS
-        functionInfos =
-            zip3 
-                fnNames
---                (concat $ repeat [blue, green]) -- styles 
-                (repeat black) -- styles 
-                (reverse $ True : True : replicate (2*iters - 2) False) -- show only the last iteration by default
-        fnNames =
-            concat $ map (\nS -> ["y" ++ nS, "y'" ++ nS]) $ map show ([1..iters] :: [Int])
+
+        functions2 =
+            picardOnPartitionWrapping
+                useFlow
+                fieldSpringMass 
+                paramVars initValues
+                (partitionDom tDom bisectDepth)
+                (limitsDS maxdeg maxsize) iters
+            where
+            paramVars = ["yi", "y'i"]
+
+        tDom = constructCF 0 tEndDbl
+        tEnd = constructCF tEndDbl tEndDbl
     
+        fnmeta = 
+            FV.simpleFnMetaData
+                sampleFn
+                (FV.Rectangle  1.125 (-1.125) (-0.5) (tEnd <+> 0.5)) -- initial plotting region
+                Nothing
+                200 -- samplesPerUnit
+                [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
+            where
+            functionInfos =
+                zip3 
+                    fnNames
+--                    (concat $ repeat [blue, green]) -- styles 
+                    (repeat black) -- styles 
+                    (reverse $ True : True : replicate (2*iters - 2) False) -- show only the last iteration by default
+            fnNames =
+                concat $ map (\nS -> ["y" ++ nS, "y'" ++ nS]) $ map show ([1..iters] :: [Int])
+
 ---------------------------------
 functionsVanDerPol :: 
-    String -> (Int -> Int -> [String] -> ([[Fn]], [CF]), [String] -> FV.FnMetaData Fn)
+    String -> Double -> Int -> Int -> [String] -> (([[Fn]], [CF]), FV.FnMetaData Fn)
 functionsVanDerPol subname =
-    case subname of
-        "ev" -> (fnsVanDerPol False initValuesVanDerPol_ev, fnmetaVanDerPol)
-        "evp" -> (fnsVanDerPol True initValuesVanDerPol_ev, fnmetaVanDerPol)
-        "uv" -> (fnsVanDerPol False initValuesVanDerPol_uv, fnmetaVanDerPol)
-        "uvp" -> (fnsVanDerPol True initValuesVanDerPol_uv, fnmetaVanDerPol)
-        _ -> error "functionsVanDerPol: internal error"
+    functionsVanDerPolSub
     where
-    fnsVanDerPol :: Bool -> [CF] -> Int -> Int -> [String] -> ([[Fn]], [CF])
-    fnsVanDerPol useFlow initValues maxdeg maxsize otherArgs = 
-        picardOnPartitionWrapping
-            useFlow
-            fieldVanDerPol 
-            paramVars initValues
-            (partitionDom tDom bisectDepth)
-            (limitsDS maxdeg maxsize) iters
-        where
-        [itersS, bisectDepthS] = otherArgs
-        iters = read itersS
-        bisectDepth = read bisectDepthS
+    functionsVanDerPolSub =
+        case subname of
+            "ev" -> fnsVanDerPol False initValuesVanDerPol_ev
+            "evp" -> fnsVanDerPol True initValuesVanDerPol_ev
+            "uv" -> fnsVanDerPol False initValuesVanDerPol_uv
+            "uvp" -> fnsVanDerPol True initValuesVanDerPol_uv
+            _ -> error "functionsVanDerPol: internal error"
 
-    fieldVanDerPol :: 
-        (ArithInOut.RoundedReal t)
-        =>
-        [t] -> [t]
-    fieldVanDerPol [x,y] = [y,((mu |<*> y) <*> ((1::Double) |<+> (neg x <*> x))) <+> (neg x)]
-    fieldVanDerPol _ = error "fieldVanDerPol"
-    mu = 1 :: Double
-    
     initValuesVanDerPol_ev :: [CF]
     initValuesVanDerPol_ev = [1,1]
     
@@ -364,36 +343,47 @@ functionsVanDerPol subname =
     pmDelta = constructCF (-delta) delta
     delta = 0.125
     
-    paramVars :: [Var Fn]
-    paramVars = ["xi", "yi"]
+    fieldVanDerPol [x,y] = [y,((mu |<*> y) <*> ((1::Double) |<+> (neg x <*> x))) <+> (neg x)]
+    fieldVanDerPol _ = error "fieldVanDerPol"
+    mu = 1 :: Double
     
-    tDom :: CF
-    tDom = constructCF 0 tEndDbl
-    
-    tEndDbl :: Double
-    tEndDbl = 10
-    tEnd :: CF
-    tEnd = constructCF tEndDbl tEndDbl
-
-    fnmetaVanDerPol otherArgs = 
-        FV.simpleFnMetaData
-            sampleFn 
-            (FV.Rectangle  2 (-2) 0 tEnd) -- initial plotting region
-            Nothing
-            200 -- samplesPerUnit
-            [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
+    fnsVanDerPol useFlow initValues tEndDbl maxdeg maxsize otherArgs =
+        (functions2, fnmeta)
         where
         [itersS, bisectDepthS] = otherArgs
         iters = read itersS
-        bisectDepth :: Int
         bisectDepth = read bisectDepthS
-        functionInfos =
-            zip3 
-                fnNames
-                (concat $ repeat [blue, green]) -- styles 
-                (reverse $ True : True : replicate (2*iters - 2) False) -- show only the last iteration by default
-        fnNames =
-            concat $ map (\nS -> ["y" ++ nS, "y'" ++ nS]) $ map show ([1..iters] :: [Int])
+
+        functions2 = 
+            picardOnPartitionWrapping
+                useFlow
+                fieldVanDerPol 
+                paramVars initValues
+                (partitionDom tDom bisectDepth)
+                (limitsDS maxdeg maxsize) iters
+            where
+            paramVars = ["xi", "yi"]
+
+        tDom = constructCF 0 tEndDbl
+        tEnd = constructCF tEndDbl tEndDbl
+    
+        fnmeta = 
+            FV.simpleFnMetaData
+                sampleFn 
+                (FV.Rectangle  2 (-2) 0 tEnd) -- initial plotting region
+                Nothing
+                200 -- samplesPerUnit
+                [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
+            where
+            functionInfos =
+                zip3 
+                    fnNames
+                    (concat $ repeat [blue, green]) -- styles 
+                    (reverse $ True : True : replicate (2*iters - 2) False) -- show only the last iteration by default
+            fnNames =
+                concat $ map (\nS -> ["y" ++ nS, "y'" ++ nS]) $ map show ([1..iters] :: [Int])
+
+    
     
 
 {-|

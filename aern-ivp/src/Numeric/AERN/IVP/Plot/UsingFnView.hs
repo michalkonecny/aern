@@ -65,6 +65,7 @@ plotODEIVPBisectionEnclosures ::
      HasDomainBox f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
+     Num (Domain f),
      Show f, Show (Var f), Show (Domain f)
     ) 
     =>
@@ -125,7 +126,7 @@ plotODEIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
                     ,
                     FV.cnvprmSamplesPerUnit = 200
                     ,
-                    FV.cnvprmBackgroundColour = Just (1,1,1,1)
+                    FV.cnvprmBackgroundColour = Nothing -- Just (1,1,1,1)
                 }
         }
         where
@@ -192,8 +193,8 @@ plotODEIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
         take (length list) activityCycle 
         where
         activityCycle = cycle $ map snd $ zip componentNames $ 
---            True : (repeat True) 
-            (concat $ repeat [True, False]) 
+            True : (repeat True) 
+--            (concat $ repeat [True, False]) 
 --            True : (repeat False) 
 --            True : False : False : True : (repeat False) 
 --            True : False : False : False : True : (repeat False) 
@@ -203,8 +204,8 @@ plotODEIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
         where
         colourCycle = cycle $ map snd $ 
             zip componentNames 
-                (cycle [blue, green, red])
---                (cycle [black]) 
+--                (cycle [blue, green, red])
+                (cycle [black]) 
 
 plotHybIVPBisectionEnclosures :: 
     (Var f ~ String,
@@ -556,9 +557,9 @@ plotHybIVPListEnclosures effCF _plotMinSegSize ivp segmentsInfo =
         take (length list) activityCycle 
         where
         activityCycle = cycle $ map snd $ zip componentNames $ 
---            True : (repeat True)
+            True : (repeat True)
 --            True : (repeat False) 
-            True : False : True : (repeat False) 
+--            True : False : True : (repeat False) 
 --            True : False : False : True : (repeat False) 
 --            True : False : False : False : True : (repeat False) 
     
@@ -571,6 +572,10 @@ plotHybIVPListEnclosures effCF _plotMinSegSize ivp segmentsInfo =
                 (cycle [black])
 
 black = FV.defaultFnPlotStyle
+    { 
+        FV.styleOutlineColour = Just (0,0,0,1), 
+        FV.styleFillColour = Just (0,0,0,0.1) 
+    } 
 blue = FV.defaultFnPlotStyle 
     { 
         FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
