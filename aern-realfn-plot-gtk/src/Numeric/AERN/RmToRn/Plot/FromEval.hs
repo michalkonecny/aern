@@ -313,10 +313,13 @@ cairoDrawFnParametericFromEval
             RefOrd.getEndpointsOutEff effGetE dom
         ithPt i =
             ((domLO <*>| (segCnt - i)) <+> (domHI <*>| i)) </>| segCnt
-        segCnt = segPerUnit
+        segCnt :: Int
+        segCnt = round $ (fromInteger $ toInteger segPerUnit) * domSize
+        domSize :: Double
+        Just domSize = ArithUpDn.convertUp 0 $ domHI <-> domLO
     dom =
         case lookupVar dombox plotVar of 
-            Just dom -> dom
+            Just dom2 -> dom2
             _ -> error $ 
                 "aern-realfn-plot-gtk error: plotVar not present in dombox:"
                 ++ "\n  plotVar = " ++ show plotVar 
@@ -326,6 +329,7 @@ cairoDrawFnParametericFromEval
     segPerUnit = cnvprmSamplesPerUnit canvasParams
 --    activeDimensions = cnvprmPlotDimensions canvasParams
     
+    (<->) = ArithInOut.subtrOutEff effAdd
     (<+>) = ArithInOut.addOutEff effAdd
     (<*>|) = ArithInOut.mixedMultOutEff effMultInt
     (</>|) = ArithInOut.mixedDivOutEff effDivInt
