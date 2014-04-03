@@ -147,6 +147,8 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fn
                 mapM_ (uncurry lineTo) [(w,0),(w,h),(0,h),(0,0)]
                 setSourceRGBA r g b a
                 fill
+            Nothing ->
+                return ()
     
     collectFns [] _ _ = []
     collectFns (False:restActive) (_:restFns) (_:restStyles) = 
