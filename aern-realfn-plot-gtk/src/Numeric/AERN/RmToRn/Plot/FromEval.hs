@@ -280,6 +280,7 @@ cairoDrawFnParametericFromEval
                 do 
                 setSourceRGBA r g b a
                 boxOutline
+                setLineCap LineCapRound
                 setLineWidth $ styleOutlineThickness style
                 stroke
             _ -> return ()
@@ -299,7 +300,7 @@ cairoDrawFnParametericFromEval
         usePt fn pt = fn xD yD
             where
             (xC,yC) = translateToCoordSystem effReal coordSystem pt
-            (xD, yD) = toScreenCoords (xC,yC)
+            (xD,yD) = toScreenCoords (xC,yC)
     enclosureSamples =
         map evalPt $ map mkPt partition
     mkPt d =
