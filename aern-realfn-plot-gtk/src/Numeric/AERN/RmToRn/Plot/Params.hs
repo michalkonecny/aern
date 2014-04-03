@@ -56,7 +56,7 @@ defaultFnPlotStyle =
     {
         styleOutlineColour = Just (0,0,0,1), -- black
         styleFillColour = Just (0,0,0,0.1), -- transparent black
-        styleOutlineThickness = 0.5
+        styleOutlineThickness = 1
     }
 
 
