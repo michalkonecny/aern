@@ -215,9 +215,13 @@ updateValueDisplay effFromDouble effEval widgets dynWidgetsRef state (fndata, _)
         where
         eval :: Double -> [[String]] 
         eval evalPointD =
-            map (map $ show . getDimValue) $ dataFns fndata
+            map (map $ show . getDimValue1Or2) $ dataFns fndata
             where
 --            getDimValueTexts :: (FA.ERFnApprox box varid domra ranra fa) => fa -> [ra]
+            getDimValue1Or2 (GraphPlotFn fn, plotVar) =
+                GraphPlotFn (getDimValue (fn, plotVar)) 
+            getDimValue1Or2 (ParamPlotFns (fnX, fnY), plotVar) =
+                ParamPlotFns (getDimValue (fnX, plotVar), getDimValue (fnY, plotVar)) 
             getDimValue (fn, plotVar) =
                 evalAtPointOutEff effEval evalPt fn
                 where

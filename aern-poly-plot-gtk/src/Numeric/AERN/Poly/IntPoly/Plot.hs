@@ -50,5 +50,8 @@ instance
         CairoDrawEffortIndicatorFnFromEval (IntPoly var cf)
     cairoDrawFnDefaultEffort =
         cairoDrawFnDefaultEffortFromEval
-    cairoDrawFn = 
-        cairoDrawFnFromEval 
+    cairoDrawFnGraph = 
+        cairoDrawFnGraphFromEval 
+    cairoDrawFnParameteric = 
+        cairoDrawFnParametericFromEval 
+        

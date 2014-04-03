@@ -75,11 +75,11 @@ plot (fns, fnmeta) =
     effCF = ArithInOut.roundedRealDefaultEffort (0:: CF)
     --effCF = (100, (100,())) -- MPFR
 
-addPlotVar :: [[Fn]] -> [[(Fn, String)]]
+addPlotVar :: [[Fn]] -> [[(FV.GraphOrParamPlotFn Fn, String)]]
 addPlotVar fns =
     map (map addV) fns
     where
-    addV fn = (fn, plotVar)
+    addV fn = (FV.GraphPlotFn fn, plotVar)
         where
         (plotVar : _) = vars
         vars = map fst $ getVarDoms fn   
