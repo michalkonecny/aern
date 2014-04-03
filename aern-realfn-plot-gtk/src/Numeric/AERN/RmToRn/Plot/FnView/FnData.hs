@@ -136,11 +136,12 @@ simpleFnMetaData ::
        HasZero (Domain t), HasOne (Domain t), HasDomainBox t) 
       =>
       t
-      -> Rectangle (Domain f)
-      -> Int
-      -> [(String, [fnInfo])]
+      -> Rectangle (Domain f) -- ^ initial crop
+      -> Maybe ColourRGBA -- ^ background colour
+      -> Int -- ^ number of samples to take of each function per viewable region
+      -> [(String, [fnInfo])] -- ^ information on plotted function groups (names, plot colours, whether shown initially)
       -> FnMetaData f
-simpleFnMetaData sampleFn rect samplesPerUnit (groups :: [(String, [fnInfo])]) =
+simpleFnMetaData sampleFn rect bgrColour samplesPerUnit (groups :: [(String, [fnInfo])]) =
         (defaultFnMetaData sampleFn)
         {
             dataFnGroupNames = map getGroupName groups,
@@ -156,6 +157,7 @@ simpleFnMetaData sampleFn rect samplesPerUnit (groups :: [(String, [fnInfo])]) =
                 (defaultCanvasParams sampleDom)
                 {
                     cnvprmCoordSystem = CoordSystemLinear rect,
+                    cnvprmBackgroundColour = bgrColour,
                     cnvprmSamplesPerUnit = samplesPerUnit
                 }
         }
