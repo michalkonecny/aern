@@ -251,11 +251,12 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, ma
         True ->
             do
 --            _ <- Concurrent.forkIO $ 
-            plotODEIVPBisectionEnclosures effCf (2^^(-8 :: Int) :: CF) ivp bisectionInfoOut
+            plotODEIVPBisectionEnclosures shouldUseParamPlot effCf (2^^(-8 :: Int) :: CF) ivp bisectionInfoOut
             return ()
     return (endValues, bisectionInfoOut)
     where
     shouldShowSteps = False
+    shouldUseParamPlot = False
     
     -- solver call:
     (endValues, bisectionInfoOut) =
