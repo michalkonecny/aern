@@ -69,12 +69,13 @@ plotODEIVPBisectionEnclosures ::
      Show f, Show (Var f), Show (Domain f)
     ) 
     =>
-    ArithInOut.RoundedRealEffortIndicator (Domain f)
+    Bool -- ^ True -> use parametric plot (using consecutive pairs of functions) 
+    -> ArithInOut.RoundedRealEffortIndicator (Domain f)
     -> Domain f
     -> ODEIVP f
     -> BisectionInfo (Maybe ([f],[f]), t) splitReason
     -> IO ()
-plotODEIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
+plotODEIVPBisectionEnclosures shouldUseParamPlot effCF plotMinSegSize ivp bisectionInfo =
     do
     _ <- Gtk.unsafeInitGUIForThreadedRTS
     fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
@@ -92,11 +93,31 @@ plotODEIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
     tEnd = odeivp_tEnd ivp
     tVar = odeivp_tVar ivp
     
-    addPlotVar = map $ map addV
+    addPlotVar
+        | shouldUseParamPlot
+            = map addVParam
+        | otherwise 
+            = map $ map addV
         where
         addV fn = (FV.GraphPlotFn fn, tVar)
-    (fns, fnNames, segNames) = 
-        aggregateSequencesOfTinySegments fnsAndNames 
+        addVParam (fnX : fnY : rest) = (FV.ParamPlotFns (fnX, fnY), tVar) : addVParam rest
+        addVParam [] = []
+        addVParam _ = errorParamButOdd
+    (fns, fnNamesPre, segNames) = 
+        aggregateSequencesOfTinySegments fnsAndNames
+    fnNames 
+        | shouldUseParamPlot = map pairUp fnNamesPre
+        | otherwise = fnNamesPre 
+        where
+        pairUp (nmX : nmY : rest) = 
+            joinedXY : pairUp rest
+            where
+            joinedXY = "(" ++ nmX ++ "," ++ nmY ++ ")" 
+        pairUp [] = []
+        pairUp _ = errorParamButOdd
+    errorParamButOdd = 
+        error 
+        "plotODEIVPBisectionEnclosures: Parameteric plot requested but there are an odd number of functions."
     fnsAndNames = 
         map getFnsFromSegInfo $
             bisectionInfoGetLeafSegInfoSequence bisectionInfo
@@ -104,33 +125,23 @@ plotODEIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
         getFnsFromSegInfo (Just (fnVec, _), _) =
             zip fnVec componentNames
         getFnsFromSegInfo _ = []
-    fnmeta = 
-        (FV.defaultFnMetaData sampleFn)
-        {
-            FV.dataFnGroupNames = segNames, -- map ("segment " ++) (map show [1..segs]),
-            FV.dataFnNames = fnNames,
-            FV.dataFnStyles = map giveColours fnNames,
-            FV.dataDomL = tStart,
-            FV.dataDomR = tEnd,
-            FV.dataValLO = neg domainHalf,
-            FV.dataValHI = domainHalf,
-            FV.dataDomName = "t",
-            FV.dataDefaultActiveFns = map whichActive fnNames,
-            FV.dataDefaultEvalPoint = tEnd,
-            FV.dataDefaultCanvasParams =
-                (FV.defaultCanvasParams sampleCf)
-                {
-                    FV.cnvprmCoordSystem = 
-                        FV.CoordSystemLinear $ 
-                            FV.Rectangle  domainHalf (neg domainHalf) tStart tEnd
-                    ,
-                    FV.cnvprmSamplesPerUnit = 200
-                    ,
-                    FV.cnvprmBackgroundColour = Nothing -- Just (1,1,1,1)
-                }
-        }
+    fnmeta =
+        FV.simpleFnMetaData
+            sampleFn
+            (FV.Rectangle  domainHalf (neg domainHalf) tStart tEnd)
+--            (FV.Rectangle  3 (-3) (-3) (3))
+            Nothing
+            100
+            (zip segNames $ map addMetaToFnNames fnNames)
         where
         domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
+        addMetaToFnNames names =
+            zip3 names colourList enabledList
+        colourList = 
+            repeat black
+--            cycle [blue, green, red]
+        enabledList = 
+            repeat True
     aggregateSequencesOfTinySegments fnsAndNames2 = 
         aggrNewSegm [] [] [] $ zip ([1..]::[Int]) fnsAndNames2
         where
@@ -189,23 +200,6 @@ plotODEIVPBisectionEnclosures effCF plotMinSegSize ivp bisectionInfo =
             (fnsFirstSeg, fnNamesFirstSeg) = unzip fnsNamesFirstSeg
         aggrNewSegm prevFns prevFnNames prevSegNames _ =
             (reverse prevFns, reverse prevFnNames, reverse prevSegNames)
-    whichActive list =
-        take (length list) activityCycle 
-        where
-        activityCycle = cycle $ map snd $ zip componentNames $ 
-            True : (repeat True) 
---            (concat $ repeat [True, False]) 
---            True : (repeat False) 
---            True : False : False : True : (repeat False) 
---            True : False : False : False : True : (repeat False) 
-    
-    giveColours list =
-        take (length list) colourCycle
-        where
-        colourCycle = cycle $ map snd $ 
-            zip componentNames 
---                (cycle [blue, green, red])
-                (cycle [black]) 
 
 plotHybIVPBisectionEnclosures :: 
     (Var f ~ String,
@@ -574,7 +568,8 @@ plotHybIVPListEnclosures effCF _plotMinSegSize ivp segmentsInfo =
 black = FV.defaultFnPlotStyle
     { 
         FV.styleOutlineColour = Just (0,0,0,1), 
-        FV.styleFillColour = Just (0,0,0,0.1) 
+        FV.styleFillColour = Just (0,0,0,0.1),
+        FV.styleOutlineThickness = 1
     } 
 blue = FV.defaultFnPlotStyle 
     { 
