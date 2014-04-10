@@ -134,7 +134,8 @@ ivpByNameMap sampleFn =
         ("ivpFallAir-ishii", ivpFallAir_ishii sampleFn),
         ("ivpLorenz-ishii", ivpLorenz_ishii sampleFn),
         ("ivpRoessler", ivpRoessler sampleFn),
-        ("ivpVanDerPol", ivpVanDerPol sampleFn)
+        ("ivpVanDerPol-ev", ivpVanDerPol_ev sampleFn),
+        ("ivpVanDerPol-uv", ivpVanDerPol_uv sampleFn)
     ]
 
 
@@ -467,7 +468,7 @@ ivpFallAir_ishii sampleFn =
         }
     initialValues = 
         [
-            lrDom 1 1.1
+            lrDom 1 1 -- .1
         ,
             toDom (-4.1)
         ]
@@ -580,8 +581,7 @@ ivpRoessler sampleFn =
     toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
-
-ivpVanDerPol :: 
+ivpVanDerPol_ev :: 
     (Var f ~ String,
      HasConstFns f,
      HasProjections f,
@@ -593,7 +593,7 @@ ivpVanDerPol ::
     )
     => 
     f -> ODEIVP f
-ivpVanDerPol sampleFn =
+ivpVanDerPol_ev sampleFn =
     ivp
     where
     ivp =
@@ -633,5 +633,47 @@ ivpVanDerPol sampleFn =
     sampleDom = getSampleDomValue sampleFn
 
 
+ivpVanDerPol_uv :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedMixedField f Double,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpVanDerPol_uv sampleFn =
+    ivp
+    where
+    ivp =
+        (ivpVanDerPol_ev sampleFn)
+        {
+            odeivp_description = 
+                "Van der Pol oscillator: x' = y; y' = \\mu*(1 - x^2)*y - x; \\mu = 1 " 
+                ++ "x(0) = " ++ show (initialValues !! 0) ++ ", y(0) = " ++ show (initialValues !! 1),
+            odeivp_makeInitialValueFnVec = makeIV
+        }
+    initialValues = 
+        [
+            (toDom initialX) <+> pmDelta
+        ,
+            (toDom initialY) <+> pmDelta
+        ]
+        where
+        pmDelta = lrDom (- delta) delta
+        delta = 0.25
+    
+    initialX = 1 :: Double
+    initialY = 1 :: Double
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    lrDom = dbldblToReal sampleDom
+    toDom = dblToReal sampleDom
+    sampleDom = getSampleDomValue sampleFn
+    
     
     
