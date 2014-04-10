@@ -48,8 +48,8 @@ import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Exception
 
-import Numeric.AERN.Misc.Debug
-_ = unsafePrint
+import Debug.Trace
+_ = trace
         
 
 solveODEIVPUncertainValueExactTime_UsingPicard_Bisect ::
@@ -149,20 +149,30 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
                 (makeFnVec)
                 effDom splitImprovementThreshold minStepSize maxStepSize
                     odeivp
-        where
-        measureImpr (_, parameterisedInitialValues) =
-            measureResultImprecision effAddDom $ 
-                map (getRange effEval) parameterisedInitialValues
-        makeFnVec (_, parameterisedInitialValues) =
-            makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames parameterisedInitialValues
+    measureImpr (_, parameterisedInitialValues) =
+        measureResultImprecision effAddDom $ 
+            map (getRange effEval) parameterisedInitialValues
+    makeFnVec (_, parameterisedInitialValues) =
+        makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames parameterisedInitialValues
     solveODEIVPNoSplitting odeivp =
-        solveODEIVPUncertainValueExactTime_UsingPicard 
-            shouldWrap shouldShrinkWrap
-                sizeLimits effCompose effEval effInteg effDeriv effInclFn 
-                effAddFn effAbsFn effMinmaxFn 
-                effDivFnInt effAddFnDom effMultFnDom effDom
-                    delta m splitImprovementThreshold
-                        odeivp 
+        trace 
+        (
+            "solveODEIVPNoSplitting:"
+            ++ "\n  tStart = " ++ show (odeivp_tStart odeivp) 
+            ++ "\n  tEnd = " ++ show (odeivp_tEnd odeivp) 
+            ++ "\n  resultImprecision = " ++ show (fmap measureImpr (fst result)) 
+        )
+        $
+        result
+        where
+        result =
+            solveODEIVPUncertainValueExactTime_UsingPicard 
+                shouldWrap shouldShrinkWrap
+                    sizeLimits effCompose effEval effInteg effDeriv effInclFn 
+                    effAddFn effAbsFn effMinmaxFn 
+                    effDivFnInt effAddFnDom effMultFnDom effDom
+                        delta m splitImprovementThreshold
+                            odeivp 
 
 
 measureResultImprecision :: 
@@ -330,13 +340,13 @@ solveODEIVPUncertainValueExactTime_UsingPicard
         | shouldShrinkWrap = 
             case shrinkWrappedParamValuesAtTEnd of
                 Just fns2 ->
-                    unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping succeeded") $ 
+--                    unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping succeeded") $ 
                     fns2
                 _ | haveAnExactDomain -> 
-                    unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping failed, wrapping") $ 
+--                    unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping failed, wrapping") $ 
                     wrappedParamValuesAtTEnd
                 _ -> 
-                    unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping failed, leaving it thick") $ 
+--                    unsafePrint ("solveUncertainValueExactTimeBisect: shrink wrapping failed, leaving it thick") $ 
                     thickParamValuesAtTEnd 
         | otherwise = thickParamValuesAtTEnd
         where

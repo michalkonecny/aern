@@ -75,8 +75,8 @@ import Numeric.AERN.Basics.Consistency
 
 import Data.Maybe (isJust)
 
-import Numeric.AERN.Misc.Debug
-_ = unsafePrint
+import Debug.Trace
+_ = trace
         
 solveHybridIVPByBisectingT ::
     (CanAddVariables f,
@@ -123,7 +123,7 @@ solveHybridIVPByBisectingT
     result = splitSolve 0 hybivpG
     
     splitSolve depth hybivp =
---        unsafePrint
+--        trace
 --        (
 --            "solveHybridIVPByBisectingT: splitSolve: "
 --            ++ "tStart = " ++ show tStart
@@ -152,7 +152,7 @@ solveHybridIVPByBisectingT
             ((tEnd .<->. tStart) <? maxStepSize) /= Just True
 
         directComputation =
---            unsafePrint
+--            trace
 --            (
 --                "solveHybridIVPByBisectingT: completed time " ++ show tEnd
 --            ) $
@@ -258,7 +258,7 @@ solveODEIVPByBisectingAtT0End
             Just fnVecLOut ->
                 case maybeResultROut of
                     Just resultOut ->
---                        unsafePrint
+--                        trace
 --                        (
 --                            "solveODEIVPByBisectingAtT0End:"
 --                            ++ "\n fnVecLOut = " ++ show fnVecLOut
@@ -351,12 +351,12 @@ solveODEIVPByBisectingT
 --    effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
     
     splitSolve odeivp =
---        unsafePrint
+--        trace
 --        (
 --            "solveODEIVPByBisectingT: splitSolve: "
 --            ++ "\n tStart = " ++ show tStart
 --            ++ "\n tEnd = " ++ show tEnd
---            ++ "\n maybeSplitImprovement = " ++ show maybeSplitImprovement
+----            ++ "\n maybeSplitImprovement = " ++ show maybeSplitImprovement
 --            ++ "\n maybeDirectResult = " ++ show maybeDirectResult
 --        ) $
         result2
@@ -442,7 +442,7 @@ solveODEIVPByBisectingT
                 _ -> Nothing
 
         measureImprovementVec res1 res2 =
---            unsafePrintReturn
+--            trace
 --            (
 --                "solveODEIVPByBisectingT: measureImprovementVec: "
 --                ++ "\n  imprecision1 = " ++ show imprecision1 
