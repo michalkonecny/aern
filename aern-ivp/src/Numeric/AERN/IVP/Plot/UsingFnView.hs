@@ -69,13 +69,15 @@ plotODEIVPBisectionEnclosures ::
      Show f, Show (Var f), Show (Domain f)
     ) 
     =>
-    Bool -- ^ True -> use parametric plot (using consecutive pairs of functions) 
+    FV.Rectangle (Domain f) -- ^ initial canvas viewport
+    -> [Bool] -- ^ for each variable, whether it should be plotted
+    -> Bool -- ^ True -> use parametric plot (using consecutive pairs of functions) 
     -> ArithInOut.RoundedRealEffortIndicator (Domain f)
     -> Domain f
     -> ODEIVP f
     -> BisectionInfo (Maybe ([f],[f]), t) splitReason
     -> IO ()
-plotODEIVPBisectionEnclosures shouldUseParamPlot effCF plotMinSegSize ivp bisectionInfo =
+plotODEIVPBisectionEnclosures rect activevars shouldUseParamPlot effCF plotMinSegSize ivp bisectionInfo =
     do
     _ <- Gtk.unsafeInitGUIForThreadedRTS
     fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
@@ -89,8 +91,8 @@ plotODEIVPBisectionEnclosures shouldUseParamPlot effCF plotMinSegSize ivp bisect
     sampleCf = getSampleDomValue sampleFn
     
     componentNames = odeivp_componentNames ivp
-    tStart = odeivp_tStart ivp
-    tEnd = odeivp_tEnd ivp
+--    tStart = odeivp_tStart ivp
+--    tEnd = odeivp_tEnd ivp
     tVar = odeivp_tVar ivp
     
     addPlotVar
@@ -140,20 +142,19 @@ plotODEIVPBisectionEnclosures shouldUseParamPlot effCF plotMinSegSize ivp bisect
     fnmeta =
         FV.simpleFnMetaData
             sampleFn
---            (FV.Rectangle  domainHalf (neg domainHalf) tStart tEnd)
-            (FV.Rectangle  3 (-3) (-3) (3))
+            rect
             Nothing
             100
             (zip segNames $ map addMetaToFnNames fnNames)
         where
-        domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
+--        domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
         addMetaToFnNames names =
             zip3 names colourList enabledList
         colourList = 
             repeat black
 --            cycle [blue, green, red]
         enabledList = 
-            repeat True
+            cycle $ map snd $ zip componentNames $ activevars ++ (repeat False)
     aggregateSequencesOfTinySegments fnsAndNames2 = 
         aggrNewSegm [] [] [] $ zip ([1..]::[Int]) fnsAndNames2
         where
