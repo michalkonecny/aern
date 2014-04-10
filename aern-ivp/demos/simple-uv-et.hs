@@ -205,7 +205,7 @@ solveVtPrintSteps ::
 solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, maxDepthParam) =
     do
     putStrLn "--------------------------------------------------"
-    putStrLn "demo of solve-Vt from (Konecny, Taha, Duracz 2012)"
+    putStrLn "demo of enclose-flow by (Konecny, Taha, Duracz 2014)"
     putStrLn "--------------------------------------------------"
     putStrLn $ "solving: " ++ description
     putStrLn "----------  parameters: -------------------------"
@@ -241,7 +241,9 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, ma
     return (endValues, bisectionInfoOut)
     where
     shouldShowSteps = False
-    shouldUseParamPlot = True
+--    shouldShowSteps = True
+    shouldUseParamPlot = False
+--    shouldUseParamPlot = True
     -- solver call:
     (endValues, bisectionInfoOut) =
         solveIVPWithUncertainValue shouldWrap
@@ -251,7 +253,7 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, ma
     -- parameters:
     delta = 1
     maxdeg = maxdegParam
-    maxsize = 1000
+    maxsize = 50
     m = 100
     substSplitSizeLimit = 100
 --    minStepSizeExp = -4 :: Int
@@ -447,7 +449,7 @@ testShrinkWrap =
         {
             ipolylimits_cf_limits = defaultSizeLimits sampleCf,
             ipolylimits_maxdeg = 3,
-            ipolylimits_maxsize = 1000
+            ipolylimits_maxsize = 50
         }
     effCf = ArithInOut.roundedRealDefaultEffort sampleCf
     effEval = (effCf, Int1To10 10)
