@@ -132,7 +132,7 @@ solveHybridIVPByBisectingT
         result2
         where
         result2
-            | belowStepSize = directComputation
+            | onMinStepSize = directComputation
             | aboveMaxStepSize = splitComputation
             | directComputationFailed = splitComputation
             | otherwise = 
@@ -146,10 +146,10 @@ solveHybridIVPByBisectingT
         tStart = hybivp_tStart hybivp
         tEnd = hybivp_tEnd hybivp
         
-        belowStepSize =
+        onMinStepSize =
             ((tEnd .<->. tStart) >? minStepSize) /= Just True
         aboveMaxStepSize =
-            ((tEnd .<->. tStart) <? maxStepSize) /= Just True
+            ((tEnd .<->. tStart) <=? maxStepSize) /= Just True
 
         directComputation =
 --            trace
@@ -362,7 +362,7 @@ solveODEIVPByBisectingT
         result2
         where
         result2
-            | belowStepSize = directComputation
+            | onMinStepSize = directComputation
             | aboveMaxStepSize = splitComputation
             | directComputationFailed = splitComputation
             | otherwise = 
@@ -376,10 +376,10 @@ solveODEIVPByBisectingT
         tStart = odeivp_tStart odeivp
         tEnd = odeivp_tEnd odeivp
         
-        belowStepSize =
+        onMinStepSize =
             ((tEnd .<->. tStart) >? minStepSize) /= Just True
         aboveMaxStepSize =
-            ((tEnd .<->. tStart) <? maxStepSize) /= Just True
+            ((tEnd .<->. tStart) <=? maxStepSize) /= Just True
 
         directComputation =
             case maybeDirectResult of
@@ -523,7 +523,7 @@ solveODEIVPByBisectingT0
 --    effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
     
     splitSolve odeivp
-        | belowStepSize = directComputation
+        | onMinStepSize = directComputation
         | directComputationFailed = splitComputation
         | otherwise = 
             case maybeSplitImprovement of
@@ -536,8 +536,7 @@ solveODEIVPByBisectingT0
         t0End = odeivp_t0End odeivp
         tEnd = odeivp_tEnd odeivp
         
-        belowStepSize =
---            unsafePrintReturn ("belowStepSize = ") $
+        onMinStepSize =
             ((t0End .<->. tStart) >? minStepSize) /= Just True
 
         directComputation =
