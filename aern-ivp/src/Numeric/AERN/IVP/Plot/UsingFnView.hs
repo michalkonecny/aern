@@ -122,14 +122,26 @@ plotODEIVPBisectionEnclosures shouldUseParamPlot effCF plotMinSegSize ivp bisect
         map getFnsFromSegInfo $
             bisectionInfoGetLeafSegInfoSequence bisectionInfo
         where
-        getFnsFromSegInfo (Just (fnVec, _), _) =
-            zip fnVec componentNames
+        getFnsFromSegInfo (Just (fnVec, _), _) 
+            | notTooThick =
+                zip fnVec componentNames
+            where
+            notTooThick =
+                True 
+--                and $ map withdOK fnVec
+            withdOK fn =
+                ((ArithInOut.absOut val) <? (one sampleCf)) == (Just True) 
+                where
+                val = zero sampleCf 
+--                    evalAtPointOutEff effEval domPt fn
+--                domPt = getSampleFromInsideDomainBox fn domBox
+--                domBox = getDomainBox fn 
         getFnsFromSegInfo _ = []
     fnmeta =
         FV.simpleFnMetaData
             sampleFn
-            (FV.Rectangle  domainHalf (neg domainHalf) tStart tEnd)
---            (FV.Rectangle  3 (-3) (-3) (3))
+--            (FV.Rectangle  domainHalf (neg domainHalf) tStart tEnd)
+            (FV.Rectangle  3 (-3) (-3) (3))
             Nothing
             100
             (zip segNames $ map addMetaToFnNames fnNames)
