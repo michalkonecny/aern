@@ -14,31 +14,43 @@ import Numeric.AERN.IVP.Solver.ShrinkWrap -- only for testing
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
+import Numeric.AERN.RmToRn.Integration
+import Numeric.AERN.RmToRn.Differentiation
+
+import qualified 
+       Numeric.AERN.RmToRn.Plot.FnView as FV
 
 import Numeric.AERN.Poly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal, dbldblToReal)
 import Numeric.AERN.RealArithmetic.Basis.Double ()
-import qualified Numeric.AERN.DoubleBasis.Interval as CF
+import qualified 
+       Numeric.AERN.DoubleBasis.Interval as CF
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
 --import qualified Numeric.AERN.MPFRBasis.Interval as MI
 
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.Basics.Interval
+import Numeric.AERN.RealArithmetic.Interval ()
+
+import qualified 
+       Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal)
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 --import Numeric.AERN.RealArithmetic.ExactOps
 
---import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.Operators
 
-import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified 
+       Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.Operators
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.ShowInternals
 
---import Data.List (intercalate)
+import Data.List (isPrefixOf)
 
 import System.IO
 import System.Environment
@@ -47,20 +59,22 @@ import System.CPUTime
 
 --import qualified Control.Concurrent as Concurrent
 
-import Numeric.AERN.Misc.Debug (unsafePrint)
-_ = unsafePrint -- stop the unused warning
+import Debug.Trace
+_ = trace -- stop the unused warning
 
 --import qualified Data.Map as Map
 --import qualified Data.List as List
 
 type CF = CF.DI
-type Poly = IntPoly String CF
+
+type Fn = IntPoly String CF
+--type Fn = Interval (IntPoly String CF)
 
 sampleCf :: CF
 sampleCf = 0
 
-samplePoly :: Poly
-samplePoly = makeSampleWithVarsDoms 10 10 ["x"] [sampleCf]
+sampleFn :: Fn
+sampleFn = makeSampleWithVarsDoms 10 10 ["x"] [sampleCf]
 
 main :: IO ()
 main =
@@ -73,13 +87,18 @@ usage :: IO ()
 usage =
     do
     putStrLn "Usage A: simple-uv-et <ivp name> <output file name> <True|False-should wrap?>"
-    putStrLn "Usage B: simple-uv-et <ivp name> <True|False-plot enclosures?> <True|False-should wrap?> <maxDeg> <minStepSize> <maxStepSize> [<tEnd>]"
+    putStrLn "Usage B: simple-uv-et <ivp name> \"<PlotArgs>\" <True|False-should wrap?> <maxDeg> <maxTermSize> <minStepSize> <maxStepSize> [<tEnd>]"
+    putStrLn "   PlotArgs:  example 1: PlotGraph[True, False, False](0,1,-1,1)"
+    putStrLn "   PlotArgs:                      [shouldPlotVar1,...]"
+    putStrLn "   PlotArgs:                                      ....(xmin, xmax, ymin, ymax)"
+    putStrLn "   PlotArgs:  example 1: PlotParam[True, True, False](-1,1,-1,1)"
+    putStrLn "   PlotArgs:  example 2: NoPlot"
 
-runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, maxDepthS, minDepthS] =
-    runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, maxDepthS, minDepthS, "default"]
-runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, maxDepthS, minDepthS, tEndS] =
+runWithArgs [ivpName, maybePlotDimensS, shouldWrapS, maxDegS, maxSizeS, maxDepthS, minDepthS] =
+    runWithArgs [ivpName, maybePlotDimensS, shouldWrapS, maxDegS, maxSizeS, maxDepthS, minDepthS, "default"]
+runWithArgs [ivpName, maybePlotDimensS, shouldWrapS, maxDegS, maxSizeS, maxDepthS, minDepthS, tEndS] =
     do
-    _ <- solveVtPrintSteps shouldWrap shouldPlotSteps ivpTEnd (maxDeg, maxDepth, minDepth)
+    _ <- solveVtPrintSteps shouldWrap maybePlotDimens ivpTEnd (maxDeg, maxSize, maxDepth, minDepth)
     return ()
     where
     ivpTEnd =
@@ -90,20 +109,57 @@ runWithArgs [ivpName, shouldPlotStepsS, shouldWrapS, maxDegS, maxDepthS, minDept
                     odeivp_tEnd = dblToReal sampleCf $ read tEndS,
                     odeivp_maybeExactValuesAtTEnd = Nothing
                 }
-    ivp = ivpByNameReportError ivpName samplePoly
+    ivp = ivpByNameReportError ivpName sampleFn
     shouldWrap = read shouldWrapS :: Bool
-    shouldPlotSteps = read shouldPlotStepsS :: Bool
+    maybePlotDimens = readPlotArg maybePlotDimensS :: Maybe PlotParams
     maxDeg = read maxDegS :: Int
+    maxSize = read maxSizeS :: Int
     maxDepth = read maxDepthS :: Int
     minDepth = read minDepthS :: Int
+    readPlotArg s 
+        | "Plot" `isPrefixOf` s =
+            case getIsParam of
+                Just isParam ->
+                    case reads sMinusPlotParam of
+                        (activeVars, rest) : _ ->
+                            case reads rest of
+                                (boundsD, []) : _ -> 
+                                    Just (PlotParams (boundsFromDoubles boundsD) activeVars isParam)
+                                _ -> errorP
+                        _ -> errorP
+                _ -> errorP
+        | s == "NoPlot" = Nothing
+        | otherwise = errorP
+        where
+        sMinusPlot = drop (length "Plot") s
+        sMinusPlotParam = drop (length "Param") sMinusPlot
+        getIsParam
+            | "Param" `isPrefixOf` sMinusPlot = Just True
+            | "Graph" `isPrefixOf` sMinusPlot = Just False
+            | otherwise = Nothing
+        errorP = error $ "Cannot parse plot specification: " ++ s
+        boundsFromDoubles (xmin, xmax, ymin, ymax) =
+            FV.Rectangle (d2r ymax) (d2r ymin) (d2r xmin) (d2r xmax)
+            where
+            d2r = dblToReal (0 :: CF)
+    
 runWithArgs [ivpName, outputFileName, shouldWrapS] =
     writeCSV ivp outputFileName shouldWrap
     where
     shouldWrap = read shouldWrapS :: Bool
-    ivp = ivpByNameReportError ivpName samplePoly
+    ivp = ivpByNameReportError ivpName sampleFn
 runWithArgs _ = usage
+
+data PlotParams =
+    PlotParams
+    {
+        plotp_rect :: FV.Rectangle CF,
+        plotp_activevars :: [Bool],
+        plotp_isParam :: Bool
+    }
+    deriving (Show)
     
-writeCSV :: ODEIVP Poly -> FilePath -> Bool -> IO ()
+writeCSV :: ODEIVP Fn -> FilePath -> Bool -> IO ()
 writeCSV ivp outputFileName shouldWrap =
     do
     isClash <- doesFileExist outputFileName
@@ -120,6 +176,7 @@ writeCSV ivp outputFileName shouldWrap =
         [(maxDegree, depth) | 
             maxDegree <- [0..15], depth <- [0..10]]
 --            maxDegree <- [0..10], depth <- [0..5]]
+    maxSize = 100
     writeCSVheader handle =
         do
         hPutStrLn handle $ "ivp: " ++ description
@@ -138,7 +195,7 @@ writeCSV ivp outputFileName shouldWrap =
         solveAndMeasure _ =
             do
             starttime <- getCPUTime
-            solverResult <- solveVtPrintSteps shouldWrap False ivp (maxDegree, maxDepth, 0)
+            solverResult <- solveVtPrintSteps shouldWrap Nothing ivp (maxDegree, maxSize, maxDepth, 0)
             endtime <- getCPUTime
             return $ (solverResult, (endtime - starttime) `div` 1000000000)
         
@@ -184,15 +241,15 @@ refines :: CF -> CF -> Bool
 refines a1 a2 = (a2 CF.|<=? a1) == Just True
    
 solveVtPrintSteps ::
-    (solvingInfo ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])))
+    (solvingInfo ~ (Maybe ([Fn],[Fn]), (CF, Maybe [CF])))
     => 
     Bool
     ->
-    Bool
+    (Maybe PlotParams)
     ->
-    ODEIVP Poly 
+    ODEIVP Fn 
     -> 
-    (Int, Int, Int) 
+    (Int, Int, Int, Int) 
     -> 
     IO 
     (
@@ -202,7 +259,7 @@ solveVtPrintSteps ::
             BisectionInfo solvingInfo (solvingInfo, Maybe CF)
         )
     )
-solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, maxDepthParam) =
+solveVtPrintSteps shouldWrap maybePlotDimens ivp (maxdegParam, maxsizeParam, minDepthParam, maxDepthParam) =
     do
     putStrLn "--------------------------------------------------"
     putStrLn "demo of enclose-flow by (Konecny, Taha, Duracz 2014)"
@@ -217,12 +274,14 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, ma
     putStrLn $ "minimum step size = 2^{" ++ show minStepSizeExp ++ "}"
     putStrLn $ "maximum step size = 2^{" ++ show maxStepSizeExp ++ "}"
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
+    putStrLn $ "wrapping: " ++ (if shouldWrap then "box" else "shrink")
+    putStrLn $ "plotting: " ++ show maybePlotDimens
     case maybeExactResult of
         Just exactResult ->
             putStr $ showSegInfo "(almost) exact result = " (Nothing, (tEnd, Just exactResult))
         _ -> return ()
-    putStrLn "----------  steps: ---------------------------"
-    _ <- printStepsInfo (1:: Int) bisectionInfoOut
+--    putStrLn "----------  steps: ---------------------------"
+--    _ <- printStepsInfo (1:: Int) bisectionInfoOut
     putStrLn "----------  step summary: -----------------------"
     putStrLn $ "number of atomic segments = " ++ (show $ bisectionInfoCountLeafs bisectionInfoOut)
     putStrLn $ "smallest segment size: " ++ (show smallestSegSize)  
@@ -235,15 +294,16 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, ma
             putStrLn $ showBisectionInfo showSegInfo showSplitReason "" bisectionInfoOut
         False -> return ()
     putStrLn "-------------------------------------------------"
-    case shouldPlotSteps of
-        False -> return ()
-        True -> plotODEIVPBisectionEnclosures shouldUseParamPlot effCf (2^^(-8 :: Int) :: CF) ivp bisectionInfoOut
+    case maybePlotDimens of
+        Nothing -> return ()
+        Just (PlotParams rect activevars shouldUseParamPlot) -> 
+            plotODEIVPBisectionEnclosures
+                rect activevars 
+                shouldUseParamPlot effCf (2^^(-8 :: Int) :: CF) ivp bisectionInfoOut
     return (endValues, bisectionInfoOut)
     where
     shouldShowSteps = False
 --    shouldShowSteps = True
-    shouldUseParamPlot = False
---    shouldUseParamPlot = True
     -- solver call:
     (endValues, bisectionInfoOut) =
         solveIVPWithUncertainValue shouldWrap
@@ -253,7 +313,7 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, ma
     -- parameters:
     delta = 1
     maxdeg = maxdegParam
-    maxsize = 50
+    maxsize = maxsizeParam
     m = 100
     substSplitSizeLimit = 100
 --    minStepSizeExp = -4 :: Int
@@ -306,20 +366,12 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, ma
         where
         showComponent (name, valueS) =
             indent ++ name ++ "("  ++ show t ++ ") ∊ " ++ valueS
---        showVec [e] = e
---        showVec list = "(" ++ (intercalate "," list) ++ ")"
         valueSs =
             case maybeValues of
                 Just valuesOut -> map showValue valuesOut
                 _ -> replicate (length componentNames) "<no result computed>"
         showValue valueOut =
             show valueOut 
---            ++ "(err<=" ++ show err ++ ")" 
---            ++ "; valueIn = " ++ show valueIn
---            where
---            err = snd $ RefOrd.getEndpointsOut $ wOut CF.<-> wIn
---            wOut = CF.width valueOut     
---            wIn = CF.width valueIn     
     showSplitReason indent (segInfo, (Just improvement)) =
         showSegInfo indent segInfo ++ 
         "; but splitting improves by " ++ show improvement ++ ":"
@@ -329,10 +381,10 @@ solveVtPrintSteps shouldWrap shouldPlotSteps ivp (maxdegParam, minDepthParam, ma
 
 
 solveIVPWithUncertainValue ::
-    (solvingInfo ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])))
+    (solvingInfo ~ (Maybe ([Fn],[Fn]), (CF, Maybe [CF])))
     =>
     Bool ->
-    SizeLimits Poly -> 
+    SizeLimits Fn -> 
     ArithInOut.RoundedRealEffortIndicator CF -> 
     Int -> 
     CF -> 
@@ -340,7 +392,7 @@ solveIVPWithUncertainValue ::
     CF -> 
     CF -> 
     CF -> 
-    ODEIVP Poly
+    ODEIVP Fn
     -> 
     (
      Maybe ([CF])
@@ -371,26 +423,24 @@ solveIVPWithUncertainValue
 --        initValDomBox =
 --            fromList $ zip componentNames initialValues
 --        
-    effSizeLims = effCf
-    effCompose = (effCf, Int1To10 substSplitSizeLimit)
-    effEval = (effCf, Int1To10 substSplitSizeLimit)
-    effInteg = effCf
-    effDeriv = effCf
-    effAddFn = effCf
-    effMultFn = effCf
-    effInclFn = ((Int1To1000 0, (effCf, Int1To10 100)), ())
-    effAbsFn = (effMinmaxFn, effAbsCf)
-    effAbsCf = ArithInOut.rrEffortAbs sampleCf effCf
-    effMinmaxFn = error "effMinmaxUpDnFn undefined"
-    effAddFnDom = effAddCf
-    effMultFnDom = (((), ()), (), ((), (), ()))
-    effDivFnInt =
-        ArithInOut.mxfldEffortDiv sampleCf (0::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
-    effAddCf =
-        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effSizeLims = sizeLimitsChangeDefaultEffort sampleFn
+    effCompose =  compositionDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effEval = evaluationDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effInteg = integrationDefaultEffort sampleFn
+    effDeriv = fakeDerivativeDefaultEffort sampleFn
+    effAddFn = ArithInOut.addDefaultEffort sampleFn
+    effMultFn = ArithInOut.multDefaultEffort sampleFn
+    effAbsFn = ArithInOut.absDefaultEffort sampleFn
+    effMinmaxFn = NumOrd.minmaxInOutDefaultEffort sampleFn
+    effAddFnDom = ArithInOut.mixedAddDefaultEffort sampleFn sampleCf
+    effMultFnDom = ArithInOut.mixedMultDefaultEffort sampleFn sampleCf
+--        ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+    effDivFnInt = ArithInOut.mixedDivDefaultEffort sampleFn (0::Int)
+    effInclFn = RefOrd.pCompareDefaultEffort sampleFn -- ((Int1To1000 0, (effCf, Int1To10 20)), ())
+--    effCf = ArithInOut.roundedRealDefaultEffort sampleCf
 
 makeSampleWithVarsDoms :: 
-     Int -> Int -> [Var Poly] -> [CF] -> Poly
+     Int -> Int -> [Var Fn] -> [CF] -> Fn
 makeSampleWithVarsDoms maxdeg maxsize vars doms =
     newConstFn sizeLimits varDoms sampleCf
     where
@@ -404,7 +454,6 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
         }
 
 
-
 testShrinkWrap :: IO ()
 testShrinkWrap =
     do
@@ -414,14 +463,14 @@ testShrinkWrap =
     getSides [x,y] =
         [(xSL,ySL),(xTL,yTL),(xSR,ySR),(xTR,yTR)]
         where
-        xSL = pEvalAtPointOutEff effComp sL x
-        xSR = pEvalAtPointOutEff effComp sR x
-        xTL = pEvalAtPointOutEff effComp tL x
-        xTR = pEvalAtPointOutEff effComp tR x
-        ySL = pEvalAtPointOutEff effComp sL y
-        ySR = pEvalAtPointOutEff effComp sR y
-        yTL = pEvalAtPointOutEff effComp tL y
-        yTR = pEvalAtPointOutEff effComp tR y
+        xSL = pEvalAtPointOutEff effPEval sL x
+        xSR = pEvalAtPointOutEff effPEval sR x
+        xTL = pEvalAtPointOutEff effPEval tL x
+        xTR = pEvalAtPointOutEff effPEval tR x
+        ySL = pEvalAtPointOutEff effPEval sL y
+        ySR = pEvalAtPointOutEff effPEval sR y
+        yTL = pEvalAtPointOutEff effPEval tL y
+        yTR = pEvalAtPointOutEff effPEval tR y
         sL = fromList [("s", -1)]
         sR = fromList [("s", 1)]
         tL = fromList [("t", -1)]
@@ -429,8 +478,8 @@ testShrinkWrap =
     
     Just result =
         shrinkWrap 
-            effComp effEval effDeriv effAddFn effAbsFn effMinmaxFn 
-                effDivFnInt effAddPolyCf effMultPolyCf effCf 
+            effCompose effEval effDeriv effAddFn effAbsFn effMinmaxFn 
+                effDivFnInt effAddFnDom effMultFnDom effCf 
                     [xUsingTS, yUsingTS]
     xUsingTS = s <*> tPlus2 <+> pmeps -- s(t+2) +- eps
     yUsingTS = (c1 <-> s <*> s) <*> tPlus2 <+> pmeps -- (1-s^2)(t+2) +- eps
@@ -440,7 +489,7 @@ testShrinkWrap =
     pmeps = newConstFnFromSample c1 $ ((-eps) CF.</\> eps)
         where
         eps = 0.125
-    c1 :: Poly
+    c1 :: Fn
     c1 = newConstFn sizeLimits varDoms (1 :: CF)
     varDoms = [("t", unitDom),  ("s", unitDom)]
     unitDom = (-1) CF.</\> 1
@@ -449,20 +498,18 @@ testShrinkWrap =
         {
             ipolylimits_cf_limits = defaultSizeLimits sampleCf,
             ipolylimits_maxdeg = 3,
-            ipolylimits_maxsize = 50
+            ipolylimits_maxsize = 1000
         }
     effCf = ArithInOut.roundedRealDefaultEffort sampleCf
-    effEval = (effCf, Int1To10 10)
-    effComp = (effCf, Int1To10 10)
-    effDeriv = effCf
-    effAddFn = effCf
-    effAbsFn = (effMinmaxFn, effAbsCf)
-    effAbsCf = ArithInOut.rrEffortAbs sampleCf effCf
-    effMinmaxFn = minmaxInOutDefaultEffortIntPolyWithBezierDegree 4 s
-    effAddPolyCf = effAddCf
-    effMultPolyCf = (((), ()), (), ((), (), ()))
-    effDivFnInt =
-        ArithInOut.mxfldEffortDiv sampleCf (0::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
-    effAddCf =
-        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-        
+    effEval = evaluationDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effPEval = partialEvaluationDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effCompose =  compositionDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
+    effDeriv = fakeDerivativeDefaultEffort sampleFn
+    effAddFn = ArithInOut.addDefaultEffort sampleFn
+    effAbsFn = ArithInOut.absDefaultEffort sampleFn
+    effMinmaxFn = NumOrd.minmaxInOutDefaultEffort sampleFn
+--    effMinmaxFn = minmaxInOutDefaultEffortIntPolyWithBezierDegree 4 sampleFn
+    effAddFnDom = ArithInOut.mixedAddDefaultEffort sampleFn sampleCf
+    effMultFnDom = ArithInOut.mixedMultDefaultEffort sampleFn sampleCf
+    effDivFnInt = ArithInOut.mixedDivDefaultEffort sampleFn (0::Int)
+ 
