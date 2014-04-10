@@ -80,13 +80,13 @@ shrinkWrap ::
     [f] ->
     Maybe [f]
 shrinkWrap effComp effEval effDeriv effAddFn effAbsFn effMinmaxFn effDivFnInt effAddFnDom effMultFnDom effDom fns =
-    unsafePrint
-    (
-        "shrinkWrap:"
---        ++ "\n fns = " ++ (show fns)
-        ++ "\n ws = " ++ (show ws)
-        ++ "\n delta = " ++ (show delta)
-    )$
+--    unsafePrint
+--    (
+--        "shrinkWrap:"
+----        ++ "\n fns = " ++ (show fns)
+--        ++ "\n ws = " ++ (show ws)
+--        ++ "\n delta = " ++ (show delta)
+--    )$
     result
     where
     result 
@@ -201,10 +201,10 @@ _getDomainDelta2 effComp effEval effDeriv effAbsFn effMinmaxFn effAddFnDom effMu
             getPeak (maxTrials - 1) rest
         where
         detectedNotIncreasing = 
-            unsafePrint
-            (
-                "ShrinkWrap: getDomainDelta: getPeak: delta1 = " ++ show delta1
-            ) $
+--            unsafePrint
+--            (
+--                "ShrinkWrap: getDomainDelta: getPeak: delta1 = " ++ show delta1
+--            ) $
             ((delta1 <? plusInfinity delta1) /= Just True)
             ||
             ((delta2 <=? delta1) == Just True)
@@ -303,10 +303,10 @@ getDomainDelta1 effComp effEval effDeriv  _effAbsFn _effMinmaxFn effAddFnDom eff
             getPeak (maxTrials - 1) rest
         where
         detectedNotIncreasing = 
-            unsafePrint
-            (
-                "ShrinkWrap: getDomainDelta: getPeak: delta1 = " ++ show delta1
-            ) $
+--            unsafePrint
+--            (
+--                "ShrinkWrap: getDomainDelta: getPeak: delta1 = " ++ show delta1
+--            ) $
             (delta2 <=? delta1) == Just True
     computeDelta oldDelta =
         {-
