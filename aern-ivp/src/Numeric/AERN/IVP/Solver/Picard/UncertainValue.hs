@@ -227,7 +227,7 @@ measureFunctionImprecision ::
     -> 
     Domain f
 measureFunctionImprecision effEval effAddFn effAddDom fnVec =
---    unsafePrint
+--    trace
 --    (
 --        "measureFunctionImprecision:"
 --        ++ "\n fnVec = " ++ show fnVec
@@ -256,7 +256,6 @@ getRange ::
 getRange effEval fn =
     evalAtPointOutEff effEval (getDomainBox fn) fn
 
-            
 
 solveODEIVPUncertainValueExactTime_UsingPicard ::
     (CanAddVariables f,
