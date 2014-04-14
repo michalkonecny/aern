@@ -132,7 +132,8 @@ ivpByNameMap sampleFn =
         ("ivpCubicSpringMass-triple", ivpCubicSpringMass_triple sampleFn),
         ("ivpCubicSpringMass-monoCheck", ivpCubicSpringMass_monoCheck sampleFn),
         ("ivpFallAir-ishii", ivpFallAir_ishii sampleFn),
-        ("ivpLorenz-ishii", ivpLorenz_ishii sampleFn),
+        ("ivpLorenz-ev", ivpLorenz_ev sampleFn),
+        ("ivpLorenz-uv", ivpLorenz_uv sampleFn),
         ("ivpRoessler", ivpRoessler sampleFn),
         ("ivpVanDerPol-ev", ivpVanDerPol_ev sampleFn),
         ("ivpVanDerPol-uv", ivpVanDerPol_uv sampleFn)
@@ -480,7 +481,7 @@ ivpFallAir_ishii sampleFn =
     toDom = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
-ivpLorenz_ishii :: 
+ivpLorenz_ev :: 
     (Var f ~ String,
      HasConstFns f,
      HasProjections f,
@@ -492,7 +493,7 @@ ivpLorenz_ishii ::
     )
     => 
     f -> ODEIVP f
-ivpLorenz_ishii sampleFn =
+ivpLorenz_ev sampleFn =
     ivp
     where
     ivp =
@@ -520,6 +521,57 @@ ivpLorenz_ishii sampleFn =
         ,
             (toDom 36)
         ]
+    makeIV =
+        makeFnVecFromInitialValues componentNames initialValues
+    componentNames = odeivp_componentNames ivp
+    tStart = odeivp_tStart ivp
+--    lrDom = dbldblToReal sampleDom
+    toDom = dblToReal sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+ivpLorenz_uv :: 
+    (Var f ~ String,
+     HasConstFns f,
+     HasProjections f,
+     Neg f,
+     ArithInOut.RoundedRing f,
+     ArithInOut.RoundedMixedField f Double,
+     ArithInOut.RoundedReal (Domain f),
+     Show f, Show (Domain f)
+    )
+    => 
+    f -> ODEIVP f
+ivpLorenz_uv sampleFn =
+    ivp
+    where
+    ivp =
+        ODEIVP
+        {
+            odeivp_description = "x' = 10(y-x), y' = x(28-z)-y, z' = xy - 8z/3; (x,y,z)(" ++ show tStart ++ ") ∊ " ++ show initialValues,
+            odeivp_field = \ [x,y,z] -> 
+                [(10 :: Double) |<*> (y <-> x),
+                  (x <*> ((28 :: Double) |<+> (neg z))) <-> y,
+                  (x <*> y) <-> (((8 :: Double) |<*> z) </>| (3 :: Double))
+                ],
+            odeivp_componentNames = ["x", "y", "z"],
+            odeivp_tVar = "t",
+            odeivp_tStart = toDom 0,
+            odeivp_t0End = toDom 0,
+            odeivp_tEnd = toDom 24,
+            odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_maybeExactValuesAtTEnd = Nothing
+        }
+    initialValues = 
+        [
+            (toDom 15) <+> pmDelta
+        ,
+            (toDom 15) <+> pmDelta
+        ,
+            (toDom 36) <+> pmDelta
+        ]
+        where
+        pmDelta = lrDom (- delta) delta
+        delta = 0.01
     makeIV =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
