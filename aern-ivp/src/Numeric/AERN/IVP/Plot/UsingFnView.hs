@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.IVP.Plot.UsingFnView
     Description :  visualising IVP solutions using FnView 
@@ -51,6 +52,7 @@ import qualified Graphics.UI.Gtk as Gtk
 import Control.Concurrent.STM
 
 import qualified Data.Map as Map
+import qualified Data.List as List
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -77,7 +79,7 @@ plotODEIVPBisectionEnclosures ::
     -> ODEIVP f
     -> BisectionInfo (Maybe ([f],[f]), t) splitReason
     -> IO ()
-plotODEIVPBisectionEnclosures rect activevars shouldUseParamPlot effCF plotMinSegSize ivp bisectionInfo =
+plotODEIVPBisectionEnclosures rect activevarsPre shouldUseParamPlot effCF plotMinSegSize (ivp :: ODEIVP f) bisectionInfo =
     do
     _ <- Gtk.unsafeInitGUIForThreadedRTS
     fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
@@ -91,35 +93,74 @@ plotODEIVPBisectionEnclosures rect activevars shouldUseParamPlot effCF plotMinSe
     sampleCf = getSampleDomValue sampleFn
     
     componentNames = odeivp_componentNames ivp
+    n = length componentNames
 --    tStart = odeivp_tStart ivp
 --    tEnd = odeivp_tEnd ivp
     tVar = odeivp_tVar ivp
+
+    -- complete the activevarsPre list with False's to be the same length as componentNames:
+    activevars =
+        take n $ activevarsPre ++ (repeat False)
+
+    activevarNames = pickByActivevars componentNames 
+
+    -- function to pick from a list of length componentNames those elements that correspond to active vars:
+    pickByActivevars :: [a] -> [a]
+    pickByActivevars list =
+        map snd $ filter fst $ zip activevars list
+    -- function to pick from a list of length componentNames those elements that correspond to active vars:
+    pickByActivevarsCycle :: [a] -> [[a]]
+    pickByActivevarsCycle [] = []
+    pickByActivevarsCycle list =
+        pickByActivevars batch : pickByActivevarsCycle rest
+        where
+        (batch, rest) = splitAt n list
+--    pickByActivevarsCycle _ = error $ "plotODEIVPBisectionEnclosures: pickByActivevarsCycle: list not divisible by n"
     
-    addPlotVar
+    addPlotVar fns2
         | shouldUseParamPlot
-            = map addVParam
+            = map (map addVParam . pickByActivevarsCycle) fns2
         | otherwise 
-            = map $ map addV
+            = map (map addV) fns2
         where
-        addV fn = (FV.GraphPlotFn fn, tVar)
-        addVParam (fnX : fnY : rest) = (FV.ParamPlotFns (fnX, fnY), tVar) : addVParam rest
-        addVParam [] = []
-        addVParam _ = errorParamButOdd
+        addV fn = (FV.GraphPlotFn (fn :: f), tVar)
+        addVParam [fnX, fnY] = (FV.ParamPlotFns (fnX, fnY), tVar)
+        addVParam _ = errorParamFnCount 
+        
+    errorParamFnCount =
+            error 
+            "plotODEIVPBisectionEnclosures: In a parameteric plot there have to be exactly two active functions."
+            
     (fns, fnNamesPre, segNames) = 
-        aggregateSequencesOfTinySegments fnsAndNames
-    fnNames 
-        | shouldUseParamPlot = map pairUp fnNamesPre
-        | otherwise = fnNamesPre 
+        aggregateSequencesOfTinySegments2 fnsAndNames
+    fnNames
+        | shouldUseParamPlot = 
+            fnNamesActiveJoined
+        | otherwise = 
+            fnNamesPre 
         where
-        pairUp (nmX : nmY : rest) = 
-            joinedXY : pairUp rest
+        fnNamesActiveJoined =
+            map ((map (const joinedActiveVarsName)) . pickByActivevarsCycle) fnNamesPre
             where
-            joinedXY = "(" ++ nmX ++ "," ++ nmY ++ ")" 
-        pairUp [] = []
-        pairUp _ = errorParamButOdd
-    errorParamButOdd = 
-        error 
-        "plotODEIVPBisectionEnclosures: Parameteric plot requested but there are an odd number of functions."
+            joinedActiveVarsName = "(" ++ List.intercalate "," activevarNames ++ ")"
+        
+    fnmeta =
+        FV.simpleFnMetaData
+            sampleFn
+            rect
+            Nothing
+            200
+            (zip segNames $ map addMetaToFnNames fnNames)
+        where
+        addMetaToFnNames names =
+            zip3 names colourList enabledList
+        colourList = 
+            repeat black
+--            cycle [blue, green, red]
+        enabledList 
+            | shouldUseParamPlot = repeat True
+            | otherwise = cycle activevars
+
     fnsAndNames = 
         map getFnsFromSegInfo $
             bisectionInfoGetLeafSegInfoSequence bisectionInfo
@@ -139,23 +180,7 @@ plotODEIVPBisectionEnclosures rect activevars shouldUseParamPlot effCF plotMinSe
 --                domPt = getSampleFromInsideDomainBox fn domBox
 --                domBox = getDomainBox fn 
         getFnsFromSegInfo _ = []
-    fnmeta =
-        FV.simpleFnMetaData
-            sampleFn
-            rect
-            Nothing
-            100
-            (zip segNames $ map addMetaToFnNames fnNames)
-        where
---        domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
-        addMetaToFnNames names =
-            zip3 names colourList enabledList
-        colourList = 
-            repeat black
---            cycle [blue, green, red]
-        enabledList = 
-            cycle $ map snd $ zip componentNames $ activevars ++ (repeat False)
-    aggregateSequencesOfTinySegments fnsAndNames2 = 
+    aggregateSequencesOfTinySegments2 fnsAndNames2 = 
         aggrNewSegm [] [] [] $ zip ([1..]::[Int]) fnsAndNames2
         where
         aggrNewSegm 
