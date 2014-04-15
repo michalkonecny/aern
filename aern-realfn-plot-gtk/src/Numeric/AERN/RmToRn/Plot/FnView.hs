@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -29,6 +30,7 @@ module Numeric.AERN.RmToRn.Plot.FnView
     defaultFnMetaData,
     simpleFnMetaData,
     new,
+    plotToPDFFile,
     module Numeric.AERN.RmToRn.Plot.Params
 )
 where
@@ -55,11 +57,11 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Graphics.Rendering.Cairo as Cairo
 import qualified Graphics.UI.Gtk as Gtk
-import Graphics.UI.Gtk (AttrOp((:=)))
+--import Graphics.UI.Gtk (AttrOp((:=)))
 import qualified Graphics.UI.Gtk.Gdk.EventM as GdkEv
 
 import Control.Concurrent (forkIO)
-import Control.Concurrent.STM (STM, TVar, newTVar, atomically, retry, readTVar, writeTVar) -- as STM
+import Control.Concurrent.STM (TVar, newTVar, atomically, readTVar, writeTVar) -- as STM
 import Data.IORef
 
 import qualified System.FilePath as FilePath
@@ -81,9 +83,9 @@ new ::
     EvaluationEffortIndicator f ->
     (TVar (FnData f),
      TVar (FnMetaData f)) ->
-    (Maybe Gtk.Window) {- ^ parent window -} -> 
+    (Maybe Gtk.Window) {- ^ parent wgt_window -} -> 
     IO Gtk.Window
-new (sampleF :: f) effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) maybeParentWindow =
+new (sampleF :: f) effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) _maybeParentWindow =
     do
     -- create initial state objects:
     (stateTV, state, fnmeta) <- atomically $
@@ -95,15 +97,15 @@ new (sampleF :: f) effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) maybeP
         return (stateTV, state, fnmeta)
     dynWidgetsRef <- newIORef initFnViewDynWidgets
     -- create most widgets:
-    widgets <- loadGlade (FilePath.combine GLADE_DIR "FnView.glade")
-    -- create plotting canvas:
-    widgets <- makeCanvas sampleF effDraw effReal widgets fndataTVs stateTV
+    widgetsPre <- loadGlade (FilePath.combine GLADE_DIR "FnView.glade")
+    -- create plotting wgt_canvas:
+    widgets <- makeCanvas sampleF effDraw effReal widgetsPre fndataTVs stateTV
     -- add dynamic function label widgets:
     updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV
     -- attach handlers to widgets
-    Gtk.onDestroy (window widgets) $
+    Gtk.onDestroy (wgt_window widgets) $
         do
-        atomically $ modifyTVar fnmetaTV $ \fnmeta -> fnmeta { dataDestroyed = True }
+        atomically $ modifyTVar fnmetaTV $ \fnmeta2 -> fnmeta2 { dataDestroyed = True }
         Gtk.mainQuit
     setHandlers sampleF effDraw effReal effEval widgets dynWidgetsRef fndataTVs stateTV
     -- start thread that reponds to changes in fndataTVs:
@@ -111,8 +113,8 @@ new (sampleF :: f) effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) maybeP
         dataWatchThread 
             sampleF effReal effEval 
             widgets dynWidgetsRef fndataTVs stateTV
-    Gtk.widgetShowAll $ window widgets
-    return $ window widgets
+    Gtk.widgetShowAll $ wgt_window widgets
+    return $ wgt_window widgets
     where
     sampleDom = getSampleDomValue sampleF
     effToDouble = ArithInOut.rrEffortToDouble sampleDom effReal
@@ -165,12 +167,12 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
     
     setHandlerCoordSystem =
         do
-        Gtk.on (coorSystemCombo widgets) Gtk.changed resetZoomPanFromCoordSystem
-        Gtk.onClicked (defaultZoomPanButton widgets) resetZoomPanFromCoordSystem
+        Gtk.on (wgt_coorSystemCombo widgets) Gtk.changed resetZoomPanFromCoordSystem
+        Gtk.onClicked (wgt_defaultZoomPanButton widgets) resetZoomPanFromCoordSystem
         where
         resetZoomPanFromCoordSystem =
             do
-            maybeCSysIx <- Gtk.comboBoxGetActive (coorSystemCombo widgets)
+            maybeCSysIx <- Gtk.comboBoxGetActive (wgt_coorSystemCombo widgets)
 --            putStrLn $ "resetZoomPanFromCoordSystem: maybeCSysIx = " ++ show maybeCSysIx
             case maybeCSysIx of
                 -1 -> return ()
@@ -184,27 +186,28 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                                     0 -> CoordSystemLogSqueeze sampleDom
                                     1 -> 
                                         linearCoordsWithZoom effReal defaultZoom (getFnExtents fnmeta)
+                                    _ -> error "FnView: unsupported choice of coordSystem"
                             state <- modifyTVar stateTV $ 
                                 updatePanCentreCoordSystem (getDefaultCentre effReal fnmeta) coordSystem
                             return state
-                    Gtk.widgetQueueDraw (canvas widgets)
+                    Gtk.widgetQueueDraw (wgt_canvas widgets)
                     updateZoomWidgets toDbl widgets state
     
     setHandlerZoomAndPanEntries =
         do
-        Gtk.onEntryActivate (zoomEntry widgets) (zoomHandler ())
-        Gtk.onFocusOut (zoomEntry widgets) (\ e -> zoomHandler False)
-        Gtk.onEntryActivate (centreXEntry widgets) (zoomHandler ())
-        Gtk.onFocusOut (centreXEntry widgets) (\ e -> zoomHandler False)
-        Gtk.onEntryActivate (centreYEntry widgets) (zoomHandler ())
-        Gtk.onFocusOut (centreYEntry widgets) (\ e -> zoomHandler False)
+        Gtk.onEntryActivate (wgt_zoomEntry widgets) (zoomHandler ())
+        Gtk.onFocusOut (wgt_zoomEntry widgets) (\ _e -> zoomHandler False)
+        Gtk.onEntryActivate (wgt_centreXEntry widgets) (zoomHandler ())
+        Gtk.onFocusOut (wgt_centreXEntry widgets) (\ _e -> zoomHandler False)
+        Gtk.onEntryActivate (wgt_centreYEntry widgets) (zoomHandler ())
+        Gtk.onFocusOut (wgt_centreYEntry widgets) (\ _e -> zoomHandler False)
         where
         zoomHandler :: t -> IO t
         zoomHandler returnValue =
             do
-            zoomS <- Gtk.entryGetText (zoomEntry widgets)
-            centreXS <- Gtk.entryGetText (centreXEntry widgets)
-            centreYS <- Gtk.entryGetText (centreYEntry widgets)
+            zoomS <- Gtk.entryGetText (wgt_zoomEntry widgets)
+            centreXS <- Gtk.entryGetText (wgt_centreXEntry widgets)
+            centreYS <- Gtk.entryGetText (wgt_centreYEntry widgets)
             case (reads zoomS, reads centreXS, reads centreYS)  of
                 ([(zoomPercent,"")], [(centreXD,"")], [(centreYD,"")]) -> 
                     atomically $
@@ -223,18 +226,18 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                     putStrLn $ "zoomHandler: parse error: " ++ show wrongParseResults 
                     return ()
 --            putStrLn $ "zoomHandler"
-            Gtk.widgetQueueDraw (canvas widgets)
+            Gtk.widgetQueueDraw (wgt_canvas widgets)
             return returnValue
 
     setHandlerPanByMouse =
         do
         -- a variable to keep track of position before each drag movement:
         panOriginTV <- atomically $ newTVar Nothing
-        -- setup the canvas to receive various mouse events:
-        Gtk.widgetAddEvents (canvas widgets)
+        -- setup the wgt_canvas to receive various mouse events:
+        Gtk.widgetAddEvents (wgt_canvas widgets)
             [Gtk.ButtonPressMask, Gtk.ButtonReleaseMask, Gtk.PointerMotionMask]
         -- what to do when the left mouse button is pressed:
-        Gtk.on (canvas widgets) Gtk.buttonPressEvent $
+        Gtk.on (wgt_canvas widgets) Gtk.buttonPressEvent $
             do
             button <- GdkEv.eventButton
             coords <- GdkEv.eventCoordinates
@@ -248,7 +251,7 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                 _ -> return ()
             return False
         -- what to do when the left mouse button is released:
-        Gtk.on (canvas widgets) Gtk.buttonReleaseEvent $
+        Gtk.on (wgt_canvas widgets) Gtk.buttonReleaseEvent $
             do
             button <- GdkEv.eventButton 
             case button of
@@ -261,7 +264,7 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                 _ -> return ()
             return False
         -- what to do when mouse moves:
-        Gtk.on (canvas widgets) Gtk.motionNotifyEvent $
+        Gtk.on (wgt_canvas widgets) Gtk.motionNotifyEvent $
             do
             coords@(x,y) <- GdkEv.eventCoordinates
             liftIO $
@@ -280,12 +283,12 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                 -- check whether dragging or not:
                 case maybePanOrigin of
                     Nothing -> return ()
-                    Just panOrigin@(oX,oY) -> -- yes, dragging occurred
+                    Just _panOrigin@(oX,oY) -> -- yes, dragging occurred
                         do
-                        -- find out the size of the canvas:
-                        (canvasX, canvasY) <- Gtk.widgetGetSize (canvas widgets)
+                        -- find out the size of the wgt_canvas:
+                        (canvasX, canvasY) <- Gtk.widgetGetSize (wgt_canvas widgets)
                         -- recalculate the centre and coordinate bounds 
-                        -- based on the drag amount relative to the size fo the canvas:
+                        -- based on the drag amount relative to the size fo the wgt_canvas:
                         state <- atomically $ modifyTVar stateTV $
                             updateCentreByRatio
                                 effReal
@@ -297,8 +300,8 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                         return ()
                         -- make sure the text in the zoom and pan entries are updated:
                         updateZoomWidgets toDbl widgets state
-                        -- schedule the canvas for redraw:
-                        Gtk.widgetQueueDraw (canvas widgets)
+                        -- schedule the wgt_canvas for redraw:
+                        Gtk.widgetQueueDraw (wgt_canvas widgets)
                         where
                         int2dbl :: Int -> Double
                         int2dbl = realToFrac
@@ -307,8 +310,8 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
             
     setHandlerZoomByMouse =
         do -- IO
-        Gtk.widgetAddEvents (canvas widgets) [Gtk.ScrollMask]
-        Gtk.on (canvas widgets) Gtk.scrollEvent $
+        Gtk.widgetAddEvents (wgt_canvas widgets) [Gtk.ScrollMask]
+        Gtk.on (wgt_canvas widgets) Gtk.scrollEvent $
             do -- ReaderTV
             scrollDirection <- GdkEv.eventScrollDirection
             liftIO $
@@ -322,16 +325,16 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                                             GdkEv.ScrollDown -> 0.8 * zoomPercent
                                             _ -> zoomPercent
                     fnmeta <- readTVar fnmetaTV
-                    state <- modifyTVar stateTV $ 
+                    state2 <- modifyTVar stateTV $ 
                         updateZoomPercentAndFnExtents effReal newZoomPercent $ getFnExtents fnmeta
-                    return state
+                    return state2
                 updateZoomWidgets toDbl widgets state
-                Gtk.widgetQueueDraw (canvas widgets)
+                Gtk.widgetQueueDraw (wgt_canvas widgets)
                 return False
         return ()
             
     setHandlerDefaultEvalPointButton =
-        Gtk.onClicked (defaultEvalPointButton widgets) $
+        Gtk.onClicked (wgt_defaultEvalPointButton widgets) $
             do
             (state, fnmeta) <- 
                 atomically $
@@ -342,7 +345,7 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
             case favstTrackingDefaultEvalPt state of
                 False ->
                     do
-                    Gtk.entrySetText (evalPointEntry widgets) $ 
+                    Gtk.entrySetText (wgt_evalPointEntry widgets) $ 
                         show $ dataDefaultEvalPoint fnmeta
                     atomically $ modifyTVar stateTV $
                         \ st -> st { favstTrackingDefaultEvalPt = True }
@@ -351,10 +354,10 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                     return ()
     setHandlerEvalPointEntry =
         do
-        Gtk.onEntryActivate (evalPointEntry widgets) $ 
+        Gtk.onEntryActivate (wgt_evalPointEntry widgets) $ 
             do
             updateEvalPointHandler
-        Gtk.onFocusOut (evalPointEntry widgets) $ \ _ -> 
+        Gtk.onFocusOut (wgt_evalPointEntry widgets) $ \ _ -> 
             do
             updateEvalPointHandler
             return False
@@ -368,9 +371,9 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
             updateValueDisplayTV effFromDouble effEval widgets dynWidgetsRef fndataTVs stateTV
 
     setHandlerPrintTXTButton =
-        Gtk.onClicked (printTXTButton widgets) $
+        Gtk.onClicked (wgt_printTXTButton widgets) $
             do
-            (state, FnData fns) <- 
+            (_state, FnData fns) <- 
                 atomically $
                     do
                     state <- readTVar stateTV
@@ -380,7 +383,7 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                 unlines $ map show $ fns
 
     setHandlerExportPDFButton =
-        Gtk.onClicked (exportPDFButton widgets) $
+        Gtk.onClicked (wgt_exportPDFButton widgets) $
             do
             (state, FnData fns, fnmeta) <- 
                 atomically $
@@ -397,14 +400,14 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                 Just filepath ->
                     withPDFSurface filepath w h $ \ surface ->
                         renderWith surface $
-                            drawFunctions sampleF effDraw effReal canvasParams state w h fnsActive (concat fns) fnsStyles
+                            drawFunctions sampleF effDraw effReal canvasParams w h fnsActive (concat fns) fnsStyles
                 _ -> return ()
             where
             w = 360 :: Double -- in 1/72 inch TODO: ask user
             h = 360 :: Double -- in 1/72 inch TODO: ask user
 
     setHandlerExportSVGButton =
-        Gtk.onClicked (exportSVGButton widgets) $
+        Gtk.onClicked (wgt_exportSVGButton widgets) $
             do
             (state, FnData fns, fnmeta) <- 
                 atomically $
@@ -421,14 +424,14 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                 Just filepath ->
                     withSVGSurface filepath w h $ \ surface ->
                         renderWith surface $
-                            drawFunctions sampleF effDraw effReal canvasParams state w h fnsActive (concat fns) fnsStyles
+                            drawFunctions sampleF effDraw effReal canvasParams w h fnsActive (concat fns) fnsStyles
                 _ -> return ()
             where
             w = 360 :: Double -- in 1/72 inch TODO: ask user
             h = 360 :: Double -- in 1/72 inch TODO: ask user
 
     setHandlerExportPNGButton =
-        Gtk.onClicked (exportPNGButton widgets) $
+        Gtk.onClicked (wgt_exportPNGButton widgets) $
             do
             (state, FnData fns, fnmeta) <- 
                 atomically $
@@ -446,7 +449,7 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
                     withImageSurface FormatARGB32 wI hI $ \ surface ->
                         do
                         renderWith surface $
-                            drawFunctions sampleF effDraw effReal canvasParams state wD hD fnsActive (concat fns) fnsStyles
+                            drawFunctions sampleF effDraw effReal canvasParams wD hD fnsActive (concat fns) fnsStyles
                         surfaceWriteToPNG surface filepath
                 _ -> return ()
             where
@@ -456,17 +459,19 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
             hD = realToFrac hI
 
 
+letUserChooseFileToSaveInto :: 
+    [Char] -> [Char] -> IO (Maybe FilePath)
 letUserChooseFileToSaveInto formatName extension =
     do
     chooser <- Gtk.fileChooserDialogNew 
         (Just $ "Save a plot in " ++ formatName) 
-        Nothing -- no parent window specified 
+        Nothing -- no parent wgt_window specified 
         Gtk.FileChooserActionSave 
         [("Cancel", Gtk.ResponseCancel),
          ("Save as " ++ formatName, Gtk.ResponseAccept)]
-    filter <- Gtk.fileFilterNew
-    Gtk.fileFilterAddPattern filter $ "*." ++ extension
-    Gtk.fileChooserSetFilter chooser filter
+    filter2 <- Gtk.fileFilterNew
+    Gtk.fileFilterAddPattern filter2 $ "*." ++ extension
+    Gtk.fileChooserSetFilter chooser filter2
     response <- Gtk.dialogRun chooser
     maybeFilename <- Gtk.fileChooserGetFilename chooser
     Gtk.widgetDestroy chooser
@@ -474,4 +479,22 @@ letUserChooseFileToSaveInto formatName extension =
         Gtk.ResponseAccept -> return maybeFilename
         _ -> return Nothing
     
+plotToPDFFile :: 
+    (Show (Domain f), ArithInOut.RoundedReal (Domain f),
+     HasDomainBox f, CairoDrawableFn f) =>
+    f
+    -> CairoDrawFnEffortIndicator f
+    -> ArithInOut.RoundedRealEffortIndicator (Domain f)
+    -> CanvasParams (Domain f)
+    -> Double
+    -> Double
+    -> [Bool]
+    -> [[(GraphOrParamPlotFn f, Var f)]]
+    -> [FnPlotStyle]
+    -> FilePath
+    -> IO ()
+plotToPDFFile sampleF effDraw effReal canvasParams w h fnsActive fns fnsStyles filepath =
+    withPDFSurface filepath w h $ \ surface ->
+        renderWith surface $
+            drawFunctions sampleF effDraw effReal canvasParams w h fnsActive (concat fns) fnsStyles
     

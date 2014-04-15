@@ -49,11 +49,11 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import Graphics.Rendering.Cairo as Cairo
 import qualified Graphics.UI.Gtk as Gtk
 import Graphics.UI.Gtk (AttrOp((:=)))
-import qualified Graphics.UI.Gtk.Gdk.EventM as GdkEv
+--import qualified Graphics.UI.Gtk.Gdk.EventM as GdkEv
 
 import Control.Concurrent.STM -- as STM
 
-makeCanvas sampleF effDraw effReal widgets fndataTVs@(fadataTV, fndataTV) stateTV =
+makeCanvas sampleF effDraw effReal widgets _fndataTVs@(fadataTV, fndataTV) stateTV =
     do
     -- create canvas:
     canvas <- Gtk.drawingAreaNew
@@ -77,9 +77,9 @@ makeCanvas sampleF effDraw effReal widgets fndataTVs@(fadataTV, fndataTV) stateT
         repaintCanvas sampleF effDraw effReal canvas font fndatas state
 --    Gtk.timeoutAdd (Gtk.widgetQueueDraw canvas >> return True) 500 >> return ()
     -- plug the canvas in the GUI:
-    Gtk.set (canvasAlignment widgets)
+    Gtk.set (wgt_canvasAlignment widgets)
         [ Gtk.containerChild := canvas ]
-    return $ widgets { canvas = canvas }
+    return $ widgets { wgt_canvas = canvas }
     
 repaintCanvas ::
     (CairoDrawableFn f,
@@ -107,7 +107,7 @@ repaintCanvas (sampleF :: f) effDraw effReal da _font (fndata, fnmeta) state =
         do
 --        background w h
         -- draw outlines of all function enclosures:
-        drawFunctions sampleF effDraw effReal canvasParams state w h fnsActive fns fnsStyles
+        drawFunctions sampleF effDraw effReal canvasParams w h fnsActive fns fnsStyles
 --    putStrLn "repaintCanvas: done"
     return True
     where
@@ -126,13 +126,12 @@ drawFunctions ::
     (CairoDrawFnEffortIndicator f) ->
     (ArithInOut.RoundedRealEffortIndicator (Domain f)) ->
     CanvasParams (Domain f) ->
-    FnViewState f ->
     Double -> Double ->
     [Bool] ->
     [(GraphOrParamPlotFn f, Var f)] ->
     [FnPlotStyle] ->
     Render ()
-drawFunctions (sampleF :: f) effDraw effReal canvasParams state w h fnsActive fns fnsStyles =
+drawFunctions (sampleF :: f) effDraw effReal canvasParams w h fnsActive fns fnsStyles =
     do
     background
     drawAxes
