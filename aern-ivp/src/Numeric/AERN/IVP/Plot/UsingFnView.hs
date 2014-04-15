@@ -73,7 +73,7 @@ plotODEIVPBisectionEnclosures ::
     =>
     FV.Rectangle (Domain f) -- ^ initial canvas viewport
     -> [Bool] -- ^ for each variable, whether it should be plotted
-    -> Bool -- ^ True -> use parametric plot (using consecutive pairs of functions) 
+    -> Bool -- ^ True -> use parametric plot (using the active functions - there have to be exactly two of them) 
     -> ArithInOut.RoundedRealEffortIndicator (Domain f)
     -> Domain f
     -> ODEIVP f

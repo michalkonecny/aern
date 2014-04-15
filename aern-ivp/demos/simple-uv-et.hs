@@ -314,7 +314,7 @@ solveVtPrintSteps shouldWrap maybePlotDimens ivp (maxdegParam, maxsizeParam, min
     delta = 1
     maxdeg = maxdegParam
     maxsize = maxsizeParam
-    m = 100
+    m = 200
     substSplitSizeLimit = 100
 --    minStepSizeExp = -4 :: Int
     minStepSizeExp = - minDepthParam
