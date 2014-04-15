@@ -78,15 +78,30 @@ plotODEIVPBisectionEnclosures ::
     -> Domain f
     -> ODEIVP f
     -> BisectionInfo (Maybe ([f],[f]), t) splitReason
+    -> Maybe String
     -> IO ()
-plotODEIVPBisectionEnclosures rect activevarsPre shouldUseParamPlot effCF plotMinSegSize (ivp :: ODEIVP f) bisectionInfo =
-    do
-    _ <- Gtk.unsafeInitGUIForThreadedRTS
-    fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
-    fnMetaTV <- atomically $ newTVar $ fnmeta
-    _ <- FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
-    Gtk.mainGUI
+plotODEIVPBisectionEnclosures 
+        rect activevarsPre shouldUseParamPlot effCF plotMinSegSize 
+        (ivp :: ODEIVP f) bisectionInfo 
+        maybePDFFilename =
+    case maybePDFFilename of
+        Nothing ->
+            do
+            _ <- Gtk.unsafeInitGUIForThreadedRTS
+            fnDataTV <- atomically $ newTVar $ FV.FnData $ fnsPlotSpec
+            fnMetaTV <- atomically $ newTVar $ fnmeta
+            _ <- FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
+            Gtk.mainGUI
+        Just pdffilename ->
+            do
+            FV.plotToPDFFile sampleFn effDrawFn effCF canvasParams 1024 1024 fnsActive fnsPlotSpec fnsStyles pdffilename
+            where
+            fnsStyles = (map $ const black) $ concat $ FV.dataFnStyles fnmeta
+            canvasParams = FV.dataDefaultCanvasParams fnmeta
+            fnsActive = concat $ FV.dataDefaultActiveFns fnmeta
     where
+    fnsPlotSpec = addPlotVar fns
+    
     effDrawFn = cairoDrawFnDefaultEffort sampleFn
     effEval = evaluationDefaultEffort sampleFn
     ((sampleFn : _) : _) = fns
@@ -155,8 +170,7 @@ plotODEIVPBisectionEnclosures rect activevarsPre shouldUseParamPlot effCF plotMi
         addMetaToFnNames names =
             zip3 names colourList enabledList
         colourList = 
-            repeat black
---            cycle [blue, green, red]
+            cycle $ take n $ cycle [blue, green, red]
         enabledList 
             | shouldUseParamPlot = repeat True
             | otherwise = cycle activevars

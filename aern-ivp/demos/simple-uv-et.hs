@@ -50,7 +50,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.ShowInternals
 
-import Data.List (isPrefixOf)
+import Data.List (isPrefixOf, isSuffixOf)
 
 import System.IO
 import System.Environment
@@ -87,18 +87,18 @@ usage :: IO ()
 usage =
     do
     putStrLn "Usage A: simple-uv-et <ivp name> <output file name> <True|False-should wrap?>"
-    putStrLn "Usage B: simple-uv-et <ivp name> \"<PlotArgs>\" <True|False-should wrap?> <maxDeg> <maxTermSize> <minStepSize> <maxStepSize> [<tEnd>]"
+    putStrLn "Usage B: simple-uv-et <ivp name> \"<PlotArgs>\" <True|False-should wrap?> <<output>.pdf|GUI> <maxDeg> <maxTermSize> <minStepSize> <maxStepSize> [<tEnd>]"
     putStrLn "   PlotArgs:  example 1: PlotGraph[True, False, False](0,1,-1,1)"
     putStrLn "   PlotArgs:                      [shouldPlotVar1,...]"
     putStrLn "   PlotArgs:                                      ....(xmin, xmax, ymin, ymax)"
     putStrLn "   PlotArgs:  example 1: PlotParam[True, True, False](-1,1,-1,1)"
     putStrLn "   PlotArgs:  example 2: NoPlot"
 
-runWithArgs [ivpName, maybePlotDimensS, shouldWrapS, maxDegS, maxSizeS, maxDepthS, minDepthS] =
-    runWithArgs [ivpName, maybePlotDimensS, shouldWrapS, maxDegS, maxSizeS, maxDepthS, minDepthS, "default"]
-runWithArgs [ivpName, maybePlotDimensS, shouldWrapS, maxDegS, maxSizeS, maxDepthS, minDepthS, tEndS] =
+runWithArgs [ivpName, maybePlotDimensS, maybePDFfilenameS, shouldWrapS, maxDegS, maxSizeS, maxDepthS, minDepthS] =
+    runWithArgs [ivpName, maybePlotDimensS, maybePDFfilenameS, shouldWrapS, maxDegS, maxSizeS, maxDepthS, minDepthS, "default"]
+runWithArgs [ivpName, maybePlotDimensS, maybePDFfilenameS, shouldWrapS, maxDegS, maxSizeS, maxDepthS, minDepthS, tEndS] =
     do
-    _ <- solveVtPrintSteps shouldWrap maybePlotDimens ivpTEnd (maxDeg, maxSize, maxDepth, minDepth)
+    _ <- solveVtPrintSteps shouldWrap maybePlotDimens maybePDFfilename ivpTEnd (maxDeg, maxSize, maxDepth, minDepth)
     return ()
     where
     ivpTEnd =
@@ -112,10 +112,15 @@ runWithArgs [ivpName, maybePlotDimensS, shouldWrapS, maxDegS, maxSizeS, maxDepth
     ivp = ivpByNameReportError ivpName sampleFn
     shouldWrap = read shouldWrapS :: Bool
     maybePlotDimens = readPlotArg maybePlotDimensS :: Maybe PlotParams
+    maybePDFfilename = readPDFfilename maybePDFfilenameS :: Maybe String
     maxDeg = read maxDegS :: Int
     maxSize = read maxSizeS :: Int
     maxDepth = read maxDepthS :: Int
     minDepth = read minDepthS :: Int
+    readPDFfilename "GUI" = Nothing
+    readPDFfilename pdfilename
+        | ".pdf" `isSuffixOf` pdfilename = Just pdfilename
+    readPDFfilename s = error $ "Expecting pdf file name or \"GUI\", not " ++ s 
     readPlotArg s 
         | "Plot" `isPrefixOf` s =
             case getIsParam of
@@ -142,6 +147,7 @@ runWithArgs [ivpName, maybePlotDimensS, shouldWrapS, maxDegS, maxSizeS, maxDepth
             FV.Rectangle (d2r ymax) (d2r ymin) (d2r xmin) (d2r xmax)
             where
             d2r = dblToReal (0 :: CF)
+    
     
 runWithArgs [ivpName, outputFileName, shouldWrapS] =
     writeCSV ivp outputFileName shouldWrap
@@ -195,7 +201,7 @@ writeCSV ivp outputFileName shouldWrap =
         solveAndMeasure _ =
             do
             starttime <- getCPUTime
-            solverResult <- solveVtPrintSteps shouldWrap Nothing ivp (maxDegree, maxSize, maxDepth, 0)
+            solverResult <- solveVtPrintSteps shouldWrap Nothing Nothing ivp (maxDegree, maxSize, maxDepth, 0)
             endtime <- getCPUTime
             return $ (solverResult, (endtime - starttime) `div` 1000000000)
         
@@ -247,6 +253,8 @@ solveVtPrintSteps ::
     ->
     (Maybe PlotParams)
     ->
+    (Maybe FilePath)
+    ->
     ODEIVP Fn 
     -> 
     (Int, Int, Int, Int) 
@@ -259,7 +267,7 @@ solveVtPrintSteps ::
             BisectionInfo solvingInfo (solvingInfo, Maybe CF)
         )
     )
-solveVtPrintSteps shouldWrap maybePlotDimens ivp (maxdegParam, maxsizeParam, minDepthParam, maxDepthParam) =
+solveVtPrintSteps shouldWrap maybePlotDimens maybePDFfilename ivp (maxdegParam, maxsizeParam, minDepthParam, maxDepthParam) =
     do
     putStrLn "--------------------------------------------------"
     putStrLn "demo of enclose-flow by (Konecny, Taha, Duracz 2014)"
@@ -300,6 +308,7 @@ solveVtPrintSteps shouldWrap maybePlotDimens ivp (maxdegParam, maxsizeParam, min
             plotODEIVPBisectionEnclosures
                 rect activevars 
                 shouldUseParamPlot effCf (2^^(-8 :: Int) :: CF) ivp bisectionInfoOut
+                maybePDFfilename
     return (endValues, bisectionInfoOut)
     where
     shouldShowSteps = False
