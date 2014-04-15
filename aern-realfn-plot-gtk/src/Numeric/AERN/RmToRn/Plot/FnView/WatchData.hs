@@ -99,7 +99,7 @@ dataWatchThread
 --        putStrLn $ show $ dataFAs fndata
         case favstTrackingDefaultEvalPt state of
             True -> 
-                Gtk.entrySetText (evalPointEntry widgets) $ 
+                Gtk.entrySetText (wgt_evalPointEntry widgets) $ 
                     show $ (dataDefaultEvalPoint fnmeta)
             False -> 
                 return () 
@@ -111,7 +111,7 @@ dataWatchThread
         case favstTrackingDefaultEvalPt state of
             True ->
                 do
-                Gtk.entrySetText (evalPointEntry widgets) $ 
+                Gtk.entrySetText (wgt_evalPointEntry widgets) $ 
                     show $ (dataDefaultEvalPoint fnmeta) 
                 updateView sampleF effReal effEval widgets dynWidgetsRef state (fndata, fnmeta)
             False -> return ()
@@ -199,7 +199,7 @@ updateValueDisplay ::
     IO ()
 updateValueDisplay effFromDouble effEval widgets dynWidgetsRef state (fndata, _) =
     do
-    evalPointText <- Gtk.entryGetText $ evalPointEntry widgets
+    evalPointText <- Gtk.entryGetText $ wgt_evalPointEntry widgets
     let maybeFnValueTexts = getFnValueTexts evalPointText 
     case maybeFnValueTexts of
         Nothing -> do return () -- putStrLn $ "failed to parse eval point: " ++ evalPointText
@@ -243,22 +243,22 @@ updateZoomWidgets toDbl widgets state =
     case coordSystem of 
         CoordSystemLogSqueeze _ ->
             do
-            Gtk.comboBoxSetActive (coorSystemCombo widgets) 0 
-            Gtk.editableSetEditable (zoomEntry widgets) False
-            Gtk.editableSetEditable (centreXEntry widgets) False
-            Gtk.editableSetEditable (centreYEntry widgets) False
-            Gtk.entrySetText (zoomEntry widgets) ""
-            Gtk.entrySetText (centreXEntry widgets) ""
-            Gtk.entrySetText (centreYEntry widgets) ""
+            Gtk.comboBoxSetActive (wgt_coorSystemCombo widgets) 0 
+            Gtk.editableSetEditable (wgt_zoomEntry widgets) False
+            Gtk.editableSetEditable (wgt_centreXEntry widgets) False
+            Gtk.editableSetEditable (wgt_centreYEntry widgets) False
+            Gtk.entrySetText (wgt_zoomEntry widgets) ""
+            Gtk.entrySetText (wgt_centreXEntry widgets) ""
+            Gtk.entrySetText (wgt_centreYEntry widgets) ""
         (CoordSystemLinear (Rectangle hi lo l r)) ->
             do
-            Gtk.comboBoxSetActive (coorSystemCombo widgets) 1 
-            Gtk.editableSetEditable (zoomEntry widgets) True
-            Gtk.editableSetEditable (centreXEntry widgets) True
-            Gtk.editableSetEditable (centreYEntry widgets) True
-            Gtk.entrySetText (zoomEntry widgets) $ show $ zoomPercent
-            Gtk.entrySetText (centreXEntry widgets) $ show $ cX
-            Gtk.entrySetText (centreYEntry widgets) $ show $ cY
+            Gtk.comboBoxSetActive (wgt_coorSystemCombo widgets) 1 
+            Gtk.editableSetEditable (wgt_zoomEntry widgets) True
+            Gtk.editableSetEditable (wgt_centreXEntry widgets) True
+            Gtk.editableSetEditable (wgt_centreYEntry widgets) True
+            Gtk.entrySetText (wgt_zoomEntry widgets) $ show $ zoomPercent
+            Gtk.entrySetText (wgt_centreXEntry widgets) $ show $ cX
+            Gtk.entrySetText (wgt_centreYEntry widgets) $ show $ cY
     where
     zoomPercent = favstZoomPercent state
     cX = toDbl cXDF
@@ -283,9 +283,9 @@ updateFnWidgets ::
 updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV =
     do
     -- update the name of the domain variable:
-    Gtk.labelSetText (domVarLabel widgets) $ domName ++ "="
+    Gtk.labelSetText (wgt_domVarLabel widgets) $ domName ++ "="
     -- set the default evaluation point:
-    Gtk.entrySetText (evalPointEntry widgets) $ show $ toDbl $ dataDefaultEvalPoint fnmeta
+    Gtk.entrySetText (wgt_evalPointEntry widgets) $ show $ toDbl $ dataDefaultEvalPoint fnmeta
     -- remove any old dim rows from dimTable:
     children <- Gtk.containerGetChildren table
     mapM (Gtk.containerRemove table) children  
@@ -304,7 +304,7 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV =
             valueLabels = valueLabels
         } 
     where
-    table = dimTable widgets
+    table = wgt_dimTable widgets
     domName = dataDomName fnmeta
     grpNames = dataFnGroupNames fnmeta
     fnNames = dataFnNames fnmeta
@@ -347,7 +347,7 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV =
                 isActive <- Gtk.toggleButtonGetActive showCheckButton
                 state <- atomically $ modifyTVar stateTV $ updateFnActive grpNo fnNo isActive
 --                fndatas <- atomically $ readBothTVars fndataTVs
-                Gtk.widgetQueueDraw (canvas widgets)
+                Gtk.widgetQueueDraw (wgt_canvas widgets)
                 return ()
             return valLabel
             where
@@ -372,7 +372,7 @@ updateView (sampleF :: f) effReal effEval widgets dynWidgetsRef state (fndata, f
     do
     updateValueDisplay effFromDouble effEval widgets dynWidgetsRef state (fndata, fnmeta)
     updateZoomWidgets toDbl widgets state
-    Gtk.widgetQueueDraw (canvas widgets)
+    Gtk.widgetQueueDraw (wgt_canvas widgets)
     return ()
     where
     toDbl :: (Domain f) -> Double

@@ -20,9 +20,9 @@ module Numeric.AERN.RmToRn.Plot.FnView.Layout
 --)
 where
 
-import Numeric.AERN.RmToRn.Plot.FnView.State
+--import Numeric.AERN.RmToRn.Plot.FnView.State
 
-import Numeric.AERN.RmToRn.Plot.Params
+--import Numeric.AERN.RmToRn.Plot.Params
 
 import qualified Graphics.UI.Gtk as Gtk
 
@@ -56,43 +56,43 @@ loadGlade gladeFileName =
     printTXTButton <- Gtk.builderGetObject gui Gtk.castToButton "printTXTButton1"
     return $ Widgets
         {
-            window = window,
-            canvasAlignment = canvasAlignment,
-            coorSystemCombo = coorSystemCombo,
-            evalPointEntry = evalPointEntry,
-            defaultEvalPointButton = defaultEvalPointButton,
-            dimTable = dimTable,
-            domVarLabel = domVarLabel,
-            zoomEntry = zoomEntry,
-            defaultZoomPanButton = defaultZoomPanButton,
-            centreXEntry = centreXEntry,
-            centreYEntry = centreYEntry,
-            exportPNGButton = exportPNGButton,
-            exportSVGButton = exportSVGButton,
-            exportPDFButton = exportPDFButton,
-            printTXTButton = printTXTButton,
-            canvas = error "canvas not created yet"
+            wgt_window = window,
+            wgt_canvasAlignment = canvasAlignment,
+            wgt_coorSystemCombo = coorSystemCombo,
+            wgt_evalPointEntry = evalPointEntry,
+            wgt_defaultEvalPointButton = defaultEvalPointButton,
+            wgt_dimTable = dimTable,
+            wgt_domVarLabel = domVarLabel,
+            wgt_zoomEntry = zoomEntry,
+            wgt_defaultZoomPanButton = defaultZoomPanButton,
+            wgt_centreXEntry = centreXEntry,
+            wgt_centreYEntry = centreYEntry,
+            wgt_exportPNGButton = exportPNGButton,
+            wgt_exportSVGButton = exportSVGButton,
+            wgt_exportPDFButton = exportPDFButton,
+            wgt_printTXTButton = printTXTButton,
+            wgt_canvas = error "canvas not created yet"
         }
 
 data Widgets = 
     Widgets
     {
-        window :: Gtk.Window,
-        canvasAlignment :: Gtk.Alignment,
-        coorSystemCombo :: Gtk.ComboBox,
-        evalPointEntry :: Gtk.Entry,
-        defaultEvalPointButton :: Gtk.Button,
-        dimTable :: Gtk.Table,
-        domVarLabel :: Gtk.Label,
-        zoomEntry :: Gtk.Entry,
-        defaultZoomPanButton :: Gtk.Button,
-        centreXEntry :: Gtk.Entry,
-        centreYEntry :: Gtk.Entry,
-        exportPNGButton :: Gtk.Button,
-        exportSVGButton :: Gtk.Button,
-        exportPDFButton :: Gtk.Button,
-        printTXTButton :: Gtk.Button,
-        canvas :: Gtk.DrawingArea
+        wgt_window :: Gtk.Window,
+        wgt_canvasAlignment :: Gtk.Alignment,
+        wgt_coorSystemCombo :: Gtk.ComboBox,
+        wgt_evalPointEntry :: Gtk.Entry,
+        wgt_defaultEvalPointButton :: Gtk.Button,
+        wgt_dimTable :: Gtk.Table,
+        wgt_domVarLabel :: Gtk.Label,
+        wgt_zoomEntry :: Gtk.Entry,
+        wgt_defaultZoomPanButton :: Gtk.Button,
+        wgt_centreXEntry :: Gtk.Entry,
+        wgt_centreYEntry :: Gtk.Entry,
+        wgt_exportPNGButton :: Gtk.Button,
+        wgt_exportSVGButton :: Gtk.Button,
+        wgt_exportPDFButton :: Gtk.Button,
+        wgt_printTXTButton :: Gtk.Button,
+        wgt_canvas :: Gtk.DrawingArea
     }
 
 data FnViewDynWidgets = 
