@@ -335,7 +335,7 @@ solveODEIVPByBisectingT
     =
     result
     where
-    result = splitSolve odeivpG
+    result = splitSolve odeivpG Nothing
 
     (.<->.) = ArithInOut.subtrOutEff effAddDom
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
@@ -350,7 +350,7 @@ solveODEIVPByBisectingT
 --    sampleImpr = imprecisionOfEff effImpr sampleDom
 --    effAddImpr = ArithInOut.fldEffortAdd sampleImpr $ ArithInOut.rrEffortImprecisionField sampleDom effDom
     
-    splitSolve odeivp =
+    splitSolve odeivp maybeDirectInfoPre =
 --        trace
 --        (
 --            "solveODEIVPByBisectingT: splitSolve: "
@@ -371,7 +371,7 @@ solveODEIVPByBisectingT
                         | (improvementBy >? splitImprovementThreshold) /= Just True -> 
                             directComputation -- split once computations succeeded but brought no noticeable improvement
                     _
---                        | splitComputationFailed -> directComputation
+                        | splitComputationFailed -> directComputation
                         | otherwise -> splitComputation -- splitting either brought noticeable improvement or some computation failed 
         tStart = odeivp_tStart odeivp
         tEnd = odeivp_tEnd odeivp
@@ -381,20 +381,26 @@ solveODEIVPByBisectingT
         aboveMaxStepSize =
             ((tEnd .<->. tStart) <=? maxStepSize) /= Just True
 
-        directComputation =
+        (directComputation, directInfo, directComputationFailed) =
             case maybeDirectResult of
-                Just resultOut -> (Just resultOut, BisectionNoSplit directInfo)
-                _ -> (Nothing, BisectionNoSplit directInfo) 
-        directInfo@(maybeDirectResult, _) = solver odeivp
-        directComputationFailed =
-            case maybeDirectResult of Just _ -> False; _ -> True
+                Just resultOut -> ((Just resultOut, BisectionNoSplit directInfo2), directInfo2, False)
+                _ -> ((Nothing, BisectionNoSplit directInfo2), directInfo2, True)
+            where 
+            (maybeDirectResult, _) = directInfo2
+            directInfo2 =
+                case maybeDirectInfoPre of
+                    Just directInfoPre -> directInfoPre
+                    _ -> solver odeivp -- no pre-computed results, we need to run the solver now
         
-        splitOnceComputation = -- needed only to decide whether splitting is benefitial, the result is then discarded
+        (splitOnceComputation, infoL1, maybeInfoR1) = 
+            -- This is needed mainly to decide whether splitting is benefitial, 
+            -- the result is discarded if splitting does not seem benefitial
+            -- or if more than one level of splitting is eventually used.
             case solver odeivpL of
-                (Just midValuesOut, _) ->
+                infoL@(Just midValuesOut, _) ->
                     case solver odeivpR of
-                        (Just endValuesOut, _) -> Just endValuesOut 
-                        _ -> Nothing
+                        infoR@(Just endValuesOut, _) -> (Just endValuesOut, infoL, Just infoR) 
+                        infoR -> (Nothing, infoL, Just infoR)
                     where
                     midValues = midValuesOut
                     odeivpR =
@@ -405,19 +411,30 @@ solveODEIVPByBisectingT
                             odeivp_makeInitialValueFnVec =
                                 makeMakeInitValFnVec midValues 
                         }
-                _ -> Nothing
+                infoL -> (Nothing, infoL, Nothing)
                 
+        splitComputationFailed =
+            case splitComputation of
+                (Just _, _) -> False
+                _ -> True
         splitComputation =
             (maybeState, BisectionSplit (directInfo, maybeSplitImprovement) infoL maybeInfoR)
             where
             (maybeMidState, infoL) =
-                splitSolve odeivpL
+                splitSolve odeivpL (Just infoL1) -- avoid re-running the solver for the left half-segment
             (maybeState, maybeInfoR) =
                 case maybeMidState of
                     Just midState ->
-                        case splitSolve odeivpR of
+                        case splitSolve odeivpR ifLisL1maybeInfoR1 of
                             (maybeState2, infoR) -> (maybeState2, Just infoR)
                         where
+                        ifLisL1maybeInfoR1 =
+                            case infoL of
+                                (BisectionNoSplit _) -> maybeInfoR1 
+                                    -- We can reuse a pre-computed solution for the right half-segment because
+                                    -- the chosen computation on the left segment did not split any further
+                                    -- and is thus equivalent to the preliminary split-once computation above.  
+                                _ -> Nothing
                         odeivpR =
                             odeivp
                             {
