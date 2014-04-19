@@ -222,6 +222,7 @@ plotODEIVPBisectionEnclosures
                     where
                     (_, tEndThisSeg) = getTVarDomEndpoints fn1ThisSeg
                     tAggrLimit = tStartFirstSeg <+> plotMinSegSize
+                segEndsBeforeLimit _ = False
             fnNamesAggregated =
                 map (++ "(aggr)") componentNames
             fnsAggregated =
