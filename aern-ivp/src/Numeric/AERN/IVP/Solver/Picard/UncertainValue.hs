@@ -128,7 +128,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
             (Nothing, bisectionInfo) ->
                 (Nothing, bisectionInfo)
             (Just (_, parameterisedInitialValues), bisectionInfo) ->
-                (Just $ map (getRange effEval) parameterisedInitialValues, bisectionInfo)
+                (Just $ map (getRangeFullEval effEval) parameterisedInitialValues, bisectionInfo)
     where
 --    tVar = odeivp_tVar odeivpG
     tStart, t0End :: Domain f
