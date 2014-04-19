@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
+--{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Plot.FromEval
     Description :  plotting on gtk canvas using evaluation at some points
@@ -43,6 +44,9 @@ import Graphics.Rendering.Cairo
 
 import qualified Data.Map as Map
 --import qualified Data.List as List
+
+import Debug.Trace
+_ = trace
 
 instance 
     (HasAntiConsistency (Domain f),
@@ -264,14 +268,19 @@ cairoDrawFnParametericFromEval
     where
     plotSampleBoxes =
         mapM_ plotValueSample enclosureSamples
-    plotValueSample (xI, yI) =
+    plotValueSample outlinePoints =
+--        trace
+--        (
+--            "plotValueSample: " ++ show (length outlinePoints) ++ " outlinePoints = "
+--            ++ (unlines $ map show outlinePoints)
+--        ) $
         do
         -- fill the box first:
         case styleFillColour style of
             Just (r,g,b,a) ->
                 do
                 setSourceRGBA r g b a
-                boxOutline
+                drawOutline
                 fill
             _ -> return ()
         -- then draw the box outline:
@@ -279,34 +288,31 @@ cairoDrawFnParametericFromEval
             Just (r,g,b,a) ->
                 do 
                 setSourceRGBA r g b a
-                boxOutline
+                drawOutline
                 setLineCap LineCapRound
                 setLineWidth $ styleOutlineThickness style
                 stroke
             _ -> return ()
         where
-        boxOutline =
+        drawOutline =
             do
-            moveToPt corner00
-            mapM_ lineToPt [corner01, corner11, corner10, corner00]
-        corner00 = (x0, y0)
-        corner01 = (x0, y1)
-        corner10 = (x1, y0)
-        corner11 = (x1, y1)
-        (x0, x1) = RefOrd.getEndpointsOutEff effGetE xI
-        (y0, y1) = RefOrd.getEndpointsOutEff effGetE yI
-        moveToPt = usePt moveTo 
-        lineToPt = usePt lineTo 
-        usePt fn pt = fn xD yD
+            moveToPt point1
+            mapM_ lineToPt points
             where
-            (xC,yC) = translateToCoordSystem effReal coordSystem pt
-            (xD,yD) = toScreenCoords (xC,yC)
+            point1 = last points
+            points = map (\[a,b] -> (a,b)) outlinePoints
+            moveToPt = usePt moveTo 
+            lineToPt = usePt lineTo 
+            usePt fn pt = fn xD yD
+                where
+                (xC,yC) = translateToCoordSystem effReal coordSystem pt
+                (xD,yD) = toScreenCoords (xC,yC)
     enclosureSamples =
-        map evalPt $ map mkPt partition
-    mkPt d =
+        map evalAreaUsingSamples $ map mkArea partition
+    mkArea d =
         insertVar plotVar d dombox
-    evalPt pt =
-        (evalAtPointOutEff effEval pt fnX, evalAtPointOutEff effEval pt fnY) 
+    evalAreaUsingSamples area =
+        evalSamplesEff effEval 2 area [fnX, fnY] 
     partition =
         [domLO] ++ (map ithPt [1..(segCnt -1)]) ++ [domHI]
         where
@@ -349,4 +355,5 @@ cairoDrawFnParametericFromEval
     sampleDF = dom
     sampleI = 1 :: Int
     
+--    sampleFn = fn
     

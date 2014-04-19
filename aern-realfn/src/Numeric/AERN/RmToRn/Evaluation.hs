@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Evaluate
     Description :  operations focusing on function evaluation  
@@ -19,8 +20,11 @@ module Numeric.AERN.RmToRn.Evaluation where
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding ((<+>), (<*>|), (</>|))
+
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Consistency
@@ -91,6 +95,47 @@ evalAtPointIn ::
         (Domain f) {-^ approximated range of @f@ over @A@ -}
 evalAtPointIn dombox f =
     evalAtPointInEff (evaluationDefaultEffort f) dombox f
+    
+evalSamplesEff :: 
+    (ArithInOut.RoundedReal (Domain f), 
+     RefOrd.IntervalLike (Domain f), 
+     CanEvaluate f) 
+    =>
+    EvaluationEffortIndicator f -> 
+    Int {-^ @n@ - Take (n+1) samples in each dimension. -} -> 
+    DomainBox f {-^ @area@ - Area to evaluate the functions over -} -> 
+    [f] {-^ @[f1, f2, ...]@ - Functions to evaluate -} -> 
+    [[Domain f]] -- ^ @[[f1(sample1), f2(sample1), ...], [f1(sample2), f2(sample2), ...], ]@ 
+evalSamplesEff effEval n area (fns :: [f]) =
+    map evalPt points
+    where
+    evalPt pt =
+        map (evalAtPointOutEff effEval pt) fns
+    points =
+        map fromAscList $ allCombinations $ map addChoices areaCoords
+        where
+        addChoices (var, a) 
+            | aIsExact = [(var, a)]
+            | otherwise = [(var, aPicked) | aPicked <- choices]
+            where
+            aIsExact = (aL NumOrd.==? aR) == Just True
+            choices = 
+                [aL, aR] ++ [midPoint i  | i <- [1..(n-1)]]
+                where
+                midPoint i = ((aL <*>| i) <+> (aR <*>| (n - i))) </>| n
+            (aL, aR) = RefOrd.getEndpointsOut a
+        
+    areaCoords :: [(Var f, Domain f)]
+    areaCoords = toAscList area
+        
+allCombinations :: [[a]] -> [[a]]
+allCombinations [] = [[]]
+allCombinations (options : rest) =
+    [option : restCombination | 
+        option <- options, 
+        restCombination <- allCombinations rest] 
+
+    
     
 class 
     (HasDomainBox f,
