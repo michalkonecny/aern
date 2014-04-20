@@ -135,6 +135,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
     tStart = odeivp_tStart odeivpG
     t0End = odeivp_t0End odeivpG
     componentNames = odeivp_componentNames odeivpG
+    imprecisionLimit = odeivp_enclosureRangeWidthLimit odeivpG
 
     effAddDom = ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effDom
 --    effImpr = ArithInOut.rrEffortImprecision sampleDom effDom
@@ -150,22 +151,36 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
                 effDom splitImprovementThreshold minStepSize maxStepSize
                     odeivp
     measureImpr (_, parameterisedInitialValues) =
-        measureResultImprecision effAddDom $ 
-            map (getRange effEval) parameterisedInitialValues
+        measureResultImprecision effAddDom ranges
+        where
+        ranges = map (getRange effEval) parameterisedInitialValues
     makeFnVec (_, parameterisedInitialValues) =
         makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames parameterisedInitialValues
-    solveODEIVPNoSplitting odeivp =
+    solveODEIVPNoSplitting odeivp = 
         trace 
         (
             "solveODEIVPNoSplitting:"
             ++ "\n  tStart = " ++ show (odeivp_tStart odeivp) 
             ++ "\n  tEnd = " ++ show (odeivp_tEnd odeivp) 
-            ++ "\n  resultImprecision = " ++ show (fmap measureImpr (fst result)) 
+            ++ "\n  resultImprecision = " ++ show imprec 
         )
         $
-        result
+        case imprecisionOverLimit  of
+            True -> (Nothing, (odeivp_tEnd odeivp, Nothing))
+            False -> result
         where
-        result =
+        (imprec, imprecisionOverLimit) =
+            case maybeParamValues of
+                Just (_, parameterisedInitialValues) ->
+                    (Just imprecisions, or $ map overLimit imprecisions)
+                    where
+                    imprecisions = measureResultImprecisions effAddDom ranges
+                    ranges = map (getRange effEval) parameterisedInitialValues
+                    overLimit imprec2 =
+                        (imprec2 >? imprecisionLimit) == Just True
+                _ -> 
+                    (Nothing, False)
+        result@(maybeParamValues, _) =
             solveODEIVPUncertainValueExactTime_UsingPicard 
                 shouldWrap shouldShrinkWrap
                     sizeLimits effCompose effEval effInteg effDeriv effInclFn 
@@ -187,25 +202,35 @@ measureResultImprecision ::
     ->
     dom
 measureResultImprecision effAddDom resVec =
---    unsafePrint
---    (
---        "measureResultImprecision:"
---        ++ "\n fnVec = " ++ show fnVec
---        ++ "\n imprVec = " ++ show imprVec
---        ++ "\n result = " ++ show result
---    ) $
     result
     where
     result =
         snd $ RefOrd.getEndpointsOut $
         foldl1 (<+>) imprVec
+    imprVec = measureResultImprecisions effAddDom resVec
+    (<+>) = ArithInOut.addOutEff effAddDom
+
+measureResultImprecisions :: 
+    (RefOrd.IntervalLike dom, 
+     ArithInOut.RoundedSubtr dom, 
+     Show dom
+    )
+    =>
+    ArithInOut.AddEffortIndicator dom
+    -> 
+    [dom]
+    ->
+    [dom]
+measureResultImprecisions effAddDom resVec =
+    imprVec
+    where
     imprVec = map perComp resVec
     perComp res =
+        snd $ RefOrd.getEndpointsOut $
         resR <-> resL
         where
         (resL, resR) = RefOrd.getEndpointsOut res
-    (<+>) = ArithInOut.addOutEff effAddDom
-    (<->) = ArithInOut.subtrOutEff effAddDom
+        (<->) = ArithInOut.subtrOutEff effAddDom
 
 
 measureFunctionImprecision :: 
