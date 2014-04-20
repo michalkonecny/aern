@@ -25,15 +25,15 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal, dbldblToReal)
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+--import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.Operators
+--import Numeric.AERN.RefinementOrder.Operators
 
-import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.Operators
+--import qualified Numeric.AERN.NumericOrder as NumOrd
+--import Numeric.AERN.NumericOrder.Operators
 
 
 import qualified Data.Map as Map
@@ -52,7 +52,7 @@ ivpByName ::
      ArithInOut.RoundedSquareRoot (Domain f),
      Show f, Show (Domain f)
     )
-    => 
+    =>
     String {-^ IVP name - see source code for the list -} -> 
     f {-^ sample function of the type to be used in simulation -} -> 
     Maybe (ODEIVP f)
@@ -165,6 +165,8 @@ ivpExpDecay_ev sampleFn =
             odeivp_t0End = toDom 0, 
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_valuePlotExtents = map toDomBoth [(0,1)],
+            odeivp_enclosureWidthLimit = toDom 2,
             odeivp_maybeExactValuesAtTEnd = Just [(toDom 1) <*>| expMOne]
         }
     initialValues = [toDom 1]
@@ -174,6 +176,7 @@ ivpExpDecay_ev sampleFn =
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
     toDom = dblToReal sampleDom
+    toDomBoth (a,b) = (toDom a, toDom b)
     sampleDom = getSampleDomValue sampleFn
 
 ivpExpDecay_uv :: 
@@ -201,6 +204,8 @@ ivpExpDecay_uv sampleFn =
             odeivp_t0End = toDom 0, 
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_valuePlotExtents = map toDomBoth [(0,2)],
+            odeivp_enclosureWidthLimit = toDom 4,
             odeivp_maybeExactValuesAtTEnd = 
                 Just [lrDom (0.875 * expMOne) (1.125 * expMOne)]
         }
@@ -212,6 +217,7 @@ ivpExpDecay_uv sampleFn =
     tStart = odeivp_tStart ivp
     lrDom = dbldblToReal sampleDom
     toDom = dblToReal sampleDom
+    toDomBoth (a,b) = (toDom a, toDom b)
     sampleDom = getSampleDomValue sampleFn
 
 ivpSpringMass_ev :: 
@@ -239,6 +245,8 @@ ivpSpringMass_ev sampleFn =
             odeivp_t0End = toDom 0,
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_valuePlotExtents = map toDomBoth [(-1,1), (-1,1)],
+            odeivp_enclosureWidthLimit = toDom 4,
             odeivp_maybeExactValuesAtTEnd = Just [cosOne, neg sinOne]
         }
     initialValues = [toDom 1,toDom 0]
@@ -250,6 +258,7 @@ ivpSpringMass_ev sampleFn =
     tStart = odeivp_tStart ivp
 --    lrDom = dbldblToReal sampleDom
     toDom = dblToReal sampleDom
+    toDomBoth (a,b) = (toDom a, toDom b)
     sampleDom = getSampleDomValue sampleFn
 
 ivpSpringMass_uv :: 
@@ -277,6 +286,8 @@ ivpSpringMass_uv sampleFn =
             odeivp_t0End = toDom 0,
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_valuePlotExtents = map toDomBoth [(-1.5,1.5), (-1.5,1.5)],
+            odeivp_enclosureWidthLimit = toDom 4,
             odeivp_maybeExactValuesAtTEnd = Just $ 
                 [
                     lrDom (0.875 * cosOne - 0.125 * sinOne) (1.125 * cosOne + 0.125 * sinOne)  
@@ -298,6 +309,7 @@ ivpSpringMass_uv sampleFn =
     tStart = odeivp_tStart ivp
     lrDom = dbldblToReal sampleDom
     toDom = dblToReal sampleDom
+    toDomBoth (a,b) = (toDom a, toDom b)
     sampleDom = getSampleDomValue sampleFn
 
 ivpSpringMassAir_ev :: 
@@ -326,6 +338,8 @@ ivpSpringMassAir_ev sampleFn =
             odeivp_t0End = toDom 0,
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_valuePlotExtents = map toDomBoth [(-1.5,1.5), (-1.5,1.5)],
+            odeivp_enclosureWidthLimit = toDom 4,
             odeivp_maybeExactValuesAtTEnd = Nothing -- Just [cosOne, -sinOne]
         }
     initialValues = [toDom 1,toDom 0]
@@ -338,8 +352,9 @@ ivpSpringMassAir_ev sampleFn =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
     tStart = odeivp_tStart ivp
-    lrDom = dbldblToReal sampleDom
+--    lrDom = dbldblToReal sampleDom
     toDom = dblToReal sampleDom
+    toDomBoth (a,b) = (toDom a, toDom b)
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -368,22 +383,27 @@ ivpCubicSpringMass_triple sampleFn =
             odeivp_t0End = toDom 0,
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_valuePlotExtents = map toDomBoth $ replicate 6 (-1.5,1.5),
+            odeivp_enclosureWidthLimit = toDom 4,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     fieldAll6 [x,x',y,y',z,z'] = concat $ map field [[x,x'], [y,y'], [z,z']]
+    fieldAll6 _ = error "ivpCubicSpringMass_triple: internal error"
     field [x,x'] = 
         [x' <+> (a <*> x),
          (neg  $ x <*> x <*> x) <+> (a <*> (x' <-> x))]
         where
         aD = 0.001 :: Double
         a = newConstFnFromSample x $ toDom aD
+    field _ = error "ivpCubicSpringMass_triple: internal error"
     initialValues = map toDom $ [1,1,1,0,1,-1]
     makeIV =
         makeFnVecFromInitialValues componentNames initialValues
     componentNames = odeivp_componentNames ivp
-    tStart = odeivp_tStart ivp
+--    tStart = odeivp_tStart ivp
 --    lrDom = dbldblToReal sampleDom
     toDom = dblToReal sampleDom
+    toDomBoth (a,b) = (toDom a, toDom b)
     sampleDom = getSampleDomValue sampleFn
 
 ivpCubicSpringMass_monoCheck :: 
@@ -411,6 +431,8 @@ ivpCubicSpringMass_monoCheck sampleFn =
             odeivp_t0End = toDom 0,
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_valuePlotExtents = map toDomBoth $ replicate 6 (-1.5,1.5),
+            odeivp_enclosureWidthLimit = toDom 4,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     field [x1,x2,x1d1,x2d1,x1d2,x2d2] =
@@ -426,6 +448,7 @@ ivpCubicSpringMass_monoCheck sampleFn =
         aD = 0.001 :: Double
         a = newConstFnFromSample x1 $ toDom aD
         three = newConstFnFromSample x1 $ toDom 3
+    field _ = error "ivpCubicSpringMass_monoCheck: internal error"
     initialValues = 
         [toDom 1, (-1) `lrDom` 1
          ,toDom 1, toDom 0
@@ -436,6 +459,7 @@ ivpCubicSpringMass_monoCheck sampleFn =
     componentNames = odeivp_componentNames ivp
     lrDom = dbldblToReal sampleDom
     toDom = dblToReal sampleDom
+    toDomBoth (a,b) = (toDom a, toDom b)
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -465,6 +489,8 @@ ivpFallAir_ishii sampleFn =
             odeivp_t0End = toDom 0,
             odeivp_tEnd = toDom 4, -- 10000
             odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_valuePlotExtents = map toDomBoth $ [(-10,1.5), (-10,5)],
+            odeivp_enclosureWidthLimit = toDom 10,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     initialValues = 
@@ -479,6 +505,7 @@ ivpFallAir_ishii sampleFn =
     tStart = odeivp_tStart ivp
     lrDom = dbldblToReal sampleDom
     toDom = dblToReal sampleDom
+    toDomBoth (a,b) = (toDom a, toDom b)
     sampleDom = getSampleDomValue sampleFn
 
 ivpLorenz_ev :: 
@@ -511,6 +538,8 @@ ivpLorenz_ev sampleFn =
             odeivp_t0End = toDom 0,
             odeivp_tEnd = toDom 24,
             odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_valuePlotExtents = map toDomBoth $ [(-20,20), (-20, 20), (-40,40)],
+            odeivp_enclosureWidthLimit = toDom 3,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     initialValues = 
@@ -527,6 +556,7 @@ ivpLorenz_ev sampleFn =
     tStart = odeivp_tStart ivp
 --    lrDom = dbldblToReal sampleDom
     toDom = dblToReal sampleDom
+    toDomBoth (a,b) = (toDom a, toDom b)
     sampleDom = getSampleDomValue sampleFn
 
 ivpLorenz_uv :: 
@@ -559,6 +589,8 @@ ivpLorenz_uv sampleFn =
             odeivp_t0End = toDom 0,
             odeivp_tEnd = toDom 24,
             odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_valuePlotExtents = map toDomBoth $ [(-20,20), (-20, 20), (-40,40)],
+            odeivp_enclosureWidthLimit = toDom 5,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     initialValues = 
@@ -578,6 +610,7 @@ ivpLorenz_uv sampleFn =
     tStart = odeivp_tStart ivp
     lrDom = dbldblToReal sampleDom
     toDom = dblToReal sampleDom
+    toDomBoth (a,b) = (toDom a, toDom b)
     sampleDom = getSampleDomValue sampleFn
 
 ivpRoessler :: 
@@ -612,6 +645,8 @@ ivpRoessler sampleFn =
             odeivp_t0End = toDom 0,
             odeivp_tEnd = toDom 48,
             odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_valuePlotExtents = map toDomBoth $ [(-20,20), (-20, 20), (-20,20)],
+            odeivp_enclosureWidthLimit = toDom 5,
             odeivp_maybeExactValuesAtTEnd = Nothing 
         }
     initialValues = 
@@ -631,6 +666,7 @@ ivpRoessler sampleFn =
 
     lrDom = dbldblToReal sampleDom
     toDom = dblToReal sampleDom
+    toDomBoth (a,b) = (toDom a, toDom b)
     sampleDom = getSampleDomValue sampleFn
 
 ivpVanDerPol_ev :: 
@@ -664,6 +700,8 @@ ivpVanDerPol_ev sampleFn =
             odeivp_t0End = toDom 0,
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
+            odeivp_valuePlotExtents = map toDomBoth $ [(-2,2), (-3, 3)],
+            odeivp_enclosureWidthLimit = toDom 1,
             odeivp_maybeExactValuesAtTEnd = Nothing 
         }
     initialValues = 
@@ -682,6 +720,7 @@ ivpVanDerPol_ev sampleFn =
 
 --    lrDom = dbldblToReal sampleDom
     toDom = dblToReal sampleDom
+    toDomBoth (a,b) = (toDom a, toDom b)
     sampleDom = getSampleDomValue sampleFn
 
 

@@ -67,6 +67,10 @@ data ODEIVP f =
             with exact initial time, we have @t0End = tStart@
         -}
     ,
+        odeivp_valuePlotExtents :: [(Domain f, Domain f)]
+    ,
+        odeivp_enclosureWidthLimit :: Domain f
+    ,
         odeivp_maybeExactValuesAtTEnd :: Maybe [Domain f]
     }
 
