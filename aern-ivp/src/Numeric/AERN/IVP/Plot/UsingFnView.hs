@@ -153,7 +153,7 @@ plotODEIVPBisectionEnclosures
             aggregateSequencesOfTinySegments2 fnsAndNames
         where
         (fns2, fnNamesPre2) = unzip $ (map unzip fnsAndNames)
-        segNames2 = map snd $ zip fnNamesPre2 $ ["segment " ++ show n | n <- [1..] :: [Int]]
+        segNames2 = map snd $ zip fnNamesPre2 $ ["segment " ++ show i | i <- [1..] :: [Int]]
     fnNames
         | shouldUseParamPlot = 
             fnNamesActiveJoined

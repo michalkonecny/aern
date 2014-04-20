@@ -69,7 +69,7 @@ data ODEIVP f =
     ,
         odeivp_valuePlotExtents :: [(Domain f, Domain f)]
     ,
-        odeivp_enclosureWidthLimit :: Domain f
+        odeivp_enclosureRangeWidthLimit :: Domain f
     ,
         odeivp_maybeExactValuesAtTEnd :: Maybe [Domain f]
     }

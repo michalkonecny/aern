@@ -166,7 +166,7 @@ ivpExpDecay_ev sampleFn =
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth [(0,1)],
-            odeivp_enclosureWidthLimit = toDom 2,
+            odeivp_enclosureRangeWidthLimit = toDom 2,
             odeivp_maybeExactValuesAtTEnd = Just [(toDom 1) <*>| expMOne]
         }
     initialValues = [toDom 1]
@@ -205,7 +205,7 @@ ivpExpDecay_uv sampleFn =
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth [(0,2)],
-            odeivp_enclosureWidthLimit = toDom 4,
+            odeivp_enclosureRangeWidthLimit = toDom 4,
             odeivp_maybeExactValuesAtTEnd = 
                 Just [lrDom (0.875 * expMOne) (1.125 * expMOne)]
         }
@@ -246,7 +246,7 @@ ivpSpringMass_ev sampleFn =
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth [(-1,1), (-1,1)],
-            odeivp_enclosureWidthLimit = toDom 4,
+            odeivp_enclosureRangeWidthLimit = toDom 4,
             odeivp_maybeExactValuesAtTEnd = Just [cosOne, neg sinOne]
         }
     initialValues = [toDom 1,toDom 0]
@@ -287,7 +287,7 @@ ivpSpringMass_uv sampleFn =
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth [(-1.5,1.5), (-1.5,1.5)],
-            odeivp_enclosureWidthLimit = toDom 4,
+            odeivp_enclosureRangeWidthLimit = toDom 4,
             odeivp_maybeExactValuesAtTEnd = Just $ 
                 [
                     lrDom (0.875 * cosOne - 0.125 * sinOne) (1.125 * cosOne + 0.125 * sinOne)  
@@ -339,7 +339,7 @@ ivpSpringMassAir_ev sampleFn =
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth [(-1.5,1.5), (-1.5,1.5)],
-            odeivp_enclosureWidthLimit = toDom 4,
+            odeivp_enclosureRangeWidthLimit = toDom 4,
             odeivp_maybeExactValuesAtTEnd = Nothing -- Just [cosOne, -sinOne]
         }
     initialValues = [toDom 1,toDom 0]
@@ -384,7 +384,7 @@ ivpCubicSpringMass_triple sampleFn =
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth $ replicate 6 (-1.5,1.5),
-            odeivp_enclosureWidthLimit = toDom 4,
+            odeivp_enclosureRangeWidthLimit = toDom 4,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     fieldAll6 [x,x',y,y',z,z'] = concat $ map field [[x,x'], [y,y'], [z,z']]
@@ -432,7 +432,7 @@ ivpCubicSpringMass_monoCheck sampleFn =
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth $ replicate 6 (-1.5,1.5),
-            odeivp_enclosureWidthLimit = toDom 4,
+            odeivp_enclosureRangeWidthLimit = toDom 4,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     field [x1,x2,x1d1,x2d1,x1d2,x2d2] =
@@ -490,7 +490,7 @@ ivpFallAir_ishii sampleFn =
             odeivp_tEnd = toDom 4, -- 10000
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth $ [(-10,1.5), (-10,5)],
-            odeivp_enclosureWidthLimit = toDom 10,
+            odeivp_enclosureRangeWidthLimit = toDom 10,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     initialValues = 
@@ -539,7 +539,7 @@ ivpLorenz_ev sampleFn =
             odeivp_tEnd = toDom 24,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth $ [(-20,20), (-20, 20), (-40,40)],
-            odeivp_enclosureWidthLimit = toDom 3,
+            odeivp_enclosureRangeWidthLimit = toDom 10,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     initialValues = 
@@ -590,7 +590,7 @@ ivpLorenz_uv sampleFn =
             odeivp_tEnd = toDom 24,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth $ [(-20,20), (-20, 20), (-40,40)],
-            odeivp_enclosureWidthLimit = toDom 5,
+            odeivp_enclosureRangeWidthLimit = toDom 20,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     initialValues = 
@@ -646,7 +646,7 @@ ivpRoessler sampleFn =
             odeivp_tEnd = toDom 48,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth $ [(-20,20), (-20, 20), (-20,20)],
-            odeivp_enclosureWidthLimit = toDom 5,
+            odeivp_enclosureRangeWidthLimit = toDom 5,
             odeivp_maybeExactValuesAtTEnd = Nothing 
         }
     initialValues = 
@@ -701,7 +701,7 @@ ivpVanDerPol_ev sampleFn =
             odeivp_tEnd = toDom 1,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth $ [(-2,2), (-3, 3)],
-            odeivp_enclosureWidthLimit = toDom 1,
+            odeivp_enclosureRangeWidthLimit = toDom 1,
             odeivp_maybeExactValuesAtTEnd = Nothing 
         }
     initialValues = 
