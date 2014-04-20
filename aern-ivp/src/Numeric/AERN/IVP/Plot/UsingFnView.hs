@@ -146,8 +146,14 @@ plotODEIVPBisectionEnclosures
             error 
             "plotODEIVPBisectionEnclosures: In a parameteric plot there have to be exactly two active functions."
             
-    (fns, fnNamesPre, segNames) = 
-        aggregateSequencesOfTinySegments2 fnsAndNames
+    (fns, fnNamesPre, segNames) 
+        | shouldUseParamPlot =
+            (fns2, fnNamesPre2, segNames2)
+        | otherwise = 
+            aggregateSequencesOfTinySegments2 fnsAndNames
+        where
+        (fns2, fnNamesPre2) = unzip $ (map unzip fnsAndNames)
+        segNames2 = map snd $ zip fnNamesPre2 $ ["segment " ++ show n | n <- [1..] :: [Int]]
     fnNames
         | shouldUseParamPlot = 
             fnNamesActiveJoined
