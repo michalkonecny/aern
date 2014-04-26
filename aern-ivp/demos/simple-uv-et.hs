@@ -120,7 +120,6 @@ runWithArgs [ivpName, maybePlotDimensS, maybePDFfilenameS, shouldWrapS, maxDegS,
     readPDFfilename "GUI" = Nothing
     readPDFfilename pdfilename
         | ".pdf" `isSuffixOf` pdfilename = Just pdfilename
-    readPDFfilename s = error $ "Expecting pdf file name or \"GUI\", not " ++ s 
     readPlotArg s 
         | "Plot" `isPrefixOf` s =
             case getIsParam of
