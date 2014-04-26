@@ -536,10 +536,10 @@ ivpLorenz_ev sampleFn =
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0,
-            odeivp_tEnd = toDom 24,
+            odeivp_tEnd = toDom 32,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth $ [(-20,20), (-20, 20), (-40,40)],
-            odeivp_enclosureRangeWidthLimit = toDom 10,
+            odeivp_enclosureRangeWidthLimit = toDom 1,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     initialValues = 
@@ -587,10 +587,10 @@ ivpLorenz_uv sampleFn =
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0,
-            odeivp_tEnd = toDom 24,
+            odeivp_tEnd = toDom 8,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth $ [(-20,20), (-20, 20), (-40,40)],
-            odeivp_enclosureRangeWidthLimit = toDom 20,
+            odeivp_enclosureRangeWidthLimit = toDom 15,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     initialValues = 

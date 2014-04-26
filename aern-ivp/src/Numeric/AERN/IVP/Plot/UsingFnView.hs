@@ -94,7 +94,7 @@ plotODEIVPBisectionEnclosures
             Gtk.mainGUI
         Just pdffilename ->
             do
-            FV.plotToPDFFile sampleFn effDrawFn effCF canvasParams 1024 1024 fnsActive fnsPlotSpec fnsStyles pdffilename
+            FV.plotToPDFFile sampleFn effDrawFn effCF canvasParams 512 512 fnsActive fnsPlotSpec fnsStyles pdffilename
             where
             fnsStyles = (map $ const black) $ concat $ FV.dataFnStyles fnmeta
             canvasParams = FV.dataDefaultCanvasParams fnmeta
