@@ -152,6 +152,8 @@ cairoDrawFnGraphFromEval
                         setSourceRGBA r g b a
                         enclosureOutline
                         setLineWidth $ styleOutlineThickness style
+                        setLineCap LineCapRound
+                        setLineJoin LineJoinRound
                         stroke
                     _ -> return ()
                 where
@@ -290,6 +292,7 @@ cairoDrawFnParametericFromEval
                 setSourceRGBA r g b a
                 drawOutline
                 setLineCap LineCapRound
+                setLineJoin LineJoinRound
                 setLineWidth $ styleOutlineThickness style
                 stroke
             _ -> return ()
