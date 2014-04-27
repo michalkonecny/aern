@@ -1,1 +1,75 @@
-My GitHub Page
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <title>$title$</title>
+    $partial("templates/headcommon.html")$
+  </head>
+  <body>
+    $partial("templates/nav.html")$
+
+    <!-- Marketing messaging and featurettes
+    ================================================== -->
+
+
+    <div class="container marketing">
+    
+    <h2>AERN | Home</h2>
+
+<!--
+      <div class="row">
+        <div class="col-lg-4">
+          <img class="img-circle" data-src="holder.js/140x140" alt="Generic placeholder image">
+          <h2>Heading 1</h2>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing
+          elit. Nullam non est in neque luctus eleifend. Sed
+          tincidunt vestibulum facilisis. Aenean ut pulvinar massa.
+          </p>
+          <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+        </div>
+        <div class="col-lg-4">
+          <img class="img-circle" data-src="holder.js/140x140" alt="Generic placeholder image">
+          <h2>Heading 2</h2>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing
+          elit. Nullam non est in neque luctus eleifend. Sed
+          tincidunt vestibulum facilisis. Aenean ut pulvinar massa.
+          </p>
+          <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+        </div>
+        <div class="col-lg-4">
+          <img class="img-circle" data-src="holder.js/140x140" alt="Generic placeholder image">
+          <h2>Heading 3</h2>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing
+          elit. Nullam non est in neque luctus eleifend. Sed
+          tincidunt vestibulum facilisis. Aenean ut pulvinar massa.
+          </p>
+          <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+        </div>
+      </div>
+-->
+      <hr class="featurette-divider">
+
+      <div class="row featurette">
+        <div class="col-md-8">
+<!--           <h2 class="featurette-heading">About</h2> -->
+                <p class="lead">
+                    AERN (Approximating Exact Real Numbers) is a Haskell library for reliable
+                    numerical computation.
+                </p>
+                $about.md$
+            </div>
+<!--         <div class="col-md-4"> -->
+<!--           <img class="featurette-image img-responsive" src="img/skewing-d0.jpg" alt="Example PolyPaver plot" width="300"> -->
+<!--         </div> -->
+      </div>
+
+      <hr class="featurette-divider">
+
+    $partial("templates/footer.html")$
+
+    </div>
+
+    <script src="/js/jquery.js"></script>
+    <script src="/js/bootstrap.js"></script>
+    <script src="/js/holder.js"></script>
+  </body>
+</html>

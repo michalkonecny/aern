@@ -1,0 +1,129 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <title>Approximate Polynomial Division</title>
+        <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content>
+    <meta name="author" content>
+    <link href="../css/bootstrap.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
+	<script>
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	
+	  ga('create', 'UA-50420538-1', 'github.com');
+	  ga('send', 'pageview');
+	</script>
+    <link href="../css/aern.css" rel="stylesheet">
+<!--     <link href="/img/logo-24.ico" rel="shortcut icon" /> -->
+  </head>
+  <body>
+    <div class="navbar-wrapper">
+  <div class="container">
+    <div class="navbar navbar-inverse navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">
+<!--             <img src="/img/logo.png" width="24"/> -->
+            AERN
+          </a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="../index.html">Home</a></li>
+<!--             <li class="dropdown"> -->
+<!--               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Products <b class="caret"></b></a> -->
+<!--               <ul class="dropdown-menu"> -->
+<!--                 <li><a href="#">Warp Drive</a></li> -->
+<!--                 <li><a href="#">Fusion Reactor</a></li> -->
+<!--                 <li><a href="#">Sufficiently Smart Compiler</a></li> -->
+<!--                 <li class="divider"></li> -->
+<!--                 <li class="dropdown-header">Services</li> -->
+<!--                 <li><a href="#">Enlightenment</a></li> -->
+<!--               </ul> -->
+<!--             </li> -->
+<!--             <li><a href="/pages/features.html">Features</a></li> -->
+<!--             <li><a href="/tutorials.html">Tutorials</a></li> -->
+            <li><a href="../news.html">News</a></li>
+            <li><a href="https://github.com/michalkonecny/aern">on GitHub</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <div class="container">
+      <h2>Approximate Polynomial Division</h2>
+      <i>(posted on April 27, 2014)</i>
+      <hr class="divider" />
+      
+      <h3 id="the-goal">The goal</h3>
+<p>The goal is to find a polynomial approximation of the reciprocal <span class="math">\[
+\frac{1}{f(x_1,x_2,\ldots)}
+\]</span> where each variable <span class="math">\(x_i\)</span> ranges over some compact real interval <span class="math">\(D_i\)</span> and the range of <span class="math">\(f\)</span> over these domains is within the interval <span class="math">\([b,c]\)</span> where <span class="math">\(b &gt; 0\)</span>.</p>
+<h3 id="reduction-to-a-unary-problem">Reduction to a unary problem</h3>
+<p>To simplify the task, we split it into two sub-tasks. The first sub-task is to approximate the unary reciprocal <span class="math">\[
+y(x) = \frac{1}{x+1+\frac{2b}{c-b}}
+\]</span> where <span class="math">\(x\in[-1,1]\)</span>, and then compute an approximation of the original reciprocal using an approximation of <span class="math">\(y\)</span> as follows: <span class="math">\[
+\frac{1}{f(x_1,x_2,\ldots)} = y\left(\frac{2(f(x_1,x_2,\ldots)-b)}{c-b}-1\right)\frac{2}{c-b}
+\]</span></p>
+<h3 id="the-tau-method">The tau method</h3>
+<p>Let <span class="math">\(d=1+\frac{2b}{c-b}\)</span>. We need to approximate <span class="math">\(y(x) = \frac{1}{x+d}\)</span>. Following the tau method as described, for example, in Mason et al (2006) on page 62, our approximation of <span class="math">\(y(x)\)</span> is the unique polynomial <span class="math">\(p(x)\)</span> with the following property: <span class="math">\[
+p(x)\cdot (x+d) = 1 + \tau \cdot T_{k+1}(x)
+\]</span> where <span class="math">\(T_i\)</span> is the Chebyshev polynomial of order <span class="math">\(i\)</span>. The smaller is <span class="math">\(\tau&gt;0\)</span>, the smaller is the error of the approximation <span class="math">\(p(x)\)</span>.</p>
+<p>Both sides of the equality are polynomials. Thus the coefficients of the polynomials must be equal. We focus on coefficients of these polynomials in the Chebyshev basis. Let us denote the (unknown) coefficients of <span class="math">\(p(x)\)</span> as follows: <span class="math">\[
+p(x) = c_0 + c_1T_1(x) + \ldots + c_k T_k(x)
+\]</span></p>
+<p>Recall that by the elementary properties of the Chebyshev polynomials we have: <span class="math">\[
+T_i(x)\cdot(x+d) = d\cdot T_i(x) + \frac{T_{|i-1|}(x) + T_{i+1}(x)}{2}
+\]</span></p>
+<p>Now by grouping the terms that contain Chebyshev polynomials <span class="math">\(T_i\)</span> on both sides of the equation, we get: <span class="math">\[
+\begin{array}{rcl}
+c_k &amp; = &amp; 2\tau
+\\
+c_{k-1} &amp; = &amp; -2dc_k
+\\
+c_{k-2} &amp; = &amp; -2dc_{k-1}-c_k
+\\
+&amp; \dots &amp;
+\\
+c_1 &amp; = &amp; -2dc_2 - c_3
+\\
+c_0 &amp; = &amp; -dc_1 - c_2/2
+\\
+1 &amp; = &amp; dc_0 + c_1/2 
+\end{array}
+\]</span> Now we have <span class="math">\(k+2\)</span> linear equations with <span class="math">\(k+2\)</span> unknowns <span class="math">\(c_0,\ldots,c_k,\tau\)</span>. Moreover, this system is very easy to solve in linear time.</p>
+
+      <hr class="divider" />
+      <footer>
+  <p class="pull-right"><a href="#">Back to top</a></p>
+  <p>
+    © 2009-2014 Michal Konečný
+<!--     &middot;  -->
+<!--     <a href="/pages/privacy.html">Privacy</a>  -->
+<!--     &middot;  -->
+<!--     <a href="/pages/tos.html">Terms</a></p> -->
+</footer>
+
+    </div>
+
+    </div><!-- /.container -->
+    <script src="../js/jquery.js"></script>
+    <script src="../js/bootstrap.js"></script>
+    <script src="../js/holder.js"></script>
+  </body>
+</html>

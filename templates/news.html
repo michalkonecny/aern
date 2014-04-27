@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <title>$title$</title>
+    $partial("templates/headcommon.html")$
+  </head>
+  <body>
+    $partial("templates/nav.html")$
+
+    <div class="container">
+      <h2>$title$</h2>
+      <hr class="divider"/>
+
+      <ul>
+        $for(posts)$
+        <li>
+          <a href="$url$">$title$</a> - $date$
+        </li>
+        $endfor$
+      </ul>
+
+      <hr class="divider"/>
+      $partial("templates/footer.html")$
+    </div>
+
+    </div><!-- /.container -->
+    <script src="/js/jquery.js"></script>
+    <script src="/js/bootstrap.js"></script>
+    <script src="/js/holder.js"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+dist
+.dist-buildwrapper
+.project
+.settings
+cabal-dev
+*.o
+*.hi
+*.chi
+*.chs.h
+*.swp
+_cache
+cabal.sandbox.config
+.cabal-sandbox/

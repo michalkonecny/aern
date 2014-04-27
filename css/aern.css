@@ -1,0 +1,9 @@
+body { 
+    font-family: 'Open Sans', sans-serif;
+}
+body { margin-top: 20px; }
+footer { margin-top: 20px; }
+li {
+    margin: 0;
+    padding-top: 1ex;
+}

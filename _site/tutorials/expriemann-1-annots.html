@@ -1,0 +1,208 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <title>Verifying a SPARK FP program, Part 1: Annotations (under construction)</title>
+        <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content>
+    <meta name="author" content>
+    <link href="../css/bootstrap.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
+	<script>
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	
+	  ga('create', 'UA-50420538-1', 'github.com');
+	  ga('send', 'pageview');
+	</script>
+    <link href="../css/aern.css" rel="stylesheet">
+<!--     <link href="/img/logo-24.ico" rel="shortcut icon" /> -->
+  </head>
+  <body>
+    <div class="navbar-wrapper">
+  <div class="container">
+    <div class="navbar navbar-inverse navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">
+<!--             <img src="/img/logo.png" width="24"/> -->
+            AERN
+          </a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="../index.html">Home</a></li>
+<!--             <li class="dropdown"> -->
+<!--               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Products <b class="caret"></b></a> -->
+<!--               <ul class="dropdown-menu"> -->
+<!--                 <li><a href="#">Warp Drive</a></li> -->
+<!--                 <li><a href="#">Fusion Reactor</a></li> -->
+<!--                 <li><a href="#">Sufficiently Smart Compiler</a></li> -->
+<!--                 <li class="divider"></li> -->
+<!--                 <li class="dropdown-header">Services</li> -->
+<!--                 <li><a href="#">Enlightenment</a></li> -->
+<!--               </ul> -->
+<!--             </li> -->
+<!--             <li><a href="/pages/features.html">Features</a></li> -->
+<!--             <li><a href="/tutorials.html">Tutorials</a></li> -->
+            <li><a href="../news.html">News</a></li>
+            <li><a href="https://github.com/michalkonecny/aern">on GitHub</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <div class="container">
+      <h2>Verifying a SPARK FP program, Part 1: Annotations (under construction)</h2>
+      <hr class="divider" />
+      
+      <p>This tutorial shows the steps of writing a floating-point SPARK 2005 program and proving it computes numbers that correspond to its intuitive meaning as well as proving the absence of numerical exceptions. The complete code for this program is available <a href="https://github.com/michalkonecny/polypaver/tree/master/tools/SPARK2005/examples/erfRiemann">here</a>.</p>
+<p>The tutorial is divided into the following parts:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Annotations: Annotating a SPARK floating-point program</strong> <em>(this page, under construction)</em></li>
+<li>Generation: Generating valid VCs <em>(coming soon)</em></li>
+<li>Proving easier VCs: Proving most of the VCs and identifying challenging VCs <em>(coming soon)</em></li>
+<li>Proving harder VCs: Attempting to prove the harder VCs <em>(coming soon)</em></li>
+<li>Debugging: Detecting and locating mistakes in SPARK floating-point programs <em>(coming soon)</em></li>
+</ol>
+<hr />
+<p><strong>TODO</strong>: <em>Add TOC</em></p>
+<h2 id="the-ada-program">The Ada program</h2>
+<p>The program computes an approximation of the integral</p>
+<p><span class="math">\[
+\int_0^x e^{-t^2}\;\mathrm{d}t
+\]</span></p>
+<p>This integral is an essential part of the <a href="http://en.wikipedia.org/wiki/Error_function">Gauss error function</a> and it has no closed algebraic solution.</p>
+<p>The integral is approximated using the left Riemann sum over a partition with <span class="math">\(2^n\)</span> segments of equal size.</p>
+<p>The following is an Ada implementation of this method.</p>
+<pre class="sourceCode ada"><code class="sourceCode ada"><span class="kw">with</span> Ada.Numerics.Elementary_Functions;
+<span class="kw">use</span> Ada.Numerics.Elementary_Functions;
+
+<span class="kw">package</span> <span class="kw">body</span> Riemann <span class="kw">is</span>
+
+   <span class="kw">function</span> erf_Riemann(x : <span class="dt">Float</span>; n : <span class="dt">Integer</span>) <span class="kw">return</span> <span class="dt">Float</span>
+   <span class="kw">is</span>
+      partitionSize : <span class="dt">Integer</span> := <span class="dv">2</span> ** n;
+      stepSize : <span class="dt">Float</span> := x/<span class="dt">Float</span>(partitionSize);
+      tLeft : <span class="dt">Float</span>;
+      valueLeft : <span class="dt">Float</span>;
+      result : <span class="dt">Float</span>;
+   <span class="kw">begin</span>
+
+      result := <span class="fl">0.0</span>;
+
+      <span class="kw">for</span> step <span class="kw">in</span> <span class="dv">0</span>..((<span class="dv">2</span>**n)-<span class="dv">1</span>) <span class="kw">loop</span>
+         tLeft := stepSize * <span class="dt">Float</span>(step);
+         valueLeft := Exp(-(tLeft * tLeft));
+         result := result + stepSize * valueLeft;
+      <span class="kw">end loop</span>;
+
+      <span class="kw">return</span> result;
+   <span class="kw">end</span> erf_Riemann;
+
+<span class="kw">end</span> Riemann;</code></pre>
+<p>The above code is available in a ready-to-compile form in <a href="https://github.com/michalkonecny/polypaver/tree/master/tools/SPARK2005/examples/erfRiemann/tutorial-steps/01-noSPARK">this folder</a>.</p>
+<p>To get an idea of how close the function is to the exact interval, there is a main procedure that prints the results of the <code>erf_Riemann</code> function for a number of different <code>x</code> and <code>n</code>. To execute this program, issue the following commands:</p>
+<pre><code>&gt; cd tools/SPARK2005/examples/erfRiemann/tutorial-steps/01-noSPARK
+&gt; mkdir -p build
+&gt; gnatmake -P erf_riemann.gpr
+&gt; build/main</code></pre>
+<p>The output should start with the following:</p>
+<pre><code>erf_Riemann(1.0,  1) = 0.889400
+erf_Riemann(1.0,  2) = 0.821999
+erf_Riemann(1.0,  3) = 0.785373
+erf_Riemann(1.0,  4) = 0.766338
+erf_Riemann(1.0,  5) = 0.756641
+erf_Riemann(1.0,  6) = 0.751748
+erf_Riemann(1.0,  7) = 0.749290
+erf_Riemann(1.0,  8) = 0.748058
+erf_Riemann(1.0,  9) = 0.747441
+erf_Riemann(1.0, 10) = 0.747132
+
+the integral for x = 1.0: 0.746824
+--------------------------------------------------------</code></pre>
+<p>With a partition of size 1024, the result agrees with the integral in the first two significant digits.</p>
+<h2 id="precondition-and-postcondition">Precondition and postcondition</h2>
+<h3 id="bounding-the-method-error">Bounding the method error</h3>
+<p>Let us defer reasoning about rounding errors for later and first consider the algorithm as if it was performed in exact real arithmetic and analyse its method error.</p>
+<p>How does the Riemann sum relate to the integral? We first restrict the domain of <span class="math">\(x\)</span> to non-negative numbers. Thus the integrand <span class="math">\(e^{-t^2}\)</span> is considered only for non-negative <span class="math">\(t\)</span>, where it is a decreasing function. The left Riemann sum is therefore an <em>upper bound</em> on the exact integral.</p>
+<p><strong>TODO</strong>: <em>Add diagram illustrating the sums</em></p>
+<p>Moreover, the difference between the left Riemann sum and the integral can be bounded by the difference between the left and rigth Riemann sums, which happens to be exactly</p>
+<p><span class="math">\[
+\frac{x}{n}\left(1-e^{-x^2}\right)
+\]</span></p>
+<p>Base on this observation, one can construct the following post-condition for erf_Riemann:</p>
+<p><span class="math">\[  
+\mathtt{result} 
+\in  
+\int_0^x e^{-t^2}\;\mathrm{d}t
++
+\left[0, \frac{x}{n}\left(1-e^{-x^2}\right)\right]
+\]</span></p>
+<h3 id="adapting-for-spark">Adapting for SPARK</h3>
+<p>Let us now enter the above postcondition into the Ada specification as a SPARK 2005 annotation:</p>
+<pre class="sourceCode Ada"><code class="sourceCode ada"><span class="co">--# inherit PP_F_Exact;</span>
+<span class="kw">package</span> Riemann <span class="kw">is</span> 
+
+   <span class="kw">function</span> erf_Riemann(x : <span class="dt">Float</span>; n : <span class="dt">Integer</span>) <span class="kw">return</span> <span class="dt">Float</span>;
+   <span class="co">--# return result =&gt; </span>
+   <span class="co">--#     PP_F_Exact.Contained_In(</span>
+   <span class="co">--#         result</span>
+   <span class="co">--#         ,</span>
+   <span class="co">--#         PP_F_Exact.Integral(0.0,x,PP_F_Exact.Exp(-PP_F_Exact.Integration_Variable**2))</span>
+   <span class="co">--#         +</span>
+   <span class="co">--#         PP_F_Exact.Interval(</span>
+   <span class="co">--#              0.0</span>
+   <span class="co">--#              ,</span>
+   <span class="co">--#              (1.0-PP_F_Exact.Exp(-x**2))*x/Float(2**n)</span>
+   <span class="co">--#         )</span>
+   <span class="co">--#     );</span>
+
+<span class="kw">end</span> Riemann;</code></pre>
+<p><strong>TODO</strong>: <em>Explain PP_F_Exact</em></p>
+<p><strong>TODO</strong>: <em>Show also the refactoring of the function body necessary to satisfy the Examiner</em></p>
+<!--
+The package `PP_F_Elementary` is a PolyPaver-friendly alternative
+to `Ada.Numeric.Elementary_Functions`.  
+This package is included in the PolyPaver download bundle.  
+-->
+
+
+<h3 id="bounding-the-rounding-error">Bounding the rounding error</h3>
+<h3 id="bounding-the-domain">Bounding the domain</h3>
+<h2 id="the-loop-invariant">The loop invariant</h2>
+<p><em>incremental version of the postcondition</em></p>
+<p><em>bounding local variables</em></p>
+
+      <hr class="divider" />
+      <footer>
+  <p class="pull-right"><a href="#">Back to top</a></p>
+  <p>
+    © 2009-2014 Michal Konečný
+<!--     &middot;  -->
+<!--     <a href="/pages/privacy.html">Privacy</a>  -->
+<!--     &middot;  -->
+<!--     <a href="/pages/tos.html">Terms</a></p> -->
+</footer>
+
+    </div>
+
+    </div><!-- /.container -->
+    <script src="../js/jquery.js"></script>
+    <script src="../js/bootstrap.js"></script>
+    <script src="../js/holder.js"></script>
+  </body>
+</html>
