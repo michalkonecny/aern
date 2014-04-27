@@ -37,18 +37,18 @@ mathCtx = field "mathjax" $ \item -> do
 
 newsCtx posts =
   listField "posts" postCtx (return posts)
-  `mappend` constField "title" "PolyPaver | News"
+  `mappend` constField "title" "AERN | News"
   `mappend` defaultContext
 
 tutorialsCtx posts =
   listField "tutorials" postCtx (return posts)
-  `mappend` constField "title" "PolyPaver | Tutorials"
+  `mappend` constField "title" "AERN | Tutorials"
   `mappend` defaultContext
 
 indexCtx posts bits =
   listField "posts" postCtx (return posts)
   `mappend` 
-  constField "title" "PolyPaver | Home"
+  constField "title" "AERN | Home"
   `mappend`
   bitsContext bits
   `mappend` 
