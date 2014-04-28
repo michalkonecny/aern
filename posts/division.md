@@ -112,5 +112,6 @@ c_0 & = & -dc_1 - c_2/2
 \end{array}
 $$
 Now we have $k+2$ linear equations with $k+2$ unknowns $c_0,\ldots,c_k,\tau$.
-Moreover, this system is very easy to solve in linear time, proceeding from
-top to bottom in the above list and determining the value of $\tau$ from the last equation.
+Moreover, this system is very easy to solve in linear time: Proceeding by substitutions from
+top to bottom in the above list we obtain a formula for each coefficient, featuring only $\tau$,
+and, finally, we determine the value of $\tau$ from the last equation.
