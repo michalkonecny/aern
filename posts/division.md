@@ -83,7 +83,9 @@ We focus on coefficients of these polynomials in the
 [Chebyshev basis](http://en.wikipedia.org/wiki/Chebyshev_polynomials).
 Let us denote the (unknown) coefficients of $p(x)$ as follows:
 $$
+\begin{equation}\label{eq:px}
 p(x) = c_0 + c_1T_1(x) + \ldots + c_k T_k(x)
+\end{equation}
 $$
 
 
@@ -95,6 +97,7 @@ $$
 Now by grouping the terms that contain Chebyshev polynomials $T_i$ on both sides equation $\eqref{eq:tau}$,
 we get:
 $$
+\begin{equation}\label{eq:coeffs-tau}
 \begin{array}{rcl}
 c_k & = & 2\tau
 \\
@@ -110,6 +113,7 @@ c_0 & = & -dc_1 - c_2/2
 \\
 1 & = & dc_0 + c_1/2 
 \end{array}
+\end{equation}
 $$
 Now we have $k+2$ linear equations with $k+2$ unknowns $c_0,\ldots,c_k,\tau$.
 Moreover, this system is very easy to solve in linear time: Proceeding by substitutions from
