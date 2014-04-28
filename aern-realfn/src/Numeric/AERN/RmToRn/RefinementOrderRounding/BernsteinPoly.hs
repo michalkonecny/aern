@@ -21,7 +21,7 @@ import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RealArithmetic.ExactOps
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
-import Numeric.AERN.Misc.IntegerArithmetic
+--import Numeric.AERN.Misc.IntegerArithmetic
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -40,7 +40,7 @@ bernsteinOut ::
     Int ->
     Int ->
     f
-bernsteinOut (effRing, effDom, effMMult) x n p =
+bernsteinOut (effRingF, effRealD, effMultFD) x n p =
 --    unsafePrint
 --    (
 --        "bernsteinOut:"
@@ -74,24 +74,24 @@ bernsteinOut (effRing, effDom, effMMult) x n p =
     sampleD = getSampleDomValue sampleF
 --    sampleCf = getSampleDomValue sampleF
 
---    (~<+>~) = ArithInOut.addOutEff effAdd
-    (~<->~) = ArithInOut.subtrOutEff effAdd
-    (~<*>~) = ArithInOut.multOutEff effMult
-    (~<^>) = ArithInOut.powerToNonnegIntOutEff effPow
-    (.<*>~) = flip $ ArithInOut.mixedMultOutEff effMMult
+--    (~<+>~) = ArithInOut.addOutEff effAddF
+    (~<->~) = ArithInOut.subtrOutEff effAddF
+    (~<*>~) = ArithInOut.multOutEff effMultF
+    (~<^>) = ArithInOut.powerToNonnegIntOutEff effPowF
+    (.<*>~) = flip $ ArithInOut.mixedMultOutEff effMultFD
 
     (.</>.) = ArithInOut.divOutEff effDivD
     (.<*>|) = ArithInOut.mixedMultOutEff effMultIntD
 
-    effAdd = ArithInOut.ringEffortAdd sampleF effRing
-    effMult = ArithInOut.ringEffortMult sampleF effRing
-    effPow = ArithInOut.ringEffortPow sampleF effRing
+    effAddF = ArithInOut.ringEffortAdd sampleF effRingF
+    effMultF = ArithInOut.ringEffortMult sampleF effRingF
+    effPowF = ArithInOut.ringEffortPow sampleF effRingF
     effDivD = 
         ArithInOut.fldEffortDiv sampleD $ 
-            ArithInOut.rrEffortField sampleD effDom
+            ArithInOut.rrEffortField sampleD effRealD
     effMultIntD = 
         ArithInOut.mxfldEffortMult sampleD (1::Int) $ 
-            ArithInOut.rrEffortIntMixedField sampleD effDom
+            ArithInOut.rrEffortIntMixedField sampleD effRealD
     
     
     
