@@ -15,19 +15,18 @@
 
 module Numeric.AERN.RmToRn.RefinementOrderRounding.BernsteinPoly where
 
-import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.New
+import Numeric.AERN.RmToRn.Domain (HasDomainBox(..))
 
-import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.ExactOps (HasOne(..))
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
 --import Numeric.AERN.Misc.IntegerArithmetic
 
-import Numeric.AERN.Misc.Debug
-_ = unsafePrint
+import Debug.Trace
+_ = trace
 
 bernsteinOut ::
-    (HasProjections f, HasConstFns f, HasOne f,
+    (HasDomainBox f, HasOne f,
      ArithInOut.RoundedRing f,
      ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedReal (Domain f), 
@@ -35,13 +34,14 @@ bernsteinOut ::
      =>
     (ArithInOut.RingOpsEffortIndicator f,
      ArithInOut.RoundedRealEffortIndicator (Domain f),
-     ArithInOut.MixedMultEffortIndicator f (Domain f)) ->
-    f ->
-    Int ->
-    Int ->
-    f
+     ArithInOut.MixedMultEffortIndicator f (Domain f)) 
+    {-^ Effort indicators to guide the effort used for approximately computing the Bernstein polynomial -} ->
+    f {-^ @x@ - a function to substitute in the Bernstein polynomial  -} ->
+    Int {-^ @n@ - the degree of the Bernstein polynomial -} ->
+    Int {-^ @p@ - the index of the Bernstein polynomial  -} ->
+    f {-^ @b_{p,n}(x)@ - The Bernstein polynomial of degree @n@ and index @p@ -}
 bernsteinOut (effRingF, effRealD, effMultFD) x n p =
---    unsafePrint
+--    trace
 --    (
 --        "bernsteinOut:"
 --        ++ "\n x = " ++ show x
@@ -72,7 +72,6 @@ bernsteinOut (effRingF, effRealD, effMultFD) x n p =
     c1 = (one sampleF)
     sampleF = x
     sampleD = getSampleDomValue sampleF
---    sampleCf = getSampleDomValue sampleF
 
 --    (~<+>~) = ArithInOut.addOutEff effAddF
     (~<->~) = ArithInOut.subtrOutEff effAddF

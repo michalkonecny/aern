@@ -47,4 +47,5 @@ Library
                   Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison,
                   Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Minmax,
                   Numeric.AERN.RmToRn.RefinementOrderRounding.BernsteinPoly
+                  Numeric.AERN.RmToRn.RefinementOrderRounding.ChebyshevPoly
   ghc-options:    -Wall
