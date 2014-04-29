@@ -83,38 +83,44 @@
 \frac{1}{f(x_1,x_2,\ldots)}
 \]</span> where each variable <span class="math">\(x_i\)</span> ranges over some compact real interval <span class="math">\(D_i\)</span> and the range of <span class="math">\(f\)</span> over these domains is within the interval <span class="math">\([b,c]\)</span> where <span class="math">\(b &gt; 0\)</span>.</p>
 <h3 id="reduction-to-a-unary-problem">Reduction to a unary problem</h3>
-<p>To simplify the task, we split it into two sub-tasks. The first sub-task is to approximate the unary reciprocal <span class="math">\[
-y(x) = \frac{1}{x+1+\frac{2b}{c-b}}
-\]</span> where <span class="math">\(x\in[-1,1]\)</span>, and then compute an approximation of the original reciprocal using an approximation of <span class="math">\(y\)</span> as follows: <span class="math">\[
+<p>To simplify the task, we split it into two sub-tasks.</p>
+<p>The first sub-task is to approximate the unary reciprocal <span class="math">\[
+y(x) = \frac{1}{x+d}
+\]</span> where <span class="math">\(x\in[-1,1]\)</span> and <span class="math">\(d&gt;1\)</span> will be specified later.</p>
+<p>We can get an approximation of the original reciprocal using an approximation of <span class="math">\(y\)</span> as follows: <span class="math">\[
 \begin{equation}\label{eq:using-y}
 \frac{1}{f(x_1,x_2,\ldots)} 
 = 
-y\left(\frac{2(f(x_1,x_2,\ldots)-b)}{c-b}-1\right)\frac{2}{c-b}
-=
 y\left(\frac{2}{c-b}f(x_1,x_2,\ldots)-d\right)\frac{2}{c-b}
 \end{equation}
-\]</span> where <span class="math">\(d=1+\frac{2b}{c-b}\)</span>.</p>
+\]</span> where we used the substitution: <span class="math">\[
+\begin{equation}\label{eq:x}
+x = \frac{2}{c-b}f(x_1,x_2,\ldots)-d
+\end{equation}
+\]</span> The scaling and shifting of <span class="math">\(f\)</span> in <span class="math">\(\eqref{eq:x}\)</span> should ensure that <span class="math">\(x\)</span> falls within <span class="math">\([-1,1]\)</span>. To make it so, we set <span class="math">\(d=1+\frac{2b}{c-b}\)</span>.</p>
 <h3 id="the-tau-method">The tau method</h3>
-<p>We need to approximate <span class="math">\(y(x) = \frac{1}{x+d}\)</span>. Following the tau method as described, for example, in <a href="http://books.google.co.uk/books/about/Chebyshev_Polynomials.html?id=8FHf0P3to0UC&amp;redir_esc=y">Mason &amp; Handscob (2002)</a> on page 62, our approximation of <span class="math">\(y(x)\)</span> is a polynomial <span class="math">\(p(x)\)</span> with the following property: <span class="math">\[
+<p>In order to approximate <span class="math">\(y(x)\)</span>, we follow the tau method as described, for example, in <a href="http://books.google.co.uk/books/about/Chebyshev_Polynomials.html?id=8FHf0P3to0UC&amp;redir_esc=y">Mason &amp; Handscob (2002)</a> on page 62. The approximation of <span class="math">\(y(x)\)</span> is a polynomial <span class="math">\(p(x)\)</span> with the following property: <span class="math">\[
 \begin{equation}\label{eq:tau}
 p(x)\cdot (x+d) = 1 + \tau \cdot T_{k+1}(x)
 \end{equation}
 \]</span> where <span class="math">\(T_i\)</span> is the Chebyshev polynomial of order <span class="math">\(i\)</span>. We will soon show that there is a unique polynomial <span class="math">\(p(x)\)</span> and unique <span class="math">\(\tau\)</span> that satisfy the above equality. It is clear that this polynomial has to have order at most <span class="math">\(k\)</span>.</p>
 <h4 id="estimating-the-error">Estimating the error</h4>
-<p>Before discussing how to compute <span class="math">\(p(x)\)</span> and <span class="math">\(\tau\)</span> satisfying <span class="math">\(\eqref{eq:tau}\)</span>, let us analyse the difference between <span class="math">\(p(x)\)</span> and <span class="math">\(y(x)\)</span> and the resulting error of the approximate reciprocal obtained using <span class="math">\(p(x)\)</span> in place of <span class="math">\(y(x)\)</span>. <span class="math">\[
+<p>Before discussing how to compute <span class="math">\(p(x)\)</span> and <span class="math">\(\tau\)</span> that satisfy <span class="math">\(\eqref{eq:tau}\)</span>, let us analyse the difference between <span class="math">\(p(x)\)</span> and <span class="math">\(y(x)\)</span> and the resulting error of the approximate reciprocal obtained using <span class="math">\(p(x)\)</span> in place of <span class="math">\(y(x)\)</span>. <span class="math">\[
 \begin{equation}\label{eq:error}
 |p(x) - y(x)|
 =
 \left|T_{k+1}(x) \frac{\tau}{x+d}\right| 
 \leq 
-\frac{\tau}{x+d}
-\leq
-\frac{\tau}{d-1}
+\left|\frac{\tau}{x+d}\right| 
 =
-\frac{\tau(c-b)}{2b}
+\frac{|\tau|}{x+d}
+\leq
+\frac{|\tau|}{d-1}
+=
+\frac{|\tau|(c-b)}{2b}
 \end{equation}
 \]</span></p>
-<p>Not surprisingly, for <span class="math">\(b\)</span> close to <span class="math">\(0\)</span>, the error could be very large. Nevertheless, if <span class="math">\(\tau\)</span> converges to <span class="math">\(0\)</span> with increasing <span class="math">\(k\)</span>, the the error can be minimised arbitrarily.</p>
+<p>Not surprisingly, for <span class="math">\(b\)</span> close to <span class="math">\(0\)</span>, the error could be very large. Nevertheless, if <span class="math">\(\tau\)</span> converges to <span class="math">\(0\)</span> with increasing <span class="math">\(k\)</span>, the error can be minimised arbitrarily.</p>
 <h4 id="computing-px">Computing p(x)</h4>
 <p>Both sides of equation <span class="math">\(\eqref{eq:tau}\)</span> are polynomials. Thus the coefficients of the polynomials must be equal. We focus on coefficients of these polynomials in the <a href="http://en.wikipedia.org/wiki/Chebyshev_polynomials">Chebyshev basis</a>. Let us denote the (unknown) coefficients of <span class="math">\(p(x)\)</span> as follows: <span class="math">\[
 \begin{equation}\label{eq:px}
@@ -123,8 +129,41 @@ p(x) = c_0 + c_1T_1(x) + \ldots + c_k T_k(x)
 \]</span></p>
 <p>By elementary properties of Chebyshev polynomials it holds: <span class="math">\[
 T_i(x)\cdot(x+d) = d\cdot T_i(x) + \frac{T_{|i-1|}(x) + T_{i+1}(x)}{2}
+\]</span> which leads to: <span class="math">\[
+\begin{array}{rcl}
+p(x)\cdot(x+d) 
+&amp; = &amp; c_0 \cdot\left(  d\cdot T_0(x) + T_1(x) \right)
+\\
+&amp; + &amp; c_1 \cdot\left( T_0(x)/2 + d\cdot T_1(x) + T_2(x)/2 \right)
+\\
+&amp; \ldots &amp;
+\\ 
+&amp; + &amp; c_{k-1} \cdot\left( T_{k-2}(x)/2 + d\cdot T_{k-1}(x) + T_k(x)/2 \right)
+\\ 
+&amp; + &amp; c_k \cdot\left( T_{k-1}(x)/2 + d\cdot T_k(x) + T_{k+1}(x)/2 \right)
+\\ 
+\end{array}
 \]</span></p>
-<p>Now by grouping the terms that contain Chebyshev polynomials <span class="math">\(T_i\)</span> on both sides equation <span class="math">\(\eqref{eq:tau}\)</span>, we get: <span class="math">\[
+<p>Now by grouping the terms that contain Chebyshev polynomials <span class="math">\(T_i\)</span> on both sides of equation <span class="math">\(\eqref{eq:tau}\)</span>, we get: <span class="math">\[
+\begin{array}{rrcl}
+T_{k+1}(x): &amp; \tau &amp; = &amp; c_k / 2
+\\
+T_{k}(x): &amp; 0 &amp; = &amp; d\cdot c_k + c_{k-1}/2
+\\
+T_{k-1}(x): &amp; 0 &amp; = &amp; c_{k}/2 + d\cdot c_{k-1} + c_{k-2}/2
+\\
+&amp; &amp; \ldots
+\\[1ex]
+T_{2}(x): &amp; 0 &amp; = &amp; c_{3}/2 + d\cdot c_{2} + c_{1}/2
+\\
+T_{1}(x): &amp; 0 &amp; = &amp; c_{2}/2 + d\cdot c_{1} + c_{0}
+\\
+T_{0}(x): &amp; 1 &amp; = &amp; c_{1}/2 + d\cdot c_{0}
+\\
+\end{array}
+\]</span></p>
+<p>We have <span class="math">\(k+2\)</span> linear equations with <span class="math">\(k+2\)</span> unknowns <span class="math">\(c_0,\ldots,c_k,\tau\)</span>. Moreover, by a simple transformation we get formulas for the individual coefficients:</p>
+<p><span class="math">\[
 \begin{equation}\label{eq:coeffs-tau}
 \begin{array}{rcl}
 c_k &amp; = &amp; 2\tau
@@ -142,7 +181,7 @@ c_0 &amp; = &amp; -dc_1 - c_2/2
 1 &amp; = &amp; dc_0 + c_1/2 
 \end{array}
 \end{equation}
-\]</span> Now we have <span class="math">\(k+2\)</span> linear equations with <span class="math">\(k+2\)</span> unknowns <span class="math">\(c_0,\ldots,c_k,\tau\)</span>. Moreover, this system is very easy to solve in linear time: Proceeding by substitutions from top to bottom in the above list we obtain a formula for each coefficient, featuring only <span class="math">\(\tau\)</span>, and, finally, we determine the value of <span class="math">\(\tau\)</span> from the last equation.</p>
+\]</span> This system is solved in linear time as follows: Proceeding by substitutions from top to bottom in the above list we obtain a formula for each coefficient, featuring only <span class="math">\(\tau\)</span>, and, finally, we determine the value of <span class="math">\(\tau\)</span> from the last equation.</p>
 
       <hr class="divider" />
       <footer>
