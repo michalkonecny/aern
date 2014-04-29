@@ -43,12 +43,16 @@ data IntPolyCfg var cf =
         ipolycfg_domsLZ :: [cf], -- domain of each variable - shifted so that the left endpoint is 0
         ipolycfg_domsLE :: [cf], -- the left endpoint of the domain for all variables
         ipolycfg_sample_cf :: cf,  -- sample coefficient (used only for type inference)
-        ipolycfg_limits :: IntPolySizeLimits cf
+        ipolycfg_limits :: IntPolySizeLimits cf,
+        ipolycfg_effort :: IntPolyEffort cf 
     }
 
-defaultIntPolyCfg :: cf -> IntPolySizeLimits cf -> IntPolyCfg var cf
+defaultIntPolyCfg ::
+    (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf) 
+    => 
+    cf -> IntPolySizeLimits cf -> IntPolyCfg var cf
 defaultIntPolyCfg sampleCf limits =
-    IntPolyCfg [] [] [] sampleCf limits
+    IntPolyCfg [] [] [] sampleCf limits (defaultIntPolyEffort sampleCf 2 limits)
 
 data IntPolySizeLimits cf =
     IntPolySizeLimits
@@ -73,6 +77,44 @@ ipolycfg_maxdeg = ipolylimits_maxdeg . ipolycfg_limits
 ipolycfg_maxsize :: IntPolyCfg var cf -> Int
 ipolycfg_maxsize = ipolylimits_maxsize . ipolycfg_limits
 
+data IntPolyEffort cf =
+    IntPolyEffort
+    {
+        ipolyeff_cfRoundedRealEffort :: ArithInOut.RoundedRealEffortIndicator cf,
+        ipolyeff_cfAbsEffort :: ArithInOut.AbsEffortIndicator cf,
+        ipolyeff_cfGetEndpointsEffort :: RefOrd.GetEndpointsEffortIndicator cf,
+        ipolyeff_cfFromEndpointsEffort :: RefOrd.FromEndpointsEffortIndicator cf,
+        ipolyeff_cfMinMaxEffort :: NumOrd.MinmaxInOutEffortIndicator cf,
+        ipolyeff_evalMaxSplitSize :: Int1To100,
+        ipolyeff_minmaxBernsteinDegreeMinus1 :: Int1To10,
+        ipolyeff_recipTauDegreeMinus1 :: Int1To10,
+        ipolyeff_counterExampleSearchSampleCount :: Int1To1000
+    }
+    
+defaultIntPolyEffort :: 
+    (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf) 
+    =>
+    cf -> Int -> IntPolySizeLimits cf -> IntPolyEffort cf
+defaultIntPolyEffort sampleCf arity sizeLimits =
+    IntPolyEffort
+    {
+        ipolyeff_cfRoundedRealEffort = ArithInOut.roundedRealDefaultEffort sampleCf,
+        ipolyeff_cfAbsEffort = ArithInOut.absDefaultEffort sampleCf,
+        ipolyeff_cfGetEndpointsEffort = RefOrd.getEndpointsDefaultEffort sampleCf,
+        ipolyeff_cfFromEndpointsEffort = RefOrd.fromEndpointsDefaultEffort sampleCf,
+        ipolyeff_cfMinMaxEffort = NumOrd.minmaxInOutDefaultEffort sampleCf,
+        ipolyeff_evalMaxSplitSize = Int1To100 maxSplitSize,
+        ipolyeff_minmaxBernsteinDegreeMinus1 = Int1To10 (bernsteinDegree - 1),
+        ipolyeff_recipTauDegreeMinus1 = Int1To10 (tauDegree - 1),
+        ipolyeff_counterExampleSearchSampleCount = Int1To1000 (4 * arity)
+    }
+    where
+    tauDegree = 2 + (min 20 $ maxdeg `div` 3)
+    bernsteinDegree = 2 + (min 20 $ maxdeg `div` 3)
+         -- TODO: the minimum 20 makes sense only with Double coeffs;
+         --       make it depend on the current coefficient precision
+    maxSplitSize = 2^ (1 + (maxdeg  `div` 3))
+    maxdeg = ipolylimits_maxdeg sizeLimits
 
 domToDomLZLEEff ::
     (ArithInOut.RoundedReal cf, 
@@ -200,7 +242,7 @@ instance
     =>
     Show (IntPolyCfg var cf)
     where
-    show (IntPolyCfg vars domsLZ domsLE sampleCf limits) 
+    show (IntPolyCfg vars domsLZ domsLE sampleCf limits _effort) -- TODO: show also effort 
         = 
         "cfg{" ++ (show $ zip vars doms) ++ ";" ++ show limits ++ "}"
         where
@@ -234,7 +276,7 @@ instance
         where
         mkCfg arity limits sampleCfs (effConsistency, effGetE, effCF) =
             IntPolyCfg
-                vars domsLZ domsLE sampleCf limits
+                vars domsLZ domsLE sampleCf limits (defaultIntPolyEffort sampleCf arity limits)
             where
             sampleCf = head sampleCfs
             vars = getNVariables arity

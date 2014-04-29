@@ -474,7 +474,7 @@ getX ::
      RefOrd.IntervalLike cf) 
     =>
     (IntPoly var cf) -> (IntPoly var cf)
-getX (IntPoly (IntPolyCfg vars _ _ sample limits) _) =
+getX (IntPoly (IntPolyCfg vars _ _ sample limits _) _) =
     newProjection limits [(var, unit)] var
     where
     var = head vars
