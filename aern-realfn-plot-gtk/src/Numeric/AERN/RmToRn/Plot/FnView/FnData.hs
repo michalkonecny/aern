@@ -140,47 +140,6 @@ defaultFnMetaData sampleF =
     where
     sampleDom = getSampleDomValue sampleF
 
-simpleFnMetaData :: 
-      (fnInfo ~ (String, FnPlotStyle, Bool), 
-       HasZero (Domain t), HasOne (Domain t), HasDomainBox t) 
-      =>
-      t
-      -> Rectangle (Domain f) -- ^ initial crop
-      -> Maybe ColourRGBA -- ^ background colour
-      -> Int -- ^ number of samples to take of each function per viewable region
-      -> [(String, [fnInfo])] -- ^ information on plotted function groups (names, plot colours, whether shown initially)
-      -> FnMetaData f
-simpleFnMetaData sampleFn rect bgrColour samplesPerUnit (groups :: [(String, [fnInfo])]) =
-        (defaultFnMetaData sampleFn)
-        {
-            dataFnGroupNames = map getGroupName groups,
-            dataFnNames = mapGroupsFns getFnName, 
-            dataFnStyles = mapGroupsFns getFnStyle,
-            dataDefaultActiveFns = mapGroupsFns getFnEnabled,
-            dataDomL = domL,
-            dataDomR = domR,
-            dataValLO = valLO,
-            dataValHI = valHI,
-            dataDefaultEvalPoint = domR,
-            dataDefaultCanvasParams =
-                (defaultCanvasParams sampleDom)
-                {
-                    cnvprmCoordSystem = CoordSystemLinear rect,
-                    cnvprmBackgroundColour = bgrColour,
-                    cnvprmSamplesPerUnit = samplesPerUnit
-                }
-        }
-        where
-        (Rectangle valHI valLO domL domR) = rect
-        sampleDom = getSampleDomValue sampleFn
-        getGroupName (name, _) = name
-        getGroupContent (_, content) = content
-        mapGroupsFns :: (fnInfo -> t) -> [[t]]
-        mapGroupsFns f = map (map f . getGroupContent) groups 
-        getFnName (name, _, _) = name
-        getFnStyle (_, style, _) = style
-        getFnEnabled (_, _, enabled) = enabled
-    
 
 getDefaultCentre ::
     (ArithInOut.RoundedReal (Domain f))
@@ -206,6 +165,8 @@ getDefaultCentre effReal fnmeta =
         ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effReal
     sampleDom = fnLO
     
+getFnExtents :: 
+    FnMetaData f -> (Domain f, Domain f, Domain f, Domain f)
 getFnExtents fnmeta =
     (dataValHI fnmeta, dataValLO fnmeta, 
      dataDomL fnmeta, dataDomR fnmeta)

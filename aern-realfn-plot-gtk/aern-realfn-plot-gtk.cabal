@@ -40,6 +40,7 @@ Library
         Numeric.AERN.RmToRn.Plot.CairoDrawable
         Numeric.AERN.RmToRn.Plot.FromEval
         Numeric.AERN.RmToRn.Plot.FnView
+        Numeric.AERN.RmToRn.Plot.FnView.New
         Numeric.AERN.RmToRn.Plot.FnView.FnData
         Numeric.AERN.RmToRn.Plot.FnView.State
         Numeric.AERN.RmToRn.Plot.FnView.Layout

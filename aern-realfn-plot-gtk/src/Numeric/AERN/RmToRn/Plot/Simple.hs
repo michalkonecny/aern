@@ -1,4 +1,6 @@
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Plot.Simple
     Description :  simple utilities for plotting functions
@@ -9,15 +11,19 @@
     Stability   :  experimental
     Portability :  portable
     
-    Abstraction for drawing on a Cairo canvas.
+    Simple utilities for plotting functions.
 -}
 module Numeric.AERN.RmToRn.Plot.Simple
 (
-    plotFns
+    plotFns,
+    simpleFnMetaData
 )
 where
 
-import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
+import Numeric.AERN.RmToRn.Plot.FnView.FnData
+import Numeric.AERN.RmToRn.Plot.FnView.New
+import Numeric.AERN.RmToRn.Plot.Params
+
 import Numeric.AERN.RmToRn.Plot.CairoDrawable
 
 import Numeric.AERN.RmToRn
@@ -26,6 +32,8 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
+
+import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Graphics.UI.Gtk as Gtk
 import Control.Concurrent.STM
@@ -45,9 +53,9 @@ plotFns fnGroups =
     do
     -- enable multithreaded GUI:
     _ <- Gtk.unsafeInitGUIForThreadedRTS
-    fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
+    fnDataTV <- atomically $ newTVar $ FnData $ addPlotVar fns
     fnMetaTV <- atomically $ newTVar $ fnmeta
-    _ <- FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
+    _ <- new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
 --    Concurrent.forkIO $ signalFn fnMetaTV
     Gtk.mainGUI
     where
@@ -63,45 +71,86 @@ plotFns fnGroups =
     (groupNames, groupFns) = unzip fnGroups
     (fnNames, fns) = unzip $ map unzip groupFns 
     fnmeta =
-        (FV.defaultFnMetaData sampleFn)
+        (defaultFnMetaData sampleFn)
         {
-            FV.dataFnGroupNames = groupNames,
-            FV.dataFnNames = fnNames,
-            FV.dataFnStyles = map mkStyles fns,
-            FV.dataDomName = show var,
-            FV.dataDomL = domL,
-            FV.dataDomR = domR
+            dataFnGroupNames = groupNames,
+            dataFnNames = fnNames,
+            dataFnStyles = map mkStyles fns,
+            dataDomName = show var,
+            dataDomL = domL,
+            dataDomR = domR
         }
         where
         mkStyles fs = map snd $ zip fs colours
         colours = cycle [black, red, green, blue]
-        black = FV.defaultFnPlotStyle
-        red = FV.defaultFnPlotStyle 
+        black = defaultFnPlotStyle
+        red = defaultFnPlotStyle 
             { 
-                FV.styleOutlineColour = Just (0.8,0.2,0.2,1), 
-                FV.styleFillColour = Just (0.8,0.2,0.2,0.1) 
+                styleOutlineColour = Just (0.8,0.2,0.2,1), 
+                styleFillColour = Just (0.8,0.2,0.2,0.1) 
             } 
-        green = FV.defaultFnPlotStyle 
+        green = defaultFnPlotStyle 
             { 
-                FV.styleOutlineColour = Just (0.2,0.8,0.2,1), 
-                FV.styleFillColour = Just (0.2,0.8,0.2,0.1) 
+                styleOutlineColour = Just (0.2,0.8,0.2,1), 
+                styleFillColour = Just (0.2,0.8,0.2,0.1) 
             } 
-        blue = FV.defaultFnPlotStyle 
+        blue = defaultFnPlotStyle 
             { 
-                FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
-                FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
+                styleOutlineColour = Just (0.1,0.1,0.8,1), 
+                styleFillColour = Just (0.1,0.1,0.8,0.1) 
             } 
 
+    
+simpleFnMetaData :: 
+      (fnInfo ~ (String, FnPlotStyle, Bool), 
+       HasZero (Domain t), HasOne (Domain t), HasDomainBox t) 
+      =>
+      t
+      -> Rectangle (Domain f) -- ^ initial crop
+      -> Maybe ColourRGBA -- ^ background colour
+      -> Int -- ^ number of samples to take of each function per viewable region
+      -> [(String, [fnInfo])] -- ^ information on plotted function groups (names, plot colours, whether shown initially)
+      -> FnMetaData f
+simpleFnMetaData sampleFn rect bgrColour samplesPerUnit (groups :: [(String, [fnInfo])]) =
+        (defaultFnMetaData sampleFn)
+        {
+            dataFnGroupNames = map getGroupName groups,
+            dataFnNames = mapGroupsFns getFnName, 
+            dataFnStyles = mapGroupsFns getFnStyle,
+            dataDefaultActiveFns = mapGroupsFns getFnEnabled,
+            dataDomL = domL,
+            dataDomR = domR,
+            dataValLO = valLO,
+            dataValHI = valHI,
+            dataDefaultEvalPoint = domR,
+            dataDefaultCanvasParams =
+                (defaultCanvasParams sampleDom)
+                {
+                    cnvprmCoordSystem = CoordSystemLinear rect,
+                    cnvprmBackgroundColour = bgrColour,
+                    cnvprmSamplesPerUnit = samplesPerUnit
+                }
+        }
+        where
+        (Rectangle valHI valLO domL domR) = rect
+        sampleDom = getSampleDomValue sampleFn
+        getGroupName (name, _) = name
+        getGroupContent (_, content) = content
+        mapGroupsFns :: (fnInfo -> t) -> [[t]]
+        mapGroupsFns f = map (map f . getGroupContent) groups 
+        getFnName (name, _, _) = name
+        getFnStyle (_, style, _) = style
+        getFnEnabled (_, _, enabled) = enabled
     
 
 addPlotVar :: 
     (HasDomainBox f)
     =>
-    [[f]] -> [[(FV.GraphOrParamPlotFn f, Var f)]]
+    [[f]] -> [[(GraphOrParamPlotFn f, Var f)]]
 addPlotVar fns =
     map (map addV) fns
     where
-    addV fn = (FV.GraphPlotFn fn, plotVar)
+    addV fn = (GraphPlotFn fn, plotVar)
         where
         (plotVar : _) = vars
         vars = map fst $ getVarDoms fn   
