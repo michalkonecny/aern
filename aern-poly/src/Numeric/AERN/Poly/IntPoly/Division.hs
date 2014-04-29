@@ -23,62 +23,111 @@ module Numeric.AERN.Poly.IntPoly.Division
 where
     
 import Numeric.AERN.Poly.IntPoly.IntPoly
+import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.Conversion ()
 import Numeric.AERN.Poly.IntPoly.Multiplication ()
 import Numeric.AERN.Poly.IntPoly.Evaluation ()
 
 import Numeric.AERN.RmToRn
 
+import Numeric.AERN.RmToRn.RefinementOrderRounding.Reciprocal (recipOutUsingTauEff)
+
 --import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import qualified 
+       Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
-import qualified Numeric.AERN.RefinementOrder as RefOrd
+import Numeric.AERN.RealArithmetic.Measures
 
-import Numeric.AERN.Basics.SizeLimits
+import qualified 
+       Numeric.AERN.RefinementOrder as RefOrd
+
+--import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.Effort
 
 --import Numeric.AERN.Misc.Debug
 
 
 instance
-    (Ord var, Show var, Show cf, Show (SizeLimits cf),
-     ArithInOut.RoundedReal cf, 
-     HasAntiConsistency cf, 
-     RefOrd.IntervalLike cf)
+   (ArithInOut.RoundedReal cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
     =>
     ArithInOut.RoundedDivideEffort (IntPoly var cf) 
     where
     type DivEffortIndicator (IntPoly var cf) = 
-        (EvaluationEffortIndicator (IntPoly var cf),
-         ArithInOut.MultEffortIndicator (IntPoly var cf))
-    divDefaultEffort p = 
-        (evaluationDefaultEffort p,
-         ArithInOut.multDefaultEffort p)  
+       (ArithInOut.RoundedRealEffortIndicator cf,
+        ArithInOut.MixedFieldOpsEffortIndicator (IntPoly var cf) cf,
+        Int1To10)
+    divDefaultEffort p@(IntPoly cfg _) = 
+        (ArithInOut.roundedRealDefaultEffort sampleCf,
+         ArithInOut.mixedFieldOpsDefaultEffort p sampleCf,
+         Int1To10 (maxdeg `div` 3))
+         where
+         sampleCf = ipolycfg_sample_cf cfg
+         maxdeg = ipolycfg_maxdeg cfg
 
 instance
-    (ArithInOut.RoundedReal cf,
-     HasAntiConsistency cf,
-     RefOrd.IntervalLike cf,
-     Ord var, Show var, Show cf) 
+   (Ord var, Show var, Show cf, Show (Imprecision cf),
+    HasAntiConsistency cf, ArithInOut.RoundedReal cf,
+    RefOrd.IntervalLike cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
     =>
     ArithInOut.RoundedDivide (IntPoly var cf) 
     where
-    divOutEff (effEval, effMulF) p1 = 
-        divOutEffDummyViaRange effEval effMulF p1
+    divOutEff (effRealD, effFldFD, Int1To10 tauDegree) p1 p2 = 
+        divOutEffUsingRecip (effRealD, effRealD, effFldFD) tauDegree p1 p2
     divInEff = 
-        error "aern-poly: IntPoly does not support inwards-rounded multiplication" 
+        error "aern-poly: IntPoly does not support inwards-rounded division" 
 
-divOutEffDummyViaRange ::
-    (CanEvaluate f,
-     HasConstFns f,
-     ArithInOut.RoundedMultiply f)
-    =>
-    (EvaluationEffortIndicator f) ->
-    (ArithInOut.MultEffortIndicator f) ->
-    f -> f -> f
-divOutEffDummyViaRange effEval effMulF f1 f2 =
-    ArithInOut.multOutEff effMulF f1 $ newConstFnFromSample f1 f2Range
+divOutEffUsingRecip :: 
+   (Ord var, Show var, Show cf, Show (Imprecision cf),
+    HasAntiConsistency cf, ArithInOut.RoundedReal cf,
+    RefOrd.IntervalLike cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
+   =>
+   (ArithInOut.RoundedRealEffortIndicator cf,
+    ArithInOut.RoundedRealEffortIndicator cf,
+    ArithInOut.MixedFieldOpsEffortIndicator (IntPoly var cf) cf)
+    -> Int -- ^ order or the tau approximation of the reciprocal 
+    -> IntPoly var cf 
+    -> IntPoly var cf 
+    -> IntPoly var cf
+divOutEffUsingRecip effRecip@(effRingF, effRealD, _effFldFD) tauDegree f1 f2 =
+    f1 <*> f2Recip 
     where
-    f2Range = evalAtPointOutEff effEval (getDomainBox f2) f2 
+    f2Recip =
+        case getConstantIfPolyConstant f2 of
+            Just c2 -> 
+                newConstFnFromSample sampleF (ArithInOut.recipOutEff effDivD c2)
+            _  | polyIsExact f2 == Just True ->
+                recipOutUsingTauEff effRecip tauDegree f2
+               | otherwise ->
+                RefOrd.fromEndpointsOut (f2RRecip, f2LRecip) -- flip because 1/x is decreasing
+                where
+                f2LRecip = recipOutUsingTauEff effRecip tauDegree f2L
+                f2RRecip = recipOutUsingTauEff effRecip tauDegree f2R
+                (f2L, f2R) = RefOrd.getEndpointsOut f2
+                
+    (<*>) = ArithInOut.multOutEff effMultF
+
+    effMultF = ArithInOut.ringEffortMult sampleF effRingF
+    sampleF = f1
+
+    effDivD = ArithInOut.fldEffortDiv sampleD effFldD
+    effFldD = ArithInOut.rrEffortField sampleD effRealD
+    sampleD = getSampleDomValue sampleF 
+
+--divOutEffDummyViaRange ::
+--    (CanEvaluate f,
+--     HasConstFns f,
+--     ArithInOut.RoundedMultiply f)
+--    =>
+--    (EvaluationEffortIndicator f) ->
+--    (ArithInOut.MultEffortIndicator f) ->
+--    f -> f -> f
+--divOutEffDummyViaRange effEval effMulF f1 f2 =
+--    ArithInOut.multOutEff effMulF f1 $ newConstFnFromSample f1 f2Range
+--    where
+--    f2Range = evalAtPointOutEff effEval (getDomainBox f2) f2 
 

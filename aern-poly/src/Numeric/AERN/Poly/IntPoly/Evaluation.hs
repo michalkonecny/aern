@@ -168,15 +168,14 @@ instance
         sample = ipolycfg_sample_cf cfg
     
 valuesAreExact :: 
-    HasImprecision t 
+    HasConsistency t 
     => 
     [t] -> Bool
 valuesAreExact values =
     and $ map isCertainlyExact values
     where
     isCertainlyExact val = 
-        isExactEff (imprecisionDefaultEffort val) val == Just True 
-
+        isExact val == Just True 
     
 instance
     (Ord var, Show var,
@@ -228,7 +227,7 @@ data PolyEvalMonoOps var cf val =
 
 
 coeffPolyEvalOpsOut ::
-    (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf)
+    (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf, HasConsistency cf)
     =>
    (ArithInOut.RoundedRealEffortIndicator cf) ->
    Int ->
@@ -252,7 +251,7 @@ coeffPolyEvalOpsOut eff depth sample =
                 getWidthAsDouble
                 eff
     isDefinitelyExact a =
-        (isExactEff $ ArithInOut.rrEffortImprecision a eff) a == Just True
+        isExact a == Just True
     split val = (val1, val2)
         where
         val1 = RefOrd.fromEndpointsOut (valL, valM)

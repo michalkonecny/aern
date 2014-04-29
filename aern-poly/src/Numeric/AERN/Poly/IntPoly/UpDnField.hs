@@ -241,9 +241,10 @@ instance
 {----- up/dn division -----}    
 
 instance
-    (Ord var, Show var, Show cf, HasAntiConsistency cf,
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf) 
+   (Ord var, Show var, Show cf, Show (Imprecision cf),
+    HasAntiConsistency cf, ArithInOut.RoundedReal cf,
+    RefOrd.IntervalLike cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
     => 
     ArithUpDn.RoundedDivideEffort (IntPoly var cf) 
     where
@@ -257,11 +258,10 @@ instance
         sampleCf = ipolycfg_sample_cf cfg
 
 instance
-    (ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf,  
-     HasAntiConsistency cf,
-     Ord var, 
-     Show var, Show cf) 
+   (Ord var, Show var, Show cf, Show (Imprecision cf),
+    HasAntiConsistency cf, ArithInOut.RoundedReal cf,
+    RefOrd.IntervalLike cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
     =>
     ArithUpDn.RoundedDivide (IntPoly var cf) 
     where
@@ -272,31 +272,32 @@ instance
   
 
 instance
-    (Ord var, Show var, Show cf, HasAntiConsistency cf,
-     ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf) 
+   (Ord var, Show var, Show cf, Show (Imprecision cf),
+    HasAntiConsistency cf, ArithInOut.RoundedReal cf,
+    RefOrd.IntervalLike cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
     => 
     ArithUpDn.RoundedFieldEffort (IntPoly var cf)
     where
     type FieldOpsEffortIndicator (IntPoly var cf) =
-        ((ArithInOut.RoundedRealEffortIndicator cf, Int1To10),
+        (ArithInOut.DivEffortIndicator (IntPoly var cf),
          RefOrd.GetEndpointsEffortIndicator cf)
     fieldOpsDefaultEffort sampleP = 
-        (evaluationDefaultEffort sampleP,
+        (ArithInOut.divDefaultEffort sampleP,
          RefOrd.getEndpointsDefaultEffort sampleCf)
         where
         sampleCf = getSampleDomValue sampleP
-    fldEffortAdd _ ((effD, _), effGE) = (effD, effGE)  
-    fldEffortMult _ ((effD, _), effGE) = (effD, effGE)
-    fldEffortPow _ ((effD, _), effGE) = (effD, effGE)
-    fldEffortDiv _ (effEval@(effD, _), effGE) = ((effEval, effD), effGE)
+    fldEffortAdd _ ((effD, _, _), effGE) = (effD, effGE)  
+    fldEffortMult _ ((effD, _, _), effGE) = (effD, effGE)
+    fldEffortPow _ ((effD, _, _), effGE) = (effD, effGE)
+    fldEffortDiv _ (effDiv, effGE) = (effDiv, effGE)
   
 instance 
-    (ArithInOut.RoundedReal cf,
-     HasAntiConsistency cf,
-     RefOrd.IntervalLike cf,
-     Show var, Ord var, Show cf,
-     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+   (Ord var, Show var, Show cf,
+    HasAntiConsistency cf, ArithInOut.RoundedReal cf,
+    RefOrd.IntervalLike cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf, 
+    NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
     =>
     ArithUpDn.RoundedField (IntPoly var cf)
 

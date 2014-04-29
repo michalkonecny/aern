@@ -138,9 +138,8 @@ polyPolyEvalOps effCmp@(_,(effCf, Int1To10 maxSplitDepth)) sampleP sampleCf =
         let (</\>) = RefOrd.meetOutEff effJoinCf in
         polyJoinWith (zero sampleCf) $ uncurry (</\>)
     isDefinitelyExact p = 
-        polyIsExactEff effImpr p == Just True
+        polyIsExact p == Just True
     effJoinCf = ArithInOut.rrEffortJoinMeet sampleCf effCf
-    effImpr = ArithInOut.rrEffortImprecision sampleCf effCf
         
         
         

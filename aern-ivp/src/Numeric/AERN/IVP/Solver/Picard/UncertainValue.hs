@@ -399,12 +399,14 @@ solveODEIVPUncertainValueExactTime_UsingPicard
         wrappedParamValuesAtTEnd =
             parameteriseInitialValues sizeLimits componentNames valuesAtEnd
         haveAnExactDomain =
-            or $ map isExact $ domains
+            or $ map isExactDom $ domains
             where
-            isExact dom =
-                (domL ==? domR) == Just True
-                where
-                (domL, domR) = RefOrd.getEndpointsOut dom
+            isExactDom dom =
+                isExact dom == Just True
+--            isExact dom =
+--                (domL ==? domR) == Just True
+--                where
+--                (domL, domR) = RefOrd.getEndpointsOut dom
             domains = map snd $ toAscList $ getDomainBox fn
             (fn : _) = fns 
         shrinkWrappedParamValuesAtTEnd =

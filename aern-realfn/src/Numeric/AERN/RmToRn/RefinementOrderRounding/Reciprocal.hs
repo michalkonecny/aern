@@ -13,7 +13,11 @@
     Approximate pointwise reciprocal of a function
 -}
 
-module Numeric.AERN.RmToRn.RefinementOrderRounding.Reciprocal where
+module Numeric.AERN.RmToRn.RefinementOrderRounding.Reciprocal 
+(
+    recipOutUsingTauEff
+)
+where
 
 import Numeric.AERN.RmToRn.RefinementOrderRounding.ChebyshevPoly (chebyshevOut)
 
@@ -35,7 +39,7 @@ _ = trace
 {-|
    Pointwise reciprocal of a function, outwards rounded.
 -}
-recipOutEff ::
+recipOutUsingTauEff ::
     (HasOne f,
      CanEvaluate f, 
      ArithInOut.RoundedRing f, 
@@ -56,7 +60,7 @@ recipOutEff ::
    
    The variable names used below correspond to names used in the above page.
 -}
-recipOutEff (effRingF, effRealD, effFldFD) kOrig fOrig =
+recipOutUsingTauEff (effRingF, effRealD, effFldFD) kOrig fOrig =
     case True of
         _ | (bOrig NumOrd.>? d0) == Just True -- f is entirely positive 
             -> stage2 (bOrig, cOrig) fOrig
@@ -75,23 +79,23 @@ recipOutEff (effRingF, effRealD, effFldFD) kOrig fOrig =
     k = max 2 kOrig
 
     stage2 (b,c) f = 
-        trace
-        (
-            "recipOut stage2:"
-            ++ "\n f = " ++ show f
-            ++ "\n b = " ++ show b
-            ++ "\n c = " ++ show c
-            ++ "\n d = " ++ show d
-            ++ "\n x = " ++ show x
-            ++ "\n rangeOfX = " ++ show (evalAtPointOut (getDomainBox x) x)
-            ++ "\n k = " ++ show k
-            ++ "\n coeffsPre = " ++ show coeffsPre
-            ++ "\n tau = " ++ show tau
-            ++ "\n coeffs = " ++ show coeffs
-            ++ "\n pmTauErrorBound = " ++ show pmTauErrorBound
-            ++ "\n 1/f = " ++ (show $ result)
-        )
-        result
+--        trace
+--        (
+--            "recipOut stage2:"
+--            ++ "\n f = " ++ show f
+--            ++ "\n b = " ++ show b
+--            ++ "\n c = " ++ show c
+--            ++ "\n d = " ++ show d
+--            ++ "\n x = " ++ show x
+--            ++ "\n rangeOfX = " ++ show (evalAtPointOut (getDomainBox x) x)
+--            ++ "\n k = " ++ show k
+--            ++ "\n coeffsPre = " ++ show coeffsPre
+--            ++ "\n tau = " ++ show tau
+--            ++ "\n coeffs = " ++ show coeffs
+--            ++ "\n pmTauErrorBound = " ++ show pmTauErrorBound
+--            ++ "\n 1/f = " ++ (show $ result)
+--        )
+        result -- TODO: check that the computation of coeffs has not overflown
         where
         result = yOfX ~<*>. twoOverCminusB
     

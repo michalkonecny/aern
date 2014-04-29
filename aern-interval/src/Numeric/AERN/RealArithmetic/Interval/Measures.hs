@@ -50,7 +50,7 @@ instance (HasDistance e, ArithInOut.RoundedAdd (Distance e)) =>
         distR = distanceBetweenEff effortDist r1 r2
         (<+>) = ArithInOut.addOutEff effortAdd
     
-instance 
+instance
     (HasDistance e, RefOrd.RoundedLattice (Distance e), Neg (Distance e), 
      NumOrd.PartialComparison e) => 
     HasImprecision (Interval e) 
@@ -74,10 +74,4 @@ instance
         where
         (<⊓>) = RefOrd.meetOutEff effortMeet
         dist = distanceBetweenEff effortDist l r
-    isExactEff _eff@(_effortDist, _effortMeet, effortConsistency) i =
-        case (isConsistentEff effortConsistency i, isAntiConsistentEff effortConsistency i) of
-            (Just True, Just True) -> Just True
-            (Just False, _) -> Just False
-            (_, Just False) -> Just False
-            _ -> Nothing
     

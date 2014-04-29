@@ -41,7 +41,11 @@ varDoms = [("x", (-1) </\> 1)]
 
 {-| example size limits for polynomials -}
 sizeLimits :: IntPolySizeLimits DI
-sizeLimits = defaultIntPolySizeLimits () 
+sizeLimits = 
+    (defaultIntPolySizeLimits ())
+        {
+            ipolylimits_maxdeg = 11
+        }
 
 {-| The identity @\x:[0,1] -> x@.  This is a simple example of a projection.  -}
 x :: PI
@@ -65,7 +69,7 @@ plotSqrt :: IO ()
 plotSqrt = 
     FV.plotFns 
         [("sqrt example", 
-            [(("(\\x:[-1,1].x)", FV.blue, True), x),
-             (("(\\x:[-1,1].1)", FV.blue, True), c1),
-             (("(\\x:[-1,1].sqrt(x+1))", FV.blue, True), sqrtXplus2)])]
+            [(("(\\x:[-1,1].x)", FV.black, True), x),
+             (("(\\x:[-1,1].1)", FV.black, True), c1),
+             (("(\\x:[-1,1].sqrt(x+2))", FV.green, True), sqrtXplus2)])]
 

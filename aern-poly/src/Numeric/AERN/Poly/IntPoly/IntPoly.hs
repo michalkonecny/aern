@@ -352,23 +352,32 @@ flipConsistencyPoly (IntPoly cfg terms) =
     IntPoly cfg $ termsMapCoeffs flipConsistency terms 
     
 polyIsExactEff ::
-    (HasImprecision cf)
+    (HasConsistency cf)
     =>
-    (ImprecisionEffortIndicator cf) ->
+    (ConsistencyEffortIndicator cf) ->
     (IntPoly var cf) ->
     Maybe Bool
-polyIsExactEff effImpr _p@(IntPoly _ terms) = termsAreExactEff effImpr terms 
+polyIsExactEff effCons _p@(IntPoly _ terms) = termsAreExactEff effCons terms 
+
+polyIsExact ::
+    (HasConsistency cf)
+    =>
+    (IntPoly var cf) ->
+    Maybe Bool
+polyIsExact p@(IntPoly cfg _) = polyIsExactEff (consistencyDefaultEffort sampleCF) p
+    where
+    sampleCF = ipolycfg_sample_cf cfg
 
 termsAreExactEff ::
-    (HasImprecision cf)
+    (HasConsistency cf)
     =>
-    (ImprecisionEffortIndicator cf) ->
+    (ConsistencyEffortIndicator cf) ->
     (IntPolyTerms var cf) ->
     Maybe Bool
-termsAreExactEff effImpr (IntPolyC val) = isExactEff effImpr val 
-termsAreExactEff effImpr (IntPolyV _var polys) =
+termsAreExactEff effCons (IntPolyC val) = isExactEff effCons val 
+termsAreExactEff effCons (IntPolyV _var polys) =
     do -- the Maybe monad, ie if any coefficient returns Nothing, so does this function 
-    results <- mapM (termsAreExactEff effImpr) $ IntMap.elems polys
+    results <- mapM (termsAreExactEff effCons) $ IntMap.elems polys
     return $ and results
 
 getConstantIfPolyConstant ::
