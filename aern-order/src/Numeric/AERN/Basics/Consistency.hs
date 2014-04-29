@@ -48,6 +48,16 @@ class
             Just Exact -> Just True
             Just _ -> Just False
             _ -> Nothing
+    isExactEff :: (ConsistencyEffortIndicator t) -> t -> Maybe Bool
+    isExactEff eff e =
+        case getConsistencyEff eff e of
+            Just Exact -> Just True
+            Just _ -> Just False
+            _ -> Nothing
+
+isExact :: (HasConsistency t) => t -> Maybe Bool
+isExact e =
+    isExactEff (consistencyDefaultEffort e) e
     
 class (HasConsistency t) => HasAntiConsistency t where
     isAntiConsistentEff :: (ConsistencyEffortIndicator t) -> t -> Maybe Bool

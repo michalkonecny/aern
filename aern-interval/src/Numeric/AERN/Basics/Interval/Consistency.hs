@@ -36,8 +36,8 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import Test.QuickCheck
 import Numeric.AERN.Misc.QuickCheck
 
-import Test.Framework (testGroup, Test)
-import Test.Framework.Providers.QuickCheck2 (testProperty)
+--import Test.Framework (testGroup, Test)
+--import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 
 instance (NumOrd.PartialComparison e) => HasConsistency (Interval e)
@@ -52,7 +52,9 @@ instance (NumOrd.PartialComparison e) => HasConsistency (Interval e)
             (Just True, _) -> Just Consistent
             (_, Just True) -> Just Anticonsistent
             (Just False, Just False) -> Just Inconsistent
-            _ -> Nothing 
+            _ -> Nothing
+    isExactEff effort (Interval l r) =
+        NumOrd.pEqualEff effort r l
 
 instance (NumOrd.PartialComparison e) => HasAntiConsistency (Interval e)
     where

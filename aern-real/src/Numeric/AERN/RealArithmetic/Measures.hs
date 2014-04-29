@@ -86,15 +86,14 @@ testsDistance (name, sample) =
 
 {-|
    A numeric measure of imprecision of approximations.
-   A zero imprecision means the approximation is exact.
    The imprecision type should support Partial comparison.
+   A zero imprecision usually means that the approximation is exact.
 -}
 class HasImprecision t where
     type Imprecision t
     type ImprecisionEffortIndicator t
     imprecisionDefaultEffort :: t -> ImprecisionEffortIndicator t
     imprecisionOfEff :: ImprecisionEffortIndicator t -> t -> Imprecision t
-    isExactEff :: ImprecisionEffortIndicator t -> t -> Maybe Bool
 
 propImprecisionDecreasesWithRefinement ::
     (HasImprecision t, NumOrd.PartialComparison (Imprecision t)) =>
@@ -129,8 +128,8 @@ instance
         effImpr = imprecisionDefaultEffort h
     imprecisionOfEff (effImpr, effMax) list@(_:_) =
         foldl1 (NumOrd.maxOutEff effMax) $ map (imprecisionOfEff effImpr) list
-    isExactEff (eff, _) list =
-        fmap and $ sequence $ map (isExactEff eff) list
+--    isExactEff (eff, _) list =
+--        fmap and $ sequence $ map (isExactEff eff) list
          
          
 {-|

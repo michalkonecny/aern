@@ -111,8 +111,8 @@ instance
         ) 
     roundedRealDefaultEffort fn =
         (
-          (NumOrd.pCompareDefaultEffort fn,
-           ArithUpDn.absDefaultEffort fn)
+         (NumOrd.pCompareDefaultEffort fn,
+          ArithUpDn.absDefaultEffort fn)
         ,
          (RefOrd.getEndpointsDefaultEffort fn,
           RefOrd.fromEndpointsDefaultEffort fn)
@@ -158,7 +158,8 @@ instance
         effFromR = ArithInOut.rrEffortFromRational sampleCf effCf
         sampleCf = getSampleDomValue sampleP
     rrEffortAbs _ ((_, effAbs),_,_) = effAbs
-    rrEffortField _ (((_, effEval),_),(effGetE, _),_) = (effEval, effGetE)
+    rrEffortField _ (((_, effEval),_),(effGetE, _),_) = 
+        error "ArithUpDn.rrEffortField not defined for IntPoly at present" --(effEval, effGetE)
     rrEffortIntMixedField sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effIntField, effGetE)
         where
         effIntField = ArithInOut.rrEffortIntMixedField sampleCf effCf
