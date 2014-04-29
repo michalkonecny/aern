@@ -171,6 +171,7 @@ plotODEIVPBisectionEnclosures
             rect
             Nothing
             200
+            tVar
             (zip segNames $ map addMetaToFnNames fnNames)
         where
         addMetaToFnNames names =
