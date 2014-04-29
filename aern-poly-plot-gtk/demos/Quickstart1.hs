@@ -24,7 +24,8 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 
 -- abstract function processing operations:
 import Numeric.AERN.RmToRn (newConstFn, newProjection)
-import Numeric.AERN.RmToRn.Plot.Simple (plotFns)
+import qualified 
+       Numeric.AERN.RmToRn.Plot.FnView as FV
 
 {----- type definitions -----}
 type DI = Interval Double
@@ -51,8 +52,8 @@ c1 :: PI
 c1 = newConstFn sizeLimits varDoms 1
 
 {-| The function @\x:[0,1] -> sqrt(x+1)@. -}
-sqrtXplus1 :: PI
-sqrtXplus1 = ArithInOut.sqrtOut $ x + c1 + c1
+sqrtXplus2 :: PI
+sqrtXplus2 = ArithInOut.sqrtOut $ x + c1 + c1
 
 {-
     To make the following plotting code work, the file FnView.glade
@@ -62,9 +63,9 @@ sqrtXplus1 = ArithInOut.sqrtOut $ x + c1 + c1
 -}
 plotSqrt :: IO ()
 plotSqrt = 
-    plotFns 
+    FV.plotFns 
         [("sqrt example", 
-            [("(\\x:[0,1].x)", x),
-             ("(\\x:[0,1].1)", c1),
-             ("(\\x:[0,1].sqrt(x+1))", sqrtXplus1)])]
+            [(("(\\x:[-1,1].x)", FV.blue, True), x),
+             (("(\\x:[-1,1].1)", FV.blue, True), c1),
+             (("(\\x:[-1,1].sqrt(x+1))", FV.blue, True), sqrtXplus2)])]
 

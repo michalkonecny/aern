@@ -87,7 +87,7 @@ plotFR :: IO ()
 plotFR = 
     FV.plotFns 
         [("recip example", 
-            [(("(\\x:[-1,1].1)", FV.black, False), Interval c1 c1),
+            [(("(\\x:[-1,1].1)", FV.black, True), Interval c1 c1),
              (("(\\x:[-1,1].1/(x+2))[ord2]", FV.blue, True), fRI 2),
              (("(\\x:[-1,1].1/(x+2) * (x+2))[ord2]", FV.blue, True), fRfI 2),
              (("(\\x:[-1,1].1/(x+2))[ord2]", FV.blue, True), fRI 3),
