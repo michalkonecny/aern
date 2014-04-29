@@ -16,6 +16,10 @@ module Numeric.AERN.RmToRn.Plot.Params
 (
     FnPlotStyle(..),
     defaultFnPlotStyle,
+    black,
+    red,
+    green,
+    blue,
     ColourRGBA,
     CanvasParams(..),
     defaultCanvasParams,
@@ -58,6 +62,27 @@ defaultFnPlotStyle =
         styleFillColour = Just (0,0,0,0.1), -- transparent black
         styleOutlineThickness = 0.5
     }
+
+black :: FnPlotStyle
+black = defaultFnPlotStyle
+red :: FnPlotStyle
+red = defaultFnPlotStyle 
+    { 
+        styleOutlineColour = Just (0.8,0.2,0.2,1), 
+        styleFillColour = Just (0.8,0.2,0.2,0.1) 
+    } 
+green :: FnPlotStyle
+green = defaultFnPlotStyle 
+    { 
+        styleOutlineColour = Just (0.2,0.8,0.2,1), 
+        styleFillColour = Just (0.2,0.8,0.2,0.1) 
+    } 
+blue :: FnPlotStyle
+blue = defaultFnPlotStyle 
+    { 
+        styleOutlineColour = Just (0.1,0.1,0.8,1), 
+        styleFillColour = Just (0.1,0.1,0.8,0.1) 
+    } 
 
 
 data CanvasParams t =

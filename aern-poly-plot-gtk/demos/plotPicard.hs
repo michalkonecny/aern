@@ -4,7 +4,8 @@ module Main where
 import Numeric.AERN.Poly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
-import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
+import qualified 
+       Numeric.AERN.RmToRn.Plot.FnView as FV
 import Numeric.AERN.RmToRn.Plot.CairoDrawable
 
 import Numeric.AERN.RmToRn
@@ -176,6 +177,7 @@ functionsExpDwindle subname =
                 (FV.Rectangle  1 (-1) 0 (tEnd)) -- initial plotting region
                 Nothing
                 200 -- samplesPerUnit
+                tVar
                 [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
             where
             functionInfos =
@@ -242,6 +244,7 @@ functionsExpMirror subname =
                 (FV.Rectangle  2.05 (-0.1) (-0.05) (tEnd+0.05)) -- initial plotting region
                 Nothing
                 200 -- samplesPerUnit
+                tVar
                 [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
             where
             functionInfos =
@@ -310,6 +313,7 @@ functionsSpringMass subname =
                 (FV.Rectangle  1.125 (-1.125) (-0.5) (tEnd <+> 0.5)) -- initial plotting region
                 Nothing
                 200 -- samplesPerUnit
+                tVar
                 [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
             where
             functionInfos =
@@ -373,6 +377,7 @@ functionsVanDerPol subname =
                 (FV.Rectangle  2 (-2) 0 tEnd) -- initial plotting region
                 Nothing
                 200 -- samplesPerUnit
+                tVar
                 [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
             where
             functionInfos =

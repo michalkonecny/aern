@@ -44,7 +44,8 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 -- abstract function processing operations:
 import Numeric.AERN.RmToRn (newConstFn, newProjection)
-import Numeric.AERN.RmToRn.Plot.Simple (plotFns)
+import qualified 
+       Numeric.AERN.RmToRn.Plot.FnView as FV
 
 {----- non-AERN imports -----}
 -- none at the moment
@@ -64,7 +65,7 @@ type PI = Interval Poly
     (https://aern.googlecode.com/hg/aern-realfn-plot-gtk/FnView.glade)
 -}
 basicFnPlot :: IO ()
-basicFnPlot = plotFns [("basic fns", [("(\\x.x)", x),("(\\x.1)", c1)])]
+basicFnPlot = FV.plotFns [("basic fns", [(("(\\x.x)", FV.black, True), x),(("(\\x.1)", FV.black, True), c1)])]
 
 {-| The identity @\x:[0,1] -> x@.  This is a simple example of a projection.  -}
 x :: PI
@@ -106,7 +107,7 @@ example12 :: PI
 example12 = x <^> 2 -- outer-rounded power with natural exponent
 
 basicArithPlot :: IO ()
-basicArithPlot = plotFns [("arith", [("(\\x.x+1)", x <+> c1),("(\\x.x^2)", x <^> 2)])]
+basicArithPlot = FV.plotFns [("arith", [(("(\\x.x+1)", FV.black, True), x <+> c1),(("(\\x.x^2)", FV.black, True), x <^> 2)])]
 
 example13 :: PI
 example13 = (x <+>| (1 :: Int)) -- scalar shifting (mixed-type arithmetic)
@@ -127,7 +128,7 @@ sizeLimitsD4 :: IntPolySizeLimits DI
 sizeLimitsD4 = sizeLimits { ipolylimits_maxdeg = 4 }
 
 roundingPlot :: IO ()
-roundingPlot = plotFns [("outer rounding", [("rounded", example16),("exact", example16E)])]
+roundingPlot = FV.plotFns [("outer rounding", [(("rounded", FV.blue, True), example16),(("exact", FV.black, True), example16E)])]
 
 example17 :: PI
 example17 = (x + c1) -- Num instance is synonymous to outer-rounded operations

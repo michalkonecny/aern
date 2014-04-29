@@ -25,7 +25,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding ((<+>))
 
 -- abstract function processing operations:
 import Numeric.AERN.RmToRn (newConstFn, newProjection)
-import Numeric.AERN.RmToRn.Plot.Simple (plotFns)
+import qualified Numeric.AERN.RmToRn.Plot.FnView as FV
 
 import Numeric.AERN.RmToRn.RefinementOrderRounding.Reciprocal (recipOutEff)
 
@@ -85,13 +85,15 @@ effRecip =
 
 plotFR :: IO ()
 plotFR = 
-    plotFns 
+    FV.plotFns 
         [("recip example", 
-            [("(\\x:[-1,1].1)", Interval c1 c1),
-             ("(\\x:[-1,1].1/(x+2))[ord2]", fRI 2),
-             ("(\\x:[-1,1].1/(x+2) * (x+2))[ord2]", fRfI 2),
-             ("(\\x:[-1,1].1/(x+2))[ord5]", fRI 5),
-             ("(\\x:[-1,1].1/(x+2) * (x+2))[ord5]", fRfI 5)
+            [(("(\\x:[-1,1].1)", FV.black, False), Interval c1 c1),
+             (("(\\x:[-1,1].1/(x+2))[ord2]", FV.blue, True), fRI 2),
+             (("(\\x:[-1,1].1/(x+2) * (x+2))[ord2]", FV.blue, True), fRfI 2),
+             (("(\\x:[-1,1].1/(x+2))[ord2]", FV.blue, True), fRI 3),
+             (("(\\x:[-1,1].1/(x+2) * (x+2))[ord2]", FV.blue, True), fRfI 3),
+             (("(\\x:[-1,1].1/(x+2))[ord5]", FV.black, True), fRI 4),
+             (("(\\x:[-1,1].1/(x+2) * (x+2))[ord5]", FV.black, True), fRfI 4)
             ])
         ]
     where
