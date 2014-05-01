@@ -138,34 +138,36 @@ instance
     CanEvaluate (IntPoly var cf)
     where
     type (EvaluationEffortIndicator (IntPoly var cf)) = 
-        (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)
+        IntPolyEffort cf
     evaluationDefaultEffort (IntPoly cfg _) =
-        (ArithInOut.roundedRealDefaultEffort (ipolycfg_sample_cf cfg),
-         Int1To10 maxSplitSize)
-        where
-        maxSplitSize = 2^maxDeg
-        maxDeg = ipolycfg_maxdeg cfg
-    evalAtPointOutEff (effCf, Int1To10 maxSplitDepth) valsMap p@(IntPoly cfg _) 
+        ipolycfg_effort cfg
+    evalAtPointOutEff eff valsMap p@(IntPoly cfg _) 
         | valuesAreExact valsLZ =
-            evalPolyAtPointOut effCf maxSplitDepth valsLZ p
+            evalPolyAtPointOut effCf maxSplitSize valsLZ p
         | otherwise =
-            evalPolyOnIntervalOut effCf maxSplitDepth valsLZ p
+            evalPolyOnIntervalOut effCf maxSplitSize valsLZ p
         where
         valsLZ = valsMapToValuesLZ (<->) cfg valsMap
         (<->) = ArithInOut.subtrOutEff effAdd
-        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample effCf
-        sample = ipolycfg_sample_cf cfg
+        effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
         
-    evalAtPointInEff (effCf, Int1To10 maxSplitDepth) valsMap p@(IntPoly cfg _) 
+        Int1To100 maxSplitSize = ipolyeff_evalMaxSplitSize eff
+        effCf = ipolyeff_cfRoundedRealEffort eff
+        sampleCf = ipolycfg_sample_cf cfg
+        
+    evalAtPointInEff eff valsMap p@(IntPoly cfg _) 
         | valuesAreExact valsLZ =
-            evalPolyAtPointIn effCf maxSplitDepth valsLZ p
+            evalPolyAtPointIn effCf maxSplitSize valsLZ p
         | otherwise =
-            evalPolyOnIntervalIn effCf maxSplitDepth valsLZ p
+            evalPolyOnIntervalIn effCf maxSplitSize valsLZ p
         where
         valsLZ = valsMapToValuesLZ (>-<) cfg valsMap
         (>-<) = ArithInOut.subtrInEff effAdd
-        effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample effCf
-        sample = ipolycfg_sample_cf cfg
+        effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
+
+        Int1To100 maxSplitSize = ipolyeff_evalMaxSplitSize eff
+        effCf = ipolyeff_cfRoundedRealEffort eff
+        sampleCf = ipolycfg_sample_cf cfg
     
 valuesAreExact :: 
     HasConsistency t 
@@ -185,16 +187,21 @@ instance
     =>
     HasEvalOps (IntPoly var cf) cf
     where
-    type EvalOpsEffortIndicator (IntPoly var cf) cf = 
-        (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)
-    evalOpsDefaultEffort _p@(IntPoly cfg _) sampleCf = 
-        (ArithInOut.roundedRealDefaultEffort sampleCf, Int1To10 depth)
-        where
-        depth = 1 + (maxDeg `div` 2)
-        maxDeg = ipolycfg_maxdeg cfg
+    type EvalOpsEffortIndicator (IntPoly var cf) cf =
+        IntPolyEffort cf
+    evalOpsDefaultEffort _p@(IntPoly cfg _) _sampleCf = 
+        ipolycfg_effort cfg
+--        (ArithInOut.roundedRealDefaultEffort sampleCf, Int1To10 depth)
+--        where
+--        depth = 1 + (maxDeg `div` 2)
+--        maxDeg = ipolycfg_maxdeg cfg
          
-    evalOpsEff (eff, Int1To10 depth) _sampleP sampleCf =
-        coeffPolyEvalOpsOut eff depth sampleCf
+    evalOpsEff eff _sampleP sampleCf =
+        coeffPolyEvalOpsOut effCf maxSplitSize sampleCf
+        where
+        Int1To100 maxSplitSize = ipolyeff_evalMaxSplitSize eff
+        effCf = ipolyeff_cfRoundedRealEffort eff
+        
 
 data PolyEvalOps var cf val =
     PolyEvalOps
@@ -292,11 +299,11 @@ instance
     where
     type Distance (IntPoly var cf) = cf
     type DistanceEffortIndicator (IntPoly var cf) =
-        (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)
+        IntPolyEffort cf
     distanceDefaultEffort p =
         evaluationDefaultEffort p
-    distanceBetweenEff effEval@(effCf, _) p1 p2 =
-        evalAtPointOutEff effEval dombox diff
+    distanceBetweenEff eff p1 p2 =
+        evalAtPointOutEff eff dombox diff
         where
         dombox = getDomainBox diff
         diff = polyJoinWith (zero sampleCf) (uncurry $ ArithInOut.subtrOutEff effAdd) (p1, p2) 
@@ -304,6 +311,7 @@ instance
         effAdd = 
             ArithInOut.fldEffortAdd sampleCf $ 
                 ArithInOut.rrEffortField sampleCf effCf
+        effCf = ipolyeff_cfRoundedRealEffort eff
         
 
 --instance

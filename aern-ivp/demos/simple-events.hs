@@ -449,17 +449,23 @@ solveHybridIVPBisect
                 delta m t0Var minStepSize maxStepSize splitImprovementThreshold
                     hybivp
 
---    effSizeLims = effCf
-    effCompose = (effCf, Int1To10 substSplitSizeLimit)
-    effEval = (effCf, Int1To10 substSplitSizeLimit)
-    effPEval = (effCf, Int1To10 substSplitSizeLimit)
+    effCompose = effIntPoly
+    effEval = effIntPoly
+    effPEval = effIntPoly
     effInteg = effCf
     effAddFn = effCf
     effMultFn = effCf
---    effMultFn = effCf
     effAddFnDom =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-    effInclFn = ((Int1To1000 0, (effCf, Int1To10 20)), ())
+    effInclFn = (effIntPoly, ())
+    effIntPoly =
+        (defaultIntPolyEffort sampleCf (1 + ivpArity) sizeLimits)
+        {
+            ipolyeff_cfRoundedRealEffort = effCf,
+            ipolyeff_evalMaxSplitSize = Int1To100 20
+        }
+        where
+        ivpArity = length $ hybsys_componentNames $ hybivp_system hybivp
 
 solveHybridIVPLocate ::
     (
@@ -517,15 +523,17 @@ solveHybridIVPLocate
                     hybivp
 
     effSizeLims = effCf
-    effCompose = (effCf, Int1To10 substSplitSizeLimit)
-    effEval = (effCf, Int1To10 substSplitSizeLimit)
-    effPEval = (effCf, Int1To10 substSplitSizeLimit)
-    effInteg = effCf
     effDeriv = effCf
-    effAddFn = effCf
-    effMultFn = effCf
     effAbsFn = ArithInOut.absDefaultEffort samplePoly
     effMinmaxFn = NumOrd.minmaxInOutDefaultEffort samplePoly
+
+    effCompose = effIntPoly
+    effEval = effIntPoly
+    effPEval = effIntPoly
+    effInteg = effCf
+    effAddFn = effCf
+    effMultFn = effCf
+
     effAddFnDom =
         ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effMultFnDom =
@@ -533,7 +541,17 @@ solveHybridIVPLocate
 --        ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     effDivFnInt =
         ArithInOut.mxfldEffortDiv sampleCf (0::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
-    effInclFn = ((Int1To1000 0, (effCf, Int1To10 20)), ())
+
+    effInclFn = (effIntPoly, ())
+    effIntPoly =
+        (defaultIntPolyEffort sampleCf (1 + ivpArity) sizeLimits)
+        {
+            ipolyeff_cfRoundedRealEffort = effCf,
+            ipolyeff_evalMaxSplitSize = Int1To100 20
+        }
+        where
+        ivpArity = length $ hybsys_componentNames $ hybivp_system hybivp
+
 
 
 makeSampleWithVarsDoms :: 

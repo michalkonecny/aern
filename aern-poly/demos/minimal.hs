@@ -14,7 +14,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 --import Numeric.AERN.RealArithmetic.ExactOps
 --import Numeric.AERN.RealArithmetic.Measures 
 
---import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.Operators
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
@@ -66,16 +66,16 @@ main =
     putStrLn $ "2(x + y + 2) [new vars z1,z2 at the back] = " 
                     ++ (showP $ addVariablesBack (zip ["z1","z2"] doms) twoBxPyP2)
     putStrLn "evaluation:"
-    putStrLn $ "((x+y)^2)evalOut1[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 1) wholeDomain $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut2[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 2) wholeDomain $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut3[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 3) wholeDomain $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut4[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 4) wholeDomain $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut5[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 5) wholeDomain $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut6[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 6) wholeDomain $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut7[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 7) wholeDomain $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut8[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 8) wholeDomain $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut9[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 9) wholeDomain $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut10[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (eff, Int1To10 10) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut1[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (effIPsplitSize 1) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut2[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (effIPsplitSize 2) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut3[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (effIPsplitSize 3) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut4[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (effIPsplitSize 4) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut5[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (effIPsplitSize 5) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut6[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (effIPsplitSize 6) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut7[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (effIPsplitSize 7) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut8[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (effIPsplitSize 8) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut9[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (effIPsplitSize 9) wholeDomain $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut10[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (effIPsplitSize 10) wholeDomain $ (x <+> y) <^> 2)
 --    putStrLn $ "((x+y)^2)evalIn[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointInEff eff wholeDomain $ (x <+> y) <^> 2)
     putStrLn "partial evaluation:"
     putStrLn $ "((x+y)^2)evalOut[x=1] = " ++ (show $ pEvalAtPointOutEff effComp (fromList [("x",1)]) $ (x <+> y) <^> 2)
@@ -233,8 +233,32 @@ eff :: ArithInOut.RoundedRealEffortIndicator CF
 --eff = (100, (100,())) -- MPFR with explicit precision
 eff = ArithInOut.roundedRealDefaultEffort (0:: CF)
 
+effIP :: IntPolyEffort CF
+effIP =
+    IntPolyEffort
+    {
+        ipolyeff_cfRoundedRealEffort = eff,
+        ipolyeff_cfAbsEffort = ArithInOut.absDefaultEffort sampleCf,
+        ipolyeff_cfGetEndpointsEffort = RefOrd.getEndpointsDefaultEffort sampleCf,
+        ipolyeff_cfFromEndpointsEffort = RefOrd.fromEndpointsDefaultEffort sampleCf,
+        ipolyeff_cfMinMaxEffort = NumOrd.minmaxInOutDefaultEffort sampleCf,
+        ipolyeff_evalMaxSplitSize = Int1To100 100,
+        ipolyeff_minmaxBernsteinDegreeMinus1 = Int1To10 (bernsteinDegree - 1),
+        ipolyeff_recipTauDegreeMinus1 = Int1To10 (tauDegree - 1),
+        ipolyeff_counterExampleSearchSampleCount = Int1To1000 (4 * arity)
+    }
+    where
+    bernsteinDegree = 4
+    tauDegree = 8
+    arity = 2
+    sampleCf = 0 :: CF
+    
+effIPsplitSize :: Int -> IntPolyEffort CF
+effIPsplitSize maxsplitSize =
+    effIP { ipolyeff_evalMaxSplitSize = Int1To100 maxsplitSize }
+
 effComp :: EvaluationEffortIndicator Poly
-effComp = (eff, Int1To10 3)
+effComp = effIP
 
 minmaxUpDnEff :: NumOrd.MinmaxEffortIndicator Poly
 minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 x
@@ -243,7 +267,7 @@ minmaxInOutEff :: NumOrd.MinmaxInOutEffortIndicator Poly
 minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 x
 
 evalOpsOutCf :: PolyEvalOps String CF CF
-evalOpsOutCf = evalOpsEff (eff, Int1To10 4) x (0::CF)
+evalOpsOutCf = evalOpsEff effIP x (0::CF)
 
 numCompare :: 
      NumOrd.PartialComparison t 

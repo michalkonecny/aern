@@ -90,6 +90,12 @@ data IntPolyEffort cf =
         ipolyeff_recipTauDegreeMinus1 :: Int1To10,
         ipolyeff_counterExampleSearchSampleCount :: Int1To1000
     }
+--    deriving (Show)
+    
+-- TODO: complete the following instances:
+instance Arbitrary (IntPolyEffort cf)
+instance Show (IntPolyEffort cf)
+instance EffortIndicator (IntPolyEffort cf)
     
 defaultIntPolyEffort :: 
     (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf) 
@@ -113,7 +119,7 @@ defaultIntPolyEffort sampleCf arity sizeLimits =
     bernsteinDegree = 2 + (min 20 $ maxdeg `div` 3)
          -- TODO: the minimum 20 makes sense only with Double coeffs;
          --       make it depend on the current coefficient precision
-    maxSplitSize = 2^ (1 + (maxdeg  `div` 3))
+    maxSplitSize = (1 + (maxdeg  `div` 2)) 
     maxdeg = ipolylimits_maxdeg sizeLimits
 
 domToDomLZLEEff ::
