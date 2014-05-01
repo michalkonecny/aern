@@ -77,9 +77,9 @@ instance
     HasEvalOps (IntPoly var cf) (IntPoly var cf)
     where
     type EvalOpsEffortIndicator (IntPoly var cf) (IntPoly var cf) = 
-        (Int1To1000, (ArithInOut.RoundedRealEffortIndicator cf, Int1To10))
-    evalOpsDefaultEffort _ sampleP = 
-        NumOrd.pCompareDefaultEffort sampleP
+        IntPolyEffort cf
+    evalOpsDefaultEffort _ _sampleP@(IntPoly cfg _) = 
+        ipolycfg_effort cfg
     evalOpsEff eff _ sampleP =
         polyPolyEvalOps eff sampleP sampleCf
         where
@@ -97,19 +97,19 @@ polyPolyEvalOps ::
      NumOrd.PartialComparison (Imprecision cf),
      Show (Imprecision cf))
     =>
-   (Int1To1000, (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)) ->
+   IntPolyEffort cf ->
    (IntPoly var cf) ->
    cf ->
    PolyEvalOps var cf (IntPoly var cf)
-polyPolyEvalOps effCmp@(_,(effCf, Int1To10 maxSplitDepth)) sampleP sampleCf =
+polyPolyEvalOps eff sampleP sampleCf =
     result
     where
     result =
         let (<+>) = ArithInOut.addOutEff effCf in
         let (<*>) = ArithInOut.multOutEff effCf in
         let (<^>) = ArithInOut.powerToNonnegIntOutEff effCf in
-        let (<=?) = NumOrd.pLeqEff effCmp in
-        PolyEvalOps (zero sampleP) (<+>) (<*>) (<^>) (newConstFnFromSample sampleP) (const Nothing) maxSplitDepth $
+        let (<=?) = NumOrd.pLeqEff eff in
+        PolyEvalOps (zero sampleP) (<+>) (<*>) (<^>) (newConstFnFromSample sampleP) (const Nothing) maxSplitSize $
             Just $ PolyEvalMonoOps
                 result
                 (<=?)
@@ -140,6 +140,9 @@ polyPolyEvalOps effCmp@(_,(effCf, Int1To10 maxSplitDepth)) sampleP sampleCf =
     isDefinitelyExact p = 
         polyIsExact p == Just True
     effJoinCf = ArithInOut.rrEffortJoinMeet sampleCf effCf
+
+    Int1To100 maxSplitSize = ipolyeff_evalMaxSplitSize eff
+    effCf = ipolyeff_cfRoundedRealEffort eff
         
         
         
@@ -155,7 +158,7 @@ instance
     (CanCompose (IntPoly var cf))
     where
     type CompositionEffortIndicator (IntPoly var cf) = 
-        (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)
+        IntPolyEffort cf
     compositionDefaultEffort p = evaluationDefaultEffort p
     composeVarsOutEff = 
         polyComposeVarsOutEff
@@ -280,7 +283,7 @@ polyComposeVarsOutEff eff substBox p@(IntPoly cfg _) =
             proj =
                 newProjectionFromSample sampleP var
     ops =
-        polyPolyEvalOps (Int1To1000 0, eff) sampleP sampleCf
+        polyPolyEvalOps eff sampleP sampleCf
     ((_,sampleP) : _) = toAscList substBox
     sampleCf = getSampleDomValue sampleP
 
@@ -322,7 +325,7 @@ polyComposeVarsInEff eff substBox p =
             proj =
                 newProjectionFromSample sampleP var
     ops =
-        polyPolyEvalOps (Int1To1000 0, eff) sampleP sampleCf
+        polyPolyEvalOps eff sampleP sampleCf
     ((_,sampleP) : _) = toAscList substBox
     sampleCf = getSampleDomValue sampleP
 

@@ -72,20 +72,19 @@ instance
     NumOrd.PartialComparison (IntPoly var cf) 
     where
     type PartialCompareEffortIndicator (IntPoly var cf) =
-        (Int1To1000, (ArithInOut.RoundedRealEffortIndicator cf, Int1To10)) 
-    pCompareDefaultEffort p@(IntPoly cfg _) = 
-        (Int1To1000 $ 4 * varsN,
-         evaluationDefaultEffort p)  
-        where
-        varsN = length vars
-        vars = ipolycfg_vars cfg
+        IntPolyEffort cf
+    pCompareDefaultEffort p@(IntPoly cfg _) =
+        ipolycfg_effort cfg
     pCompareEff eff p1 p2 =
         case partialInfo2PartialOrdering $ NumOrd.pCompareInFullEff eff p1 p2 of
             [rel] -> Just rel
             _ -> Nothing
-    pCompareInFullEff (Int1To1000 n, effEval@(effDom, _)) p1 p2 = 
+    pCompareInFullEff eff p1 p2 = 
         pCompareFunFromRingOps (n, effDom, effCompDom, effEval) p1 p2 
         where
+        Int1To1000 n = ipolyeff_counterExampleSearchSampleCount eff
+        effEval = eff
+        effDom = ipolyeff_cfRoundedRealEffort eff
         effCompDom = ArithInOut.rrEffortNumComp sampleDom effDom
         sampleDom = getSampleDomValue p1
 

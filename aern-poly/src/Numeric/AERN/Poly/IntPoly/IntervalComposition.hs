@@ -22,7 +22,7 @@ module Numeric.AERN.Poly.IntPoly.IntervalComposition
 ()
 where
 
---import Numeric.AERN.Poly.IntPoly.Config
+import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
 import Numeric.AERN.Poly.IntPoly.New ()
 import Numeric.AERN.Poly.IntPoly.Conversion ()
@@ -86,12 +86,12 @@ instance
     type EvalOpsEffortIndicator (IntPoly var (Interval e)) (Interval (IntPoly var (Interval e))) = 
         (
             ArithInOut.RingOpsEffortIndicator (Interval (IntPoly var (Interval e))),
-            (Int1To1000, (ArithInOut.RoundedRealEffortIndicator (Interval e), Int1To10))
+            IntPolyEffort (Interval e)
         )
-    evalOpsDefaultEffort sampleP samplePI = 
+    evalOpsDefaultEffort _sampleP@(IntPoly cfg _) samplePI = 
         (
             ArithInOut.ringOpsDefaultEffort samplePI,
-            NumOrd.pCompareDefaultEffort sampleP
+            ipolycfg_effort cfg
         )
     evalOpsEff eff sampleP samplePI =
         intpolyPolyEvalOps eff samplePI sampleCf
@@ -114,20 +114,20 @@ intpolyPolyEvalOps ::
     =>
    (
     (ArithInOut.RingOpsEffortIndicator (Interval poly)),
-    (Int1To1000, (ArithInOut.RoundedRealEffortIndicator cf, Int1To10))
+    IntPolyEffort cf
    ) ->
    (Interval poly) ->
    cf ->
    PolyEvalOps var cf (Interval poly)
-intpolyPolyEvalOps (effRing, effCmp@(_,(effCf, Int1To10 maxSplitDepth))) samplePI sampleCf =
+intpolyPolyEvalOps (effRing, effIntPoly) samplePI sampleCf =
     result
     where
     result =
         let (<+>) = ArithInOut.addOutEff  (ArithInOut.ringEffortAdd samplePI effRing) in
         let (<*>) = ArithInOut.multOutEff (ArithInOut.ringEffortMult samplePI effRing) in
         let (<^>) = ArithInOut.powerToNonnegIntOutEff (ArithInOut.ringEffortPow samplePI effRing) in
-        let (<=?) = NumOrd.pLeqEff effCmp in
-        PolyEvalOps (zero samplePI) (<+>) (<*>) (<^>) (newConstFnFromSample samplePI) (const Nothing) maxSplitDepth $
+        let (<=?) = NumOrd.pLeqEff effIntPoly in
+        PolyEvalOps (zero samplePI) (<+>) (<*>) (<^>) (newConstFnFromSample samplePI) (const Nothing) maxSplitSize $
             Just $ PolyEvalMonoOps
                 result
                 (<=?)
@@ -158,5 +158,8 @@ intpolyPolyEvalOps (effRing, effCmp@(_,(effCf, Int1To10 maxSplitDepth))) sampleP
 --    effAddCf = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     join (Interval l1 _, Interval _ r2) = Interval l1 r2 
     isDefinitelyExact (Interval l r) = 
-        (NumOrd.pEqualEff effCmp l r) == Just True
+        (NumOrd.pEqualEff effIntPoly l r) == Just True
+
+    Int1To100 maxSplitSize = ipolyeff_evalMaxSplitSize effIntPoly
+    effCf = ipolyeff_cfRoundedRealEffort effIntPoly
         
