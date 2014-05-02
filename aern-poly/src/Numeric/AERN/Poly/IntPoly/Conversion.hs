@@ -118,6 +118,13 @@ instance
         excludesInfty _ coeff =
             excludesPlusInfinity coeff 
 
+convertToDefaultEffortStandard :: 
+    IntPoly var cf -> 
+    t -> 
+    IntPolyEffort cf
+convertToDefaultEffortStandard _sampleP@(IntPoly cfg _) _sampleT =
+    ipolycfg_effort cfg
+
 instance
     (Ord var, Show var,
      ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
@@ -128,10 +135,11 @@ instance
     ArithUpDn.Convertible (IntPoly var cf) Integer
     where
     type ConvertEffortIndicator (IntPoly var cf) Integer =
-        ConvertEffortIndicatorGeneric var cf Integer
-    convertDefaultEffort = convertDefaultEffortGeneric
-    convertUpEff = convertUpEffGeneric
-    convertDnEff = convertDnEffGeneric
+        IntPolyEffort cf
+    convertDefaultEffort = convertToDefaultEffortStandard
+    convertUpEff = convertUpEffStandard ArithInOut.rrEffortToInteger 
+    convertDnEff = convertDnEffStandard ArithInOut.rrEffortToInteger
+
 
 instance
     (Ord var, Show var,
@@ -143,10 +151,10 @@ instance
     ArithUpDn.Convertible (IntPoly var cf) Int
     where
     type ConvertEffortIndicator (IntPoly var cf) Int =
-        ConvertEffortIndicatorGeneric var cf Int
-    convertDefaultEffort = convertDefaultEffortGeneric
-    convertUpEff = convertUpEffGeneric
-    convertDnEff = convertDnEffGeneric
+        IntPolyEffort cf
+    convertDefaultEffort = convertToDefaultEffortStandard
+    convertUpEff = convertUpEffStandard ArithInOut.rrEffortToInt 
+    convertDnEff = convertDnEffStandard ArithInOut.rrEffortToInt
 
 instance
     (Ord var, Show var,
@@ -158,10 +166,10 @@ instance
     ArithUpDn.Convertible (IntPoly var cf) Rational
     where
     type ConvertEffortIndicator (IntPoly var cf) Rational =
-        ConvertEffortIndicatorGeneric var cf Rational
-    convertDefaultEffort = convertDefaultEffortGeneric
-    convertUpEff = convertUpEffGeneric
-    convertDnEff = convertDnEffGeneric
+        IntPolyEffort cf
+    convertDefaultEffort = convertToDefaultEffortStandard
+    convertUpEff = convertUpEffStandard ArithInOut.rrEffortToRational 
+    convertDnEff = convertDnEffStandard ArithInOut.rrEffortToRational
 
 instance
     (Ord var, Show var,
@@ -173,10 +181,10 @@ instance
     ArithUpDn.Convertible (IntPoly var cf) Double
     where
     type ConvertEffortIndicator (IntPoly var cf) Double =
-        ConvertEffortIndicatorGeneric var cf Double
-    convertDefaultEffort = convertDefaultEffortGeneric
-    convertUpEff = convertUpEffGeneric
-    convertDnEff = convertDnEffGeneric
+        IntPolyEffort cf
+    convertDefaultEffort = convertToDefaultEffortStandard
+    convertUpEff = convertUpEffStandard ArithInOut.rrEffortToDouble 
+    convertDnEff = convertDnEffStandard ArithInOut.rrEffortToDouble
 
 instance
     (Ord var, Show var,
@@ -188,33 +196,57 @@ instance
     ArithUpDn.Convertible (IntPoly var cf) (Interval e)
     where
     type ConvertEffortIndicator (IntPoly var cf) (Interval e) =
-        ConvertEffortIndicatorGeneric var cf (Interval e)
-    convertDefaultEffort = convertDefaultEffortGeneric
-    convertUpEff = convertUpEffGeneric
-    convertDnEff = convertDnEffGeneric
+        (IntPolyEffort cf, ArithUpDn.ConvertEffortIndicator cf (Interval e))
+    convertDefaultEffort sampleP@(IntPoly cfg _) sampleI = 
+        (convertToDefaultEffortStandard sampleP sampleI, 
+         ArithUpDn.convertDefaultEffort sampleCf sampleI)
+        where
+        sampleCf = ipolycfg_sample_cf cfg
+    convertUpEff (eff, effConv) = convertUpEffStandard (\ _ _ -> effConv) eff 
+    convertDnEff (eff, effConv) = convertDnEffStandard (\ _ _ -> effConv) eff 
 
+convertUpEffStandard, convertDnEffStandard ::
+      (Ord var, Show cf, Show var, RefOrd.IntervalLike cf,
+       ArithUpDn.Convertible cf t, ArithInOut.RoundedReal cf,
+       HasConsistency cf) 
+       =>
+      (cf -> ArithInOut.RoundedRealEffortIndicator cf -> ConvertEffortIndicator cf t) -> 
+      IntPolyEffort cf -> t -> 
+      IntPoly var cf -> 
+      Maybe t
 
-convertDefaultEffortGeneric :: 
-      (RefOrd.IntervalLike (Domain f),
-       ArithUpDn.Convertible (Domain f) t2, CanEvaluate f) =>
-      f
-      -> t2
-      -> (EvaluationEffortIndicator f,
-          RefOrd.GetEndpointsEffortIndicator (Domain f),
-          ConvertEffortIndicator (Domain f) t2)
-convertDefaultEffortGeneric sampleP sampleT =    
-    (evaluationDefaultEffort sampleP,
-     RefOrd.getEndpointsDefaultEffort sampleCf,
-     ArithUpDn.convertDefaultEffort sampleCf sampleT)
+convertUpEffStandard rrEffortToT eff sampleT p =
+    convertUpEffGeneric (effStandardToGeneric sampleT rrEffortToT eff p) sampleT p
+
+convertDnEffStandard rrEffortToT eff sampleT p =
+    convertDnEffGeneric (effStandardToGeneric sampleT rrEffortToT eff p) sampleT p
+    
+effStandardToGeneric :: 
+      t 
+      -> (cf -> ArithInOut.RoundedRealEffortIndicator cf -> (ConvertEffortIndicator cf t))
+      -> IntPolyEffort cf
+      -> (IntPoly var cf)
+      -> ConvertEffortIndicatorGeneric var cf t
+effStandardToGeneric _sampleT rrEffortToT eff _p@(IntPoly cfg _) =
+    (effEval, effGetEndpts, effConv)
     where
-    sampleCf = getSampleDomValue sampleP
+    effEval = eff
+    effGetEndpts = ipolyeff_cfGetEndpointsEffort eff
+    effConv = rrEffortToT sampleCf effCf
+    effCf = ipolyeff_cfRoundedRealEffort eff
+    sampleCf = ipolycfg_sample_cf cfg
+    
 convertUpEffGeneric, convertDnEffGeneric :: 
       (Show (Domain f), RefOrd.IntervalLike (Domain f),
-       ArithUpDn.Convertible (Domain f) t2, HasEvalOps f (Domain f)) =>
+       ArithUpDn.Convertible (Domain f) t, HasEvalOps f (Domain f)) 
+       =>
       (EvalOpsEffortIndicator f (Domain f),
        RefOrd.GetEndpointsEffortIndicator (Domain f),
-       ConvertEffortIndicator (Domain f) t2)
-      -> t2 -> f -> Maybe t2
+       ConvertEffortIndicator (Domain f) t)
+      -> 
+      t -> 
+      f -> 
+      Maybe t
 convertUpEffGeneric (effEval, effGetEndpts, effConv) sampleT p =
     ArithUpDn.convertUpEff effConv sampleT $ 
         snd $ RefOrd.getEndpointsOutEff effGetEndpts range
@@ -237,6 +269,15 @@ type ConvertEffortIndicatorGeneric var cf t =
      RefOrd.GetEndpointsEffortIndicator cf,
      ArithUpDn.ConvertEffortIndicator cf t)
 
+{---- Conversions FROM type t to IntPoly  ----}     
+     
+convertFromDefaultEffortStandard :: 
+    t -> 
+    IntPoly var cf -> 
+    IntPolyEffort cf
+convertFromDefaultEffortStandard  _sampleT _sampleP@(IntPoly cfg _) =
+    ipolycfg_effort cfg
+    
 instance
     (Ord var, Show var,
      ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
@@ -247,27 +288,36 @@ instance
     ArithUpDn.Convertible Int (IntPoly var cf)
     where
     type ConvertEffortIndicator Int (IntPoly var cf) =
-        (ArithInOut.ConvertEffortIndicator Int cf,
-         RefOrd.GetEndpointsEffortIndicator cf)
-    convertDefaultEffort sampleI sampleP =
-        (ArithInOut.convertDefaultEffort sampleI sampleCf,
-         RefOrd.getEndpointsDefaultEffort sampleCf)
-        where
-        sampleCf = getSampleDomValue sampleP
-    convertUpEff (effConv, effGetEndpts) sampleP n =
-        Just $
-            newConstFnFromSample sampleP $
-                snd $ RefOrd.getEndpointsOutEff effGetEndpts $
-                    ArithInOut.convertOutEff effConv sampleCf n 
-        where
-        sampleCf = getSampleDomValue sampleP
-    convertDnEff (effConv, effGetEndpts) sampleP n =
-        Just $
-            newConstFnFromSample sampleP $
-                fst $ RefOrd.getEndpointsOutEff effGetEndpts $
-                    ArithInOut.convertOutEff effConv sampleCf n 
-        where
-        sampleCf = getSampleDomValue sampleP
+        IntPolyEffort cf
+    convertDefaultEffort = convertFromDefaultEffortStandard
+    convertUpEff = convertUpDnEffStandardFrom snd ArithInOut.rrEffortFromInt
+    convertDnEff = convertUpDnEffStandardFrom fst ArithInOut.rrEffortFromInt
+
+convertUpDnEffStandardFrom :: 
+      (Ord var, Show var, Show cf, ArithInOut.RoundedReal cf,
+       RefOrd.IntervalLike cf, HasConsistency cf,
+       ArithInOut.Convertible t cf) 
+      =>
+      ((cf,cf) -> cf)
+      ->
+      (cf
+       -> ArithInOut.RoundedRealEffortIndicator cf
+       -> ArithInOut.ConvertEffortIndicator t cf
+      )
+      -> IntPolyEffort cf 
+      -> IntPoly var cf 
+      -> t 
+      -> Maybe (IntPoly var cf)
+convertUpDnEffStandardFrom pick rrEffortFrom eff sampleP@(IntPoly cfg _) n =
+    Just $
+        newConstFnFromSample sampleP $
+            pick $ RefOrd.getEndpointsOutEff effGetEndpts $
+                ArithInOut.convertOutEff effConv sampleCf n
+    where
+    effGetEndpts = ipolyeff_cfGetEndpointsEffort eff
+    effConv = rrEffortFrom sampleCf effCf
+    effCf = ipolyeff_cfRoundedRealEffort eff
+    sampleCf = ipolycfg_sample_cf cfg
 
 instance
     (Ord var, Show var,
@@ -279,27 +329,10 @@ instance
     ArithUpDn.Convertible Integer (IntPoly var cf)
     where
     type ConvertEffortIndicator Integer (IntPoly var cf) =
-        (ArithInOut.ConvertEffortIndicator Integer cf,
-         RefOrd.GetEndpointsEffortIndicator cf)
-    convertDefaultEffort sampleI sampleP =
-        (ArithInOut.convertDefaultEffort sampleI sampleCf,
-         RefOrd.getEndpointsDefaultEffort sampleCf)
-        where
-        sampleCf = getSampleDomValue sampleP
-    convertUpEff (effConv, effGetEndpts) sampleP n =
-        Just $
-            newConstFnFromSample sampleP $
-                snd $ RefOrd.getEndpointsOutEff effGetEndpts $
-                    ArithInOut.convertOutEff effConv sampleCf n 
-        where
-        sampleCf = getSampleDomValue sampleP
-    convertDnEff (effConv, effGetEndpts) sampleP n =
-        Just $
-            newConstFnFromSample sampleP $
-                fst $ RefOrd.getEndpointsOutEff effGetEndpts $
-                    ArithInOut.convertOutEff effConv sampleCf n 
-        where
-        sampleCf = getSampleDomValue sampleP
+        IntPolyEffort cf
+    convertDefaultEffort = convertFromDefaultEffortStandard
+    convertUpEff = convertUpDnEffStandardFrom snd ArithInOut.rrEffortFromInteger
+    convertDnEff = convertUpDnEffStandardFrom fst ArithInOut.rrEffortFromInteger
 
 
 instance
@@ -312,27 +345,10 @@ instance
     ArithUpDn.Convertible Rational (IntPoly var cf)
     where
     type ConvertEffortIndicator Rational (IntPoly var cf) =
-        (ArithInOut.ConvertEffortIndicator Rational cf,
-         RefOrd.GetEndpointsEffortIndicator cf)
-    convertDefaultEffort sampleI sampleP =
-        (ArithInOut.convertDefaultEffort sampleI sampleCf,
-         RefOrd.getEndpointsDefaultEffort sampleCf)
-        where
-        sampleCf = getSampleDomValue sampleP
-    convertUpEff (effConv, effGetEndpts) sampleP n =
-        Just $
-            newConstFnFromSample sampleP $
-                snd $ RefOrd.getEndpointsOutEff effGetEndpts $
-                    ArithInOut.convertOutEff effConv sampleCf n 
-        where
-        sampleCf = getSampleDomValue sampleP
-    convertDnEff (effConv, effGetEndpts) sampleP n =
-        Just $
-            newConstFnFromSample sampleP $
-                fst $ RefOrd.getEndpointsOutEff effGetEndpts $
-                    ArithInOut.convertOutEff effConv sampleCf n 
-        where
-        sampleCf = getSampleDomValue sampleP
+        IntPolyEffort cf
+    convertDefaultEffort = convertFromDefaultEffortStandard
+    convertUpEff = convertUpDnEffStandardFrom snd ArithInOut.rrEffortFromRational
+    convertDnEff = convertUpDnEffStandardFrom fst ArithInOut.rrEffortFromRational
 
 
 instance
@@ -345,24 +361,7 @@ instance
     ArithUpDn.Convertible Double (IntPoly var cf)
     where
     type ConvertEffortIndicator Double (IntPoly var cf) =
-        (ArithInOut.ConvertEffortIndicator Double cf,
-         RefOrd.GetEndpointsEffortIndicator cf)
-    convertDefaultEffort sampleI sampleP =
-        (ArithInOut.convertDefaultEffort sampleI sampleCf,
-         RefOrd.getEndpointsDefaultEffort sampleCf)
-        where
-        sampleCf = getSampleDomValue sampleP
-    convertUpEff (effConv, effGetEndpts) sampleP n =
-        Just $
-            newConstFnFromSample sampleP $
-                snd $ RefOrd.getEndpointsOutEff effGetEndpts $
-                    ArithInOut.convertOutEff effConv sampleCf n 
-        where
-        sampleCf = getSampleDomValue sampleP
-    convertDnEff (effConv, effGetEndpts) sampleP n =
-        Just $
-            newConstFnFromSample sampleP $
-                fst $ RefOrd.getEndpointsOutEff effGetEndpts $
-                    ArithInOut.convertOutEff effConv sampleCf n 
-        where
-        sampleCf = getSampleDomValue sampleP
+        IntPolyEffort cf
+    convertDefaultEffort = convertFromDefaultEffortStandard
+    convertUpEff = convertUpDnEffStandardFrom snd ArithInOut.rrEffortFromDouble
+    convertDnEff = convertUpDnEffStandardFrom fst ArithInOut.rrEffortFromDouble
