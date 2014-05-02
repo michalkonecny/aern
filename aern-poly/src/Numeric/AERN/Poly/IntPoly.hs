@@ -98,10 +98,10 @@ instance
         sampleCf = getSampleDomValue p
         limits = ipolycfg_limits cfg
         arity = length $ ipolycfg_vars cfg
-    -- TODO: enable all the following and change the effor indicators for the various operations to be equal to the above record
     rrEffortComp _ eff = eff
---    rrEffortMinmax _ ((_, (effMinmax,_)),_,_) = effMinmax
---    rrEffortDistance _ (((_, effEval),_),_,_) = effEval
+    rrEffortMinmax _ eff = eff
+    rrEffortDistance _ eff = eff
+    -- TODO: enable all the following and change the effor indicators for the various operations to be equal to the above record
 --    rrEffortToInt sampleP (((_, effEval@(effCf,_)),_),(effGetE, _),_) = (effEval, effGetE, effToI)
 --        where
 --        effToI = ArithInOut.rrEffortToInt sampleCf effCf
