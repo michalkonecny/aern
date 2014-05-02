@@ -590,7 +590,7 @@ ivpLorenz_uv sampleFn =
             odeivp_tEnd = toDom 8,
             odeivp_makeInitialValueFnVec = makeIV,
             odeivp_valuePlotExtents = map toDomBoth $ [(-20,20), (-20, 20), (-40,40)],
-            odeivp_enclosureRangeWidthLimit = toDom 15,
+            odeivp_enclosureRangeWidthLimit = toDom 25,
             odeivp_maybeExactValuesAtTEnd = Nothing
         }
     initialValues = 
