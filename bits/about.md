@@ -5,7 +5,7 @@ date: 2014-04-27
 mathjax: on
 ---
 
-## Examples
+## What can AERN do?
 
 
 ### Compute (tight) interval bounds and function enclosures
@@ -44,6 +44,7 @@ $n$    time          computed enclosure of $x_n$
 </tr>
 </table>
 
+----
 
 ### Enclose solutions of differential equations
 
