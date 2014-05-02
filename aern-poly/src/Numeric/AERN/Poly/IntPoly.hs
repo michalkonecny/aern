@@ -101,40 +101,16 @@ instance
     rrEffortComp _ eff = eff
     rrEffortMinmax _ eff = eff
     rrEffortDistance _ eff = eff
+    rrEffortToInt _sampleP eff = eff
+    rrEffortFromInt _sampleP eff = eff
+    rrEffortToInteger _sampleP eff = eff
+    rrEffortFromInteger _sampleP eff = eff
+    rrEffortToDouble _sampleP eff = eff
+    rrEffortFromDouble _sampleP eff = eff
+    rrEffortToRational _sampleP eff = eff
+    rrEffortFromRational _sampleP eff = eff
     -- TODO: enable all the following and change the effor indicators for the various operations to be equal to the above record
---    rrEffortToInt sampleP (((_, effEval@(effCf,_)),_),(effGetE, _),_) = (effEval, effGetE, effToI)
---        where
---        effToI = ArithInOut.rrEffortToInt sampleCf effCf
---        sampleCf = getSampleDomValue sampleP
---    rrEffortFromInt sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effFromI, effGetE)
---        where
---        effFromI = ArithInOut.rrEffortFromInt sampleCf effCf
---        sampleCf = getSampleDomValue sampleP
---    rrEffortToInteger sampleP (((_, effEval@(effCf,_)),_),(effGetE, _),_) = (effEval, effGetE, effToI)
---        where
---        effToI = ArithInOut.rrEffortToInteger sampleCf effCf
---        sampleCf = getSampleDomValue sampleP
---    rrEffortFromInteger sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effFromI, effGetE)
---        where
---        effFromI = ArithInOut.rrEffortFromInteger sampleCf effCf
---        sampleCf = getSampleDomValue sampleP
---    rrEffortToDouble sampleP (((_, effEval@(effCf,_)),_),(effGetE, _),_) = (effEval, effGetE, effToD)
---        where
---        effToD = ArithInOut.rrEffortToDouble sampleCf effCf
---        sampleCf = getSampleDomValue sampleP
---    rrEffortFromDouble sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effFromD, effGetE)
---        where
---        effFromD = ArithInOut.rrEffortFromDouble sampleCf effCf
---        sampleCf = getSampleDomValue sampleP
---    rrEffortToRational sampleP (((_, effEval@(effCf,_)),_),(effGetE, _),_) = (effEval, effGetE, effToR)
---        where
---        effToR = ArithInOut.rrEffortToRational sampleCf effCf
---        sampleCf = getSampleDomValue sampleP
---    rrEffortFromRational sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effFromR, effGetE)
---        where
---        effFromR = ArithInOut.rrEffortFromRational sampleCf effCf
---        sampleCf = getSampleDomValue sampleP
---    rrEffortAbs _ ((_, effAbs),_,_) = effAbs
+--    rrEffortAbs _ eff = eff
 --    rrEffortField _ (((_, effEval),_),(effGetE, _),_) = 
 --        error "ArithUpDn.rrEffortField not defined for IntPoly at present" --(effEval, effGetE)
 --    rrEffortIntMixedField sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effIntField, effGetE)
