@@ -47,17 +47,17 @@ sizeLimits =
             ipolylimits_maxdeg = 11
         }
 
-{-| The identity @\x:[0,1] -> x@.  This is a simple example of a projection.  -}
+{-| The identity @\x:[-1,1] -> x@.  This is a simple example of a projection.  -}
 x :: PI
 x = newProjection sizeLimits varDoms "x"
 
-{-| The constant function @\x:[0,1] -> 1@. -}
+{-| The constant function @\x:[-1,1] -> 1@. -}
 c1 :: PI
 c1 = newConstFn sizeLimits varDoms 1
 
-{-| The function @\x:[0,1] -> sqrt(x+1)@. -}
-sqrtXplus2 :: PI
-sqrtXplus2 = ArithInOut.sqrtOut $ x + c1 + c1
+{-| The function @\x:[-1,1] -> exp(x)@. -}
+expX :: PI
+expX = ArithInOut.expOut x
 
 {-
     To make the following plotting code work, the file FnView.glade
@@ -65,6 +65,20 @@ sqrtXplus2 = ArithInOut.sqrtOut $ x + c1 + c1
     is in the root folder of the aern-realfn-plot-gtk package.
     (https://aern.googlecode.com/hg/aern-realfn-plot-gtk/FnView.glade)
 -}
+
+{-| Show a plot of exp(x) over [-1,1] -}
+plotExp :: IO ()
+plotExp = 
+    FV.plotFns 
+        [("exp example", 
+            [(("(\\x:[-1,1].x)", FV.black, True), x),
+             (("(\\x:[-1,1].exp(x))", FV.green, True), expX)])]
+
+{-| The function @\x:[-1,1] -> sqrt(x+2)@. -}
+sqrtXplus2 :: PI
+sqrtXplus2 = ArithInOut.sqrtOut $ x + c1 + c1
+
+{-| Show a plot of sqrt(x+2) over [-1,1] -}
 plotSqrt :: IO ()
 plotSqrt = 
     FV.plotFns 
