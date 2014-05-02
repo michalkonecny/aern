@@ -110,7 +110,7 @@ instance
     rrEffortToRational _sampleP eff = eff
     rrEffortFromRational _sampleP eff = eff
     -- TODO: enable all the following and change the effor indicators for the various operations to be equal to the above record
---    rrEffortAbs _ eff = eff
+    rrEffortAbs _ eff = eff
 --    rrEffortField _ (((_, effEval),_),(effGetE, _),_) = 
 --        error "ArithUpDn.rrEffortField not defined for IntPoly at present" --(effEval, effGetE)
 --    rrEffortIntMixedField sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effIntField, effGetE)
