@@ -17,7 +17,7 @@ gendoc.sh
 /eexec
 /Makefile
 /package-dependencies.*
-/logo-ideas.*
+/logo
 /eclipse-workspace*
 /overview.txt
 /[0-9][0-9]-aern-*
