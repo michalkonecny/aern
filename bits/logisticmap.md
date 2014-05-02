@@ -27,15 +27,15 @@ $n$    time          computed enclosure of $x_n$
 
 <table class="table table-striped table-bordered">
 <tr>
-<th>$n$</th><th>computation time</th><th>computed enclosure of $x_n$</th>
+<th>$n$ (Number of iterations)</th><th>Approx. computation time</th><th>Computed enclosure of $x_n$</th>
 </tr>
 <tr>
-<td>$100$</td><td>0.02s</td><td>$3.8545043842252...\pm 10^{-160}$</td>
+<td>$100$</td><td>0.02 s</td><td>$3.8545043842252...\pm 10^{-160}$</td>
 </tr>
 <tr>
-<td>$1000$</td><td>0.5s</td><td>$6.9714851192442...\pm 10^{-160}$</td>
+<td>$1000$</td><td>0.5 s</td><td>$6.9714851192442...\pm 10^{-160}$</td>
 </tr>
 <tr>
-<td>$10000$</td><td>72s</td><td>$6.7381614749956...\pm 10^{-160}$</td>
+<td>$10000$</td><td>72 s</td><td>$6.7381614749956...\pm 10^{-160}$</td>
 </tr>
 </table>
