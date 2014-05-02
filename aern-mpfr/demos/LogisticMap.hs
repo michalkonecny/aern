@@ -3,19 +3,14 @@ module Main where
 -- the MPFR interval type:
 import qualified Numeric.AERN.MPFRBasis.Interval as MI
 
--- numerical comparison abstraction and operators:
-import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.Operators
-
 -- real arithmetic operators and imprecision measure:
-import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Measures
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding (convertOutEff)
+import Numeric.AERN.RealArithmetic.ExactOps (neg)
+import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate)
 
--- generic tools for controlling effort and formatting:
-import Numeric.AERN.Basics.Effort
-import Numeric.AERN.Basics.ShowInternals
+-- generic tools for controlling formatting:
+import Numeric.AERN.Basics.ShowInternals (showInternals)
 
 import System.IO
 import System.Environment
@@ -62,7 +57,7 @@ main =
         formatRes prec res =
             show prec ++ ": " 
             ++ (showInternals shouldShowInternals res) 
-            ++ "; prec = " ++ (show $ imprecisionOfEff (imprecisionDefaultEffort res) res)
+            ++ "; prec = " ++ (show $ imprecisionOf res)
         shouldShowInternals = (digitsW+2, False)
         digitsW = fromIntegral digits
         
@@ -79,6 +74,6 @@ logisticMap prec r x0 =
 
 ensurePrecision :: Precision -> RealApprox -> RealApprox
 ensurePrecision prec x =
-    (ArithInOut.convertOutEff prec x (0:: Int)) <+> x 
+    (convertOutEff prec x (0:: Int)) <+> x 
         
              

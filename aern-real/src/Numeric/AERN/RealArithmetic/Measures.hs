@@ -95,6 +95,9 @@ class HasImprecision t where
     imprecisionDefaultEffort :: t -> ImprecisionEffortIndicator t
     imprecisionOfEff :: ImprecisionEffortIndicator t -> t -> Imprecision t
 
+imprecisionOf :: (HasImprecision t) => t -> Imprecision t
+imprecisionOf v = imprecisionOfEff (imprecisionDefaultEffort v) v
+
 propImprecisionDecreasesWithRefinement ::
     (HasImprecision t, NumOrd.PartialComparison (Imprecision t)) =>
     t -> 
