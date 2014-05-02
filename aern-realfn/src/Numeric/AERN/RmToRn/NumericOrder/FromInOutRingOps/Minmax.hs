@@ -53,23 +53,22 @@ import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
 
-type MinmaxEffortIndicatorFromRingOps f t =
-        ((ArithUpDn.ConvertEffortIndicator t (Domain f), -- finding the range of a function of type t
-          ArithInOut.RoundedRealEffortIndicator (Domain f),
-          RefOrd.GetEndpointsEffortIndicator (Domain f)
-          )
-          ,
-          (EvalOpsEffortIndicator f t,
-           EvalOpsEffortIndicator f (Domain f))
-          ,
-         (ArithInOut.RingOpsEffortIndicator f,
-          ArithInOut.MixedMultEffortIndicator f (Domain f),
-          SizeLimits f
-         ),
-         (ArithInOut.RingOpsEffortIndicator t,
-          ArithInOut.MixedFieldOpsEffortIndicator t (Domain f)
-         )
-        )
+data MinmaxEffortIndicatorFromRingOps f t =
+    MinmaxEffortIndicatorFromRingOps
+    {
+        minmaxFromRO_eff_convertTDF :: ArithUpDn.ConvertEffortIndicator t (Domain f),
+            -- finding the range of a function of type t
+        minmaxFromRO_eff_roundedRealD :: ArithInOut.RoundedRealEffortIndicator (Domain f),
+        minmaxFromRO_eff_getEndpointsD :: RefOrd.GetEndpointsEffortIndicator (Domain f),
+        minmaxFromRO_eff_evalFT :: EvalOpsEffortIndicator f t,
+        minmaxFromRO_eff_evalFDF :: EvalOpsEffortIndicator f (Domain f),
+        minmaxFromRO_eff_ringOpsF :: ArithInOut.RingOpsEffortIndicator f,
+        minmaxFromRO_eff_mixmultFDF :: ArithInOut.MixedMultEffortIndicator f (Domain f),
+        minmaxFromRO_eff_sizelimitsF :: SizeLimits f,
+        minmaxFromRO_eff_ringOpsT :: ArithInOut.RingOpsEffortIndicator t,
+        minmaxFromRO_eff_mixedFldTDF :: ArithInOut.MixedFieldOpsEffortIndicator t (Domain f)
+    }
+
 
 --deriving instance
 --    (ArithUpDn.Convertible t (Domain f),
@@ -109,24 +108,19 @@ defaultMinmaxEffortIndicatorFromRingOps ::
     t {-^ an arbitrary sample value of the main type -} -> 
     MinmaxEffortIndicatorFromRingOps f t
 defaultMinmaxEffortIndicatorFromRingOps sampleF sampleT =
-    ((ArithUpDn.convertDefaultEffort sampleT sampleDF, -- finding the range of a function of type t
-      ArithInOut.roundedRealDefaultEffort sampleDF,
-      RefOrd.getEndpointsDefaultEffort sampleDF
-     )
-     ,
-     (evalOpsDefaultEffort sampleF sampleT,
-      evalOpsDefaultEffort sampleF sampleDF
-     )
-     ,
-     (ArithInOut.ringOpsDefaultEffort sampleF,
-      ArithInOut.mixedMultDefaultEffort sampleF sampleDF,
-      getSizeLimits sampleF
-     )
-     ,
-     (ArithInOut.ringOpsDefaultEffort sampleT,
-      ArithInOut.mixedFieldOpsDefaultEffort sampleT sampleDF
-     )
-    )
+    MinmaxEffortIndicatorFromRingOps
+    {
+        minmaxFromRO_eff_convertTDF = ArithUpDn.convertDefaultEffort sampleT sampleDF,
+        minmaxFromRO_eff_roundedRealD = ArithInOut.roundedRealDefaultEffort sampleDF,
+        minmaxFromRO_eff_getEndpointsD = RefOrd.getEndpointsDefaultEffort sampleDF,
+        minmaxFromRO_eff_evalFT = evalOpsDefaultEffort sampleF sampleT,
+        minmaxFromRO_eff_evalFDF = evalOpsDefaultEffort sampleF sampleDF,
+        minmaxFromRO_eff_ringOpsF = ArithInOut.ringOpsDefaultEffort sampleF,
+        minmaxFromRO_eff_mixmultFDF = ArithInOut.mixedMultDefaultEffort sampleF sampleDF,
+        minmaxFromRO_eff_sizelimitsF = getSizeLimits sampleF,
+        minmaxFromRO_eff_ringOpsT = ArithInOut.ringOpsDefaultEffort sampleT,
+        minmaxFromRO_eff_mixedFldTDF = ArithInOut.mixedFieldOpsDefaultEffort sampleT sampleDF
+    }
     where
     sampleDF = getSampleDomValue sampleF
 
@@ -155,7 +149,7 @@ maxUpEffFromRingOps ::
     MinmaxEffortIndicatorFromRingOps f t ->
     Int {- ^ degree of Bernstein approximations; must be > 1 -} ->
     t -> t -> (t, t)
-maxUpEffFromRingOps sampleF getX eff@(_, _, _, (effRing, effFieldTDF)) degree a b =
+maxUpEffFromRingOps sampleF getX eff degree a b =
     (upper, upperShiftedBelow)
     where
     upperShiftedBelow =
@@ -169,8 +163,12 @@ maxUpEffFromRingOps sampleF getX eff@(_, _, _, (effRing, effFieldTDF)) degree a 
     (#<->#) = ArithInOut.subtrOutEff effAddT
     (#<+>.) = ArithInOut.mixedAddOutEff effAddTDF
 
-    effAddT = ArithInOut.ringEffortAdd sampleT $ effRing
+    effAddT = ArithInOut.ringEffortAdd sampleT $ effRingT
     effAddTDF = ArithInOut.mxfldEffortAdd sampleT sampleDF $ effFieldTDF
+    
+    effFieldTDF = minmaxFromRO_eff_mixedFldTDF eff
+    effRingT = minmaxFromRO_eff_ringOpsT eff
+    
     sampleT = a
     sampleDF = errUp
 
@@ -199,12 +197,13 @@ maxDnEffFromRingOps ::
     MinmaxEffortIndicatorFromRingOps f t -> 
     Int {- ^ degree of Bernstein approximations (must be > 1) -} ->
     t -> t -> t
-maxDnEffFromRingOps sampleF getX eff@(_, _, _, (effRing, _)) degree a b =
+maxDnEffFromRingOps sampleF getX eff degree a b =
     a #<+># (fst $ fst $ maxZeroDnUp sampleF getX eff degree $ b #<-># a)
     where
     (#<+>#) = ArithInOut.addOutEff effAddT
     (#<->#) = ArithInOut.subtrOutEff effAddT
-    effAddT = ArithInOut.ringEffortAdd sampleT $ effRing
+    effAddT = ArithInOut.ringEffortAdd sampleT effRingT
+    effRingT = minmaxFromRO_eff_ringOpsT eff
     sampleT = a
 
 minUpEffFromRingOps ::
@@ -306,10 +305,7 @@ maxZeroDnUp ::
 -}
 maxZeroDnUp
         sampleF getX
-        ((effTToDom, effRealDF, effGetEDF), 
-         (effEvalOpsT, effEvalOpsDF), 
-         (effRingF, effMultFDF, sizeLimits), 
-         (_effRingT, effFldTDF))
+        eff
         degree
         a =
     let (<=?) = NumOrd.pLeqEff effCompDF in
@@ -408,6 +404,13 @@ maxZeroDnUp
     
     effMultDFI = ArithInOut.mxfldEffortMult sampleDF (1::Int) $ ArithInOut.rrEffortIntMixedField sampleDF effRealDF
 --    effDivDFI = ArithInOut.mxfldEffortDiv sampleDF (1::Int) $ ArithInOut.rrEffortIntMixedField sampleDF effRealDF
+
+    (MinmaxEffortIndicatorFromRingOps 
+        effTToDom effRealDF effGetEDF 
+        effEvalOpsT effEvalOpsDF 
+        effRingF effMultFDF _sizeLimits 
+        _effRingT effFldTDF) = eff
+
 
 {-| compute an upper Bernstein approximation of the function max(x,c) over [0,1] -}
 hillbaseApproxUp :: 

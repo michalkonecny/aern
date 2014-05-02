@@ -91,46 +91,22 @@ instance
     NumOrd.RoundedLatticeEffort (IntPoly var (Interval e))
     where
     type MinmaxEffortIndicator (IntPoly var (Interval e)) =
-        (MinmaxEffortIndicatorFromRingOps (IntPoly var (Interval e)) (IntPoly var (Interval e)),
-         NumOrd.MinmaxInOutEffortIndicator (Interval e),
-         Int1To10, -- (degree of Bernstein approximations) - 1   (the degree must be > 1)
-         RefOrd.GetEndpointsEffortIndicator (IntPoly var (Interval e)))
+        IntPolyEffort (Interval e)
     minmaxDefaultEffort f@(IntPoly cfg _) =
-        (defaultMinmaxEffortIndicatorFromRingOps f f,
-         NumOrd.minmaxInOutDefaultEffort sampleDom,
-         Int1To10 (1 + (min 20 $ maxdeg `div` 3)),
-         -- TODO: the minimum 20 makes sense only with Double coeffs;
-         --       make it depend on the current coefficient precision
-         RefOrd.getEndpointsDefaultEffort f)
+        ipolycfg_effort cfg
         where
         maxdeg = ipolycfg_maxdeg cfg
         sampleDom = getSampleDomValue f
 
 minmaxUpDnDefaultEffortIntPolyWithBezierDegree ::
-    (ArithInOut.RoundedReal (Domain f), 
-     RefOrd.IntervalLike (Domain f), 
-     ArithUpDn.Convertible f (Domain f), 
-     ArithInOut.RoundedMixedFieldEffort f Int, 
-     ArithInOut.RoundedMixedField f (Domain f), 
-     ArithInOut.RoundedRingEffort f, 
-     HasSizeLimits f, 
-     RefOrd.IntervalLike f,
-     HasEvalOps f (Domain f),
-     HasEvalOps f f)
-    =>
     Int -> 
-    f -> 
-    (MinmaxEffortIndicatorFromRingOps f f,
-     NumOrd.MinmaxInOutEffortIndicator (Domain f),
-     Int1To10, -- (degree of Bernstein approximations) - 1   (the degree must be > 1)
-     RefOrd.GetEndpointsEffortIndicator f)
-minmaxUpDnDefaultEffortIntPolyWithBezierDegree degree f =
-    (defaultMinmaxEffortIndicatorFromRingOps f f,
-     NumOrd.minmaxInOutDefaultEffort sampleDom,
-     Int1To10 (degree - 1),
-     RefOrd.getEndpointsDefaultEffort f)
-    where
-    sampleDom = getSampleDomValue f
+    (IntPoly var cf) -> 
+    IntPolyEffort cf
+minmaxUpDnDefaultEffortIntPolyWithBezierDegree degree _p@(IntPoly cfg _) =
+    (ipolycfg_effort cfg)
+    {
+        ipolyeff_minmaxBernsteinDegreeMinus1 = Int1To10 (degree - 1)
+    }
 
 instance
     (Ord var,
@@ -149,7 +125,7 @@ instance
     =>
     NumOrd.RoundedLattice (IntPoly var (Interval e))
     where
-    maxUpEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne, effGetE) a b =
+    maxUpEff eff a b =
 --        unsafePrint 
 --            ( "IntPoly maxUpEff:"
 --                ++ "\n degreeMinusOne = " ++ show degreeMinusOne
@@ -167,41 +143,66 @@ instance
                     newConstFnFromSample a $ NumOrd.maxOutEff effMinmaxDom aC bC 
                 _ ->
                     fst $ maxUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
-        (_aL,aR) = RefOrd.getEndpointsOutEff effGetE a
-        (_bL,bR) = RefOrd.getEndpointsOutEff effGetE b
-    maxDnEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne, effGetE) a b =
-        result
-        where
-        result =
-            case (getConstantIfPolyConstant a, getConstantIfPolyConstant b) of
-                (Just aC, Just bC) ->
-                    newConstFnFromSample a $ NumOrd.maxOutEff effMinmaxDom aC bC 
-                _ ->
-                    maxDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
-        (aL,_aR) = RefOrd.getEndpointsOutEff effGetE a
-        (bL,_bR) = RefOrd.getEndpointsOutEff effGetE b
-    minUpEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne,effGetE) a b = 
-        result
-        where
-        result =
-            case (getConstantIfPolyConstant a, getConstantIfPolyConstant b) of
-                (Just aC, Just bC) ->
-                    newConstFnFromSample a $ NumOrd.minOutEff effMinmaxDom aC bC 
-                _ ->
-                    minUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
-        (_aL,aR) = RefOrd.getEndpointsOutEff effGetE a
-        (_bL,bR) = RefOrd.getEndpointsOutEff effGetE b
-    minDnEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne,effGetE) a b = 
-        result
-        where
-        result =
-            case (getConstantIfPolyConstant a, getConstantIfPolyConstant b) of
-                (Just aC, Just bC) ->
-                    newConstFnFromSample a $ NumOrd.minOutEff effMinmaxDom aC bC 
-                _ ->
-                    fst $ minDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
-        (aL,_aR) = RefOrd.getEndpointsOutEff effGetE a
-        (bL,_bR) = RefOrd.getEndpointsOutEff effGetE b
+        (_aL,aR) = RefOrd.getEndpointsOutEff () a
+        (_bL,bR) = RefOrd.getEndpointsOutEff () b
+        
+        effMinmax = 
+            MinmaxEffortIndicatorFromRingOps -- TODO: insert efforts from eff instead of defaults
+            {
+                minmaxFromRO_eff_convertTDF = ArithUpDn.convertDefaultEffort sampleF sampleCf,
+                minmaxFromRO_eff_roundedRealD = ArithInOut.roundedRealDefaultEffort sampleCf,
+                minmaxFromRO_eff_getEndpointsD = RefOrd.getEndpointsDefaultEffort sampleCf,
+                minmaxFromRO_eff_evalFT = evalOpsDefaultEffort sampleF sampleF,
+                minmaxFromRO_eff_evalFDF = evalOpsDefaultEffort sampleF sampleCf,
+                minmaxFromRO_eff_ringOpsF = ArithInOut.ringOpsDefaultEffort sampleF,
+                minmaxFromRO_eff_mixmultFDF = ArithInOut.mixedMultDefaultEffort sampleF sampleCf,
+                minmaxFromRO_eff_sizelimitsF = getSizeLimits sampleF,
+                minmaxFromRO_eff_ringOpsT = ArithInOut.ringOpsDefaultEffort sampleF,
+                minmaxFromRO_eff_mixedFldTDF = ArithInOut.mixedFieldOpsDefaultEffort sampleF sampleCf
+            }
+            where
+            sampleCf = ipolycfg_sample_cf cfg
+            (IntPoly cfg _) = a
+            sampleF = a
+        
+        Int1To10 degreeMinusOne = ipolyeff_minmaxBernsteinDegreeMinus1 eff
+        effMinmaxDom = ipolyeff_cfMinMaxEffort eff
+        effDom = ipolyeff_cfRoundedRealEffort eff
+        
+        
+--    maxDnEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne, effGetE) a b =
+--        result
+--        where
+--        result =
+--            case (getConstantIfPolyConstant a, getConstantIfPolyConstant b) of
+--                (Just aC, Just bC) ->
+--                    newConstFnFromSample a $ NumOrd.maxOutEff effMinmaxDom aC bC 
+--                _ ->
+--                    maxDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+--        (aL,_aR) = RefOrd.getEndpointsOutEff effGetE a
+--        (bL,_bR) = RefOrd.getEndpointsOutEff effGetE b
+--    minUpEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne,effGetE) a b = 
+--        result
+--        where
+--        result =
+--            case (getConstantIfPolyConstant a, getConstantIfPolyConstant b) of
+--                (Just aC, Just bC) ->
+--                    newConstFnFromSample a $ NumOrd.minOutEff effMinmaxDom aC bC 
+--                _ ->
+--                    minUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+--        (_aL,aR) = RefOrd.getEndpointsOutEff effGetE a
+--        (_bL,bR) = RefOrd.getEndpointsOutEff effGetE b
+--    minDnEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne,effGetE) a b = 
+--        result
+--        where
+--        result =
+--            case (getConstantIfPolyConstant a, getConstantIfPolyConstant b) of
+--                (Just aC, Just bC) ->
+--                    newConstFnFromSample a $ NumOrd.minOutEff effMinmaxDom aC bC 
+--                _ ->
+--                    fst $ minDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+--        (aL,_aR) = RefOrd.getEndpointsOutEff effGetE a
+--        (bL,_bR) = RefOrd.getEndpointsOutEff effGetE b
 
 instance
     (Ord var,
@@ -275,52 +276,16 @@ instance
     NumOrd.RefinementRoundedLatticeEffort (IntPoly var (Interval e))
     where
     type MinmaxInOutEffortIndicator (IntPoly var (Interval e)) =
-        (MinmaxEffortIndicatorFromRingOps (IntPoly var (Interval e)) (IntPoly var (Interval e)),
-         Int1To10, -- (degree of Bernstein approximations) - 1   (the degree must be > 1)
-         RefOrd.GetEndpointsEffortIndicator (IntPoly var (Interval e)),
-         RefOrd.FromEndpointsEffortIndicator (IntPoly var (Interval e)))
+        IntPolyEffort (Interval e)
 
     minmaxInOutDefaultEffort f@(IntPoly cfg _) =
-        (defaultMinmaxEffortIndicatorFromRingOps f f, 
-         Int1To10 (1 + (min 20 $ maxdeg `div` 3)),
-         -- TODO: the minimum 20 makes sense only with Double coeffs;
-         --       make it depend on the current coefficient precision
-         RefOrd.getEndpointsDefaultEffort f,
-         RefOrd.fromEndpointsDefaultEffort f)
-        where
-        maxdeg = ipolycfg_maxdeg cfg
+        ipolycfg_effort cfg
 
-minmaxInOutDefaultEffortIntPolyWithBezierDegree ::
-    (ArithUpDn.Convertible f (Domain f), 
-     ArithInOut.RoundedMixedFieldEffort f Int, 
-     ArithInOut.RoundedMixedField f (Domain f), 
-     ArithInOut.RoundedRingEffort f, 
-     HasSizeLimits f,
-     RefOrd.IntervalLike f, 
-     HasEvalOps f (Domain f), 
-     HasEvalOps f f,
-     GeneratableVariables (Var f),
-     HasAntiConsistency (Domain f),
-     Arbitrary (Domain f), 
-     ArithInOut.RoundedReal (Domain f),
-     RefOrd.IntervalLike (Domain f),
-     ArithUpDn.Convertible (Domain f) (Domain f),
-     ArithInOut.RoundedMixedField (Domain f) (Domain f),
-     Show (Var f),
-     Show (Domain f),
-     Show (Imprecision (Domain f)),
-     NumOrd.PartialComparison (Imprecision (Domain f)))
-    =>
-    Int -> (f) -> 
-    (MinmaxEffortIndicatorFromRingOps (f) (f),
-     Int1To10, -- (degree of Bernstein approximations) - 1   (the degree must be > 1)
-     RefOrd.GetEndpointsEffortIndicator (f),
-     RefOrd.FromEndpointsEffortIndicator (f))    
-minmaxInOutDefaultEffortIntPolyWithBezierDegree degree f =
-    (defaultMinmaxEffortIndicatorFromRingOps f f,
-     Int1To10 (degree - 1),
-     RefOrd.getEndpointsDefaultEffort f,
-     RefOrd.fromEndpointsDefaultEffort f)
+minmaxInOutDefaultEffortIntPolyWithBezierDegree degree _p@(IntPoly cfg _) =
+    (ipolycfg_effort cfg)
+    {
+        ipolyeff_minmaxBernsteinDegreeMinus1 = Int1To10 (degree - 1)
+    }
 
 instance
     (Ord var,
@@ -338,28 +303,72 @@ instance
     =>
     NumOrd.RefinementRoundedLattice (IntPoly var (Interval e))
     where
-    maxOutEff (effMinmax,Int1To10 degreeMinusOne,effGetE,effFromE) a b =
+    maxOutEff eff a b =
         result
         where
         result =
             makeCoeffsConsistentOut $ 
-            RefOrd.fromEndpointsOutEff effFromE (resL,resR)
+            RefOrd.fromEndpointsOutEff () (resL,resR)
         resL = maxDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
         (resR, _) = maxUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
-        (aL,aR) = RefOrd.getEndpointsOutEff effGetE a
-        (bL,bR) = RefOrd.getEndpointsOutEff effGetE b
+        (aL,aR) = RefOrd.getEndpointsOutEff () a
+        (bL,bR) = RefOrd.getEndpointsOutEff () b
+
+        effMinmax = 
+            MinmaxEffortIndicatorFromRingOps -- TODO: insert efforts from eff instead of defaults
+            {
+                minmaxFromRO_eff_convertTDF = ArithUpDn.convertDefaultEffort sampleF sampleCf,
+                minmaxFromRO_eff_roundedRealD = ArithInOut.roundedRealDefaultEffort sampleCf,
+                minmaxFromRO_eff_getEndpointsD = RefOrd.getEndpointsDefaultEffort sampleCf,
+                minmaxFromRO_eff_evalFT = evalOpsDefaultEffort sampleF sampleF,
+                minmaxFromRO_eff_evalFDF = evalOpsDefaultEffort sampleF sampleCf,
+                minmaxFromRO_eff_ringOpsF = ArithInOut.ringOpsDefaultEffort sampleF,
+                minmaxFromRO_eff_mixmultFDF = ArithInOut.mixedMultDefaultEffort sampleF sampleCf,
+                minmaxFromRO_eff_sizelimitsF = getSizeLimits sampleF,
+                minmaxFromRO_eff_ringOpsT = ArithInOut.ringOpsDefaultEffort sampleF,
+                minmaxFromRO_eff_mixedFldTDF = ArithInOut.mixedFieldOpsDefaultEffort sampleF sampleCf
+            }
+            where
+            sampleCf = ipolycfg_sample_cf cfg
+            (IntPoly cfg _) = a
+            sampleF = a
+        
+        Int1To10 degreeMinusOne = ipolyeff_minmaxBernsteinDegreeMinus1 eff
+
     maxInEff =
         error "aern-poly: inner-rounded max not available for IntPoly"
-    minOutEff (effMinmax,Int1To10 degreeMinusOne,effGetE,effFromE) a b =
+    minOutEff eff a b =
         result
         where
         result = 
             makeCoeffsConsistentOut $ 
-            RefOrd.fromEndpointsOutEff effFromE (resL,resR)
+            RefOrd.fromEndpointsOutEff () (resL,resR)
         (resL, _) = minDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
         resR = minUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
-        (aL,aR) = RefOrd.getEndpointsOutEff effGetE a
-        (bL,bR) = RefOrd.getEndpointsOutEff effGetE b
+        (aL,aR) = RefOrd.getEndpointsOutEff () a
+        (bL,bR) = RefOrd.getEndpointsOutEff () b
+
+        effMinmax = 
+            MinmaxEffortIndicatorFromRingOps -- TODO: insert efforts from eff instead of defaults
+            {
+                minmaxFromRO_eff_convertTDF = ArithUpDn.convertDefaultEffort sampleF sampleCf,
+                minmaxFromRO_eff_roundedRealD = ArithInOut.roundedRealDefaultEffort sampleCf,
+                minmaxFromRO_eff_getEndpointsD = RefOrd.getEndpointsDefaultEffort sampleCf,
+                minmaxFromRO_eff_evalFT = evalOpsDefaultEffort sampleF sampleF,
+                minmaxFromRO_eff_evalFDF = evalOpsDefaultEffort sampleF sampleCf,
+                minmaxFromRO_eff_ringOpsF = ArithInOut.ringOpsDefaultEffort sampleF,
+                minmaxFromRO_eff_mixmultFDF = ArithInOut.mixedMultDefaultEffort sampleF sampleCf,
+                minmaxFromRO_eff_sizelimitsF = getSizeLimits sampleF,
+                minmaxFromRO_eff_ringOpsT = ArithInOut.ringOpsDefaultEffort sampleF,
+                minmaxFromRO_eff_mixedFldTDF = ArithInOut.mixedFieldOpsDefaultEffort sampleF sampleCf
+            }
+            where
+            sampleCf = ipolycfg_sample_cf cfg
+            (IntPoly cfg _) = a
+            sampleF = a
+        
+        Int1To10 degreeMinusOne = ipolyeff_minmaxBernsteinDegreeMinus1 eff
+
     minInEff =
         error "aern-poly: inner-rounded min not available for IntPoly"
     
