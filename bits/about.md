@@ -1,5 +1,5 @@
 ---
-title: test
+title: about
 author: Michal Konečný
 date: 2014-04-27
 mathjax: on
