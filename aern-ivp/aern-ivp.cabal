@@ -48,7 +48,7 @@ Library
         Numeric.AERN.IVP.Specification.Hybrid,
         Numeric.AERN.IVP.Specification.ODE
 
-executable simple-uv-et-polyint
+executable simple-ode-polyint
   build-depends:   
         base >= 4.4,
         containers >= 0.3,
@@ -68,9 +68,9 @@ executable simple-uv-et-polyint
         aern-ivp == 0.5.*
   ghc-options:     -Wall -rtsopts
   hs-source-dirs:  demos
-  main-is:         simple-uv-et-polyint.hs
+  main-is:         simple-ode-polyint.hs
 
-executable simple-uv-et
+executable simple-ode
   build-depends:   
         base >= 4.4,
         containers >= 0.3,
@@ -90,7 +90,7 @@ executable simple-uv-et
         aern-ivp == 0.5.*
   ghc-options:     -Wall -rtsopts
   hs-source-dirs:  demos
-  main-is:         simple-uv-et.hs
+  main-is:         simple-ode.hs
 
 executable simple-events-locate-polyint
   build-depends:   
