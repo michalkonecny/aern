@@ -39,3 +39,13 @@ $n$    time          computed enclosure of $x_n$
 <td>$10000$</td><td>72 s</td><td>$6.7381614749956...\pm 10^{-160}$</td>
 </tr>
 </table>
+
+<!-- 
+TODO: Demonstrate that the same formula can be used to evaluate on real numbers 
+as well as on real functions to capture dependency.
+
+Show how x_1..x_5 depend on x_0 \in [0,1].
+
+Plot how x_n depends on n \in [0,10] when r = 4 using the explicit formula.  
+-->
+
