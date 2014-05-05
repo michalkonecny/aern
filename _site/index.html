@@ -107,9 +107,11 @@ x_{n+1} = rx_n(1-x_n)
 <!--
 $n$    time          computed enclosure of $x_n$                     
 -----  ------ ----   --------------------------------
-100    0.02s         $3.8545043842252...\pm 10^{-160}$
-1000   0.5s          $6.9714851192442...\pm 10^{-160}$
-10000  1min          $6.7381614749956...\pm 10^{-160}$
+10     0.008s        $0.77910939751004...\pm 10^{-160}$
+100    0.02s         $0.38545043842252...\pm 10^{-160}$
+1000   0.5s          $0.69714851192442...\pm 10^{-160}$
+10000  72s           $0.67381614749956...\pm 10^{-160}$
+100000 72s           $0.76860294939511...\pm 10^{-160}$
 -->
 
 <table class="table table-striped table-bordered">
@@ -124,11 +126,20 @@ Computed enclosure of <span class="math">\(x_n\)</span>
 </tr>
 <tr>
 <td>
+<span class="math">\(10\)</span>
+</td><td>
+0.01 s
+</td><td>
+<span class="math">\(0.77910939751004...\pm 10^{-160}\)</span>
+</td>
+</tr>
+<tr>
+<td>
 <span class="math">\(100\)</span>
 </td><td>
 0.02 s
 </td><td>
-<span class="math">\(3.8545043842252...\pm 10^{-160}\)</span>
+<span class="math">\(0.38545043842252...\pm 10^{-160}\)</span>
 </td>
 </tr>
 <tr>
@@ -137,16 +148,25 @@ Computed enclosure of <span class="math">\(x_n\)</span>
 </td><td>
 0.5 s
 </td><td>
-<span class="math">\(6.9714851192442...\pm 10^{-160}\)</span>
+<span class="math">\(0.69714851192442...\pm 10^{-160}\)</span>
 </td>
 </tr>
 <tr>
 <td>
 <span class="math">\(10000\)</span>
 </td><td>
-72 s
+70 s
 </td><td>
-<span class="math">\(6.7381614749956...\pm 10^{-160}\)</span>
+<span class="math">\(0.67381614749956...\pm 10^{-160}\)</span>
+</td>
+</tr>
+<tr>
+<td>
+<span class="math">\(100000\)</span>
+</td><td>
+3 h
+</td><td>
+<span class="math">\(0.76860294939511...\pm 10^{-160}\)</span>
 </td>
 </tr>
 </table>
