@@ -41,21 +41,22 @@ $n$    time          computed enclosure of $x_n$
 <td>$1000$</td><td>0.5 s</td><td>$0.69714851192442...\pm 10^{-160}$</td>
 </tr>
 <tr>
-<td>$10000$</td><td>70 s</td><td>$0.67381614749956...\pm 10^{-160}$</td>
+<td>$10,000$</td><td>70 s</td><td>$0.67381614749956...\pm 10^{-160}$</td>
 </tr>
 <tr>
-<td>$100000$</td><td>3 h</td><td>$0.76860294939511...\pm 10^{-160}$</td>
+<td>$100,000$</td><td>3 h</td><td>$0.76860294939511...\pm 10^{-160}$</td>
 </tr>
 </table>
 
-Note that iterating the logistic map is a highly unstable computation.  
-Evaluating it directly using Double precision gives completely meaningless
-results after not many iterations.  For example, for 100 iterations using Double
-precision one gets 0.664605873132831, while the correct answer is   
-0.38545043842252.
+Note that iterating the logistic map is a highly unstable computation.  Evaluating 
+it directly using Double precision gives completely meaningless results 
+after not many iterations.  For example, for 100 iterations using Double
+precision one gets $0.66...$, while the correct number is close to $0.38...$. 
 
-To compute 100000 iterations with a good
-precision, AERN used floating-point numbers with the mantissa precision of 209100 bits.
+To compute 100,000 iterations with a good
+precision, the program used floating-point numbers with mantissa size 
+over 200,000 bits.  Over 2 hours of the 3-hour computation time was spent
+trying and failing to perform the computation with various lower precisions.
 
 <!-- 
 TODO: Demonstrate that the same formula can be used to evaluate on real numbers 

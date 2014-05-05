@@ -153,7 +153,7 @@ Computed enclosure of <span class="math">\(x_n\)</span>
 </tr>
 <tr>
 <td>
-<span class="math">\(10000\)</span>
+<span class="math">\(10,000\)</span>
 </td><td>
 70 s
 </td><td>
@@ -162,7 +162,7 @@ Computed enclosure of <span class="math">\(x_n\)</span>
 </tr>
 <tr>
 <td>
-<span class="math">\(100000\)</span>
+<span class="math">\(100,000\)</span>
 </td><td>
 3 h
 </td><td>
@@ -171,8 +171,8 @@ Computed enclosure of <span class="math">\(x_n\)</span>
 </tr>
 </table>
 
-<p>Note that iterating the logistic map is a highly unstable computation.<br />Evaluating it directly using Double precision gives completely meaningless results after not many iterations. For example, for 100 iterations using Double precision one gets 0.664605873132831, while the correct answer is<br />0.38545043842252.</p>
-<p>To compute 100000 iterations with a good precision, AERN used floating-point numbers with the mantissa precision of 209100 bits.</p>
+<p>Note that iterating the logistic map is a highly unstable computation. Evaluating it directly using Double precision gives completely meaningless results after not many iterations. For example, for 100 iterations using Double precision one gets <span class="math">\(0.66...\)</span>, while the correct number is close to <span class="math">\(0.38...\)</span>.</p>
+<p>To compute 100,000 iterations with a good precision, the program used floating-point numbers with mantissa size over 200,000 bits. Over 2 hours of the 3-hour computation time was spent trying and failing to perform the computation with various lower precisions.</p>
 <!-- 
 TODO: Demonstrate that the same formula can be used to evaluate on real numbers 
 as well as on real functions to capture dependency.
