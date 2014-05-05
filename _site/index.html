@@ -171,6 +171,8 @@ Computed enclosure of <span class="math">\(x_n\)</span>
 </tr>
 </table>
 
+<p>Note that iterating the logistic map is a highly unstable computation.<br />Evaluating it directly using Double precision gives completely meaningless results after not many iterations. For example, for 100 iterations using Double precision one gets 0.664605873132831, while the correct answer is<br />0.38545043842252.</p>
+<p>To compute 100000 iterations with a good precision, AERN used floating-point numbers with the mantissa precision of 209100 bits.</p>
 <!-- 
 TODO: Demonstrate that the same formula can be used to evaluate on real numbers 
 as well as on real functions to capture dependency.
