@@ -64,11 +64,11 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import qualified Numeric.AERN.NumericOrder as NumOrd
+--import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Consistency
-import Numeric.AERN.Basics.Effort
+--import Numeric.AERN.Basics.Effort
 
 import Test.QuickCheck.Arbitrary
 
@@ -109,10 +109,9 @@ instance
     rrEffortFromDouble _sampleP eff = eff
     rrEffortToRational _sampleP eff = eff
     rrEffortFromRational _sampleP eff = eff
-    -- TODO: enable all the following and change the effor indicators for the various operations to be equal to the above record
     rrEffortAbs _ eff = eff
---    rrEffortField _ (((_, effEval),_),(effGetE, _),_) = 
---        error "ArithUpDn.rrEffortField not defined for IntPoly at present" --(effEval, effGetE)
+    -- TODO: enable all the following and change the effor indicators for the various operations to be equal to the above record
+--    rrEffortField eff = eff
 --    rrEffortIntMixedField sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effIntField, effGetE)
 --        where
 --        effIntField = ArithInOut.rrEffortIntMixedField sampleCf effCf

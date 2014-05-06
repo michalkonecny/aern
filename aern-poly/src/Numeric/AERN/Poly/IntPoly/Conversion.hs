@@ -1,9 +1,10 @@
-{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-orphans  #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE UndecidableInstances  #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.Conversion
     Description :  conversions to and from common numeric types
@@ -188,22 +189,24 @@ instance
 
 instance
     (Ord var, Show var,
+     cf ~ Interval e,
      ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
      HasAntiConsistency cf,
      ArithUpDn.Convertible cf (Interval e),
      Show cf,  Show (SizeLimits cf))
     =>
-    ArithUpDn.Convertible (IntPoly var cf) (Interval e)
+    ArithUpDn.Convertible (IntPoly var (Interval e)) (Interval e)
     where
-    type ConvertEffortIndicator (IntPoly var cf) (Interval e) =
-        (IntPolyEffort cf, ArithUpDn.ConvertEffortIndicator cf (Interval e))
-    convertDefaultEffort sampleP@(IntPoly cfg _) sampleI = 
-        (convertToDefaultEffortStandard sampleP sampleI, 
-         ArithUpDn.convertDefaultEffort sampleCf sampleI)
+    type ConvertEffortIndicator (IntPoly var (Interval e)) (Interval e) =
+        (IntPolyEffort (Interval e))
+    convertDefaultEffort sampleP@(IntPoly _cfg _) sampleI = 
+        (convertToDefaultEffortStandard sampleP sampleI)
         where
-        sampleCf = ipolycfg_sample_cf cfg
-    convertUpEff (eff, effConv) = convertUpEffStandard (\ _ _ -> effConv) eff 
-    convertDnEff (eff, effConv) = convertDnEffStandard (\ _ _ -> effConv) eff 
+--        sampleCf = ipolycfg_sample_cf cfg
+    convertUpEff eff = convertUpEffStandard (\ _ _ -> ()) eff
+    convertDnEff eff = convertDnEffStandard (\ _ _ -> ()) eff
+--    convertUpEff (eff, effConv) = convertUpEffStandard (\ _ _ -> effConv) eff 
+--    convertDnEff (eff, effConv) = convertDnEffStandard (\ _ _ -> effConv) eff 
 
 convertUpEffStandard, convertDnEffStandard ::
       (Ord var, Show cf, Show var, RefOrd.IntervalLike cf,

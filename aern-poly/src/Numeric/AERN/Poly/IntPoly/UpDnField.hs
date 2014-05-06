@@ -121,9 +121,10 @@ instance
     type MultEffortIndicator (IntPoly var cf) = 
         (ArithInOut.MultEffortIndicator (IntPoly var cf), 
          RefOrd.GetEndpointsEffortIndicator cf) 
-    multDefaultEffort p@(IntPoly cfg _) = 
-        (ArithInOut.addDefaultEffort p,
-         RefOrd.getEndpointsDefaultEffort sampleCf)
+    multDefaultEffort p@(IntPoly cfg _) =
+        undefined -- TODO
+--        (ArithInOut.addDefaultEffort p,
+--         RefOrd.getEndpointsDefaultEffort sampleCf)
         where
         sampleCf = ipolycfg_sample_cf cfg
 
@@ -224,7 +225,9 @@ instance
          RefOrd.getEndpointsDefaultEffort sampleCf)
         where
         sampleCf = getSampleDomValue sampleP
-    ringEffortAdd _ eff = eff  
+    ringEffortAdd _ eff = 
+        undefined -- TODO
+--        eff  
     ringEffortMult _ eff = eff
     ringEffortPow _ eff = eff
   
@@ -287,7 +290,9 @@ instance
          RefOrd.getEndpointsDefaultEffort sampleCf)
         where
         sampleCf = getSampleDomValue sampleP
-    fldEffortAdd _ ((effD, _, _), effGE) = (effD, effGE)  
+    fldEffortAdd _ ((effD, _, _), effGE) = 
+        undefined -- TODO
+--        (effD, effGE)  
     fldEffortMult _ ((effD, _, _), effGE) = (effD, effGE)
     fldEffortPow _ ((effD, _, _), effGE) = (effD, effGE)
     fldEffortDiv _ (effDiv, effGE) = (effDiv, effGE)
@@ -624,7 +629,8 @@ instance
         where
         sampleCf = getSampleDomValue sampleP
     mxringEffortAdd sampleP sampleI (effRing, effGetE) = 
-        (ArithInOut.mxringEffortAdd sampleCf sampleI effRing, effGetE)  
+        undefined -- TODO
+--        (ArithInOut.mxringEffortAdd sampleCf sampleI effRing, effGetE)  
         where
         sampleCf = getSampleDomValue sampleP
     mxringEffortMult sampleP sampleI (effRing, effGetE) = 
@@ -659,7 +665,8 @@ instance
         where
         sampleCf = getSampleDomValue sampleP
     mxringEffortAdd sampleP sampleI (effRing, effGetE) = 
-        (ArithInOut.mxringEffortAdd sampleCf sampleI effRing, effGetE)  
+        undefined -- TODO
+--        (ArithInOut.mxringEffortAdd sampleCf sampleI effRing, effGetE)  
         where
         sampleCf = getSampleDomValue sampleP
     mxringEffortMult sampleP sampleI (effRing, effGetE) = 
@@ -694,7 +701,8 @@ instance
         where
         sampleCf = getSampleDomValue sampleP
     mxringEffortAdd sampleP sampleI (effRing, effGetE) = 
-        (ArithInOut.mxringEffortAdd sampleCf sampleI effRing, effGetE)  
+          undefined -- TODO
+--        (ArithInOut.mxringEffortAdd sampleCf sampleI effRing, effGetE)  
         where
         sampleCf = getSampleDomValue sampleP
     mxringEffortMult sampleP sampleI (effRing, effGetE) = 
@@ -729,7 +737,8 @@ instance
         where
         sampleCf = getSampleDomValue sampleP
     mxringEffortAdd sampleP sampleI (effRing, effGetE) = 
-        (ArithInOut.mxringEffortAdd sampleCf sampleI effRing, effGetE)  
+        undefined -- TODO
+--        (ArithInOut.mxringEffortAdd sampleCf sampleI effRing, effGetE)  
         where
         sampleCf = getSampleDomValue sampleP
     mxringEffortMult sampleP sampleI (effRing, effGetE) = 
@@ -766,7 +775,8 @@ instance
         where
         sampleCf = getSampleDomValue sampleP
     mxringEffortAdd sampleP sampleI (effRing, effGetE) = 
-        (ArithInOut.mxringEffortAdd sampleCf sampleI effRing, effGetE)  
+        undefined -- TODO
+--        (ArithInOut.mxringEffortAdd sampleCf sampleI effRing, effGetE)  
         where
         sampleCf = getSampleDomValue sampleP
     mxringEffortMult sampleP sampleI (effRing, effGetE) = 
@@ -951,7 +961,8 @@ instance
         where
         sampleCf = getSampleDomValue sampleP
     mxfldEffortAdd sampleP sampleI (effField, effGetE) = 
-        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
+        undefined -- TODO
+--        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
         where
         sampleCf = getSampleDomValue sampleP
     mxfldEffortMult sampleP sampleI (effField, effGetE) = 
@@ -989,7 +1000,8 @@ instance
         where
         sampleCf = getSampleDomValue sampleP
     mxfldEffortAdd sampleP sampleI (effField, effGetE) = 
-        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
+        undefined -- TODO
+--        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
         where
         sampleCf = getSampleDomValue sampleP
     mxfldEffortMult sampleP sampleI (effField, effGetE) = 
@@ -1028,7 +1040,8 @@ instance
         where
         sampleCf = getSampleDomValue sampleP
     mxfldEffortAdd sampleP sampleI (effField, effGetE) = 
-        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
+        undefined -- TODO
+--        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
         where
         sampleCf = getSampleDomValue sampleP
     mxfldEffortMult sampleP sampleI (effField, effGetE) = 
@@ -1067,7 +1080,8 @@ instance
         where
         sampleCf = getSampleDomValue sampleP
     mxfldEffortAdd sampleP sampleI (effField, effGetE) = 
-        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
+        undefined -- TODO
+--        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
         where
         sampleCf = getSampleDomValue sampleP
     mxfldEffortMult sampleP sampleI (effField, effGetE) = 
@@ -1106,7 +1120,8 @@ instance
         where
         sampleCf = getSampleDomValue sampleP
     mxfldEffortAdd sampleP sampleI (effField, effGetE) = 
-        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
+        undefined -- TODO
+--        (ArithInOut.mxfldEffortAdd sampleCf sampleI effField, effGetE)  
         where
         sampleCf = getSampleDomValue sampleP
     mxfldEffortMult sampleP sampleI (effField, effGetE) = 

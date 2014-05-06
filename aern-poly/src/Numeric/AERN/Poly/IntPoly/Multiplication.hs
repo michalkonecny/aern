@@ -320,7 +320,7 @@ instance
         (ArithInOut.RoundedRealEffortIndicator cf)
     ringOpsDefaultEffort (IntPoly cfg _) = 
         ArithInOut.roundedRealDefaultEffort $ ipolycfg_sample_cf cfg
-    ringEffortAdd _ eff = eff  
+    ringEffortAdd _ eff = undefined -- TODO eff  
     ringEffortMult _ eff = eff
     ringEffortPow _ eff = eff  
 
@@ -345,7 +345,8 @@ instance
     mixedRingOpsDefaultEffort (IntPoly cfg _) sample = 
         ArithInOut.mixedRingOpsDefaultEffort (ipolycfg_sample_cf cfg) sample
     mxringEffortAdd  (IntPoly cfg _) eff = 
-        ArithInOut.mxringEffortAdd (ipolycfg_sample_cf cfg) eff  
+        undefined -- TODO
+--        ArithInOut.mxringEffortAdd (ipolycfg_sample_cf cfg) eff  
     mxringEffortMult  (IntPoly cfg _) eff = 
         ArithInOut.mxringEffortMult (ipolycfg_sample_cf cfg) eff  
 
@@ -370,7 +371,8 @@ instance
     mixedRingOpsDefaultEffort (IntPoly cfg _) sample = 
         ArithInOut.mixedRingOpsDefaultEffort (ipolycfg_sample_cf cfg) sample
     mxringEffortAdd  (IntPoly cfg _) eff = 
-        ArithInOut.mxringEffortAdd (ipolycfg_sample_cf cfg) eff  
+        undefined -- TODO
+--        ArithInOut.mxringEffortAdd (ipolycfg_sample_cf cfg) eff  
     mxringEffortMult  (IntPoly cfg _) eff = 
         ArithInOut.mxringEffortMult (ipolycfg_sample_cf cfg) eff  
 
@@ -395,7 +397,8 @@ instance
     mixedRingOpsDefaultEffort (IntPoly cfg _) sample = 
         ArithInOut.mixedRingOpsDefaultEffort (ipolycfg_sample_cf cfg) sample
     mxringEffortAdd  (IntPoly cfg _) eff = 
-        ArithInOut.mxringEffortAdd (ipolycfg_sample_cf cfg) eff  
+        undefined -- TODO
+--        ArithInOut.mxringEffortAdd (ipolycfg_sample_cf cfg) eff  
     mxringEffortMult  (IntPoly cfg _) eff = 
         ArithInOut.mxringEffortMult (ipolycfg_sample_cf cfg) eff  
 
@@ -420,7 +423,8 @@ instance
     mixedRingOpsDefaultEffort (IntPoly cfg _) sample = 
         ArithInOut.mixedRingOpsDefaultEffort (ipolycfg_sample_cf cfg) sample
     mxringEffortAdd  (IntPoly cfg _) eff = 
-        ArithInOut.mxringEffortAdd (ipolycfg_sample_cf cfg) eff  
+        undefined -- TODO
+--        ArithInOut.mxringEffortAdd (ipolycfg_sample_cf cfg) eff  
     mxringEffortMult  (IntPoly cfg _) eff = 
         ArithInOut.mxringEffortMult (ipolycfg_sample_cf cfg) eff  
 
@@ -436,29 +440,32 @@ instance
 
 
 instance
-    (ArithInOut.RoundedReal cf,
+    (cf ~ Interval e,
+     ArithInOut.RoundedReal cf,
      ArithInOut.RoundedMixedRingEffort cf (Interval e)) 
     => 
     ArithInOut.RoundedMixedRingEffort (IntPoly var cf) (Interval e)
     where
     type MixedRingOpsEffortIndicator (IntPoly var cf) (Interval e) =
-        ArithInOut.MixedRingOpsEffortIndicator cf (Interval e)
+        ArithInOut.MixedRingOpsEffortIndicator (Interval e) (Interval e)
     mixedRingOpsDefaultEffort (IntPoly cfg _) sample = 
         ArithInOut.mixedRingOpsDefaultEffort (ipolycfg_sample_cf cfg) sample
     mxringEffortAdd  (IntPoly cfg _) eff = 
-        ArithInOut.mxringEffortAdd (ipolycfg_sample_cf cfg) eff  
+        undefined -- TODO
+--        ArithInOut.mxringEffortAdd (ipolycfg_sample_cf cfg) eff  
     mxringEffortMult  (IntPoly cfg _) eff = 
         ArithInOut.mxringEffortMult (ipolycfg_sample_cf cfg) eff  
 
 instance 
-    (ArithInOut.RoundedReal cf,
+    (cf ~ Interval e,
+     ArithInOut.RoundedReal cf,
      ArithInOut.RoundedMixedRing cf (Interval e),
      HasAntiConsistency cf,
      RefOrd.IntervalLike cf,
      Show var, Ord var, Show cf,
      NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
     =>
-    ArithInOut.RoundedMixedRing (IntPoly var cf) (Interval e)
+    ArithInOut.RoundedMixedRing (IntPoly var (Interval e)) (Interval e)
 
 
 
@@ -586,7 +593,8 @@ instance
     mixedFieldOpsDefaultEffort (IntPoly cfg _) sample = 
         ArithInOut.mixedFieldOpsDefaultEffort (ipolycfg_sample_cf cfg) sample
     mxfldEffortAdd  (IntPoly cfg _) eff = 
-        ArithInOut.mxfldEffortAdd (ipolycfg_sample_cf cfg) eff  
+        undefined -- TODO
+--        ArithInOut.mxfldEffortAdd (ipolycfg_sample_cf cfg) eff  
     mxfldEffortMult  (IntPoly cfg _) eff = 
         ArithInOut.mxfldEffortMult (ipolycfg_sample_cf cfg) eff  
     mxfldEffortDiv  (IntPoly cfg _) eff = 
@@ -613,7 +621,8 @@ instance
     mixedFieldOpsDefaultEffort (IntPoly cfg _) sample = 
         ArithInOut.mixedFieldOpsDefaultEffort (ipolycfg_sample_cf cfg) sample
     mxfldEffortAdd  (IntPoly cfg _) eff = 
-        ArithInOut.mxfldEffortAdd (ipolycfg_sample_cf cfg) eff  
+        undefined -- TODO
+--        ArithInOut.mxfldEffortAdd (ipolycfg_sample_cf cfg) eff  
     mxfldEffortMult  (IntPoly cfg _) eff = 
         ArithInOut.mxfldEffortMult (ipolycfg_sample_cf cfg) eff  
     mxfldEffortDiv  (IntPoly cfg _) eff = 
@@ -640,7 +649,8 @@ instance
     mixedFieldOpsDefaultEffort (IntPoly cfg _) sample = 
         ArithInOut.mixedFieldOpsDefaultEffort (ipolycfg_sample_cf cfg) sample
     mxfldEffortAdd  (IntPoly cfg _) eff = 
-        ArithInOut.mxfldEffortAdd (ipolycfg_sample_cf cfg) eff  
+        undefined -- TODO
+--        ArithInOut.mxfldEffortAdd (ipolycfg_sample_cf cfg) eff  
     mxfldEffortMult  (IntPoly cfg _) eff = 
         ArithInOut.mxfldEffortMult (ipolycfg_sample_cf cfg) eff  
     mxfldEffortDiv  (IntPoly cfg _) eff = 
@@ -667,7 +677,8 @@ instance
     mixedFieldOpsDefaultEffort (IntPoly cfg _) sample = 
         ArithInOut.mixedFieldOpsDefaultEffort (ipolycfg_sample_cf cfg) sample
     mxfldEffortAdd  (IntPoly cfg _) eff = 
-        ArithInOut.mxfldEffortAdd (ipolycfg_sample_cf cfg) eff  
+        undefined -- TODO
+--        ArithInOut.mxfldEffortAdd (ipolycfg_sample_cf cfg) eff  
     mxfldEffortMult  (IntPoly cfg _) eff = 
         ArithInOut.mxfldEffortMult (ipolycfg_sample_cf cfg) eff  
     mxfldEffortDiv  (IntPoly cfg _) eff = 
@@ -684,29 +695,32 @@ instance
     ArithInOut.RoundedMixedField (IntPoly var cf) Double
 
 instance
-    (ArithInOut.RoundedReal cf,
+    (cf ~ Interval e,
+     ArithInOut.RoundedReal cf,
      ArithInOut.RoundedMixedFieldEffort cf (Interval e)) 
     => 
-    ArithInOut.RoundedMixedFieldEffort (IntPoly var cf) (Interval e)
+    ArithInOut.RoundedMixedFieldEffort (IntPoly var (Interval e)) (Interval e)
     where
-    type MixedFieldOpsEffortIndicator (IntPoly var cf) (Interval e) =
-        ArithInOut.MixedFieldOpsEffortIndicator cf (Interval e)
+    type MixedFieldOpsEffortIndicator (IntPoly var (Interval e)) (Interval e) =
+        ArithInOut.MixedFieldOpsEffortIndicator (Interval e) (Interval e)
     mixedFieldOpsDefaultEffort (IntPoly cfg _) sample = 
         ArithInOut.mixedFieldOpsDefaultEffort (ipolycfg_sample_cf cfg) sample
     mxfldEffortAdd  (IntPoly cfg _) eff = 
-        ArithInOut.mxfldEffortAdd (ipolycfg_sample_cf cfg) eff  
+        undefined -- TODO
+--        ArithInOut.mxfldEffortAdd (ipolycfg_sample_cf cfg) eff  
     mxfldEffortMult  (IntPoly cfg _) eff = 
         ArithInOut.mxfldEffortMult (ipolycfg_sample_cf cfg) eff  
     mxfldEffortDiv  (IntPoly cfg _) eff = 
         ArithInOut.mxfldEffortDiv (ipolycfg_sample_cf cfg) eff  
 
 instance 
-    (ArithInOut.RoundedReal cf,
+    (cf ~ Interval e,
+     ArithInOut.RoundedReal cf,
      ArithInOut.RoundedMixedField cf (Interval e),
      HasAntiConsistency cf,
      RefOrd.IntervalLike cf,
      Show var, Ord var, Show cf,
      NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
     =>
-    ArithInOut.RoundedMixedField (IntPoly var cf) (Interval e)
+    ArithInOut.RoundedMixedField (IntPoly var (Interval e)) (Interval e)
 

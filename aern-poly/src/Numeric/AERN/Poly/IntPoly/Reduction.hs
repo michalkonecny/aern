@@ -32,7 +32,7 @@ import Numeric.AERN.Poly.IntPoly.New ()
 import Numeric.AERN.Poly.IntPoly.Show ()
 
 import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.New
+--import Numeric.AERN.RmToRn.New
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
@@ -229,7 +229,7 @@ reduceTermsCountWithOps (+) (*) (^) getImpr varDoms maxSize terms
         * count terms, return without change if not over maxSize 
         * collect the widths of the ranges of all terms
         * sort the list and determine a cut-off treshold
-        * (TODO) mark all terms whose range's width is below the treshold (but never mark the constant term!) 
+        * mark all terms whose range's width is below the treshold (but never mark the constant term!) 
         * remove the marked terms and compensate for them by widening the remaining coeffs
     -}
     where
