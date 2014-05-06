@@ -24,7 +24,7 @@ module Numeric.AERN.Poly.IntPoly.Minmax
     minmaxInOutDefaultEffortIntPolyWithBezierDegree
 )
 where
-    
+
 import Numeric.AERN.Poly.IntPoly.Config
 import Numeric.AERN.Poly.IntPoly.IntPoly
 import Numeric.AERN.Poly.IntPoly.New ()
@@ -342,7 +342,9 @@ effMinmaxFromIntPolyEffort ::
 effMinmaxFromIntPolyEffort sampleP eff =
     MinmaxEffortIndicatorFromRingOps -- TODO: insert efforts from eff instead of defaults
     {
-        minmaxFromRO_eff_convertTDF = (eff, ()),
+        minmaxFromRO_eff_convertTDF =
+            undefined, -- TODO 
+--            (eff, ()),
         minmaxFromRO_eff_roundedRealD = ipolyeff_cfRoundedRealEffort eff,
         minmaxFromRO_eff_getEndpointsD = ipolyeff_cfGetEndpointsEffort eff,
         minmaxFromRO_eff_evalFT = eff,

@@ -105,7 +105,8 @@ polyPolyEvalOps eff sampleP sampleCf =
     result
     where
     result =
-        let (<+>) = ArithInOut.addOutEff effCf in
+        let (<+>) = undefined in -- TODO
+--        let (<+>) = ArithInOut.addOutEff effCf in
         let (<*>) = ArithInOut.multOutEff effCf in
         let (<^>) = ArithInOut.powerToNonnegIntOutEff effCf in
         let (<=?) = NumOrd.pLeqEff eff in
@@ -128,7 +129,8 @@ polyPolyEvalOps eff sampleP sampleCf =
         val2 = RefOrd.fromEndpointsOut (valM, valR)
         (valL, valR) = RefOrd.getEndpointsOut val
         valM =
-            let (<+>) = ArithInOut.addOutEff effCf in
+            let (<+>) = undefined in -- TODO
+--            let (<+>) = ArithInOut.addOutEff effCf in
             let (</>|) = ArithInOut.mixedDivOutEff effDivIntCf in
             (valL <+> valR) </>| (2 :: Int)
     getWidthAsDoubleDummy _ = 0 -- no splitting...
