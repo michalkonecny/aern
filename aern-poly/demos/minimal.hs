@@ -20,7 +20,6 @@ import Numeric.AERN.RefinementOrder.Operators
 import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
-import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.PartialOrdering
@@ -242,10 +241,10 @@ effIP =
         ipolyeff_cfGetEndpointsEffort = RefOrd.getEndpointsDefaultEffort sampleCf,
         ipolyeff_cfFromEndpointsEffort = RefOrd.fromEndpointsDefaultEffort sampleCf,
         ipolyeff_cfMinMaxEffort = NumOrd.minmaxInOutDefaultEffort sampleCf,
-        ipolyeff_evalMaxSplitSize = Int1To100 100,
-        ipolyeff_minmaxBernsteinDegreeMinus1 = Int1To10 (bernsteinDegree - 1),
-        ipolyeff_recipTauDegreeMinus1 = Int1To10 (tauDegree - 1),
-        ipolyeff_counterExampleSearchSampleCount = Int1To1000 (4 * arity)
+        ipolyeff_evalMaxSplitSize = 100,
+        ipolyeff_minmaxBernsteinDegree = bernsteinDegree,
+        ipolyeff_recipTauDegree = tauDegree,
+        ipolyeff_counterExampleSearchSampleCount = 4 * arity
     }
     where
     bernsteinDegree = 4
@@ -255,13 +254,13 @@ effIP =
     
 effIPsplitSize :: Int -> IntPolyEffort CF
 effIPsplitSize maxsplitSize =
-    effIP { ipolyeff_evalMaxSplitSize = Int1To100 maxsplitSize }
+    effIP { ipolyeff_evalMaxSplitSize = maxsplitSize }
 
 minmaxUpDnEff :: IntPolyEffort CF
-minmaxUpDnEff = effIP { ipolyeff_minmaxBernsteinDegreeMinus1 = Int1To10 10 }
+minmaxUpDnEff = effIP { ipolyeff_minmaxBernsteinDegree = 10 }
 
 minmaxInOutEff :: IntPolyEffort CF
-minmaxInOutEff = effIP { ipolyeff_minmaxBernsteinDegreeMinus1 = Int1To10 10 }
+minmaxInOutEff = effIP { ipolyeff_minmaxBernsteinDegree = 10 }
 
 evalOpsOutCf :: PolyEvalOps String CF CF
 evalOpsOutCf = evalOpsEff effIP x (0::CF)
@@ -281,7 +280,8 @@ limits =
     {
         ipolylimits_cf_limits = (),
         ipolylimits_maxdeg = 4,
-        ipolylimits_maxsize = 30
+        ipolylimits_maxsize = 30,
+        ipolylimits_effort = effIP
     } 
 
 limitsDeg0 :: IntPolySizeLimits CF

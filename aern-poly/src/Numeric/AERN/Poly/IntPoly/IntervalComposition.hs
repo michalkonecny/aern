@@ -160,6 +160,6 @@ intpolyPolyEvalOps (effRing, effIntPoly) samplePI sampleCf =
     isDefinitelyExact (Interval l r) = 
         (NumOrd.pEqualEff effIntPoly l r) == Just True
 
-    Int1To100 maxSplitSize = ipolyeff_evalMaxSplitSize effIntPoly
+    maxSplitSize = ipolyeff_evalMaxSplitSize effIntPoly
     effCf = ipolyeff_cfRoundedRealEffort effIntPoly
         

@@ -52,7 +52,6 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Arbitrary
@@ -82,7 +81,7 @@ instance
     pCompareInFullEff eff p1 p2 = 
         pCompareFunFromRingOps (n, eff, effCompDom, effEval) p1 p2 
         where
-        Int1To1000 n = ipolyeff_counterExampleSearchSampleCount eff
+        n = ipolyeff_counterExampleSearchSampleCount eff
         effEval = eff
         effDom = ipolyeff_cfRoundedRealEffort eff
         effCompDom = ArithInOut.rrEffortNumComp sampleDom effDom

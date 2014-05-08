@@ -64,7 +64,6 @@ import Numeric.AERN.RefinementOrder
 
 import Numeric.AERN.Basics.Interval
 --import Numeric.AERN.Basics.PartialOrdering
-import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 
@@ -102,7 +101,7 @@ minmaxUpDnDefaultEffortIntPolyWithBezierDegree ::
 minmaxUpDnDefaultEffortIntPolyWithBezierDegree degree _p@(IntPoly cfg _) =
     (ipolycfg_effort cfg)
     {
-        ipolyeff_minmaxBernsteinDegreeMinus1 = Int1To10 (degree - 1)
+        ipolyeff_minmaxBernsteinDegree = degree
     }
 
 instance
@@ -139,7 +138,7 @@ instance
                 (Just aC, Just bC) ->
                     newConstFnFromSample a $ NumOrd.maxOutEff effMinmaxDom aC bC 
                 _ ->
-                    fst $ maxUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+                    fst $ maxUpEffFromRingOps a getX effMinmax (getDegree degree a) aR bR
         (_aL,aR) = RefOrd.getEndpointsOutEff () a
         (_bL,bR) = RefOrd.getEndpointsOutEff () b
         
@@ -147,7 +146,7 @@ instance
             where
             sampleP = a
         
-        Int1To10 degreeMinusOne = ipolyeff_minmaxBernsteinDegreeMinus1 eff
+        degree = ipolyeff_minmaxBernsteinDegree eff
         effMinmaxDom = ipolyeff_cfMinMaxEffort eff
 --        effDom = ipolyeff_cfRoundedRealEffort eff
         
@@ -160,13 +159,13 @@ instance
                 (Just aC, Just bC) ->
                     newConstFnFromSample a $ NumOrd.maxOutEff effMinmaxDom aC bC 
                 _ ->
-                    maxDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+                    maxDnEffFromRingOps a getX effMinmax (getDegree degree a) aL bL
         (aL,_aR) = RefOrd.getEndpointsOutEff () a
         (bL,_bR) = RefOrd.getEndpointsOutEff () b
         effMinmax = effMinmaxFromIntPolyEffort sampleP eff
             where
             sampleP = a
-        Int1To10 degreeMinusOne = ipolyeff_minmaxBernsteinDegreeMinus1 eff
+        degree = ipolyeff_minmaxBernsteinDegree eff
         effMinmaxDom = ipolyeff_cfMinMaxEffort eff
 
     minUpEff eff a b = 
@@ -177,13 +176,13 @@ instance
                 (Just aC, Just bC) ->
                     newConstFnFromSample a $ NumOrd.minOutEff effMinmaxDom aC bC 
                 _ ->
-                    minUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+                    minUpEffFromRingOps a getX effMinmax (getDegree degree a) aR bR
         (_aL,aR) = RefOrd.getEndpointsOutEff () a
         (_bL,bR) = RefOrd.getEndpointsOutEff () b
         effMinmax = effMinmaxFromIntPolyEffort sampleP eff
             where
             sampleP = a
-        Int1To10 degreeMinusOne = ipolyeff_minmaxBernsteinDegreeMinus1 eff
+        degree = ipolyeff_minmaxBernsteinDegree eff
         effMinmaxDom = ipolyeff_cfMinMaxEffort eff
 
     minDnEff eff a b = 
@@ -194,13 +193,13 @@ instance
                 (Just aC, Just bC) ->
                     newConstFnFromSample a $ NumOrd.minOutEff effMinmaxDom aC bC 
                 _ ->
-                    fst $ minDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+                    fst $ minDnEffFromRingOps a getX effMinmax (getDegree degree a) aL bL
         (aL,_aR) = RefOrd.getEndpointsOutEff () a
         (bL,_bR) = RefOrd.getEndpointsOutEff () b
         effMinmax = effMinmaxFromIntPolyEffort sampleP eff
             where
             sampleP = a
-        Int1To10 degreeMinusOne = ipolyeff_minmaxBernsteinDegreeMinus1 eff
+        degree = ipolyeff_minmaxBernsteinDegree eff
         effMinmaxDom = ipolyeff_cfMinMaxEffort eff
 
 instance
@@ -289,7 +288,7 @@ minmaxInOutDefaultEffortIntPolyWithBezierDegree ::
 minmaxInOutDefaultEffortIntPolyWithBezierDegree degree _p@(IntPoly cfg _) =
     (ipolycfg_effort cfg)
     {
-        ipolyeff_minmaxBernsteinDegreeMinus1 = Int1To10 (degree - 1)
+        ipolyeff_minmaxBernsteinDegree = degree
     }
 
 instance
@@ -314,15 +313,15 @@ instance
         result =
             makeCoeffsConsistentOut $ 
             RefOrd.fromEndpointsOutEff () (resL,resR)
-        resL = maxDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
-        (resR, _) = maxUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+        resL = maxDnEffFromRingOps a getX effMinmax (getDegree degree a) aL bL
+        (resR, _) = maxUpEffFromRingOps a getX effMinmax (getDegree degree a) aR bR
         (aL,aR) = RefOrd.getEndpointsOutEff () a
         (bL,bR) = RefOrd.getEndpointsOutEff () b
 
         effMinmax = effMinmaxFromIntPolyEffort sampleP eff
             where
             sampleP = a
-        Int1To10 degreeMinusOne = ipolyeff_minmaxBernsteinDegreeMinus1 eff
+        degree = ipolyeff_minmaxBernsteinDegree eff
 
     maxInEff =
         error "aern-poly: inner-rounded max not available for IntPoly"
@@ -332,8 +331,8 @@ instance
         result = 
             makeCoeffsConsistentOut $ 
             RefOrd.fromEndpointsOutEff () (resL,resR)
-        (resL, _) = minDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
-        resR = minUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+        (resL, _) = minDnEffFromRingOps a getX effMinmax (getDegree degree a) aL bL
+        resR = minUpEffFromRingOps a getX effMinmax (getDegree degree a) aR bR
         (aL,aR) = RefOrd.getEndpointsOutEff () a
         (bL,bR) = RefOrd.getEndpointsOutEff () b
 
@@ -341,7 +340,7 @@ instance
             where
             sampleP = a
         
-        Int1To10 degreeMinusOne = ipolyeff_minmaxBernsteinDegreeMinus1 eff
+        degree = ipolyeff_minmaxBernsteinDegree eff
 
     minInEff =
         error "aern-poly: inner-rounded min not available for IntPoly"
@@ -491,7 +490,7 @@ getX (IntPoly (IntPolyCfg vars _ _ sample limits) _) =
     unit = RefOrd.fromEndpointsOut (zero sample, one sample)
     
 getDegree :: Int -> IntPoly var cf -> Int
-getDegree degreeMinusOne (IntPoly cfg _) =
-    max 2 $ min (degreeMinusOne + 1) maxDeg
+getDegree degree (IntPoly cfg _) =
+    max 2 $ min degree maxDeg
     where
     maxDeg = ipolycfg_maxdeg cfg

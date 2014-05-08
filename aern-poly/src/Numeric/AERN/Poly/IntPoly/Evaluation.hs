@@ -151,7 +151,7 @@ instance
         (<->) = ArithInOut.subtrOutEff effAdd
         effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
         
-        Int1To100 maxSplitSize = ipolyeff_evalMaxSplitSize eff
+        maxSplitSize = ipolyeff_evalMaxSplitSize eff
         effCf = ipolyeff_cfRoundedRealEffort eff
         sampleCf = ipolycfg_sample_cf cfg
         
@@ -165,7 +165,7 @@ instance
         (>-<) = ArithInOut.subtrInEff effAdd
         effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
 
-        Int1To100 maxSplitSize = ipolyeff_evalMaxSplitSize eff
+        maxSplitSize = ipolyeff_evalMaxSplitSize eff
         effCf = ipolyeff_cfRoundedRealEffort eff
         sampleCf = ipolycfg_sample_cf cfg
     
@@ -199,7 +199,7 @@ instance
     evalOpsEff eff _sampleP sampleCf =
         coeffPolyEvalOpsOut effCf maxSplitSize sampleCf
         where
-        Int1To100 maxSplitSize = ipolyeff_evalMaxSplitSize eff
+        maxSplitSize = ipolyeff_evalMaxSplitSize eff
         effCf = ipolyeff_cfRoundedRealEffort eff
         
 

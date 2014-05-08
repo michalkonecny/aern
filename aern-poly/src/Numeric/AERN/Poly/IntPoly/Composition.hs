@@ -53,7 +53,6 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Consistency
-import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.SizeLimits
 
 import Numeric.AERN.Misc.Debug
@@ -139,7 +138,7 @@ polyPolyEvalOps eff sampleP sampleCf =
         polyIsExact p == Just True
     effJoinCf = ArithInOut.rrEffortJoinMeet sampleCf effCf
 
-    Int1To100 maxSplitSize = ipolyeff_evalMaxSplitSize eff
+    maxSplitSize = ipolyeff_evalMaxSplitSize eff
     effCf = ipolyeff_cfRoundedRealEffort eff
         
         

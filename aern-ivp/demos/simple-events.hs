@@ -38,7 +38,6 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsDefaultEffort
 
 
-import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.ShowInternals
 
@@ -461,7 +460,7 @@ solveHybridIVPBisect
         (ipolylimits_effort sizeLimits)
         {
             ipolyeff_cfRoundedRealEffort = effCf,
-            ipolyeff_evalMaxSplitSize = Int1To100 substSplitSizeLimit
+            ipolyeff_evalMaxSplitSize = substSplitSizeLimit
         }
 
 solveHybridIVPLocate ::
@@ -539,7 +538,7 @@ solveHybridIVPLocate
         (ipolylimits_effort sizeLimits)
         {
             ipolyeff_cfRoundedRealEffort = effCf,
-            ipolyeff_evalMaxSplitSize = Int1To100 substSplitSizeLimit
+            ipolyeff_evalMaxSplitSize = substSplitSizeLimit
         }
 
 
