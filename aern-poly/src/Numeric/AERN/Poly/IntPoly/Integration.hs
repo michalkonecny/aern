@@ -56,11 +56,9 @@ instance
     RoundedIntegration (IntPoly var cf)
     where
     type IntegrationEffortIndicator (IntPoly var cf) =
-         ArithInOut.RoundedRealEffortIndicator cf
+         IntPolyEffort cf
     integrationDefaultEffort (IntPoly cfg _) =
-        ArithInOut.roundedRealDefaultEffort sampleCf
-        where
-        sampleCf = ipolycfg_sample_cf cfg
+        ipolycfg_effort cfg
     primitiveFunctionOutEff = primitiveFnOutPoly
     primitiveFunctionInEff =
         error "inner rounded integration not defined for IntPoly"
@@ -73,14 +71,15 @@ primitiveFnOutPoly ::
      NumOrd.PartialComparison (Imprecision cf), 
      Show cf) 
     => 
-    (ArithInOut.RoundedRealEffortIndicator cf) ->
+    (IntPolyEffort cf) ->
     IntPoly var cf {- polynomial to integrate in its main variable -} ->
     var {- variable to integrate in -} ->
     IntPoly var cf
 primitiveFnOutPoly eff _p@(IntPoly cfgTop terms) integVar =
-    reducePolyDegreeOut eff $
+    reducePolyDegreeOut effCf $
     IntPoly cfgTop $ primitiveFnOutTerms cfgTop terms
     where
+    effCf = ipolyeff_cfRoundedRealEffort eff
     primitiveFnOutTerms cfg (IntPolyV var powers) 
         | integVar == var =
         --    unsafePrint
@@ -104,8 +103,7 @@ primitiveFnOutPoly eff _p@(IntPoly cfgTop terms) integVar =
             where
             integrateTerms (n,t) =
                 (n+1, intpoly_terms $ (IntPoly cfgR t) </>| (n+1))
-            (</>|) = ArithInOut.mixedDivOutEff effDiv
-        effDiv = ArithInOut.mxfldEffortDiv sample (1::Int) $ ArithInOut.rrEffortIntMixedField sample eff
+            (</>|) = ArithInOut.mixedDivOutEff eff
     --    effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
         sample = ipolycfg_sample_cf cfg
     primitiveFnOutTerms _ _ = 

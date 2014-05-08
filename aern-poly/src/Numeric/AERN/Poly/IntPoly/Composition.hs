@@ -105,10 +105,9 @@ polyPolyEvalOps eff sampleP sampleCf =
     result
     where
     result =
-        let (<+>) = undefined in -- TODO
---        let (<+>) = ArithInOut.addOutEff effCf in
-        let (<*>) = ArithInOut.multOutEff effCf in
-        let (<^>) = ArithInOut.powerToNonnegIntOutEff effCf in
+        let (<+>) = ArithInOut.addOutEff eff in
+        let (<*>) = ArithInOut.multOutEff eff in
+        let (<^>) = ArithInOut.powerToNonnegIntOutEff eff in
         let (<=?) = NumOrd.pLeqEff eff in
         PolyEvalOps (zero sampleP) (<+>) (<*>) (<^>) (newConstFnFromSample sampleP) (const Nothing) maxSplitSize $
             Just $ PolyEvalMonoOps
@@ -129,13 +128,10 @@ polyPolyEvalOps eff sampleP sampleCf =
         val2 = RefOrd.fromEndpointsOut (valM, valR)
         (valL, valR) = RefOrd.getEndpointsOut val
         valM =
-            let (<+>) = undefined in -- TODO
---            let (<+>) = ArithInOut.addOutEff effCf in
-            let (</>|) = ArithInOut.mixedDivOutEff effDivIntCf in
+            let (<+>) = ArithInOut.addOutEff eff in
+            let (</>|) = ArithInOut.mixedDivOutEff eff in
             (valL <+> valR) </>| (2 :: Int)
     getWidthAsDoubleDummy _ = 0 -- no splitting...
-    effDivIntCf = ArithInOut.mxfldEffortDiv sampleCf (1::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
---    effAddCf = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     join = 
         let (</\>) = RefOrd.meetOutEff effJoinCf in
         polyJoinWith (zero sampleCf) $ uncurry (</\>)
@@ -193,10 +189,10 @@ instance
             toAscList evalValuesBox
         getVarComposeValue (var,value) =
             (var, newConstFn limits varDomsWithoutEvalVars value)
-        cfgWithoutEvalVars =
-            cfgAdjustDomains varsWithoutEvalVars domsWithoutEvalVars cfg 
-        (varsWithoutEvalVars, domsWithoutEvalVars) = 
-            unzip varDomsWithoutEvalVars
+--        cfgWithoutEvalVars =
+--            cfgAdjustDomains varsWithoutEvalVars domsWithoutEvalVars cfg 
+--        (varsWithoutEvalVars, domsWithoutEvalVars) = 
+--            unzip varDomsWithoutEvalVars
         varDomsWithoutEvalVars =
             filter notSubstitutedVarDom varDoms
             where
@@ -217,9 +213,9 @@ instance
             toAscList evalValuesBox
         getVarComposeValue (var,value) =
             (var, newConstFn limits varDomsWithoutEvalVars value)
-        cfgWithoutEvalVars =
-            cfgAdjustDomains varsWithoutEvalVars domsWithoutEvalVars cfg 
-        (varsWithoutEvalVars, domsWithoutEvalVars) = unzip varDomsWithoutEvalVars
+--        cfgWithoutEvalVars =
+--            cfgAdjustDomains varsWithoutEvalVars domsWithoutEvalVars cfg 
+--        (varsWithoutEvalVars, domsWithoutEvalVars) = unzip varDomsWithoutEvalVars
         varDomsWithoutEvalVars =
             filter notSubstitutedVarDom varDoms
             where

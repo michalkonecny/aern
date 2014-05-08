@@ -32,6 +32,9 @@ import Numeric.AERN.RmToRn
 
 import Numeric.AERN.RmToRn.RefinementOrderRounding.Reciprocal (recipOutUsingTauEff)
 
+import Numeric.AERN.Basics.Interval (Interval)
+
+
 --import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified 
@@ -56,27 +59,24 @@ instance
     ArithInOut.RoundedDivideEffort (IntPoly var cf) 
     where
     type DivEffortIndicator (IntPoly var cf) = 
-       (ArithInOut.RoundedRealEffortIndicator cf,
-        ArithInOut.MixedFieldOpsEffortIndicator (IntPoly var cf) cf,
-        Int1To10)
-    divDefaultEffort p@(IntPoly cfg _) = 
-        (ArithInOut.roundedRealDefaultEffort sampleCf,
-         ArithInOut.mixedFieldOpsDefaultEffort p sampleCf,
-         Int1To10 (maxdeg `div` 3))
-         where
-         sampleCf = ipolycfg_sample_cf cfg
-         maxdeg = ipolycfg_maxdeg cfg
+        IntPolyEffort cf
+    divDefaultEffort (IntPoly cfg _) =
+        ipolycfg_effort cfg 
 
 instance
-   (Ord var, Show var, Show cf, Show (Imprecision cf),
+   (cf ~ Interval e, 
+    Ord var, Show var, Show cf, Show (Imprecision cf),
     HasAntiConsistency cf, ArithInOut.RoundedReal cf,
-    RefOrd.IntervalLike cf,
     ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
     =>
     ArithInOut.RoundedDivide (IntPoly var cf) 
     where
-    divOutEff (effRealD, effFldFD, Int1To10 tauDegree) p1 p2 = 
-        divOutEffUsingRecip (effRealD, effRealD, effFldFD) tauDegree p1 p2
+    divOutEff eff p1 p2 = 
+        divOutEffUsingRecip (eff, effRealD, effFldFD) tauDegree p1 p2
+        where
+        effRealD = ipolyeff_cfRoundedRealEffort eff
+        effFldFD = eff
+        Int1To10 tauDegree = ipolyeff_recipTauDegreeMinus1 eff
     divInEff = 
         error "aern-poly: IntPoly does not support inwards-rounded division" 
 
@@ -86,7 +86,7 @@ divOutEffUsingRecip ::
     RefOrd.IntervalLike cf,
     ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
    =>
-   (ArithInOut.RoundedRealEffortIndicator cf,
+   (ArithInOut.RingOpsEffortIndicator (IntPoly var cf),
     ArithInOut.RoundedRealEffortIndicator cf,
     ArithInOut.MixedFieldOpsEffortIndicator (IntPoly var cf) cf)
     -> Int -- ^ order or the tau approximation of the reciprocal 
