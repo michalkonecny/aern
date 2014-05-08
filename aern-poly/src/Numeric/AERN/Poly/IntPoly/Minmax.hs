@@ -152,39 +152,56 @@ instance
 --        effDom = ipolyeff_cfRoundedRealEffort eff
         
         
---    maxDnEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne, effGetE) a b =
---        result
---        where
---        result =
---            case (getConstantIfPolyConstant a, getConstantIfPolyConstant b) of
---                (Just aC, Just bC) ->
---                    newConstFnFromSample a $ NumOrd.maxOutEff effMinmaxDom aC bC 
---                _ ->
---                    maxDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
---        (aL,_aR) = RefOrd.getEndpointsOutEff effGetE a
---        (bL,_bR) = RefOrd.getEndpointsOutEff effGetE b
---    minUpEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne,effGetE) a b = 
---        result
---        where
---        result =
---            case (getConstantIfPolyConstant a, getConstantIfPolyConstant b) of
---                (Just aC, Just bC) ->
---                    newConstFnFromSample a $ NumOrd.minOutEff effMinmaxDom aC bC 
---                _ ->
---                    minUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
---        (_aL,aR) = RefOrd.getEndpointsOutEff effGetE a
---        (_bL,bR) = RefOrd.getEndpointsOutEff effGetE b
---    minDnEff (effMinmax, effMinmaxDom, Int1To10 degreeMinusOne,effGetE) a b = 
---        result
---        where
---        result =
---            case (getConstantIfPolyConstant a, getConstantIfPolyConstant b) of
---                (Just aC, Just bC) ->
---                    newConstFnFromSample a $ NumOrd.minOutEff effMinmaxDom aC bC 
---                _ ->
---                    fst $ minDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
---        (aL,_aR) = RefOrd.getEndpointsOutEff effGetE a
---        (bL,_bR) = RefOrd.getEndpointsOutEff effGetE b
+    maxDnEff eff a b =
+        result
+        where
+        result =
+            case (getConstantIfPolyConstant a, getConstantIfPolyConstant b) of
+                (Just aC, Just bC) ->
+                    newConstFnFromSample a $ NumOrd.maxOutEff effMinmaxDom aC bC 
+                _ ->
+                    maxDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+        (aL,_aR) = RefOrd.getEndpointsOutEff () a
+        (bL,_bR) = RefOrd.getEndpointsOutEff () b
+        effMinmax = effMinmaxFromIntPolyEffort sampleP eff
+            where
+            sampleP = a
+        Int1To10 degreeMinusOne = ipolyeff_minmaxBernsteinDegreeMinus1 eff
+        effMinmaxDom = ipolyeff_cfMinMaxEffort eff
+
+    minUpEff eff a b = 
+        result
+        where
+        result =
+            case (getConstantIfPolyConstant a, getConstantIfPolyConstant b) of
+                (Just aC, Just bC) ->
+                    newConstFnFromSample a $ NumOrd.minOutEff effMinmaxDom aC bC 
+                _ ->
+                    minUpEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aR bR
+        (_aL,aR) = RefOrd.getEndpointsOutEff () a
+        (_bL,bR) = RefOrd.getEndpointsOutEff () b
+        effMinmax = effMinmaxFromIntPolyEffort sampleP eff
+            where
+            sampleP = a
+        Int1To10 degreeMinusOne = ipolyeff_minmaxBernsteinDegreeMinus1 eff
+        effMinmaxDom = ipolyeff_cfMinMaxEffort eff
+
+    minDnEff eff a b = 
+        result
+        where
+        result =
+            case (getConstantIfPolyConstant a, getConstantIfPolyConstant b) of
+                (Just aC, Just bC) ->
+                    newConstFnFromSample a $ NumOrd.minOutEff effMinmaxDom aC bC 
+                _ ->
+                    fst $ minDnEffFromRingOps a getX effMinmax (getDegree degreeMinusOne a) aL bL
+        (aL,_aR) = RefOrd.getEndpointsOutEff () a
+        (bL,_bR) = RefOrd.getEndpointsOutEff () b
+        effMinmax = effMinmaxFromIntPolyEffort sampleP eff
+            where
+            sampleP = a
+        Int1To10 degreeMinusOne = ipolyeff_minmaxBernsteinDegreeMinus1 eff
+        effMinmaxDom = ipolyeff_cfMinMaxEffort eff
 
 instance
     (Ord var,
