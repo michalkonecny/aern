@@ -110,24 +110,11 @@ instance
     rrEffortToRational _sampleP eff = eff
     rrEffortFromRational _sampleP eff = eff
     rrEffortAbs _ eff = eff
-    -- TODO: enable all the following and change the effor indicators for the various operations to be equal to the above record
---    rrEffortField eff = eff
---    rrEffortIntMixedField sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effIntField, effGetE)
---        where
---        effIntField = ArithInOut.rrEffortIntMixedField sampleCf effCf
---        sampleCf = getSampleDomValue sampleP
---    rrEffortIntegerMixedField sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effIntegerField, effGetE)
---        where
---        effIntegerField = ArithInOut.rrEffortIntegerMixedField sampleCf effCf
---        sampleCf = getSampleDomValue sampleP
---    rrEffortRationalMixedField sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effRationalField, effGetE)
---        where
---        effRationalField = ArithInOut.rrEffortRationalMixedField sampleCf effCf
---        sampleCf = getSampleDomValue sampleP
---    rrEffortDoubleMixedField sampleP (((_, (effCf,_)),_),(effGetE, _),_) = (effDoubleField, effGetE)
---        where
---        effDoubleField = ArithInOut.rrEffortDoubleMixedField sampleCf effCf
---        sampleCf = getSampleDomValue sampleP
+    rrEffortField _ eff = eff
+    rrEffortIntMixedField _sampleP eff = eff
+    rrEffortIntegerMixedField _sampleP eff = eff
+    rrEffortRationalMixedField _sampleP eff = eff
+    rrEffortDoubleMixedField _sampleP eff = eff
 
 
 --import Numeric.AERN.RmToRn.New
