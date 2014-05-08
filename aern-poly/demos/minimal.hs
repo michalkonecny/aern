@@ -57,9 +57,9 @@ main =
     putStrLn $ "(x + y)^2 = " 
                     ++ (showP $ (x <+> y) <^> 2)
     putStrLn $ "(x + y)^2[size 1] = " 
-                    ++ (showP $ changeSizeLimitsOutEff eff limitsSize1 $ (x <+> y) <^> 2)
+                    ++ (showP $ changeSizeLimitsOutEff effIP limitsSize1 $ (x <+> y) <^> 2)
     putStrLn $ "2(x + y + 2)[size 1] = " 
-                    ++ (showP $ changeSizeLimitsOutEff eff limitsSize1 $ twoBxPyP2)
+                    ++ (showP $ changeSizeLimitsOutEff effIP limitsSize1 $ twoBxPyP2)
     putStrLn "structure changes:"
     putStrLn $ "2(x + y + 2) [new vars z1,z2 at the front] = " 
                     ++ (showP $ addVariablesFront (zip ["z1","z2"] doms) twoBxPyP2)
@@ -78,28 +78,28 @@ main =
     putStrLn $ "((x+y)^2)evalOut10[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointOutEff (effIPsplitSize 10) wholeDomain $ (x <+> y) <^> 2)
 --    putStrLn $ "((x+y)^2)evalIn[x=[-1,1],y=[-1,1]] = " ++ (show $ evalAtPointInEff eff wholeDomain $ (x <+> y) <^> 2)
     putStrLn "partial evaluation:"
-    putStrLn $ "((x+y)^2)evalOut[x=1] = " ++ (show $ pEvalAtPointOutEff effComp (fromList [("x",1)]) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut[y=1] = " ++ (show $ pEvalAtPointOutEff effComp (fromList [("y",1)]) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut[x=[-1,1]] = " ++ (show $ pEvalAtPointOutEff effComp wholeDomainNoY $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)evalOut[y=[-1,1]] = " ++ (show $ pEvalAtPointOutEff effComp wholeDomainNoX $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut[x=1] = " ++ (show $ pEvalAtPointOutEff effIP (fromList [("x",1)]) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut[y=1] = " ++ (show $ pEvalAtPointOutEff effIP (fromList [("y",1)]) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut[x=[-1,1]] = " ++ (show $ pEvalAtPointOutEff effIP wholeDomainNoY $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)evalOut[y=[-1,1]] = " ++ (show $ pEvalAtPointOutEff effIP wholeDomainNoX $ (x <+> y) <^> 2)
     putStrLn "composition:"
     putStrLn $ "(x+y)^2 = " ++ (showP $ (x <+> y) <^> 2)
     
-    putStrLn $ "((x+y)^2)subst[x=y+1] = " ++ (showP $ composeVarOutEff effComp "x" (y <+> c1) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)substE[x=yNoX+1] = " ++ (showP $ composeVarOutEff effComp "x" (yNoX <+>| (1::Int)) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)subst[x=[0,1]] = " ++ (showP $ composeVarOutEff effComp "x" (c01) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[x=y+1] = " ++ (showP $ composeVarOutEff effIP "x" (y <+> c1) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)substE[x=yNoX+1] = " ++ (showP $ composeVarOutEff effIP "x" (yNoX <+>| (1::Int)) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[x=[0,1]] = " ++ (showP $ composeVarOutEff effIP "x" (c01) $ (x <+> y) <^> 2)
 
-    putStrLn $ "((x+y)^2)subst[y=x+1] = " ++ (showP $ composeVarOutEff effComp "y" (x <+>| (1 :: Int)) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)subst[y=xNoY+1] = " ++ (showP $ composeVarOutEff effComp "y" (xNoY <+>| (1::Int)) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)substOut[y=[0,1]] = " ++ (showP $ composeVarOutEff effComp "y" (c01) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)substIn[y=[0,1]] = " ++ (showP $ composeVarInEff effComp "y" (c01) $ (x <+> y) <^> 2)
-    putStrLn $ "((x+y)^2)subst[x=x-y] = " ++ (showP $ composeVarOutEff effComp "x" (x <-> y) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[y=x+1] = " ++ (showP $ composeVarOutEff effIP "y" (x <+>| (1 :: Int)) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[y=xNoY+1] = " ++ (showP $ composeVarOutEff effIP "y" (xNoY <+>| (1::Int)) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)substOut[y=[0,1]] = " ++ (showP $ composeVarOutEff effIP "y" (c01) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)substIn[y=[0,1]] = " ++ (showP $ composeVarInEff effIP "y" (c01) $ (x <+> y) <^> 2)
+    putStrLn $ "((x+y)^2)subst[x=x-y] = " ++ (showP $ composeVarOutEff effIP "x" (x <-> y) $ (x <+> y) <^> 2)
     putStrLn $ "-- thick coeffs:"
     putStrLn $ "([0,1](x+1)+y+1) = " ++ (showP $ ((c01 <*> (x <+> c1)) <+> y <+> c1))
     putStrLn $ "([0,1](x+1)+y+1)^2 = " ++ (showP $ ((c01 <*> (x <+> c1)) <+> y <+> c1) <^> 2)
 
     putStrLn $ "(([0,1](x+1)+y+1)^2)subst[x=x-y-1] = " 
-                    ++ (showP $ composeVarOutEff effComp "x" (x <-> y <-> c1) $ ((c01 <*> (x <+> c1)) <+> y <+> c1) <^> 2)
+                    ++ (showP $ composeVarOutEff effIP "x" (x <-> y <-> c1) $ ((c01 <*> (x <+> c1)) <+> y <+> c1) <^> 2)
 
 
 --    putStrLn "endpoints (ie boundaries):"
@@ -222,10 +222,10 @@ twoBxPyP2 :: Poly
 twoBxPyP2 = (2::Int) |<*> xPyP1P1
 
 integxTwoBxPyP2 :: Poly
-integxTwoBxPyP2 = c1 <+> primitiveFunctionOutEff eff twoBxPyP2 "x"
+integxTwoBxPyP2 = c1 <+> primitiveFunctionOutEff effIP twoBxPyP2 "x"
 
 integyTwoBxPyP2 :: Poly
-integyTwoBxPyP2 = c1 <+> primitiveFunctionOutEff eff twoBxPyP2 "y"
+integyTwoBxPyP2 = c1 <+> primitiveFunctionOutEff effIP twoBxPyP2 "y"
 
 --expBxPyP2 = exp xPyP1P1
 
@@ -257,14 +257,11 @@ effIPsplitSize :: Int -> IntPolyEffort CF
 effIPsplitSize maxsplitSize =
     effIP { ipolyeff_evalMaxSplitSize = Int1To100 maxsplitSize }
 
-effComp :: EvaluationEffortIndicator Poly
-effComp = effIP
+minmaxUpDnEff :: IntPolyEffort CF
+minmaxUpDnEff = effIP { ipolyeff_minmaxBernsteinDegreeMinus1 = Int1To10 10 }
 
-minmaxUpDnEff :: NumOrd.MinmaxEffortIndicator Poly
-minmaxUpDnEff = minmaxUpDnDefaultEffortIntPolyWithBezierDegree 10 x
-
-minmaxInOutEff :: NumOrd.MinmaxInOutEffortIndicator Poly
-minmaxInOutEff = minmaxInOutDefaultEffortIntPolyWithBezierDegree 10 x
+minmaxInOutEff :: IntPolyEffort CF
+minmaxInOutEff = effIP { ipolyeff_minmaxBernsteinDegreeMinus1 = Int1To10 10 }
 
 evalOpsOutCf :: PolyEvalOps String CF CF
 evalOpsOutCf = evalOpsEff effIP x (0::CF)

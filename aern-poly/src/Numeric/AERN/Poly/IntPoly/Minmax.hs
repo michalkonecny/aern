@@ -340,24 +340,22 @@ effMinmaxFromIntPolyEffort ::
     -> IntPolyEffort cf 
     -> MinmaxEffortIndicatorFromRingOps (IntPoly var cf) (IntPoly var cf)
 effMinmaxFromIntPolyEffort sampleP eff =
-    MinmaxEffortIndicatorFromRingOps -- TODO: insert efforts from eff instead of defaults
+    MinmaxEffortIndicatorFromRingOps
     {
-        minmaxFromRO_eff_convertTDF =
-            undefined, -- TODO 
---            (eff, ()),
+        minmaxFromRO_eff_convertTDF = eff,
         minmaxFromRO_eff_roundedRealD = ipolyeff_cfRoundedRealEffort eff,
         minmaxFromRO_eff_getEndpointsD = ipolyeff_cfGetEndpointsEffort eff,
         minmaxFromRO_eff_evalFT = eff,
         minmaxFromRO_eff_evalFDF = eff,
-        minmaxFromRO_eff_ringOpsF = ArithInOut.ringOpsDefaultEffort sampleP, -- TODO
-        minmaxFromRO_eff_mixmultFDF = ArithInOut.mixedMultDefaultEffort sampleP sampleCf, -- TODO
+        minmaxFromRO_eff_ringOpsF = eff,
+        minmaxFromRO_eff_mixmultFDF = eff,
         minmaxFromRO_eff_sizelimitsF = getSizeLimits sampleP,
-        minmaxFromRO_eff_ringOpsT = ArithInOut.ringOpsDefaultEffort sampleP, -- TODO
-        minmaxFromRO_eff_mixedFldTDF = ArithInOut.mixedFieldOpsDefaultEffort sampleP sampleCf -- TODO
+        minmaxFromRO_eff_ringOpsT = eff,
+        minmaxFromRO_eff_mixedFldTDF = eff
     }
-    where
-    sampleCf = ipolycfg_sample_cf cfg
-    (IntPoly cfg _) = sampleP
+--    where
+--    sampleCf = ipolycfg_sample_cf cfg
+--    (IntPoly cfg _) = sampleP
     
 instance
     (Ord var,
@@ -376,11 +374,9 @@ instance
     ArithInOut.RoundedAbsEffort (IntPoly var (Interval e))
     where
     type AbsEffortIndicator (IntPoly var (Interval e)) =
-        (NumOrd.MinmaxInOutEffortIndicator (IntPoly var (Interval e)),
-         ArithInOut.AbsEffortIndicator (Interval e))
-    absDefaultEffort p =
-        (NumOrd.minmaxInOutDefaultEffort p,
-         ArithInOut.absDefaultEffort $ getSampleDomValue p)
+        IntPolyEffort (Interval e)
+    absDefaultEffort _p@(IntPoly cfg _) =
+        ipolycfg_effort cfg
 
 instance
     (Ord var,
@@ -398,10 +394,12 @@ instance
     =>
     ArithInOut.RoundedAbs (IntPoly var (Interval e))
     where
-    absOutEff (effMinmax, effAbsDom) p =
+    absOutEff eff p =
         case getConstantIfPolyConstant p of
-            Just c -> newConstFnFromSample p $ ArithInOut.absOutEff effAbsDom c
-            _ -> NumOrd.maxOutEff effMinmax p (neg p)
+            Just c -> newConstFnFromSample p $ ArithInOut.absOutEff effCfAbs c
+            _ -> NumOrd.maxOutEff eff p (neg p)
+        where
+        effCfAbs = ipolyeff_cfAbsEffort eff
     absInEff =
         error "aern-poly: inner-rounded abs not available for IntPoly"
     
@@ -421,10 +419,9 @@ instance
     RefOrd.RoundedLatticeEffort (IntPoly var cf)
     where
     type JoinMeetEffortIndicator (IntPoly var cf) =
-        RefOrd.JoinMeetEffortIndicator cf
-
+        IntPolyEffort cf
     joinmeetDefaultEffort (IntPoly cfg _) =
-        RefOrd.joinmeetDefaultEffort $ ipolycfg_sample_cf cfg
+        ipolycfg_effort cfg
 
 --joinmeetDefaultEffortIntPolyWithBezierDegree degree f =
 --    (defaultMinmaxEffortIndicatorFromRingOps f f,
@@ -452,8 +449,9 @@ instance
     joinInEff =
         error "aern-poly: join not defined for IntPoly"
     meetOutEff eff a b@(IntPoly cfg _) =
-        polyJoinWith (zero sampleCf) (uncurry $ RefOrd.meetOutEff eff) (a, b)
+        polyJoinWith (zero sampleCf) (uncurry $ RefOrd.meetOutEff effCfJoin) (a, b)
         where
+        effCfJoin = ArithInOut.rrEffortJoinMeet sampleCf $ ipolyeff_cfRoundedRealEffort eff
         sampleCf = ipolycfg_sample_cf cfg
     meetInEff =
         error "aern-poly: inner-rounded meet not defined for IntPoly"

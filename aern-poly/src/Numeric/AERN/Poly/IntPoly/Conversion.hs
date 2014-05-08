@@ -190,9 +190,8 @@ instance
 instance
     (Ord var, Show var,
      cf ~ Interval e,
-     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+     ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
-     ArithUpDn.Convertible cf (Interval e),
      Show cf,  Show (SizeLimits cf))
     =>
     ArithUpDn.Convertible (IntPoly var (Interval e)) (Interval e)
@@ -207,6 +206,7 @@ instance
     convertDnEff eff = convertDnEffStandard (\ _ _ -> ()) eff
 --    convertUpEff (eff, effConv) = convertUpEffStandard (\ _ _ -> effConv) eff 
 --    convertDnEff (eff, effConv) = convertDnEffStandard (\ _ _ -> effConv) eff 
+
 
 convertUpEffStandard, convertDnEffStandard ::
       (Ord var, Show cf, Show var, RefOrd.IntervalLike cf,

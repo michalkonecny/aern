@@ -37,11 +37,13 @@ instance
     => 
     RoundedFakeDerivative (IntPoly var cf)
     where
-    type FakeDerivativeEffortIndicator (IntPoly var cf) = ArithInOut.RoundedRealEffortIndicator cf
-    fakeDerivativeDefaultEffort (IntPoly cfg _) = ArithInOut.roundedRealDefaultEffort sampleCf
+    type FakeDerivativeEffortIndicator (IntPoly var cf) = 
+        IntPolyEffort cf
+    fakeDerivativeDefaultEffort (IntPoly cfg _) = 
+        ipolycfg_effort cfg
+    fakePartialDerivativeOutEff eff p var = diffPolyOut effCf var p
         where
-        sampleCf = ipolycfg_sample_cf cfg
-    fakePartialDerivativeOutEff effCf p var = diffPolyOut effCf var p
+        effCf = ipolyeff_cfRoundedRealEffort eff
     fakePartialDerivativeInEff = 
         error "inner rounded fake derivative of IntPoly not implemented yet"
 

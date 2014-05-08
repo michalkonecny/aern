@@ -64,10 +64,10 @@ instance
     (CanChangeSizeLimits (IntPoly var cf))
     where
     type SizeLimitsChangeEffort (IntPoly var cf) = 
-        ArithInOut.RoundedRealEffortIndicator cf
-    sizeLimitsChangeDefaultEffort p =
-        ArithInOut.roundedRealDefaultEffort $ getSampleDomValue p
-    changeSizeLimitsOutEff effCf limitsNew _p@(IntPoly cfgOld terms) =
+        IntPolyEffort cf
+    sizeLimitsChangeDefaultEffort (IntPoly cfg _) =
+        ipolycfg_effort cfg
+    changeSizeLimitsOutEff eff limitsNew _p@(IntPoly cfgOld terms) =
 --        unsafePrintReturn
 --        (
 --            "IntPoly changeSizeLimitsOutEff:"
@@ -87,6 +87,7 @@ instance
             reduceTermsDegreeOut effCf cfg $
                 reduceTermsTermCountOut effCf cfg $
                     terms
+        effCf = ipolyeff_cfRoundedRealEffort eff
     changeSizeLimitsInEff =
         error "aern-poly: changeSizeLimitsInEff not available for IntPoly" 
     changeSizeLimitsUpEff effCf limitsNew p =

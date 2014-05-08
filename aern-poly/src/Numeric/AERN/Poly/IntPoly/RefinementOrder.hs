@@ -49,11 +49,6 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder
-    (PartialCompareEffortIndicator,
-     GetEndpointsEffortIndicator,
-     FromEndpointsEffortIndicator)
-     -- needed for ghc 6.12
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Interval (refordPCompareInFullIntervalsEff)
@@ -76,21 +71,19 @@ instance
     RefOrd.PartialComparison (IntPoly var cf) 
     where
     type PartialCompareEffortIndicator (IntPoly var cf) =
-        (NumOrd.PartialCompareEffortIndicator (IntPoly var cf),
-         RefOrd.GetEndpointsEffortIndicator cf) 
-    pCompareDefaultEffort p =
-        (NumOrd.pCompareDefaultEffort p, RefOrd.getEndpointsDefaultEffort sampleCf)
-        where
-        sampleCf = getSampleDomValue p 
+        IntPolyEffort cf
+    pCompareDefaultEffort (IntPoly cfg _) =
+        ipolycfg_effort cfg
     pCompareEff eff p1 p2 =
         case partialInfo2PartialOrdering $ RefOrd.pCompareInFullEff eff p1 p2 of
             [rel] -> Just rel
             _ -> Nothing
-    pCompareInFullEff (effNumComp, effGetE) p1 p2 = 
-        refordPCompareInFullIntervalsEff effNumComp p1Endpoints p2Endpoints  
+    pCompareInFullEff eff p1 p2 = 
+        refordPCompareInFullIntervalsEff eff p1Endpoints p2Endpoints  
         where
         p1Endpoints = polyGetEndpointsOutEff effGetE p1
         p2Endpoints = polyGetEndpointsOutEff effGetE p2
+        effGetE = ipolyeff_cfGetEndpointsEffort eff
         
 
 

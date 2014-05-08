@@ -28,7 +28,7 @@ import Numeric.AERN.Poly.IntPoly.Multiplication ()
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.Evaluation
+--import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison
 import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Arbitrary
@@ -73,15 +73,14 @@ instance
     where
     type PartialCompareEffortIndicator (IntPoly var cf) =
         IntPolyEffort cf
-    pCompareDefaultEffort p@(IntPoly cfg _) =
+    pCompareDefaultEffort (IntPoly cfg _) =
         ipolycfg_effort cfg
     pCompareEff eff p1 p2 =
         case partialInfo2PartialOrdering $ NumOrd.pCompareInFullEff eff p1 p2 of
             [rel] -> Just rel
             _ -> Nothing
     pCompareInFullEff eff p1 p2 = 
-        undefined -- TODO
---        pCompareFunFromRingOps (n, effDom, effCompDom, effEval) p1 p2 
+        pCompareFunFromRingOps (n, eff, effCompDom, effEval) p1 p2 
         where
         Int1To1000 n = ipolyeff_counterExampleSearchSampleCount eff
         effEval = eff

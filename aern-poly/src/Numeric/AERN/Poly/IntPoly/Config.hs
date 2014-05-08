@@ -92,10 +92,6 @@ data IntPolyEffort cf =
     }
 --    deriving (Show)
     
--- TODO: complete the following instances:
-instance Arbitrary (IntPolyEffort cf)
-instance Show (IntPolyEffort cf)
-instance EffortIndicator (IntPolyEffort cf)
     
 defaultIntPolyEffort :: 
     (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf) 
@@ -342,3 +338,7 @@ instance
         Int1To10 md = effortRepeatIncrement (Int1To10 maxdeg1, Int1To10 maxdeg2)  
         Int1To1000 ms = effortRepeatIncrement (Int1To1000 maxsize1, Int1To1000 maxsize2)  
 
+-- TODO: complete the following instances:
+instance Arbitrary (IntPolyEffort cf)
+instance Show (IntPolyEffort cf)
+instance EffortIndicator (IntPolyEffort cf)

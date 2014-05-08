@@ -449,16 +449,15 @@ solveHybridIVPBisect
                 delta m t0Var minStepSize maxStepSize splitImprovementThreshold
                     hybivp
 
-    effCompose = effIntPoly
-    effEval = effIntPoly
-    effPEval = effIntPoly
-    effInteg = effCf
-    effAddFn = effCf
-    effMultFn = effCf
-    effAddFnDom =
-        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-    effInclFn = (effIntPoly, ())
-    effIntPoly =
+    effCompose = effIP
+    effEval = effIP
+    effPEval = effIP
+    effInteg = effIP
+    effAddFn = effIP
+    effMultFn = effIP
+    effAddFnDom = effIP
+    effInclFn = effIP
+    effIP =
         (defaultIntPolyEffort sampleCf (1 + ivpArity) sizeLimits)
         {
             ipolyeff_cfRoundedRealEffort = effCf,
@@ -522,28 +521,23 @@ solveHybridIVPLocate
                 delta m t0Var minStepSize maxStepSize splitImprovementThreshold
                     hybivp
 
-    effSizeLims = effCf
-    effDeriv = effCf
-    effAbsFn = ArithInOut.absDefaultEffort samplePoly
-    effMinmaxFn = NumOrd.minmaxInOutDefaultEffort samplePoly
+    effSizeLims = effIP
+    effDeriv = effIP
+    effAbsFn = effIP
+    effMinmaxFn = effIP
 
-    effCompose = effIntPoly
-    effEval = effIntPoly
-    effPEval = effIntPoly
-    effInteg = effCf
-    effAddFn = effCf
-    effMultFn = effCf
+    effCompose = effIP
+    effEval = effIP
+    effPEval = effIP
+    effInteg = effIP
+    effAddFn = effIP
+    effMultFn = effIP
 
-    effAddFnDom =
-        ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-    effMultFnDom =
-        ArithInOut.mixedMultDefaultEffort samplePoly sampleCf
---        ArithInOut.fldEffortMult sampleCf $ ArithInOut.rrEffortField sampleCf effCf
-    effDivFnInt =
-        ArithInOut.mxfldEffortDiv sampleCf (0::Int) $ ArithInOut.rrEffortIntMixedField sampleCf effCf
-
-    effInclFn = (effIntPoly, ())
-    effIntPoly =
+    effAddFnDom = effIP
+    effMultFnDom = effIP
+    effDivFnInt = effIP
+    effInclFn = effIP
+    effIP =
         (defaultIntPolyEffort sampleCf (1 + ivpArity) sizeLimits)
         {
             ipolyeff_cfRoundedRealEffort = effCf,
