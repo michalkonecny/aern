@@ -63,10 +63,10 @@ data IntPolyEffort cf =
         ipolyeff_cfGetEndpointsEffort :: RefOrd.GetEndpointsEffortIndicator cf,
         ipolyeff_cfFromEndpointsEffort :: RefOrd.FromEndpointsEffortIndicator cf,
         ipolyeff_cfMinMaxEffort :: NumOrd.MinmaxInOutEffortIndicator cf,
-        ipolyeff_evalMaxSplitSize :: Int1To100,
-        ipolyeff_minmaxBernsteinDegreeMinus1 :: Int1To10,
-        ipolyeff_recipTauDegreeMinus1 :: Int1To10,
-        ipolyeff_counterExampleSearchSampleCount :: Int1To1000
+        ipolyeff_evalMaxSplitSize :: Int,
+        ipolyeff_minmaxBernsteinDegree :: Int,
+        ipolyeff_recipTauDegree :: Int,
+        ipolyeff_counterExampleSearchSampleCount :: Int
     }
     
 data IntPolySizeLimits cf =
@@ -113,10 +113,10 @@ defaultIntPolyEffort sampleCf arity maxdeg =
         ipolyeff_cfGetEndpointsEffort = RefOrd.getEndpointsDefaultEffort sampleCf,
         ipolyeff_cfFromEndpointsEffort = RefOrd.fromEndpointsDefaultEffort sampleCf,
         ipolyeff_cfMinMaxEffort = NumOrd.minmaxInOutDefaultEffort sampleCf,
-        ipolyeff_evalMaxSplitSize = Int1To100 maxSplitSize,
-        ipolyeff_minmaxBernsteinDegreeMinus1 = Int1To10 (bernsteinDegree - 1),
-        ipolyeff_recipTauDegreeMinus1 = Int1To10 (tauDegree - 1),
-        ipolyeff_counterExampleSearchSampleCount = Int1To1000 (4 * arity)
+        ipolyeff_evalMaxSplitSize = maxSplitSize,
+        ipolyeff_minmaxBernsteinDegree = bernsteinDegree,
+        ipolyeff_recipTauDegree = tauDegree,
+        ipolyeff_counterExampleSearchSampleCount = 4 * arity
     }
     where
     tauDegree = 2 + (min 20 $ maxdeg `div` 3)

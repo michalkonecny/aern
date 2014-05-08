@@ -47,7 +47,6 @@ import qualified
 
 --import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
-import Numeric.AERN.Basics.Effort
 
 --import Numeric.AERN.Misc.Debug
 
@@ -76,7 +75,7 @@ instance
         where
         effRealD = ipolyeff_cfRoundedRealEffort eff
         effFldFD = eff
-        Int1To10 tauDegree = ipolyeff_recipTauDegreeMinus1 eff
+        tauDegree = ipolyeff_recipTauDegree eff
     divInEff = 
         error "aern-poly: IntPoly does not support inwards-rounded division" 
 

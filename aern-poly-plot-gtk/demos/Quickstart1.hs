@@ -10,8 +10,6 @@ import Numeric.AERN.RealArithmetic.Basis.Double ()
 -- intervals generic in the type of its endpoints:
 import Numeric.AERN.Basics.Interval
 
-import Numeric.AERN.Basics.Effort -- TODO: remove this
-
 -- interval-coefficient polynomials:
 import Numeric.AERN.Poly.IntPoly 
     (IntPoly, IntPolySizeLimits(..), IntPolyEffort(..), defaultIntPolySizeLimits)
@@ -48,16 +46,15 @@ sizeLimits =
     {
         ipolylimits_maxdeg = 50,
         ipolylimits_maxsize = 100,
-        ipolylimits_effort = effort
+        ipolylimits_effort =
+            (ipolylimits_effort limitsDefault)
+            {
+                ipolyeff_recipTauDegree = 6
+            }
     }
     where
     limitsDefault = 
         defaultIntPolySizeLimits sampleCf effortCf arity
-    effort = 
-        (ipolylimits_effort limitsDefault)
-        {
-            ipolyeff_recipTauDegreeMinus1 = Int1To10 6
-        }
     sampleCf = 0
     arity = 1
     effortCf = ()
