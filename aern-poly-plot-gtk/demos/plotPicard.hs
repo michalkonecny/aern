@@ -504,12 +504,11 @@ limitsD :: Int -> IntPolySizeLimits CF
 limitsD maxdeg = limitsDS maxdeg 100
 limitsDS :: Int -> Int -> IntPolySizeLimits CF
 limitsDS maxdeg maxsize =
-    IntPolySizeLimits
-        {
-            ipolylimits_cf_limits = (),
-            ipolylimits_maxdeg = maxdeg,
-            ipolylimits_maxsize = maxsize
-        } 
+    (defaultIntPolySizeLimits 0 () 1)
+    {
+        ipolylimits_maxdeg = maxdeg,
+        ipolylimits_maxsize = maxsize
+    } 
 
 ----effCF = (100, (100,())) -- MPFR
 effCF :: ArithInOut.RoundedRealEffortIndicator CF

@@ -31,7 +31,7 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 import Numeric.AERN.RealArithmetic.ExactOps
 --import Numeric.AERN.RealArithmetic.Measures
 
-import qualified Numeric.AERN.NumericOrder as NumOrd
+--import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
@@ -457,14 +457,12 @@ solveHybridIVPBisect
     effMultFn = effIP
     effAddFnDom = effIP
     effInclFn = effIP
-    effIP =
-        (defaultIntPolyEffort sampleCf (1 + ivpArity) sizeLimits)
+    effIP = 
+        (ipolylimits_effort sizeLimits)
         {
             ipolyeff_cfRoundedRealEffort = effCf,
-            ipolyeff_evalMaxSplitSize = Int1To100 20
+            ipolyeff_evalMaxSplitSize = Int1To100 substSplitSizeLimit
         }
-        where
-        ivpArity = length $ hybsys_componentNames $ hybivp_system hybivp
 
 solveHybridIVPLocate ::
     (
@@ -537,14 +535,12 @@ solveHybridIVPLocate
     effMultFnDom = effIP
     effDivFnInt = effIP
     effInclFn = effIP
-    effIP =
-        (defaultIntPolyEffort sampleCf (1 + ivpArity) sizeLimits)
+    effIP = 
+        (ipolylimits_effort sizeLimits)
         {
             ipolyeff_cfRoundedRealEffort = effCf,
-            ipolyeff_evalMaxSplitSize = Int1To100 20
+            ipolyeff_evalMaxSplitSize = Int1To100 substSplitSizeLimit
         }
-        where
-        ivpArity = length $ hybsys_componentNames $ hybivp_system hybivp
 
 
 
@@ -555,11 +551,13 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
     where
     varDoms = zip vars doms 
     sizeLimits =
-        IntPolySizeLimits
+        (defaultIntPolySizeLimits sampleCf cf_limits arity)
         {
-            ipolylimits_cf_limits = defaultSizeLimits sampleCf,
             ipolylimits_maxdeg = maxdeg,
             ipolylimits_maxsize = maxsize
         }
+        where
+        arity = length vars
+        cf_limits = defaultSizeLimits sampleCf
      
     

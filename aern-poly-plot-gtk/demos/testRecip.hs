@@ -44,10 +44,14 @@ varDoms = [("x", (-1) </\> 1)]
 {-| example size limits for polynomials -}
 sizeLimits :: IntPolySizeLimits DI
 sizeLimits = 
-    (defaultIntPolySizeLimits ())
+    (defaultIntPolySizeLimits sampleCf effortCf arity)
     {
         ipolylimits_maxdeg = 10
     }
+    where
+    sampleCf = 0
+    arity = 1
+    effortCf = ()
 
 {-| The identity @\x:[0,1] -> x@.  This is a simple example of a projection.  -}
 x :: Poly

@@ -37,7 +37,7 @@ import Numeric.AERN.Poly.IntPoly.Composition ()
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.Evaluation
+--import Numeric.AERN.RmToRn.Evaluation
 
 --import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Comparison
 --import Numeric.AERN.RmToRn.NumericOrder.FromInOutRingOps.Arbitrary
@@ -484,7 +484,7 @@ getX ::
      RefOrd.IntervalLike cf) 
     =>
     (IntPoly var cf) -> (IntPoly var cf)
-getX (IntPoly (IntPolyCfg vars _ _ sample limits _) _) =
+getX (IntPoly (IntPolyCfg vars _ _ sample limits) _) =
     newProjection limits [(var, unit)] var
     where
     var = head vars

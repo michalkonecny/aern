@@ -43,39 +43,17 @@ data IntPolyCfg var cf =
         ipolycfg_domsLZ :: [cf], -- domain of each variable - shifted so that the left endpoint is 0
         ipolycfg_domsLE :: [cf], -- the left endpoint of the domain for all variables
         ipolycfg_sample_cf :: cf,  -- sample coefficient (used only for type inference)
-        ipolycfg_limits :: IntPolySizeLimits cf,
-        ipolycfg_effort :: IntPolyEffort cf 
+        ipolycfg_limits :: IntPolySizeLimits cf
     }
+    
+ipolycfg_effort = ipolylimits_effort . ipolycfg_limits -- shortcut
 
 defaultIntPolyCfg ::
     (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf) 
     => 
     cf -> IntPolySizeLimits cf -> IntPolyCfg var cf
 defaultIntPolyCfg sampleCf limits =
-    IntPolyCfg [] [] [] sampleCf limits (defaultIntPolyEffort sampleCf 2 limits)
-
-data IntPolySizeLimits cf =
-    IntPolySizeLimits
-    {
-        ipolylimits_cf_limits :: SizeLimits cf,
-        ipolylimits_maxdeg :: Int, -- maximum degree of each term
-        ipolylimits_maxsize :: Int -- maximum term count
-    }
-
-defaultIntPolySizeLimits :: SizeLimits cf -> IntPolySizeLimits cf
-defaultIntPolySizeLimits cf_limist =
-    IntPolySizeLimits cf_limist default_maxdeg default_maxsize
-
-default_maxdeg :: Int
-default_maxdeg = 3
-default_maxsize :: Int
-default_maxsize = 50
-
-ipolycfg_maxdeg :: IntPolyCfg var cf -> Int
-ipolycfg_maxdeg = ipolylimits_maxdeg . ipolycfg_limits
-
-ipolycfg_maxsize :: IntPolyCfg var cf -> Int
-ipolycfg_maxsize = ipolylimits_maxsize . ipolycfg_limits
+    IntPolyCfg [] [] [] sampleCf limits
 
 data IntPolyEffort cf =
     IntPolyEffort
@@ -90,14 +68,44 @@ data IntPolyEffort cf =
         ipolyeff_recipTauDegreeMinus1 :: Int1To10,
         ipolyeff_counterExampleSearchSampleCount :: Int1To1000
     }
---    deriving (Show)
     
+data IntPolySizeLimits cf =
+    IntPolySizeLimits
+    {
+        ipolylimits_cf_limits :: SizeLimits cf,
+        ipolylimits_maxdeg :: Int, -- maximum degree of each term
+        ipolylimits_maxsize :: Int, -- maximum term count
+        ipolylimits_effort :: IntPolyEffort cf
+    }
+
+defaultIntPolySizeLimits ::
+    (ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf)
+    => 
+    cf -> SizeLimits cf -> Int -> IntPolySizeLimits cf
+defaultIntPolySizeLimits sampleCf cf_limits arity =
+    IntPolySizeLimits 
+    {
+        ipolylimits_cf_limits = cf_limits,
+        ipolylimits_maxdeg = default_maxdeg,
+        ipolylimits_maxsize = default_maxsize,
+        ipolylimits_effort = defaultIntPolyEffort sampleCf arity default_maxdeg
+    }
+    where
+    default_maxdeg = 5
+    default_maxsize = 6 * arity
+
+ipolycfg_maxdeg :: IntPolyCfg var cf -> Int
+ipolycfg_maxdeg = ipolylimits_maxdeg . ipolycfg_limits
+
+ipolycfg_maxsize :: IntPolyCfg var cf -> Int
+ipolycfg_maxsize = ipolylimits_maxsize . ipolycfg_limits
+
     
 defaultIntPolyEffort :: 
     (RefOrd.IntervalLike cf, ArithInOut.RoundedReal cf) 
     =>
-    cf -> Int -> IntPolySizeLimits cf -> IntPolyEffort cf
-defaultIntPolyEffort sampleCf arity sizeLimits =
+    cf -> Int -> Int -> IntPolyEffort cf
+defaultIntPolyEffort sampleCf arity maxdeg =
     IntPolyEffort
     {
         ipolyeff_cfRoundedRealEffort = ArithInOut.roundedRealDefaultEffort sampleCf,
@@ -116,7 +124,6 @@ defaultIntPolyEffort sampleCf arity sizeLimits =
          -- TODO: the minimum 20 makes sense only with Double coeffs;
          --       make it depend on the current coefficient precision
     maxSplitSize = (1 + (maxdeg  `div` 2)) 
-    maxdeg = ipolylimits_maxdeg sizeLimits
 
 domToDomLZLEEff ::
     (ArithInOut.RoundedReal cf, 
@@ -244,7 +251,7 @@ instance
     =>
     Show (IntPolyCfg var cf)
     where
-    show (IntPolyCfg vars domsLZ domsLE sampleCf limits _effort) -- TODO: show also effort 
+    show (IntPolyCfg vars domsLZ domsLE sampleCf limits) 
         = 
         "cfg{" ++ (show $ zip vars doms) ++ ";" ++ show limits ++ "}"
         where
@@ -256,7 +263,7 @@ instance
     =>
     Show (IntPolySizeLimits cf)
     where
-    show (IntPolySizeLimits cfLimits maxdeg maxsize) =
+    show (IntPolySizeLimits cfLimits maxdeg maxsize effort) =  -- TODO: show also effort
          "cf:" ++ show cfLimits ++ "/dg:" ++ show maxdeg ++ "/sz:" ++ show maxsize
 
 instance
@@ -278,7 +285,7 @@ instance
         where
         mkCfg arity limits sampleCfs (effConsistency, effGetE, effCF) =
             IntPolyCfg
-                vars domsLZ domsLE sampleCf limits (defaultIntPolyEffort sampleCf arity limits)
+                vars domsLZ domsLE sampleCf limits
             where
             sampleCf = head sampleCfs
             vars = getNVariables arity
@@ -306,7 +313,8 @@ instance
         cfLimits <- arbitrary
         Int1To10 maxdeg <- arbitrary
         Int1To1000 maxsizeRaw <- arbitrary
-        return $ IntPolySizeLimits cfLimits maxdeg (max 2 maxsizeRaw)
+        effort <- arbitrary
+        return $ IntPolySizeLimits cfLimits maxdeg (max 2 maxsizeRaw) effort
 
 instance
     (Show cf,
@@ -319,21 +327,22 @@ instance
     =>
     (EffortIndicator (IntPolySizeLimits cf))
     where
-    effortIncrementVariants (IntPolySizeLimits cfLimits maxdeg maxsize) =
+    -- TODO: properly incorporate IntPolyEffort:
+    effortIncrementVariants (IntPolySizeLimits cfLimits maxdeg maxsize effort) =
         map recreateLimits $ effortIncrementVariants (Int1To10 maxdeg, Int1To1000 maxsize)
         where
         recreateLimits (Int1To10 md, Int1To1000 ms) =
-            IntPolySizeLimits cfLimits md ms 
-    effortIncrementSequence (IntPolySizeLimits cfLimits maxdeg maxsize) =
+            IntPolySizeLimits cfLimits md ms effort
+    effortIncrementSequence (IntPolySizeLimits cfLimits maxdeg maxsize effort) =
         map recreateLimits $ effortIncrementSequence (Int1To10 maxdeg, Int1To1000 maxsize)
         where
         recreateLimits (Int1To10 md, Int1To1000 ms) =
-            IntPolySizeLimits cfLimits md ms 
+            IntPolySizeLimits cfLimits md ms effort
     effortRepeatIncrement 
-            (IntPolySizeLimits cfLimits1 maxdeg1 maxsize1, 
-             IntPolySizeLimits cfLimits2 maxdeg2 maxsize2)
+            (IntPolySizeLimits cfLimits1 maxdeg1 maxsize1 effort1, 
+             IntPolySizeLimits cfLimits2 maxdeg2 maxsize2 effort2)
         =
-        IntPolySizeLimits (effortRepeatIncrement (cfLimits1, cfLimits2)) md ms
+        IntPolySizeLimits (effortRepeatIncrement (cfLimits1, cfLimits2)) md ms effort1
         where
         Int1To10 md = effortRepeatIncrement (Int1To10 maxdeg1, Int1To10 maxdeg2)  
         Int1To1000 ms = effortRepeatIncrement (Int1To1000 maxsize1, Int1To1000 maxsize2)  

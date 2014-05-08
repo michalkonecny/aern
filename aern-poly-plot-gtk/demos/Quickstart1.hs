@@ -10,9 +10,11 @@ import Numeric.AERN.RealArithmetic.Basis.Double ()
 -- intervals generic in the type of its endpoints:
 import Numeric.AERN.Basics.Interval
 
+import Numeric.AERN.Basics.Effort -- TODO: remove this
+
 -- interval-coefficient polynomials:
 import Numeric.AERN.Poly.IntPoly 
-    (IntPoly, IntPolySizeLimits(..), defaultIntPolySizeLimits)
+    (IntPoly, IntPolySizeLimits(..), IntPolyEffort(..), defaultIntPolySizeLimits)
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
 -- abstract approximate order operations:
@@ -41,11 +43,24 @@ varDoms = [("x", (-1) </\> 1)]
 
 {-| example size limits for polynomials -}
 sizeLimits :: IntPolySizeLimits DI
-sizeLimits = 
-    (defaultIntPolySizeLimits ())
+sizeLimits =
+    limitsDefault
+    {
+        ipolylimits_maxdeg = 50,
+        ipolylimits_maxsize = 100,
+        ipolylimits_effort = effort
+    }
+    where
+    limitsDefault = 
+        defaultIntPolySizeLimits sampleCf effortCf arity
+    effort = 
+        (ipolylimits_effort limitsDefault)
         {
-            ipolylimits_maxdeg = 11
+            ipolyeff_recipTauDegreeMinus1 = Int1To10 6
         }
+    sampleCf = 0
+    arity = 1
+    effortCf = ()
 
 {-| The identity @\x:[-1,1] -> x@.  This is a simple example of a projection.  -}
 x :: PI
@@ -77,6 +92,8 @@ plotExp =
 {-| The function @\x:[-1,1] -> sqrt(x+2)@. -}
 sqrtXplus2 :: PI
 sqrtXplus2 = ArithInOut.sqrtOut $ x + c1 + c1
+
+--effSqrt = effIP
 
 {-| Show a plot of sqrt(x+2) over [-1,1] -}
 plotSqrt :: IO ()
