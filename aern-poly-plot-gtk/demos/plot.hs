@@ -146,9 +146,8 @@ fnDefsMinmax maxdeg otherParams = (fns, fnmeta)
         ]
     limits :: IntPolySizeLimits CF
     limits =
-        IntPolySizeLimits
+        (defaultIntPolySizeLimits 0 () 1)
         {
-            ipolylimits_cf_limits = (),
             ipolylimits_maxdeg = maxdeg,
             ipolylimits_maxsize = 1000
         } 
@@ -248,9 +247,8 @@ fnDefsMult1 maxdeg _otherParams = (fns, fnmeta)
     
     limits :: IntPolySizeLimits CF
     limits =
-        IntPolySizeLimits
+        (defaultIntPolySizeLimits 0 () 1)
         {
-            ipolylimits_cf_limits = (),
             ipolylimits_maxdeg = maxdeg,
             ipolylimits_maxsize = 1000
         } 
@@ -297,9 +295,8 @@ fnDefsExpMx2 maxdeg _otherParams = (fns, fnmeta)
     
     limits :: IntPolySizeLimits CF
     limits =
-        IntPolySizeLimits
+        (defaultIntPolySizeLimits 0 () 1)
         {
-            ipolylimits_cf_limits = (),
             ipolylimits_maxdeg = maxdeg,
             ipolylimits_maxsize = 1000
         } 

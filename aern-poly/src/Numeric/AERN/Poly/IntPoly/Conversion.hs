@@ -67,8 +67,9 @@ instance
     sampleFromContext = 
         newConstFn sizeLimits [(sampleFromContext, sampleCf)] sampleCf
         where
-        sizeLimits = defaultIntPolySizeLimits (defaultSizeLimits sampleCf) 
+        sizeLimits = defaultIntPolySizeLimits sampleCf (defaultSizeLimits sampleCf) arity 
         sampleCf = sampleFromContext
+        arity = 1
 
 instance
     (Ord var, Show var, Show cf,

@@ -19,7 +19,7 @@ import Numeric.AERN.RealArithmetic.Basis.Double ()
 import Numeric.AERN.Basics.Interval
 
 -- interval-coefficient polynomials:
-import Numeric.AERN.Poly.IntPoly (IntPoly, IntPolySizeLimits(..))
+import Numeric.AERN.Poly.IntPoly (IntPoly, IntPolySizeLimits(..), defaultIntPolySizeLimits)
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
 -- abstract approximate order operations:
@@ -88,12 +88,11 @@ doms = [(-1) </\> 1]
 {-| example size limits for polynomials -}
 sizeLimits :: IntPolySizeLimits DI
 sizeLimits =
-    IntPolySizeLimits 
-        {
-            ipolylimits_cf_limits = (),
-            ipolylimits_maxdeg = 3,
-            ipolylimits_maxsize = 40
-        }
+    (defaultIntPolySizeLimits 0 () 1)
+    {
+        ipolylimits_maxdeg = 3,
+        ipolylimits_maxsize = 40
+    }
 
 {----- basic arithmetic -----}
 

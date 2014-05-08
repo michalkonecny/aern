@@ -107,23 +107,13 @@ instance
     (HasSizeLimits (IntPoly var cf))
     where
     type (SizeLimits (IntPoly var cf)) = IntPolySizeLimits cf
-    defaultSizeLimits (IntPoly cfg _) = 
-        IntPolySizeLimits (defaultSizeLimits cf) default_maxdeg default_maxsize
+    defaultSizeLimits (IntPoly cfg _) =
+        defaultIntPolySizeLimits sampleCf cf_limits arity
         where
-        cf = ipolycfg_sample_cf cfg 
+        cf_limits = defaultSizeLimits sampleCf
+        sampleCf = ipolycfg_sample_cf cfg
+        arity = length $ ipolycfg_vars cfg 
     getSizeLimits (IntPoly cfg _) = ipolycfg_limits cfg
---    adjustSizeLimitsToVarsAndDombox _ vars dombox cfg =
---        cfgAdjustDomains vars domains cfg
---        where
---        domains =
---            map getDomain vars
---        getDomain var =
---            case lookupVar dombox var of
---                Just dom -> dom
---                Nothing ->
---                    error $ 
---                        "aern-poly: IntPoly adjustSizeLimitsToVarsAndDombox: variable "
---                        ++ show var ++ " not in the given domain box"
 
 instance 
     (Ord var, Show var, Show cf, 

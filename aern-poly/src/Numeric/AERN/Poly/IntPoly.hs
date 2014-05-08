@@ -92,12 +92,7 @@ instance
     where
     type RoundedRealEffortIndicator (IntPoly var (Interval e)) =
         IntPolyEffort (Interval e)
-    roundedRealDefaultEffort p@(IntPoly cfg _) =
-        defaultIntPolyEffort sampleCf arity limits 
-        where
-        sampleCf = getSampleDomValue p
-        limits = ipolycfg_limits cfg
-        arity = length $ ipolycfg_vars cfg
+    roundedRealDefaultEffort (IntPoly cfg _) = ipolycfg_effort cfg
     rrEffortComp _ eff = eff
     rrEffortMinmax _ eff = eff
     rrEffortDistance _ eff = eff
