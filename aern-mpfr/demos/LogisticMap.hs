@@ -35,7 +35,7 @@ main =
         -- invoke an iRRAM-style procedure for automatic precision/effort incrementing: 
         iterateUntilAccurate maxIncrements (maxImprecision digits) initPrec $ 
             -- on the computation of iters-many iterations of the logistic map:
-            \prec -> ((logisticMap prec r x0) !! (iters - 1))
+            \prec -> ((logisticMapIterated prec r x0) !! (iters - 1))
     
     r :: Rational
     r = 375 / 100
@@ -61,16 +61,20 @@ main =
         shouldShowInternals = (digitsW+2, False)
         digitsW = fromIntegral digits
         
-logisticMap :: 
+logisticMapIterated :: 
     Precision -> 
     Rational {-^ scaling constant r -} -> 
     RealApprox {-^ initial value x_0 -} -> 
     [RealApprox]  {-^ sequence x_k defined by x_{k+1} = r*x_k*(1 - x_k) -}
-logisticMap prec r x0 =
-    iterate logisticAux $ ensurePrecision prec x0
-    where
-    logisticAux xPrev =
-        r |<*> (xPrev * ((1::Int) |<+> (neg xPrev)))
+logisticMapIterated prec r x0 =
+    iterate (logisticMap r) $ ensurePrecision prec x0
+
+logisticMap r xPrev =
+    r |<*> (xPrev * (neg $ xPrev - 1))
+    -- The operator |<*> stands for mixed-type outwards-rounded multiplication.
+    -- The <> surrounding the operator * indicate outwards rounding.
+    -- The | preceding the operator <*> indicate that the type of the first
+    -- operand is different than the type of the second operand and the result.
 
 ensurePrecision :: Precision -> RealApprox -> RealApprox
 ensurePrecision prec x =
