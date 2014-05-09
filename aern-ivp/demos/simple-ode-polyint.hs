@@ -454,12 +454,14 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
     where
     varDoms = zip vars doms 
     sizeLimits =
-        IntPolySizeLimits
+        (defaultIntPolySizeLimits sampleCf cf_limits arity)
         {
-            ipolylimits_cf_limits = defaultSizeLimits sampleCf,
             ipolylimits_maxdeg = maxdeg,
             ipolylimits_maxsize = maxsize
         }
+        where
+        arity = length vars
+        cf_limits = defaultSizeLimits sampleCf
 
 
 testShrinkWrap :: IO ()
