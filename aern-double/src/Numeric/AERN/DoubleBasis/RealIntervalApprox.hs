@@ -156,7 +156,7 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     -- > expOutIters 10 x
     --
     -- which means that at most 10 iterations should be used while computing exp
-    expOutIters,sqrtOutIters,
+    expOutIters,
 
     -- * Inward rounded operations 
 
@@ -197,7 +197,7 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     -- > expInIters 10 x
     --
     -- which means that at most 10 iterations should be used while computing exp
-    expInIters,sqrtInIters
+    expInIters
 )
 where
 
@@ -231,7 +231,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
   )
  
 import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
-    (intervalExpOutIters, intervalExpInIters, intervalSqrtOutIters, intervalSqrtInIters)
+    (intervalExpOutIters, intervalExpInIters)
 
 import Numeric.AERN.RealArithmetic.Basis.Double()
 
@@ -584,14 +584,8 @@ sqrtIn = RAROR.sqrtIn
 expOutIters :: Int -> RealIntervalApprox -> RealIntervalApprox
 expOutIters = RAIEFFO.intervalExpOutIters
 
-sqrtOutIters :: Int -> RealIntervalApprox -> RealIntervalApprox
-sqrtOutIters = RAIEFFO.intervalSqrtOutIters
-
 expInIters :: Int -> RealIntervalApprox -> RealIntervalApprox
 expInIters = RAIEFFO.intervalExpInIters
-
-sqrtInIters :: Int -> RealIntervalApprox -> RealIntervalApprox
-sqrtInIters = RAIEFFO.intervalSqrtInIters
 
 newtype PositiveRealIntervalApprox = 
     PositiveRealIntervalApprox 

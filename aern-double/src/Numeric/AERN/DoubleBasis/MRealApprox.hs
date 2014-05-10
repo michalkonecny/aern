@@ -88,7 +88,7 @@ module Numeric.AERN.DoubleBasis.MRealApprox
     -- > expOutInPlaceIters 10 resM xM
     --
     -- which means that at most 10 iterations should be used while computing exp of x
-    expOutInPlaceIters,sqrtOutInPlaceIters,
+    expOutInPlaceIters,
     
     -- * Base class and associted type
     CanBeMutable(..)
@@ -126,7 +126,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
   )
 
 import qualified Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps as RAIMEFFO
-    (intervalExpOutInPlaceIters, intervalSqrtOutInPlaceIters)
+    (intervalExpOutInPlaceIters)
 
 import Numeric.AERN.DoubleBasis.RealApprox (RealApprox)
 import Control.Monad.ST (runST)
@@ -259,6 +259,5 @@ expOutInPlace = RAROR.expOutInPlace
 sqrtOutInPlace :: OpMutable1 RealApprox s
 sqrtOutInPlace = RAROR.sqrtOutInPlace 
 
-expOutInPlaceIters, sqrtOutInPlaceIters :: Int -> OpMutable1 RealApprox s
+expOutInPlaceIters :: Int -> OpMutable1 RealApprox s
 expOutInPlaceIters = RAIMEFFO.intervalExpOutInPlaceIters
-sqrtOutInPlaceIters = RAIMEFFO.intervalSqrtOutInPlaceIters

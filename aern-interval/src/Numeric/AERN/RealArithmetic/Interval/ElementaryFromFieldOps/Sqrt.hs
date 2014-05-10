@@ -27,39 +27,47 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Interval.FieldOps ()
 
-import Numeric.AERN.Basics.Interval
 --import Numeric.AERN.Basics.Consistency
---import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Exception
+
+import Test.QuickCheck (Arbitrary) -- , arbitrary, vectorOf)
 
 import Control.Exception (throw)
 --import Control.Monad.ST (ST)
 
+data SqrtThinEffortIndicator e =
+    SqrtThinEffortIndicator
+    {
+        sqrteff_arith :: ArithUpDn.RoundedRealEffortIndicator e,
+        sqrteff_newtonIters :: Int -- ^ the highest number of iterations of Newton method to make 
+    }
+
+-- TODO: complete the following instances:
+instance Arbitrary (SqrtThinEffortIndicator cf)
+instance Show (SqrtThinEffortIndicator cf)
+instance EffortIndicator (SqrtThinEffortIndicator cf)
+
+sqrtThinDefaultEffort :: 
+   (ArithUpDn.RoundedReal e) 
+   =>
+   e -> Int -> SqrtThinEffortIndicator e
+sqrtThinDefaultEffort x iters =
+    SqrtThinEffortIndicator
+    {
+        sqrteff_arith = ArithUpDn.roundedRealDefaultEffort x,
+        sqrteff_newtonIters = iters
+    }
+
 sqrtOutThinArg ::
-    (HasZero e, HasOne e, Show e,
-     NumOrd.RoundedLattice e,
-     NumOrd.PartialComparison e,
-     ArithUpDn.Convertible e Double,
-     ArithUpDn.RoundedMixedField e Int,
-     ArithUpDn.RoundedField e) =>
-    ArithUpDn.FieldOpsEffortIndicator e ->
-    ArithUpDn.MixedFieldOpsEffortIndicator e Int ->
-    NumOrd.MinmaxEffortIndicator e ->
-    NumOrd.PartialCompareEffortIndicator e ->
-    ArithUpDn.ConvertEffortIndicator e Double ->
-    Int {-^ the highest number of iterations of Newton method to make -} ->
+    (Show e, ArithUpDn.RoundedReal e) 
+    =>
+    SqrtThinEffortIndicator e ->
     e {-^ @x@ as a singleton interval -} -> 
-    (Interval e) {-^ @sqrt(x)@ -}
-sqrtOutThinArg
-        effortField
-        effortMixedField
-        effortMinmax
-        effortCompare
-        effortToDouble
-        maxIters
-        x
-    | sureIsZero x = zero $ Interval x x
+    (e, e) {-^ @sqrt(x)@ lower and upper bounds -}
+sqrtOutThinArg eff x
+    | sureIsZero x = (zero x, zero x)
     | not (sureAbove0 x) = 
         case (sureAbove0 (neg x)) of
             True -> 
@@ -70,20 +78,17 @@ sqrtOutThinArg
                     "sqrtOutThinArg: cannot check that sqrt is applied to a positive argument " ++ show x
     | xRecipSqrtDownInFastRegion =
 --            unsafePrint ("AERN: sqrtOutThinArg: lower bound in fast region") $
-        Interval 
-            (x *. xRecipSqrtDown)
-            (x *^ xRecipSqrtUp) -- best upper bound estimate based on an error estimate of the lower bound
+        (x *. xRecipSqrtDown,
+         x *^ xRecipSqrtUp) -- best upper bound estimate based on an error estimate of the lower bound
     | sureAbove0 xRecipSqrtDown =
 --            unsafePrint ("AERN: sqrtOutThinArg: lower bound NOT in fast region, using division") $
-        Interval 
-            (x *. xRecipSqrtDown)
-            (recipUp xRecipSqrtDown) 
+        (x *. xRecipSqrtDown,
+         recipUp xRecipSqrtDown) 
          -- an upper bound using division - introduces a fairly large error; used when iteration has not reached the fast region
     | otherwise =
 --            unsafePrint ("AERN: sqrtOutThinArg: lower bound too close to zero, using dummy upper bound") $
-        Interval
-            (x *. xRecipSqrtDown)
-            (NumOrd.maxUpEff effortMinmax x (one x))
+        (x *. xRecipSqrtDown,
+         NumOrd.maxUpEff effortMinmax x (one x))
          -- a dummy fallback upper bound where lower bound is too close to 0
     where
     (xRecipSqrtDownPrev, xRecipSqrtDown) = recipSqrtDown
@@ -127,6 +132,14 @@ sqrtOutThinArg
     effortDiv = ArithUpDn.fldEffortDiv x effortField
     effortAddInt = ArithUpDn.mxfldEffortAdd x (0::Int) effortMixedField
     effortDivInt = ArithUpDn.mxfldEffortDiv x (0::Int) effortMixedField
+
+    effortMinmax = ArithUpDn.rrEffortMinmax x effE
+    effortToDouble = ArithUpDn.rrEffortToDouble x effE
+    effortCompare = ArithUpDn.rrEffortComp x effE
+    effortField = ArithUpDn.rrEffortField x effE
+    effortMixedField = ArithUpDn.rrEffortIntMixedField x effE
+    effE = sqrteff_arith eff
+    maxIters = sqrteff_newtonIters eff
 
     recipSqrtDown
         | q0OK = -- computed an approximation in the stable region:
