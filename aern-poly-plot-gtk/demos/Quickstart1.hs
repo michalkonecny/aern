@@ -9,7 +9,6 @@ import Numeric.AERN.RealArithmetic.Basis.Double ()
 
 -- intervals generic in the type of its endpoints:
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.Effort (Int1To10(..))
 
 -- interval-coefficient polynomials:
 import Numeric.AERN.Poly.IntPoly 
@@ -23,6 +22,10 @@ import Numeric.AERN.RefinementOrder.Operators
 
 -- abstract approximate real arithmetic operations:
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+
+-- ability to control the effort for elementary operations: 
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
+
 
 -- abstract function processing operations:
 import Numeric.AERN.RmToRn (newConstFn, newProjection)
@@ -75,9 +78,13 @@ expX = ArithInOut.expOut x
 
 {-| The function @\x:[-1,1] -> exp(x)@ with adjustable effort. -}
 expXDeg :: Int -> PI
-expXDeg taylorDegree = ArithInOut.expOutEff (effRR, Int1To10 taylorDegree) x
+expXDeg taylorDegree = ArithInOut.expOutEff eff x
     where
-    (effRR, _) = ArithInOut.expDefaultEffort x
+    eff = effDefault
+        {
+            expeff_taylorDeg = taylorDegree
+        }
+    effDefault = ArithInOut.expDefaultEffort x
 
 {-
     To make the following plotting code work, the file FnView.glade
@@ -92,11 +99,25 @@ plotExp =
     FV.plotFns 
         [("exp example", 
             [(("(\\x:[-1,1].x)", FV.black, True), x),
-             (("(\\x:[-1,1].exp(x))", FV.green, True), expX)])]
+             (("(\\x:[-1,1].exp(x))", FV.green, True), expXDeg 7),
+             (("(\\x:[-1,1].exp(x))", FV.blue, True), expXDeg 10)
+            ]
+         )
+        ]
 
 {-| The function @\x:[-1,1] -> sqrt(x+2)@. -}
 sqrtXplus2 :: PI
 sqrtXplus2 = ArithInOut.sqrtOut $ x + c1 + c1
+
+{-| The function @\x:[-1,1] -> sqrt(x+2)@ with adjustable effort. -}
+sqrtXplus2Iters :: Int -> PI
+sqrtXplus2Iters iters = ArithInOut.sqrtOutEff eff $ x + c1 + c1
+    where
+    eff = effDefault
+        {
+            sqrteff_newtonIters = iters
+        }
+    effDefault = ArithInOut.sqrtDefaultEffort x
 
 --effSqrt = effIP
 
@@ -107,5 +128,9 @@ plotSqrt =
         [("sqrt example", 
             [(("(\\x:[-1,1].x)", FV.black, True), x),
              (("(\\x:[-1,1].1)", FV.black, True), c1),
-             (("(\\x:[-1,1].sqrt(x+2))", FV.green, True), sqrtXplus2)])]
+             (("(\\x:[-1,1].sqrt(x+2))", FV.green, True), sqrtXplus2Iters 2),
+             (("(\\x:[-1,1].sqrt(x+2))", FV.blue, True), sqrtXplus2Iters 20)
+            ]
+         )
+        ]
 

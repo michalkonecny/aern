@@ -96,9 +96,10 @@ three, ten, hundred, thousand :: MI
 
     
 expEffort n =
-    (a, Int1To10 n)
-    where
-    (a, _) = expEffortDefault
+    expEffortDefault
+    {
+        expeff_taylorDeg = n
+    }
 
 expEffortDefault = 
    ArithInOut.expDefaultEffort three

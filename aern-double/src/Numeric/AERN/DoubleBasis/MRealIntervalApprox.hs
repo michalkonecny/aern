@@ -81,15 +81,6 @@ module Numeric.AERN.DoubleBasis.MRealIntervalApprox
     -- ** Elementary functions
     absOutInPlace,expOutInPlace,sqrtOutInPlace,
 
-    -- *** Elementary functions with iteration effort control
-    -- |
-    -- To be used eg as follows:
-    -- 
-    -- > expOutInPlaceIters 10 resM xM
-    --
-    -- which means that at most 10 iterations should be used while computing exp of x
-    expOutInPlaceIters,
-    
     -- * Inward rounded operations
 
     -- ** Order operations
@@ -138,15 +129,6 @@ module Numeric.AERN.DoubleBasis.MRealIntervalApprox
     -- ** Elementary functions
     absInInPlace,expInInPlace,sqrtInInPlace,
     
-    -- *** Elementary functions with iteration effort control
-    -- |
-    -- To be used eg as follows:
-    -- 
-    -- > expInInPlaceIters 10 resM xM
-    --
-    -- which means that at most 10 iterations should be used while computing exp of x
-    expInInPlaceIters,
-    
     -- * Base class and associted type
     CanBeMutable(..)
 )
@@ -192,9 +174,6 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
    mixedMultInInPlace,(>*<|=),
    mixedDivInInPlace,(>/<|=),
    powerToNonnegIntInInPlace,(>^<=))
-
-import qualified Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps as RAIMEFFO
-    (intervalExpOutInPlaceIters, intervalExpInInPlaceIters)
 
 import Numeric.AERN.DoubleBasis.RealIntervalApprox (RealIntervalApprox)
 import Control.Monad.ST (runST)
@@ -455,8 +434,4 @@ sqrtInInPlace = RAROR.sqrtInInPlace
 sqrtOutInPlace :: OpMutable1 RealIntervalApprox s
 sqrtOutInPlace = RAROR.sqrtOutInPlace 
 
-expOutInPlaceIters,
- expInInPlaceIters :: Int -> OpMutable1 RealIntervalApprox s
-expOutInPlaceIters = RAIMEFFO.intervalExpOutInPlaceIters
-expInInPlaceIters = RAIMEFFO.intervalExpInInPlaceIters
 

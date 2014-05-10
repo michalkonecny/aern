@@ -17,10 +17,10 @@
 -}
 
 module Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
-    (intervalExpOutInPlaceIters, intervalExpInInPlaceIters) 
+()
 where
 
-import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps ()
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
 
@@ -54,7 +54,7 @@ instance
     (ArithInOut.RoundedExponentiationInPlace (Interval e))
     where
     expOutInPlaceEff 
-        (eff, Int1To10 effortTaylor)
+        eff
         (MInterval resL resR)
         (MInterval lM rM) =
             do
@@ -62,14 +62,12 @@ instance
             forgetMeR <- cloneMutable lM  
             expOutThinArgInPlace eff
                 (MInterval resL forgetMeR)
-                effortTaylor 
                 (MInterval lM lM)
             expOutThinArgInPlace eff
                 (MInterval forgetMeL resR)
-                effortTaylor 
                 (MInterval rM rM)
     expInInPlaceEff 
-        (eff, Int1To10 effortTaylor)
+        eff
         (MInterval resL resR)
         (MInterval lM rM) =
             do
@@ -77,32 +75,10 @@ instance
             forgetMeR <- cloneMutable lM  
             expOutThinArgInPlace eff 
                 (MInterval forgetMeL resL)
-                effortTaylor 
                 (MInterval lM lM)
             expOutThinArgInPlace eff
                 (MInterval resR forgetMeR)
-                effortTaylor 
                 (MInterval rM rM)
-
-intervalExpOutInPlaceIters, intervalExpInInPlaceIters ::
-    (CanBeMutable e, 
-     ArithInOut.RoundedRealInPlace (Interval e),
-     -- MK has no idea why the following three are not automatically deduced from the above...
-     ArithUpDn.RoundedReal e,
-     ArithInOut.RoundedAddEffort (Distance e),
-     RefOrd.RoundedLatticeEffort (Distance e),
-     EffortIndicator (ArithInOut.FieldOpsEffortIndicator (Distance e))
-    ) 
-    => 
-    Int -> OpMutable1 (Interval e) s 
-intervalExpOutInPlaceIters n resM iM =
-    do
-    i <- unsafeReadMutable iM
-    ArithInOut.expOutInPlaceEff (intervalExpDefaultEffortWithIters i n) resM iM
-intervalExpInInPlaceIters n resM iM =
-    do
-    i <- unsafeReadMutable iM
-    ArithInOut.expInInPlaceEff (intervalExpDefaultEffortWithIters i n) resM iM
 
 instance
     (CanBeMutable e, Show e,
