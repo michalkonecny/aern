@@ -32,7 +32,8 @@ Library
         aern-real == 0.5.*,
         aern-interval == 0.5.*,
         aern-realfn == 0.5.*
-  exposed-modules:  Numeric.AERN.Poly.IntPoly
+  exposed-modules:  Numeric.AERN.Poly.IntPoly,
+                    Numeric.AERN.Poly.IntPoly.Interval
   other-modules:    
                     Numeric.AERN.Poly.IntPoly.Addition,
                     Numeric.AERN.Poly.IntPoly.Composition,
@@ -42,7 +43,6 @@ Library
                     Numeric.AERN.Poly.IntPoly.Evaluation,
                     Numeric.AERN.Poly.IntPoly.IntPoly,
                     Numeric.AERN.Poly.IntPoly.Integration,
-                    Numeric.AERN.Poly.IntPoly.IntervalComposition,
                     Numeric.AERN.Poly.IntPoly.Minmax,
                     Numeric.AERN.Poly.IntPoly.Multiplication,
                     Numeric.AERN.Poly.IntPoly.Division,

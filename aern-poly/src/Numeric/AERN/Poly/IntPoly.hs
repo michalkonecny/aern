@@ -52,7 +52,6 @@ import Numeric.AERN.Poly.IntPoly.Show
 import Numeric.AERN.Poly.IntPoly.NumericOrder ()
 import Numeric.AERN.Poly.IntPoly.RefinementOrder ()
 import Numeric.AERN.Poly.IntPoly.Minmax
-import Numeric.AERN.Poly.IntPoly.IntervalComposition ()
 
 import Numeric.AERN.RmToRn.Domain
 

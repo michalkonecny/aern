@@ -21,6 +21,7 @@ import qualified
        Numeric.AERN.RmToRn.Plot.FnView as FV
 
 import Numeric.AERN.Poly.IntPoly
+import Numeric.AERN.Poly.IntPoly.Interval ()
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal, dbldblToReal)

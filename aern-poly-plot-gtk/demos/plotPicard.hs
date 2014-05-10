@@ -94,7 +94,7 @@ getFns name tEndDbl maxdeg maxsize otherArgs =
     functionMap = Map.fromList functions 
     names = map fst functions
     
-functions :: 
+functions ::
     [(
        String
      ,
@@ -521,9 +521,19 @@ effNumComp = NumOrd.pCompareDefaultEffort sampleFn
 effRefComp :: RefOrd.PartialCompareEffortIndicator Fn
 effRefComp = RefOrd.pCompareDefaultEffort sampleFn
 minmaxInOutEff :: Int -> NumOrd.MinmaxInOutEffortIndicator Fn
-minmaxInOutEff bd = minmaxUpDnDefaultEffortIntPolyWithBezierDegree bd sampleFnEndpt
+minmaxInOutEff bd =
+        defaultEffort
+        {
+            intordeff_eMinmax = 
+                (intordeff_eMinmax defaultEffort)
+                {
+                    ipolyeff_minmaxBernsteinDegree = bd
+                }
+        }
+        where
+        defaultEffort = NumOrd.minmaxInOutDefaultEffort sampleFn
 effAbs :: Int -> ArithInOut.AbsEffortIndicator Fn
-effAbs bd = (effNumComp, minmaxInOutEff bd)
+effAbs bd = minmaxInOutEff bd
 effDrawFn :: CairoDrawFnEffortIndicator Fn
 effDrawFn = cairoDrawFnDefaultEffort sampleFn
 effInteg :: IntegrationEffortIndicator Fn

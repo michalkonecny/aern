@@ -35,11 +35,13 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.Measures
 
 import Numeric.AERN.RefinementOrder.Operators
 
+import qualified Numeric.AERN.RefinementOrder as RefOrd
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.Operators
+--import Numeric.AERN.NumericOrder.Operators
 
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.Interval
@@ -49,7 +51,7 @@ import Control.Exception
 
 
 instance
-    (NumOrd.PartialComparison e, ShowInternals e) =>
+    (NumOrd.PartialComparison e, NumOrd.RoundedLatticeEffort e, ShowInternals e) =>
     Eq (Interval e)
     where
     i1 == i2 =
@@ -88,11 +90,10 @@ instance
     (ArithUpDn.Convertible Integer e, 
      HasSampleFromContext e, 
      ShowInternals e,
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLattice e, 
-     HasZero e,
-     ArithUpDn.RoundedRing e, 
-     ArithUpDn.RoundedAbs e) => 
+     ArithUpDn.RoundedReal e,
+     ArithInOut.RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)) 
+    => 
     Num (Interval e)
     where
     negate = neg
@@ -112,15 +113,13 @@ instance
         error $ "signum not implemented for Interval"
 
 instance 
-    (ArithUpDn.Convertible Integer e, 
-     ArithUpDn.Convertible Rational e,
-     HasSampleFromContext e, 
+    (HasSampleFromContext e, 
      Eq e, ShowInternals e,
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLattice e, 
-     HasZero e, HasOne e, NumOrd.HasExtrema e,
-     ArithUpDn.RoundedField e, 
-     ArithUpDn.RoundedAbs e) => 
+     NumOrd.HasExtrema e,
+     ArithUpDn.RoundedReal e, 
+     ArithInOut.RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e))
+    => 
     Fractional (Interval e)
     where
     (/) = (</>)
@@ -135,17 +134,13 @@ instance
             sample = sampleFromContext
 
 instance
-    (ArithUpDn.Convertible Integer e,
-     ArithUpDn.Convertible Rational e,
-     HasSampleFromContext e,
+    (HasSampleFromContext e,
      Eq e,
      ShowInternals e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e,
-     HasZero e,
-     ArithUpDn.RoundedField e,
+     ArithUpDn.RoundedReal e,
+     ArithInOut.RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e), 
      NumOrd.HasExtrema e,
-     ArithUpDn.RoundedAbs e,
      ArithUpDn.RoundedSpecialConst e,
      ArithInOut.RoundedExponentiation (Interval e),
      ArithInOut.RoundedSquareRoot (Interval e)) =>

@@ -6,8 +6,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 {-|
-    Module      :  Numeric.AERN.Poly.IntPoly.IntervalComposition
-    Description :  composition of polynomial intervals  
+    Module      :  Numeric.AERN.Poly.IntPoly.Interval
+    Description :  intervals whose endpoints are interval polynomials  
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -15,26 +15,15 @@
     Stability   :  experimental
     Portability :  portable
     
-    Evaluation of _polynomial intervals_ in general using its instance of 'CanEvaluateOtherType'.
+    Polynomial intervals, ie intervals whose endpoints are interval polynomials.  
+    In particular, evaluation of polynomial intervals in general, using its instance of 'CanEvaluateOtherType'.
 -}
 
-module Numeric.AERN.Poly.IntPoly.IntervalComposition
+module Numeric.AERN.Poly.IntPoly.Interval
 ()
 where
 
-import Numeric.AERN.Poly.IntPoly.Config
-import Numeric.AERN.Poly.IntPoly.IntPoly
-import Numeric.AERN.Poly.IntPoly.New ()
-import Numeric.AERN.Poly.IntPoly.Conversion ()
-import Numeric.AERN.Poly.IntPoly.Evaluation
-import Numeric.AERN.Poly.IntPoly.Show ()
-import Numeric.AERN.Poly.IntPoly.NumericOrder ()
-import Numeric.AERN.Poly.IntPoly.RefinementOrder ()
-import Numeric.AERN.Poly.IntPoly.Addition ()
-import Numeric.AERN.Poly.IntPoly.Multiplication ()
-import Numeric.AERN.Poly.IntPoly.Composition ()
-import Numeric.AERN.Poly.IntPoly.Minmax ()
-import Numeric.AERN.Poly.IntPoly.UpDnField ()
+import Numeric.AERN.Poly.IntPoly
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
@@ -55,7 +44,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.RealArithmetic.Interval ()
+import Numeric.AERN.RealArithmetic.Interval (IntervalRealEffort(..), intrealeff_intordeff)
 import Numeric.AERN.RmToRn.Interval ()
 
 import Numeric.AERN.Basics.Consistency
@@ -78,21 +67,16 @@ instance
      ArithUpDn.Convertible (Interval e) (Interval e),
      Show (Interval e), Arbitrary (Interval e), 
      Show (Imprecision (Interval e)),
-     NumOrd.PartialComparison (Imprecision (Interval e))
+     NumOrd.PartialComparison (Imprecision (Interval e)),
+     NumOrd.HasExtrema e, ArithUpDn.RoundedReal e
     )
     =>
     HasEvalOps (IntPoly var (Interval e)) (Interval (IntPoly var (Interval e)))
     where
     type EvalOpsEffortIndicator (IntPoly var (Interval e)) (Interval (IntPoly var (Interval e))) = 
-        (
-            ArithInOut.RingOpsEffortIndicator (Interval (IntPoly var (Interval e))),
-            IntPolyEffort (Interval e)
-        )
-    evalOpsDefaultEffort _sampleP@(IntPoly cfg _) samplePI = 
-        (
-            ArithInOut.ringOpsDefaultEffort samplePI,
-            ipolycfg_effort cfg
-        )
+        IntPolyEffort (Interval e)
+    evalOpsDefaultEffort _sampleP@(IntPoly cfg _) _samplePI = 
+        ipolycfg_effort cfg
     evalOpsEff eff sampleP samplePI =
         intpolyPolyEvalOps eff samplePI sampleCf
         where
@@ -110,23 +94,22 @@ intpolyPolyEvalOps ::
      NumOrd.PartialComparison (Imprecision cf),
      Show (Imprecision cf),
      NumOrd.RoundedLattice poly,
-     poly ~ IntPoly var cf)
+     poly ~ IntPoly var cf, cf ~ Interval e,
+     ArithUpDn.RoundedReal e,
+     NumOrd.HasExtrema e)
     =>
-   (
-    (ArithInOut.RingOpsEffortIndicator (Interval poly)),
-    IntPolyEffort cf
-   ) ->
+   IntPolyEffort cf ->
    (Interval poly) ->
    cf ->
    PolyEvalOps var cf (Interval poly)
-intpolyPolyEvalOps (effRing, effIntPoly) samplePI sampleCf =
+intpolyPolyEvalOps effIP samplePI@(Interval sampleIP _) sampleCf =
     result
     where
     result =
-        let (<+>) = ArithInOut.addOutEff  (ArithInOut.ringEffortAdd samplePI effRing) in
-        let (<*>) = ArithInOut.multOutEff (ArithInOut.ringEffortMult samplePI effRing) in
-        let (<^>) = ArithInOut.powerToNonnegIntOutEff (ArithInOut.ringEffortPow samplePI effRing) in
-        let (<=?) = NumOrd.pLeqEff effIntPoly in
+        let (<+>) = ArithInOut.addOutEff  (ArithInOut.ringEffortAdd samplePI effPI) in
+        let (<*>) = ArithInOut.multOutEff (ArithInOut.ringEffortMult samplePI effPI) in
+        let (<^>) = ArithInOut.powerToNonnegIntOutEff (ArithInOut.ringEffortPow samplePI effPI) in
+        let (<=?) = NumOrd.pLeqEff (intrealeff_intordeff sampleIP effPI) in
         PolyEvalOps (zero samplePI) (<+>) (<*>) (<^>) (newConstFnFromSample samplePI) (const Nothing) maxSplitSize $
             Just $ PolyEvalMonoOps
                 result
@@ -146,8 +129,8 @@ intpolyPolyEvalOps (effRing, effIntPoly) samplePI sampleCf =
         val2 = RefOrd.fromEndpointsOut (valM, valR)
         (valL, valR) = RefOrd.getEndpointsOut val
         valM =
-            let (<+>) = ArithInOut.addOutEff (ArithInOut.ringEffortAdd samplePI effRing) in
-            let (<*>) = ArithInOut.multOutEff (ArithInOut.ringEffortMult samplePI effRing) in
+            let (<+>) = ArithInOut.addOutEff (ArithInOut.ringEffortAdd samplePI effPI) in
+            let (<*>) = ArithInOut.multOutEff (ArithInOut.ringEffortMult samplePI effPI) in
             (valL <+> valR) <*> (newConstFnFromSample samplePI half)
             where
             half = ArithInOut.mixedAddOutEff effAddCfDbl (zero sampleCf) (0.5 :: Double)
@@ -158,8 +141,14 @@ intpolyPolyEvalOps (effRing, effIntPoly) samplePI sampleCf =
 --    effAddCf = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
     join (Interval l1 _, Interval _ r2) = Interval l1 r2 
     isDefinitelyExact (Interval l r) = 
-        (NumOrd.pEqualEff effIntPoly l r) == Just True
+        (NumOrd.pEqualEff effIP l r) == Just True
 
-    maxSplitSize = ipolyeff_evalMaxSplitSize effIntPoly
-    effCf = ipolyeff_cfRoundedRealEffort effIntPoly
+    effPI = ipolyeff_intrealeff sampleIP effIP
+    maxSplitSize = ipolyeff_evalMaxSplitSize effIP
+    effCf = ipolyeff_cfRoundedRealEffort effIP
         
+ipolyeff_intrealeff sampleIP effIP =
+    IntervalRealEffort
+    {
+        
+    }

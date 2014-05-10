@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -20,58 +21,75 @@ module Numeric.AERN.RealArithmetic.Interval.Measures
 ()
 where
 
+import Numeric.AERN.RealArithmetic.Interval.Effort
+
 import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Consistency
 
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import qualified 
+       Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
-import qualified Numeric.AERN.NumericOrder as NumOrd
-import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified 
+       Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+
+import qualified 
+       Numeric.AERN.RefinementOrder as RefOrd
 
 
-instance (HasDistance e, ArithInOut.RoundedAdd (Distance e)) => 
-    HasDistance (Interval e) where
+instance 
+    (ArithUpDn.RoundedReal e,
+     ArithInOut.RoundedField (Distance e),
+     RefOrd.RoundedLattice (Distance e)) 
+    => 
+    HasDistance (Interval e) 
+    where
     type Distance (Interval e) = Distance e
-    type DistanceEffortIndicator (Interval e) = 
-        (DistanceEffortIndicator e, ArithInOut.AddEffortIndicator (Distance e))
-    distanceDefaultEffort (Interval l r) = 
-        (effortDist, effortAdd)
-        where
-        effortDist = distanceDefaultEffort l 
-        effortAdd = ArithInOut.addDefaultEffort d 
-        d = distanceBetweenEff effortDist l r
-    distanceBetweenEff (effortDist, effortAdd) (Interval l1 r1) (Interval l2 r2) =
+    type DistanceEffortIndicator (Interval e) =
+        IntervalRealEffort e
+    distanceDefaultEffort i =
+        defaultIntervalRealEffort i
+    distanceBetweenEff effort (Interval l1 r1) (Interval l2 r2) =
         distL <+> distR
         where
         distL = distanceBetweenEff effortDist l1 l2
         distR = distanceBetweenEff effortDist r1 r2
         (<+>) = ArithInOut.addOutEff effortAdd
+        effortAdd = ArithInOut.fldEffortAdd sampleDist effDistField
+        sampleDist = distL
+        effDistField = intrealeff_distField effort 
+        effortDist = ArithUpDn.rrEffortDistance sampleE effE
+        effE = intrealeff_eRoundedReal effort 
+        sampleE = l1
     
 instance
-    (HasDistance e, RefOrd.RoundedLattice (Distance e), Neg (Distance e), 
-     NumOrd.PartialComparison e) => 
+    (ArithUpDn.RoundedReal e,
+     Neg (Distance e), 
+     ArithInOut.RoundedField (Distance e),
+     RefOrd.RoundedLattice (Distance e)) 
+    => 
     HasImprecision (Interval e) 
     where
     type Imprecision (Interval e) = Distance e
     type ImprecisionEffortIndicator (Interval e) = 
-        (DistanceEffortIndicator e,
-         RefOrd.JoinMeetEffortIndicator (Distance e), 
-         ConsistencyEffortIndicator (Interval e))
-    imprecisionDefaultEffort i@(Interval l r) = 
-        (effortDist, effortMeet, consistencyDefaultEffort i) 
-        where
-        effortDist = distanceDefaultEffort l
-        effortMeet = RefOrd.joinmeetDefaultEffort d
-        d = distanceBetweenEff effortDist l r
-    imprecisionOfEff (effortDist, effortMeet, effortConsistency) i@(Interval l r) =
-        case (isConsistentEff effortConsistency i) of
+        IntervalRealEffort e
+    imprecisionDefaultEffort i =
+        defaultIntervalRealEffort i 
+    imprecisionOfEff effort i@(Interval l r) =
+        case (isConsistentEff effortOrd i) of
             Just True -> dist
             Just False -> neg dist
             Nothing -> dist <⊓> (neg dist)
         where
         (<⊓>) = RefOrd.meetOutEff effortMeet
         dist = distanceBetweenEff effortDist l r
+        
+        effortOrd = intrealeff_intordeff sampleE effort
+        effortMeet = intrealeff_distJoinMeet effort
+        effortDist = ArithUpDn.rrEffortDistance l effE
+        effE = intrealeff_eRoundedReal effort
+        sampleE = l
+        
     

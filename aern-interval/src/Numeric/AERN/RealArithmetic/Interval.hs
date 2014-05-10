@@ -20,12 +20,14 @@ module Numeric.AERN.RealArithmetic.Interval
 (
     -- This module re-exports mainly type class instances;
     -- The following modules have some auxiliary functions:
+    module Numeric.AERN.RealArithmetic.Interval.Effort,
     module Numeric.AERN.RealArithmetic.Interval.MixedFieldOps,
     module Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 )
 where
 
 import Numeric.AERN.RealArithmetic.Interval.ExactOps ()
+import Numeric.AERN.RealArithmetic.Interval.Effort
 import Numeric.AERN.RealArithmetic.Interval.Measures ()
 import Numeric.AERN.RealArithmetic.Interval.UpDnConversion ()
 import Numeric.AERN.RealArithmetic.Interval.Conversion ()
@@ -35,14 +37,18 @@ import Numeric.AERN.RealArithmetic.Interval.SpecialConst ()
 import Numeric.AERN.RealArithmetic.Interval.Floating ()
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import qualified 
+       Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import qualified 
+       Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
-import qualified Numeric.AERN.NumericOrder as NumOrd
-import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified 
+       Numeric.AERN.NumericOrder as NumOrd
+import qualified 
+       Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Exception
@@ -66,98 +72,76 @@ instance
     ) => 
     ArithInOut.RoundedReal (Interval e) 
     where
-#if (__GLASGOW_HASKELL__ >= 704)
-    type RoundedRealEffortIndicator (Interval e) = 
-        (ArithUpDn.RoundedRealEffortIndicator e, 
-         (ArithInOut.FieldOpsEffortIndicator (Distance e),
-          NumOrd.PartialCompareEffortIndicator (Distance e),
-          RefOrd.JoinMeetEffortIndicator (Distance e)
-         ))
-#else
-    type ArithInOut.RoundedRealEffortIndicator (Interval e) = 
-        (ArithUpDn.RoundedRealEffortIndicator e, 
-         (ArithInOut.FieldOpsEffortIndicator (Distance e),
-          NumOrd.PartialCompareEffortIndicator (Distance e),
-          RefOrd.JoinMeetEffortIndicator (Distance e)
-         ))
-#endif
-    roundedRealDefaultEffort (Interval l _) = 
-        (ArithUpDn.roundedRealDefaultEffort l, 
-            (ArithInOut.fieldOpsDefaultEffort sampleDist,
-             NumOrd.pCompareDefaultEffort sampleDist, 
-             RefOrd.joinmeetDefaultEffort sampleDist
-            )
-        )
-        where
-        sampleDist =  distanceBetweenEff (distanceDefaultEffort l) l l
-    rrEffortNumComp (Interval l _) (effR,_) = ArithUpDn.rrEffortComp l effR
-    rrEffortMinmaxInOut (Interval l _) (effR,_) = ArithUpDn.rrEffortMinmax l effR
-    rrEffortRefComp (Interval l _) (effR,_) = ArithUpDn.rrEffortComp l effR
-    rrEffortPartialJoin (Interval l _) (effR,_) = (ArithUpDn.rrEffortMinmax l effR, ArithUpDn.rrEffortComp l effR)
-    rrEffortJoinMeet (Interval l _) (effR,_) = ArithUpDn.rrEffortMinmax l effR
-    rrEffortDistance (Interval l _) (effR,(effDistFld, _,_)) 
-        = (effDist, effDistAdd)
-        where
-        effDist = ArithUpDn.rrEffortDistance l effR 
-        effDistAdd = ArithInOut.fldEffortAdd sampleDist effDistFld
-        sampleDist = distanceBetweenEff effDist l l
-    rrEffortDistanceComp (Interval _ _) (_, (_, effDistComp, _)) = effDistComp
-    rrEffortDistanceField (Interval _ _) (_, (effDistFld, _, _)) = effDistFld
-    rrEffortImprecision (Interval l _) (effR,(_, _, effDistJoin))
-        = (ArithUpDn.rrEffortDistance l effR, effDistJoin, ArithUpDn.rrEffortComp l effR)
-    rrEffortImprecisionComp (Interval _ _) (_, (_, effDistComp, _)) = effDistComp
-    rrEffortImprecisionField (Interval _ _) (_, (effDistFld, _, _)) = effDistFld
+    type RoundedRealEffortIndicator (Interval e) =
+        IntervalRealEffort e 
+    roundedRealDefaultEffort i =
+        defaultIntervalRealEffort i 
+    rrEffortNumComp (Interval l _) eff = intrealeff_intordeff l eff
+    rrEffortMinmaxInOut (Interval l _) eff = intrealeff_intordeff l eff
+    rrEffortRefComp (Interval l _) eff = intrealeff_intordeff l eff
+    rrEffortPartialJoin (Interval l _) eff = intrealeff_intordeff l eff
+    rrEffortJoinMeet (Interval l _) eff = intrealeff_intordeff l eff
+    rrEffortDistance (Interval _ _) eff = eff 
+    rrEffortDistanceComp (Interval _ _) eff = intrealeff_distComp eff
+    rrEffortDistanceField (Interval _ _) eff = intrealeff_distField eff
+    rrEffortImprecision (Interval _ _) eff = eff
+    rrEffortImprecisionComp (Interval _ _) eff = intrealeff_distComp eff
+    rrEffortImprecisionField (Interval _ _) eff = intrealeff_distField eff
     rrEffortToSelf _ _ = ()
-    rrEffortToInt (Interval l _) (effR,_) = ArithUpDn.rrEffortToInt l effR
-    rrEffortFromInt (Interval l _) (effR,_) = ArithUpDn.rrEffortFromInt l effR
-    rrEffortToInteger (Interval l _) (effR,_) = ArithUpDn.rrEffortToInteger l effR
-    rrEffortFromInteger (Interval l _) (effR,_) = ArithUpDn.rrEffortFromInteger l effR
-    rrEffortToDouble (Interval l _) (effR,_) = ArithUpDn.rrEffortToDouble l effR
-    rrEffortFromDouble (Interval l _) (effR,_) = ArithUpDn.rrEffortFromDouble l effR
-    rrEffortToRational (Interval l _) (effR,_) = ArithUpDn.rrEffortToRational l effR
-    rrEffortFromRational (Interval l _) (effR,_) = ArithUpDn.rrEffortFromRational l effR
-    rrEffortAbs (Interval l _) (effR,_) =
-         (ArithUpDn.rrEffortComp l effR, 
-         ArithUpDn.rrEffortMinmax l effR)
-    rrEffortField (Interval l _) (effR,_) = 
-        (ArithUpDn.rrEffortField l effR,
-         ArithUpDn.rrEffortComp l effR, 
-         ArithUpDn.rrEffortMinmax l effR)
-    rrEffortSelfMixedField (Interval l _) (effR,_) =
-        ((ArithUpDn.rrEffortSelfMixedField l effR, 
-          ArithUpDn.rrEffortComp l effR, 
-          ArithUpDn.rrEffortMinmax l effR),
+    rrEffortToInt (Interval l _) eff = ArithUpDn.rrEffortToInt l $ intrealeff_eRoundedReal eff
+    rrEffortFromInt (Interval l _) eff = ArithUpDn.rrEffortFromInt l $ intrealeff_eRoundedReal eff
+    rrEffortToInteger (Interval l _) eff = ArithUpDn.rrEffortToInteger l  $ intrealeff_eRoundedReal eff
+    rrEffortFromInteger (Interval l _) eff = ArithUpDn.rrEffortFromInteger l  $ intrealeff_eRoundedReal eff
+    rrEffortToDouble (Interval l _) eff = ArithUpDn.rrEffortToDouble l  $ intrealeff_eRoundedReal eff
+    rrEffortFromDouble (Interval l _) eff = ArithUpDn.rrEffortFromDouble l  $ intrealeff_eRoundedReal eff
+    rrEffortToRational (Interval l _) eff = ArithUpDn.rrEffortToRational l  $ intrealeff_eRoundedReal eff
+    rrEffortFromRational (Interval l _) eff = ArithUpDn.rrEffortFromRational l  $ intrealeff_eRoundedReal eff
+    rrEffortAbs (Interval l _) eff = intrealeff_intordeff l eff
+    rrEffortField (Interval _ _) eff = eff 
+    rrEffortSelfMixedField (Interval l _) eff = 
+        (eff,
          (ArithUpDn.rrEffortComp l effR,
           ArithUpDn.rrEffortMinmax l effR,
-          ArithUpDn.rrEffortComp l effR
+          effOrd
          )
         )
-    rrEffortIntMixedField (Interval l _) (effR,_) =
+        where
+        effOrd = intrealeff_intordeff l eff
+        effR = intrealeff_eRoundedReal eff
+    rrEffortIntMixedField (Interval l _) eff =
         (ArithUpDn.rrEffortIntMixedField l effR,
          (ArithUpDn.rrEffortComp l effR,
           ArithUpDn.rrEffortMinmax l effR,
           ()
          )
         )
-    rrEffortIntegerMixedField (Interval l _) (effR,_) =
+        where
+        effR = intrealeff_eRoundedReal eff
+    rrEffortIntegerMixedField (Interval l _) eff =
         (ArithUpDn.rrEffortIntegerMixedField l effR,
          (ArithUpDn.rrEffortComp l effR,
           ArithUpDn.rrEffortMinmax l effR,
           ()
          )
         )
-    rrEffortDoubleMixedField (Interval l _) (effR,_) =
+        where
+        effR = intrealeff_eRoundedReal eff
+    rrEffortDoubleMixedField (Interval l _) eff =
         (ArithUpDn.rrEffortDoubleMixedField l effR,
          (ArithUpDn.rrEffortComp l effR,
           ArithUpDn.rrEffortMinmax l effR,
           ()
          )
         )
-    rrEffortRationalMixedField (Interval l _) (effR,_) =
+        where
+        effR = intrealeff_eRoundedReal eff
+    rrEffortRationalMixedField (Interval l _) eff =
         (ArithUpDn.rrEffortRationalMixedField l effR,
          (ArithUpDn.rrEffortComp l effR,
           ArithUpDn.rrEffortMinmax l effR,
           ()
          )
         )
+        where
+        effR = intrealeff_eRoundedReal eff
 

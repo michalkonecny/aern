@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps
@@ -18,14 +19,17 @@ module Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps() where
 
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.Interval.Mutable
+--import Numeric.AERN.Basics.Interval.Mutable
 
+import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps
+import Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps ()
+import Numeric.AERN.RealArithmetic.Interval.Effort
+
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
-import Numeric.AERN.RealArithmetic.Interval.FieldOps
+import Numeric.AERN.RealArithmetic.Interval.FieldOps ()
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
@@ -56,13 +60,16 @@ instance (RoundedAbs (Interval e), CanBeMutable (Interval e)) =>
     RoundedAbsInPlace (Interval e) 
 
 instance 
-    (ArithUpDn.RoundedMultiplyInPlace e,
+    (ArithUpDn.RoundedReal e,
+     ArithUpDn.RoundedMultiplyInPlace e, 
      NumOrd.RoundedLatticeInPlace e,
-     HasZero e,  NumOrd.PartialComparison e,
-     CanBeMutable e) =>
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e), 
+     CanBeMutable e) 
+    =>
     RoundedMultiplyInPlace (Interval e) 
     where
-    multOutInPlaceEff (effortComp, effortMinmax, effortMult) r i1 i2 =
+    multOutInPlaceEff effort r i1 i2 =
         multiplyIntervalsInPlace
             (pNonnegNonposEff effortComp)
             (ArithUpDn.multDnInPlaceEff effortMult) 
@@ -74,7 +81,14 @@ instance
             (NumOrd.minDnInPlaceEff effortMinmax)
             (NumOrd.maxUpInPlaceEff effortMinmax) 
             r i1 i2
-    multInInPlaceEff (effortComp, effortMinmax, effortMult) r i1 i2 =
+        where
+        effortComp = intrealeff_eComp sampleE effort
+        effortMinmax = intrealeff_eMinmax sampleE effort
+        effortMult = ArithUpDn.fldEffortMult sampleE effField 
+        effField = ArithUpDn.rrEffortField sampleE effE 
+        effE = intrealeff_eRoundedReal effort
+        Interval sampleE _ = getDummySample r
+    multInInPlaceEff effort r i1 i2 =
         multiplyIntervalsInPlace
             (pNonnegNonposEff effortComp)
             (ArithUpDn.multUpInPlaceEff effortMult) 
@@ -86,6 +100,13 @@ instance
             (NumOrd.maxUpInPlaceEff effortMinmax)
             (NumOrd.minDnInPlaceEff effortMinmax) 
             r i1 i2
+        where
+        effortComp = intrealeff_eComp sampleE effort
+        effortMinmax = intrealeff_eMinmax sampleE effort
+        effortMult = ArithUpDn.fldEffortMult sampleE effField 
+        effField = ArithUpDn.rrEffortField sampleE effE 
+        effE = intrealeff_eRoundedReal effort
+        Interval sampleE _ = getDummySample r
     
 multiplyIntervalsInPlace ::
     (CanBeMutable e, HasZero e) =>
@@ -396,11 +417,11 @@ multiplyIntervalsInPlace
                 
                 assignMutable lResM temp3
     where
-    assignResEndpointsUsingTimesLR sampleE l1M l2M r1M r2M =
+    assignResEndpointsUsingTimesLR sampleE l1M_ l2M_ r1M_ r2M_ =
         do
         temp1 <- makeMutable (zero sampleE)
-        timesLInPlace temp1 l1M l2M -- beware of aliasing between res and param
-        timesRInPlace rResM r1M r2M
+        timesLInPlace temp1 l1M_ l2M_ -- beware of aliasing between res and param
+        timesRInPlace rResM r1M_ r2M_
         assignMutable lResM temp1
 
 
@@ -415,14 +436,17 @@ instance
     (ArithUpDn.RoundedPowerNonnegToNonnegIntInPlace e,
      RoundedPowerToNonnegInt (Interval e),
      RoundedMultiplyInPlace (Interval e),
-     HasOne e,  HasZero e, Neg e, NegInPlace e,
-     NumOrd.PartialComparison e, NumOrd.RoundedLatticeInPlace e,
+     ArithUpDn.RoundedReal e,
+     NegInPlace e, 
+     NumOrd.RoundedLatticeInPlace e,
      CanBeMutable e
-     ) => 
+     ) 
+     => 
     RoundedPowerToNonnegIntInPlace (Interval e)
     where
     powerToNonnegIntInInPlaceEff
-            (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
+            effort
+--            (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
             res@(MInterval resL resR) a@(MInterval aL aR) n =
         do
         l <- readMutable aL 
@@ -450,16 +474,25 @@ instance
                         negInPlace res res -- back to the original sign
             _ ->
                 do
-                powerToNonnegIntInInPlaceEffFromMult effPowerFromMult res a n
+                powerToNonnegIntInInPlaceEffFromMult effort res a n
                 case even n of
                     True ->
                         do
                         let zeroI = zero $ Interval l r
                         zeroM <- unsafeMakeMutable zeroI 
-                        NumOrd.maxInInPlaceEff effMinMax res res zeroM
+                        NumOrd.maxInInPlaceEff effOrd res res zeroM
                     False -> return ()
+        where
+        effComp = intrealeff_eComp sampleE effort
+        effOrd = intrealeff_intordeff sampleE effort
+        
+        effPowerEndpt = ArithUpDn.fldEffortPow sampleE effField
+        effField = ArithUpDn.rrEffortField sampleE effE
+        effE = intrealeff_eRoundedReal effort 
+        Interval sampleE _ = getDummySample res
+
     powerToNonnegIntOutInPlaceEff
-            (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
+            effort 
             res@(MInterval resL resR) a@(MInterval aL aR) n =
         do
         l <- readMutable aL 
@@ -487,27 +520,38 @@ instance
                         negInPlace res res -- back to the original sign
             _ ->
                 do
-                powerToNonnegIntOutInPlaceEffFromMult effPowerFromMult res a n
+                powerToNonnegIntOutInPlaceEffFromMult effort res a n
                 case even n of
                     True ->
                         do
                         let zeroI = zero $ Interval l r
                         zeroM <- unsafeMakeMutable zeroI 
-                        NumOrd.maxOutInPlaceEff effMinMax res res zeroM
+                        NumOrd.maxOutInPlaceEff effOrd res res zeroM
                     False -> return ()
+        where
+        effComp = intrealeff_eComp sampleE effort
+        effOrd = intrealeff_intordeff sampleE effort
+        
+        effPowerEndpt = ArithUpDn.fldEffortPow sampleE effField
+        effField = ArithUpDn.rrEffortField sampleE effE
+        effE = intrealeff_eRoundedReal effort 
+        Interval sampleE _ = getDummySample res
 
 instance 
     (ArithUpDn.RoundedDivideInPlace e,
      ArithUpDn.RoundedMultiplyInPlace e,
      NumOrd.RoundedLatticeInPlace e,
-     HasZero e,  HasOne e, Neg e, 
-     NumOrd.PartialComparison e,  NumOrd.HasExtrema e,
-     CanBeMutable e) => 
+     ArithUpDn.RoundedReal e,
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e), 
+     NumOrd.HasExtrema e,
+     CanBeMutable e) 
+    => 
     RoundedDivideInPlace (Interval e) 
     where
     divOutInPlaceEff 
-            (effortComp, effortMinmax, (effortMult, effortDiv)) 
-            res@(MInterval resL resR) a@(MInterval aL aR) b@(MInterval bL bR) =
+            effort 
+            res a b =
         do
         temp <- makeMutable $ zero sampleI
         recipIntervalInPlace
@@ -516,15 +560,22 @@ instance
             divUp
             bottom
             temp b
-        multOutInPlaceEff (effortComp, effortMinmax, effortMult) res a temp
+        multOutInPlaceEff effort res a temp
         where
         bottom = RefOrd.bottom sampleI
-        sampleI = getDummySample res
+        sampleI@(Interval sampleE _) = getDummySample res
         divUp = ArithUpDn.divUpInPlaceEff effortDiv
         divDn = ArithUpDn.divDnInPlaceEff effortDiv
+
+        effortComp = intrealeff_eComp sampleE effort
+        
+        effortDiv = ArithUpDn.fldEffortDiv sampleE effField
+        effField = ArithUpDn.rrEffortField sampleE effE
+        effE = intrealeff_eRoundedReal effort 
+        
     divInInPlaceEff 
-            (effortComp, effortMinmax, (effortMult, effortDiv)) 
-            res@(MInterval resL resR) a@(MInterval aL aR) b@(MInterval bL bR) =
+            effort 
+            res a b =
         do
         temp <- makeMutable $ zero sampleI
         recipIntervalInPlace
@@ -533,15 +584,31 @@ instance
             divDn
             top
             temp b
-        multInInPlaceEff (effortComp, effortMinmax, effortMult) res a temp
+        multInInPlaceEff effort res a temp
         where
         top = RefOrd.top sampleI
-        sampleI = getDummySample res
+        sampleI@(Interval sampleE _) = getDummySample res
         divUp = ArithUpDn.divUpInPlaceEff effortDiv
         divDn = ArithUpDn.divDnInPlaceEff effortDiv
 
+        effortComp = intrealeff_eComp sampleE effort
+        
+        effortDiv = ArithUpDn.fldEffortDiv sampleE effField
+        effField = ArithUpDn.rrEffortField sampleE effE
+        effE = intrealeff_eRoundedReal effort 
+
+recipIntervalInPlace :: 
+      (NumOrd.HasExtrema e, CanBeMutable e, CanBeMutable e, HasOne e) 
+      =>
+      (e -> (Maybe Bool, Maybe Bool, Maybe Bool, Maybe Bool))
+      -> (Mutable e s -> Mutable e s -> Mutable e s -> ST s ())
+      -> (Mutable e s -> Mutable e s -> Mutable e s -> ST s ())
+      -> Interval e
+      -> Mutable (Interval e) s
+      -> Mutable (Interval e) s
+      -> ST s ()
 recipIntervalInPlace pPosNonnegNegNonpos divL divR fallback 
-        res@(MInterval resL resR) a@(MInterval aL aR) =
+        res@(MInterval resL resR) (MInterval aL aR) =
     do
     l <- readMutable aL
     r <- readMutable aR
@@ -553,12 +620,12 @@ recipIntervalInPlace pPosNonnegNegNonpos divL divR fallback
         -- positive:
         ((Just True, _, _, _), (Just True, _, _, _)) ->
             do
-            divL resL oneM aR
+            _ <- divL resL oneM aR
             divR resR oneM aL
         -- negative:
         ((_, _, Just True, _), (_, _, Just True, _)) ->  
             do
-            divL resL oneM aR
+            _ <- divL resL oneM aR
             divR resR oneM aL
         -- consistent around zero:
         ((_, _, _, Just True), (_, Just True, _, _)) ->
@@ -572,12 +639,12 @@ recipIntervalInPlace pPosNonnegNegNonpos divL divR fallback
 
 instance 
     (ArithUpDn.RoundedFieldInPlace e,
-     ArithUpDn.RoundedMultiply e,
-     ArithUpDn.RoundedPowerNonnegToNonnegInt e,
-     HasZero e, Neg e, NegInPlace e, HasOne e, 
+     ArithUpDn.RoundedReal e,
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e), 
+     NegInPlace e, 
      NumOrd.HasExtrema e,
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLattice e, 
-     NumOrd.RoundedLatticeInPlace e) => 
+     NumOrd.RoundedLatticeInPlace e) 
+    => 
     RoundedFieldInPlace (Interval e)
     

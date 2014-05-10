@@ -18,17 +18,23 @@
 module Numeric.AERN.Basics.Interval.Basics 
 (
    Interval(..), 
+   IntervalOrderEffort(..), defaultIntervalOrderEffort, 
    getEndpoints, fromEndpoints, mapBothEndpoints, mapEachEndpoint, mapEndpointPair 
 )
 where
 
 import Prelude hiding (EQ, LT, GT)
 
+
+import qualified 
+       Numeric.AERN.NumericOrder as NumOrd
+
+import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.SizeLimits
 
-import qualified Numeric.AERN.NumericOrder as NumOrd
+import Test.QuickCheck (Arbitrary) --, arbitrary, vectorOf)
 
 import Control.DeepSeq
 
@@ -39,9 +45,33 @@ import Control.DeepSeq
 data Interval e =
     Interval
     { 
-        leftEndpoint :: ! e,
-        rightEndpoint :: ! e
+        leftEndpoint :: !e,
+        rightEndpoint :: !e
     }
+    
+data IntervalOrderEffort e =
+    IntervalOrderEffort
+    {
+        intordeff_eComp :: NumOrd.PartialCompareEffortIndicator e,
+        intordeff_eMinmax :: NumOrd.MinmaxEffortIndicator e
+    }
+    
+defaultIntervalOrderEffort :: 
+    (NumOrd.RoundedLatticeEffort e, NumOrd.PartialComparison e)
+    =>
+    Interval e -> IntervalOrderEffort e
+defaultIntervalOrderEffort (Interval sampleE _) =
+    IntervalOrderEffort
+    {
+        intordeff_eComp = NumOrd.pCompareDefaultEffort sampleE,
+        intordeff_eMinmax = NumOrd.minmaxDefaultEffort sampleE
+    }
+    
+-- TODO: complete the following instances:
+instance Arbitrary (IntervalOrderEffort e)
+instance Show (IntervalOrderEffort e)
+instance EffortIndicator (IntervalOrderEffort e)
+
     
 instance (ShowInternals e, NumOrd.PartialComparison e) => (ShowInternals (Interval e))
     where

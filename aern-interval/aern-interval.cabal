@@ -58,6 +58,7 @@ Library
     Numeric.AERN.Basics.Interval.RefinementOrder,
     Numeric.AERN.RealArithmetic.Interval,
     Numeric.AERN.RealArithmetic.Interval.Conversion,
+    Numeric.AERN.RealArithmetic.Interval.Effort,
     Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis,
     Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps,
     Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt,
