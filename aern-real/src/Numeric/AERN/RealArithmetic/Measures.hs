@@ -44,6 +44,11 @@ class
     distanceBetweenEff :: 
         DistanceEffortIndicator t -> t -> t -> Distance t
 
+distanceBetween :: (HasDistance t) => t -> t -> Distance t
+distanceBetween a b = distanceBetweenEff eff a b
+    where
+    eff = distanceDefaultEffort a
+
 propDistanceTriangular :: 
     (HasDistance t, 
      NumOrd.PartialComparison (Distance t),

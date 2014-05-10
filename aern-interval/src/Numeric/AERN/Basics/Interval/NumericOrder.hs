@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -19,12 +20,12 @@ module Numeric.AERN.Basics.Interval.NumericOrder where
 
 import Prelude hiding (EQ, LT, GT)
 
-import Numeric.AERN.Basics.Interval.Arbitrary
 
 import Numeric.AERN.Basics.Arbitrary
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.PartialOrdering
 
+import Numeric.AERN.Basics.Interval.Arbitrary
 import Numeric.AERN.Basics.Interval.Basics
 import Numeric.AERN.Basics.Interval.Consistency ()
 import Numeric.AERN.Basics.Interval.Mutable
@@ -41,12 +42,14 @@ import Test.QuickCheck
 import Data.Maybe
 
 instance
-    (NumOrd.PartialComparison e) => 
+    (NumOrd.PartialComparison e, NumOrd.RoundedLatticeEffort e) 
+    => 
     (NumOrd.PartialComparison (Interval e))
     where
     type PartialCompareEffortIndicator (Interval e) = 
-        PartialCompareEffortIndicator e 
-    pCompareDefaultEffort (Interval l r) = NumOrd.pCompareDefaultEffort l
+        IntervalOrderEffort e 
+    pCompareDefaultEffort i = 
+        defaultIntervalOrderEffort i
     pCompareEff effort i1 i2 =
         case partialInfo2PartialOrdering $ NumOrd.pCompareInFullEff effort i1 i2 of
             [ord] -> Just ord
@@ -83,55 +86,76 @@ instance
         ncD = (r1 `nc` l2 == jt) && (l1 `nc` r2 == jt)
         jt = Just True
         jf = Just False
-        leq = NumOrd.pLeqEff effort
-        less = NumOrd.pLessEff effort
-        nc = NumOrd.pIncomparableEff effort
-            
+        leq = NumOrd.pLeqEff effComp
+        less = NumOrd.pLessEff effComp
+        nc = NumOrd.pIncomparableEff effComp
+        effComp = intordeff_eComp effort
                 
 instance
-    (NumOrd.RoundedLatticeEffort e) =>
+    (NumOrd.PartialComparison e, NumOrd.RoundedLatticeEffort e) 
+    =>
     (NumOrd.RefinementRoundedLatticeEffort (Interval e))
     where
-    type MinmaxInOutEffortIndicator (Interval e) = NumOrd.MinmaxEffortIndicator e
-    minmaxInOutDefaultEffort (Interval l r) = NumOrd.minmaxDefaultEffort l  
+    type MinmaxInOutEffortIndicator (Interval e) = 
+        IntervalOrderEffort e
+    minmaxInOutDefaultEffort i = 
+        defaultIntervalOrderEffort i  
 
 instance
-    (NumOrd.RoundedLattice e) =>
+    (NumOrd.PartialComparison e, NumOrd.RoundedLattice e) 
+    =>
     (NumOrd.RefinementRoundedLattice (Interval e))
     where
     minOutEff effort (Interval l1 r1) (Interval l2 r2) =
-        Interval (NumOrd.minDnEff effort l1 l2) (NumOrd.minUpEff effort r1 r2)
+        Interval (NumOrd.minDnEff effMinmax l1 l2) (NumOrd.minUpEff effMinmax r1 r2)
+        where
+        effMinmax = intordeff_eMinmax effort
     maxOutEff effort (Interval l1 r1) (Interval l2 r2) =
-        Interval (NumOrd.maxDnEff effort l1 l2) (NumOrd.maxUpEff effort r1 r2)
+        Interval (NumOrd.maxDnEff effMinmax l1 l2) (NumOrd.maxUpEff effMinmax r1 r2)
+        where
+        effMinmax = intordeff_eMinmax effort
     minInEff effort (Interval l1 r1) (Interval l2 r2) =
-        Interval (NumOrd.minUpEff effort l1 l2) (NumOrd.minDnEff effort r1 r2)
+        Interval (NumOrd.minUpEff effMinmax l1 l2) (NumOrd.minDnEff effMinmax r1 r2)
+        where
+        effMinmax = intordeff_eMinmax effort
     maxInEff effort (Interval l1 r1) (Interval l2 r2) =
-        Interval (NumOrd.maxUpEff effort l1 l2) (NumOrd.maxDnEff effort r1 r2)
+        Interval (NumOrd.maxUpEff effMinmax l1 l2) (NumOrd.maxDnEff effMinmax r1 r2)
+        where
+        effMinmax = intordeff_eMinmax effort
 
 instance
-    (NumOrd.RoundedLatticeInPlace e) =>
+    (NumOrd.PartialComparison e, NumOrd.RoundedLatticeInPlace e) 
+    =>
     (NumOrd.RefinementRoundedLatticeInPlace (Interval e))
     where
     minOutInPlaceEff effort 
             (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
-        NumOrd.minDnInPlaceEff effort resLM l1M l2M
-        NumOrd.minUpInPlaceEff effort resRM r1M r2M
+        NumOrd.minDnInPlaceEff effMinmax resLM l1M l2M
+        NumOrd.minUpInPlaceEff effMinmax resRM r1M r2M
+        where
+        effMinmax = intordeff_eMinmax effort
     maxOutInPlaceEff effort 
             (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
-        NumOrd.maxDnInPlaceEff effort resLM l1M l2M
-        NumOrd.maxUpInPlaceEff effort resRM r1M r2M
+        NumOrd.maxDnInPlaceEff effMinmax resLM l1M l2M
+        NumOrd.maxUpInPlaceEff effMinmax resRM r1M r2M
+        where
+        effMinmax = intordeff_eMinmax effort
     minInInPlaceEff effort 
             (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
-        NumOrd.minUpInPlaceEff effort resLM l1M l2M
-        NumOrd.minDnInPlaceEff effort resRM r1M r2M
+        NumOrd.minUpInPlaceEff effMinmax resLM l1M l2M
+        NumOrd.minDnInPlaceEff effMinmax resRM r1M r2M
+        where
+        effMinmax = intordeff_eMinmax effort
     maxInInPlaceEff effort 
             (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
         do
-        NumOrd.maxUpInPlaceEff effort resLM l1M l2M
-        NumOrd.maxDnInPlaceEff effort resRM r1M r2M
+        NumOrd.maxUpInPlaceEff effMinmax resLM l1M l2M
+        NumOrd.maxDnInPlaceEff effMinmax resRM r1M r2M
+        where
+        effMinmax = intordeff_eMinmax effort
 
 instance (NumOrd.HasLeast e) => (NumOrd.HasLeast (Interval e))
     where

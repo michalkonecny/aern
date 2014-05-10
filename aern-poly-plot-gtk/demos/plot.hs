@@ -167,15 +167,24 @@ fnDefsMinmax maxdeg otherParams = (fns, fnmeta)
     
     effMinmaxInOut =
         case maybeBernsteinDegree of
-            Nothing -> NumOrd.minmaxInOutDefaultEffort sampleFn
+            Nothing -> defaultEffort 
             Just bernsteinDeg ->
-                minmaxUpDnDefaultEffortIntPolyWithBezierDegree bernsteinDeg sampleFnEndpt
+                defaultEffort
+                {
+                    intordeff_eMinmax = 
+                        (intordeff_eMinmax defaultEffort)
+                        {
+                            ipolyeff_minmaxBernsteinDegree = bernsteinDeg
+                        }
+                }
+        where
+        defaultEffort = NumOrd.minmaxInOutDefaultEffort sampleFn
     maybeBernsteinDegree =
         case otherParams of
             [] -> Nothing
             bernsteinDegS : _ -> Just (read bernsteinDegS)
     sampleFn = x 
-    sampleFnEndpt = newProjection limits varDoms "x" :: FnEndpt
+--    sampleFnEndpt = newProjection limits varDoms "x" :: FnEndpt
 
 fnDefsMult1 :: Int -> [String] -> ([[Fn]], FV.FnMetaData Fn)
 fnDefsMult1 maxdeg _otherParams = (fns, fnmeta)

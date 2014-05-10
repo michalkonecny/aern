@@ -23,8 +23,11 @@ where
 
 import Numeric.AERN.Basics.Interval
 
+import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Interval.ExactOps ()
+
+import Numeric.AERN.RealArithmetic.Interval.Effort
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
@@ -35,7 +38,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 instance (ArithUpDn.RoundedAddEffort e) => RoundedAddEffort (Interval e) where
     type AddEffortIndicator (Interval e) = ArithUpDn.AddEffortIndicator e
-    addDefaultEffort (Interval l r) = ArithUpDn.addDefaultEffort l
+    addDefaultEffort (Interval sampleE _) = ArithUpDn.addDefaultEffort sampleE
 
 instance (ArithUpDn.RoundedAdd e) => RoundedAdd (Interval e) where
     addInEff effort (Interval l1 r1) (Interval l2 r2) =
@@ -55,9 +58,9 @@ instance
     RoundedAbsEffort (Interval e)
     where
     type AbsEffortIndicator (Interval e) = 
-        (NumOrd.PartialCompareEffortIndicator e, NumOrd.MinmaxEffortIndicator e)
-    absDefaultEffort (Interval l r) = 
-        (NumOrd.pCompareDefaultEffort l, NumOrd.minmaxDefaultEffort l) 
+        IntervalOrderEffort e
+    absDefaultEffort i = 
+        defaultIntervalOrderEffort i 
 
 instance 
     (ArithUpDn.RoundedAbs e,  
@@ -66,33 +69,30 @@ instance
      NumOrd.RoundedLattice e) => 
     RoundedAbs (Interval e)
     where
-    absOutEff = absOutUsingCompMax
-    absInEff = absInUsingCompMax
+    absOutEff eff = absOutUsingCompMax (eff, eff)
+    absInEff eff = absInUsingCompMax (eff, eff)
 
 
 instance 
-    (ArithUpDn.RoundedMultiplyEffort e,  
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLatticeEffort e) => 
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)) 
+    => 
     RoundedMultiplyEffort (Interval e)
     where
-    type MultEffortIndicator (Interval e) = 
-        (NumOrd.PartialCompareEffortIndicator e, 
-         NumOrd.MinmaxEffortIndicator e,
-         ArithUpDn.MultEffortIndicator e)
-    multDefaultEffort (Interval l r) = 
-        (NumOrd.pCompareDefaultEffort l, 
-         NumOrd.minmaxDefaultEffort l,
-         ArithUpDn.multDefaultEffort l) 
+    type MultEffortIndicator (Interval e) =
+        IntervalRealEffort e
+    multDefaultEffort i =
+        defaultIntervalRealEffort i 
 
 instance 
-    (ArithUpDn.RoundedMultiply e,  
-     HasZero e, Neg e,
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLattice e) => 
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)) 
+    => 
     RoundedMultiply (Interval e)
     where
-    multOutEff (effortComp, effortMinmax, effortMult) i1 i2 =
+    multOutEff effort i1@(Interval sampleE _) i2 =
         fromEndpoints $
         multiplyIntervals 
             (pNonnegNonposEff effortComp)
@@ -104,7 +104,14 @@ instance
             (NumOrd.minDnEff effortMinmax)
             (NumOrd.maxUpEff effortMinmax) 
             (getEndpoints i1) (getEndpoints i2)
-    multInEff (effortComp, effortMinmax, effortMult) i1 i2 =
+        where
+        effortComp = intrealeff_eComp sampleE effort
+        effortMinmax = intrealeff_eMinmax sampleE effort
+        effortMult = ArithUpDn.fldEffortMult sampleE effField 
+        effField = ArithUpDn.rrEffortField sampleE effE 
+        effE = intrealeff_eRoundedReal effort
+        
+    multInEff effort i1@(Interval sampleE _) i2 =
         fromEndpoints $
         multiplyIntervals 
             (pNonnegNonposEff effortComp)
@@ -116,7 +123,28 @@ instance
             (NumOrd.maxUpEff effortMinmax)
             (NumOrd.minDnEff effortMinmax) 
             (getEndpoints i1) (getEndpoints i2)
+        where
+        effortComp = intrealeff_eComp sampleE effort
+        effortMinmax = intrealeff_eMinmax sampleE effort
+        effortMult = ArithUpDn.fldEffortMult sampleE effField 
+        effField = ArithUpDn.rrEffortField sampleE effE 
+        effE = intrealeff_eRoundedReal effort
     
+multiplyIntervals :: 
+   HasZero t 
+   =>
+   (t -> (Maybe Bool, Maybe Bool))
+   -> (t -> t -> t)
+   -> (t -> t -> t)
+   -> (t -> t -> t)
+   -> (t -> t -> t)
+   -> (t -> t -> t)
+   -> (t -> t -> t)
+   -> (t -> t -> t)
+   -> (t -> t -> t)
+   -> (t, t)
+   -> (t, t)
+   -> (t, t)
 multiplyIntervals
         pNonnegNonpos timesL timesR minL minR maxL maxR 
         combineL combineR 
@@ -235,34 +263,25 @@ multiplyIntervals
         sampleE = l1  
 
 instance
-    (ArithUpDn.RoundedPowerNonnegToNonnegIntEffort e,
-     ArithUpDn.RoundedMultiplyEffort e,
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLatticeEffort e
-     ) 
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)) 
     => 
     RoundedPowerToNonnegIntEffort (Interval e)
     where
     type PowerToNonnegIntEffortIndicator (Interval e) =
-        (ArithUpDn.PowerNonnegToNonnegIntEffortIndicator e,
-         NumOrd.PartialCompareEffortIndicator e,
-         PowerToNonnegIntEffortIndicatorFromMult (Interval e))
-    powerToNonnegIntDefaultEffort i@(Interval l r) =
-        (ArithUpDn.powerNonnegToNonnegIntDefaultEffort l,
-         NumOrd.pCompareDefaultEffort l,
-         powerToNonnegIntDefaultEffortFromMult i) 
+        IntervalRealEffort e
+    powerToNonnegIntDefaultEffort i =
+        defaultIntervalRealEffort i
 
 instance
-    (ArithUpDn.RoundedPowerNonnegToNonnegInt e,
-     ArithUpDn.RoundedMultiply e,
-     HasZero e, HasOne e, Neg e,
-     NumOrd.PartialComparison e, NumOrd.RoundedLattice e
-     ) => 
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)) 
+    => 
     RoundedPowerToNonnegInt (Interval e)
     where
-    powerToNonnegIntInEff 
-            (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
-            i@(Interval l r) n =
+    powerToNonnegIntInEff effort i@(Interval l r) n =
         case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp r) of
             ((Just True, _), (Just True, _)) -> -- both non-negative
                 Interval lPowerUp hPowerDn
@@ -273,7 +292,7 @@ instance
             _ -> -- may involve crossing zero, revert to the default:
                 case even n of
                     True -> 
-                        NumOrd.maxInEff effMinMax z iPowerFromMult 
+                        NumOrd.maxInEff effOrd z iPowerFromMult 
                         -- take advantage of the fact that the result is non-negative 
                     False -> iPowerFromMult 
         where
@@ -283,11 +302,18 @@ instance
         hNegPowerUp = ArithUpDn.powerNonnegToNonnegIntUpEff effPowerEndpt (neg r) n
         lNegNegPowerUp = neg lNegPowerDn
         hNegNegPowerDn = neg hNegPowerUp
-        iPowerFromMult = powerToNonnegIntInEffFromMult effPowerFromMult i n 
+        iPowerFromMult = powerToNonnegIntInEffFromMult effort i n 
         z = zero i
-    powerToNonnegIntOutEff 
-            (effPowerEndpt, effComp, effPowerFromMult@(_,effMinMax,_)) 
-            i@(Interval l r) n =
+        
+        effComp = intrealeff_eComp sampleE effort
+        effOrd = intrealeff_intordeff sampleE effort
+        
+        effPowerEndpt = ArithUpDn.fldEffortPow sampleE effField
+        effField = ArithUpDn.rrEffortField sampleE effE
+        effE = intrealeff_eRoundedReal effort 
+        sampleE = l
+        
+    powerToNonnegIntOutEff effort i@(Interval l r) n =
         case (pNonnegNonposEff effComp l, pNonnegNonposEff effComp r) of
             ((Just True, _), (Just True, _)) -> -- both non-negative
                 Interval lPowerDn hPowerUp
@@ -298,7 +324,7 @@ instance
             _ -> -- may involve crossing zero, revert to the default:
                 case even n of
                     True -> 
-                        NumOrd.maxOutEff effMinMax z iPowerFromMult 
+                        NumOrd.maxOutEff effOrd z iPowerFromMult 
                         -- take advantage of the fact that the result is non-negative 
                     False -> iPowerFromMult 
         where
@@ -308,53 +334,78 @@ instance
         hNegPowerDn = ArithUpDn.powerNonnegToNonnegIntDnEff effPowerEndpt (neg r) n
         lNegNegPowerDn = neg lNegPowerUp
         hNegNegPowerUp = neg hNegPowerDn
-        iPowerFromMult = powerToNonnegIntOutEffFromMult effPowerFromMult i n 
+        iPowerFromMult = powerToNonnegIntOutEffFromMult effort i n 
         z = zero i
 
+        effComp = intrealeff_eComp sampleE effort
+        effOrd = intrealeff_intordeff sampleE effort
+        
+        effPowerEndpt = ArithUpDn.fldEffortPow sampleE effField
+        effField = ArithUpDn.rrEffortField sampleE effE
+        effE = intrealeff_eRoundedReal effort 
+        sampleE = l
+
 instance 
-    (ArithUpDn.RoundedMultiplyEffort e, 
-     ArithUpDn.RoundedDivideEffort e,  
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLatticeEffort e) 
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)) 
     =>
     RoundedDivideEffort (Interval e)
     where
-    type DivEffortIndicator (Interval e) = 
-        (NumOrd.PartialCompareEffortIndicator e, 
-         NumOrd.MinmaxEffortIndicator e,
-         (ArithUpDn.MultEffortIndicator e,
-          ArithUpDn.DivEffortIndicator e))
-    divDefaultEffort (Interval l _) = 
-        (NumOrd.pCompareDefaultEffort l, 
-         NumOrd.minmaxDefaultEffort l,
-         (ArithUpDn.multDefaultEffort l,
-          ArithUpDn.divDefaultEffort l)) 
+    type DivEffortIndicator (Interval e) =
+        IntervalRealEffort e
+    divDefaultEffort i =
+        defaultIntervalRealEffort i 
 
 instance 
-    (ArithUpDn.RoundedMultiply e, ArithUpDn.RoundedDivide e,  
-     HasZero e, Neg e, HasOne e, NumOrd.HasExtrema e,
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLattice e) => 
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     NumOrd.HasExtrema e)
+    => 
     RoundedDivide (Interval e)
     where
-    divOutEff (effortComp, effortMinmax, (effortMult, effortDiv)) i1 i2 =
-        multOutEff (effortComp, effortMinmax, effortMult) i1 $ 
+    divOutEff effort i1@(Interval sampleE _) i2 =
+        multOutEff effort i1 $ 
             recipInterval 
-                (pPosNonnegNegNonposEff effortComp) 
-                (ArithUpDn.divDnEff effortDiv)
-                (ArithUpDn.divUpEff effortDiv)
+                (pPosNonnegNegNonposEff effComp) 
+                (ArithUpDn.divDnEff effDiv)
+                (ArithUpDn.divUpEff effDiv)
                 (RefOrd.bottom i1)
                 i2
-    divInEff (effortComp, effortMinmax, (effortMult, effortDiv)) i1 i2 =
-        multInEff (effortComp, effortMinmax, effortMult) i1 $ 
+        where
+        effComp = intrealeff_eComp sampleE effort
+        
+        effDiv = ArithUpDn.fldEffortDiv sampleE effField
+        effField = ArithUpDn.rrEffortField sampleE effE
+        effE = intrealeff_eRoundedReal effort 
+        
+    divInEff effort i1@(Interval sampleE _) i2 =
+        multInEff effort i1 $ 
             recipInterval 
-                (pPosNonnegNegNonposEff effortComp) 
-                (ArithUpDn.divUpEff effortDiv)
-                (ArithUpDn.divDnEff effortDiv)
+                (pPosNonnegNegNonposEff effComp) 
+                (ArithUpDn.divUpEff effDiv)
+                (ArithUpDn.divDnEff effDiv)
                 (RefOrd.top i1)
                 i2
+        where
+        effComp = intrealeff_eComp sampleE effort
+        
+        effDiv = ArithUpDn.fldEffortDiv sampleE effField
+        effField = ArithUpDn.rrEffortField sampleE effE
+        effE = intrealeff_eRoundedReal effort 
 
 
+
+recipInterval :: 
+   (NumOrd.HasExtrema e, HasOne e) 
+   =>
+   (e -> (Maybe Bool, Maybe Bool, Maybe Bool, Maybe Bool))
+   -> (e -> e -> e)
+   -> (e -> e -> e)
+   -> Interval e
+   -> Interval e
+   -> Interval e
 recipInterval pPosNonnegNegNonpos divL divR fallback (Interval l r) =
     case (pPosNonnegNegNonpos l, pPosNonnegNegNonpos r) of
         -- positive:
@@ -377,73 +428,59 @@ recipInterval pPosNonnegNegNonpos divL divR fallback (Interval l r) =
     sampleE = l 
 
 instance 
-    (ArithUpDn.RoundedRingEffort e,
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLatticeEffort e) => 
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     NumOrd.HasExtrema e)
+    =>
     RoundedRingEffort (Interval e)
     where
     type RingOpsEffortIndicator (Interval e) =
-        (ArithUpDn.RingOpsEffortIndicator e,
-         NumOrd.PartialCompareEffortIndicator e,
-         NumOrd.MinmaxEffortIndicator e)
-    ringOpsDefaultEffort (Interval l r) =
-        (ArithUpDn.ringOpsDefaultEffort l,
-         NumOrd.pCompareDefaultEffort l,
-         NumOrd.minmaxDefaultEffort l)
-    ringEffortAdd (Interval l r) (effortRing, effortComp, effortMinmax) =
-        ArithUpDn.ringEffortAdd l effortRing
-    ringEffortMult (Interval l r) (effortRing, effortComp, effortMinmax) =
-        (effortComp, effortMinmax, 
-         ArithUpDn.ringEffortMult l effortRing)
-    ringEffortPow i@(Interval l r) e@(effortRing, effortComp, effortMinmax) =
-        (ArithUpDn.ringEffortPow l effortRing,
-         effortComp,
-         ringEffortMult i e) 
+        IntervalRealEffort e
+    ringOpsDefaultEffort i =
+        defaultIntervalRealEffort i
+    ringEffortAdd (Interval sampleE _) effort =
+        ArithUpDn.fldEffortAdd sampleE effortField
+        where
+        effortField = ArithUpDn.rrEffortField sampleE $ intrealeff_eRoundedReal effort
+    ringEffortMult _ effort = effort
+    ringEffortPow _ effort = effort
 
 instance 
-    (ArithUpDn.RoundedRing e,
-     ArithUpDn.RoundedPowerNonnegToNonnegInt e,
-     HasOne e, HasZero e, Neg e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e) => 
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     NumOrd.HasExtrema e)
+    =>
     RoundedRing (Interval e)
 
 
 instance 
-    (ArithUpDn.RoundedFieldEffort e,
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLatticeEffort e) => 
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     NumOrd.HasExtrema e)
+    =>
     RoundedFieldEffort (Interval e)
     where
     type FieldOpsEffortIndicator (Interval e) =
-        (ArithUpDn.FieldOpsEffortIndicator e,
-         NumOrd.PartialCompareEffortIndicator e,
-         NumOrd.MinmaxEffortIndicator e)
-    fieldOpsDefaultEffort (Interval l r) =
-        (ArithUpDn.fieldOpsDefaultEffort l,
-         NumOrd.pCompareDefaultEffort l,
-         NumOrd.minmaxDefaultEffort l)
-    fldEffortAdd (Interval l r) (effortField, effortComp, effortMinmax) =
-        ArithUpDn.fldEffortAdd l effortField
-    fldEffortMult (Interval l r) (effortField, effortComp, effortMinmax) =
-        (effortComp, effortMinmax, 
-         ArithUpDn.fldEffortMult l effortField)
-    fldEffortPow i@(Interval l r) e@(effortField, effortComp, effortMinmax) =
-        (ArithUpDn.fldEffortPow l effortField,
-         effortComp,
-         fldEffortMult i e) 
-    fldEffortDiv (Interval l r) (effortField, effortComp, effortMinmax) =
-        (effortComp, effortMinmax, 
-         (ArithUpDn.fldEffortMult l effortField,
-          ArithUpDn.fldEffortDiv l effortField))
+        IntervalRealEffort e
+    fieldOpsDefaultEffort i =
+        defaultIntervalRealEffort i
+    fldEffortAdd (Interval sampleE _) effort =
+        ArithUpDn.fldEffortAdd sampleE effortField
+        where
+        effortField = ArithUpDn.rrEffortField sampleE $ intrealeff_eRoundedReal effort
+    fldEffortMult _ effort = effort
+    fldEffortPow _ effort = effort
+    fldEffortDiv _  effort = effort
          
         
 instance 
-    (ArithUpDn.RoundedField e,
-     ArithUpDn.RoundedPowerNonnegToNonnegInt e,
-     HasZero e, Neg e, HasOne e, 
-     NumOrd.HasExtrema e,
-     NumOrd.PartialComparison e, 
-     NumOrd.RoundedLattice e) => 
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     NumOrd.HasExtrema e)
+    =>
     RoundedField (Interval e)
         

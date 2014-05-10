@@ -33,16 +33,22 @@ where
 
 import Numeric.AERN.Basics.Interval
 
+import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.ExactOps
 --import Numeric.AERN.RealArithmetic.Interval.ExactOps
 import Numeric.AERN.RealArithmetic.Interval.FieldOps ()
 
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+--import Numeric.AERN.RealArithmetic.Interval.Effort
+
+import qualified 
+       Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 
-import qualified Numeric.AERN.NumericOrder as NumOrd
---import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified 
+       Numeric.AERN.NumericOrder as NumOrd
+import qualified 
+       Numeric.AERN.RefinementOrder as RefOrd
 
 {---- mixed addition ----}
 
@@ -867,10 +873,9 @@ instance (ArithUpDn.RoundedAdd e) =>
             Interval l _r -> l  
 
 instance 
-    (ArithUpDn.RoundedMultiplyEffort e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLatticeEffort e
-    ) 
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)) 
     => 
     ArithUpDn.RoundedMixedMultiplyEffort e (Interval e) 
     where
@@ -880,12 +885,10 @@ instance
         multDefaultEffort i
    
 instance 
-    (ArithUpDn.RoundedMultiply e,
-     HasZero e, Neg e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e
-    )
-    =>
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)) 
+    => 
     ArithUpDn.RoundedMixedMultiply e (Interval e) 
     where
     mixedMultUpEff effort e i =
@@ -896,11 +899,9 @@ instance
             Interval l _r -> l  
 
 instance 
-    (ArithUpDn.RoundedMultiplyEffort e,
-     ArithUpDn.RoundedDivideEffort e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLatticeEffort e
-    ) 
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)) 
     => 
     ArithUpDn.RoundedMixedDivideEffort e (Interval e) 
     where
@@ -910,14 +911,11 @@ instance
         divDefaultEffort i
    
 instance 
-    (ArithUpDn.RoundedMultiply e,
-     ArithUpDn.RoundedDivide e,
-     NumOrd.HasExtrema e,
-     HasZero e, Neg e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e
-    )
-    =>
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     NumOrd.HasExtrema e) 
+    => 
     ArithUpDn.RoundedMixedDivide e (Interval e) 
     where
     mixedDivUpEff effort e i =
@@ -928,11 +926,11 @@ instance
             Interval l _r -> l  
 
 instance
-    (ArithUpDn.RoundedRingEffort e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLatticeEffort e
-    )
-    =>
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     NumOrd.HasExtrema e) 
+    => 
     ArithUpDn.RoundedMixedRingEffort e (Interval e)
     where
     type MixedRingOpsEffortIndicator e (Interval e) =
@@ -942,21 +940,19 @@ instance
     mxringEffortMult _ sampleI eff = ringEffortMult sampleI eff
 
 instance
-    (ArithUpDn.RoundedRing e,
-     NumOrd.HasExtrema e,
-     HasZero e, Neg e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e
-    )
-    =>
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     NumOrd.HasExtrema e) 
+    => 
     ArithUpDn.RoundedMixedRing e (Interval e)
 
 instance
-    (ArithUpDn.RoundedFieldEffort e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLatticeEffort e
-    )
-    =>
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     NumOrd.HasExtrema e) 
+    => 
     ArithUpDn.RoundedMixedFieldEffort e (Interval e)
     where
     type MixedFieldOpsEffortIndicator e (Interval e) =
@@ -967,13 +963,11 @@ instance
     mxfldEffortDiv _ sampleI eff = fldEffortDiv sampleI eff
 
 instance
-    (ArithUpDn.RoundedField e,
-     NumOrd.HasExtrema e,
-     HasZero e, Neg e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e
-    )
-    =>
+    (ArithUpDn.RoundedReal e, 
+     RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     NumOrd.HasExtrema e) 
+    => 
     ArithUpDn.RoundedMixedField e (Interval e)
 
 {- end of weird mixed operations -}   

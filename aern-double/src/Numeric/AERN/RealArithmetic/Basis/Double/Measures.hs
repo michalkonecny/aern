@@ -37,7 +37,7 @@ instance HasDistance Double where
 --          -- distance between two infinities is zero (beware: distance not continuous at infinities!)  
 --        | d1 == -1/0 && d2 == -1/0 = zero
 --        | otherwise =
-            ArithInOut.absOutEff ((),()) (d2I <-> d1I)
+            ArithInOut.absOut (d2I <-> d1I)
             where
             d1I = Interval d1 d1
             d2I = Interval d2 d2

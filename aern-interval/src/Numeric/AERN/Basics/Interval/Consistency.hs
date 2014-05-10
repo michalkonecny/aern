@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-|
@@ -40,29 +41,38 @@ import Numeric.AERN.Misc.QuickCheck
 --import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 
-instance (NumOrd.PartialComparison e) => HasConsistency (Interval e)
+instance 
+    (NumOrd.PartialComparison e, NumOrd.RoundedLatticeEffort e) 
+    =>
+    HasConsistency (Interval e)
     where
-    type ConsistencyEffortIndicator (Interval e) = 
-        NumOrd.PartialCompareEffortIndicator e
-    consistencyDefaultEffort (Interval l r) =
-        NumOrd.pCompareDefaultEffort l
+    type ConsistencyEffortIndicator (Interval e) = IntervalOrderEffort e
+    consistencyDefaultEffort i =
+        defaultIntervalOrderEffort i
     getConsistencyEff effort (Interval l r) =
-        case (NumOrd.pLeqEff effort l r, NumOrd.pGeqEff effort l r) of
+        case (NumOrd.pLeqEff effComp l r, NumOrd.pGeqEff effComp l r) of
             (Just True, Just True) -> Just Exact
             (Just True, _) -> Just Consistent
             (_, Just True) -> Just Anticonsistent
             (Just False, Just False) -> Just Inconsistent
             _ -> Nothing
+        where
+        effComp = intordeff_eComp effort
     isExactEff effort (Interval l r) =
-        NumOrd.pEqualEff effort r l
+        NumOrd.pEqualEff effComp r l
+        where
+        effComp = intordeff_eComp effort
 
-instance (NumOrd.PartialComparison e) => HasAntiConsistency (Interval e)
+instance 
+    (NumOrd.PartialComparison e, NumOrd.RoundedLatticeEffort e) 
+    => 
+    HasAntiConsistency (Interval e)
     where
     flipConsistency (Interval l r) = Interval r l
 
 instance HasThinRepresentative (Interval e)
     where
-    getThinRepresentative (Interval l r) = Interval r r
+    getThinRepresentative (Interval _ r) = Interval r r
 
 -- random generation of intervals with no guarantee of consistency: 
 instance (NumOrd.ArbitraryOrderedTuple e) => Arbitrary (Interval e)
