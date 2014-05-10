@@ -9,10 +9,12 @@ import Numeric.AERN.RealArithmetic.Basis.Double ()
 
 -- intervals generic in the type of its endpoints:
 import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.Effort (Int1To10(..))
 
 -- interval-coefficient polynomials:
 import Numeric.AERN.Poly.IntPoly 
     (IntPoly, IntPolySizeLimits(..), IntPolyEffort(..), defaultIntPolySizeLimits)
+import Numeric.AERN.Poly.IntPoly.Interval () 
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
 -- abstract approximate order operations:
@@ -44,7 +46,7 @@ sizeLimits :: IntPolySizeLimits DI
 sizeLimits =
     limitsDefault
     {
-        ipolylimits_maxdeg = 50,
+        ipolylimits_maxdeg = 10,
         ipolylimits_maxsize = 100,
         ipolylimits_effort =
             (ipolylimits_effort limitsDefault)
@@ -70,6 +72,12 @@ c1 = newConstFn sizeLimits varDoms 1
 {-| The function @\x:[-1,1] -> exp(x)@. -}
 expX :: PI
 expX = ArithInOut.expOut x
+
+{-| The function @\x:[-1,1] -> exp(x)@ with adjustable effort. -}
+expXDeg :: Int -> PI
+expXDeg taylorDegree = ArithInOut.expOutEff (effRR, Int1To10 taylorDegree) x
+    where
+    (effRR, _) = ArithInOut.expDefaultEffort x
 
 {-
     To make the following plotting code work, the file FnView.glade

@@ -19,7 +19,9 @@ import Numeric.AERN.RealArithmetic.Basis.Double ()
 import Numeric.AERN.Basics.Interval
 
 -- interval-coefficient polynomials:
-import Numeric.AERN.Poly.IntPoly (IntPoly, IntPolySizeLimits(..), defaultIntPolySizeLimits)
+import Numeric.AERN.Poly.IntPoly 
+    (IntPoly, IntPolySizeLimits(..), defaultIntPolySizeLimits)
+import Numeric.AERN.Poly.IntPoly.Interval () 
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
 -- abstract approximate order operations:
