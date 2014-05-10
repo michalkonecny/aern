@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,8 +16,7 @@
 -}
 
 module Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps 
-(intervalExpDefaultEffortWithIters, intervalExpOutIters, intervalExpInIters,
- intervalSqrtDefaultEffortWithIters, intervalSqrtOutIters, intervalSqrtInIters)
+(intervalExpDefaultEffortWithIters, intervalExpOutIters, intervalExpInIters)
 where
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
@@ -34,12 +34,12 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
-import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Interval.FieldOps
+--import Numeric.AERN.RealArithmetic.ExactOps
+--import Numeric.AERN.RealArithmetic.Interval.FieldOps
 import Numeric.AERN.RealArithmetic.Measures
 
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.Consistency
+--import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.ShowInternals
 
@@ -66,7 +66,7 @@ intervalExpDefaultEffortWithIters ::
     (Interval e) -> 
     Int -> 
     ArithInOut.ExpEffortIndicator (Interval e)
-intervalExpDefaultEffortWithIters  i@(Interval l r) n =
+intervalExpDefaultEffortWithIters  i@(Interval _ _) n =
     (ArithInOut.roundedRealDefaultEffort i, Int1To10 n)
 
 
@@ -130,123 +130,35 @@ intervalExpOutIters n i = ArithInOut.expOutEff (intervalExpDefaultEffortWithIter
 intervalExpInIters n i = ArithInOut.expInEff (intervalExpDefaultEffortWithIters i n) i
 
 instance 
-    (ArithUpDn.RoundedMixedFieldEffort e Int,
-     ArithUpDn.RoundedFieldEffort e, 
-     ArithUpDn.Convertible e Double,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLatticeEffort e) 
+    (ArithUpDn.RoundedReal e) 
     => 
     (ArithInOut.RoundedSquareRootEffort (Interval e))
     where
-    type SqrtEffortIndicator (Interval e) = 
-        ((ArithUpDn.FieldOpsEffortIndicator e,
-          ArithUpDn.MixedFieldOpsEffortIndicator e Int)
-        ,
-         Int1To10
-        ,
-         ((NumOrd.MinmaxEffortIndicator e, NumOrd.PartialCompareEffortIndicator e),
-          ArithUpDn.ConvertEffortIndicator e Double)
-        )
-
-    sqrtDefaultEffort i@(Interval l r) = 
-        ((ArithUpDn.fieldOpsDefaultEffort l, 
-          ArithUpDn.mixedFieldOpsDefaultEffort l sampleI)
-        ,
-         Int1To10 10
-        , 
-         ((NumOrd.minmaxDefaultEffort l, NumOrd.pCompareDefaultEffort l), 
-          ArithUpDn.convertDefaultEffort l sampleD)
-        )
-        where
-        sampleI = 1 :: Int
-        sampleD = 1 :: Double
-
-intervalSqrtDefaultEffortWithIters ::
-    (ArithUpDn.RoundedMixedFieldEffort e Int,
-     ArithUpDn.RoundedFieldEffort e, 
-     ArithUpDn.Convertible e Double,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLatticeEffort e) 
-    => 
-    (Interval e) -> 
-    Int -> 
-    ArithInOut.SqrtEffortIndicator (Interval e)
-intervalSqrtDefaultEffortWithIters i@(Interval l r) n =
-        ((ArithUpDn.fieldOpsDefaultEffort l, 
-          ArithUpDn.mixedFieldOpsDefaultEffort l sampleI)
-        ,
-         Int1To10 n
-        , 
-         ((NumOrd.minmaxDefaultEffort l, NumOrd.pCompareDefaultEffort l), 
-          ArithUpDn.convertDefaultEffort l sampleD)
-        )
-        where
-        sampleI = 1 :: Int
-        sampleD = 1 :: Double
-
+    type SqrtEffortIndicator (Interval e) = SqrtThinEffortIndicator e 
+    sqrtDefaultEffort (Interval l _) =
+        sqrtThinDefaultEffort l 10 
 
 instance 
-    (ArithUpDn.RoundedMixedField e Int,
-     ArithUpDn.RoundedField e, 
-     ArithUpDn.Convertible e Double,
-     HasZero e, HasOne e, 
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e,
-     Show e) 
+    (ArithUpDn.RoundedReal e, Show e) 
     => 
     (ArithInOut.RoundedSquareRoot (Interval e))
     where
-    sqrtOutEff
-            ((effortField, effortMixedField),
-             (Int1To10 effortNewton),
-             ((effortMinmax, effortComp), effortConv))
-            (Interval l r) =
-                case NumOrd.pEqualEff effortComp l r of
-                    Just True -> sqrtL
-                    _ -> Interval sqrtLL sqrtRR
-                    
+    sqrtOutEff eff (Interval l r) =
+        case NumOrd.pEqualEff effComp l r of
+            Just True -> Interval sqrtLL sqrtLR
+            _ -> Interval sqrtLL sqrtRR
         where
-        sqrtL@(Interval sqrtLL _) = sqrt l 
-        sqrtR@(Interval _ sqrtRR) = sqrt r
-        sqrt = 
-            sqrtOutThinArg 
-                effortField
-                effortMixedField 
-                effortMinmax
-                effortComp
-                effortConv
-                effortNewton 
-    sqrtInEff
-            ((effortField, effortMixedField),
-             (Int1To10 effortNewton),
-             ((effortMinmax, effortComp), effortConv))
-            (Interval l r) =
-                case NumOrd.pEqualEff effortComp l r of
-                    Just True -> Interval sqrtLR sqrtLL -- invert
-                    _ -> Interval sqrtLR sqrtRL
-                    
+        (sqrtLL, sqrtLR) = sqrtOutThinArg eff l 
+        (_, sqrtRR) = sqrtOutThinArg eff r
+        effComp = 
+            ArithUpDn.rrEffortComp l $ sqrteff_arith eff 
+    sqrtInEff eff (Interval l r) =
+        case NumOrd.pEqualEff effComp l r of
+            Just True -> Interval sqrtLR sqrtLL -- invert
+            _ -> Interval sqrtLR sqrtRL
         where
-        (Interval sqrtLL sqrtLR) = sqrt l 
-        (Interval sqrtRL sqrtRR) = sqrt r
-        sqrt = 
-            sqrtOutThinArg 
-                effortField
-                effortMixedField 
-                effortMinmax
-                effortComp
-                effortConv 
-                effortNewton 
-
-intervalSqrtOutIters, intervalSqrtInIters ::
-    (ArithUpDn.RoundedMixedField e Int,
-     ArithUpDn.RoundedField e, 
-     ArithUpDn.Convertible e Double,
-     HasZero e, HasOne e, 
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e,
-     Show e)
-    =>
-    Int -> (Interval e) -> (Interval e) 
-intervalSqrtOutIters n i = ArithInOut.sqrtOutEff (intervalSqrtDefaultEffortWithIters i n) i
-intervalSqrtInIters n i = ArithInOut.sqrtInEff (intervalSqrtDefaultEffortWithIters i n) i
+        (sqrtLL, sqrtLR) = sqrtOutThinArg eff l 
+        (sqrtRL, _) = sqrtOutThinArg eff r
+        effComp = 
+            ArithUpDn.rrEffortComp l $ sqrteff_arith eff 
                 

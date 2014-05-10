@@ -151,7 +151,7 @@ module Numeric.AERN.DoubleBasis.Interval
     -- > expOutIters 10 x
     --
     -- which means that at most 10 iterations should be used while computing exp
-    expOutIters,sqrtOutIters,
+    expOutIters,
 
     -- * Inward rounded operations 
 
@@ -192,7 +192,7 @@ module Numeric.AERN.DoubleBasis.Interval
     -- > expInIters 10 x
     --
     -- which means that at most 10 iterations should be used while computing exp
-    expInIters,sqrtInIters,
+    expInIters,
     
     -- * Low level facilities
     
@@ -232,7 +232,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
    piIn,eIn,absIn,expIn,sqrtIn)
  
 import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
-    (intervalExpOutIters, intervalExpInIters, intervalSqrtOutIters, intervalSqrtInIters)
+    (intervalExpOutIters, intervalExpInIters)
 
 import Numeric.AERN.RealArithmetic.Basis.Double()
 
@@ -564,14 +564,8 @@ sqrtIn = RAROR.sqrtIn
 expOutIters :: Int -> DI -> DI
 expOutIters = RAIEFFO.intervalExpOutIters
 
-sqrtOutIters :: Int -> DI -> DI
-sqrtOutIters = RAIEFFO.intervalSqrtOutIters
-
 expInIters :: Int -> DI -> DI
 expInIters = RAIEFFO.intervalExpInIters
-
-sqrtInIters :: Int -> DI -> DI
-sqrtInIters = RAIEFFO.intervalSqrtInIters
 
 newtype PositiveDI = PositiveDI { unPositiveDI :: DI }
 

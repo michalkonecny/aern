@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,7 +17,7 @@
 -}
 
 module Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
-    (intervalExpOutInPlaceIters, intervalExpInInPlaceIters, intervalSqrtOutInPlaceIters, intervalSqrtInInPlaceIters) 
+    (intervalExpOutInPlaceIters, intervalExpInInPlaceIters) 
 where
 
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
@@ -30,7 +31,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
-import Numeric.AERN.RealArithmetic.ExactOps
+--import Numeric.AERN.RealArithmetic.ExactOps
 --import Numeric.AERN.RealArithmetic.Interval
 import Numeric.AERN.RealArithmetic.Measures
 
@@ -107,13 +108,7 @@ instance
     (CanBeMutable e, Show e,
      ArithUpDn.RoundedFieldInPlace e,
      ArithUpDn.RoundedMixedFieldInPlace e Int,
-     ArithUpDn.RoundedMixedField e Int,
-     ArithUpDn.RoundedField e, 
-     ArithUpDn.Convertible e Double,
-     HasZero e, HasOne e, 
-     HasInfinities e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e,
+     ArithUpDn.RoundedReal e, 
      NumOrd.RoundedLatticeInPlace e) 
     => 
     (ArithInOut.RoundedSquareRootInPlace (Interval e))
@@ -166,26 +161,4 @@ instance
 --                effortNewton 
 --                rM
             
-intervalSqrtOutInPlaceIters, intervalSqrtInInPlaceIters ::
-    (CanBeMutable e, Show e,
-     ArithUpDn.RoundedFieldInPlace e,
-     ArithUpDn.RoundedMixedFieldInPlace e Int,
-     ArithUpDn.RoundedMixedField e Int,
-     ArithUpDn.RoundedField e, 
-     ArithUpDn.Convertible e Double,
-     HasZero e, HasOne e, 
-     HasInfinities e,
-     NumOrd.PartialComparison e,
-     NumOrd.RoundedLattice e,
-     NumOrd.RoundedLatticeInPlace e) 
-    =>
-    Int -> OpMutable1 (Interval e) s 
-intervalSqrtOutInPlaceIters n resM iM =
-    do
-    i <- unsafeReadMutable iM
-    ArithInOut.sqrtOutInPlaceEff (intervalSqrtDefaultEffortWithIters i n) resM iM
-intervalSqrtInInPlaceIters n resM iM =
-    do
-    i <- unsafeReadMutable iM
-    ArithInOut.sqrtInInPlaceEff (intervalSqrtDefaultEffortWithIters i n) resM iM
             
