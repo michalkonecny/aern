@@ -3,8 +3,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NoMonoLocalBinds #-}
 {-|
-    Module      :  Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt
-    Description :  an interval-specific implementation of sqrt
+    Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.ElementaryFromFieldOps.Sqrt
+    Description :  generic up/down rounded sqrt
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -12,10 +12,10 @@
     Stability   :  experimental
     Portability :  portable
 
-    An interval-specific implementation of sqrt.
+    An generic implementation of up/down rounded sqrt.
 -}
 
-module Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt where
+module Numeric.AERN.RealArithmetic.NumericOrderRounding.ElementaryFromFieldOps.Sqrt where
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 --import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
@@ -25,7 +25,6 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.RealArithmetic.ExactOps
-import Numeric.AERN.RealArithmetic.Interval.FieldOps ()
 
 --import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort

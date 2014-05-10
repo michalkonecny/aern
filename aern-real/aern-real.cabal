@@ -60,6 +60,7 @@ Library
                   Numeric.AERN.RealArithmetic.NumericOrderRounding.Operators,
                   Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace,
                   Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Operators,
+                  Numeric.AERN.RealArithmetic.NumericOrderRounding.ElementaryFromFieldOps.Sqrt
                   Numeric.AERN.RealArithmetic.RefinementOrderRounding,
                   Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
                   Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace,
