@@ -61,7 +61,6 @@ Library
     Numeric.AERN.RealArithmetic.Interval.Effort,
     Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis,
     Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps,
-    Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt,
     Numeric.AERN.RealArithmetic.Interval.ExactOps,
     Numeric.AERN.RealArithmetic.Interval.FieldOps,
     Numeric.AERN.RealArithmetic.Interval.Floating,

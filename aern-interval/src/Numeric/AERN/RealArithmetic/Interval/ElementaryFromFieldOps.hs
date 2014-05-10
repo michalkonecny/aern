@@ -21,7 +21,7 @@ where
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
 
-import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps.Sqrt
+import Numeric.AERN.RealArithmetic.NumericOrderRounding.ElementaryFromFieldOps.Sqrt
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
