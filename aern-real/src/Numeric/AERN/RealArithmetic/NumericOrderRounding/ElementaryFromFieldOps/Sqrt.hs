@@ -44,9 +44,9 @@ data SqrtThinEffortIndicator e =
     }
 
 -- TODO: complete the following instances:
-instance Arbitrary (SqrtThinEffortIndicator cf)
-instance Show (SqrtThinEffortIndicator cf)
-instance EffortIndicator (SqrtThinEffortIndicator cf)
+instance Arbitrary (SqrtThinEffortIndicator e)
+instance Show (SqrtThinEffortIndicator e)
+instance EffortIndicator (SqrtThinEffortIndicator e)
 
 sqrtThinDefaultEffort :: 
    (ArithUpDn.RoundedReal e) 

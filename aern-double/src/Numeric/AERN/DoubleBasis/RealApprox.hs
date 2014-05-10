@@ -129,14 +129,6 @@ module Numeric.AERN.DoubleBasis.RealApprox
     -- ** Elementary functions
     absOut,expOut,sqrtOut,
     
-    -- *** Elementary functions with iteration effort control
-    -- |
-    -- To be used eg as follows:
-    -- 
-    -- > expOutIters 10 x
-    --
-    -- which means that at most 10 iterations should be used while computing exp
-    expOutIters
 )
 where
 
@@ -162,9 +154,6 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
    (<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
    piOut,eOut,absOut,expOut,sqrtOut
   )
-
-import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
-  (intervalExpOutIters)
 
 import Numeric.AERN.RealArithmetic.Basis.Double()
 
@@ -382,9 +371,6 @@ expOut = RAROR.expOut
 -- | Outward rounded square root
 sqrtOut :: RealApprox -> RealApprox
 sqrtOut = RAROR.sqrtOut
-
-expOutIters :: Int -> RealApprox -> RealApprox
-expOutIters = RAIEFFO.intervalExpOutIters
 
 newtype PositiveRealApprox = 
     PositiveRealApprox { unPositiveRealApprox :: RealApprox }

@@ -26,20 +26,44 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.ExactOps
 
+import Test.QuickCheck (Arbitrary) -- , arbitrary, vectorOf)
+
 import Control.Monad.ST (ST)
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
 
+data ExpThinEffortIndicator t =
+    ExpThinEffortIndicator
+    {
+        expeff_arith :: ArithInOut.RoundedRealEffortIndicator t,
+        expeff_taylorDeg :: Int -- ^ the highest number of iterations of Newton method to make 
+    }
+
+-- TODO: complete the following instances:
+instance Arbitrary (ExpThinEffortIndicator t)
+instance Show (ExpThinEffortIndicator t)
+instance EffortIndicator (ExpThinEffortIndicator t)
+
+expThinDefaultEffort :: 
+   (ArithInOut.RoundedReal t) 
+   =>
+   t -> Int -> ExpThinEffortIndicator t
+expThinDefaultEffort x deg =
+    ExpThinEffortIndicator
+    {
+        expeff_arith = ArithInOut.roundedRealDefaultEffort x,
+        expeff_taylorDeg = deg
+    }
+
+
 expOutThinArg ::
     (ArithInOut.RoundedReal t, Show t) 
     =>
-    ArithInOut.RoundedRealEffortIndicator t ->
-    Int {-^ the highest degree to consider in the Taylor expansion -} ->
+    ExpThinEffortIndicator t ->
     t {-^ @x@ assumed to be a thin approximation -} -> 
     t {-^ @exp(x)@ -}
-expOutThinArg eff
-        degr x =
+expOutThinArg eff x =
     -- infinities not handled well by the Taylor formula,
     -- treat them as special cases, adding also 0 for efficiency:
     case (xTooBig, xTooLow, x |>=? (zero sample)) of
@@ -126,26 +150,29 @@ expOutThinArg eff
     mixedMultInOutEffort = ArithInOut.mxfldEffortMult x xUp effortMixedField
     mixedDivInOutEffort = ArithInOut.mxfldEffortDiv x xUp effortMixedField
     
-    effortField = ArithInOut.rrEffortField sample eff
-    effortMixedField = ArithInOut.rrEffortIntMixedField sample eff
-    effortMeet = ArithInOut.rrEffortJoinMeet sample eff
-    effortRefinement = ArithInOut.rrEffortRefComp sample eff
-    effortCompare = ArithInOut.rrEffortNumComp sample eff
-    effortToInt = ArithInOut.rrEffortToInt sample eff
-    effortFromDouble = ArithInOut.rrEffortFromDouble sample eff
+    effortField = ArithInOut.rrEffortField sample effR
+    effortMixedField = ArithInOut.rrEffortIntMixedField sample effR
+    effortMeet = ArithInOut.rrEffortJoinMeet sample effR
+    effortRefinement = ArithInOut.rrEffortRefComp sample effR
+    effortCompare = ArithInOut.rrEffortNumComp sample effR
+    effortToInt = ArithInOut.rrEffortToInt sample effR
+    effortFromDouble = ArithInOut.rrEffortFromDouble sample effR
+    
+    effR = expeff_arith eff
+    degr = expeff_taylorDeg eff
+    
     sample = x
     sampleI = 0 :: Int
 
 expOutThinArgInPlace ::
     (ArithInOut.RoundedRealInPlace t) =>
-    ArithInOut.RoundedRealEffortIndicator t ->
+    ExpThinEffortIndicator t ->
     Mutable t s {-^ out parameter -} ->
-    Int {-^ the highest degree to consider in the Taylor expansion -} ->
     Mutable t s {-^ @xM@ assumed to be a thin approximation -} -> 
     ST s ()
 expOutThinArgInPlace
         eff
-        resM degr xM =
+        resM xM =
     do
     -- clone xM to ensure no aliasing with resM:
     xMNA <- cloneMutable xM
@@ -156,13 +183,13 @@ expOutThinArgInPlace
 
     -- set various effort indicators for the following block using implicit parameters: 
     let sample = x
-    let effortField = ArithInOut.rrEffortField sample eff
-    let effortMixedField = ArithInOut.rrEffortIntMixedField sample eff
-    let effortMeet = ArithInOut.rrEffortJoinMeet sample eff
-    let effortRefinement = ArithInOut.rrEffortRefComp sample eff
-    let effortCompare = ArithInOut.rrEffortNumComp sample eff
-    let effortToInt = ArithInOut.rrEffortToInt sample eff
-    let effortFromDouble = ArithInOut.rrEffortFromDouble sample eff
+    let effortField = ArithInOut.rrEffortField sample effR
+    let effortMixedField = ArithInOut.rrEffortIntMixedField sample effR
+    let effortMeet = ArithInOut.rrEffortJoinMeet sample effR
+    let effortRefinement = ArithInOut.rrEffortRefComp sample effR
+    let effortCompare = ArithInOut.rrEffortNumComp sample effR
+    let effortToInt = ArithInOut.rrEffortToInt sample effR
+    let effortFromDouble = ArithInOut.rrEffortFromDouble sample effR
     let divInOutEffort = ArithInOut.fldEffortDiv x effortField
     let multInOutEffort = ArithInOut.fldEffortMult x effortField
     let intPowerInOutEffort = ArithInOut.fldEffortPow x effortField
@@ -196,6 +223,8 @@ expOutThinArgInPlace
             unsafeWriteMutable resM ((zero x) </\> (plusInfinity x))
              -- this is always a valid outer approx
     where
+    effR = expeff_arith eff
+    degr = expeff_taylorDeg eff
     expOutViaTaylorForXScaledNearZero sample effortField effortMixedField effortCompare effortFromDouble resM xUp xDn xM =
         -- assuming no aliasing between xM and resM
     
@@ -261,7 +290,7 @@ expOutThinArgInPlace
             recipEDn =
                 ArithInOut.convertOutEff effortFromDouble sample (0.367879440 :: Double)
                 
-            (</\>) = RefOrd.meetOutEff $ ArithInOut.rrEffortJoinMeet sample eff
+            (</\>) = RefOrd.meetOutEff $ ArithInOut.rrEffortJoinMeet sample effR
             (<+>|=) = mutableNonmutToNonmut $ ArithInOut.mixedAddOutInPlaceEff effortMixedAdd 
             (</>|=) = mutableNonmutToNonmut $ ArithInOut.mixedDivOutInPlaceEff effortMixedDiv 
             effortMixedAdd = ArithInOut.mxfldEffortAdd sample i effortMixedField

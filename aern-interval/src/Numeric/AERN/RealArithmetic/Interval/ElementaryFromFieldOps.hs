@@ -16,11 +16,13 @@
 -}
 
 module Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps 
-(intervalExpDefaultEffortWithIters, intervalExpOutIters, intervalExpInIters)
+(
+    ExpThinEffortIndicator(..), 
+    SqrtThinEffortIndicator(..)
+)
 where
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
-
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.ElementaryFromFieldOps.Sqrt
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
@@ -55,19 +57,10 @@ instance
     => 
     (ArithInOut.RoundedExponentiationEffort (Interval e))
     where
-    type ExpEffortIndicator (Interval e) = 
-        (ArithInOut.RoundedRealEffortIndicator (Interval e), Int1To10)
+    type ExpEffortIndicator (Interval e) =
+        ExpThinEffortIndicator (Interval e) 
     expDefaultEffort i =
-        (ArithInOut.roundedRealDefaultEffort i, Int1To10 10)
-
-intervalExpDefaultEffortWithIters ::
-    (ArithInOut.RoundedReal (Interval e))
-    => 
-    (Interval e) -> 
-    Int -> 
-    ArithInOut.ExpEffortIndicator (Interval e)
-intervalExpDefaultEffortWithIters  i@(Interval _ _) n =
-    (ArithInOut.roundedRealDefaultEffort i, Int1To10 n)
+        expThinDefaultEffort i 10
 
 
 instance
@@ -83,51 +76,28 @@ instance
     => 
     (ArithInOut.RoundedExponentiation (Interval e))
     where
-    expOutEff 
-            (eff, (Int1To10 effortTaylor)) 
-            (Interval l r) 
+    expOutEff eff (Interval l r) 
         = Interval resL resR
         where
         Interval resL _ = 
             expOutThinArg 
                 eff 
-                effortTaylor 
                 (Interval l l)
         Interval _ resR =
             expOutThinArg 
-                eff 
-                effortTaylor 
+                eff
                 (Interval r r)
-    expInEff 
-            (eff, (Int1To10 effortTaylor)) 
-            (Interval l r) 
+    expInEff eff (Interval l r) 
         = Interval resL resR
         where
         Interval _ resL = 
             expOutThinArg 
                 eff 
-                effortTaylor 
                 (Interval l l)
         Interval resR _ =
             expOutThinArg 
                 eff 
-                effortTaylor 
                 (Interval r r)
-
-intervalExpOutIters, intervalExpInIters ::
-    (ArithInOut.RoundedReal (Interval e), 
-     -- MK has no idea why the following three are not automatically deduced from the above...
-     ArithUpDn.RoundedReal e,
-     ShowInternals e,
-     ArithInOut.RoundedAddEffort (Distance e),
-     RefOrd.RoundedLatticeEffort (Distance e),
-     EffortIndicator (ArithInOut.FieldOpsEffortIndicator (Distance e)),
-     --
-     NumOrd.HasExtrema e)
-    => 
-    Int -> (Interval e) -> (Interval e)
-intervalExpOutIters n i = ArithInOut.expOutEff (intervalExpDefaultEffortWithIters i n) i
-intervalExpInIters n i = ArithInOut.expInEff (intervalExpDefaultEffortWithIters i n) i
 
 instance 
     (ArithUpDn.RoundedReal e) 

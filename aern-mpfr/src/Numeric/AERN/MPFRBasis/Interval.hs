@@ -223,7 +223,8 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
    piIn,eIn,absIn,expIn,sqrtIn
   )
  
-import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis(asIntervalElementaryFromBasis)
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
+    (asIntervalElementaryFromBasis)
 
 import Numeric.AERN.RealArithmetic.Basis.MPFR(MPFR)
 

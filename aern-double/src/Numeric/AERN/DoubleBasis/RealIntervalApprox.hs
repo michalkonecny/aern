@@ -149,15 +149,6 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     -- ** Elementary functions
     absOut,expOut,sqrtOut,
 
-    -- *** Elementary functions with iteration effort control
-    -- |
-    -- To be used eg as follows:
-    -- 
-    -- > expOutIters 10 x
-    --
-    -- which means that at most 10 iterations should be used while computing exp
-    expOutIters,
-
     -- * Inward rounded operations 
 
     -- ** Order operations
@@ -189,15 +180,6 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     
     -- ** Elementary functions
     absIn,expIn,sqrtIn,
-
-    -- *** Elementary functions with iteration effort control
-    -- |
-    -- To be used eg as follows:
-    -- 
-    -- > expInIters 10 x
-    --
-    -- which means that at most 10 iterations should be used while computing exp
-    expInIters
 )
 where
 
@@ -230,9 +212,6 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
    piIn,eIn,absIn,expIn,sqrtIn
   )
  
-import qualified Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps as RAIEFFO
-    (intervalExpOutIters, intervalExpInIters)
-
 import Numeric.AERN.RealArithmetic.Basis.Double()
 
 import qualified Numeric.AERN.RealArithmetic.Interval.Double as RAID
@@ -580,12 +559,6 @@ expIn = RAROR.expIn
 -- | Inward rounded square root
 sqrtIn :: RealIntervalApprox -> RealIntervalApprox
 sqrtIn = RAROR.sqrtIn
-
-expOutIters :: Int -> RealIntervalApprox -> RealIntervalApprox
-expOutIters = RAIEFFO.intervalExpOutIters
-
-expInIters :: Int -> RealIntervalApprox -> RealIntervalApprox
-expInIters = RAIEFFO.intervalExpInIters
 
 newtype PositiveRealIntervalApprox = 
     PositiveRealIntervalApprox 
