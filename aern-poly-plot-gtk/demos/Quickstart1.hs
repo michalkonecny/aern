@@ -8,7 +8,8 @@ module Quickstart1 where
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 
 -- intervals generic in the type of its endpoints:
-import Numeric.AERN.Basics.Interval
+import Numeric.AERN.Basics.Interval 
+    (Interval)
 
 -- interval-coefficient polynomials:
 import Numeric.AERN.Poly.IntPoly 
@@ -21,16 +22,23 @@ import Numeric.AERN.RefinementOrder.Operators
     ((</\>)) -- hull of interval union
 
 -- abstract approximate real arithmetic operations:
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding
+    (piOut, 
+     sqrtOut, sqrtOutEff, sqrtDefaultEffort,  
+     expOut, expOutEff, expDefaultEffort)
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
+    ((|<*>))
 
 -- ability to control the effort for elementary operations: 
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
-
+    (ExpThinEffortIndicator(..), SqrtThinEffortIndicator(..))
 
 -- abstract function processing operations:
-import Numeric.AERN.RmToRn (newConstFn, newProjection)
+import Numeric.AERN.RmToRn 
+    (newConstFn, newProjection, primitiveFunctionOut)
 import qualified 
-       Numeric.AERN.RmToRn.Plot.FnView as FV
+       Numeric.AERN.RmToRn.Plot.FnView 
+    as FV
 
 {----- type definitions -----}
 type DI = Interval Double
@@ -49,7 +57,7 @@ sizeLimits :: IntPolySizeLimits DI
 sizeLimits =
     limitsDefault
     {
-        ipolylimits_maxdeg = 10,
+        ipolylimits_maxdeg = 30,
         ipolylimits_maxsize = 100,
         ipolylimits_effort =
             (ipolylimits_effort limitsDefault)
@@ -74,17 +82,17 @@ c1 = newConstFn sizeLimits varDoms 1
 
 {-| The function @\x:[-1,1] -> exp(x)@. -}
 expX :: PI
-expX = ArithInOut.expOut x
+expX = expOut x
 
 {-| The function @\x:[-1,1] -> exp(x)@ with adjustable effort. -}
 expXDeg :: Int -> PI
-expXDeg taylorDegree = ArithInOut.expOutEff eff x
+expXDeg taylorDegree = expOutEff eff x
     where
     eff = effDefault
         {
             expeff_taylorDeg = taylorDegree
         }
-    effDefault = ArithInOut.expDefaultEffort x
+    effDefault = expDefaultEffort x
 
 {-
     To make the following plotting code work, the file FnView.glade
@@ -105,19 +113,60 @@ plotExp =
          )
         ]
 
+erf :: PI
+erf =
+    scale $
+    primitiveFunctionOut
+        (expOutEff effExp (- x * x))
+        integrationVariable
+    where
+    integrationVariable = "x"
+    x = -- the identity function \x:[0,2] -> x
+        newProjection sizeLimits varDoms "x"
+        where
+        varDoms = [("x", 0 </\> 2)]
+
+    scale = (c |<*>)
+    c = 2 / (sqrtOut (piOut sample_coeff))
+    sample_coeff = 0
+
+    -- indicators controlling the approximation effort:
+    effExp =
+        (expDefaultEffort x)
+        {
+            expeff_taylorDeg = 20 -- Taylor approximation degree
+        }
+    sizeLimits = -- restrictions on the size of the polynomials
+        (defaultIntPolySizeLimits sample_coeff () 1)
+        {
+            ipolylimits_maxdeg = 30, -- maximum degree
+            ipolylimits_maxsize = 100 -- maximum number of terms
+        }
+
+{-| Show a plot of erf(x) over [-1,1] -}
+plotERF :: IO ()
+plotERF = 
+    FV.plotFns 
+        [("erf example", 
+            [
+             (("(\\x:[-1,1].integral(exp(-x^2)))", FV.blue, True), erf)
+            ]
+         )
+        ]
+
 {-| The function @\x:[-1,1] -> sqrt(x+2)@. -}
 sqrtXplus2 :: PI
-sqrtXplus2 = ArithInOut.sqrtOut $ x + c1 + c1
+sqrtXplus2 = sqrtOut $ x + c1 + c1
 
 {-| The function @\x:[-1,1] -> sqrt(x+2)@ with adjustable effort. -}
 sqrtXplus2Iters :: Int -> PI
-sqrtXplus2Iters iters = ArithInOut.sqrtOutEff eff $ x + c1 + c1
+sqrtXplus2Iters iters = sqrtOutEff eff $ x + c1 + c1
     where
     eff = effDefault
         {
             sqrteff_newtonIters = iters
         }
-    effDefault = ArithInOut.sqrtDefaultEffort x
+    effDefault = sqrtDefaultEffort x
 
 --effSqrt = effIP
 
