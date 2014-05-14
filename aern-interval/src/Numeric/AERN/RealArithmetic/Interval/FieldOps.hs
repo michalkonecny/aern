@@ -120,8 +120,8 @@ instance
             (NumOrd.minDnEff effortMinmax) -- minR
             (NumOrd.maxUpEff effortMinmax) -- maxL
             (NumOrd.maxDnEff effortMinmax) -- maxR
-            (NumOrd.maxUpEff effortMinmax)
-            (NumOrd.minDnEff effortMinmax) 
+            (NumOrd.minUpEff effortMinmax) -- combineL
+            (NumOrd.maxDnEff effortMinmax) -- combineR
             (getEndpoints i1) (getEndpoints i2)
         where
         effortComp = intrealeff_eComp sampleE effort
@@ -146,7 +146,9 @@ multiplyIntervals ::
    -> (t, t)
    -> (t, t)
 multiplyIntervals
-        pNonnegNonpos timesL timesR minL minR maxL maxR 
+        pNonnegNonpos 
+        timesL timesR 
+        minL minR maxL maxR 
         combineL combineR 
         (l1, r1) (l2, r2) =
     let _ = [minL, maxR, combineL, combineR] in
@@ -229,8 +231,9 @@ multiplyIntervals
                 (z, z)
             -- i1 consistent and containing zero, i2 unknown
             ((_, Just True), (Just True, _), _, _) ->
-                (((l1 `timesL` r2) `combineL` (r1 `timesL` l2)) `combineL` z,
-                 ((l1 `timesR` l2) `combineR` (r1 `timesR` r2)) `combineR` z)
+                (((l1 `timesL` r2) `combineL` (r1 `timesL` l2)), -- `combineL` z,
+                 ((l1 `timesR` l2) `combineR` (r1 `timesR` r2))) -- `combineR` z)
+                           -- combining with z is also correct but tends to make the approximation worse 
                 
             -- i1 anti-consistent and anti-containing zero, i2 consistent and containing zero
             ((Just True, _), (_, Just True), (_, Just True), (Just True, _)) ->
@@ -241,18 +244,19 @@ multiplyIntervals
                  (l1 `timesR` r2) `minR` (r1 `timesR` l2)) 
             -- i1 anti-consistent and anti-containing zero, i2 unknown
             ((Just True, _), (_, Just True), _, _) -> 
-                ((l1 `timesL` l2) `combineL` (r1 `timesL` r2) `combineL` z,
-                 (l1 `timesR` r2) `combineR` (r1 `timesR` l2) `combineR` z) 
+                ((l1 `timesL` l2) `combineL` (r1 `timesL` r2), -- `combineL` z,
+                 (l1 `timesR` r2) `combineR` (r1 `timesR` l2)) -- `combineR` z) 
+                           -- combining with z is also correct but tends to make the approximation worse 
                 
             -- i1 unknown, i2 anti-consistent and anti-containing zero
             (_, _, (Just True, _), (_, Just True)) -> 
-                ((l1 `timesL` l2) `combineL` (r1 `timesL` r2) `combineL` z,
-                 (l1 `timesR` r2) `combineR` (r1 `timesR` l2) `combineR` z) 
+                ((l1 `timesL` l2) `combineL` (r1 `timesL` r2), -- `combineL` z,
+                 (l1 `timesR` r2) `combineR` (r1 `timesR` l2)) -- `combineR` z) 
 
             -- i1 unknown, i2 consistent and containing zero
             (_, _, (_, Just True), (Just True, _)) -> 
-                ((l1 `timesL` r2) `combineL` (r1 `timesL` l2) `combineL` z, 
-                 (l1 `timesR` l2) `combineR` (r1 `timesR` r2) `combineR` z)
+                ((l1 `timesL` r2) `combineL` (r1 `timesL` l2), -- `combineL` z, 
+                 (l1 `timesR` l2) `combineR` (r1 `timesR` r2)) -- `combineR` z)
 
             -- both i1 and i2 unknown sign
             _ ->
