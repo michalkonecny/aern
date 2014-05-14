@@ -46,6 +46,7 @@ data IntPolyCfg var cf =
         ipolycfg_limits :: IntPolySizeLimits cf
     }
     
+ipolycfg_effort :: IntPolyCfg var cf -> IntPolyEffort cf
 ipolycfg_effort = ipolylimits_effort . ipolycfg_limits -- shortcut
 
 defaultIntPolyCfg ::
@@ -123,7 +124,7 @@ defaultIntPolyEffort sampleCf arity maxdeg =
     bernsteinDegree = 2 + (min 20 $ maxdeg `div` 3)
          -- TODO: the minimum 20 makes sense only with Double coeffs;
          --       make it depend on the current coefficient precision
-    maxSplitSize = (1 + (maxdeg  `div` 2)) 
+    maxSplitSize = (1 + (arity * 3 * maxdeg)) 
 
 domToDomLZLEEff ::
     (ArithInOut.RoundedReal cf, 
