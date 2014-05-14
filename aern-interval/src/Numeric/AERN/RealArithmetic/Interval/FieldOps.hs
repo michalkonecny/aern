@@ -95,7 +95,8 @@ instance
     multOutEff effort i1@(Interval sampleE _) i2 =
         fromEndpoints $
         multiplyIntervals 
-            (pNonnegNonposEff effortComp)
+            (pNonnegNonposEff effortComp) (pConsAnticonsEff effortComp)
+            (pNonnegNonposEff effortComp) (pConsAnticonsEff effortComp)
             (ArithUpDn.multDnEff effortMult) (ArithUpDn.multUpEff effortMult)
             (NumOrd.minDnEff effortMinmax) -- minL
             (NumOrd.minUpEff effortMinmax) -- minR
@@ -105,6 +106,8 @@ instance
             (NumOrd.maxUpEff effortMinmax) 
             (getEndpoints i1) (getEndpoints i2)
         where
+        pConsAnticonsEff eff (l,r) = (NumOrd.pLeqEff eff l r, NumOrd.pGeqEff eff l r)
+
         effortComp = intrealeff_eComp sampleE effort
         effortMinmax = intrealeff_eMinmax sampleE effort
         effortMult = ArithUpDn.fldEffortMult sampleE effField 
@@ -114,16 +117,19 @@ instance
     multInEff effort i1@(Interval sampleE _) i2 =
         fromEndpoints $
         multiplyIntervals 
-            (pNonnegNonposEff effortComp)
+            (pNonnegNonposEff effortComp) (pConsAnticonsEff effortComp)
+            (pNonnegNonposEff effortComp) (pConsAnticonsEff effortComp)
             (ArithUpDn.multUpEff effortMult) (ArithUpDn.multDnEff effortMult)
             (NumOrd.minUpEff effortMinmax) -- minL
             (NumOrd.minDnEff effortMinmax) -- minR
             (NumOrd.maxUpEff effortMinmax) -- maxL
             (NumOrd.maxDnEff effortMinmax) -- maxR
-            (NumOrd.minUpEff effortMinmax) -- combineL
-            (NumOrd.maxDnEff effortMinmax) -- combineR
+            (NumOrd.maxUpEff effortMinmax) -- combineL
+            (NumOrd.minDnEff effortMinmax) -- combineR
             (getEndpoints i1) (getEndpoints i2)
         where
+        pConsAnticonsEff eff (l,r) = (NumOrd.pLeqEff eff l r, NumOrd.pGeqEff eff l r)
+        
         effortComp = intrealeff_eComp sampleE effort
         effortMinmax = intrealeff_eMinmax sampleE effort
         effortMult = ArithUpDn.fldEffortMult sampleE effField 
@@ -133,88 +139,90 @@ instance
 multiplyIntervals :: 
    HasZero t 
    =>
-   (t -> (Maybe Bool, Maybe Bool))
+      (t1 -> (Maybe Bool, Maybe Bool))
+   -> ((t1, t1) -> (Maybe Bool, Maybe Bool))
+   -> (t2 -> (Maybe Bool, Maybe Bool))
+   -> ((t2, t2) -> (Maybe Bool, Maybe Bool))
+   -> (t1 -> t2 -> t)
+   -> (t1 -> t2 -> t)
    -> (t -> t -> t)
    -> (t -> t -> t)
    -> (t -> t -> t)
    -> (t -> t -> t)
    -> (t -> t -> t)
    -> (t -> t -> t)
-   -> (t -> t -> t)
-   -> (t -> t -> t)
-   -> (t, t)
-   -> (t, t)
+   -> (t1, t1)
+   -> (t2, t2)
    -> (t, t)
 multiplyIntervals
-        pNonnegNonpos 
+        pNonnegNonpos1 pConsistency1 
+        pNonnegNonpos2 pConsistency2
         timesL timesR 
         minL minR maxL maxR 
         combineL combineR 
-        (l1, r1) (l2, r2) =
-    let _ = [minL, maxR, combineL, combineR] in
-        case (pNonnegNonpos l1, -- sign of l1 
-              pNonnegNonpos r1, -- sign of r1
-              pNonnegNonpos l2, -- sign of l2
-              pNonnegNonpos r2 -- sign of r2 
-             ) of
-            -----------------------------------------------------------
-            -- cases where i1 or i2 is known to be positive or negative
-            -----------------------------------------------------------
+        (l1, r1) (l2, r2)
+            --------------------------------------------------------------
+            -- Cases where either i1 or i2 is shown to be positive/negative
+            --------------------------------------------------------------
+            -------- i1 negative:
             -- i1 negative, i2 positive
-            ((_, Just True), (_, Just True), (Just True, _), (Just True, _)) -> 
+            | i1Nonpos && i2Nonneg = 
                 (l1 `timesL` r2, r1 `timesR` l2)
             -- i1 negative, i2 negative
-            ((_, Just True), (_, Just True), (_, Just True), (_, Just True)) -> 
+            | i1Nonpos && i2Nonpos = 
                 (r1 `timesL` r2, l1 `timesR` l2)
             -- i1 negative, i2 consistent and containing zero
-            ((_, Just True), (_, Just True), (_, Just True), (Just True, _)) -> 
+            | i1Nonpos && i2ContZero = 
                 (l1 `timesL` r2, l1 `timesR` l2)
             -- i1 negative, i2 anti-consistent and anti-containing zero
-            ((_, Just True), (_, Just True), (Just True, _), (_, Just True)) -> 
+            | i1Nonpos && i2AntiContZero = 
                 (r1 `timesL` r2, r1 `timesR` l2)
             -- i1 negative, nothing known about i2:
-            ((_, Just True), (_, Just True), _, _) -> 
+            | i1Nonpos = 
+                -- this could be any combination of the four cases above:
                 ((r1 `timesL` r2) `combineL` (l1 `timesL` r2), 
                  (r1 `timesR` l2) `combineR` (l1 `timesR` l2))
 
+            -------- i1 positive:
             -- i1 positive, i2 positive
-            ((Just True, _), (Just True, _), (Just True, _), (Just True, _)) -> 
+            | i1Nonneg && i2Nonneg = 
                 (l1 `timesL` l2, r1 `timesR` r2)
             -- i1 positive, i2 negative
-            ((Just True, _), (Just True, _), (_, Just True), (_, Just True)) -> 
+            | i1Nonneg && i2Nonpos = 
                 (r1 `timesL` l2, l1 `timesR` r2)
             -- i1 positive, i2 consistent and containing zero
-            ((Just True, _), (Just True, _), (_, Just True), (Just True, _)) -> 
+            | i1Nonneg && i2ContZero = 
                 (r1 `timesL` l2, r1 `timesR` r2)
             -- i1 positive, i2 anti-consistent and anti-containing zero
-            ((Just True, _), (Just True, _), (Just True, _), (_, Just True)) -> 
+            | i1Nonneg && i2AntiContZero = 
                 (l1 `timesL` l2, l1 `timesR` r2)
-
             -- i1 positive, nothing known about i2:
-            ((Just True, _), (Just True, _), _, _) -> 
+            | i1Nonneg = 
+                -- this could be any combination of the four cases above:
                 ((r1 `timesL` l2) `combineL` (l1 `timesL` l2), 
                  (r1 `timesR` r2) `combineR` (l1 `timesR` r2))
-            
  
+            -------- i2 positive:
             -- i1 consistent and containing zero, i2 positive
-            ((_, Just True), (Just True, _), (Just True, _), (Just True, _)) -> 
+            | i1ContZero && i2Nonneg = 
                 (l1 `timesL` r2, r1 `timesR` r2)
             -- i1 anti-consistent and anti-containing zero, i2 positive
-            ((Just True, _), (_, Just True), (Just True, _), (Just True, _)) -> 
+            | i1AntiContZero && i2Nonneg = 
                 (l1 `timesL` l2, r1 `timesR` l2)
             -- nothing known about i1, i2 positive
-            (_, _, (Just True, _), (Just True, _)) -> 
+            | i2Nonneg = 
                 ((l1 `timesL` r2) `combineL` (l1 `timesL` l2), 
                  (r1 `timesR` r2) `combineR` (r1 `timesR` l2))
 
+            -------- i2 negative:
             -- i1 consistent and containing zero, i2 negative
-            ((_, Just True), (Just True, _), (_, Just True), (_, Just True)) -> 
+            | i1ContZero && i2Nonpos = 
                 (r1 `timesL` l2, l1 `timesR` l2)
             -- i1 anti-consistent and anti-containing zero, i2 negative
-            ((Just True, _), (_, Just True), (_, Just True), (_, Just True)) -> 
+            | i1AntiContZero && i2Nonpos = 
                 (r1 `timesL` r2, l1 `timesR` r2)
             -- nothing known about i1, i2 negative
-            (_, _, (_, Just True), (_, Just True)) -> 
+            | i2Nonpos = 
                 ((r1 `timesL` r2) `combineL` (r1 `timesL` l2), 
                  (l1 `timesR` r2) `combineR` (l1 `timesR` l2))
 
@@ -222,49 +230,75 @@ multiplyIntervals
             -- cases where both i1 or i2 are around zero
             -----------------------------------------------------------
 
-            -- i1 consistent and containing zero, i2 consistent and containing zero
-            ((_, Just True), (Just True, _), (_, Just True), (Just True, _)) ->
+            -- both consistent, at least one contains zero
+            | (i1ContZero && i2Consistent) || (i2Consistent && i1ContZero) =
                 ((l1 `timesL` r2) `minL` (r1 `timesL` l2), 
                  (l1 `timesR` l2) `maxR` (r1 `timesR` r2))
             -- i1 consistent and containing zero, i2 anti-consistent and anti-containing zero
-            ((_, Just True), (Just True, _), (Just True, _), (_, Just True)) ->
+            | i1ContZero && i2AntiContZero =
                 (z, z)
             -- i1 consistent and containing zero, i2 unknown
-            ((_, Just True), (Just True, _), _, _) ->
-                (((l1 `timesL` r2) `combineL` (r1 `timesL` l2)), -- `combineL` z,
-                 ((l1 `timesR` l2) `combineR` (r1 `timesR` r2))) -- `combineR` z)
-                           -- combining with z is also correct but tends to make the approximation worse 
+            | i1ContZero =
+                (((l1 `timesL` r2) `combineL` (r1 `timesL` l2)) `combineL` z,
+                 ((l1 `timesR` l2) `combineR` (r1 `timesR` r2)) `combineR` z)
                 
             -- i1 anti-consistent and anti-containing zero, i2 consistent and containing zero
-            ((Just True, _), (_, Just True), (_, Just True), (Just True, _)) ->
+            | i1AntiContZero && i2ContZero =
                 (z, z)
             -- i1 anti-consistent and anti-containing zero, i2 anti-consistent and anti-containing zero
-            ((Just True, _), (_, Just True), (Just True, _), (_, Just True)) ->
+            | i1AntiContZero && i2AntiContZero =
+--            | (i1AntiContZero && i2Anticonsistent) || (i1Anticonsistent && i2AntiContZero) = -- TODO: is this correct? 
                 ((l1 `timesL` l2) `maxL` (r1 `timesL` r2),
                  (l1 `timesR` r2) `minR` (r1 `timesR` l2)) 
             -- i1 anti-consistent and anti-containing zero, i2 unknown
-            ((Just True, _), (_, Just True), _, _) -> 
-                ((l1 `timesL` l2) `combineL` (r1 `timesL` r2), -- `combineL` z,
-                 (l1 `timesR` r2) `combineR` (r1 `timesR` l2)) -- `combineR` z) 
-                           -- combining with z is also correct but tends to make the approximation worse 
+            | i1AntiContZero = 
+                ((l1 `timesL` l2) `combineL` (r1 `timesL` r2) `combineL` z,
+                 (l1 `timesR` r2) `combineR` (r1 `timesR` l2) `combineR` z) 
                 
             -- i1 unknown, i2 anti-consistent and anti-containing zero
-            (_, _, (Just True, _), (_, Just True)) -> 
-                ((l1 `timesL` l2) `combineL` (r1 `timesL` r2), -- `combineL` z,
-                 (l1 `timesR` r2) `combineR` (r1 `timesR` l2)) -- `combineR` z) 
+            | i2AntiContZero = 
+                ((l1 `timesL` l2) `combineL` (r1 `timesL` r2) `combineL` z,
+                 (l1 `timesR` r2) `combineR` (r1 `timesR` l2) `combineR` z) 
 
             -- i1 unknown, i2 consistent and containing zero
-            (_, _, (_, Just True), (Just True, _)) -> 
-                ((l1 `timesL` r2) `combineL` (r1 `timesL` l2), -- `combineL` z, 
-                 (l1 `timesR` l2) `combineR` (r1 `timesR` r2)) -- `combineR` z)
+            | i2ContZero =
+                ((l1 `timesL` r2) `combineL` (r1 `timesL` l2) `combineL` z, 
+                 (l1 `timesR` l2) `combineR` (r1 `timesR` r2) `combineR` z)
 
-            -- both i1 and i2 unknown sign
-            _ ->
+            -- both i1 and i2 unknown
+            | otherwise =
                 (foldl1 combineL [l1 `timesL` r2, r1 `timesL` l2, l1 `timesL` l2, r1 `timesL` r2], 
                  foldl1 combineR [l1 `timesR` r2, r1 `timesR` l2, l1 `timesR` l2, r1 `timesR` r2])
         where
-        z = zero sampleE
-        sampleE = l1  
+        z = zero sampleT
+        sampleT = l1 `timesL` l2  
+
+        -- the 2 x 4 booleans that determine the 16 cases of the Kaucher multiplication table: 
+        i1Nonpos = l1Nonpos && r1Nonpos
+        i1Nonneg = l1Nonneg && r1Nonneg
+        i1ContZero = l1Nonpos && r1Nonneg
+        i1AntiContZero = l1Nonneg && r1Nonpos
+         
+        i2Nonpos = l2Nonpos && r2Nonpos
+        i2Nonneg = l2Nonneg && r2Nonneg
+        i2ContZero = l2Nonpos && r2Nonneg
+        i2AntiContZero = l2Nonneg && r2Nonpos
+         
+        [l1Nonneg,  l1Nonpos,  r1Nonneg,  r1Nonpos,  l2Nonneg,  l2Nonpos,  r2Nonneg,  r2Nonpos] =
+            map (== Just True)
+            [l1MNonneg, l1MNonpos, r1MNonneg, r1MNonpos, l2MNonneg, l2MNonpos, r2MNonneg, r2MNonpos]
+        (l1MNonneg, l1MNonpos) = pNonnegNonpos1 l1 
+        (r1MNonneg, r1MNonpos) = pNonnegNonpos1 r1 
+        (l2MNonneg, l2MNonpos) = pNonnegNonpos2 l2 
+        (r2MNonneg, r2MNonpos) = pNonnegNonpos2 r2
+        
+        -- consistency information can help when the above is not available:
+        [i1Consistent,  i1Anticonsistent, i2Consistent,  i2Anticonsistent] =
+            map (== Just True)
+            [i1MConsistent,  i1MAnticonsistent, i2MConsistent,  i2MAnticonsistent]
+        (i1MConsistent,  i1MAnticonsistent) = pConsistency1 (l1, r1)
+        (i2MConsistent,  i2MAnticonsistent) = pConsistency2 (l2, r2)
+
 
 instance
     (ArithUpDn.RoundedReal e, 
