@@ -196,7 +196,7 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams w h fnsActive fns fnsS
         -- fix the base position of the label:
         let (x,y) = toScreenCoordsFromUnit pt
         let pX = if isX then x else x + textWidthHalf + 2
-        let pY = if isX then y - textHeight - 4 else y
+        let pY = if isX then y - 1.3*textHeight - 5 else y
         -- draw a small line at the point:
         case isX of
             True ->
@@ -210,7 +210,7 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams w h fnsActive fns fnsS
                 lineTo (pX + 5) pY
                 stroke
         -- center the label below the cross:
-        moveTo (pX - textWidthHalf) (pY + textHeight + 2)
+        moveTo (pX - textWidthHalf) (pY + 1.3*textHeight + if isX then 5 else 0)
         showText text
         
     yPts = map translYtoPt $ pickAFewDyadicBetween sampleDom effReal valLO valHI
