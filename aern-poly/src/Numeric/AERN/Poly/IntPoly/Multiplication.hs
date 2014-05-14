@@ -34,7 +34,7 @@ import Numeric.AERN.Poly.IntPoly.New
 import Numeric.AERN.Poly.IntPoly.Reduction
 import Numeric.AERN.Poly.IntPoly.Addition
 
---import Numeric.AERN.RmToRn.New =
+import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
 
 --import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
@@ -54,6 +54,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Interval (Interval)
 import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.ShowInternals
 
 --import Numeric.AERN.Misc.Debug
 
@@ -61,7 +62,6 @@ import qualified Data.IntMap as IntMap
 
 
 instance
-    (ArithInOut.RoundedReal cf) => 
     ArithInOut.RoundedMultiplyEffort (IntPoly var cf) 
     where
     type MultEffortIndicator (IntPoly var cf) = 
@@ -128,7 +128,6 @@ multTerms _ _ terms1 terms2
 
 
 instance
-    (ArithInOut.RoundedReal cf) => 
     ArithInOut.RoundedPowerToNonnegIntEffort (IntPoly var cf)
     where
     type PowerToNonnegIntEffortIndicator (IntPoly var cf) =
@@ -186,7 +185,6 @@ powTerms eff sample cfg (+) (*) =
     
     
 instance
-    (ArithInOut.RoundedMixedMultiplyEffort cf Integer) => 
     ArithInOut.RoundedMixedMultiplyEffort (IntPoly var cf) Integer 
     where
     type MixedMultEffortIndicator (IntPoly var cf) Integer = 
@@ -207,7 +205,6 @@ instance
     mixedMultInEff = mixedMultInEffGeneric  ArithInOut.rrEffortIntegerMixedField 0
 
 instance
-    (ArithInOut.RoundedMixedMultiplyEffort cf Int) => 
     ArithInOut.RoundedMixedMultiplyEffort (IntPoly var cf) Int 
     where
     type MixedMultEffortIndicator (IntPoly var cf) Int = 
@@ -228,7 +225,6 @@ instance
     mixedMultInEff = mixedMultInEffGeneric  ArithInOut.rrEffortIntMixedField 0
 
 instance
-    (ArithInOut.RoundedMixedMultiplyEffort cf Rational) => 
     ArithInOut.RoundedMixedMultiplyEffort (IntPoly var cf) Rational 
     where
     type MixedMultEffortIndicator (IntPoly var cf) Rational = 
@@ -249,7 +245,6 @@ instance
     mixedMultInEff = mixedMultInEffGeneric  ArithInOut.rrEffortRationalMixedField 0
 
 instance
-    (ArithInOut.RoundedMixedMultiplyEffort cf Double) => 
     ArithInOut.RoundedMixedMultiplyEffort (IntPoly var cf) Double 
     where
     type MixedMultEffortIndicator (IntPoly var cf) Double = 
@@ -269,35 +264,6 @@ instance
     mixedMultOutEff = mixedMultOutEffGeneric ArithInOut.rrEffortDoubleMixedField 0
     mixedMultInEff = mixedMultInEffGeneric  ArithInOut.rrEffortDoubleMixedField 0
 
-
-instance
-    (ArithInOut.RoundedMixedMultiplyEffort (Interval e) (Interval e)) => 
-    ArithInOut.RoundedMixedMultiplyEffort (IntPoly var (Interval e)) (Interval e) 
-    where
-    type MixedMultEffortIndicator (IntPoly var (Interval e)) (Interval e) = 
-        IntPolyEffort (Interval e)
-    mixedMultDefaultEffort (IntPoly cfg _) _c = 
-        ipolycfg_effort cfg 
-
-instance
-    (cf ~ Interval e,
-     ArithInOut.RoundedMultiply cf,  Ord var, 
-     ArithInOut.RoundedReal cf, 
-     HasConsistency cf, 
-     RefOrd.IntervalLike cf) 
-    =>
-    ArithInOut.RoundedMixedMultiply (IntPoly var (Interval e)) (Interval e) 
-    where
-    mixedMultOutEff eff (IntPoly cfg terms) a = 
-        IntPoly cfg $ scaleTerms (*|) a terms
-        where
-        (*|) = ArithInOut.multOutEff effMult
-        effMult = ArithInOut.fldEffortMult sampleCf effField
-        effField = ArithInOut.rrEffortField sampleCf effCf
-        effCf = ipolyeff_cfRoundedRealEffort eff
-        sampleCf = ipolycfg_sample_cf cfg
-    mixedMultInEff = 
-        error "aern-poly: IntPoly does not support inwards-rounded mixed multiplication" 
 
 mixedMultOutEffGeneric, mixedMultInEffGeneric :: 
     (Ord var, Show cf, Show var, ArithInOut.RoundedReal cf,
@@ -327,6 +293,30 @@ scaleTerms ::
     IntPolyTerms var cf
 scaleTerms (*|) factor terms =
     termsMapCoeffs (*| factor) terms
+
+instance
+    ArithInOut.RoundedMixedMultiplyEffort (IntPoly var (Interval e)) (Interval e) 
+    where
+    type MixedMultEffortIndicator (IntPoly var (Interval e)) (Interval e) = 
+        IntPolyEffort (Interval e)
+    mixedMultDefaultEffort (IntPoly cfg _) _c = 
+        ipolycfg_effort cfg 
+
+instance
+    (poly ~ IntPoly var cf, cf ~ Interval e,
+     Show cf,  HasConsistency cf,
+     ArithInOut.RoundedMultiply poly) 
+    =>
+    ArithInOut.RoundedMixedMultiply (IntPoly var (Interval e)) (Interval e) 
+    where
+    mixedMultOutEff eff p@(IntPoly cfg _terms) a =
+        -- TODO: use  multiplySingletonWithInterval from Numeric.AERN.RealArithmetic.Interval.MixedFieldOps
+        ArithInOut.multOutEff eff p (IntPoly cfg $ mkConstTerms a vars)
+        where
+        vars = ipolycfg_vars cfg
+    mixedMultInEff = 
+        error "aern-poly: IntPoly does not support inwards-rounded mixed multiplication" 
+
         
 
 instance
@@ -376,8 +366,7 @@ instance
     ArithInOut.RoundedMixedRing (IntPoly var cf) Integer
 
 instance
-    (ArithInOut.RoundedReal cf,
-     ArithInOut.RoundedMixedRingEffort cf Int) 
+    (ArithInOut.RoundedReal cf) 
     => 
     ArithInOut.RoundedMixedRingEffort (IntPoly var cf) Int
     where
@@ -399,8 +388,7 @@ instance
     ArithInOut.RoundedMixedRing (IntPoly var cf) Int
 
 instance
-    (ArithInOut.RoundedReal cf,
-     ArithInOut.RoundedMixedRingEffort cf Rational) 
+    (ArithInOut.RoundedReal cf) 
     => 
     ArithInOut.RoundedMixedRingEffort (IntPoly var cf) Rational
     where
@@ -422,8 +410,7 @@ instance
     ArithInOut.RoundedMixedRing (IntPoly var cf) Rational
 
 instance
-    (ArithInOut.RoundedReal cf,
-     ArithInOut.RoundedMixedRingEffort cf Double) 
+    (ArithInOut.RoundedReal cf) 
     => 
     ArithInOut.RoundedMixedRingEffort (IntPoly var cf) Double
     where
@@ -446,10 +433,6 @@ instance
 
 
 instance
-    (cf ~ Interval e,
-     ArithInOut.RoundedReal cf,
-     ArithInOut.RoundedMixedRingEffort cf (Interval e)) 
-    => 
     ArithInOut.RoundedMixedRingEffort (IntPoly var (Interval e)) (Interval e)
     where
     type MixedRingOpsEffortIndicator (IntPoly var (Interval e)) (Interval e) =
@@ -475,7 +458,6 @@ instance
 {-------------------------------}
 
 instance
-    (ArithInOut.RoundedMixedDivideEffort cf Integer) => 
     ArithInOut.RoundedMixedDivideEffort (IntPoly var cf) Integer 
     where
     type MixedDivEffortIndicator (IntPoly var cf) Integer = 
@@ -496,7 +478,6 @@ instance
     mixedDivInEff = mixedDivInEffGeneric ArithInOut.rrEffortIntegerMixedField 0
     
 instance
-    (ArithInOut.RoundedMixedDivideEffort cf Int) => 
     ArithInOut.RoundedMixedDivideEffort (IntPoly var cf) Int 
     where
     type MixedDivEffortIndicator (IntPoly var cf) Int = 
@@ -517,7 +498,6 @@ instance
     mixedDivInEff = mixedDivInEffGeneric ArithInOut.rrEffortIntMixedField 0
     
 instance
-    (ArithInOut.RoundedMixedDivideEffort cf Rational) => 
     ArithInOut.RoundedMixedDivideEffort (IntPoly var cf) Rational 
     where
     type MixedDivEffortIndicator (IntPoly var cf) Rational = 
@@ -538,7 +518,6 @@ instance
     mixedDivInEff = mixedDivInEffGeneric ArithInOut.rrEffortRationalMixedField 0
     
 instance
-    (ArithInOut.RoundedMixedDivideEffort cf Double) => 
     ArithInOut.RoundedMixedDivideEffort (IntPoly var cf) Double 
     where
     type MixedDivEffortIndicator (IntPoly var cf) Double = 
@@ -559,7 +538,6 @@ instance
     mixedDivInEff = mixedDivInEffGeneric ArithInOut.rrEffortDoubleMixedField 0
 
 instance
-    (ArithInOut.RoundedMixedDivideEffort (Interval e) (Interval e)) => 
     ArithInOut.RoundedMixedDivideEffort (IntPoly var (Interval e)) (Interval e) 
     where
     type MixedDivEffortIndicator (IntPoly var (Interval e)) (Interval e) = 
@@ -607,8 +585,7 @@ mixedDivInEffGeneric =
         
         
 instance
-    (ArithInOut.RoundedReal cf,
-     ArithInOut.RoundedMixedFieldEffort cf Integer) 
+    (ArithInOut.RoundedReal cf) 
     => 
     ArithInOut.RoundedMixedFieldEffort (IntPoly var cf) Integer
     where
@@ -631,8 +608,7 @@ instance
     ArithInOut.RoundedMixedField (IntPoly var cf) Integer
         
 instance
-    (ArithInOut.RoundedReal cf,
-     ArithInOut.RoundedMixedFieldEffort cf Int) 
+    (ArithInOut.RoundedReal cf) 
     => 
     ArithInOut.RoundedMixedFieldEffort (IntPoly var cf) Int
     where
@@ -655,8 +631,7 @@ instance
     ArithInOut.RoundedMixedField (IntPoly var cf) Int
 
 instance
-    (ArithInOut.RoundedReal cf,
-     ArithInOut.RoundedMixedFieldEffort cf Rational) 
+    (ArithInOut.RoundedReal cf) 
     => 
     ArithInOut.RoundedMixedFieldEffort (IntPoly var cf) Rational
     where
@@ -679,8 +654,7 @@ instance
     ArithInOut.RoundedMixedField (IntPoly var cf) Rational
         
 instance
-    (ArithInOut.RoundedReal cf,
-     ArithInOut.RoundedMixedFieldEffort cf Double) 
+    (ArithInOut.RoundedReal cf) 
     => 
     ArithInOut.RoundedMixedFieldEffort (IntPoly var cf) Double
     where

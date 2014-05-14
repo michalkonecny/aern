@@ -119,7 +119,8 @@ instance
     (Ord var, Show var, Show cf, 
      ArithInOut.RoundedReal cf,
      HasConsistency cf,
-     RefOrd.IntervalLike cf) => 
+     RefOrd.IntervalLike cf) 
+    => 
     (HasConstFns (IntPoly var cf))
     where
     newConstFn limits varDoms value = 
