@@ -30,8 +30,6 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
-import Numeric.AERN.Misc.Debug
-
 data FnViewState f =
     FnViewState
     {
@@ -58,7 +56,7 @@ initState effReal (_, fnmeta) =
         favstPanCentre = getDefaultCentre effReal fnmeta
     }
     where
-    activeFns = mergeDefaults (mergeDefaults $ \ a b -> b) allTrue $ dataDefaultActiveFns fnmeta
+    activeFns = mergeDefaults (mergeDefaults $ \ _a b -> b) allTrue $ dataDefaultActiveFns fnmeta
     allTrue = map (map $ const True) $ dataFnNames fnmeta
     mergeDefaults :: (a -> a -> a) -> [a] -> [a] -> [a]
     mergeDefaults _ [] _ = [] 
@@ -92,6 +90,14 @@ updatePanCentreCoordSystem ::
     (FnViewState f)
 updatePanCentreCoordSystem = updateZoomPanCentreCoordSystem defaultZoom
 
+updateZoomPercentAndFnExtents :: 
+   ArithInOut.RoundedReal (Domain f) 
+   =>
+   ArithInOut.RoundedRealEffortIndicator (Domain f)
+   -> Double
+   -> (Domain f, Domain f, Domain f, Domain f)
+   -> FnViewState f
+   -> FnViewState f
 updateZoomPercentAndFnExtents effFromDouble zoomPercent fnExtents state =
     state
     {

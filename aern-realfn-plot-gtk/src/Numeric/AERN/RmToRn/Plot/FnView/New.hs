@@ -156,7 +156,13 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
     
     setHandlerCoordSystem =
         do
-        Gtk.on (wgt_coorSystemCombo widgets) Gtk.changed resetZoomPanFromCoordSystem
+--        Gtk.on (wgt_coorSystemCombo widgets) Gtk.changed resetZoomPanFromCoordSystem
+        -- disable the coord system combo because only one coord system is currently supported:
+        Gtk.widgetSetSensitivity (wgt_coorSystemCombo widgets) False   
+        -- TODO: make these two widgets work:
+        Gtk.widgetSetSensitivity (wgt_showAxesCheckbutton widgets) False   
+        Gtk.widgetSetSensitivity (wgt_fontSizeEntry widgets) False
+           
         Gtk.onClicked (wgt_defaultZoomPanButton widgets) resetZoomPanFromCoordSystem
         where
         resetZoomPanFromCoordSystem =
