@@ -53,6 +53,17 @@ import Graphics.UI.Gtk (AttrOp((:=)))
 
 import Control.Concurrent.STM -- as STM
 
+makeCanvas :: 
+    (Show (Domain f), ArithInOut.RoundedReal (Domain f),
+     CairoDrawableFn f, HasDomainBox f) 
+    =>
+    f
+    -> CairoDrawFnEffortIndicator f
+    -> ArithInOut.RoundedRealEffortIndicator (Domain f)
+    -> Widgets
+    -> (TVar (FnData f), TVar (FnMetaData f))
+    -> TVar (FnViewState f)
+    -> IO Widgets
 makeCanvas sampleF effDraw effReal widgets _fndataTVs@(fadataTV, fndataTV) stateTV =
     do
     -- create canvas:
@@ -66,7 +77,7 @@ makeCanvas sampleF effDraw effReal widgets _fndataTVs@(fadataTV, fndataTV) state
     -- open font for labels:
     let font = () -- a dummy
     -- set the canvas repaint handler:
-    Gtk.onExpose canvas $ \ event ->
+    _ <- Gtk.onExpose canvas $ \ _event ->
         do
         (fndatas, state) <- atomically $
             do
@@ -154,6 +165,7 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams w h fnsActive fns fnsS
         collectFns restActive restFns restStyles
     collectFns (True:restActive) (fn:restFns) (col:restStyles) = 
         (fn, col) : (collectFns restActive restFns restStyles)
+    collectFns _ _ _ = error "FV: Canvas internal error."
     
     drawFn ::
         ((GraphOrParamPlotFn f, Var f), FnPlotStyle) ->
@@ -168,13 +180,32 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams w h fnsActive fns fnsS
             do
             setSourceRGBA 0 0 0 1
             setLineWidth 0.5
+            extents <- getExtents
             uncurry moveTo $ toScreenCoordsFromOrig (domLO,c0)  
             uncurry lineTo $ toScreenCoordsFromOrig (domHI,c0)
             stroke  
-            uncurry moveTo $ toScreenCoordsFromOrig (c0,valLO)  
+            uncurry moveTo $ makeSpaceForXLabels extents $ toScreenCoordsFromOrig (c0,valLO)  
             uncurry lineTo $ toScreenCoordsFromOrig (c0,valHI)
-            stroke  
+            stroke
         | otherwise = return ()
+        where
+        getExtents =
+            case cnvprmShowSampleValuesFontSize canvasParams of
+                Just fontSize ->
+                    do
+                    setFontSize fontSize
+                    extents <- textExtents "0"
+                    return (Just extents)
+                _ -> return Nothing
+            
+--        makeSpaceForYLabels Nothing pt = pt
+--        makeSpaceForYLabels (Just extents) (x,y) = (x+d, y)
+--            where
+--            d = 1.2 * (textExtentsWidth extents)
+        makeSpaceForXLabels Nothing pt = pt
+        makeSpaceForXLabels (Just extents) (x,y) = (x, y-d)
+            where
+            d = 15 + 1.3 * (textExtentsHeight extents)
     drawSampleValues =
         case cnvprmShowSampleValuesFontSize canvasParams of
             Just fontSize ->
@@ -242,9 +273,6 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams w h fnsActive fns fnsS
     c0 = zero sampleDom
     sampleDom = getSampleDomValue sampleF
     effToDouble = ArithInOut.rrEffortToDouble sampleDom effReal
-    effFromDouble = ArithInOut.rrEffortFromDouble sampleDom effReal
-    effAdd =
-        ArithInOut.fldEffortAdd sampleDom $ ArithInOut.rrEffortField sampleDom effReal
 
 
 pickAFewDyadicBetween ::
@@ -267,7 +295,7 @@ pickAFewDyadicBetween sampleDom effReal a b =
             case logOfSizeIMinusOne of
 --                _ | count == 0 -> "0" 
                 lgs | 0 <= lgs && lgs < 10 -> show (count * (2^lgs))
-                lgs | -10 < lgs && lgs < 0 -> show count ++ "/" ++ (show $ 2^(-lgs))
+                lgs | -10 < lgs && lgs < 0 -> show count ++ "/" ++ (show $ (2::Int)^(-lgs))
                 lgs | lgs < 0 -> show count ++ "*2^(" ++ show lgs ++ ")"
                 lgs -> show count ++ "*2^" ++ show lgs
     
