@@ -43,7 +43,7 @@ import qualified Graphics.UI.Gtk as Gtk
 import Graphics.UI.Gtk (AttrOp((:=)))
 
 import qualified Control.Concurrent as Concurrent
-import Control.Concurrent.STM (STM, TVar, atomically, newTVar, retry, readTVar, writeTVar) -- as STM
+import Control.Concurrent.STM (STM, TVar, atomically, retry, readTVar, writeTVar) -- as STM
 import Data.IORef
 
 dataWatchThread ::
@@ -77,12 +77,12 @@ dataWatchThread
 --        putStrLn "dataWatchLoop: start"
         ((dataChange, fndatas@(_, fnmeta)), state) <- waitForChange fnmetaOld
 --        putStrLn "dataWatchLoop: fnmeta change detected"
-        Gtk.timeoutAdd (do { action dataChange fndatas state; return False }) 10
+        _ <- Gtk.timeoutAdd (do { action dataChange fndatas state; return False }) 10
         Concurrent.yield
         case dataChange of
             DataChangeClose -> return ()
             _ -> dataWatchLoop fnmeta
-    action DataChangeClose (fndata, fnmeta) state =
+    action DataChangeClose (_fndata, _fnmeta) _state =
         do
         return ()
     action DataChangeMeta (fndata, fnmeta) state =
@@ -117,9 +117,9 @@ dataWatchThread
             False -> return ()
     waitForChange fnmetaOld =
         do
-        waitFC fnmetaOld
+        waitFC
         where
-        waitFC fnmetaOld =
+        waitFC =
             atomically $
             do
             fnmeta <- readTVar fnmetaTV
@@ -131,20 +131,20 @@ dataWatchThread
                             True ->
                                 do
                                 fndata <- readTVar fndataTV
-                                let change = returnChange fnmetaOld fnmeta fndata
+                                let change = returnChange fnmeta fndata
                                 let fnmetaNew = fnmeta { dataFnsUpdated = False }
                                 writeTVar fnmetaTV fnmetaNew
                                 return (change, (fndata, fnmetaNew))
                             False ->
                                 do
-                                let change = returnChange fnmetaOld fnmeta undefined
+                                let change = returnChange fnmeta undefined
                                 return (change, (undefined, fnmeta))
             state <- readTVar stateTV
             return ((change, fndatas), state) 
-        returnChange fnmetaOld fnmeta fndata
+        returnChange fnmeta _fndata
             | dataDestroyed fnmeta =
                 DataChangeClose
-            | namesChanged = 
+            | namesChanged || fnStylesChanged = 
                 DataChangeMeta
             | dataFnsUpdated fnmeta =
                 DataChangeFn
@@ -170,7 +170,6 @@ dataWatchThread
         where
         (Just d) = ArithUpDn.convertUpEff effToDouble 0 a
     effToDouble = ArithInOut.rrEffortToDouble sampleDom effReal
-    effFromDouble = ArithInOut.rrEffortFromDouble sampleDom effReal
     sampleDom = getSampleDomValue sampleF
     
     
@@ -197,7 +196,7 @@ updateValueDisplay ::
     ((FnData f),
       FnMetaData f) ->
     IO ()
-updateValueDisplay effFromDouble effEval widgets dynWidgetsRef state (fndata, _) =
+updateValueDisplay effFromDouble effEval widgets dynWidgetsRef _state (fndata, _) =
     do
     evalPointText <- Gtk.entryGetText $ wgt_evalPointEntry widgets
     let maybeFnValueTexts = getFnValueTexts evalPointText 
@@ -206,8 +205,8 @@ updateValueDisplay effFromDouble effEval widgets dynWidgetsRef state (fndata, _)
         Just fnValueTexts ->
             do
             dynWidgets <- readIORef dynWidgetsRef
-            mapM (mapM $ uncurry Gtk.labelSetText) $ 
-                zipWith zip (valueLabels dynWidgets) fnValueTexts
+            mapM_ (mapM $ uncurry Gtk.labelSetText) $ 
+                zipWith zip (dynwgt_valueLabels dynWidgets) fnValueTexts
             return ()
     where
     getFnValueTexts evalPointText =
@@ -232,6 +231,17 @@ updateValueDisplay effFromDouble effEval widgets dynWidgetsRef state (fndata, _)
                 sampleDom = getSampleDomValue fn
                 dombox = getDomainBox fn
 
+updateValueDisplayTV :: 
+      (Show (Domain f), ArithInOut.Convertible Double (Domain f),
+       CanEvaluate f) 
+      =>
+      ArithInOut.ConvertEffortIndicator Double (Domain f)
+      -> EvaluationEffortIndicator f
+      -> Widgets
+      -> IORef FnViewDynWidgets
+      -> (TVar (FnData f), TVar (FnMetaData f))
+      -> TVar (FnViewState f)
+      -> IO ()
 updateValueDisplayTV effFromDouble effEval widgets dynWidgetsRef fndataTVs stateTV =
     do
 --    putStrLn "updateValueDisplayTVERFA"
@@ -239,6 +249,13 @@ updateValueDisplayTV effFromDouble effEval widgets dynWidgetsRef fndataTVs state
     updateValueDisplay effFromDouble effEval widgets dynWidgetsRef state fndatas    
 
 
+updateZoomWidgets :: 
+   Show a 
+   =>
+   (Domain f -> a) -> 
+   Widgets -> 
+   FnViewState f -> 
+   IO ()
 updateZoomWidgets toDbl widgets state =
     case coordSystem of 
         CoordSystemLogSqueeze _ ->
@@ -250,21 +267,31 @@ updateZoomWidgets toDbl widgets state =
             Gtk.entrySetText (wgt_zoomEntry widgets) ""
             Gtk.entrySetText (wgt_centreXEntry widgets) ""
             Gtk.entrySetText (wgt_centreYEntry widgets) ""
-        (CoordSystemLinear (Rectangle hi lo l r)) ->
+        (CoordSystemLinear (Rectangle _hi _lo _l _r)) ->
             do
             Gtk.comboBoxSetActive (wgt_coorSystemCombo widgets) 1 
             Gtk.editableSetEditable (wgt_zoomEntry widgets) True
             Gtk.editableSetEditable (wgt_centreXEntry widgets) True
             Gtk.editableSetEditable (wgt_centreYEntry widgets) True
-            Gtk.entrySetText (wgt_zoomEntry widgets) $ show $ zoomPercent
-            Gtk.entrySetText (wgt_centreXEntry widgets) $ show $ cX
-            Gtk.entrySetText (wgt_centreYEntry widgets) $ show $ cY
+            Gtk.entrySetText (wgt_zoomEntry widgets) $ show zoomPercent
+            Gtk.entrySetText (wgt_centreXEntry widgets) $ show cX
+            Gtk.entrySetText (wgt_centreYEntry widgets) $ show cY
     where
     zoomPercent = favstZoomPercent state
     cX = toDbl cXDF
     cY = toDbl cYDF
     (cXDF,cYDF) = favstPanCentre state
     coordSystem = cnvprmCoordSystem $ favstCanvasParams state
+
+updateAxesWidgets :: Widgets -> FnViewState f -> IO ()
+updateAxesWidgets widgets state =
+    do
+    Gtk.entrySetText (wgt_fontSizeEntry widgets) (show fontSize)
+    Gtk.toggleButtonSetActive (wgt_showAxesCheckbutton widgets) showAxes
+    where
+    fontSize = case maybeFontSize of Just sz -> sz; _ -> 0
+    maybeFontSize = cnvprmShowSampleValuesFontSize $ favstCanvasParams state
+    showAxes = cnvprmShowAxes $ favstCanvasParams state
 
 {-|
     Reconfigure the GUI to show variable names appropriate
@@ -280,7 +307,7 @@ updateFnWidgets ::
       TVar (FnMetaData f)) ->
     (TVar (FnViewState f)) ->
     IO ()
-updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV =
+updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state _fndataTVs stateTV =
     do
     -- update the name of the domain variable:
     Gtk.labelSetText (wgt_domVarLabel widgets) $ domName ++ "="
@@ -288,7 +315,7 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV =
     Gtk.entrySetText (wgt_evalPointEntry widgets) $ show $ toDbl $ dataDefaultEvalPoint fnmeta
     -- remove any old dim rows from dimTable:
     children <- Gtk.containerGetChildren table
-    mapM (Gtk.containerRemove table) children  
+    mapM_ (Gtk.containerRemove table) children  
     -- add new dim rows:
     Gtk.tableResize table (fnRowCount + 1) 3
     -- fill each row with widgets and return all newly created value entries:
@@ -301,7 +328,7 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV =
     modifyIORef dynWidgetsRef $ \ dynWidgets ->
         dynWidgets
         {
-            valueLabels = valueLabels
+            dynwgt_valueLabels = valueLabels
         } 
     where
     table = wgt_dimTable widgets
@@ -309,7 +336,7 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV =
     grpNames = dataFnGroupNames fnmeta
     fnNames = dataFnNames fnmeta
     fnRowCount = (length grpNames) + (sum $ map length fnNames)
-    addGroupLabels nextRowNo [] = return []
+    addGroupLabels _nextRowNo [] = return []
     addGroupLabels nextRowNo ((grpNo, grpName, fnNamesActive):rest) =
         do
         -- add a function label:
@@ -323,11 +350,11 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV =
         restLabels <- addGroupLabels (nextRowNo + 1 + (length fnNamesActive)) rest
         return $ labels : restLabels
         
-    addFnLabels nextRowNo (grpNo, grpName) fnNamesActive =
+    addFnLabels nextRowNo0 (grpNo, _grpName) fnNamesActive =
         do
-        mapM addFnLabel $ zip3 [nextRowNo..] [0..] fnNamesActive
+        mapM addFnLabel $ zip3 [nextRowNo0..] [0..] fnNamesActive
         where
-        addFnLabel (nextRowNo, fnNo, (fnName, isActive)) =
+        addFnLabel (nextRowNo, fnNo, (fnName, isActive0)) =
             do
             -- add variable label:
             fnLabel <- Gtk.labelNew (Just labelText)
@@ -340,12 +367,12 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV =
             showCheckButton <- Gtk.checkButtonNew
             Gtk.tableAttachDefaults table showCheckButton 0 1 nextRowNo nextRowNoPlus1
             -- make it ticked:
-            Gtk.toggleButtonSetActive showCheckButton isActive
+            Gtk.toggleButtonSetActive showCheckButton isActive0
             -- give the check button a handler:
-            Gtk.onToggled showCheckButton $
+            _ <- Gtk.onToggled showCheckButton $
                 do
                 isActive <- Gtk.toggleButtonGetActive showCheckButton
-                state <- atomically $ modifyTVar stateTV $ updateFnActive grpNo fnNo isActive
+                _state <- atomically $ modifyTVar stateTV $ updateFnActive grpNo fnNo isActive
 --                fndatas <- atomically $ readBothTVars fndataTVs
                 Gtk.widgetQueueDraw (wgt_canvas widgets)
                 return ()
@@ -372,6 +399,7 @@ updateView (sampleF :: f) effReal effEval widgets dynWidgetsRef state (fndata, f
     do
     updateValueDisplay effFromDouble effEval widgets dynWidgetsRef state (fndata, fnmeta)
     updateZoomWidgets toDbl widgets state
+    updateAxesWidgets widgets state
     Gtk.widgetQueueDraw (wgt_canvas widgets)
     return ()
     where
@@ -394,6 +422,7 @@ readMaybe s =
 
 -- stm:
 
+modifyTVar :: TVar b -> (b -> b) -> STM b
 modifyTVar tv update =
     do
     value <- readTVar tv
