@@ -42,6 +42,8 @@ loadGlade gladeFileName =
     window <- Gtk.builderGetObject gui Gtk.castToWindow "window1"
     canvasAlignment <- Gtk.builderGetObject gui Gtk.castToAlignment "canvasAlignment1"
     coorSystemCombo <- Gtk.builderGetObject gui Gtk.castToComboBox "coorSystemCombo1"
+    showAxesCheckbutton <- Gtk.builderGetObject gui Gtk.castToCheckButton "showAxesCheckbutton1"
+    fontSizeEntry <- Gtk.builderGetObject gui Gtk.castToEntry "fontSizeEntry1"
     evalPointEntry <- Gtk.builderGetObject gui Gtk.castToEntry "evalPointEntry1"
     defaultEvalPointButton <- Gtk.builderGetObject gui Gtk.castToButton "defaultEvalPointButton1"
     dimTable <- Gtk.builderGetObject gui Gtk.castToTable "dimTable1"
@@ -59,6 +61,8 @@ loadGlade gladeFileName =
             wgt_window = window,
             wgt_canvasAlignment = canvasAlignment,
             wgt_coorSystemCombo = coorSystemCombo,
+            wgt_showAxesCheckbutton = showAxesCheckbutton,
+            wgt_fontSizeEntry = fontSizeEntry,
             wgt_evalPointEntry = evalPointEntry,
             wgt_defaultEvalPointButton = defaultEvalPointButton,
             wgt_dimTable = dimTable,
@@ -80,6 +84,8 @@ data Widgets =
         wgt_window :: Gtk.Window,
         wgt_canvasAlignment :: Gtk.Alignment,
         wgt_coorSystemCombo :: Gtk.ComboBox,
+        wgt_showAxesCheckbutton :: Gtk.CheckButton,
+        wgt_fontSizeEntry :: Gtk.Entry,
         wgt_evalPointEntry :: Gtk.Entry,
         wgt_defaultEvalPointButton :: Gtk.Button,
         wgt_dimTable :: Gtk.Table,
