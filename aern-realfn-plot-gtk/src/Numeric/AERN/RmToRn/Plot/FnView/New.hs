@@ -84,14 +84,17 @@ new (sampleF :: f) effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) _maybe
         let state = initState effReal (fndata, fnmeta)
         stateTV <- newTVar state
         return (stateTV, state, fnmeta)
-    dynWidgetsRef <- newIORef initFnViewDynWidgets
     -- create most widgets:
     widgetsPre <- loadGlade (FilePath.combine GLADE_DIR "FnView.glade")
     -- create plotting wgt_canvas:
     widgets <- makeCanvas sampleF effDraw effReal widgetsPre fndataTVs stateTV
     -- add dynamic function label widgets:
+    dynWidgetsRef <- newIORef initFnViewDynWidgets
     updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state fndataTVs stateTV
-    -- attach handlers to widgets
+    -- initialise controls according to state:
+    updateZoomWidgets toDbl widgets state
+    updateAxesWidgets widgets state
+    -- attach handlers to widgets:
     Gtk.onDestroy (wgt_window widgets) $
         do
         atomically $ modifyTVar fnmetaTV $ \fnmeta2 -> fnmeta2 { dataDestroyed = True }
@@ -102,7 +105,9 @@ new (sampleF :: f) effDraw effReal effEval fndataTVs@(fndataTV, fnmetaTV) _maybe
         dataWatchThread 
             sampleF effReal effEval 
             widgets dynWidgetsRef fndataTVs stateTV
+    -- make the window visible
     Gtk.widgetShowAll $ wgt_window widgets
+    --
     return $ wgt_window widgets
     where
     sampleDom = getSampleDomValue sampleF
@@ -130,6 +135,7 @@ setHandlers ::
     IO ()
 setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataTVs@(fndataTV, fnmetaTV) stateTV =
     do
+    setHandlerAxesSetting
     setHandlerCoordSystem
     setHandlerZoomAndPanEntries
     setHandlerPanByMouse
@@ -141,8 +147,6 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
     setHandlerExportSVGButton
     setHandlerExportPNGButton
 
-    state <- atomically $ readTVar stateTV
-    updateZoomWidgets toDbl widgets state
 --    putStrLn $ "setHandlers: " ++ (show $ cnvprmCoordSystem $ favstCanvasParams state)
     return ()
     where        
@@ -153,16 +157,40 @@ setHandlers (sampleF :: f) effDraw effReal effEval widgets dynWidgetsRef fndataT
     effToDouble = ArithInOut.rrEffortToDouble sampleDom effReal
     effFromDouble = ArithInOut.rrEffortFromDouble sampleDom effReal
     sampleDom = getSampleDomValue sampleF
-    
+
+    setHandlerAxesSetting =
+        do
+        Gtk.onToggled (wgt_showAxesCheckbutton widgets) showAxesHandler   
+        Gtk.onEntryActivate (wgt_fontSizeEntry widgets) (fontSizeHandler ())
+        Gtk.onFocusOut (wgt_fontSizeEntry widgets) (\ _e -> fontSizeHandler False)
+        where
+        showAxesHandler =
+            do
+            showAxes <- Gtk.toggleButtonGetActive (wgt_showAxesCheckbutton widgets)
+            _ <- atomically $ modifyTVar stateTV $ updateShowAxes showAxes
+            Gtk.widgetQueueDraw (wgt_canvas widgets)
+        fontSizeHandler :: t -> IO t
+        fontSizeHandler returnValue =
+            do
+            fontSizeS <- Gtk.entryGetText (wgt_fontSizeEntry widgets)
+            case reads fontSizeS of
+                ((fontSize, _): _)
+                    | fontSize > 0 -> 
+                        do
+                        _ <- atomically $ modifyTVar stateTV $ updateFontSize (Just fontSize)
+                        Gtk.widgetQueueDraw (wgt_canvas widgets)
+                    | fontSize == 0 ->
+                        do
+                        _ <- atomically $ modifyTVar stateTV $ updateFontSize Nothing
+                        Gtk.widgetQueueDraw (wgt_canvas widgets)
+                _ -> return ()
+            return returnValue
+        
     setHandlerCoordSystem =
         do
 --        Gtk.on (wgt_coorSystemCombo widgets) Gtk.changed resetZoomPanFromCoordSystem
         -- disable the coord system combo because only one coord system is currently supported:
         Gtk.widgetSetSensitivity (wgt_coorSystemCombo widgets) False   
-        -- TODO: make these two widgets work:
-        Gtk.widgetSetSensitivity (wgt_showAxesCheckbutton widgets) False   
-        Gtk.widgetSetSensitivity (wgt_fontSizeEntry widgets) False
-           
         Gtk.onClicked (wgt_defaultZoomPanButton widgets) resetZoomPanFromCoordSystem
         where
         resetZoomPanFromCoordSystem =

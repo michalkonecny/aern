@@ -104,7 +104,7 @@ data Widgets =
 data FnViewDynWidgets = 
     FnViewDynWidgets
     {
-        valueLabels :: [[Gtk.Label]]
+        dynwgt_valueLabels :: [[Gtk.Label]]
     }
 
 initFnViewDynWidgets :: FnViewDynWidgets

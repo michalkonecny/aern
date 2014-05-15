@@ -51,11 +51,18 @@ initState effReal (_, fnmeta) =
     {
         favstActiveFns = activeFns,
         favstTrackingDefaultEvalPt = True,
-        favstCanvasParams = dataDefaultCanvasParams fnmeta,
+        favstCanvasParams = 
+            (dataDefaultCanvasParams fnmeta)
+            {
+                cnvprmCoordSystem = 
+                    linearCoordsWithZoomAndCentre effReal defaultZoom centre $
+                        getFnExtents fnmeta 
+            },
         favstZoomPercent = defaultZoom,
-        favstPanCentre = getDefaultCentre effReal fnmeta
+        favstPanCentre = centre
     }
     where
+    centre = getDefaultCentre effReal fnmeta
     activeFns = mergeDefaults (mergeDefaults $ \ _a b -> b) allTrue $ dataDefaultActiveFns fnmeta
     allTrue = map (map $ const True) $ dataFnNames fnmeta
     mergeDefaults :: (a -> a -> a) -> [a] -> [a] -> [a]
@@ -64,8 +71,32 @@ initState effReal (_, fnmeta) =
     mergeDefaults mergeElems (h1:t1) (h2:t2) =
         (mergeElems h1 h2) : (mergeDefaults mergeElems t1 t2)
     
+updateShowAxes ::
+    Bool ->
+    (FnViewState f) ->
+    (FnViewState f)
+updateShowAxes showAxes state = 
+    state 
+    { 
+        favstCanvasParams = 
+            (favstCanvasParams state) 
+                { cnvprmShowAxes = showAxes }
+    }
+    
+updateFontSize ::
+    Maybe Double ->
+    (FnViewState f) ->
+    (FnViewState f)
+updateFontSize maybeFontSize state = 
+    state 
+    { 
+        favstCanvasParams = 
+            (favstCanvasParams state) 
+                { cnvprmShowSampleValuesFontSize = maybeFontSize }
+    }
+    
 defaultZoom :: Double
-defaultZoom = 95
+defaultZoom = 90
     
 updateZoomPanCentreCoordSystem ::
     Double ->
@@ -265,7 +296,9 @@ linearCoordsWithZoomAndCentre effReal zoomPercent (cX,cY) (fnHI, fnLO, fnL, fnR)
 
     
 listUpdate :: Int -> a -> [a] -> [a]
+listUpdate _ _ [] = error "FV: listUpdate: invalid index"
 listUpdate i newx (x:xs) 
     | i == 0 = newx : xs
-    | i > 0 = x : (listUpdate (i - 1) newx xs) 
+    | i > 0 = x : (listUpdate (i - 1) newx xs)
+    | otherwise = error "FV: listUpdate: invalid index"
 
