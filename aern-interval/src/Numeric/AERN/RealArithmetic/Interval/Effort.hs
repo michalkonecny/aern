@@ -1,4 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.Interval.Effort
     Description :  composite effort indicator for basic interval real operations 
@@ -35,7 +37,9 @@ import qualified
 
 import Numeric.AERN.Basics.Effort
 
-import Test.QuickCheck (Arbitrary) --, arbitrary, vectorOf)
+import Test.QuickCheck (Arbitrary(..)) --, arbitrary, vectorOf)
+
+import Control.Applicative
 
 data IntervalRealEffort e =
     IntervalRealEffort
@@ -46,10 +50,51 @@ data IntervalRealEffort e =
         intrealeff_distJoinMeet :: RefOrd.JoinMeetEffortIndicator (Distance e)
     }
 
--- TODO: complete the following instances:
-instance Arbitrary (IntervalRealEffort e)
-instance Show (IntervalRealEffort e)
-instance EffortIndicator (IntervalRealEffort e)
+instance 
+    (
+        Arbitrary (ArithUpDn.RoundedRealEffortIndicator e),
+        Arbitrary (ArithInOut.FieldOpsEffortIndicator (Distance e)),
+        Arbitrary (NumOrd.PartialCompareEffortIndicator (Distance e)),
+        Arbitrary (RefOrd.JoinMeetEffortIndicator (Distance e))
+    )
+    =>
+    Arbitrary (IntervalRealEffort e)
+    where
+    arbitrary =
+        IntervalRealEffort <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+        
+deriving instance
+    (
+        Show (ArithUpDn.RoundedRealEffortIndicator e),
+        Show (ArithInOut.FieldOpsEffortIndicator (Distance e)),
+        Show (NumOrd.PartialCompareEffortIndicator (Distance e)),
+        Show (RefOrd.JoinMeetEffortIndicator (Distance e))
+    )
+    =>
+    Show (IntervalRealEffort e)
+
+instance
+    (
+        EffortIndicator (ArithUpDn.RoundedRealEffortIndicator e),
+        EffortIndicator (ArithInOut.FieldOpsEffortIndicator (Distance e)),
+        EffortIndicator (NumOrd.PartialCompareEffortIndicator (Distance e)),
+        EffortIndicator (RefOrd.JoinMeetEffortIndicator (Distance e))
+    )
+    =>
+    EffortIndicator (IntervalRealEffort e)
+    where
+    effortIncrementVariants (IntervalRealEffort e1O e2O e3O e4O) =
+        [IntervalRealEffort e1 e2 e3 e4 | 
+            (e1, e2, e3, e4) <- effortIncrementVariants (e1O,e2O,e3O,e4O) ]
+    effortRepeatIncrement (IntervalRealEffort i1 i2 i3 i4, IntervalRealEffort j1 j2 j3 j4) = 
+        IntervalRealEffort 
+            (effortRepeatIncrement (i1, j1)) 
+            (effortRepeatIncrement (i2, j2)) 
+            (effortRepeatIncrement (i3, j3)) 
+            (effortRepeatIncrement (i4, j4)) 
+    effortIncrementSequence (IntervalRealEffort e1O e2O e3O e4O) =
+        [IntervalRealEffort e1 e2 e3 e4 | 
+            (e1, e2, e3, e4) <- effortIncrementSequence (e1O,e2O,e3O,e4O) ]
 
 intrealeff_intordeff ::
     (ArithUpDn.RoundedReal e)

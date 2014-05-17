@@ -90,6 +90,14 @@ instance Arbitrary Int1To1000 where
         i <- choose (1, 1000)
         return $ Int1To1000 i
 
+instance EffortIndicator Int where
+    effortIncrementVariants i = [i + 1]
+    effortRepeatIncrement (i1, i2) = i2 + (i2 - i1)
+    effortIncrementSequence i =
+        map (i +) $ fibs12
+        where
+        fibs12 = scanl (+) 1 (1:fibs12)
+
 instance EffortIndicator Int1To5 where
     effortIncrementVariants (Int1To5 i) = [Int1To5 $ i + 1]
     effortRepeatIncrement (Int1To5 i1, Int1To5 i2) = Int1To5 $ i2 + (i2 - i1)

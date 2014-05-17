@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-|
     Module      :  Numeric.AERN.Basics.Interval.Basics
     Description :  interval datatype and its basic instances 
@@ -34,9 +35,10 @@ import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.SizeLimits
 
-import Test.QuickCheck (Arbitrary) --, arbitrary, vectorOf)
+import Test.QuickCheck (Arbitrary(..)) --, arbitrary, vectorOf)
 
 import Control.DeepSeq
+import Control.Applicative
 
 {-|
     Pairs of endpoints.  An end user should not use this type directly
@@ -67,10 +69,41 @@ defaultIntervalOrderEffort (Interval sampleE _) =
         intordeff_eMinmax = NumOrd.minmaxDefaultEffort sampleE
     }
     
--- TODO: complete the following instances:
-instance Arbitrary (IntervalOrderEffort e)
-instance Show (IntervalOrderEffort e)
-instance EffortIndicator (IntervalOrderEffort e)
+instance 
+    (
+        Arbitrary (NumOrd.PartialCompareEffortIndicator e),
+        Arbitrary (NumOrd.MinmaxEffortIndicator e)
+    )
+    =>
+    Arbitrary (IntervalOrderEffort e)
+    where
+    arbitrary =
+        IntervalOrderEffort <$> arbitrary <*> arbitrary
+        
+deriving instance
+    (
+        Show (NumOrd.PartialCompareEffortIndicator e),
+        Show (NumOrd.MinmaxEffortIndicator e)
+    )
+    =>
+    Show (IntervalOrderEffort e)
+
+instance
+    (
+        EffortIndicator (NumOrd.PartialCompareEffortIndicator e),
+        EffortIndicator (NumOrd.MinmaxEffortIndicator e)
+    )
+    =>
+    EffortIndicator (IntervalOrderEffort e)
+    where
+    effortIncrementVariants (IntervalOrderEffort e1O e2O) =
+        [IntervalOrderEffort e1 e2 | 
+            (e1, e2) <- effortIncrementVariants (e1O, e2O) ]
+    effortRepeatIncrement (IntervalOrderEffort i1 i2, IntervalOrderEffort j1 j2) = 
+        IntervalOrderEffort (effortRepeatIncrement (i1, j1)) (effortRepeatIncrement (i2, j2)) 
+    effortIncrementSequence (IntervalOrderEffort e1O e2O) =
+        [IntervalOrderEffort e1 e2 | 
+            (e1, e2) <- effortIncrementSequence (e1O, e2O) ]
 
     
 instance (ShowInternals e, NumOrd.PartialComparison e) => (ShowInternals (Interval e))
