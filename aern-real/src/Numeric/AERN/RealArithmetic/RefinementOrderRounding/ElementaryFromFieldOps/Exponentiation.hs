@@ -1,4 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
     Description :  implementation of in/out rounded exponentiation
@@ -26,9 +28,11 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.RealArithmetic.ExactOps
 
-import Test.QuickCheck (Arbitrary) -- , arbitrary, vectorOf)
+import Test.QuickCheck (Arbitrary(..)) -- , arbitrary, vectorOf)
 
 import Control.Monad.ST (ST)
+
+import Control.Applicative
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -40,10 +44,38 @@ data ExpThinEffortIndicator t =
         expeff_taylorDeg :: Int -- ^ the highest number of iterations of Newton method to make 
     }
 
--- TODO: complete the following instances:
-instance Arbitrary (ExpThinEffortIndicator t)
-instance Show (ExpThinEffortIndicator t)
-instance EffortIndicator (ExpThinEffortIndicator t)
+instance 
+    (
+        Arbitrary (ArithInOut.RoundedRealEffortIndicator e)
+    )
+    =>
+    Arbitrary (ExpThinEffortIndicator e)
+    where
+    arbitrary =
+        ExpThinEffortIndicator <$> arbitrary <*> (fromInt1To10 <$> arbitrary)
+        
+deriving instance
+    (
+        Show (ArithInOut.RoundedRealEffortIndicator e)
+    )
+    =>
+    Show (ExpThinEffortIndicator e)
+
+instance
+    (
+        EffortIndicator (ArithInOut.RoundedRealEffortIndicator e)
+    )
+    =>
+    EffortIndicator (ExpThinEffortIndicator e)
+    where
+    effortIncrementVariants (ExpThinEffortIndicator e1O e2O) =
+        [ExpThinEffortIndicator e1 e2 | 
+            (e1, e2) <- effortIncrementVariants (e1O, e2O) ]
+    effortRepeatIncrement (ExpThinEffortIndicator i1 i2, ExpThinEffortIndicator j1 j2) = 
+        ExpThinEffortIndicator (effortRepeatIncrement (i1, j1)) (effortRepeatIncrement (i2, j2)) 
+    effortIncrementSequence (ExpThinEffortIndicator e1O e2O) =
+        [ExpThinEffortIndicator e1 e2 | 
+            (e1, e2) <- effortIncrementSequence (e1O, e2O) ]
 
 expThinDefaultEffort :: 
    (ArithInOut.RoundedReal t) 

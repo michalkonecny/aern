@@ -2,6 +2,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NoMonoLocalBinds #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.NumericOrderRounding.ElementaryFromFieldOps.Sqrt
     Description :  generic up/down rounded sqrt
@@ -31,8 +32,9 @@ import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.Mutable
 import Numeric.AERN.Basics.Exception
 
-import Test.QuickCheck (Arbitrary) -- , arbitrary, vectorOf)
+import Test.QuickCheck (Arbitrary(..)) -- , arbitrary, vectorOf)
 
+import Control.Applicative
 import Control.Exception (throw)
 --import Control.Monad.ST (ST)
 
@@ -43,10 +45,38 @@ data SqrtThinEffortIndicator e =
         sqrteff_newtonIters :: Int -- ^ the highest number of iterations of Newton method to make 
     }
 
--- TODO: complete the following instances:
-instance Arbitrary (SqrtThinEffortIndicator e)
-instance Show (SqrtThinEffortIndicator e)
-instance EffortIndicator (SqrtThinEffortIndicator e)
+instance 
+    (
+        Arbitrary (ArithUpDn.RoundedRealEffortIndicator e)
+    )
+    =>
+    Arbitrary (SqrtThinEffortIndicator e)
+    where
+    arbitrary =
+        SqrtThinEffortIndicator <$> arbitrary <*> (fromInt1To10 <$> arbitrary)
+        
+deriving instance
+    (
+        Show (ArithUpDn.RoundedRealEffortIndicator e)
+    )
+    =>
+    Show (SqrtThinEffortIndicator e)
+
+instance
+    (
+        EffortIndicator (ArithUpDn.RoundedRealEffortIndicator e)
+    )
+    =>
+    EffortIndicator (SqrtThinEffortIndicator e)
+    where
+    effortIncrementVariants (SqrtThinEffortIndicator e1O e2O) =
+        [SqrtThinEffortIndicator e1 e2 | 
+            (e1, e2) <- effortIncrementVariants (e1O, e2O) ]
+    effortRepeatIncrement (SqrtThinEffortIndicator i1 i2, SqrtThinEffortIndicator j1 j2) = 
+        SqrtThinEffortIndicator (effortRepeatIncrement (i1, j1)) (effortRepeatIncrement (i2, j2)) 
+    effortIncrementSequence (SqrtThinEffortIndicator e1O e2O) =
+        [SqrtThinEffortIndicator e1 e2 | 
+            (e1, e2) <- effortIncrementSequence (e1O, e2O) ]
 
 sqrtThinDefaultEffort :: 
    (ArithUpDn.RoundedReal e) 
@@ -92,7 +122,7 @@ sqrtOutThinArg eff x
     where
     (xRecipSqrtDownPrev, xRecipSqrtDown) = recipSqrtDown
     xRecipSqrtDownInFastRegion =
-        case ArithUpDn.convertDnEff effortToDouble (0::Double) t of
+        case ArithUpDn.convertDnEff effortToDbl (0::Double) t of
             Just lowerBound -> lowerBound > 0.381966012 -- (3 - sqrt 5)/2
             Nothing -> False
         where
@@ -107,7 +137,7 @@ sqrtOutThinArg eff x
             (3 |+^ (neg $ x *. (xRecipSqrtDownPrev *. xRecipSqrtDownPrev))) 
             
     sureAbove0 t = 
-        case ArithUpDn.convertDnEff effortToDouble (0::Double) t of
+        case ArithUpDn.convertDnEff effortToDbl (0::Double) t of
             Just lowerBound -> lowerBound > 0
             Nothing -> False
             
@@ -133,7 +163,7 @@ sqrtOutThinArg eff x
     effortDivInt = ArithUpDn.mxfldEffortDiv x (0::Int) effortMixedField
 
     effortMinmax = ArithUpDn.rrEffortMinmax x effE
-    effortToDouble = ArithUpDn.rrEffortToDouble x effE
+    effortToDbl = ArithUpDn.rrEffortToDouble x effE
     effortCompare = ArithUpDn.rrEffortComp x effE
     effortField = ArithUpDn.rrEffortField x effE
     effortMixedField = ArithUpDn.rrEffortIntMixedField x effE
@@ -206,7 +236,7 @@ sqrtOutThinArg eff x
 --        effortMixedField
 --        effortMinmax
 --        effortCompare
---        effortToDouble
+--        effortToDbl
 --        resM@(MInterval resLM resRM)
 --        maxIters
 --        xM
@@ -292,7 +322,7 @@ sqrtOutThinArg eff x
 --                            NumOrd.maxUpEff effortMinmax x (one x)
 --                    where
 --                    xRecipSqrtDownInFastRegion =
---                        case ArithUpDn.convertDnEff effortToDouble (0::Double) t of
+--                        case ArithUpDn.convertDnEff effortToDbl (0::Double) t of
 --                            Just lowerBound -> lowerBound > 0.381966012 -- (3 - sqrt 5)/2
 --                            Nothing -> False
 --                        where
@@ -327,7 +357,7 @@ sqrtOutThinArg eff x
 --                    resM2 /^|= (2 :: Int)
 --    
 --                sureAbove0 t = 
---                    case ArithUpDn.convertDnEff effortToDouble (0 :: Double) t of
+--                    case ArithUpDn.convertDnEff effortToDbl (0 :: Double) t of
 --                        Just lowerBound -> lowerBound > 0
 --                        Nothing -> False
 --                        
