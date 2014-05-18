@@ -48,12 +48,13 @@ thickProd useInner maxdeg bernsteinDeg
         unitIntervalConstFn >*< x
     | otherwise =
         unitIntervalConstFn <*> x
+--        (Interval (-1) 1 :: DI) |<*> x
     where
     unitIntervalConstFn = 
         newConstFn sizeLimits domains (Interval (-1) 1)
     x = 
         newProjection sizeLimits domains "x"
-    domains = [("x", Interval (-1) 1)]
+    domains = [("x", Interval (-1) 2)]
         -- ie the identity function \x:[-1,1] -> x
 
     -- indicators controlling the approximation effort:
@@ -81,7 +82,7 @@ thickProdExact =
     x = newProjection sizeLimits domains "x"
         -- ie the projection function \(x,a):[-1,1]x[-1,1] -> x
     a = newProjection sizeLimits domains "a"
-    domains = [("x", Interval (-1) 1), ("a", Interval (-1) 1)]
+    domains = [("x", Interval (-1) 2), ("a", Interval (-1) 1)]
 
     -- indicators controlling the approximation effort:
     sizeLimits =
@@ -94,8 +95,10 @@ plotThickProd =
     FV.plotFns 
         [("f(x) = [-1,1]*x", 
             [
-             (("f(x) [outer approx.]", FV.blue, True), thickProd False 50 6),
-             (("f(x) [inner approx.]", FV.green, True), thickProd True 50 6),
+             (("f(x) [outer approx.]", FV.blue, True), thickProd False 50 4),
+             (("f(x) [inner approx.]", FV.green, True), thickProd True 10 2),
+                                            -- deliberately using low precision for inner approx. 
+                                            -- so that its inconsistent region is visible
              (("f(x)", FV.black, True), thickProdExact)
             ]
          )
