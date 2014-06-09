@@ -5,22 +5,22 @@ module Main where
 import Numeric.AERN.Basics.Effort
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.OpsDefaultEffort
+import Numeric.AERN.NumericOrder.Operators
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+import Numeric.AERN.RefinementOrder.Operators
 
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
-import Numeric.AERN.RealArithmetic.NumericOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.NumericOrderRounding.Operators
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.OpsDefaultEffort
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
-import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
 
 import Numeric.AERN.Basics.ShowInternals
 
@@ -47,34 +47,35 @@ shouldShowInternals = False
 
 exp1efforts :: [DI]
 exp1efforts =
-    map (\n -> ArithInOut.expOutEff (expEffort n) one) [1..20]
+    map (\n -> ArithInOut.expOutEff (expEffort n) c1) [1..20]
     
 exp3efforts :: [DI]
 exp3efforts =
-    map (\n -> ArithInOut.expOutEff (expEffort n) three) [1..20]
+    map (\n -> ArithInOut.expOutEff (expEffort n) c3) [1..20]
 
 exp10efforts :: [DI]
 exp10efforts =
-    map (\n -> ArithInOut.expOutEff (expEffort n) ten) [1..20]
+    map (\n -> ArithInOut.expOutEff (expEffort n) c10) [1..20]
 
 exp100efforts :: [DI]
 exp100efforts =
-    map (\n -> ArithInOut.expOutEff (expEffort n) hundred) [1..20]
+    map (\n -> ArithInOut.expOutEff (expEffort n) c100) [1..20]
 
 exp1000efforts :: [DI]
 exp1000efforts =
-    map (\n -> ArithInOut.expOutEff (expEffort n) thousand) [1..20]
+    map (\n -> ArithInOut.expOutEff (expEffort n) c1000) [1..20]
 
-three, ten, hundred, thousand :: DI
+c1, c3, c10, c100, c1000 :: DI
 
-[three, ten, hundred, thousand] = 
-    map (ArithInOut.convertOutEff ()) ([3,10,100,1000] :: [Int])
+[c1,c3,c10,c100,c1000] = 
+    map (ArithInOut.convertOutEff () 0) ([1,3,10,100,1000] :: [Int])
 
     
 expEffort n =
-    (a, Int1To10 n, c)
-    where
-    (a, _, c) = expEffortDefault
+    expEffortDefault
+    {
+        expeff_taylorDeg = n
+    }
 
 expEffortDefault = 
    ArithInOut.expDefaultEffort t2
@@ -88,6 +89,6 @@ t2 :: DI
 t2 = 
    (1 :: Int)
    |<+> 
-   (ArithInOut.convertOutEff () big)
+   (ArithInOut.convertOutEff () 0 big)
 
    
