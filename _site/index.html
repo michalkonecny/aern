@@ -90,17 +90,17 @@
       <h3>What can AERN do?</h3>
 
 		<div class="panel-group" id="accordion">
-		  <div class="panel panel-default" id="panel1">
-		    <div class="panel-heading">
-		      <h4 class="panel-title">
-		        <a data-toggle="collapse" data-target="#collapseOne" href="#collapseOne" class="collapsed">
-		          Compute (tight) interval bounds and function enclosures
-		        </a>
-		      </h4>
-		    </div>
-		    <div id="collapseOne" class="panel-collapse collapse">
-		      <div class="panel-body">
-		        <p>For example, consider the <a href="http://en.wikipedia.org/wiki/Logistic_map">logistic map</a>, defined by the simple recurrence formula: <span class="math">\[
+          <div class="panel panel-default" id="panel1A">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-target="#collapseOneA" href="#collapseOneA" class="collapsed">
+                  Compute (tight) interval bounds
+                </a>
+              </h4>
+            </div>
+            <div id="collapseOneA" class="panel-collapse collapse">
+              <div class="panel-body">
+                <p>For example, consider the <a href="http://en.wikipedia.org/wiki/Logistic_map">logistic map</a>, defined by the simple recurrence formula: <span class="math">\[
 x_{n+1} = rx_n(1-x_n)
 \]</span> For almost all <span class="math">\(r\in[3.567,4]\)</span> this system is chaotic.</p>
 <p>A <a href="https://github.com/michalkonecny/aern/blob/master/aern-mpfr/demos/LogisticMap.hs">direct encoding in AERN</a> with arbitrary precision support in the style of <a href="http://irram.uni-trier.de/">iRRAM</a> computes tight interval enclosures for <span class="math">\(x_n\)</span>. For example, with <span class="math">\(r=3.75\)</span> and <span class="math">\(x_0=0.5\)</span>, it computes:</p>
@@ -184,9 +184,37 @@ Plot how x_n depends on n \in [0,10] when r = 4 using the explicit formula.
 
 
 
-		      </div>
-		    </div>
-		  </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default" id="panel1B">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-target="#collapseOneB" href="#collapseOneB" class="collapsed">
+                  Compute (tight) function enclosures
+                </a>
+              </h4>
+            </div>
+            <div id="collapseOneB" class="panel-collapse collapse">
+              <div class="panel-body">
+                <p>AERN can approximate real numbers by real intervals and real continuous functions by <em>function intervals</em>. For example, <a href="https://github.com/michalkonecny/aern/blob/master/aern-poly-plot-gtk/demos/erf.hs">this code</a> computes approximations of the error function <span class="math">\[
+\begin{equation}
+    \mathrm{erf}(x) =\frac{2}{\sqrt{\pi}}\int_0^x e^{-t^2}\,dt
+\end{equation}
+\]</span> over the domain <span class="math">\(x\in[0,2]\)</span>. Each computed approximation is an interval <span class="math">\([f(x),g(x)]\)</span> where <span class="math">\(f\)</span> and <span class="math">\(g\)</span> are polynomials such that <span class="math">\(f(x) \leq \mathrm{erf}(x) \leq g(x)\)</span>. We say that the interval <span class="math">\([f(x),g(x)]\)</span> is an enclosure of the function <span class="math">\(\mathrm{erf}(x)\)</span>.</p>
+<p><a href="https://github.com/michalkonecny/aern/blob/master/aern-poly-plot-gtk/demos/erf.hs">The program</a> produces the following enclosures:</p>
+<p><a href="./img/erf-enclosures.png"> <img src="./img/erf-enclosures.png" height="300" alt="Enclosures of the error function over the domain [0,2]"> </a></p>
+<p>Some of the plotted enclosures are rather inaccurate and others are so tight that their thickness is not visible at this zoom level. The quality of the computed enclosure depends on the effort used during the computation. The effort can be set via so-called effort parameters.</p>
+<p>For approximating <span class="math">\(\mathrm{erf}(x)\)</span> in AERN there are the following effort parameters:</p>
+<ul>
+<li>The precision of polynomial coefficients and constants such as <span class="math">\(\pi\)</span></li>
+<li>An upper bound on the polynomial degree</li>
+<li>The Taylor degree for approximating <span class="math">\(e^x\)</span></li>
+</ul>
+<p>In our example, all enclosures are computed using the machine Double for polynomial coefficients and interval endpoints, and using the Taylor degree 5.<br />The upper bound on polynomial degree ranges from 5 to 25.</p>
+              </div>
+            </div>
+          </div>
 		  <div class="panel panel-default" id="panel2">
 		    <div class="panel-heading">
 		      <h4 class="panel-title">
