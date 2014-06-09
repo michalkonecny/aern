@@ -5,21 +5,21 @@ date: 2014-06-07
 mathjax: on
 ---
 
-AERN can approximate real numbers by real intervals and real continuous functions by 
-*function intervals*.  For example, [this code](https://github.com/michalkonecny/aern/blob/master/aern-poly-plot-gtk/demos/erf.hs) 
-computes approximations of the error function
+AERN can bound real continuous functions by 
+*function intervals* analogously to how it can bound real numbers by real intervals.
+For example, [the demo program erf.hs](https://github.com/michalkonecny/aern/blob/master/aern-poly-plot-gtk/demos/erf.hs) 
+computes bounds for the error function
 $$
 \begin{equation}
     \mathrm{erf}(x) =\frac{2}{\sqrt{\pi}}\int_0^x e^{-t^2}\,dt
 \end{equation}
 $$
-over the domain $x\in[0,2]$.  Each computed approximation is an interval $[f(x),g(x)]$ where
-$f$ and $g$ are polynomials such that
-$f(x) \leq \mathrm{erf}(x) \leq g(x)$.
-We say that the interval $[f(x),g(x)]$ is an enclosure of the function $\mathrm{erf}(x)$.
-
-[The program](https://github.com/michalkonecny/aern/blob/master/aern-poly-plot-gtk/demos/erf.hs) 
-produces the following enclosures:
+over the domain $x\in[0,2]$.  The computed bounds are in the form of an interval $[f(x),g(x)]$ where
+$f$ and $g$ are polynomials such that $f(x) \leq \mathrm{erf}(x) \leq g(x)$ for all $x\in[0,2]$.
+We say that the interval $[f(x),g(x)]$ is an enclosure of the function $\mathrm{erf}(x)$ over $x\in[0,2]$.
+ 
+The following plot shows the enclosures for $\mathrm{erf}(x)$ computed by 
+[the program erf.hs](https://github.com/michalkonecny/aern/blob/master/aern-poly-plot-gtk/demos/erf.hs):
 
 <a href="/img/erf-enclosures.png">
 <img 

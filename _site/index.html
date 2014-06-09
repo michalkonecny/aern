@@ -94,7 +94,7 @@
             <div class="panel-heading">
               <h4 class="panel-title">
                 <a data-toggle="collapse" data-target="#collapseOneA" href="#collapseOneA" class="collapsed">
-                  Compute (tight) interval bounds
+                  Compute (tight) bounds for real numbers
                 </a>
               </h4>
             </div>
@@ -197,12 +197,12 @@ Plot how x_n depends on n \in [0,10] when r = 4 using the explicit formula.
             </div>
             <div id="collapseOneB" class="panel-collapse collapse">
               <div class="panel-body">
-                <p>AERN can approximate real numbers by real intervals and real continuous functions by <em>function intervals</em>. For example, <a href="https://github.com/michalkonecny/aern/blob/master/aern-poly-plot-gtk/demos/erf.hs">this code</a> computes approximations of the error function <span class="math">\[
+                <p>AERN can bound real continuous functions by <em>function intervals</em> analogously to how it can bound real numbers by real intervals. For example, <a href="https://github.com/michalkonecny/aern/blob/master/aern-poly-plot-gtk/demos/erf.hs">the demo program erf.hs</a> computes bounds for the error function <span class="math">\[
 \begin{equation}
     \mathrm{erf}(x) =\frac{2}{\sqrt{\pi}}\int_0^x e^{-t^2}\,dt
 \end{equation}
-\]</span> over the domain <span class="math">\(x\in[0,2]\)</span>. Each computed approximation is an interval <span class="math">\([f(x),g(x)]\)</span> where <span class="math">\(f\)</span> and <span class="math">\(g\)</span> are polynomials such that <span class="math">\(f(x) \leq \mathrm{erf}(x) \leq g(x)\)</span>. We say that the interval <span class="math">\([f(x),g(x)]\)</span> is an enclosure of the function <span class="math">\(\mathrm{erf}(x)\)</span>.</p>
-<p><a href="https://github.com/michalkonecny/aern/blob/master/aern-poly-plot-gtk/demos/erf.hs">The program</a> produces the following enclosures:</p>
+\]</span> over the domain <span class="math">\(x\in[0,2]\)</span>. The computed bounds are in the form of an interval <span class="math">\([f(x),g(x)]\)</span> where <span class="math">\(f\)</span> and <span class="math">\(g\)</span> are polynomials such that <span class="math">\(f(x) \leq \mathrm{erf}(x) \leq g(x)\)</span> for all <span class="math">\(x\in[0,2]\)</span>. We say that the interval <span class="math">\([f(x),g(x)]\)</span> is an enclosure of the function <span class="math">\(\mathrm{erf}(x)\)</span> over <span class="math">\(x\in[0,2]\)</span>.</p>
+<p>The following plot shows the enclosures for <span class="math">\(\mathrm{erf}(x)\)</span> computed by <a href="https://github.com/michalkonecny/aern/blob/master/aern-poly-plot-gtk/demos/erf.hs">the program erf.hs</a>:</p>
 <p><a href="./img/erf-enclosures.png"> <img src="./img/erf-enclosures.png" height="300" alt="Enclosures of the error function over the domain [0,2]"> </a></p>
 <p>Some of the plotted enclosures are rather inaccurate and others are so tight that their thickness is not visible at this zoom level. The quality of the computed enclosure depends on the effort used during the computation. The effort can be set via so-called effort parameters.</p>
 <p>For approximating <span class="math">\(\mathrm{erf}(x)\)</span> in AERN there are the following effort parameters:</p>
