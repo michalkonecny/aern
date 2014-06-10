@@ -278,7 +278,7 @@ solveVtPrintSteps shouldWrap maybePlotDimens maybePDFfilename ivp (maxdegParam, 
     putStrLn $ "maxsize = " ++ show maxsize
     putStrLn $ "delta = " ++ show delta
     putStrLn $ "m = " ++ show m
-    putStrLn $ "substSplitSizeLimit = " ++ show substSplitSizeLimit
+--    putStrLn $ "substSplitSizeLimit = " ++ show substSplitSizeLimit
     putStrLn $ "minimum step size = 2^{" ++ show minStepSizeExp ++ "}"
     putStrLn $ "maximum step size = 2^{" ++ show maxStepSizeExp ++ "}"
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
@@ -324,7 +324,7 @@ solveVtPrintSteps shouldWrap maybePlotDimens maybePDFfilename ivp (maxdegParam, 
     maxdeg = maxdegParam
     maxsize = maxsizeParam
     m = 200
-    substSplitSizeLimit = 100
+    substSplitSizeLimit = undefined
 --    minStepSizeExp = -4 :: Int
     minStepSizeExp = - minDepthParam
     maxStepSizeExp = - maxDepthParam
@@ -412,7 +412,7 @@ solveIVPWithUncertainValue ::
     )
 solveIVPWithUncertainValue
         shouldWrap 
-            sizeLimits effCf substSplitSizeLimit
+            sizeLimits effCf _substSplitSizeLimit
                 delta m minStepSize maxStepSize splitImprovementThreshold
                     odeivp
     =
@@ -455,12 +455,19 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
     where
     varDoms = zip vars doms 
     sizeLimits =
-        (defaultIntPolySizeLimits sampleCf cf_limits arity)
+        defaultLimits
         {
             ipolylimits_maxdeg = maxdeg,
-            ipolylimits_maxsize = maxsize
+            ipolylimits_maxsize = maxsize,
+            ipolylimits_effort =
+                (ipolylimits_effort defaultLimits)
+                {
+                    ipolyeff_evalMaxSplitSize = 100
+                }
         }
         where
+        defaultLimits =
+            defaultIntPolySizeLimits sampleCf cf_limits arity
         arity = length vars
         cf_limits = defaultSizeLimits sampleCf
 
@@ -505,12 +512,15 @@ testShrinkWrap =
     varDoms = [("t", unitDom),  ("s", unitDom)]
     unitDom = (-1) CF.</\> 1
     sizeLimits =
-        IntPolySizeLimits
+        (defaultIntPolySizeLimits sampleCf cf_limits arity)
         {
             ipolylimits_cf_limits = defaultSizeLimits sampleCf,
             ipolylimits_maxdeg = 3,
             ipolylimits_maxsize = 1000
         }
+        where
+        arity = 2
+        cf_limits = defaultSizeLimits sampleCf
     effCf = ArithInOut.roundedRealDefaultEffort sampleCf
     effEval = evaluationDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
     effPEval = partialEvaluationDefaultEffort sampleFn -- (effCf, Int1To10 substSplitSizeLimit)
