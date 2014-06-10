@@ -70,7 +70,7 @@ instance
      Neg (Distance e),
      RefOrd.RoundedLattice (Distance e)
     ) => 
-    ArithInOut.RoundedReal (Interval e) 
+    ArithInOut.RoundedReal (Interval e)
     where
     type RoundedRealEffortIndicator (Interval e) =
         IntervalRealEffort e 
@@ -82,11 +82,11 @@ instance
     rrEffortPartialJoin (Interval l _) eff = intrealeff_intordeff l eff
     rrEffortJoinMeet (Interval l _) eff = intrealeff_intordeff l eff
     rrEffortDistance (Interval _ _) eff = eff 
-    rrEffortDistanceComp (Interval _ _) eff = intrealeff_distComp eff
-    rrEffortDistanceField (Interval _ _) eff = intrealeff_distField eff
+--    rrEffortDistanceComp (Interval _ _) eff = intrealeff_distComp eff
+--    rrEffortDistanceField (Interval _ _) eff = intrealeff_distField eff
     rrEffortImprecision (Interval _ _) eff = eff
-    rrEffortImprecisionComp (Interval _ _) eff = intrealeff_distComp eff
-    rrEffortImprecisionField (Interval _ _) eff = intrealeff_distField eff
+--    rrEffortImprecisionComp (Interval _ _) eff = intrealeff_distComp eff
+--    rrEffortImprecisionField (Interval _ _) eff = intrealeff_distField eff
     rrEffortToSelf _ _ = ()
     rrEffortToInt (Interval l _) eff = ArithUpDn.rrEffortToInt l $ intrealeff_eRoundedReal eff
     rrEffortFromInt (Interval l _) eff = ArithUpDn.rrEffortFromInt l $ intrealeff_eRoundedReal eff

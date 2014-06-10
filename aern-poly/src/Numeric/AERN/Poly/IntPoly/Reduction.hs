@@ -58,6 +58,7 @@ _ = unsafePrint
 instance
     (Ord var, Show var, Show cf,
      ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf,
      HasAntiConsistency cf)
     => 
@@ -102,6 +103,7 @@ reducePolyTermCountOut ::
      Show cf,
      HasDomainBox (IntPoly var cf),
      ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf),
      HasAntiConsistency cf) 
     =>
     ArithInOut.RoundedRealEffortIndicator cf -> 
@@ -115,6 +117,7 @@ reduceTermsTermCountOut ::
      Show cf,
      HasDomainBox (IntPoly var cf),
      ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf),
      HasAntiConsistency cf) 
     =>
     ArithInOut.RoundedRealEffortIndicator cf -> 

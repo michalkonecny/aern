@@ -34,7 +34,7 @@ import Numeric.AERN.Poly.IntPoly.New
 import Numeric.AERN.Poly.IntPoly.Reduction
 import Numeric.AERN.Poly.IntPoly.Addition
 
-import Numeric.AERN.RmToRn.New
+--import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
 
 --import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
@@ -54,7 +54,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Interval (Interval)
 import Numeric.AERN.Basics.Consistency
-import Numeric.AERN.Basics.ShowInternals
+--import Numeric.AERN.Basics.ShowInternals
 
 --import Numeric.AERN.Misc.Debug
 
@@ -71,6 +71,7 @@ instance
 
 instance
     (ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf),
      HasAntiConsistency cf,
      RefOrd.IntervalLike cf, 
      Ord var, Show var, Show cf) 
@@ -84,7 +85,9 @@ instance
 multPolysOut ::
     (Ord var, Show var, Show cf,
      RefOrd.IntervalLike cf,
-     ArithInOut.RoundedReal cf, HasAntiConsistency cf) 
+     ArithInOut.RoundedReal cf, 
+     NumOrd.PartialComparison (Imprecision cf),
+     HasAntiConsistency cf) 
     =>
     (ArithInOut.RoundedRealEffortIndicator cf) -> 
     IntPoly var cf -> IntPoly var cf -> IntPoly var cf
@@ -137,6 +140,7 @@ instance
 
 instance
     (ArithInOut.RoundedReal cf, 
+     NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf, 
      HasAntiConsistency cf,
      Show var, Show cf, Ord var) 
@@ -163,6 +167,7 @@ instance
 powTerms ::
     (Ord var, Show var, Show cf,
      ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf, 
      HasAntiConsistency cf) 
     =>
