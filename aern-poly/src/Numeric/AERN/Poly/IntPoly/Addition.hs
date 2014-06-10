@@ -43,10 +43,10 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding
     (AddEffortIndicator, MixedAddEffortIndicator)
 
 import Numeric.AERN.RealArithmetic.ExactOps
---import Numeric.AERN.RealArithmetic.Measures
+import Numeric.AERN.RealArithmetic.Measures
 --import Numeric.AERN.RealArithmetic.Auxiliary
 
---import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Interval
@@ -68,6 +68,7 @@ instance
     
 instance
     (ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf,  
      HasAntiConsistency cf,
      Ord var, 
@@ -96,6 +97,7 @@ instance
 
 instance
     (ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf,  
      HasAntiConsistency cf,
      Ord var, 

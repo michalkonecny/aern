@@ -95,8 +95,8 @@ instance
     multOutEff effort i1@(Interval sampleE _) i2 =
         fromEndpoints $
         multiplyIntervals 
-            (pNonnegNonposEff effortComp) (pConsAnticonsEff effortComp)
-            (pNonnegNonposEff effortComp) (pConsAnticonsEff effortComp)
+            (pNonnegNonposEff effortComp) (pConsAnticons)
+            (pNonnegNonposEff effortComp) (pConsAnticons)
             (ArithUpDn.multDnEff effortMult) (ArithUpDn.multUpEff effortMult)
             (NumOrd.minDnEff effortMinmax) -- minL
             (NumOrd.minUpEff effortMinmax) -- minR
@@ -106,7 +106,7 @@ instance
             (NumOrd.maxUpEff effortMinmax) 
             (getEndpoints i1) (getEndpoints i2)
         where
-        pConsAnticonsEff eff (l,r) = (NumOrd.pLeqEff eff l r, NumOrd.pGeqEff eff l r)
+        pConsAnticons (l,r) = (NumOrd.pLeqEff effortComp l r, NumOrd.pLeqEff effortComp r l)
 
         effortComp = intrealeff_eComp sampleE effort
         effortMinmax = intrealeff_eMinmax sampleE effort
@@ -117,8 +117,8 @@ instance
     multInEff effort i1@(Interval sampleE _) i2 =
         fromEndpoints $
         multiplyIntervals 
-            (pNonnegNonposEff effortComp) (pConsAnticonsEff effortComp)
-            (pNonnegNonposEff effortComp) (pConsAnticonsEff effortComp)
+            (pNonnegNonposEff effortComp) (pConsAnticons)
+            (pNonnegNonposEff effortComp) (pConsAnticons)
             (ArithUpDn.multUpEff effortMult) (ArithUpDn.multDnEff effortMult)
             (NumOrd.minUpEff effortMinmax) -- minL
             (NumOrd.minDnEff effortMinmax) -- minR
@@ -128,7 +128,7 @@ instance
             (NumOrd.minDnEff effortMinmax) -- combineR
             (getEndpoints i1) (getEndpoints i2)
         where
-        pConsAnticonsEff eff (l,r) = (NumOrd.pLeqEff eff l r, NumOrd.pGeqEff eff l r)
+        pConsAnticons (l,r) = (NumOrd.pLeqEff effortComp l r, NumOrd.pLeqEff effortComp r l)
         
         effortComp = intrealeff_eComp sampleE effort
         effortMinmax = intrealeff_eMinmax sampleE effort
@@ -231,7 +231,7 @@ multiplyIntervals
             -----------------------------------------------------------
 
             -- both consistent, at least one contains zero
-            | (i1ContZero && i2Consistent) || (i2Consistent && i1ContZero) =
+            | (i1ContZero && i2Consistent) || (i2ContZero && i1Consistent) =
                 ((l1 `timesL` r2) `minL` (r1 `timesL` l2), 
                  (l1 `timesR` l2) `maxR` (r1 `timesR` r2))
             -- i1 consistent and containing zero, i2 anti-consistent and anti-containing zero

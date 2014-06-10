@@ -84,6 +84,7 @@ instance
 
 instance
     (ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf,  
      HasAntiConsistency cf,
      Ord var, 
@@ -102,6 +103,7 @@ instance
 
 instance
     (ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf,  
      HasAntiConsistency cf,
      Ord var, 
@@ -125,6 +127,7 @@ instance
 
 instance
     (ArithInOut.RoundedReal cf,
+     NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf,  
      HasAntiConsistency cf,
      Ord var, 
@@ -157,6 +160,7 @@ instance
 
 instance
     (ArithInOut.RoundedReal cf, 
+     NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf, 
      HasAntiConsistency cf,
 --     NumOrd.PartialComparison (Imprecision cf), 
@@ -188,6 +192,7 @@ instance
 
 instance
     (ArithInOut.RoundedReal cf, 
+     NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf, 
      HasAntiConsistency cf,
 --     NumOrd.PartialComparison (Imprecision cf), 
@@ -247,8 +252,11 @@ instance
 
 instance
    (cf ~ (Interval e),
-    Ord var, Show var, Show cf, Show (Imprecision cf),
-    HasAntiConsistency cf, ArithInOut.RoundedReal cf,
+    Ord var, Show var, Show cf, 
+    Show (Imprecision cf),
+    ArithInOut.RoundedReal cf,
+    NumOrd.PartialComparison (Imprecision cf),
+    HasAntiConsistency cf, 
     RefOrd.IntervalLike cf,
     ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
     =>
@@ -504,6 +512,7 @@ instance
 instance
     (ArithInOut.RoundedMixedMultiply (Interval e) (Interval e),
      ArithInOut.RoundedReal (Interval e),
+     NumOrd.PartialComparison (Imprecision (Interval e)),
      RefOrd.IntervalLike (Interval e),  
      HasAntiConsistency (Interval e),
      Ord var, 

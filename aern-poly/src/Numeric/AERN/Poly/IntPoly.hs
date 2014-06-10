@@ -63,7 +63,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Consistency
@@ -74,6 +74,7 @@ import Test.QuickCheck.Arbitrary
 instance
     (
      ArithInOut.RoundedReal (Interval e),
+     NumOrd.PartialComparison (Imprecision (Interval e)),
      ArithUpDn.Convertible Int (Interval e),
      ArithUpDn.Convertible Integer (Interval e),
      ArithUpDn.Convertible Rational (Interval e),

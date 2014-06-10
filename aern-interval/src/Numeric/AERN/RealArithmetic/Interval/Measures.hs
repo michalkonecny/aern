@@ -27,7 +27,7 @@ import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.Basics.Consistency
+--import Numeric.AERN.Basics.Consistency
 
 import qualified 
        Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
@@ -35,14 +35,21 @@ import qualified
 import qualified 
        Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((<+>))
+
 import qualified 
        Numeric.AERN.RefinementOrder as RefOrd
+import Numeric.AERN.RefinementOrder.Operators ((</\>))
 
+import qualified 
+       Numeric.AERN.NumericOrder as NumOrd
+
+import qualified 
+       Numeric.AERN.Basics.PartialOrdering as POrd
 
 instance 
     (ArithUpDn.RoundedReal e,
-     ArithInOut.RoundedField (Distance e),
-     RefOrd.RoundedLattice (Distance e)) 
+     ArithInOut.RoundedAdd (Distance e))
     => 
     HasDistance (Interval e) 
     where
@@ -52,23 +59,17 @@ instance
     distanceDefaultEffort i =
         defaultIntervalRealEffort i
     distanceBetweenEff effort (Interval l1 r1) (Interval l2 r2) =
-        distL <+> distR
+        distL <+> distR -- addition with default effort
         where
-        distL = distanceBetweenEff effortDist l1 l2
-        distR = distanceBetweenEff effortDist r1 r2
-        (<+>) = ArithInOut.addOutEff effortAdd
-        effortAdd = ArithInOut.fldEffortAdd sampleDist effDistField
-        sampleDist = distL
-        effDistField = intrealeff_distField effort 
-        effortDist = ArithUpDn.rrEffortDistance sampleE effE
-        effE = intrealeff_eRoundedReal effort 
+        distL = distanceBetweenEff effGetDist l1 l2
+        distR = distanceBetweenEff effGetDist r1 r2
+        effGetDist = ArithUpDn.rrEffortDistance sampleE effortE
         sampleE = l1
+        effortE = intrealeff_eRoundedReal effort
     
 instance
     (ArithUpDn.RoundedReal e,
-     Neg (Distance e), 
-     ArithInOut.RoundedField (Distance e),
-     RefOrd.RoundedLattice (Distance e)) 
+     RefOrd.RoundedLattice (Distance e), Neg (Distance e))
     => 
     HasImprecision (Interval e) 
     where
@@ -77,19 +78,17 @@ instance
         IntervalRealEffort e
     imprecisionDefaultEffort i =
         defaultIntervalRealEffort i 
-    imprecisionOfEff effort i@(Interval l r) =
-        case (isConsistentEff effortOrd i) of
-            Just True -> dist
-            Just False -> neg dist
-            Nothing -> dist <⊓> (neg dist)
+    imprecisionOfEff effort (Interval l r) =
+        case (NumOrd.pCompareEff effComp l r) of
+            Just POrd.LT -> dist
+            Just POrd.GT -> neg dist
+            _ -> dist </\> (neg dist)
         where
-        (<⊓>) = RefOrd.meetOutEff effortMeet
-        dist = distanceBetweenEff effortDist l r
-        
-        effortOrd = intrealeff_intordeff sampleE effort
-        effortMeet = intrealeff_distJoinMeet effort
-        effortDist = ArithUpDn.rrEffortDistance l effE
-        effE = intrealeff_eRoundedReal effort
+        dist = distanceBetweenEff effGetDist l r
+        effGetDist = ArithUpDn.rrEffortDistance sampleE effortE
+        effComp = ArithUpDn.rrEffortComp sampleE effortE
         sampleE = l
+        effortE = intrealeff_eRoundedReal effort
+        
         
     

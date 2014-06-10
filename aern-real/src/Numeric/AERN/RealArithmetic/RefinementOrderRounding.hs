@@ -61,8 +61,10 @@ class
     (HasZero t, HasOne t, HasInfinities t, Neg t,
      NumOrd.PartialComparison t, NumOrd.RefinementRoundedLattice t,
      RefOrd.PartialComparison t, RefOrd.RoundedLattice t,
-     HasImprecision t, NumOrd.PartialComparison (Imprecision t), RoundedField (Imprecision t), 
-     HasDistance t, NumOrd.PartialComparison (Distance t), RoundedField (Distance t),
+     HasImprecision t, 
+--     NumOrd.PartialComparison (Imprecision t), RoundedField (Imprecision t), 
+     HasDistance t, 
+--     NumOrd.PartialComparison (Distance t), RoundedField (Distance t),
      Convertible t t, ArithUpDn.Convertible t t,
      Convertible Int t, ArithUpDn.Convertible t Int,
      Convertible Integer t, ArithUpDn.Convertible t Integer,  
@@ -89,11 +91,11 @@ class
     rrEffortPartialJoin :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.PartialJoinEffortIndicator t)
     rrEffortJoinMeet :: t -> (RoundedRealEffortIndicator t) -> (RefOrd.JoinMeetEffortIndicator t)
     rrEffortImprecision :: t -> (RoundedRealEffortIndicator t) -> (ImprecisionEffortIndicator t)
-    rrEffortImprecisionComp :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator (Imprecision t))
-    rrEffortImprecisionField :: t -> (RoundedRealEffortIndicator t) -> (FieldOpsEffortIndicator (Imprecision t))
+--    rrEffortImprecisionComp :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator (Imprecision t))
+--    rrEffortImprecisionField :: t -> (RoundedRealEffortIndicator t) -> (FieldOpsEffortIndicator (Imprecision t))
     rrEffortDistance :: t -> (RoundedRealEffortIndicator t) -> (DistanceEffortIndicator t)
-    rrEffortDistanceComp :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator (Distance t))
-    rrEffortDistanceField :: t -> (RoundedRealEffortIndicator t) -> (FieldOpsEffortIndicator (Distance t))
+--    rrEffortDistanceComp :: t -> (RoundedRealEffortIndicator t) -> (NumOrd.PartialCompareEffortIndicator (Distance t))
+--    rrEffortDistanceField :: t -> (RoundedRealEffortIndicator t) -> (FieldOpsEffortIndicator (Distance t))
     rrEffortToSelf :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t t)
     rrEffortToInt :: t -> (RoundedRealEffortIndicator t) -> (ArithUpDn.ConvertEffortIndicator t Int)
     rrEffortFromInt :: t -> (RoundedRealEffortIndicator t) -> (ConvertEffortIndicator Int t)

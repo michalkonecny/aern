@@ -44,6 +44,9 @@ import Numeric.AERN.RealArithmetic.Measures
 
 import qualified 
        Numeric.AERN.RefinementOrder as RefOrd
+import qualified 
+       Numeric.AERN.NumericOrder as NumOrd
+
 
 --import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
@@ -64,8 +67,11 @@ instance
 
 instance
    (cf ~ Interval e, 
-    Ord var, Show var, Show cf, Show (Imprecision cf),
-    HasAntiConsistency cf, ArithInOut.RoundedReal cf,
+    Ord var, Show var, Show cf, 
+    Show (Imprecision cf),
+    ArithInOut.RoundedReal cf,
+    NumOrd.PartialComparison (Imprecision cf),
+    HasAntiConsistency cf, 
     ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
     =>
     ArithInOut.RoundedDivide (IntPoly var cf) 
@@ -82,6 +88,7 @@ instance
 divOutEffUsingRecip :: 
    (Ord var, Show var, Show cf, Show (Imprecision cf),
     HasAntiConsistency cf, ArithInOut.RoundedReal cf,
+    NumOrd.PartialComparison (Imprecision cf),
     RefOrd.IntervalLike cf,
     ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
    =>
