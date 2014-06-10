@@ -254,7 +254,7 @@ absOutUsingCompMax (effortComp, effortMinmax) a =
 --        Just LEE -> a
         Just GT -> neg a
 --        Just GEE -> neg a
-        _ -> (a `max` (neg a))
+        _ -> (zero a) `max` (a `max` (neg a))
     where
     max = NumOrd.maxOutEff effortMinmax
 
