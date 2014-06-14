@@ -50,13 +50,15 @@ import qualified
 
 --import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.Effort (EffortIndicator)
 
 --import Numeric.AERN.Misc.Debug
 
 
 instance
-   (ArithInOut.RoundedReal cf,
-    ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
+    (EffortIndicator (IntPolyEffort cf),
+     ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
     =>
     ArithInOut.RoundedDivideEffort (IntPoly var cf) 
     where

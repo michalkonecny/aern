@@ -62,7 +62,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Interval
---import Numeric.AERN.Basics.Effort
+import Numeric.AERN.Basics.Effort (EffortIndicator)
 import Numeric.AERN.Basics.Consistency
 
 --import Numeric.AERN.Misc.Debug
@@ -302,7 +302,8 @@ instance
 {----- mixed addition up/dn via out -----}    
 
 instance
-    (ArithInOut.RoundedMixedAddEffort (Interval e) (Interval e)) 
+    (EffortIndicator (IntPolyEffort (Interval e)),
+     ArithInOut.RoundedMixedAddEffort (Interval e) (Interval e)) 
     =>
     ArithUpDn.RoundedMixedAddEffort (IntPoly var (Interval e)) (Interval e) 
     where
@@ -313,6 +314,7 @@ instance
 
 instance
     (ArithInOut.RoundedMixedAddEffort cf Int,
+     EffortIndicator (IntPolyEffort cf),
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedMixedAddEffort (IntPoly var cf) Int 
@@ -324,6 +326,7 @@ instance
 
 instance
     (ArithInOut.RoundedMixedAddEffort cf Integer,
+     EffortIndicator (IntPolyEffort cf),
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedMixedAddEffort (IntPoly var cf) Integer
@@ -335,6 +338,7 @@ instance
 
 instance
     (ArithInOut.RoundedMixedAddEffort cf Rational,
+     EffortIndicator (IntPolyEffort cf),
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedMixedAddEffort (IntPoly var cf) Rational
@@ -347,6 +351,7 @@ instance
 
 instance
     (ArithInOut.RoundedMixedAddEffort cf Double,
+     EffortIndicator (IntPolyEffort cf),
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedMixedAddEffort (IntPoly var cf) Double
@@ -456,7 +461,8 @@ instance
 {----- mixed multiplication up/dn via out -----}    
 
 instance
-    (ArithInOut.RoundedMixedMultiplyEffort (Interval e) (Interval e)) 
+    (ArithInOut.RoundedMixedMultiplyEffort (Interval e) (Interval e), 
+     EffortIndicator (IntPolyEffort (Interval e)))
     => 
     ArithUpDn.RoundedMixedMultiplyEffort (IntPoly var (Interval e)) (Interval e) 
     where
@@ -467,6 +473,7 @@ instance
 
 instance
     (ArithInOut.RoundedMixedMultiplyEffort cf Int,
+     EffortIndicator (IntPolyEffort cf),
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedMixedMultiplyEffort (IntPoly var cf) Int 
@@ -478,6 +485,7 @@ instance
 
 instance
     (ArithInOut.RoundedMixedMultiplyEffort cf Integer,
+     EffortIndicator (IntPolyEffort cf),
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedMixedMultiplyEffort (IntPoly var cf) Integer 
@@ -489,6 +497,7 @@ instance
 
 instance
     (ArithInOut.RoundedMixedMultiplyEffort cf Double,
+     EffortIndicator (IntPolyEffort cf),
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedMixedMultiplyEffort (IntPoly var cf) Double 
@@ -500,6 +509,7 @@ instance
 
 instance
     (ArithInOut.RoundedMixedMultiplyEffort cf Rational,
+     EffortIndicator (IntPolyEffort cf),
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedMixedMultiplyEffort (IntPoly var cf) Rational 
@@ -736,7 +746,8 @@ instance
 {----- mixed division up/dn via out -----}    
 
 instance
-    (ArithInOut.RoundedMixedDivideEffort (Interval e) (Interval e)) 
+    (EffortIndicator (IntPolyEffort (Interval e)),
+     ArithInOut.RoundedMixedDivideEffort (Interval e) (Interval e)) 
     => 
     ArithUpDn.RoundedMixedDivideEffort (IntPoly var (Interval e)) (Interval e) 
     where
@@ -765,6 +776,7 @@ instance
 
 instance
     (ArithInOut.RoundedMixedDivideEffort cf Int,
+     EffortIndicator (IntPolyEffort cf),
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedMixedDivideEffort (IntPoly var cf) Int 
@@ -795,6 +807,7 @@ instance
 
 instance
     (ArithInOut.RoundedMixedDivideEffort cf Integer,
+     EffortIndicator (IntPolyEffort cf),
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedMixedDivideEffort (IntPoly var cf) Integer 
@@ -825,6 +838,7 @@ instance
 
 instance
     (ArithInOut.RoundedMixedDivideEffort cf Rational,
+     EffortIndicator (IntPolyEffort cf),
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedMixedDivideEffort (IntPoly var cf) Rational 
@@ -855,6 +869,7 @@ instance
 
 instance
     (ArithInOut.RoundedMixedDivideEffort cf Double,
+     EffortIndicator (IntPolyEffort cf),
      RefOrd.IntervalLike cf) 
     => 
     ArithUpDn.RoundedMixedDivideEffort (IntPoly var cf) Double 

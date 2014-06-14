@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.Config
     Description :  Extra data kept with each interval polynomial.
@@ -35,6 +36,8 @@ import Numeric.AERN.Basics.Consistency
 
 import Test.QuickCheck (Arbitrary, arbitrary, vectorOf)
 import Data.List (elemIndex)
+
+import Control.Applicative
 
 data IntPolyCfg var cf =
     IntPolyCfg
@@ -305,7 +308,19 @@ instance
 --                        _ -> False
              
 instance
-    (Arbitrary (SizeLimits cf)) 
+    (
+        Arbitrary (SizeLimits cf)
+        ,
+        Arbitrary (ArithInOut.RoundedRealEffortIndicator cf)
+        ,
+        Arbitrary (ArithInOut.AbsEffortIndicator cf)
+        ,
+        Arbitrary (RefOrd.GetEndpointsEffortIndicator cf)
+        ,
+        Arbitrary (RefOrd.FromEndpointsEffortIndicator cf)
+        ,
+        Arbitrary (NumOrd.MinmaxInOutEffortIndicator cf)
+    ) 
     =>
     (Arbitrary (IntPolySizeLimits cf))
     where
@@ -341,14 +356,77 @@ instance
             IntPolySizeLimits cfLimits md ms effort
     effortRepeatIncrement 
             (IntPolySizeLimits cfLimits1 maxdeg1 maxsize1 effort1, 
-             IntPolySizeLimits cfLimits2 maxdeg2 maxsize2 effort2)
+             IntPolySizeLimits cfLimits2 maxdeg2 maxsize2 _effort2)
         =
         IntPolySizeLimits (effortRepeatIncrement (cfLimits1, cfLimits2)) md ms effort1
         where
         Int1To10 md = effortRepeatIncrement (Int1To10 maxdeg1, Int1To10 maxdeg2)  
         Int1To1000 ms = effortRepeatIncrement (Int1To1000 maxsize1, Int1To1000 maxsize2)  
 
--- TODO: complete the following instances:
-instance Arbitrary (IntPolyEffort cf)
-instance Show (IntPolyEffort cf)
-instance EffortIndicator (IntPolyEffort cf)
+instance 
+    (
+        Arbitrary (ArithInOut.RoundedRealEffortIndicator cf)
+        ,
+        Arbitrary (ArithInOut.AbsEffortIndicator cf)
+        ,
+        Arbitrary (RefOrd.GetEndpointsEffortIndicator cf)
+        ,
+        Arbitrary (RefOrd.FromEndpointsEffortIndicator cf)
+        ,
+        Arbitrary (NumOrd.MinmaxInOutEffortIndicator cf)
+    )
+    =>
+    Arbitrary (IntPolyEffort cf)
+    where
+    arbitrary =
+        IntPolyEffort <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+        
+deriving instance
+    (
+        Show (ArithInOut.RoundedRealEffortIndicator cf)
+        ,
+        Show (ArithInOut.AbsEffortIndicator cf)
+        ,
+        Show (RefOrd.GetEndpointsEffortIndicator cf)
+        ,
+        Show (RefOrd.FromEndpointsEffortIndicator cf)
+        ,
+        Show (NumOrd.MinmaxInOutEffortIndicator cf)
+    )
+    =>
+    Show (IntPolyEffort cf)
+
+instance
+    (
+        EffortIndicator (ArithInOut.RoundedRealEffortIndicator cf)
+        ,
+        EffortIndicator (ArithInOut.AbsEffortIndicator cf)
+        ,
+        EffortIndicator (RefOrd.GetEndpointsEffortIndicator cf)
+        ,
+        EffortIndicator (RefOrd.FromEndpointsEffortIndicator cf)
+        ,
+        EffortIndicator (NumOrd.MinmaxInOutEffortIndicator cf)
+    )
+    =>
+    EffortIndicator (IntPolyEffort cf)
+    where
+    effortIncrementVariants (IntPolyEffort e1O e2O e3O e4O e5O e6O e7O e8O e9O) =
+        [IntPolyEffort e1 e2 e3 e4 e5 e6 e7 e8 e9| 
+            ((e1, e2, e3), (e4, e5, e6), (e7, e8, e9)) 
+                <- effortIncrementVariants ((e1O, e2O, e3O), (e4O, e5O, e6O), (e7O, e8O, e9O)) ]
+    effortRepeatIncrement (IntPolyEffort i1 i2 i3 i4 i5 i6 i7 i8 i9, IntPolyEffort j1 j2 j3 j4 j5 j6 j7 j8 j9) = 
+        IntPolyEffort 
+            (effortRepeatIncrement (i1, j1)) 
+            (effortRepeatIncrement (i2, j2)) 
+            (effortRepeatIncrement (i3, j3)) 
+            (effortRepeatIncrement (i4, j4)) 
+            (effortRepeatIncrement (i5, j5)) 
+            (effortRepeatIncrement (i6, j6)) 
+            (effortRepeatIncrement (i7, j7)) 
+            (effortRepeatIncrement (i8, j8)) 
+            (effortRepeatIncrement (i9, j9)) 
+    effortIncrementSequence (IntPolyEffort e1O e2O e3O e4O e5O e6O e7O e8O e9O) =
+        [IntPolyEffort e1 e2 e3 e4 e5 e6 e7 e8 e9 | 
+            ((e1, e2, e3), (e4, e5, e6), (e7, e8, e9)) 
+                <- effortIncrementSequence ((e1O, e2O, e3O), (e4O, e5O, e6O), (e7O, e8O, e9O)) ]
