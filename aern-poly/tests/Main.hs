@@ -12,10 +12,11 @@
 module Main where
 
 import Numeric.AERN.Poly.IntPoly
+import Numeric.AERN.Poly.IntPoly.Interval
 
 import Numeric.AERN.RmToRn.New
 import Numeric.AERN.RmToRn.Domain
-import Numeric.AERN.RmToRn.Laws (testsEval, testsFnNumCompare)
+import Numeric.AERN.RmToRn.Laws (testsEval, testsFnNumCompare, testsFieldPointwise)
 --import Numeric.AERN.RmToRn.Evaluation
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
@@ -46,9 +47,13 @@ import Test.Framework (defaultMain, Test)
 --type CF = Interval MPFR
 type CF = Interval Double
 type Poly = IntPoly String CF
+type PI = Interval Poly
 
 polyTypeName :: String
-polyTypeName = "IntPoly-DI"
+polyTypeName = "P(DI)"
+
+polyIntervalTypeName :: String
+polyIntervalTypeName = "PI(DI)"
 
 main :: IO ()
 main =
@@ -61,10 +66,15 @@ tests = testsPoly
 testsPoly :: [Test]
 testsPoly =
     [
-        testsEval ("IntPoly-DI", samplePoly) areaPoly
+        testsEval (polyTypeName, samplePoly) areaPoly
         ,
-        testsFnNumCompare ("IntPoly-DI", samplePoly) areaPoly
+        testsFnNumCompare (polyTypeName, samplePoly) areaPoly
+        ,
+        testsFieldPointwise (polyIntervalTypeName, samplePI) areaPI
     ]
+
+areaPI :: Area PI
+areaPI = (areaPoly, AreaMaybeAllowOnlyWithConsistencyStatus Nothing)
 
 areaPoly :: Area Poly
 areaPoly = areaWhole samplePoly
@@ -77,6 +87,9 @@ sampleR = 1
 
 samplePoly :: Poly
 samplePoly = newConstFn limits varDoms 0
+
+samplePI :: PI
+samplePI = Interval samplePoly samplePoly
 
 limits :: IntPolySizeLimits CF
 limits =
