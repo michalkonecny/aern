@@ -236,11 +236,10 @@ effIP :: IntPolyEffort CF
 effIP =
     IntPolyEffort
     {
+        ipolyeff_sampleCf = 0,
         ipolyeff_cfRoundedRealEffort = eff,
-        ipolyeff_cfAbsEffort = ArithInOut.absDefaultEffort sampleCf,
         ipolyeff_cfGetEndpointsEffort = RefOrd.getEndpointsDefaultEffort sampleCf,
         ipolyeff_cfFromEndpointsEffort = RefOrd.fromEndpointsDefaultEffort sampleCf,
-        ipolyeff_cfMinMaxEffort = NumOrd.minmaxInOutDefaultEffort sampleCf,
         ipolyeff_evalMaxSplitSize = 100,
         ipolyeff_minmaxBernsteinDegree = bernsteinDegree,
         ipolyeff_recipTauDegree = tauDegree,
