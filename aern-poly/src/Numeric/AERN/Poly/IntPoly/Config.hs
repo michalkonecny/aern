@@ -84,7 +84,10 @@ data IntPolySizeLimits cf =
 defaultIntPolySizeLimits ::
     (ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf)
     => 
-    cf -> SizeLimits cf -> Int -> IntPolySizeLimits cf
+    cf {-^ sample coefficient -} -> 
+    SizeLimits cf {-^ internal limits on the coeffiecient (eg precision) -} -> 
+    Int {-^ the arity of the polynomials -} -> 
+    IntPolySizeLimits cf
 defaultIntPolySizeLimits sampleCf cf_limits arity =
     IntPolySizeLimits 
     {

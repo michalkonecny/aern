@@ -80,7 +80,7 @@ samplePoly = newConstFn limits varDoms 0
 
 limits :: IntPolySizeLimits CF
 limits =
-    IntPolySizeLimits
+    (defaultIntPolySizeLimits 0 () 2)
     {
         ipolylimits_cf_limits = (),
         ipolylimits_maxdeg = 4,
