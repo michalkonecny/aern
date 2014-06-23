@@ -81,6 +81,9 @@ data IntPolySizeLimits cf =
         ipolylimits_effort :: IntPolyEffort cf
     }
 
+{-|
+    Default internal size limits for polynomial arithmetic.
+-}
 defaultIntPolySizeLimits ::
     (ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf)
     => 
@@ -446,12 +449,12 @@ instance
     show eff =
         "IntPolyEffort(" 
         ++ "ipolyeff_cfRoundedRealEffort = " ++ show (ipolyeff_cfRoundedRealEffort eff)
-        ++ "ipolyeff_cfGetEndpointsEffort = " ++ show (ipolyeff_cfGetEndpointsEffort eff)
-        ++ "ipolyeff_cfFromEndpointsEffort = " ++ show (ipolyeff_cfFromEndpointsEffort eff)
-        ++ "ipolyeff_evalMaxSplitSize = " ++ show (ipolyeff_evalMaxSplitSize eff)
-        ++ "ipolyeff_minmaxBernsteinDegree = " ++ show (ipolyeff_minmaxBernsteinDegree eff)
-        ++ "ipolyeff_recipTauDegree = " ++ show (ipolyeff_recipTauDegree eff)
-        ++ "ipolyeff_counterExampleSearchSampleCount = " ++ show (ipolyeff_counterExampleSearchSampleCount eff)
+        ++ ", ipolyeff_cfGetEndpointsEffort = " ++ show (ipolyeff_cfGetEndpointsEffort eff)
+        ++ ", ipolyeff_cfFromEndpointsEffort = " ++ show (ipolyeff_cfFromEndpointsEffort eff)
+        ++ ", ipolyeff_evalMaxSplitSize = " ++ show (ipolyeff_evalMaxSplitSize eff)
+        ++ ", ipolyeff_minmaxBernsteinDegree = " ++ show (ipolyeff_minmaxBernsteinDegree eff)
+        ++ ", ipolyeff_recipTauDegree = " ++ show (ipolyeff_recipTauDegree eff)
+        ++ ", ipolyeff_counterExampleSearchSampleCount = " ++ show (ipolyeff_counterExampleSearchSampleCount eff)
         ++ ")"
 
 instance
