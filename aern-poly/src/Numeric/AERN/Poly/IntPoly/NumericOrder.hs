@@ -56,9 +56,10 @@ import Numeric.AERN.Basics.SizeLimits
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Arbitrary
 
---import Numeric.AERN.Misc.Debug
-
 import Test.QuickCheck
+
+import Debug.Trace
+_ = trace
 
 instance
     (Ord var, Show var, 
@@ -160,9 +161,16 @@ instance
                 fixedRandSeqQuantityOfSize 
                 area
         fixedRandSeqQuantityOfSize :: Int -> Int
-        fixedRandSeqQuantityOfSize size
-            = 10 + ((size*(size+100)) `div` 10)  
---            = 10 + (3*size)
+        fixedRandSeqQuantityOfSize size =
+--            trace
+--            (
+--                "fixedRandSeqQuantityOfSize " ++ show size ++ " = " ++ show result
+--            )
+            result
+            where
+            result =
+                10 + ((size*(size+100)) `div` 10)  
+--                10 + (3*size)
 
 instance
     (Show var, Ord var,

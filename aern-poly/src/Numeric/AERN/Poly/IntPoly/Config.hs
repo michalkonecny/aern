@@ -62,11 +62,10 @@ defaultIntPolyCfg sampleCf limits =
 data IntPolyEffort cf =
     IntPolyEffort
     {
+        ipolyeff_sampleCf :: cf,
         ipolyeff_cfRoundedRealEffort :: ArithInOut.RoundedRealEffortIndicator cf,
-        ipolyeff_cfAbsEffort :: ArithInOut.AbsEffortIndicator cf,
         ipolyeff_cfGetEndpointsEffort :: RefOrd.GetEndpointsEffortIndicator cf,
         ipolyeff_cfFromEndpointsEffort :: RefOrd.FromEndpointsEffortIndicator cf,
-        ipolyeff_cfMinMaxEffort :: NumOrd.MinmaxInOutEffortIndicator cf,
         ipolyeff_evalMaxSplitSize :: Int,
         ipolyeff_minmaxBernsteinDegree :: Int,
         ipolyeff_recipTauDegree :: Int,
@@ -112,11 +111,10 @@ defaultIntPolyEffort ::
 defaultIntPolyEffort sampleCf arity maxdeg =
     IntPolyEffort
     {
+        ipolyeff_sampleCf = sampleCf,
         ipolyeff_cfRoundedRealEffort = ArithInOut.roundedRealDefaultEffort sampleCf,
-        ipolyeff_cfAbsEffort = ArithInOut.absDefaultEffort sampleCf,
         ipolyeff_cfGetEndpointsEffort = RefOrd.getEndpointsDefaultEffort sampleCf,
         ipolyeff_cfFromEndpointsEffort = RefOrd.fromEndpointsDefaultEffort sampleCf,
-        ipolyeff_cfMinMaxEffort = NumOrd.minmaxInOutDefaultEffort sampleCf,
         ipolyeff_evalMaxSplitSize = maxSplitSize,
         ipolyeff_minmaxBernsteinDegree = bernsteinDegree,
         ipolyeff_recipTauDegree = tauDegree,
@@ -128,6 +126,22 @@ defaultIntPolyEffort sampleCf arity maxdeg =
          -- TODO: the minimum 20 makes sense only with Double coeffs;
          --       make it depend on the current coefficient precision
     maxSplitSize = (1 + (arity * 3 * maxdeg)) 
+
+ipolyeff_cfMinMaxEffort ::
+    (ArithInOut.RoundedReal cf)
+    => 
+    IntPolyEffort cf -> NumOrd.MinmaxInOutEffortIndicator cf
+ipolyeff_cfMinMaxEffort eff =
+     ArithInOut.rrEffortMinmaxInOut (ipolyeff_sampleCf eff) $ 
+        ipolyeff_cfRoundedRealEffort eff
+
+ipolyeff_cfAbsEffort ::
+    (ArithInOut.RoundedReal cf)
+    => 
+    IntPolyEffort cf -> ArithInOut.AbsEffortIndicator cf
+ipolyeff_cfAbsEffort eff =
+     ArithInOut.rrEffortAbs (ipolyeff_sampleCf eff) $ 
+        ipolyeff_cfRoundedRealEffort eff
 
 domToDomLZLEEff ::
     (ArithInOut.RoundedReal cf, 
@@ -251,7 +265,7 @@ cfg2vardomains cfg =
         zipWith domLZLEToDom domsLZ domsLE
     
 instance 
-    (Show var, Show cf, ArithInOut.RoundedReal cf, Show (SizeLimits cf)) 
+    (Show var, Show cf, ArithInOut.RoundedReal cf, Show (IntPolySizeLimits cf)) 
     =>
     Show (IntPolyCfg var cf)
     where
@@ -263,12 +277,24 @@ instance
         effCF = ArithInOut.roundedRealDefaultEffort sampleCf
 
 instance 
-    (Show (SizeLimits cf)) 
+    (Show (SizeLimits cf)
+    ,
+    Show (ArithInOut.RoundedRealEffortIndicator cf)
+    ,
+    Show (ArithInOut.AbsEffortIndicator cf)
+    ,
+    Show (RefOrd.GetEndpointsEffortIndicator cf)
+    ,
+    Show (RefOrd.FromEndpointsEffortIndicator cf)
+    ,
+    Show (NumOrd.MinmaxInOutEffortIndicator cf)
+    )
     =>
     Show (IntPolySizeLimits cf)
     where
-    show (IntPolySizeLimits cfLimits maxdeg maxsize effort) =  -- TODO: show also effort
+    show (IntPolySizeLimits cfLimits maxdeg maxsize effort) =
          "cf:" ++ show cfLimits ++ "/dg:" ++ show maxdeg ++ "/sz:" ++ show maxsize
+         ++ "eff:" ++ show effort
 
 instance
     (RefOrd.IntervalLike cf, 
@@ -379,9 +405,27 @@ instance
     Arbitrary (IntPolyEffort cf)
     where
     arbitrary =
-        IntPolyEffort <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+        do
+        cfRREff <- arbitrary
+        cfGetE <- arbitrary
+        cfFromE <- arbitrary
+        Int1To1000 maxSplitSize <- arbitrary
+        Int1To10 bernsteinDegree <- arbitrary
+        Int1To10 tauDegree <- arbitrary
+        Int1To1000 sampleCount <- arbitrary
+        return $ IntPolyEffort 
+            {
+                ipolyeff_sampleCf = error "Randomly generated IntPolyEffort has no ipolyeff_sampleCf.",
+                ipolyeff_cfRoundedRealEffort = cfRREff,
+                ipolyeff_cfGetEndpointsEffort = cfGetE,
+                ipolyeff_cfFromEndpointsEffort = cfFromE,
+                ipolyeff_evalMaxSplitSize = maxSplitSize,
+                ipolyeff_minmaxBernsteinDegree = bernsteinDegree,
+                ipolyeff_recipTauDegree = tauDegree,
+                ipolyeff_counterExampleSearchSampleCount = sampleCount
+            }
         
-deriving instance
+instance
     (
         Show (ArithInOut.RoundedRealEffortIndicator cf)
         ,
@@ -395,6 +439,17 @@ deriving instance
     )
     =>
     Show (IntPolyEffort cf)
+    where
+    show eff =
+        "IntPolyEffort(" 
+        ++ "ipolyeff_cfRoundedRealEffort = " ++ show (ipolyeff_cfRoundedRealEffort eff)
+        ++ "ipolyeff_cfGetEndpointsEffort = " ++ show (ipolyeff_cfGetEndpointsEffort eff)
+        ++ "ipolyeff_cfFromEndpointsEffort = " ++ show (ipolyeff_cfFromEndpointsEffort eff)
+        ++ "ipolyeff_evalMaxSplitSize = " ++ show (ipolyeff_evalMaxSplitSize eff)
+        ++ "ipolyeff_minmaxBernsteinDegree = " ++ show (ipolyeff_minmaxBernsteinDegree eff)
+        ++ "ipolyeff_recipTauDegree = " ++ show (ipolyeff_recipTauDegree eff)
+        ++ "ipolyeff_counterExampleSearchSampleCount = " ++ show (ipolyeff_counterExampleSearchSampleCount eff)
+        ++ ")"
 
 instance
     (
@@ -411,12 +466,12 @@ instance
     =>
     EffortIndicator (IntPolyEffort cf)
     where
-    effortIncrementVariants (IntPolyEffort e1O e2O e3O e4O e5O e6O e7O e8O e9O) =
-        [IntPolyEffort e1 e2 e3 e4 e5 e6 e7 e8 e9| 
-            ((e1, e2, e3), (e4, e5, e6), (e7, e8, e9)) 
-                <- effortIncrementVariants ((e1O, e2O, e3O), (e4O, e5O, e6O), (e7O, e8O, e9O)) ]
-    effortRepeatIncrement (IntPolyEffort i1 i2 i3 i4 i5 i6 i7 i8 i9, IntPolyEffort j1 j2 j3 j4 j5 j6 j7 j8 j9) = 
-        IntPolyEffort 
+    effortIncrementVariants (IntPolyEffort sampleCf e1O e2O e3O e4O e5O e6O e7O) =
+        [IntPolyEffort sampleCf e1 e2 e3 e4 e5 e6 e7| 
+            ((e1, e2, e3), (e4, e5, e6), e7) 
+                <- effortIncrementVariants ((e1O, e2O, e3O), (e4O, e5O, e6O), e7O) ]
+    effortRepeatIncrement (IntPolyEffort sampleCf i1 i2 i3 i4 i5 i6 i7, IntPolyEffort _ j1 j2 j3 j4 j5 j6 j7) = 
+        IntPolyEffort sampleCf
             (effortRepeatIncrement (i1, j1)) 
             (effortRepeatIncrement (i2, j2)) 
             (effortRepeatIncrement (i3, j3)) 
@@ -424,9 +479,7 @@ instance
             (effortRepeatIncrement (i5, j5)) 
             (effortRepeatIncrement (i6, j6)) 
             (effortRepeatIncrement (i7, j7)) 
-            (effortRepeatIncrement (i8, j8)) 
-            (effortRepeatIncrement (i9, j9)) 
-    effortIncrementSequence (IntPolyEffort e1O e2O e3O e4O e5O e6O e7O e8O e9O) =
-        [IntPolyEffort e1 e2 e3 e4 e5 e6 e7 e8 e9 | 
-            ((e1, e2, e3), (e4, e5, e6), (e7, e8, e9)) 
-                <- effortIncrementSequence ((e1O, e2O, e3O), (e4O, e5O, e6O), (e7O, e8O, e9O)) ]
+    effortIncrementSequence (IntPolyEffort sampleCf e1O e2O e3O e4O e5O e6O e7O) =
+        [IntPolyEffort sampleCf e1 e2 e3 e4 e5 e6 e7 | 
+            ((e1, e2, e3), (e4, e5, e6), e7) 
+                <- effortIncrementSequence ((e1O, e2O, e3O), (e4O, e5O, e6O), e7O) ]

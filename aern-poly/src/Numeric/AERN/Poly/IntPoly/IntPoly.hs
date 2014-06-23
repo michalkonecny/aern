@@ -273,7 +273,7 @@ termsNormalise poly =
             degree == 0 || (not $ termsIsZero subTerms)  
 
 instance
-    (HasLegalValues cf, Show cf, Show (SizeLimits cf),
+    (HasLegalValues cf, Show cf, Show (IntPolySizeLimits cf),
      ArithInOut.RoundedReal cf,
      HasConsistency cf,
      Show var, Ord var) 
@@ -284,7 +284,7 @@ instance
         maybeGetProblemForTerms cfg terms
     
 maybeGetProblemForTerms :: 
-    (HasLegalValues cf, Show cf, Show (SizeLimits cf),
+    (HasLegalValues cf, Show cf, Show (IntPolySizeLimits cf),
      ArithInOut.RoundedReal cf,
      HasConsistency cf,
      Show var, Ord var) 
