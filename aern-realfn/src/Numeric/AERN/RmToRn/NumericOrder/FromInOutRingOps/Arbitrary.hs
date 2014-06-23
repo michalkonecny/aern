@@ -53,7 +53,8 @@ import qualified System.Random as R
 
 
 type Area4FunFromRingOps f = 
-    (f, Maybe (Domain f))
+    (f, -- sample value
+     Maybe (Domain f)) -- maybe range
 
 areaWhole4FunFromRingOps sampleFn =
     (sampleFn, Nothing)

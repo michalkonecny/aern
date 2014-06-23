@@ -19,6 +19,8 @@ module Numeric.AERN.RmToRn.Laws where
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
 
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 --import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
@@ -34,24 +36,110 @@ import Numeric.AERN.Misc.Debug
 import Test.Framework (Test, testGroup)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-roundedAgreeWithPointwisePred2 :: 
+{-|
+    Property declaring that the given full-function binary operator
+    is compatible with the given point binary operator.
+-}
+roundedAgreeWithPointwiseOp2 :: 
+    (CanEvaluate f,
+     RefOrd.PartialComparison (Domain f),
+     Show f,
+     Show (DomainBox f)) 
+    =>
+    f 
+        {-^ sample function (only for type checking) -} -> 
+    String 
+        {-^ context description to use in reporting -} -> 
+    (effFn -> f -> f -> f) 
+        {-^ the binary op - a whole function version - inner-rounded -} -> 
+    (effFn -> f -> f -> f) 
+        {-^ the binary op - a whole function version - outer-rounded -} -> 
+    (effPt -> Domain f -> Domain f -> Domain f)
+        {-^ the binary op - a point version - inner-rounded -} -> 
+    (effPt -> Domain f -> Domain f -> Domain f)
+        {-^ the binary op - a point version - outer-rounded -} -> 
+    (f, f)
+        {-^ pair of functions to test the property on -} -> 
+    (SingletonInArea (DomainBox f)) 
+        {-^ a domain point to test the operation on -} -> 
+    effFn 
+        {-^ effort indicator for the predicate - function version -}  ->
+    effPt 
+        {-^ effort indicator for the predicate - point version -}  ->
+    EvaluationEffortIndicator f 
+        {-^ function evaluation effort parameter -} ->
+    (RefOrd.PartialCompareEffortIndicator (Domain f)) 
+        {-^ effort indicator for containment checking of results -} ->
+    Bool
+roundedAgreeWithPointwiseOp2 _ contextDescription 
+        fnOpInEff fnOpOutEff ptOpInEff ptOpOutEff 
+        (fn1, fn2) (SingletonInArea box) 
+        effFnOp effPtOp effEval effContain
+    | passed = passed
+    | otherwise =
+            unsafePrint
+            (
+                contextDescription ++ ": pointwise check failed for: " 
+                ++ "\n fn1 = " ++ show fn1
+                ++ "\n fn2 = " ++ show fn2
+                ++ "\n box = " ++ show box
+            )
+            False
+    where
+    passed = 
+        case (resPtOut `contains` resFnAtPtIn, resFnAtPtOut `contains` resPtIn) of
+            (Just False, _) -> False
+            (_, Just False) -> False
+            _ -> True
+        where
+        contains = RefOrd.pLeqEff effContain 
+        
+    -- evaluate operand functions on box and then execute operation:
+    pt1 = evalAtPointOutEff effEval box fn1
+    pt2 = evalAtPointOutEff effEval box fn2
+    resPtOut = ptOpOutEff effPtOp pt1 pt2
+    resPtIn = ptOpInEff effPtOp pt1 pt2
+
+    -- execute operation on whole functions and then evaluate them on box:
+    resFnAtPtOut = evalAtPointOutEff effEval box resFnOut
+    resFnOut = fnOpOutEff effFnOp fn1 fn2
+    resFnAtPtIn = evalAtPointInEff effEval box resFnIn
+    resFnIn = fnOpInEff effFnOp fn1 fn2
+
+
+{-|
+    Property declaring that if the given binary predicate holds on the whole domain,
+    it holds also on each point of the domain.
+-}
+roundedAgreeWithPointwisePred2All :: 
     (CanEvaluate f,
      Show f,
      Show (DomainBox f)) 
     =>
-    f -> 
-    String -> 
-    (effFn -> f -> f -> Maybe Bool) -> 
-    (effPt -> Domain f -> Domain f -> Maybe Bool) -> 
-    (f, f) -> 
-    (SingletonInArea (DomainBox f)) -> 
-    effFn ->
-    effPt ->
-    EvaluationEffortIndicator f ->
+    f 
+        {-^ sample function (only for type checking) -} -> 
+    String 
+        {-^ context description to use in reporting -} -> 
+    (effFn -> f -> f -> Maybe Bool) 
+        {-^ the binary predicate - a whole function version -} -> 
+    (effPt -> Domain f -> Domain f -> Maybe Bool)
+        {-^ the binary predicate - a domain point version -} -> 
+    (f, f)
+        {-^ pair of functions to test the property on -} -> 
+    (SingletonInArea (DomainBox f)) 
+        {-^ a domain point to test the property on -} -> 
+    effFn 
+        {-^ effort indicator for the predicate - function version -}  ->
+    effPt 
+        {-^ effort indicator for the predicate - point version -}  ->
+    EvaluationEffortIndicator f 
+        {-^ function evaluation effort parameter -} ->
     Bool
-roundedAgreeWithPointwisePred2 _ contextDescription fnOpEff ptOpEff (fn1, fn2) (SingletonInArea box) effFnOp effPtOp effEval =
-    case (resultFn, resultPt) of
-        (Just True, Just False) -> -- if it is true on all points, it cannot be false on this point
+roundedAgreeWithPointwisePred2All _ contextDescription fnOpEff ptOpEff (fn1, fn2) (SingletonInArea box) effFnOp effPtOp effEval =
+    case (mresultFn, mresultPt) of
+        (Just True, Just False) ->
+            -- if it is true on all points, it cannot be false on this box
+--        (Just resFn, Just resPt) | resFn /= resPt ->
             unsafePrint
             (
                 contextDescription ++ ": pointwise check failed for: " 
@@ -70,8 +158,8 @@ roundedAgreeWithPointwisePred2 _ contextDescription fnOpEff ptOpEff (fn1, fn2) (
 --            )
             True
     where
-    resultFn = fnOpEff effFnOp fn1 fn2
-    resultPt = ptOpEff effPtOp pt1 pt2
+    mresultFn = fnOpEff effFnOp fn1 fn2
+    mresultPt = ptOpEff effPtOp pt1 pt2
     pt1 = evalAtPointOutEff effEval box fn1
     pt2 = evalAtPointOutEff effEval box fn2
 
@@ -82,9 +170,12 @@ roundedRefinementIsotoneDom ::
      Show (Domain f),
      Show t)
     =>
-    f ->
-    String ->
-    (ei -> (DomainBox f) -> t) ->
+    f 
+        {-^ sample function (only for type checking) -} -> 
+    String 
+        {-^ context description to use in reporting -} -> 
+    (ei -> (DomainBox f) -> t) 
+        {-^ operation -} ->
     (ei -> (DomainBox f) -> t) ->
     (RefOrd.LEPair (DomainBox f)) -> 
     ei -> 
@@ -182,7 +273,7 @@ propNumCompareAgreesWithPointwise ::
         EvaluationEffortIndicator f -> 
         Bool)
 propNumCompareAgreesWithPointwise sampleFn (PairInArea fns) =
-    (domBox, roundedAgreeWithPointwisePred2 sampleFn  "function numerical comparison" NumOrd.pLeqEff NumOrd.pLeqEff fns)
+    (domBox, roundedAgreeWithPointwisePred2All sampleFn  "function numerical comparison" NumOrd.pLeqEff NumOrd.pLeqEff fns)
     where
     domBox = getDomainBox sampleFn
     
@@ -202,4 +293,50 @@ testsFnNumCompare (name, sample) area =
         [
             testProperty "pointwise" (area, propNumCompareAgreesWithPointwise sample)
         ]
+
+
+propAddPointwise :: 
+  (Show f, Show (VarBox f (Domain f)), 
+   ArithInOut.RoundedAdd f,
+   ArithInOut.RoundedAdd (Domain f),
+   RefOrd.PartialComparison (Domain f), CanEvaluate f) 
+  =>
+  f
+  -> PairInArea f
+  -> (DomainBox f,
+      SingletonInArea (DomainBox f)
+      -> ArithInOut.AddEffortIndicator f
+      -> ArithInOut.AddEffortIndicator (Domain f)
+      -> EvaluationEffortIndicator f
+      -> RefOrd.PartialCompareEffortIndicator (Domain f)
+      -> Bool)
+propAddPointwise sampleFn (PairInArea fns) =
+    (domBox, 
+        roundedAgreeWithPointwiseOp2 
+            sampleFn "addition" 
+            ArithInOut.addInEff ArithInOut.addOutEff 
+            ArithInOut.addInEff ArithInOut.addOutEff 
+            fns)
+    where
+    domBox = getDomainBox sampleFn
+
+testsFieldPointwise ::
+    (Show f,
+     Show (Domain f),
+     Show (VarBox f (Domain f)),
+     ArbitraryWithArea f,
+     ArithInOut.RoundedReal (Domain f), 
+     ArithInOut.RoundedAdd f, 
+     RefOrd.ArbitraryOrderedTuple (VarBox f (Domain f)),
+     RefOrd.PartialComparison (Domain f),
+     CanEvaluate f,
+     Area (DomainBox f) ~ (DomainBox f))
+     =>
+    ([Char], f) -> Area f -> Test
+testsFieldPointwise (name, sample) area =
+    testGroup (name ++ " field ops") $
+        [
+            testProperty "pointwise" (area, propAddPointwise sample)
+        ]
+    
     

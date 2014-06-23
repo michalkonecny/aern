@@ -173,6 +173,12 @@ instance
 --                10 + (3*size)
 
 instance
+    AreaHasForbiddenValues (IntPoly var (Interval e))
+    where
+    areaGetForbiddenValues _ = []
+    areaAddForbiddenValues _ _ = error "Adding forbidden values to Area (IntPoly var (Interval e)) currently not supported."
+
+instance
     (Show var, Ord var,
      Show (Interval e), Show (SizeLimits (Interval e)),
      RefOrd.ArbitraryOrderedTuple (Interval e), RefOrd.IntervalLike (Interval e),
