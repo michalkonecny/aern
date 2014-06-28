@@ -7,7 +7,7 @@
 
 {-|
     Module      :  Numeric.AERN.Poly.IntPoly.UpDnField
-    Description :  up/dn-rounded polynomial field operations
+    Description :  up/dn-rounded ops for polys as interval endpoints
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -15,7 +15,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Up/dn-rounded polynomial field operations.
+    Up/dn-rounded polynomial field operations, making the polynomials usable as interval endpoints.
 -}
 
 module Numeric.AERN.Poly.IntPoly.UpDnField

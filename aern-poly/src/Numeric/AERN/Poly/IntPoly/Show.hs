@@ -59,7 +59,7 @@ instance
     type ShowInternalsIndicator (IntPoly var cf) 
         = (ShowInternalsIndicator cf, Bool, Bool)
     defaultShowIndicator (IntPoly cfg _) 
-        = (defaultShowIndicator $ ipolycfg_sample_cf cfg, False, False)
+        = (defaultShowIndicator $ ipolycfg_sample_cf cfg, True, False)
     showInternals (cfIndicator, shouldShowCfg, shouldShowTerms) p =
         showPolyInternals showCf shouldShowCfg shouldShowTerms p 
         where
