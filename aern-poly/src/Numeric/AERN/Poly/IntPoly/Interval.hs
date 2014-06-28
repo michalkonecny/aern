@@ -150,5 +150,5 @@ intpolyPolyEvalOps effIP samplePI@(Interval sampleIP _) sampleCf =
 ipolyeff_intrealeff sampleIP effIP =
     IntervalRealEffort
     {
-        
+        -- TODO
     }
