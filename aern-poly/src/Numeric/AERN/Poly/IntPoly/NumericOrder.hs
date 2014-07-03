@@ -153,7 +153,11 @@ instance
     arbitraryInArea area@(sampleFn,_) =
         do
         eff <- arbitrary
-        withEff eff
+        poly <- withEff eff
+        isThin <- arbitrary
+        case isThin of
+            True -> return $ fst $ RefOrd.getEndpointsOut poly
+            False -> return poly
         where
         withEff eff =
             arbitraryInArea4FunFromRingOps eff

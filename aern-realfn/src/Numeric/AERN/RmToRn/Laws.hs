@@ -27,6 +27,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Numeric.AERN.Basics.Arbitrary
+import Numeric.AERN.Basics.ShowInternals
 
 --import Numeric.AERN.Misc.QuickCheck
 import Numeric.AERN.Misc.Debug
@@ -43,7 +44,7 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 roundedAgreeWithPointwiseOp2 :: 
     (CanEvaluate f,
      RefOrd.PartialComparison (Domain f),
-     Show f,
+     ShowInternals f, Show f, Show (Domain f),
      Show (DomainBox f)) 
     =>
     f 
@@ -72,17 +73,29 @@ roundedAgreeWithPointwiseOp2 ::
         {-^ effort indicator for containment checking of results -} ->
     Bool
 roundedAgreeWithPointwiseOp2 _ contextDescription 
-        fnOpInEff fnOpOutEff ptOpInEff ptOpOutEff 
-        (fn1, fn2) (SingletonInArea box) 
+        fnOpInEff fnOpOutEff 
+        ptOpInEff ptOpOutEff 
+        (fn1, fn2) 
+        (SingletonInArea box) -- TODO: replace the single point by a list of points to get better coverage 
         effFnOp effPtOp effEval effContain
     | passed = passed
     | otherwise =
             unsafePrint
             (
                 contextDescription ++ ": pointwise check failed for: " 
-                ++ "\n fn1 = " ++ show fn1
-                ++ "\n fn2 = " ++ show fn2
+                ++ "\n fn1 = " ++ showUsingShowInternals fn1
+                ++ "\n fn2 = " ++ showUsingShowInternals fn2
                 ++ "\n box = " ++ show box
+                ++ "\n pt1In = " ++ show pt1In
+                ++ "\n pt1Out = " ++ show pt1Out
+                ++ "\n pt2In = " ++ show pt2In
+                ++ "\n pt2Out = " ++ show pt2Out
+                ++ "\n resPtIn = " ++ show resPtIn
+                ++ "\n resPtOut = " ++ show resPtOut
+                ++ "\n resFnAtPtIn = " ++ show resFnAtPtIn
+                ++ "\n resFnAtPtOut = " ++ show resFnAtPtOut
+                ++ "\n resFnIn = " ++ show resFnIn
+                ++ "\n resFnOut = " ++ show resFnOut
             )
             False
     where
@@ -95,16 +108,20 @@ roundedAgreeWithPointwiseOp2 _ contextDescription
         contains = RefOrd.pLeqEff effContain 
         
     -- evaluate operand functions on box and then execute operation:
-    pt1 = evalAtPointOutEff effEval box fn1
-    pt2 = evalAtPointOutEff effEval box fn2
-    resPtOut = ptOpOutEff effPtOp pt1 pt2
-    resPtIn = ptOpInEff effPtOp pt1 pt2
+    pt1Out = evalAtPointOutEff effEval box fn1
+    pt2Out = evalAtPointOutEff effEval box fn2
+    resPtOut = ptOpOutEff effPtOp pt1Out pt2Out
+    
+    pt1In = evalAtPointInEff effEval box fn1
+    pt2In = evalAtPointInEff effEval box fn2
+    resPtIn = ptOpInEff effPtOp pt1In pt2In
 
     -- execute operation on whole functions and then evaluate them on box:
-    resFnAtPtOut = evalAtPointOutEff effEval box resFnOut
     resFnOut = fnOpOutEff effFnOp fn1 fn2
-    resFnAtPtIn = evalAtPointInEff effEval box resFnIn
+    resFnAtPtOut = evalAtPointOutEff effEval box resFnOut
+    
     resFnIn = fnOpInEff effFnOp fn1 fn2
+    resFnAtPtIn = evalAtPointInEff effEval box resFnIn
 
 
 {-|
@@ -296,7 +313,8 @@ testsFnNumCompare (name, sample) area =
 
 
 propAddPointwise :: 
-  (Show f, Show (VarBox f (Domain f)), 
+  (Show f, Show (VarBox f (Domain f)), Show (Domain f),
+   ShowInternals f, 
    ArithInOut.RoundedAdd f,
    ArithInOut.RoundedAdd (Domain f),
    RefOrd.PartialComparison (Domain f), CanEvaluate f) 
@@ -321,7 +339,7 @@ propAddPointwise sampleFn (PairInArea fns) =
     domBox = getDomainBox sampleFn
 
 testsFieldPointwise ::
-    (Show f,
+    (Show f, ShowInternals f,
      Show (Domain f),
      Show (VarBox f (Domain f)),
      ArbitraryWithArea f,
@@ -336,7 +354,7 @@ testsFieldPointwise ::
 testsFieldPointwise (name, sample) area =
     testGroup (name ++ " field ops") $
         [
-            testProperty "pointwise" (area, propAddPointwise sample)
+            testProperty "pointwise (+)" (area, propAddPointwise sample)
         ]
     
     
