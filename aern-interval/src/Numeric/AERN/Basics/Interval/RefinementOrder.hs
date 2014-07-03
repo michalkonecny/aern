@@ -55,16 +55,9 @@ instance
     type FromEndpointsEffortIndicator (Interval e) = ()
     getEndpointsDefaultEffort _ = ()
     fromEndpointsDefaultEffort _ = ()
-    getEndpointsInEff _ (Interval l r) = (Interval l l,Interval r r)
+--    getEndpointsInEff _ (Interval l r) = (Interval l l,Interval r r)
     getEndpointsOutEff _ (Interval l r) = (Interval l l,Interval r r)
-    fromEndpointsInEff _ (Interval ll _lr, Interval _rl rr) = (Interval ll rr) 
-        -- why not (Interval lr rl) ? because:
-        --   we do not necessarily interpret intervals as approximations of singletons
-        --   we are approximating an interval operation - which one?
-        --      a suitable inverse of getEndpointsInEff, which produces anti-consistent endpoints
-        --         inner rounded (from . get) must produce a sub-interval
-        --           Interval lr rl here would break this property
-        --   in this case no rounding occurs - Out and In versions must be the same
+    fromEndpointsInEff _ (Interval _ll lr, Interval rl _rr) = (Interval lr rl) 
     fromEndpointsOutEff _ (Interval ll _lr, Interval _rl rr) = (Interval ll rr)
 
 instance 

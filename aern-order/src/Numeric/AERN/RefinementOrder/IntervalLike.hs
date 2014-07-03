@@ -40,14 +40,16 @@ class
     type FromEndpointsEffortIndicator t
     getEndpointsDefaultEffort :: t -> GetEndpointsEffortIndicator t
     fromEndpointsDefaultEffort :: t -> FromEndpointsEffortIndicator t
-    getEndpointsInEff :: (GetEndpointsEffortIndicator t) -> t -> (t,t)
+--    getEndpointsInEff :: (GetEndpointsEffortIndicator t) -> t -> (t,t)
+-- getEndpointsInEff makes no sense as the endpoints are "thin" 
+-- and an it makes little sense to approximate them inwards.
     getEndpointsOutEff :: (GetEndpointsEffortIndicator t) -> t -> (t,t)
     fromEndpointsInEff :: (FromEndpointsEffortIndicator t) -> (t,t) -> t 
     fromEndpointsOutEff :: (FromEndpointsEffortIndicator t) -> (t,t) -> t 
 
 -- versions  with default effort
-getEndpointsIn :: (IntervalLike t) => t -> (t,t)
-getEndpointsIn a = getEndpointsInEff (getEndpointsDefaultEffort a) a
+--getEndpointsIn :: (IntervalLike t) => t -> (t,t)
+--getEndpointsIn a = getEndpointsInEff (getEndpointsDefaultEffort a) a
 getEndpointsOut :: (IntervalLike t) => t -> (t,t)
 getEndpointsOut a = getEndpointsOutEff (getEndpointsDefaultEffort a) a
 fromEndpointsIn :: (IntervalLike t) => (t,t) -> t
@@ -71,8 +73,8 @@ propEndpointsFromGet _ effGet effFrom effComp e =
         leqIfDefined "outer (from.get) endpoints" (pLeqEff effComp) 
             (fromEndpointsOutEff effFrom $ getEndpointsOutEff effGet e) e 
     innerFromGet =
-        leqIfDefined "outer (from.get) endpoints" (pLeqEff effComp) 
-            e (fromEndpointsInEff effFrom $ getEndpointsInEff effGet e) 
+        leqIfDefined "inner (from.get) endpoints" (pLeqEff effComp) 
+            e (fromEndpointsInEff effFrom $ getEndpointsOutEff effGet e) 
 
 testsEndpoints :: 
     (Arbitrary t, Show t, Eq t,

@@ -131,8 +131,8 @@ instance
     evalAtPointInEff (effEval, effFromE) dombox (Interval l r) =
         RefOrd.fromEndpointsInEff effFromE (lVal, rVal)
         where
-        lVal = evalAtPointInEff effEval dombox l
-        rVal = evalAtPointInEff effEval dombox r
+        lVal = evalAtPointOutEff effEval dombox l
+        rVal = evalAtPointOutEff effEval dombox r
 
 instance
     (CanPartiallyEvaluate f, 
@@ -153,8 +153,8 @@ instance
     pEvalAtPointInEff (effEval, effGetE) dombox (Interval l r) =
         Interval lVal rVal
         where
-        (lVal, _) = RefOrd.getEndpointsInEff effGetE $ pEvalAtPointInEff effEval dombox l
-        (_, rVal) = RefOrd.getEndpointsInEff effGetE $ pEvalAtPointInEff effEval dombox r
+        (_, lVal) = RefOrd.getEndpointsOutEff effGetE $ pEvalAtPointInEff effEval dombox l
+        (rVal, _) = RefOrd.getEndpointsOutEff effGetE $ pEvalAtPointInEff effEval dombox r
 
 
 
@@ -234,8 +234,8 @@ instance
         (_, rN) = RefOrd.getEndpointsOutEff effGetE $ primitiveFunctionOutEff effInteg r var 
     primitiveFunctionInEff (effInteg, effGetE) (Interval l r) var = Interval lN rN
         where
-        (lN, _) = RefOrd.getEndpointsInEff effGetE $ primitiveFunctionInEff effInteg l var 
-        (_, rN) = RefOrd.getEndpointsInEff effGetE $ primitiveFunctionInEff effInteg r var 
+        (_, lN) = RefOrd.getEndpointsOutEff effGetE $ primitiveFunctionInEff effInteg l var 
+        (rN, _) = RefOrd.getEndpointsOutEff effGetE $ primitiveFunctionInEff effInteg r var 
 
 instance 
     (RoundedFakeDerivative f,
@@ -254,8 +254,8 @@ instance
         (_, rN) = RefOrd.getEndpointsOutEff effGetE $ fakePartialDerivativeOutEff effDeriv r var
     fakePartialDerivativeInEff (effDeriv, effGetE) (Interval l r) var = Interval lN rN
         where
-        (lN, _) = RefOrd.getEndpointsInEff effGetE $ fakePartialDerivativeInEff effDeriv l var 
-        (_, rN) = RefOrd.getEndpointsInEff effGetE $ fakePartialDerivativeInEff effDeriv r var
+        (_, lN) = RefOrd.getEndpointsOutEff effGetE $ fakePartialDerivativeInEff effDeriv l var 
+        (rN, _) = RefOrd.getEndpointsOutEff effGetE $ fakePartialDerivativeInEff effDeriv r var
         
 instance
     (
