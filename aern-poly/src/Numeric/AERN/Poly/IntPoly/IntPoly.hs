@@ -427,7 +427,7 @@ instance
         RefOrd.fromEndpointsDefaultEffort sampleCf
         where
         sampleCf = ipolycfg_sample_cf cfg
-    getEndpointsInEff eff = polySplitWith (RefOrd.getEndpointsInEff eff)
+--    getEndpointsInEff eff = polySplitWith (RefOrd.getEndpointsInEff eff)
     getEndpointsOutEff eff = polySplitWith (RefOrd.getEndpointsOutEff eff)
     fromEndpointsInEff eff pp@(IntPoly cfg _, _) = 
         polyJoinWith z fromEndpointsCheck pp
