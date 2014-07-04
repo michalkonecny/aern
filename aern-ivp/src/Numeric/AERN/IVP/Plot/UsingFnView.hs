@@ -611,9 +611,9 @@ plotHybIVPListEnclosures effCF _plotMinSegSize ivp segmentsInfo =
         take (length list) activityCycle 
         where
         activityCycle = cycle $ map snd $ zip componentNames $ 
-            True : (repeat True)
+--            True : (repeat True)
 --            True : (repeat False) 
---            True : False : True : (repeat False) 
+            True : False : True : (repeat False) 
 --            True : False : False : True : (repeat False) 
 --            True : False : False : False : True : (repeat False) 
     
