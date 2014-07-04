@@ -989,9 +989,9 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
         }
     initValues@[initX, initXV, initY, initYV, initYVV, initR] = 
         [toDom 5, toDom 0, 
---            toDom 0, toDom 1, toDom 0, toDom 101] -- linear rise
+            toDom 0, toDom 1, toDom 0, toDom 101] -- linear rise
 --            toDom 0, toDom 1, toDom floorRiseAccelD, toDom $ 101] -- quadratic
-            toDom 3.5, toDom 0, toDom 6, toDom 30] -- cubic hill
+--            toDom 3.5, toDom 0, toDom 6, toDom 30] -- cubic hill
                     -- r = 2g(x-y) + (x'-y')^2
     modeMove = HybSysMode "move"
     odeMove :: [f] -> [f]
@@ -1000,12 +1000,12 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
          newConstFnFromSample x (toDom $ -10), 
          yv,
          yvv,
---         newConstFnFromSample yvv (toDom $ 0), -- linear/quadratic (y''' = 0)
-         newConstFnFromSample y (toDom $ -6), -- cubic hill
+         newConstFnFromSample yvv (toDom $ 0), -- linear/quadratic (y''' = 0)
+--         newConstFnFromSample y (toDom $ -6), -- cubic hill
          -- r' = 2(x'-y')(g+x''-y'')
---         newConstFnFromSample r (toDom $ 0) -- linear
+         newConstFnFromSample r (toDom $ 0) -- linear
 --         (-2 * floorRiseAccelD) |<*> (xv <-> yv) -- quadratic
-         (-2 :: Double) |<*> ((xv <-> yv) <*> yvv) -- cubic
+--         (-2 :: Double) |<*> ((xv <-> yv) <*> yvv) -- cubic
         ]
 --    invariantMove = id
 --    floorRiseAccelD = 1 :: Double 

@@ -36,10 +36,11 @@ import Numeric.AERN.RmToRn.Integration
 import Numeric.AERN.RmToRn.Differentiation
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding ((<+>|))
 import Numeric.AERN.RealArithmetic.Measures
-import Numeric.AERN.RealArithmetic.ExactOps
+import Numeric.AERN.RealArithmetic.ExactOps (zero)
 
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+--import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.Operators
@@ -53,7 +54,7 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.List as List
 import Data.Maybe (catMaybes)
-import Control.Monad (liftM2)
+--import Control.Monad (liftM2)
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -81,7 +82,6 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
      ArithInOut.RoundedMixedAdd f (Domain f),
      ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedAbs f,
-     NumOrd.RefinementRoundedLattice f,
      ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f),
@@ -254,7 +254,7 @@ solveHybridIVP_SplitNearEvents ::
 solveHybridIVP_SplitNearEvents
         solveHybridNoSplitting
         solveODEWithSplitting
-            effEval effPEval effDom 
+            effEval _effPEval effDom 
                 minStepSize _maxStepSize
                     (hybivpG :: HybridIVP f)
     =
@@ -283,7 +283,7 @@ solveHybridIVP_SplitNearEvents
         where
         effJoinMeet = ArithInOut.rrEffortJoinMeet sampleD effDom
         effMinmax = ArithInOut.rrEffortMinmaxInOut sampleD effDom
-        effAdd = ArithInOut.fldEffortAdd sampleD $ ArithInOut.rrEffortField sampleD effDom
+--        effAdd = ArithInOut.fldEffortAdd sampleD $ ArithInOut.rrEffortField sampleD effDom
         sampleD = tEventR
         
         rest =
@@ -337,6 +337,7 @@ solveHybridIVP_SplitNearEvents
                         noEventsSolution (tStart, tEnd) t
                 where
                 removeInfo (_, otherInfo) = (Nothing, otherInfo)
+                trimInfo (Nothing, otherInfo) = (Nothing, otherInfo)
                 trimInfo (Just (fns, midVals), otherInfo) =
                     (Just (trimmedFns, midVals), otherInfo)
                     where
@@ -445,7 +446,7 @@ solveHybridIVP_SplitNearEvents
                     maybeActiveOnD (_, (_, _, _, pruneUsingTheGuard)) =
                         case checkConditionOnBisectedFunction guardIsExcluded d of
                             Just True -> False
-                            Nothing -> True
+                            _ -> True
                         where
                         guardIsExcluded valueVec = 
                             case pruneUsingTheGuard d valueVec of
@@ -454,13 +455,13 @@ solveHybridIVP_SplitNearEvents
                 invariantCertainlyViolatedOnDom d =
                         case checkConditionOnBisectedFunction invariantIsFalse d of
                             Just True -> True
-                            Nothing -> False
+                            _ -> False
                         where
                         invariantIsFalse valueVec = 
                             case modeInvariant valueVec of
                                 Nothing -> Just True
                                 _ -> Nothing  
-                invariantIndecisiveThroughoutDom d =
+                invariantIndecisiveThroughoutDom _d =
                     False -- TODO
                     
                 eventSpecList = Map.toList eventSpecMap 
@@ -534,7 +535,9 @@ solveHybridIVP_SplitNearEvents
                 odeivp_tEnd = tEnd,
                 odeivp_makeInitialValueFnVec = makeInitValueFnVec,
                 odeivp_t0End = tStart,
-                odeivp_maybeExactValuesAtTEnd = Nothing
+                odeivp_maybeExactValuesAtTEnd = Nothing,
+                odeivp_valuePlotExtents = error "odeivp_valuePlotExtents deliberately not set",
+                odeivp_enclosureRangeWidthLimit = (zero tStart) <+>| (100000 :: Int) 
             }
             where
             makeInitValueFnVec = makeFnVecFromInitialValues componentNames initialValues
