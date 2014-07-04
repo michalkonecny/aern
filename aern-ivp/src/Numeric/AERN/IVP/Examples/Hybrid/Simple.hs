@@ -25,7 +25,7 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal)
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+--import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
 import Numeric.AERN.RealArithmetic.ExactOps
 
@@ -73,6 +73,7 @@ ivpByNameMap sampleFn =
         ("bouncingBallEnergy", ivpBouncingBallEnergy sampleFn),
         ("bouncingBallFloorRise", ivpBouncingBallFloorRise sampleFn),
         ("bouncingBallFloorRiseEnergy", ivpBouncingBallFloorRiseEnergy sampleFn),
+        ("bouncingBallFloorDropEnergy", ivpBouncingBallFloorDropEnergy sampleFn),
         ("bouncingBallRiseFall", ivpBouncingBallRiseFall sampleFn),
         ("bouncingBallEnergyRiseFall", ivpBouncingBallRiseFallEnergy sampleFn),
         ("bouncingBallAir", ivpBouncingBallAir sampleFn),
@@ -1066,6 +1067,157 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
         ++ ", x'(" ++ show tStart ++ ") = " ++ show initXV
         ++ "; y(" ++ show tStart ++ ") = " ++ show initY
         ++ ", y'(" ++ show tStart ++ ") = " ++ show initYV
+        ++ ", r(" ++ show tStart ++ ") = " ++ show initR
+    tStart = hybivp_tStart ivp
+    z = toDom 0
+    toDom = dblToReal sampleDom
+    toDomInterval l r = (toDom l) </\> (toDom r)
+    sampleDom = getSampleDomValue sampleFn
+
+ivpBouncingBallFloorDropEnergy :: 
+    (Var f ~ String,
+     HasConstFns f,
+     Neg f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMultiply f,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedReal (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     HasConsistency (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     Show (Domain f)
+    )
+    => 
+    f -> 
+    HybridIVP f
+ivpBouncingBallFloorDropEnergy (sampleFn :: f) =
+    ivp
+    where
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x","xv","y","tm","r"],
+            hybsys_modeFields = Map.fromList [(modeMove1, odeMove), (modeMove2, odeMove)],
+            hybsys_modeInvariants = Map.fromList [(modeMove1, invariantMove1), (modeMove2, invariantMove2)],
+            hybsys_eventSpecification = eventSpecMap
+        }
+    initValues = [initX, initXV, initY, initTM, initR]
+    initX = toDom 6
+    initXV = toDom 0
+    initY = toDom 1
+    initTM = toDom 0
+    initR = toDom 100 -- r = 2g(x-y) + (x'-y')^2
+                  
+    tDrop = 3.03125
+    yDrop = 0
+
+    modeMove1 = HybSysMode "move1"
+    modeMove2 = HybSysMode "move2"
+    odeMove :: [f] -> [f]
+    odeMove [x,xv,y,t,r] =
+        [xv, 
+         newConstFnFromSample x (toDom $ -10), 
+         newConstFnFromSample x (toDom $ 0), -- y'
+         newConstFnFromSample x (toDom $ 1), -- tm'
+         -- r' = 2(x'-y')(g+x''-y'')
+         newConstFnFromSample r (toDom $ 0) -- r'
+        ]
+    invariantMove1 orig@[_x,_xv,_y,tm,_r] =
+        do
+        _ <- isect (tStart </\> (toDom tDrop)) tm
+        invariantMove orig
+    invariantMove2 = 
+        invariantMove
+    invariantMove [x,xv,y,tm,r] = 
+        do 
+        let yv = zero y
+        -- x >= y:
+        xMyNN <- makeNonneg $ x <-> y
+        let xFromY = xMyNN <+> y  
+        -- r = 2g(x-y) + (x'-y')^2
+        -- r >= 0:
+        rNN <- makeNonneg r
+        -- x-y = (r - (x'-y')^2) / 2g:
+        let xvMyv = xv <-> yv
+        xvMyvSqr2 <- makeNonneg $ xvMyv <*> xvMyv
+        let xFromXV = (rNN <-> xvMyvSqr2) </> (toDom 20) <+> y
+        xNew <- isect xFromY xFromXV
+        -- |x'-y'| = sqrt(r - 2g(x-y)):
+        xvMyvSqr <- makeNonneg $ rNN <-> ((toDom 20) <*> xMyNN)
+        let xvMyvAbs = ArithInOut.sqrtOut xvMyvSqr
+        xvNew <- isect xv ((neg xvMyvAbs </\> xvMyvAbs) <+> yv) 
+        return [xNew,xvNew,y,tm,rNN]
+
+    eventSpecMap mode 
+        | mode == modeMove1 =
+            Map.fromList $ 
+                [ 
+                    (eventBounce1, 
+                        (modeMove1, resetBounce, [True, True, False, False, True], pruneBounce))
+                ,
+                    (eventDrop, 
+                        (modeMove2, resetDrop, [True, True, True, True, True], pruneDrop))
+                ]
+        | mode == modeMove2 =
+            Map.fromList $ 
+                [ 
+                    (eventBounce2, 
+                        (modeMove2, resetBounce, [True, True, False, False, True], pruneBounce))
+                ]
+        | otherwise =
+            error "internal error: eventSpecMap"
+                
+    eventBounce1 = HybSysEventKind "bounce1"
+    eventBounce2 = HybSysEventKind "bounce2"
+    pruneBounce _ [x,xv,y,tm,r] = 
+        do  
+        let yv = zero y
+        vDiffNP <- makeNonpos $ xv <-> yv 
+        _ <- isect x y
+        return [y, vDiffNP <+> yv, y, tm, r]
+    pruneBounce _ _ = error "internal error: pruneBounce"
+        
+    resetBounce [x,xv,y,tm,r] =
+        let yv = zero y in 
+        [x, 
+         yv <+> (-0.5 :: Double) |<*> (xv <-> yv), -- x' := y' - (x' - y')/2 
+         y, tm,
+         (toDomInterval 0 0.25) <*> r] -- r := r/4
+    resetBounce _ = error "internal error: resetBounce"
+    
+    eventDrop = HybSysEventKind "drop"
+    pruneDrop _ orig@[_x,_xv,_y,tm,_r] =
+        do
+        _ <- isect tm (toDom tDrop)
+        return orig 
+    pruneDrop _ _ = error "internal error: pruneDrop"
+
+    resetDrop [x,xv,y,tm,r] =
+        [x, xv, 
+         toDom yDrop, 
+         tm,
+         ((toDom 20) <*> (y <-> (toDom yDrop))) <+> r] -- -- r = 2g(x-y) + (x'-y')^2
+    resetDrop _ = error "internal error: resetDrop"
+    
+    ivp :: HybridIVP f
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = toDom 0,
+            hybivp_tEnd = toDom 1,
+            hybivp_initialStateEnclosure = 
+                Map.singleton modeMove1 initValues,
+            hybivp_maybeExactStateAtTEnd = Nothing
+        }
+    description = 
+        "BB-R+"
+        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
+        ++ ", x'(" ++ show tStart ++ ") = " ++ show initXV
+        ++ "; y(" ++ show tStart ++ ") = " ++ show initY
+        ++ ", t(" ++ show tStart ++ ") = " ++ show initTM
         ++ ", r(" ++ show tStart ++ ") = " ++ show initR
     tStart = hybivp_tStart ivp
     z = toDom 0
@@ -2467,4 +2619,5 @@ isect x1 x2 =
     where
     meet = x1 <\/> x2
     
+
       

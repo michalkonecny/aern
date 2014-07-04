@@ -29,8 +29,8 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 --
-import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.Operators
+--import qualified Numeric.AERN.NumericOrder as NumOrd
+--import Numeric.AERN.NumericOrder.Operators
 --
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
@@ -87,7 +87,9 @@ data HybridSystem f =
                  Domain f -> [Domain f] -> Maybe [Domain f] 
                     {- intersection with the support of the guard, 
                        used to detect some cases when this kind of event is ruled out 
-                       and to prune some impossible states at the switching point -} 
+                       and to prune some impossible states at the switching point;
+                       the first parameter is the current time interval
+                    -} 
                 )  
     }
     
