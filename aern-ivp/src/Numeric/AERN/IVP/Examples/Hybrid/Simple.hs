@@ -80,7 +80,8 @@ ivpByNameMap sampleFn =
         ("bouncingBallAirEnergy", ivpBouncingBallAirEnergy sampleFn),
         ("bouncingBallCubicDrag", ivpBouncingBallCubicDrag sampleFn),
         ("bouncingBallCubicDragEnergy", ivpBouncingBallCubicDragEnergy sampleFn),
-        ("2BeadColumnEnergy", ivp2BeadColumnEnergy sampleFn)
+        ("2BeadColumnEnergy", ivp2BeadColumnEnergy sampleFn),
+        ("2BeadColumnEnergyVDiff", ivp2BeadColumnEnergyVDiff sampleFn)
 --        ,
 --        ("bouncingBallVibr-graze", ivpBouncingBallVibr_AtTime 2 sampleFn),
 --    -- TODO: define "bouncingBallVibrEnergy-graze" 
@@ -2624,11 +2625,11 @@ ivp2BeadColumnEnergy (sampleFn :: f) =
         x2Mx1NN <- makeNonneg $ x2 <-> x1 
         x1New <- isect x1 (x2 <-> x2Mx1NN)
         x2New <- isect x2 (x2Mx1NN <+> x1)
-        let vars2 = [x2New, y2, r2]
+        let vars2 = [x2New, v2, r2]
         res2 <- invariantMoveAux vars2
         return $ [x1New,v1,r1] ++ res2 
         where
-        (vars1, [x2,y2,r2]) = splitAt 3 vars
+        (vars1, [x2,v2,r2]) = splitAt 3 vars
     invariantMoveAux [x,v,r] =
         do
         -- x >= 0:
@@ -2649,7 +2650,10 @@ ivp2BeadColumnEnergy (sampleFn :: f) =
         Map.fromList $
             [
                 (eventBounce1,
-                    (modeMove, resetBounce1, [True, True, True, True, True, True], pruneBounce1))
+                    (modeMove, resetBounce1, 
+--                        [True, True, True, True, True, True], 
+                        [True, True, True, False, False, False], 
+                            pruneBounce1))
             ,
                 (eventBounce2,
                     (modeMove, resetBounce2, [True, True, True, True, True, True], pruneBounce2))
@@ -2730,6 +2734,178 @@ ivp2BeadColumnEnergy (sampleFn :: f) =
     initX2 = toDom 4
     initX2' = toDom 0
     initR2 = energyWith initX2 initX2'
+    
+    z = toDom 0
+    toDom = dblToReal sampleDom
+    toDomInterval l r = (toDom l) </\> (toDom r)
+    sampleDom = getSampleDomValue sampleFn
+
+ivp2BeadColumnEnergyVDiff :: 
+    (Var f ~ String,
+     HasConstFns f,
+     Neg f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     HasConsistency (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show (Domain f)
+    )
+    => 
+    f -> 
+    HybridIVP f
+ivp2BeadColumnEnergyVDiff (sampleFn :: f) =
+    ivp
+    where
+    energyWith x v = 
+        (v <*> v <+> (toDom 20) <*> x)
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x1","v1","r1", "x2","v2","r2","v1Mv2"],
+            hybsys_modeFields = Map.fromList [(modeMove, odeMove)],
+            hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
+            hybsys_eventSpecification = eventSpecMap
+        }
+    modeMove = HybSysMode "move"
+    odeMove :: [f] -> [f]
+    odeMove vars = 
+        odeMoveAux vars1 ++ odeMoveAux vars2 ++ [newConstFnFromSample v1Mv2 (toDom 0)]
+        where
+        (vars2, [v1Mv2]) = splitAt 3 vars2vDiff
+        (vars1, vars2vDiff) = splitAt 3 vars
+    odeMoveAux [x,v,r] = 
+        [v, 
+         newConstFnFromSample x (toDom $ -10), 
+         newConstFnFromSample r (toDom 0)]
+    odeMoveAux _ = error "internal error in odeMoveAux"
+    invariantMove vars =
+        do
+        [x1,v1,r1] <- invariantMoveAux vars1
+        -- x1 <= x2:
+        x2Mx1NN <- makeNonneg $ x2 <-> x1 
+        x1New <- isect x1 (x2 <-> x2Mx1NN)
+        x2New <- isect x2 (x2Mx1NN <+> x1)
+        -- v2 = v1 - v1Mv2:
+        v2New <- isect v2 (v1 <-> v1Mv2)
+        let vars2 = [x2New, v2New, r2]
+        res2@[_, v2New2, _] <- invariantMoveAux vars2
+        -- v1 = v1Mv2 + v2:        
+        v1New <- isect v1 (v1Mv2 <+> v2New2)
+        v1Mv2New <- isect v1Mv2 $ v1New <-> v2New2
+        return $ [x1New,v1New,r1] ++ res2 ++ [v1Mv2New] 
+        where
+        (vars1, [x2,v2,r2,v1Mv2]) = splitAt 3 vars
+    invariantMoveAux [x,v,r] =
+        do
+        -- x >= 0:
+        xNN <- makeNonneg x
+        -- r >= 0:
+        rNN <- makeNonneg r
+        -- |v| = sqrt(r - 2gx):
+        vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
+        let absV = ArithInOut.sqrtOut vSqr1
+        vNew <- isect v ((neg absV) </\> absV)
+        -- x = (r - (v)^2) / 2g:
+        vSqr2 <- makeNonneg $ v <*> v
+        let x2 = (rNN <-> vSqr2) </> (toDom 20)
+        xNew <- isect xNN x2
+        return [xNew, vNew, rNN]
+
+    eventSpecMap _mode =
+        Map.fromList $
+            [
+                (eventBounce1,
+                    (modeMove, resetBounce1, 
+--                        [True, True, True, True, True, True, True], 
+                        [True, True, True, False, False, False, True], 
+                            pruneBounce1))
+            ,
+                (eventBounce2,
+                    (modeMove, resetBounce2, [True, True, True, True, True, True, True], pruneBounce2))
+            ]
+    
+    eventBounce1 = HybSysEventKind "bc1"
+    pruneBounce1 _ [x1,v1,r1,x2,v2,r2,v1Mv2] =
+        do
+        _ <- isect z x1
+        v1NP <- makeNonpos v1
+        return $ [z,v1NP,r1,x2,v2,r2,v1Mv2]
+    pruneBounce1 _ _ = error "internal error in pruneBounce1"
+    resetBounce1 [x1,v1,r1,x2,v2,r2,v1Mv2] = 
+        [x1,
+         (-0.5 :: Double) |<*> v1, 
+         (toDomInterval 0 0.25) <*> r1,
+         x2, v2, r2,
+         v1Mv2 <+> ((-1.5 :: Double) |<*> v1)
+        ]
+    resetBounce1 _ = error "internal error in resetBounce1"
+
+    eventBounce2 = HybSysEventKind "bc2"
+    pruneBounce2 _ [x1,v1,r1,x2,v2,r2,v1Mv2] =
+        do
+        xNew <- isect x1 x2
+        -- v1 >= v2
+        v1Mv2New <- isect v1Mv2 (v1 <-> v2)
+        v1Mv2NN <- makeNonneg $ v1Mv2New
+        v1New <- isect v1 $ v1Mv2NN <+> v2
+        v2New <- isect v2 $ v1 <-> v1Mv2NN
+        return $ [xNew,v1New,r1,xNew,v2New,r2,v1Mv2NN]
+    pruneBounce2 _ _ = error "internal error in pruneBounce2"
+    resetBounce2 [x1,v1,r1,x2,v2,r2,v1Mv2] = 
+        [x1,
+         v2 <+> vDiffRest, -- v1+ := v2 + c(v1-v2)
+         r2 <+> vDiffRest <*> (vDiffRest <+> ((2 :: Int) |<*> v2)),
+            -- r1+ = (v1+)^2 + 20x 
+            --     = (v2 + c(v1-v2))^2 + 20x 
+            --     = v2^2 + 20x + 2*v2*c*(v1-v2) + (c(v1-v2))^2
+            --     = r2 + 2*v2*c*(v1-v2)  + (c(v1-v2))^2
+            --     = r2 + c(v1-v2)*(c(v1-v2)+2*v2)
+         x2,
+         v1 <-> vDiffRest, -- v2+ := v1 - c(v1-v2)
+         r1 <+> vDiffRest <*> (vDiffRest <-> ((2 :: Int) |<*> v1)),
+            -- r2+ = (v2+)^2 + 20x 
+            --     = (v1 - c(v1-v2))^2 + 20x 
+            --     = v1^2 + 20x - 2*v1*c*(v1-v2)  + (c(v1-v2))^2
+            --     = r1 - 2*v1*c*(v1-v2)  + (c(v1-v2))^2
+            --     = r1 + c(v1-v2)*(c(v1-v2)-2*v1)
+         (2*restCoeff - 1) |<*> v1Mv2
+        ]
+        where
+        vDiff = v1Mv2
+        vDiffRest = restCoeff |<*> vDiff
+        restCoeff = 0.25 :: Double -- has to be > 0 and  < 0.5
+    resetBounce2 _ = error "internal error in resetBounce2"
+
+    ivp :: HybridIVP f
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = z,
+            hybivp_tEnd = z,
+            hybivp_initialStateEnclosure = 
+                Map.singleton modeMove initValues,
+            hybivp_maybeExactStateAtTEnd = Nothing
+        }
+    description =
+        "2BC+"
+        ++ "; x1(" ++ show tStart ++ ") = " ++ show initX1
+        ++ ", v1(" ++ show tStart ++ ") = " ++ show initX1'
+        ++ ", r1(" ++ show tStart ++ ") ∊ " ++ show initR1
+    tStart = hybivp_tStart ivp
+
+    initValues = [initX1, initX1', initR1, initX2, initX2', initR2, initV1MV2]
+    initX1 = toDom 2
+    initX1' = toDom 0
+    initR1 = energyWith initX1 initX1'
+    initX2 = toDom 4
+    initX2' = toDom 0
+    initR2 = energyWith initX2 initX2'
+    initV1MV2 = initX1' <-> initX2'
     
     z = toDom 0
     toDom = dblToReal sampleDom
