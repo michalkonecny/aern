@@ -68,6 +68,8 @@ testsPoly =
     [
         testsEval (polyTypeName, samplePoly) areaPoly
         ,
+        testsEval (polyIntervalTypeName, samplePI) areaPI
+        ,
         testsFnNumCompare (polyTypeName, samplePoly) areaPoly
         ,
         testsFieldPointwise (polyIntervalTypeName, samplePI) areaPI
