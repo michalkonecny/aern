@@ -186,12 +186,15 @@ solveHybridIVP_UsingPicardAndEventTree
             varDoms = 
                 toAscList $ getDomainBox fn
 
-        esolve prevEventInfo =
-            case addOneLayer prevEventInfo of
-                (newEventInfo, _, False) -> newEventInfo -- nothing left to do
-                (newEventInfo, Nothing, _) -> newEventInfo -- ie given up or reached limit
-                (newEventInfo, _, _) -> esolve newEventInfo
-        addOneLayer prevEventInfo =
+        esolve prevEventInfo0 =
+            aux [] prevEventInfo0
+            where
+            aux prevStates prevEventInfo =
+                case addOneLayer prevStates prevEventInfo of
+                    (newEventInfo, _, False) -> newEventInfo -- nothing left to do
+                    (newEventInfo, Nothing, _) -> newEventInfo -- ie given up or reached limit
+                    (newEventInfo, Just newStates, _) -> aux newStates newEventInfo
+        addOneLayer prevStates0 prevEventInfo =
 --            unsafePrint
 --            (
 --                "solveEvents: solveEventsOneMode: "
@@ -199,40 +202,40 @@ solveHybridIVP_UsingPicardAndEventTree
 --                ++ "\n tEnd = " ++ show tEnd  
 --                ++ "\n prevEventInfo = \n" ++ showEventInfo "   " (show . id) prevEventInfo
 --            ) $
-            processNode 0 [] prevEventInfo
+            processNode prevStates0 prevEventInfo
             where
-            processNode nodeCountSoFar previousStates eventInfo2 = 
+            processNode prevStates eventInfo2 = 
                 case eventInfo2 of
                     EventGivenUp -> (eventInfo2, Nothing, False)
-                    EventInconsistent -> (eventInfo2, Just nodeCountSoFar, False)
-                    EventFixedPoint _ -> (eventInfo2, Just nodeCountSoFar, False)
+                    EventInconsistent -> (eventInfo2, Just prevStates, False)
+                    EventFixedPoint _ -> (eventInfo2, Just prevStates, False)
                     EventNextSure state children ->
-                        (EventNextSure state newChildren, maybeNodeCount, someChildHasChanged)
+                        (EventNextSure state newChildren, maybeNewStates, someChildHasChanged)
                         where
-                        (newChildren, maybeNodeCount, someChildHasChanged) = 
-                            processChildren (nodeCountSoFar + 1) (state : previousStates) $ 
+                        (newChildren, maybeNewStates, someChildHasChanged) = 
+                            processChildren prevStates $ 
                                 Map.toAscList children
                     EventNextMaybe state children -> 
-                        (EventNextMaybe state newChildren, maybeNodeCount, someChildHasChanged)
+                        (EventNextMaybe state newChildren, maybeNewStates, someChildHasChanged)
                         where
-                        (newChildren, maybeNodeCount, someChildHasChanged) = 
-                            processChildren (nodeCountSoFar + 1) (state : previousStates) $ 
+                        (newChildren, maybeNewStates, someChildHasChanged) = 
+                            processChildren prevStates $ 
                                 Map.toAscList children
-                    EventTODO state -> processState (nodeCountSoFar + 1) previousStates state
-            processChildren nodeCountSoFar _previousStates [] = (Map.empty, Just nodeCountSoFar, False)
-            processChildren nodeCountSoFar previousStates ((key, child) : rest) =
-                 case processChildren nodeCountSoFar previousStates rest of
+                    EventTODO state -> processState prevStates state
+            processChildren prevStates [] = (Map.empty, Just prevStates, False)
+            processChildren prevStates ((key, child) : rest) =
+                 case processChildren prevStates rest of
                     (newRest, Nothing, someChildHasChanged) -> 
                         (Map.insert key child newRest, Nothing, someChildHasChanged)
-                    (newRest, Just nodeCountSoFarWithRest, someChildHasChanged) ->
+                    (newRest, Just prevStatesWithRest, someChildHasChanged) ->
                         (Map.insert key newChild newRest, newNodeCountSoFar, someChildHasChanged || hasChanged)
                         where
                         (newChild, newNodeCountSoFar, hasChanged) = 
-                            processNode nodeCountSoFarWithRest previousStates child
-            processState nodeCountSoFar previousStates state@(modeBeforeEvent, fnVecBeforeEvent) 
+                            processNode prevStatesWithRest child
+            processState prevStates state@(modeBeforeEvent, fnVecBeforeEvent) 
                 -- first check whether this state is included in a previous state:
                 | stateShrinksPreviousOne =
-                    (EventFixedPoint state, Just (nodeCountSoFar + 1), True)
+                    (EventFixedPoint state, Just prevStates, True)
 --                -- the following case unnecessarily gives up in some cases:
 --                | stateExpandsPreviousOne =
 --                    unsafePrint
@@ -250,23 +253,23 @@ solveHybridIVP_UsingPicardAndEventTree
                 -- at the same time sum up the overall events 
                 --  (how? need breadth-first with size cut off - need to have partial event info to hold intermediate results;
                 --   could use a zipper...)
-                    (constructorForNextEvents state eventTasksMap, maybeNodeCountNew, True)
+                    (constructorForNextEvents state eventTasksMap, maybeNewStates, True)
                 where
                 stateShrinksPreviousOne =
-                    or $ map (stateIncludedIn state) previousStates
+                    or $ map (stateIncludedIn state) prevStates
                 stateIncludedIn (mode1, fnVec1) (mode2, fnVec2) 
                     | mode1 /= mode2 = False
                     | otherwise =
                         let (|<=?) = RefOrd.pLeqEff effInclFn in
                         and $ map (== Just True) $ zipWith (|<=?) fnVec2 fnVec1 
-                maybeNodeCountNew
+                maybeNewStates
                     | givenUp2 = Nothing
-                    | nodeCountSoFar + eventCount > maxNodes = Nothing
-                    | otherwise = Just $ nodeCountSoFar + eventCount
-                (eventList, eventCount) = 
+                    | length prevStates + 1 > maxNodes = Nothing
+                    | otherwise = Just $ state : prevStates
+                eventList = 
                     case eventExaminationResult of
-                        LDResSome _ _ eventSet -> (Set.toList eventSet, Set.size eventSet)
-                        LDResNone -> ([], 0)
+                        LDResSome _ _ eventSet -> Set.toList eventSet
+                        LDResNone -> []
                 someEventCertain = isLDResSure eventExaminationResult
                 eventExaminationResult =
                     detectEventsWithoutLocalisation 
