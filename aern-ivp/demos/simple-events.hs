@@ -154,6 +154,9 @@ solveEventsPrintSteps
         shouldPlotSteps 
         ivp (maxdegParam, depthParam, minDepthParam, maxSplitSizeParam) =
     do
+    case basicStepType of
+        BasicStepPWL -> error "PWL not fully implemented yet."
+        BasicStepEvTree -> return ()
     putStrLn "---------------------------------------------------------"
     putStrLn "enclosure semantics based on (Konecny, Taha, Duracz 2012)" 
     putStrLn "---------------------------------------------------------"
