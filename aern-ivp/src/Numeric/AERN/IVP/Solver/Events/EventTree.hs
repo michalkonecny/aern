@@ -118,6 +118,7 @@ solveHybridIVP_UsingPicardAndEventTree
         (Just finalState, modeEventInfoList)
     where
     effJoinDom = ArithInOut.rrEffortJoinMeet sampleDom effDom
+    effInclDom = ArithInOut.rrEffortRefComp sampleDom effDom
     sampleDom = tStart
     tStart = hybivp_tStart hybivp
     tEnd = hybivp_tEnd hybivp
@@ -257,11 +258,12 @@ solveHybridIVP_UsingPicardAndEventTree
                 --   could use a zipper...)
                     (constructorForNextEvents state eventTasksMap, maybeNewStates, True)
                 where
+                stateRange = (modeBeforeEvent, getRangeVec fnVecBeforeEvent)
                 stateShrinksPreviousOne =
-                    stateMapIncludedIn effInclFn state prevStates
+                    stateMapIncludedIn2 effInclDom stateRange prevStates
                 maybeNewStates
                     | givenUp2 = Nothing
-                    | otherwise = Just $ stateMapAdd state prevStates
+                    | otherwise = Just $ stateMapAdd stateRange prevStates
                 eventList = 
                     case eventExaminationResult of
                         LDResSome _ _ eventSet -> Set.toList eventSet
@@ -350,10 +352,11 @@ solveHybridIVP_UsingPicardAndEventTree
                             where
                             pick True (fnAfterEvent, _fnBeforeEvent) = fnAfterEvent
                             pick False (_fnAfterEvent, fnBeforeEvent) = fnBeforeEvent  
-                    getRangeVec fnVec = 
-                        map getRange fnVec
-                    getRange fn =
-                        evalAtPointOutEff effEval (getDomainBox fn) fn
+                    
+                getRangeVec fnVec = 
+                    map getRange fnVec
+                getRange fn =
+                    evalAtPointOutEff effEval (getDomainBox fn) fn
     
                 eventKindAffectCompsAndPruneList =
                     map lookupSpec eventList
@@ -457,21 +460,83 @@ stateMapAdd (mode, box) stateMap =
         Just boxes -> Map.insert mode (box : boxes) stateMap 
 
 stateMapIncludedIn ::
-    (RefOrd.PartialComparison f)
+    (RefOrd.PartialComparison d)
     =>
-    RefOrd.PartialCompareEffortIndicator f -> 
-    (HybSysMode, [f]) -> StateMap f -> Bool
+    RefOrd.PartialCompareEffortIndicator d -> 
+    (HybSysMode, [d]) -> StateMap d -> Bool
 stateMapIncludedIn effInclFn (mode, box) stateMap =
     case Map.lookup mode stateMap of
         Nothing -> False
         Just boxes ->
-            or $ map (box `boxIncludedIn`) boxes
-    where            
-    box1 `boxIncludedIn` box2 = 
-        let (|<=?) = RefOrd.pLeqEff effInclFn in
-        and $ map (== Just True) $ zipWith (|<=?) box2 box1 
+            or $ map (boxIncludedIn effInclFn box) boxes
+    
+boxIncludedIn :: 
+    RefOrd.PartialComparison d 
+    =>
+    RefOrd.PartialCompareEffortIndicator d -> 
+    [d] -> [d] -> Bool
+boxIncludedIn effIncl box1 box2 =          
+    let (|<=?) = RefOrd.pLeqEff effIncl in
+    and $ map (== Just True) $ zipWith (|<=?) box2 box1 
 
+stateMapIncludedIn2 :: 
+     (ArithInOut.RoundedReal d, RefOrd.IntervalLike d) 
+    =>
+    RefOrd.PartialCompareEffortIndicator d -> 
+    (HybSysMode, [d]) -> StateMap d -> Bool
+stateMapIncludedIn2 effIncl (mode, box0) stateMap =
+    case Map.lookup mode stateMap of
+        Nothing -> False
+        Just boxes -> box0 `coveredBy` boxes
+    where
+    box `coveredBy` boxes
+        | coveredByOne = True
+        | otherwise = useIntersection boxes
+        where
+        coveredByOne =  
+            or $ map (boxIncludedIn effIncl box) boxes
+        useIntersection [] = False
+        useIntersection (b : bb) =
+            case splitUpBoxBy b box of
+                Nothing -> useIntersection bb -- b and box are disjoint, ignore b
+                Just boxFragments -> 
+                    and $ map (`coveredBy` bb) boxFragments
 
+splitUpBoxBy ::
+    (ArithInOut.RoundedReal d, RefOrd.IntervalLike d)
+    =>
+    [d] -> [d] -> Maybe [[d]]
+splitUpBoxBy b box = aux [] [] b box
+    where
+    aux prevFragments _prevCoords [] [] = Just prevFragments
+    aux prevFragments prevCoords (bEdge : brest) (boxEdge : boxrest) = 
+        case splitUpIntervalBy bEdge boxEdge of
+            Nothing -> Nothing
+            Just (intersectionEdge, outsideEdges) -> 
+                aux (prevFragments ++ newFragments) (intersectionEdge : prevCoords) brest boxrest
+                where
+                newFragments = map makeFragment outsideEdges
+                    where
+                    makeFragment outsideEdge = reverse prevCoords ++ [outsideEdge] ++ boxrest
+    aux _ _ _ _ = error "splitUpBoxBy: aux: internal error"
+    splitUpIntervalBy be boxe 
+        | be .<. boxe = Nothing
+        | boxe .<. be = Nothing
+        | boxe `inside` be = Just (boxe, [])
+        | be `inside` boxe = Just (be, [boxeLbeL, beRboxeR])
+        | beL `inside` boxe = Just (beLboxeR, [boxeLbeL])
+        | beR `inside` boxe = Just (boxeLbeR, [beRboxeR])
+        | otherwise = error "splitUpBoxBy: splitUpIntervalBy: internal error"
+        where
+        a1 .<. a2 = (a1 NumOrd.<? a2) == Just True
+        a1 `inside` a2 = (a2 RefOrd.|<=? a1) == Just True
+        (beL, beR) = RefOrd.getEndpointsOut be
+        (boxeL, boxeR) = RefOrd.getEndpointsOut boxe
+        boxeLbeL = RefOrd.fromEndpointsOut (boxeL, beL)
+        boxeLbeR = RefOrd.fromEndpointsOut (boxeL, beR)
+        beLboxeR = RefOrd.fromEndpointsOut (beL, boxeR)
+        beRboxeR = RefOrd.fromEndpointsOut (beR, boxeR)
+    
 data EventInfo f
     = EventNextSure (HybSysMode, [f]) (Map.Map HybSysEventKind (EventInfo f)) -- at least one
     | EventNextMaybe (HybSysMode, [f]) (Map.Map HybSysEventKind (EventInfo f)) -- possibly none
