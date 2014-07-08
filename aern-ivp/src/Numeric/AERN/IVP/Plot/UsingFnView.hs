@@ -622,8 +622,8 @@ plotHybIVPListEnclosures effCF _plotMinSegSize ivp segmentsInfo =
         where
         colourCycle = cycle $ map snd $ 
             zip componentNames 
---                (cycle [blue, green, red, black])
-                (cycle [black])
+                (cycle [blue, green, red, black, orange, purple, magenta])
+--                (cycle [black])
 
 black = FV.defaultFnPlotStyle
     { 
@@ -645,5 +645,20 @@ red = FV.defaultFnPlotStyle
     { 
         FV.styleOutlineColour = Just (0.8,0.1,0.1,1), 
         FV.styleFillColour = Just (0.8,0.1,0.1,0.1) 
+    } 
+orange = FV.defaultFnPlotStyle 
+    { 
+        FV.styleOutlineColour = Just (1,0.7,0.2,1), 
+        FV.styleFillColour = Just (1,0.7,0.2,0.1) 
+    } 
+purple = FV.defaultFnPlotStyle 
+    { 
+        FV.styleOutlineColour = Just (0.7,0.4,1,1), 
+        FV.styleFillColour = Just (0.7,0.4,1,0.1) 
+    } 
+magenta = FV.defaultFnPlotStyle 
+    { 
+        FV.styleOutlineColour = Just (0, 0.8,0.8,1), 
+        FV.styleFillColour = Just (0, 0.8,0.8,0.1) 
     } 
         
