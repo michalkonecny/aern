@@ -2789,12 +2789,13 @@ ivp2BeadColumnEnergyVDiff (sampleFn :: f) =
         x2New <- isect x2 (x2Mx1NN <+> x1)
         -- v2 = v1 - v1Mv2:
         v2New <- isect v2 (v1 <-> v1Mv2)
+        v1Mv2New <- isect v1Mv2 $ v1 <-> v2New
         let vars2 = [x2New, v2New, r2]
         res2@[_, v2New2, _] <- invariantMoveAux vars2
         -- v1 = v1Mv2 + v2:        
-        v1New <- isect v1 (v1Mv2 <+> v2New2)
-        v1Mv2New <- isect v1Mv2 $ v1New <-> v2New2
-        return $ [x1New,v1New,r1] ++ res2 ++ [v1Mv2New] 
+        v1New <- isect v1 (v1Mv2New <+> v2New2)
+        v1Mv2New2 <- isect v1Mv2New $ v1New <-> v2New2
+        return $ [x1New,v1New,r1] ++ res2 ++ [v1Mv2New2] 
         where
         (vars1, [x2,v2,r2,v1Mv2]) = splitAt 3 vars
     invariantMoveAux [x,v,r] =
