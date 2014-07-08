@@ -187,13 +187,15 @@ solveHybridIVP_UsingPicardAndEventTree
                 toAscList $ getDomainBox fn
 
         esolve prevEventInfo0 =
-            aux [] prevEventInfo0
+            aux stateMapEmpty prevEventInfo0
             where
             aux prevStates prevEventInfo =
                 case addOneLayer prevStates prevEventInfo of
                     (newEventInfo, _, False) -> newEventInfo -- nothing left to do
-                    (newEventInfo, Nothing, _) -> newEventInfo -- ie given up or reached limit
-                    (newEventInfo, Just newStates, _) -> aux newStates newEventInfo
+                    (newEventInfo, Nothing, _) -> newEventInfo -- given up
+                    (newEventInfo, Just newStates, _) 
+                        | eventInfoCountNodes newEventInfo > maxNodes -> newEventInfo -- reached size limit 
+                        | otherwise -> aux newStates newEventInfo -- continue adding nodes
         addOneLayer prevStates0 prevEventInfo =
 --            unsafePrint
 --            (
@@ -228,9 +230,9 @@ solveHybridIVP_UsingPicardAndEventTree
                     (newRest, Nothing, someChildHasChanged) -> 
                         (Map.insert key child newRest, Nothing, someChildHasChanged)
                     (newRest, Just prevStatesWithRest, someChildHasChanged) ->
-                        (Map.insert key newChild newRest, newNodeCountSoFar, someChildHasChanged || hasChanged)
+                        (Map.insert key newChild newRest, newStatesSoFar, someChildHasChanged || hasChanged)
                         where
-                        (newChild, newNodeCountSoFar, hasChanged) = 
+                        (newChild, newStatesSoFar, hasChanged) = 
                             processNode prevStatesWithRest child
             processState prevStates state@(modeBeforeEvent, fnVecBeforeEvent) 
                 -- first check whether this state is included in a previous state:
@@ -256,16 +258,10 @@ solveHybridIVP_UsingPicardAndEventTree
                     (constructorForNextEvents state eventTasksMap, maybeNewStates, True)
                 where
                 stateShrinksPreviousOne =
-                    or $ map (stateIncludedIn state) prevStates
-                stateIncludedIn (mode1, fnVec1) (mode2, fnVec2) 
-                    | mode1 /= mode2 = False
-                    | otherwise =
-                        let (|<=?) = RefOrd.pLeqEff effInclFn in
-                        and $ map (== Just True) $ zipWith (|<=?) fnVec2 fnVec1 
+                    stateMapIncludedIn effInclFn state prevStates
                 maybeNewStates
                     | givenUp2 = Nothing
-                    | length prevStates + 1 > maxNodes = Nothing
-                    | otherwise = Just $ state : prevStates
+                    | otherwise = Just $ stateMapAdd state prevStates
                 eventList = 
                     case eventExaminationResult of
                         LDResSome _ _ eventSet -> Set.toList eventSet
@@ -448,6 +444,34 @@ wrapFnVecAsBox effEval transformVec fnVec =
     dombox = getDomainBox sampleFn
     (sampleFn : _) = fnVec
 
+
+type StateMap d = Map.Map HybSysMode [[d]]
+
+stateMapEmpty :: StateMap d
+stateMapEmpty = Map.empty
+ 
+stateMapAdd :: (HybSysMode, [d]) -> StateMap d -> StateMap d
+stateMapAdd (mode, box) stateMap =
+    case Map.lookup mode stateMap of
+        Nothing -> Map.insert mode [box] stateMap
+        Just boxes -> Map.insert mode (box : boxes) stateMap 
+
+stateMapIncludedIn ::
+    (RefOrd.PartialComparison f)
+    =>
+    RefOrd.PartialCompareEffortIndicator f -> 
+    (HybSysMode, [f]) -> StateMap f -> Bool
+stateMapIncludedIn effInclFn (mode, box) stateMap =
+    case Map.lookup mode stateMap of
+        Nothing -> False
+        Just boxes ->
+            or $ map (box `boxIncludedIn`) boxes
+    where            
+    box1 `boxIncludedIn` box2 = 
+        let (|<=?) = RefOrd.pLeqEff effInclFn in
+        and $ map (== Just True) $ zipWith (|<=?) box2 box1 
+
+
 data EventInfo f
     = EventNextSure (HybSysMode, [f]) (Map.Map HybSysEventKind (EventInfo f)) -- at least one
     | EventNextMaybe (HybSysMode, [f]) (Map.Map HybSysEventKind (EventInfo f)) -- possibly none
@@ -522,6 +546,18 @@ eventInfoCollectFinalStates effEval tVar tEnd eventInfo =
         where
         valueVec =
             fst $ evalAtEndTimeVec effEval tVar tEnd fnVec
+
+eventInfoCountNodes ::
+    EventInfo f -> Int
+eventInfoCountNodes eventInfo =
+    aux eventInfo
+    where
+    aux (EventFixedPoint _) = 0 
+    aux (EventNextSure _ furtherInfo) = 
+        1 + (sum $ map aux $ Map.elems furtherInfo)
+    aux (EventNextMaybe _ furtherInfo) =
+        1 + (sum $ map aux $ Map.elems furtherInfo)
+    aux _ = 0
         
 eventInfoCountEvents ::
     (ArithInOut.RoundedReal d)
