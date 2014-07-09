@@ -167,16 +167,22 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
         (maybeFinalStateWithInvariants, (tEnd, maybeFinalStateWithInvariants, eventInfo))
         where
         tEnd = hybivp_tEnd hybivp
-        maybeFinalStateWithInvariants
-            = fmap filterInvariants maybeFinalState
+        maybeFinalStateWithInvariants =
+            checkEmpty $
+            fmap filterInvariants maybeFinalState
             where
+            checkEmpty (Just finalState) 
+                | Map.null finalState =
+                     error $ 
+                        "mode invariant failed on a value passed between two segments" ++
+                        "; maybeFinalState = " ++ show maybeFinalState
+            checkEmpty r = r
+             
             filterInvariants st =
-                Map.mapWithKey filterInvariantsVec st
+                Map.mapMaybeWithKey filterInvariantsVec st
                 where
                 filterInvariantsVec mode vec =
-                    case invariant vec of
-                        Just res -> res
-                        _ -> error $ "mode invariant failed on a value passed between two segments"
+                    invariant vec
                     where
                     Just invariant =
                         Map.lookup mode modeInvariants
