@@ -235,6 +235,7 @@ solveHybridIVP_UsingPicardAndEventTree
                         where
                         (newChild, newStatesSoFar, hasChanged) = 
                             processNode prevStatesWithRest child
+
             processState prevStates state@(modeBeforeEvent, fnVecBeforeEvent) 
                 -- first check whether this state is included in a previous state:
                 | stateShrinksPreviousOne =
@@ -598,7 +599,7 @@ eventInfoCollectFinalStates ::
 eventInfoCollectFinalStates effEval tVar tEnd eventInfo =
     aux eventInfo
     where
-    aux (EventFixedPoint _state) = Just [] -- the enclosure can be discounted as it is included in an earlier one 
+    aux (EventFixedPoint state) = Just [stateFromModeFnVec state]
     aux (EventNextSure _state furtherInfo) =
         fmap concat $ sequence $ map aux $ Map.elems furtherInfo
     aux (EventNextMaybe state furtherInfo) =
