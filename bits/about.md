@@ -16,7 +16,7 @@ mathjax: on
  
 ### Origin
 
-  * AERN has been under development since 2005, mainly at [Aston University](http://www.aston.ac.uk/)
+  * AERN has been under development since 2005, mainly by [Michal Konečný](http://www.aston.ac.uk/eas/staff/a-z/dr-michal-konecny/) at [Aston University](http://www.aston.ac.uk/)
   * AERN was initially inspired by the C++ library [iRRAM](http://irram.uni-trier.de/)
   * The project has been sponsored by EPSRC and Altran Praxis
 
