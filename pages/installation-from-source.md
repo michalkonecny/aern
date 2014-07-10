@@ -5,8 +5,9 @@ date: 2014-07-10
 mathjax: on
 ---
 
-The specific parts of these instructions are applicable only to a Debian/Ubuntu Linux.  
-Nevertheless, these instructions should be easy to adapt to any modern desktop operating system.
+The specific parts of these instructions are applicable only to a Debian/Ubuntu Linux.
+
+Nevertheless, these instructions should be adaptable to any modern desktop operating system.
 
 ----
 
