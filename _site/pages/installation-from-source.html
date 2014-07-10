@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <title>Installing AERN from source code (master branch)</title>
+    <title>AERN | Installing from source code</title>
         <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content>
@@ -73,15 +73,54 @@
 
 
     <div class="container">
-    <h2>Installing AERN from source code (master branch)</h2>
+    <h2>AERN | Installing from source code</h2>
     
     <hr class="divider">
 
-    <ul>
-<li><p>Ensure you have a <a href="https://www.haskell.org/platform/">Haskell Platform</a> installation or similar (tested with <a href="http://www.haskell.org/ghc/">GHC</a> 7.6.3)</p></li>
-<li><p>Clone the <a href="https://github.com/michalkonecny/aern">GitHub master branch</a> where you want to build AERN</p></li>
-<li><p>[TODO]</p></li>
-</ul>
+    <p>The specific parts of these instructions are applicable only to a Debian/Ubuntu Linux.<br />Nevertheless, these instructions should be easy to adapt to any modern desktop operating system.</p>
+<hr />
+<ol style="list-style-type: decimal">
+<li>Ensure you have a <a href="https://www.haskell.org/platform/">Haskell Platform</a> installation or similar (tested with <a href="http://www.haskell.org/ghc/">GHC</a> 7.6.3)</li>
+</ol>
+<pre class="sh"><code>&gt; sudo apt-get install haskell-platform
+&gt; sudo cabal update
+&gt; cabal update</code></pre>
+<hr />
+<ol start="2" style="list-style-type: decimal">
+<li>(Optional) Install <a href="http://www.mpfr.org/">MPFR</a> if you require support for arbitrary precision arithmetic.</li>
+</ol>
+<p><strong>Note:</strong> <em>If you require arbitrary-precision arithmetic using MPFR, you need a modified GHC as described on <a href="https://hackage.haskell.org/package/hmpfr">this page</a>.</em></p>
+<pre class="sh"><code>&gt; sudo apt-get install libmpfr-dev</code></pre>
+<hr />
+<ol start="3" style="list-style-type: decimal">
+<li>(Optional) Install <a href="http://projects.haskell.org/gtk2hs/">Haskell support</a> for <a href="http://www.gtk.org/">GTK+</a>, <a href="http://cairographics.org/examples/">Cairo</a> and <a href="https://glade.gnome.org/">Glade</a> if you require support for plotting.</li>
+</ol>
+<pre class="sh"><code>&gt; sudo apt-get install libghc-cairo-dev libghc-glade-dev  </code></pre>
+<hr />
+<ol start="4" style="list-style-type: decimal">
+<li>Clone the <a href="https://github.com/michalkonecny/aern">GitHub master branch</a> where you want to build AERN</li>
+</ol>
+<pre class="sh"><code>&gt; git clone https://github.com/michalkonecny/aern.git</code></pre>
+<hr />
+<ol start="5" style="list-style-type: decimal">
+<li>Run an installation script</li>
+</ol>
+<pre class="sh"><code>&gt; cd aern
+&gt; . install-all.sh </code></pre>
+<p>If you do not want support for MPFR and/or GTK, use the appropriately named <code>install-*.sh</code> script instead.</p>
+<p>This script invokes <a href="http://www.haskell.org/haskellwiki/Cabal-Install">cabal-install</a> for each of the AERN packages. See <a href="https://github.com/michalkonecny/aern/blob/master/install-all.sh">the script code</a> to see in what order the packages are installed.</p>
+<p>The first time the script is executed, it is likely to install a large number of dependencies, which can take a long time.</p>
+<p>On subsequent executions, the script is likely to give a warning about dangerous reinstalls. This warning can be safely ignored in this case.</p>
+<hr />
+<ol start="6" style="list-style-type: decimal">
+<li>You can now execute a demo or a test suite to check the installation has been successful, eg:</li>
+</ol>
+<pre class="sh"><code>&gt; ~/.cabal/bin/testAERN-Real-Double
+&gt; ~/.cabal/bin/
+&gt; cp aern-realfn-plot-gtk/FnView.glade .
+&gt; ~/.cabal/bin/plot minmax 10
+&gt; ~/.cabal/bin/simple-ode ivpSpringMass-uv &quot;PlotGraph[True,False](0,10,-1.5,1.5)&quot; GUI False 30 200 -10 -10 10</code></pre>
+<p>You can also execute the various demos using ghci.</p>
     
     <hr class="divider">
     <footer>
