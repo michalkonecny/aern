@@ -208,7 +208,7 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --    modeBefore = HybSysMode "before"
 --    modeAfter = HybSysMode "after"
 --    odeBefore, odeAfter :: [f] -> [f]
---    odeBefore [x,time] = [neg x, newConstFnFromSample time (toDom 1)]
+--    odeBefore [x,time] = [neg x, newConstFnFromSample time (toD 1)]
 --    odeAfter = odeBefore
 --    eventReset = HybSysEventKind "reset"
 --    resetReset :: [f] -> [f]
@@ -234,8 +234,8 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --            hybivp_description = description,
 --            hybivp_system = system,
 --            hybivp_tVar = "t",
---            hybivp_tStart = toDom 0,
---            hybivp_tEnd = toDom 1,
+--            hybivp_tStart = toD 0,
+--            hybivp_tEnd = toD 1,
 --            hybivp_initialStateEnclosure = 
 --                Map.singleton modeBefore [initValue, tStart],
 --            hybivp_maybeExactStateAtTEnd = Just $
@@ -250,7 +250,7 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --    xEnd = (one sampleDom) <*>| (exp (-tEndDbl+tEventDbl) :: Double)
 --    tEndDbl :: Double
 --    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
---    toDom = dblToReal sampleDom
+--    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
 --
 --ivpExpDecay_resetOn34 ::
@@ -288,7 +288,7 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --        where
 --        xDip [x] = x <-> xEventFn
 --            where
---            xEventFn = newConstFnFromSample x $ (toDom 1) <*>| xEventDbl
+--            xEventFn = newConstFnFromSample x $ (toD 1) <*>| xEventDbl
 --
 --    xEventDbl = 0.75 :: Double
 --    
@@ -299,8 +299,8 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --            hybivp_description = description,
 --            hybivp_system = system,
 --            hybivp_tVar = "t",
---            hybivp_tStart = toDom 0,
---            hybivp_tEnd = toDom 1,
+--            hybivp_tStart = toD 0,
+--            hybivp_tEnd = toD 1,
 --            hybivp_initialStateEnclosure = 
 --                Map.singleton modeNormal [initValue],
 --            hybivp_maybeExactStateAtTEnd = Just $
@@ -309,14 +309,14 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --    description =
 --        "v = -x; if x <= " ++ show xEventDbl ++ " then x := " ++ show initValue 
 --        ++ "; x(" ++ show tStart ++ ") = " ++ show initValue
---    initValue = (toDom 1) :: Domain f
+--    initValue = (toD 1) :: Domain f
 --    tStart = hybivp_tStart ivp
 --    tEnd = hybivp_tEnd ivp
 ----    tVar = hybivp_tVar ivp
---    xEnd = (toDom 1) <*>| (exp (-tEndDbl-3*(log xEventDbl)) :: Double)
+--    xEnd = (toD 1) <*>| (exp (-tEndDbl-3*(log xEventDbl)) :: Double)
 --    tEndDbl :: Double
 --    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
---    toDom = dblToReal sampleDom
+--    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
 --
 --
@@ -346,7 +346,7 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --    modeBefore = HybSysMode "before"
 --    modeAfter = HybSysMode "after"
 --    odeBefore, odeAfter :: [f] -> [f]
---    odeBefore [x,v,time] = [v, neg x, newConstFnFromSample time (toDom 1)]
+--    odeBefore [x,v,time] = [v, neg x, newConstFnFromSample time (toD 1)]
 --    odeAfter = odeBefore
 --    eventReset = HybSysEventKind "reset"
 --    resetReset :: [f] -> [f]
@@ -358,7 +358,7 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --        where
 --        timeDip [_, _, t] = tEventP <-> t
 --            where
---            tEventP = newConstFnFromSample t $ (toDom 1) <*>| tEventDbl
+--            tEventP = newConstFnFromSample t $ (toD 1) <*>| tEventDbl
 --        timeReset [x,v,t] = [x,v,zP]
 --            where
 --            zP = zero t
@@ -372,8 +372,8 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --            hybivp_description = description,
 --            hybivp_system = system,
 --            hybivp_tVar = "t",
---            hybivp_tStart = toDom 0,
---            hybivp_tEnd = toDom 1,
+--            hybivp_tStart = toD 0,
+--            hybivp_tEnd = toD 1,
 --            hybivp_initialStateEnclosure = 
 --                Map.singleton modeBefore (initValues ++ [tStart]),
 --            hybivp_maybeExactStateAtTEnd = Just $
@@ -383,14 +383,14 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --        "x'' = -x; if t = " ++ show tEventDbl ++ " then [x,v] := " ++ show initValues 
 --        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
 --        ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
---    initValues@[initX, initX'] = [toDom 1,toDom 0] :: [Domain f]
+--    initValues@[initX, initX'] = [toD 1,toD 0] :: [Domain f]
 --    tStart = hybivp_tStart ivp
 --    tEnd = hybivp_tEnd ivp
---    xEnd = (toDom 1) <*>| (cos (tEndDbl - tEventDbl) :: Double)
---    xDerEnd = (toDom $ -1) <*>| (sin (tEndDbl - tEventDbl) :: Double)
+--    xEnd = (toD 1) <*>| (cos (tEndDbl - tEventDbl) :: Double)
+--    xDerEnd = (toD $ -1) <*>| (sin (tEndDbl - tEventDbl) :: Double)
 --    tEndDbl :: Double
 --    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
---    toDom = dblToReal sampleDom
+--    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
 --    
 --    
@@ -429,7 +429,7 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --        where
 --        xDip [x,_v] = x <-> xEventFn
 --            where
---            xEventFn = newConstFnFromSample x $ (toDom 1) <*>| xEventDbl
+--            xEventFn = newConstFnFromSample x $ (toD 1) <*>| xEventDbl
 --    xEventDbl = 0.75 :: Double
 --    tEventDbl = acos xEventDbl -- 0.72273424781341...
 --    
@@ -440,8 +440,8 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --            hybivp_description = description,
 --            hybivp_system = system,
 --            hybivp_tVar = "t",
---            hybivp_tStart = toDom 0,
---            hybivp_tEnd = toDom 1,
+--            hybivp_tStart = toD 0,
+--            hybivp_tEnd = toD 1,
 --            hybivp_initialStateEnclosure = 
 --                Map.singleton modeNormal (initValues ++ [tStart]),
 --            hybivp_maybeExactStateAtTEnd = Just $
@@ -456,10 +456,10 @@ ivpNames sampleFn = Map.keys $ ivpByNameMap sampleFn
 --    tEnd = hybivp_tEnd ivp
 ----    tVar = hybivp_tVar ivp
 --    xEnd = (one sampleDom) <*>| (cos (tEndDbl - tEventDbl) :: Double)
---    xDerEnd = (toDom $ -1) <*>| (sin (tEndDbl - tEventDbl) :: Double)
+--    xDerEnd = (toD $ -1) <*>| (sin (tEndDbl - tEventDbl) :: Double)
 --    tEndDbl :: Double
 --    (Just tEndDbl) = ArithUpDn.convertUpEff (ArithUpDn.convertDefaultEffort tEnd (0::Double)) 0 tEnd
---    toDom = dblToReal sampleDom
+--    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
 
 ivpDampenedPendulum :: 
@@ -501,8 +501,8 @@ ivpDampenedPendulum (sampleFn :: f) =
             hybivp_description = description,
             hybivp_system = system,
             hybivp_tVar = "t",
-            hybivp_tStart = toDom 0,
-            hybivp_tEnd = toDom 1,
+            hybivp_tStart = toD 0,
+            hybivp_tEnd = toD 1,
             hybivp_initialStateEnclosure = 
                 Map.singleton modeMove initValues,
             hybivp_maybeExactStateAtTEnd = Nothing
@@ -511,10 +511,10 @@ ivpDampenedPendulum (sampleFn :: f) =
         "x''=-1.5x'-x"
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", v(" ++ show tStart ++ ") = " ++ show initV
-    initValues@[initX, initV] = [toDom 1, toDom 0] :: [Domain f]
+    initValues@[initX, initV] = [toD 1, toD 0] :: [Domain f]
     tStart = hybivp_tStart ivp
-    z = toDom 0
-    toDom = dblToReal sampleDom
+    z = toD 0
+    toD = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -545,7 +545,7 @@ ivpBouncingBall (sampleFn :: f) =
         }
     modeMove = HybSysMode "move"
     odeMove :: [f] -> [f]
-    odeMove [x,v] = [v, newConstFnFromSample x (toDom $ -10)]
+    odeMove [x,v] = [v, newConstFnFromSample x (toD $ -10)]
 --    invariantMove = id
     invariantMove [x,v] = 
         do 
@@ -562,7 +562,7 @@ ivpBouncingBall (sampleFn :: f) =
         _ <- isect z x
         return [z, vNP]
         where
-        z = toDom 0 
+        z = toD 0 
         
     resetBounce [x,v] = 
         [x, (-0.5 :: Double) |<*> v]
@@ -575,8 +575,8 @@ ivpBouncingBall (sampleFn :: f) =
             hybivp_description = description,
             hybivp_system = system,
             hybivp_tVar = "t",
-            hybivp_tStart = toDom 0,
-            hybivp_tEnd = toDom 1,
+            hybivp_tStart = toD 0,
+            hybivp_tEnd = toD 1,
             hybivp_initialStateEnclosure = 
                 Map.singleton modeMove initValues,
             hybivp_maybeExactStateAtTEnd = Nothing
@@ -586,10 +586,10 @@ ivpBouncingBall (sampleFn :: f) =
 --        "if x = 0 && v <= 0 then post(v) = -0.5*pre(v) else x'' = -10" 
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
-    initValues@[initX, initX'] = [toDom 5, toDom 0] :: [Domain f]
+    initValues@[initX, initX'] = [toD 5, toD 0] :: [Domain f]
     tStart = hybivp_tStart ivp
-    z = toDom 0
-    toDom = dblToReal sampleDom
+    z = toD 0
+    toD = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpBouncingBallEnergy :: 
@@ -612,7 +612,7 @@ ivpBouncingBallEnergy (sampleFn :: f) =
     where
     energyWith x v = 
 --        z </\> 
-        (v <*> v <+> (toDom 20) <*> x)
+        (v <*> v <+> (toD 20) <*> x)
         -- added zero so that after reset the interval refines the original (model-level hack!)  
     system =
         HybridSystem
@@ -624,7 +624,7 @@ ivpBouncingBallEnergy (sampleFn :: f) =
         }
     modeMove = HybSysMode "move"
     odeMove :: [f] -> [f]
-    odeMove [x,v,r] = [v, newConstFnFromSample x (toDom $ -10), newConstFnFromSample r (toDom 0)]
+    odeMove [x,v,r] = [v, newConstFnFromSample x (toD $ -10), newConstFnFromSample r (toD 0)]
     invariantMove [x,v,r] =
         do
         -- x >= 0:
@@ -632,12 +632,12 @@ ivpBouncingBallEnergy (sampleFn :: f) =
         -- r >= 0:
         rNN <- makeNonneg r
         -- |v| = sqrt(r - 2gx):
-        vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
+        vSqr1 <- makeNonneg $ rNN <-> ((toD 20) <*> xNN)
         let absV = ArithInOut.sqrtOut vSqr1
         vNew <- isect v ((neg absV) </\> absV)
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
-        let x2 = (rNN <-> vSqr2) </> (toDom 20)
+        let x2 = (rNN <-> vSqr2) </> (toD 20)
         xNew <- isect xNN x2
         return [xNew, vNew, rNN]
     eventBounce = HybSysEventKind "bc"
@@ -649,7 +649,7 @@ ivpBouncingBallEnergy (sampleFn :: f) =
     resetBounce [x,v,r] = 
         [x,
          (-0.5 :: Double) |<*> v, 
-         (toDomInterval 0 0.25) <*> r
+         (toDInterval 0 0.25) <*> r
         ] -- deliberately lose precision to facilitate quicker event tree convergence (HACK!)
     eventSpecMap _mode =
         Map.singleton eventBounce $
@@ -674,11 +674,11 @@ ivpBouncingBallEnergy (sampleFn :: f) =
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
         ++ ", r(" ++ show tStart ++ ") ∊ " ++ show initR
-    initValues@[initX, initX', initR] = [toDom 5, toDom 0, energyWith initX initX'] :: [Domain f]
+    initValues@[initX, initX', initR] = [toD 5, toD 0, energyWith initX initX'] :: [Domain f]
     tStart = hybivp_tStart ivp
-    z = toDom 0
-    toDom = dblToReal sampleDom
-    toDomInterval l r = (toDom l) </\> (toDom r)
+    z = toD 0
+    toD = dblToReal sampleDom
+    toDInterval l r = (toD l) </\> (toD r)
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -710,7 +710,7 @@ ivpBouncingBallRiseFall (sampleFn :: f) =
     modeRise = HybSysMode "rise"
     modeFall = HybSysMode "fall"
     odeMove :: [f] -> [f]
-    odeMove [x,v] = [v, newConstFnFromSample x (toDom $ -10)]
+    odeMove [x,v] = [v, newConstFnFromSample x (toD $ -10)]
     invariantRise [x,v] = 
         do 
         xNN <- makeNonneg x
@@ -736,7 +736,7 @@ ivpBouncingBallRiseFall (sampleFn :: f) =
         _ <- isect z x
         return [z, vNP]
         where
-        z = toDom 0 
+        z = toD 0 
         
     resetBounce [x,v] = 
         [x, (-0.5 :: Double) |<*> v]
@@ -755,8 +755,8 @@ ivpBouncingBallRiseFall (sampleFn :: f) =
             hybivp_description = description,
             hybivp_system = system,
             hybivp_tVar = "t",
-            hybivp_tStart = toDom 0,
-            hybivp_tEnd = toDom 1,
+            hybivp_tStart = toD 0,
+            hybivp_tEnd = toD 1,
             hybivp_initialStateEnclosure = 
                 Map.singleton modeFall initValues,
             hybivp_maybeExactStateAtTEnd = Nothing
@@ -766,10 +766,10 @@ ivpBouncingBallRiseFall (sampleFn :: f) =
 --        "if x = 0 && v <= 0 then post(v) = -0.5*pre(v) else x'' = -10" 
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
-    initValues@[initX, initX'] = [toDom 5, toDom 0] :: [Domain f]
+    initValues@[initX, initX'] = [toD 5, toD 0] :: [Domain f]
     tStart = hybivp_tStart ivp
-    z = toDom 0
-    toDom = dblToReal sampleDom
+    z = toD 0
+    toD = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -791,7 +791,7 @@ ivpBouncingBallRiseFallEnergy ::
 ivpBouncingBallRiseFallEnergy (sampleFn :: f) =
     ivp
     where
-    energyWith x v = (v <*> v <+> (toDom 20) <*> x)
+    energyWith x v = (v <*> v <+> (toD 20) <*> x)
         -- added zero so that after reset the interval refines the original (model-level hack!)  
     system =
         HybridSystem
@@ -804,7 +804,7 @@ ivpBouncingBallRiseFallEnergy (sampleFn :: f) =
     modeRise = HybSysMode "rise"
     modeFall = HybSysMode "fall"
     odeMove :: [f] -> [f]
-    odeMove [x,v,r] = [v, newConstFnFromSample x (toDom $ -10), newConstFnFromSample r (toDom 0)]
+    odeMove [x,v,r] = [v, newConstFnFromSample x (toD $ -10), newConstFnFromSample r (toD 0)]
     invariantRise [x,v,r] =
         do
         -- x >= 0:
@@ -814,12 +814,12 @@ ivpBouncingBallRiseFallEnergy (sampleFn :: f) =
         -- v >= 0:
         vNN <- makeNonneg v
         -- v = sqrt(r - 2gx):
-        vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
+        vSqr1 <- makeNonneg $ rNN <-> ((toD 20) <*> xNN)
         let v1 = ArithInOut.sqrtOut vSqr1
         vNew <- isect v v1
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
-        let x2 = (rNN <-> vSqr2) </> (toDom 20)
+        let x2 = (rNN <-> vSqr2) </> (toD 20)
         xNew <- isect xNN x2
         return [xNew, vNew, rNN]
     invariantFall [x,v,r] =
@@ -831,12 +831,12 @@ ivpBouncingBallRiseFallEnergy (sampleFn :: f) =
         -- v <= 0:
         vNP <- makeNonpos v
         -- v = sqrt(r - 2gx):
-        vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
+        vSqr1 <- makeNonneg $ rNN <-> ((toD 20) <*> xNN)
         let v1 = neg $ ArithInOut.sqrtOut vSqr1
         vNew <- isect v v1
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
-        let x2 = (rNN <-> vSqr2) </> (toDom 20)
+        let x2 = (rNN <-> vSqr2) </> (toD 20)
         xNew <- isect xNN x2
         return [xNew, vNew, rNN]
     eventBounce = HybSysEventKind "bc"
@@ -848,7 +848,7 @@ ivpBouncingBallRiseFallEnergy (sampleFn :: f) =
     resetBounce [x,v,r] = 
         [x, 
          (-0.5 :: Double) |<*> v, 
-         (toDomInterval 0 0.25) <*> r]
+         (toDInterval 0 0.25) <*> r]
     eventPeak = HybSysEventKind "pk"
     prunePeak _ [x,v,r] = 
         do
@@ -882,11 +882,11 @@ ivpBouncingBallRiseFallEnergy (sampleFn :: f) =
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
         ++ ", r(" ++ show tStart ++ ") ∊ " ++ show initR
-    initValues@[initX, initX', initR] = [toDom 5, toDom 0, energyWith initX initX'] :: [Domain f]
+    initValues@[initX, initX', initR] = [toD 5, toD 0, energyWith initX initX'] :: [Domain f]
     tStart = hybivp_tStart ivp
-    z = toDom 0
-    toDom = dblToReal sampleDom
-    toDomInterval l r = (toDom l) </\> (toDom r)
+    z = toD 0
+    toD = dblToReal sampleDom
+    toDInterval l r = (toD l) </\> (toD r)
     sampleDom = getSampleDomValue sampleFn
 
 ivpBouncingBallFloorRise :: 
@@ -916,7 +916,7 @@ ivpBouncingBallFloorRise (sampleFn :: f) =
         }
     modeMove = HybSysMode "move"
     odeMove :: [f] -> [f]
-    odeMove [x,xv,y,yv] = [xv, newConstFnFromSample x (toDom $ -10), yv, newConstFnFromSample y (toDom $ 1)]
+    odeMove [x,xv,y,yv] = [xv, newConstFnFromSample x (toD $ -10), yv, newConstFnFromSample y (toD $ 1)]
 --    invariantMove = id
     invariantMove [x,xv,y,yv] = 
         do 
@@ -943,8 +943,8 @@ ivpBouncingBallFloorRise (sampleFn :: f) =
             hybivp_description = description,
             hybivp_system = system,
             hybivp_tVar = "t",
-            hybivp_tStart = toDom 0,
-            hybivp_tEnd = toDom 1,
+            hybivp_tStart = toD 0,
+            hybivp_tEnd = toD 1,
             hybivp_initialStateEnclosure = 
                 Map.singleton modeMove initValues,
             hybivp_maybeExactStateAtTEnd = Nothing
@@ -956,10 +956,10 @@ ivpBouncingBallFloorRise (sampleFn :: f) =
         ++ ", x'(" ++ show tStart ++ ") = " ++ show initXV
         ++ "; y(" ++ show tStart ++ ") = " ++ show initY
         ++ ", y'(" ++ show tStart ++ ") = " ++ show initYV
-    initValues@[initX, initXV, initY, initYV] = [toDom 5, toDom 0, toDom 0, toDom 0] :: [Domain f]
+    initValues@[initX, initXV, initY, initYV] = [toD 5, toD 0, toD 0, toD 0] :: [Domain f]
     tStart = hybivp_tStart ivp
-    z = toDom 0
-    toDom = dblToReal sampleDom
+    z = toD 0
+    toD = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -991,22 +991,22 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
             hybsys_eventSpecification = eventSpecMap
         }
     initValues@[initX, initXV, initY, initYV, initYVV, initR] = 
-        [toDom 5, toDom 0, 
-            toDom 0, toDom 1, toDom 0, toDom 101] -- linear rise
---            toDom 0, toDom 1, toDom floorRiseAccelD, toDom $ 101] -- quadratic
---            toDom 3.5, toDom 0, toDom 6, toDom 30] -- cubic hill
+        [toD 5, toD 0, 
+            toD 0, toD 1, toD 0, toD 101] -- linear rise
+--            toD 0, toD 1, toD floorRiseAccelD, toD $ 101] -- quadratic
+--            toD 3.5, toD 0, toD 6, toD 30] -- cubic hill
                     -- r = 2g(x-y) + (x'-y')^2
     modeMove = HybSysMode "move"
     odeMove :: [f] -> [f]
     odeMove [x,xv,y,yv,yvv,r] =
         [xv, 
-         newConstFnFromSample x (toDom $ -10), 
+         newConstFnFromSample x (toD $ -10), 
          yv,
          yvv,
-         newConstFnFromSample yvv (toDom $ 0), -- linear/quadratic (y''' = 0)
---         newConstFnFromSample y (toDom $ -6), -- cubic hill
+         newConstFnFromSample yvv (toD $ 0), -- linear/quadratic (y''' = 0)
+--         newConstFnFromSample y (toD $ -6), -- cubic hill
          -- r' = 2(x'-y')(g+x''-y'')
-         newConstFnFromSample r (toDom $ 0) -- linear
+         newConstFnFromSample r (toD $ 0) -- linear
 --         (-2 * floorRiseAccelD) |<*> (xv <-> yv) -- quadratic
 --         (-2 :: Double) |<*> ((xv <-> yv) <*> yvv) -- cubic
         ]
@@ -1026,10 +1026,10 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
         -- x-y = (r - (x'-y')^2) / 2g:
         let xvMyv = xv <-> yv
         xvMyvSqr2 <- makeNonneg $ xvMyv <*> xvMyv
-        let xFromXV = (rNN <-> xvMyvSqr2) </> (toDom 20) <+> y
+        let xFromXV = (rNN <-> xvMyvSqr2) </> (toD 20) <+> y
         xNew <- isect xFromY xFromXV
         -- |x'-y'| = sqrt(r - 2g(x-y)):
-        xvMyvSqr <- makeNonneg $ rNN <-> ((toDom 20) <*> xMyNN)
+        xvMyvSqr <- makeNonneg $ rNN <-> ((toD 20) <*> xMyNN)
         let xvMyvAbs = ArithInOut.sqrtOut xvMyvSqr
         xvNew <- isect xv ((neg xvMyvAbs </\> xvMyvAbs) <+> yv) 
         return [xNew,xvNew,y,yv,yvv,rNN]
@@ -1048,7 +1048,7 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
         [x, 
          yv <+> (-0.5 :: Double) |<*> (xv <-> yv), -- x' := y' - (x' - y')/2 
          y, yv, yvv,
-         (toDomInterval 0 0.25) <*> r] -- r := r/4
+         (toDInterval 0 0.25) <*> r] -- r := r/4
     
     ivp :: HybridIVP f
     ivp =
@@ -1057,8 +1057,8 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
             hybivp_description = description,
             hybivp_system = system,
             hybivp_tVar = "t",
-            hybivp_tStart = toDom 0,
-            hybivp_tEnd = toDom 1,
+            hybivp_tStart = toD 0,
+            hybivp_tEnd = toD 1,
             hybivp_initialStateEnclosure = 
                 Map.singleton modeMove initValues,
             hybivp_maybeExactStateAtTEnd = Nothing
@@ -1071,9 +1071,9 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
         ++ ", y'(" ++ show tStart ++ ") = " ++ show initYV
         ++ ", r(" ++ show tStart ++ ") = " ++ show initR
     tStart = hybivp_tStart ivp
-    z = toDom 0
-    toDom = dblToReal sampleDom
-    toDomInterval l r = (toDom l) </\> (toDom r)
+    z = toD 0
+    toD = dblToReal sampleDom
+    toDInterval l r = (toD l) </\> (toD r)
     sampleDom = getSampleDomValue sampleFn
 
 ivpBouncingBallFloorDropEnergy :: 
@@ -1104,11 +1104,11 @@ ivpBouncingBallFloorDropEnergy (sampleFn :: f) =
             hybsys_eventSpecification = eventSpecMap
         }
     initValues = [initX, initXV, initY, initTM, initR]
-    initX = toDom 6
-    initXV = toDom 0
-    initY = toDom 1
-    initTM = toDom 0
-    initR = toDom 100 -- r = 2g(x-y) + (x'-y')^2
+    initX = toD 6
+    initXV = toD 0
+    initY = toD 1
+    initTM = toD 0
+    initR = toD 100 -- r = 2g(x-y) + (x'-y')^2
                   
     tDrop = 3.03125
     yDrop = 0
@@ -1118,15 +1118,15 @@ ivpBouncingBallFloorDropEnergy (sampleFn :: f) =
     odeMove :: [f] -> [f]
     odeMove [x,xv,y,t,r] =
         [xv, 
-         newConstFnFromSample x (toDom $ -10), 
-         newConstFnFromSample x (toDom $ 0), -- y'
-         newConstFnFromSample x (toDom $ 1), -- tm'
+         newConstFnFromSample x (toD $ -10), 
+         newConstFnFromSample x (toD $ 0), -- y'
+         newConstFnFromSample x (toD $ 1), -- tm'
          -- r' = 2(x'-y')(g+x''-y'')
-         newConstFnFromSample r (toDom $ 0) -- r'
+         newConstFnFromSample r (toD $ 0) -- r'
         ]
     invariantMove1 orig@[_x,_xv,_y,tm,_r] =
         do
-        _ <- isect (tStart </\> (toDom tDrop)) tm
+        _ <- isect (tStart </\> (toD tDrop)) tm
         invariantMove orig
     invariantMove2 = 
         invariantMove
@@ -1142,10 +1142,10 @@ ivpBouncingBallFloorDropEnergy (sampleFn :: f) =
         -- x-y = (r - (x'-y')^2) / 2g:
         let xvMyv = xv <-> yv
         xvMyvSqr2 <- makeNonneg $ xvMyv <*> xvMyv
-        let xFromXV = (rNN <-> xvMyvSqr2) </> (toDom 20) <+> y
+        let xFromXV = (rNN <-> xvMyvSqr2) </> (toD 20) <+> y
         xNew <- isect xFromY xFromXV
         -- |x'-y'| = sqrt(r - 2g(x-y)):
-        xvMyvSqr <- makeNonneg $ rNN <-> ((toDom 20) <*> xMyNN)
+        xvMyvSqr <- makeNonneg $ rNN <-> ((toD 20) <*> xMyNN)
         let xvMyvAbs = ArithInOut.sqrtOut xvMyvSqr
         xvNew <- isect xv ((neg xvMyvAbs </\> xvMyvAbs) <+> yv) 
         return [xNew,xvNew,y,tm,rNN]
@@ -1184,21 +1184,21 @@ ivpBouncingBallFloorDropEnergy (sampleFn :: f) =
         [x, 
          yv <+> (-0.5 :: Double) |<*> (xv <-> yv), -- x' := y' - (x' - y')/2 
          y, tm,
-         (toDomInterval 0 0.25) <*> r] -- r := r/4
+         (toDInterval 0 0.25) <*> r] -- r := r/4
     resetBounce _ = error "internal error: resetBounce"
     
     eventDrop = HybSysEventKind "drop"
     pruneDrop _ orig@[_x,_xv,_y,tm,_r] =
         do
-        _ <- isect tm (toDom tDrop)
+        _ <- isect tm (toD tDrop)
         return orig 
     pruneDrop _ _ = error "internal error: pruneDrop"
 
     resetDrop [x,xv,y,tm,r] =
         [x, xv, 
-         toDom yDrop, 
+         toD yDrop, 
          tm,
-         ((toDom 20) <*> (y <-> (toDom yDrop))) <+> r] -- -- r = 2g(x-y) + (x'-y')^2
+         ((toD 20) <*> (y <-> (toD yDrop))) <+> r] -- -- r = 2g(x-y) + (x'-y')^2
     resetDrop _ = error "internal error: resetDrop"
     
     ivp :: HybridIVP f
@@ -1208,8 +1208,8 @@ ivpBouncingBallFloorDropEnergy (sampleFn :: f) =
             hybivp_description = description,
             hybivp_system = system,
             hybivp_tVar = "t",
-            hybivp_tStart = toDom 0,
-            hybivp_tEnd = toDom 1,
+            hybivp_tStart = toD 0,
+            hybivp_tEnd = toD 1,
             hybivp_initialStateEnclosure = 
                 Map.singleton modeMove1 initValues,
             hybivp_maybeExactStateAtTEnd = Nothing
@@ -1222,9 +1222,9 @@ ivpBouncingBallFloorDropEnergy (sampleFn :: f) =
         ++ ", t(" ++ show tStart ++ ") = " ++ show initTM
         ++ ", r(" ++ show tStart ++ ") = " ++ show initR
     tStart = hybivp_tStart ivp
-    z = toDom 0
-    toDom = dblToReal sampleDom
-    toDomInterval l r = (toDom l) </\> (toDom r)
+    z = toD 0
+    toD = dblToReal sampleDom
+    toDInterval l r = (toD l) </\> (toD r)
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -1257,9 +1257,9 @@ ivpBouncingBallAir (sampleFn :: f) =
     modeRise = HybSysMode "rise"
     modeFall = HybSysMode "fall"
     odeRise :: [f] -> [f]
-    odeRise [x,v] = [v, newConstFnFromSample x (toDom $ -10) <-> (v <*> v <*>| (0.1 :: Double))]
+    odeRise [x,v] = [v, newConstFnFromSample x (toD $ -10) <-> (v <*> v <*>| (0.1 :: Double))]
     odeFall :: [f] -> [f]
-    odeFall [x,v] = [v, newConstFnFromSample x (toDom $ -10) <+> (v <*> v <*>| (0.1 :: Double))]
+    odeFall [x,v] = [v, newConstFnFromSample x (toD $ -10) <+> (v <*> v <*>| (0.1 :: Double))]
     invariantRise [x,v] = 
         do 
         xNN <- makeNonneg x
@@ -1285,7 +1285,7 @@ ivpBouncingBallAir (sampleFn :: f) =
         _ <- isect z x
         return [z, vNP]
         where
-        z = toDom 0 
+        z = toD 0 
         
     resetBounce [x,v] = 
         [x, (-0.5 :: Double) |<*> v]
@@ -1304,8 +1304,8 @@ ivpBouncingBallAir (sampleFn :: f) =
             hybivp_description = description,
             hybivp_system = system,
             hybivp_tVar = "t",
-            hybivp_tStart = toDom 0,
-            hybivp_tEnd = toDom 1,
+            hybivp_tStart = toD 0,
+            hybivp_tEnd = toD 1,
             hybivp_initialStateEnclosure = 
                 Map.singleton modeFall initValues,
             hybivp_maybeExactStateAtTEnd = Nothing
@@ -1315,10 +1315,10 @@ ivpBouncingBallAir (sampleFn :: f) =
 --        "if x = 0 && v <= 0 then post(v) = -0.5*pre(v) else x'' = -10" 
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
-    initValues@[initX, initX'] = [toDom 5, toDom 0] :: [Domain f]
+    initValues@[initX, initX'] = [toD 5, toD 0] :: [Domain f]
     tStart = hybivp_tStart ivp
-    z = toDom 0
-    toDom = dblToReal sampleDom
+    z = toD 0
+    toD = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -1343,7 +1343,7 @@ ivpBouncingBallAirEnergy (sampleFn :: f) =
     where
     energyWith x v = 
 --        z </\> 
-        (v <*> v <+> (toDom 20) <*> x)
+        (v <*> v <+> (toD 20) <*> x)
         -- added zero so that after reset the interval refines the original (model-level hack!)  
     system =
         HybridSystem
@@ -1358,12 +1358,12 @@ ivpBouncingBallAirEnergy (sampleFn :: f) =
     odeRise :: [f] -> [f]
     odeRise [x,v,r] = 
         [v, 
-         newConstFnFromSample x (toDom $ -10) <-> (v <*> v <*>| (0.1 :: Double)), 
+         newConstFnFromSample x (toD $ -10) <-> (v <*> v <*>| (0.1 :: Double)), 
          (v <*> v <*> v <*>| (-0.2 :: Double))]
     odeFall :: [f] -> [f]
     odeFall [x,v,r] = 
         [v, 
-         newConstFnFromSample x (toDom $ -10) <+> (v <*> v <*>| (0.1 :: Double)), 
+         newConstFnFromSample x (toD $ -10) <+> (v <*> v <*>| (0.1 :: Double)), 
          (v <*> v <*> v <*>| (0.2 :: Double))]
     invariantRise [x,v,r] =
         do
@@ -1374,12 +1374,12 @@ ivpBouncingBallAirEnergy (sampleFn :: f) =
         -- v >= 0:
         vNN <- makeNonneg v
         -- v = sqrt(r - 2gx):
-        vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
+        vSqr1 <- makeNonneg $ rNN <-> ((toD 20) <*> xNN)
         let v1 = ArithInOut.sqrtOut vSqr1
         vNew <- isect v v1
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
-        let x2 = (rNN <-> vSqr2) </> (toDom 20)
+        let x2 = (rNN <-> vSqr2) </> (toD 20)
         xNew <- isect xNN x2
         return [xNew, vNew, rNN]
     invariantFall [x,v,r] =
@@ -1391,12 +1391,12 @@ ivpBouncingBallAirEnergy (sampleFn :: f) =
         -- v <= 0:
         vNP <- makeNonpos v
         -- v = sqrt(r - 2gx):
-        vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
+        vSqr1 <- makeNonneg $ rNN <-> ((toD 20) <*> xNN)
         let v1 = neg $ ArithInOut.sqrtOut vSqr1
         vNew <- isect v v1
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
-        let x2 = (rNN <-> vSqr2) </> (toDom 20)
+        let x2 = (rNN <-> vSqr2) </> (toD 20)
         xNew <- isect xNN x2
         return [xNew, vNew, rNN]
     eventBounce = HybSysEventKind "bc"
@@ -1442,10 +1442,10 @@ ivpBouncingBallAirEnergy (sampleFn :: f) =
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
         ++ ", r(" ++ show tStart ++ ") ∊ " ++ show initR
-    initValues@[initX, initX', initR] = [toDom 5, toDom 0, energyWith initX initX'] :: [Domain f]
+    initValues@[initX, initX', initR] = [toD 5, toD 0, energyWith initX initX'] :: [Domain f]
     tStart = hybivp_tStart ivp
-    z = toDom 0
-    toDom = dblToReal sampleDom
+    z = toD 0
+    toD = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 ivpBouncingBallCubicDrag :: 
@@ -1480,7 +1480,7 @@ ivpBouncingBallCubicDrag (sampleFn :: f) =
     odeMove [x,v] = 
         [
             v, 
-            newConstFnFromSample x (toDom $ -10) <-> (v <*> v <*> v) </>| (1000 :: Double) 
+            newConstFnFromSample x (toD $ -10) <-> (v <*> v <*> v) </>| (1000 :: Double) 
         ]
 --    invariantMove = id
     invariantMove [x,v] = 
@@ -1498,7 +1498,7 @@ ivpBouncingBallCubicDrag (sampleFn :: f) =
         _ <- isect z x
         return [z, vNP]
         where
-        z = toDom 0 
+        z = toD 0 
         
     resetBounce [x,v] = 
         [x, (-0.5 :: Double) |<*> v]
@@ -1511,8 +1511,8 @@ ivpBouncingBallCubicDrag (sampleFn :: f) =
             hybivp_description = description,
             hybivp_system = system,
             hybivp_tVar = "t",
-            hybivp_tStart = toDom 0,
-            hybivp_tEnd = toDom 1,
+            hybivp_tStart = toD 0,
+            hybivp_tEnd = toD 1,
             hybivp_initialStateEnclosure = 
                 Map.singleton modeMove initValues,
             hybivp_maybeExactStateAtTEnd = Nothing
@@ -1522,10 +1522,10 @@ ivpBouncingBallCubicDrag (sampleFn :: f) =
 --        "if x = 0 && v <= 0 then post(v) = -0.5*pre(v) else x'' = -10" 
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
-    initValues@[initX, initX'] = [toDom 5, toDom 0] :: [Domain f]
+    initValues@[initX, initX'] = [toD 5, toD 0] :: [Domain f]
     tStart = hybivp_tStart ivp
-    z = toDom 0
-    toDom = dblToReal sampleDom
+    z = toD 0
+    toD = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -1552,7 +1552,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
     where
     energyWith x v = 
 --        z </\> 
-        (v <*> v <+> (toDom 20) <*> x)
+        (v <*> v <+> (toD 20) <*> x)
         -- added zero so that after reset the interval refines the original (model-level hack!)  
     system =
         HybridSystem
@@ -1567,7 +1567,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
     odeMove [x,v,r] = 
         [
             v, 
-            newConstFnFromSample x (toDom $ -10) <-> (v <*> v <*> v) </>| (1000 :: Double), 
+            newConstFnFromSample x (toD $ -10) <-> (v <*> v <*> v) </>| (1000 :: Double), 
             (v <*> v <*> v <*> v) </>| (-500 :: Double)
         ]
     invariantMove [x,v,r] =
@@ -1577,12 +1577,12 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
         -- r >= 0:
         rNN <- makeNonneg r
         -- |v| = sqrt(r - 2gx):
-        vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
+        vSqr1 <- makeNonneg $ rNN <-> ((toD 20) <*> xNN)
         let absV = ArithInOut.sqrtOut vSqr1
         vNew <- isect v ((neg absV) </\> absV)
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
-        let x2 = (rNN <-> vSqr2) </> (toDom 20)
+        let x2 = (rNN <-> vSqr2) </> (toD 20)
         xNew <- isect xNN x2
         return [xNew, vNew, rNN]
     eventBounce = HybSysEventKind "bc"
@@ -1594,7 +1594,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
     resetBounce [x,v,r] = 
         [x,
          (-0.5 :: Double) |<*> v, 
-         (toDomInterval 0 0.25) <*> r
+         (toDInterval 0 0.25) <*> r
         ] -- deliberately lose precision to facilitate quicker event tree convergence (HACK!)
     eventSpecMap _mode =
         Map.singleton eventBounce $
@@ -1619,11 +1619,11 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
         ++ "; x(" ++ show tStart ++ ") = " ++ show initX
         ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
         ++ ", r(" ++ show tStart ++ ") ∊ " ++ show initR
-    initValues@[initX, initX', initR] = [toDom 5, toDom 0, energyWith initX initX'] :: [Domain f]
+    initValues@[initX, initX', initR] = [toD 5, toD 0, energyWith initX initX'] :: [Domain f]
     tStart = hybivp_tStart ivp
-    z = toDom 0
-    toDom = dblToReal sampleDom
-    toDomInterval l r = (toDom l) </\> (toDom r)
+    z = toD 0
+    toD = dblToReal sampleDom
+    toDInterval l r = (toD l) </\> (toD r)
     sampleDom = getSampleDomValue sampleFn
 
 
@@ -1658,7 +1658,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --    modeMove = HybSysMode "move"
 --    odeMove :: [f] -> [f]
 --    odeMove [x,v,y,w] = 
---        [v, newConstFnFromSample x (toDom $ -0.81056947), -- 8/pi^2 
+--        [v, newConstFnFromSample x (toD $ -0.81056947), -- 8/pi^2 
 --         w, (1::Double) |<*> (neg y)]
 ----    invariantMove = id
 --    invariantMove [x,v,y,w] = [y <+> (makeNonneg (x <-> y)),v,y,w]
@@ -1694,12 +1694,12 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --        ++ ", v(" ++ show tStart ++ ") = " ++ show initV
 --        ++ "; y(" ++ show tStart ++ ") = " ++ show initY
 --        ++ ", w(" ++ show tStart ++ ") = " ++ show initW
---    initValues@[initX, initV, initY, initW] = (map toDom [0,1.2732395,0,1]) :: [Domain f]
+--    initValues@[initX, initV, initY, initW] = (map toD [0,1.2732395,0,1]) :: [Domain f]
 ----    initValues@[initX, initX'] = [0,0] :: [Domain f]
 --    tStart = hybivp_tStart ivp
---    tEnd = toDom tEndDbl
---    z = toDom 0
---    toDom = dblToReal sampleDom
+--    tEnd = toD tEndDbl
+--    z = toD 0
+--    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
 --
 --
@@ -1743,9 +1743,9 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --    modeMove2 = HybSysMode "move2"
 --    odeMove :: [f] -> [f]
 --    odeMove [x,v,_y,_tt] = 
---        [v, newConstFnFromSample x (toDom $ -10), 
---         newConstFnFromSample x (toDom 0), 
---         newConstFnFromSample x (toDom 1)]
+--        [v, newConstFnFromSample x (toD $ -10), 
+--         newConstFnFromSample x (toD 0), 
+--         newConstFnFromSample x (toD 1)]
 ----    invariantMove = id
 --    invariantMove [x,v,y,tt] = [y <+> (makeNonneg (x<->y)),v,y,tt]
 --    eventBounce1 = HybSysEventKind "bounce1"
@@ -1786,7 +1786,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --            hybivp_description = description,
 --            hybivp_system = system,
 --            hybivp_tVar = "t",
---            hybivp_tStart = toDom 0,
+--            hybivp_tStart = toD 0,
 --            hybivp_tEnd = tEnd,
 --            hybivp_initialStateEnclosure = 
 --                Map.singleton modeMove1 initValues,
@@ -1798,12 +1798,12 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
 --        ++ ", v(" ++ show tStart ++ ") = " ++ show initV
 --        ++ "; y(" ++ show tStart ++ ") = " ++ show initY
---    initValues@[initX, initV, initY, _initTT] = (map toDom [5,0,groundInitDbl,0]) :: [Domain f]
+--    initValues@[initX, initV, initY, _initTT] = (map toD [5,0,groundInitDbl,0]) :: [Domain f]
 ----    initValues@[initX, initX'] = [0,0] :: [Domain f]
 --    tStart = hybivp_tStart ivp
---    [_groundInit, tDrop, groundDrop, tEnd] = map toDom [groundInitDbl, tDropDbl, groundDropDbl, tEndDbl]
---    z = toDom 0
---    toDom = dblToReal sampleDom
+--    [_groundInit, tDrop, groundDrop, tEnd] = map toD [groundInitDbl, tDropDbl, groundDropDbl, tEndDbl]
+--    z = toD 0
+--    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
 --
 --ivpBouncingBallEnergyDrop_AtTime :: 
@@ -1830,7 +1830,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --ivpBouncingBallEnergyDrop_AtTime groundInitDbl tDropDbl groundDropDbl tEndDbl (sampleFn :: f) =
 --    ivp
 --    where
---    energyWith x v = z </\> (v <*> v <+> (toDom 20) <*> x)
+--    energyWith x v = z </\> (v <*> v <+> (toD 20) <*> x)
 --    system =
 --        HybridSystem
 --        {
@@ -1851,10 +1851,10 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --    odeMove :: [f] -> [f]
 --    odeMove [x,v,r,y,tt] = 
 --        [v, 
---         newConstFnFromSample x (toDom $ -10), 
---         newConstFnFromSample r (toDom 0), 
---         newConstFnFromSample y (toDom 0), 
---         newConstFnFromSample tt (toDom 1)]
+--         newConstFnFromSample x (toD $ -10), 
+--         newConstFnFromSample r (toD 0), 
+--         newConstFnFromSample y (toD 0), 
+--         newConstFnFromSample tt (toD 1)]
 ----    invariantMove = id
 --    invariantMove [x,v,r,y,tt] = 
 --        [xNN <\/> x2, 
@@ -1871,8 +1871,8 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --        where
 --        rNN = makeNonneg r
 --        xNN = y <+> (makeNonneg (x <-> y))
---        absV = sqrtOut $ makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
---        x2 = (rNN <-> (makeNonneg $ v <*> v)) </> (toDom 20)
+--        absV = sqrtOut $ makeNonneg $ rNN <-> ((toD 20) <*> xNN)
+--        x2 = (rNN <-> (makeNonneg $ v <*> v)) </> (toD 20)
 --    eventBounce1 = HybSysEventKind "bounce1"
 --    eventBounce2 = HybSysEventKind "bounce2"
 --    pruneBounce [_x,v,r,y,tt] = [y, neg (makeNonneg (neg v)),r,y,tt]
@@ -1935,15 +1935,15 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --        ++ ", r(" ++ show tStart ++ ") ∊ " ++ show initR
 --        ++ "; y(" ++ show tStart ++ ") = " ++ show initY
 --    initValues@[initX, initV, initR, initY, _initTT] = 
---        [toDom 5,toDom 0,
+--        [toD 5,toD 0,
 --         energyWith initX initV,
 --         groundInit,
---         toDom 0] :: [Domain f]
+--         toD 0] :: [Domain f]
 ----    initValues@[initX, initX'] = [0,0] :: [Domain f]
 --    tStart = hybivp_tStart ivp
---    [groundInit, tDrop, groundDrop, tEnd] = map toDom [groundInitDbl, tDropDbl, groundDropDbl, tEndDbl]
---    z = toDom 0
---    toDom = dblToReal sampleDom
+--    [groundInit, tDrop, groundDrop, tEnd] = map toD [groundInitDbl, tDropDbl, groundDropDbl, tEndDbl]
+--    z = toD 0
+--    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
 --
 --ivpTwoBouncingBallsDrop_AtTime :: 
@@ -1995,12 +1995,12 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --    odeMove :: [f] -> [f]
 --    odeMove [x1,v1,y1,x2,v2,y2,tt] = 
 --        [v1, 
---         newConstFnFromSample x1 (toDom (-g)), 
---         newConstFnFromSample y1 (toDom 0),
+--         newConstFnFromSample x1 (toD (-g)), 
+--         newConstFnFromSample y1 (toD 0),
 --         v2, 
---         newConstFnFromSample x2 (toDom (-g)), 
---         newConstFnFromSample y2 (toDom 0),
---         newConstFnFromSample tt (toDom 1)]
+--         newConstFnFromSample x2 (toD (-g)), 
+--         newConstFnFromSample y2 (toD 0),
+--         newConstFnFromSample tt (toD 1)]
 ----    invariantMove = id
 --    invariantMove [x1,v1,y1,x2,v2,y2,tt] = 
 --        [y1 <+> (makeNonneg (x1 <-> y1)),v1,y1,
@@ -2048,7 +2048,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --            tDip1 [_x1,_v1,_y1,_x2,_v2,_y2,tt] = tDrop1P <-> tt
 --                where
 --                tDrop1P = newConstFnFromSample tt tDrop1
---            tNearDrop1 [_x1,_v1,_y1,_x2,_v2,_y2,tt] = tt <? (tDrop1 <+> (toDom 0.5))
+--            tNearDrop1 [_x1,_v1,_y1,_x2,_v2,_y2,tt] = tt <? (tDrop1 <+> (toD 0.5))
 --        eventsDrop2 =
 --            Map.singleton eventDrop2
 --                ([False, False, False, False, False, True, True], tDip2, tNearDrop2, pruneDrop2)
@@ -2056,7 +2056,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --            tDip2 [_x1,_v1,_y1,_x2,_v2,_y2,tt] = tDrop2P <-> tt
 --                where
 --                tDrop2P = newConstFnFromSample tt tDrop2
---            tNearDrop2 [_x1,_v1,_y1,_x2,_v2,_y2,tt] = tt <? (tDrop2 <+> (toDom 0.5))
+--            tNearDrop2 [_x1,_v1,_y1,_x2,_v2,_y2,tt] = tt <? (tDrop2 <+> (toD 0.5))
 --        eventsBounce1 =
 --            Map.singleton eventBounce1 $
 --                ([True, True, False, False, False, False, False], 
@@ -2097,13 +2097,13 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --        ++ ", v2(" ++ show tStart ++ ") = " ++ show initV2
 --        ++ "; y2(" ++ show tStart ++ ") = " ++ show initY2
 --    initValues@[initX1, initV1, initY1, initX2, initV2, initY2, _initTT] = 
---        [toDom 30,toDom 14,groundInit,
---         toDom 30,toDom 25,groundInit,
+--        [toD 30,toD 14,groundInit,
+--         toD 30,toD 25,groundInit,
 --         z] :: [Domain f]
 --    tStart = hybivp_tStart ivp
---    [groundInit, tDrop1, tDrop2, groundDrop, tEnd] = map toDom [groundInitDbl, tDrop1Dbl, tDrop2Dbl, groundDropDbl, tEndDbl]
---    z = toDom 0
---    toDom = dblToReal sampleDom
+--    [groundInit, tDrop1, tDrop2, groundDrop, tEnd] = map toD [groundInitDbl, tDrop1Dbl, tDrop2Dbl, groundDropDbl, tEndDbl]
+--    z = toD 0
+--    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
 --
 --
@@ -2136,7 +2136,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --    tDrop2Dbl = tDrop2PreDbl + 1
 --    g = 9.81 :: Double
 --    c = 0.8 :: Double
---    energyWith x v = z </\> (v <*> v <+> (toDom 20) <*> x)
+--    energyWith x v = z </\> (v <*> v <+> (toD 20) <*> x)
 --    system =
 --        HybridSystem
 --        {
@@ -2158,14 +2158,14 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --    odeMove :: [f] -> [f]
 --    odeMove [x1,v1,r1,y1,x2,v2,r2,y2,tt] = 
 --        [v1,
---         newConstFnFromSample x1 (toDom (-g)), 
---         newConstFnFromSample r1 (toDom 0), 
---         newConstFnFromSample y1 (toDom 0), 
+--         newConstFnFromSample x1 (toD (-g)), 
+--         newConstFnFromSample r1 (toD 0), 
+--         newConstFnFromSample y1 (toD 0), 
 --         v2,
---         newConstFnFromSample x2 (toDom (-g)), 
---         newConstFnFromSample r2 (toDom 0), 
---         newConstFnFromSample y2 (toDom 0),
---         newConstFnFromSample tt (toDom 1)]
+--         newConstFnFromSample x2 (toD (-g)), 
+--         newConstFnFromSample r2 (toD 0), 
+--         newConstFnFromSample y2 (toD 0),
+--         newConstFnFromSample tt (toD 1)]
 ----    invariantMove = id
 --    invariantMove [x1,v1,r1,y1,x2,v2,r2,y2,tt] = 
 --        [x1NN <\/> x1E, 
@@ -2255,7 +2255,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --            tDip1 [_x1,_v1,_r1,_y1,_x2,_v2,_r2,_y2,tt] = tDrop1P <-> tt
 --                where
 --                tDrop1P = newConstFnFromSample tt tDrop1
---            tNearDrop1 [_x1,_v1,_r1,_y1,_x2,_v2,_r2,_y2,tt] = tt <? (tDrop1 <+> (toDom 0.5))
+--            tNearDrop1 [_x1,_v1,_r1,_y1,_x2,_v2,_r2,_y2,tt] = tt <? (tDrop1 <+> (toD 0.5))
 --        eventsDrop2 =
 --            Map.singleton eventDrop2
 --                ([False, False, False, False, False, False, True, True, True], tDip2, tNearDrop2, pruneDrop2)
@@ -2263,7 +2263,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --            tDip2 [_x1,_v1,_r1,_y1,_x2,_v2,_r2,_y2,tt] = tDrop2P <-> tt
 --                where
 --                tDrop2P = newConstFnFromSample tt tDrop2
---            tNearDrop2 [_x1,_v1,_r1,_y1,_x2,_v2,_r2,_y2,tt] = tt <? (tDrop2 <+> (toDom 0.5))
+--            tNearDrop2 [_x1,_v1,_r1,_y1,_x2,_v2,_r2,_y2,tt] = tt <? (tDrop2 <+> (toD 0.5))
 --        eventsBounce1 =
 --            Map.singleton eventBounce1 $
 --                ([True, True, True, False, False, False, False, False, False], 
@@ -2306,15 +2306,15 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --        ++ ", r2(" ++ show tStart ++ ") ∊ " ++ show initR2
 --        ++ "; y2(" ++ show tStart ++ ") = " ++ show initY2
 --    initValues@[initX1, initV1, initR1, initY1, initX2, initV2, initR2, initY2, _initTT] = 
---        [toDom 30,toDom 14,energyWith initX1 initV1,groundInit,
---         toDom 30,toDom 25,energyWith initX2 initV2,groundInit,
+--        [toD 30,toD 14,energyWith initX1 initV1,groundInit,
+--         toD 30,toD 25,energyWith initX2 initV2,groundInit,
 --         z] :: [Domain f]
 ----    initValues@[initX, initX'] = [0,0] :: [Domain f]
 --    tStart = hybivp_tStart ivp
 --    [groundInit, tDrop1, tDrop2, groundDrop, tEnd] = 
---        map toDom [groundInitDbl, tDrop1Dbl, tDrop2Dbl, groundDropDbl, tEndDbl]
---    z = toDom 0
---    toDom = dblToReal sampleDom
+--        map toD [groundInitDbl, tDrop1Dbl, tDrop2Dbl, groundDropDbl, tEndDbl]
+--    z = toD 0
+--    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
 --
 --ivpBouncingSpring_AtTime :: 
@@ -2346,9 +2346,9 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --    modeMove = HybSysMode "move"
 --    odeMove :: [f] -> [f]
 --    odeMove [x,v] = [v, (-1 :: Double) |<*> x]
---    invariantMove [x,v] = [(toDom 1) <+> (makeNonneg (x <-> (toDom 1))), v]
+--    invariantMove [x,v] = [(toD 1) <+> (makeNonneg (x <-> (toD 1))), v]
 --    eventBounce = HybSysEventKind "bounce"
---    pruneBounce [_x,v] = [toDom 1, neg $ makeNonneg $ neg v]
+--    pruneBounce [_x,v] = [toD 1, neg $ makeNonneg $ neg v]
 --    resetBounce :: [f] -> [f]
 --    resetBounce [x,v] = 
 --        [x, (-0.5 :: Double) |<*> v]
@@ -2377,11 +2377,11 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --        "if x = 1 && v <= 0 then post(v) = -0.5*pre(v) else x'' = -10x" 
 --        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
 --        ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
---    initValues@[initX, initX'] = [toDom 1,toDom 1] :: [Domain f]
+--    initValues@[initX, initX'] = [toD 1,toD 1] :: [Domain f]
 --    tStart = hybivp_tStart ivp
---    z = toDom 0
---    tEnd = toDom tEndDbl
---    toDom = dblToReal sampleDom
+--    z = toD 0
+--    tEnd = toD tEndDbl
+--    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
 --
 --ivpTwoTanks_AfterZeno :: 
@@ -2398,9 +2398,9 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --ivpTwoTanks_AfterZeno tEndMinusTZenoDbl (sampleFn :: f) =
 --    ivp
 --    where
---    v1 = toDom 2
---    v2 = toDom 3
---    w = toDom 4
+--    v1 = toD 2
+--    v2 = toD 3
+--    w = toD 4
 --    tZenoDbl = 2
 --    tEndDbl = tEndMinusTZenoDbl + tZenoDbl
 --    system =
@@ -2422,8 +2422,8 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --    invariant [x1,x2] = [makeNonneg x1, makeNonneg x2]
 --    event1To2 = HybSysEventKind "1To2"
 --    event2To1 = HybSysEventKind "2To1"
---    prune1To2 [x1,_x2] = [x1, toDom 0]
---    prune2To1 [_x1,x2] = [toDom 0, x2]
+--    prune1To2 [x1,_x2] = [x1, toD 0]
+--    prune2To1 [_x1,x2] = [toD 0, x2]
 --
 --    eventSpecMap (HybSysMode "fill1") =
 --        Map.singleton event1To2 $
@@ -2450,8 +2450,8 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --            hybivp_maybeExactStateAtTEnd = Just $
 --                Map.fromList
 --                [
---                    (modeFill1, [toDom 0,toDom 0]),
---                    (modeFill2, [toDom 0,toDom 0])
+--                    (modeFill1, [toD 0,toD 0]),
+--                    (modeFill2, [toD 0,toD 0])
 --                ]
 --        }
 --    description =
@@ -2460,11 +2460,11 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --        ++ "\n if fill2 then (if x1 = 0 then fill1 else x1' =  -2, x2' = 4-3)"
 --        ++ "\n ; x1(" ++ show tStart ++ ") = " ++ show initX1
 --        ++    ", x2(" ++ show tStart ++ ") = " ++ show initX2
---    initValues@[initX1, initX2] = [toDom 1,toDom 1] :: [Domain f]
+--    initValues@[initX1, initX2] = [toD 1,toD 1] :: [Domain f]
 --    tStart = hybivp_tStart ivp
---    z = toDom 0
---    tEnd = toDom tEndDbl
---    toDom = dblToReal sampleDom
+--    z = toD 0
+--    tEnd = toD tEndDbl
+--    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
 --
 --ivpTwoTanksSum_AfterZeno :: 
@@ -2481,9 +2481,9 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --ivpTwoTanksSum_AfterZeno tEndMinusTZenoDbl (sampleFn :: f) =
 --    ivp
 --    where
---    v1 = toDom 2
---    v2 = toDom 3
---    w = toDom 4
+--    v1 = toD 2
+--    v2 = toD 3
+--    w = toD 4
 --    tZenoDbl = 2
 --    tEndDbl = tEndMinusTZenoDbl + tZenoDbl
 --    system =
@@ -2531,8 +2531,8 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --        x12NN = makeNonneg x12
 --    event1To2 = HybSysEventKind "1To2"
 --    event2To1 = HybSysEventKind "2To1"
---    prune1To2 [x1,_x2, x12] = [x1, toDom 0, x12]
---    prune2To1 [_x1,x2, x12] = [toDom 0, x2, x12]
+--    prune1To2 [x1,_x2, x12] = [x1, toD 0, x12]
+--    prune2To1 [_x1,x2, x12] = [toD 0, x2, x12]
 --
 --    eventSpecMap (HybSysMode "fill1") =
 --        Map.singleton event1To2 $
@@ -2574,11 +2574,11 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 --        ++ "\n ; x1(" ++ show tStart ++ ") = " ++ show initX1
 --        ++    ", x2(" ++ show tStart ++ ") = " ++ show initX2
 --        ++    ", x12(" ++ show tStart ++ ") = " ++ show initX12
---    initValues@[initX1, initX2, initX12] = [toDom 1,toDom 1,toDom 2] :: [Domain f]
+--    initValues@[initX1, initX2, initX12] = [toD 1,toD 1,toD 2] :: [Domain f]
 --    tStart = hybivp_tStart ivp
---    z = toDom 0
---    tEnd = toDom tEndDbl
---    toDom = dblToReal sampleDom
+--    z = toD 0
+--    tEnd = toD tEndDbl
+--    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
 
 
@@ -2601,7 +2601,7 @@ ivp2BeadColumnEnergy (sampleFn :: f) =
     ivp
     where
     energyWith x v = 
-        (v <*> v <+> (toDom 20) <*> x)
+        (v <*> v <+> (toD 20) <*> x)
     system =
         HybridSystem
         {
@@ -2616,7 +2616,7 @@ ivp2BeadColumnEnergy (sampleFn :: f) =
         odeMoveAux vars1 ++ odeMoveAux vars2
         where
         (vars1, vars2) = splitAt 3 vars
-    odeMoveAux [x,v,r] = [v, newConstFnFromSample x (toDom $ -10), newConstFnFromSample r (toDom 0)]
+    odeMoveAux [x,v,r] = [v, newConstFnFromSample x (toD $ -10), newConstFnFromSample r (toD 0)]
     odeMoveAux _ = error "internal error in odeMoveAux"
     invariantMove vars =
         do
@@ -2637,12 +2637,12 @@ ivp2BeadColumnEnergy (sampleFn :: f) =
         -- r >= 0:
         rNN <- makeNonneg r
         -- |v| = sqrt(r - 2gx):
-        vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
+        vSqr1 <- makeNonneg $ rNN <-> ((toD 20) <*> xNN)
         let absV = ArithInOut.sqrtOut vSqr1
         vNew <- isect v ((neg absV) </\> absV)
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
-        let x2 = (rNN <-> vSqr2) </> (toDom 20)
+        let x2 = (rNN <-> vSqr2) </> (toD 20)
         xNew <- isect xNN x2
         return [xNew, vNew, rNN]
 
@@ -2669,7 +2669,7 @@ ivp2BeadColumnEnergy (sampleFn :: f) =
     resetBounce1 [x1,v1,r1,x2,v2,r2] = 
         [x1,
          (-0.5 :: Double) |<*> v1, 
-         (toDomInterval 0 0.25) <*> r1,
+         (toDInterval 0 0.25) <*> r1,
          x2, v2, r2
         ]
     resetBounce1 _ = error "internal error in resetBounce1"
@@ -2728,16 +2728,16 @@ ivp2BeadColumnEnergy (sampleFn :: f) =
     tStart = hybivp_tStart ivp
 
     initValues = [initX1, initX1', initR1, initX2, initX2', initR2]
-    initX1 = toDom 2
-    initX1' = toDom 0
+    initX1 = toD 2
+    initX1' = toD 0
     initR1 = energyWith initX1 initX1'
-    initX2 = toDom 4
-    initX2' = toDom 0
+    initX2 = toD 4
+    initX2' = toD 0
     initR2 = energyWith initX2 initX2'
     
-    z = toDom 0
-    toDom = dblToReal sampleDom
-    toDomInterval l r = (toDom l) </\> (toDom r)
+    z = toD 0
+    toD = dblToReal sampleDom
+    toDInterval l r = (toD l) </\> (toD r)
     sampleDom = getSampleDomValue sampleFn
 
 ivp2BeadColumnEnergyVDiff :: 
@@ -2759,7 +2759,7 @@ ivp2BeadColumnEnergyVDiff (sampleFn :: f) =
     ivp
     where
     energyWith x v = 
-        (v <*> v <+> (toDom 20) <*> x)
+        (v <*> v <+> (toD 20) <*> x)
     system =
         HybridSystem
         {
@@ -2771,14 +2771,14 @@ ivp2BeadColumnEnergyVDiff (sampleFn :: f) =
     modeMove = HybSysMode "move"
     odeMove :: [f] -> [f]
     odeMove vars = 
-        odeMoveAux vars1 ++ odeMoveAux vars2 ++ [newConstFnFromSample v1Mv2 (toDom 0)]
+        odeMoveAux vars1 ++ odeMoveAux vars2 ++ [newConstFnFromSample v1Mv2 (toD 0)]
         where
         (vars2, [v1Mv2]) = splitAt 3 vars2vDiff
         (vars1, vars2vDiff) = splitAt 3 vars
     odeMoveAux [x,v,r] = 
         [v, 
-         newConstFnFromSample x (toDom $ -10), 
-         newConstFnFromSample r (toDom 0)]
+         newConstFnFromSample x (toD $ -10), 
+         newConstFnFromSample r (toD 0)]
     odeMoveAux _ = error "internal error in odeMoveAux"
     invariantMove vars =
         do
@@ -2805,12 +2805,12 @@ ivp2BeadColumnEnergyVDiff (sampleFn :: f) =
         -- r >= 0:
         rNN <- makeNonneg r
         -- |v| = sqrt(r - 2gx):
-        vSqr1 <- makeNonneg $ rNN <-> ((toDom 20) <*> xNN)
+        vSqr1 <- makeNonneg $ rNN <-> ((toD 20) <*> xNN)
         let absV = ArithInOut.sqrtOut vSqr1
         vNew <- isect v ((neg absV) </\> absV)
         -- x = (r - (v)^2) / 2g:
         vSqr2 <- makeNonneg $ v <*> v
-        let x2 = (rNN <-> vSqr2) </> (toDom 20)
+        let x2 = (rNN <-> vSqr2) </> (toD 20)
         xNew <- isect xNN x2
         return [xNew, vNew, rNN]
 
@@ -2837,7 +2837,7 @@ ivp2BeadColumnEnergyVDiff (sampleFn :: f) =
     resetBounce1 [x1,v1,r1,x2,v2,r2,v1Mv2] = 
         [x1,
          (-0.5 :: Double) |<*> v1, 
-         (toDomInterval 0 0.25) <*> r1,
+         (toDInterval 0 0.25) <*> r1,
          x2, v2, r2,
          v1Mv2 <+> ((-1.5 :: Double) |<*> v1)
         ]
@@ -2900,17 +2900,17 @@ ivp2BeadColumnEnergyVDiff (sampleFn :: f) =
     tStart = hybivp_tStart ivp
 
     initValues = [initX1, initX1', initR1, initX2, initX2', initR2, initV1MV2]
-    initX1 = toDom 2
-    initX1' = toDom 0
+    initX1 = toD 2
+    initX1' = toD 0
     initR1 = energyWith initX1 initX1'
-    initX2 = toDom 4
-    initX2' = toDom 0
+    initX2 = toD 4
+    initX2' = toD 0
     initR2 = energyWith initX2 initX2'
     initV1MV2 = initX1' <-> initX2'
     
-    z = toDom 0
-    toDom = dblToReal sampleDom
-    toDomInterval l r = (toDom l) </\> (toDom r)
+    z = toD 0
+    toD = dblToReal sampleDom
+    toDInterval l r = (toD l) </\> (toD r)
     sampleDom = getSampleDomValue sampleFn
 
 
