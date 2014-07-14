@@ -94,7 +94,7 @@ Compute and plot an enclosure of an ODE IVP with uncertain initial value:
 Compute and plot an enclosure of a hybrid system with Zeno behaviour:
 
 ```sh
-> ~/.cabal/bin/simple-events bouncingBallFloorDropEnergy 4.4 "PlotGraph[True,False,True,False,True](0,5,-0.2,5)" GUI locate evtree 10 10 3 50 0 0 
+> ~/.cabal/bin/simple-events bouncingBallFloorDropEnergy 4.4 "PlotGraph[True,False,True,False,False](0,5,-0.2,5)" GUI locate evtree 10 10 3 50 0 0 
 ```
 
 You can also execute various demos using ghci.
