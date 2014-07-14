@@ -87,74 +87,52 @@ main =
 usage :: IO ()
 usage =
     do
-    putStrLn "Usage A: simple-uv-et <ivp name> <output file name> <True|False-should wrap?>"
-    putStrLn "Usage B: simple-uv-et <ivp name> \"<PlotArgs>\" <True|False-should wrap?> <<output>.pdf|GUI> <maxDeg> <maxTermSize> <minStepSize> <maxStepSize> [<tEnd>]"
+--    putStrLn "Usage A: simple-uv-et <ivp name> <output>.csv [Wrap|ShrinkWrap]"
+    putStrLn $ "Usage: simple-uv-et <ivp name> <end time> \"<PlotArgs>\" [<output>.pdf|GUI]" 
+                ++ " [Wrap|ShrinkWrap] <maxDeg> <maxTermSize> <maxUnitSplitDepth> <minUnitSplitDepth>"
     putStrLn "   PlotArgs:  example 1: PlotGraph[True, False, False](0,1,-1,1)"
     putStrLn "   PlotArgs:                      [shouldPlotVar1,...]"
     putStrLn "   PlotArgs:                                      ....(xmin, xmax, ymin, ymax)"
     putStrLn "   PlotArgs:  example 1: PlotParam[True, True, False](-1,1,-1,1)"
     putStrLn "   PlotArgs:  example 2: NoPlot"
 
-runWithArgs [ivpName, maybePlotDimensS, maybePDFfilenameS, shouldWrapS, maxDegS, maxSizeS, maxDepthS, minDepthS] =
-    runWithArgs [ivpName, maybePlotDimensS, maybePDFfilenameS, shouldWrapS, maxDegS, maxSizeS, maxDepthS, minDepthS, "default"]
-runWithArgs [ivpName, maybePlotDimensS, maybePDFfilenameS, shouldWrapS, maxDegS, maxSizeS, maxDepthS, minDepthS, tEndS] =
+runWithArgs :: [String] -> IO ()
+runWithArgs [ivpName, tEndS, maybePlotDimensS, maybePDFfilenameS, 
+                wrapTypeS, maxDegS, maxSizeS, maxDepthS, minDepthS] =
     do
-    _ <- solveVtPrintSteps shouldWrap maybePlotDimens maybePDFfilename ivpTEnd (maxDeg, maxSize, maxDepth, minDepth)
+    _ <- solveVtPrintSteps wrapType maybePlotDimens maybePDFfilename ivpTEnd (maxDeg, maxSize, maxDepth, minDepth)
     return ()
     where
-    ivpTEnd =
-        case tEndS of
-            "default" -> ivp
-            _ -> ivp
-                {
-                    odeivp_tEnd = dblToReal sampleCf $ read tEndS,
-                    odeivp_maybeExactValuesAtTEnd = Nothing
-                }
+    ivpTEnd = 
+        ivp
+        {
+            odeivp_tEnd = dblToReal sampleCf tEndD,
+            odeivp_maybeExactValuesAtTEnd = Nothing
+        }
     ivp = ivpByNameReportError ivpName sampleFn
-    shouldWrap = read shouldWrapS :: Bool
-    maybePlotDimens = readPlotArg maybePlotDimensS :: Maybe PlotParams
+    wrapType = read wrapTypeS :: WrapType
+    maybePlotDimens = readPlotParams maybePlotDimensS :: Maybe PlotParams
     maybePDFfilename = readPDFfilename maybePDFfilenameS :: Maybe String
     maxDeg = read maxDegS :: Int
     maxSize = read maxSizeS :: Int
     maxDepth = read maxDepthS :: Int
     minDepth = read minDepthS :: Int
+    tEndD = read tEndS :: Double
     readPDFfilename "GUI" = Nothing
     readPDFfilename pdfilename
         | ".pdf" `isSuffixOf` pdfilename = Just pdfilename
-    readPlotArg s 
-        | "Plot" `isPrefixOf` s =
-            case getIsParam of
-                Just isParam ->
-                    case reads sMinusPlotParam of
-                        (activeVars, rest) : _ ->
-                            case reads rest of
-                                (boundsD, []) : _ -> 
-                                    Just (PlotParams (boundsFromDoubles boundsD) activeVars isParam)
-                                _ -> errorP
-                        _ -> errorP
-                _ -> errorP
-        | s == "NoPlot" = Nothing
-        | otherwise = errorP
-        where
-        sMinusPlot = drop (length "Plot") s
-        sMinusPlotParam = drop (length "Param") sMinusPlot
-        getIsParam
-            | "Param" `isPrefixOf` sMinusPlot = Just True
-            | "Graph" `isPrefixOf` sMinusPlot = Just False
-            | otherwise = Nothing
-        errorP = error $ "Cannot parse plot specification: " ++ s
-        boundsFromDoubles (xmin, xmax, ymin, ymax) =
-            FV.Rectangle (d2r ymax) (d2r ymin) (d2r xmin) (d2r xmax)
-            where
-            d2r = dblToReal (0 :: CF)
+
     
-    
-runWithArgs [ivpName, outputFileName, shouldWrapS] =
-    writeCSV ivp outputFileName shouldWrap
+runWithArgs [ivpName, outputFileName, wrapTypeS] =
+    writeCSV ivp outputFileName wrapType
     where
-    shouldWrap = read shouldWrapS :: Bool
+    wrapType = read wrapTypeS :: WrapType
     ivp = ivpByNameReportError ivpName sampleFn
 runWithArgs _ = usage
+
+data WrapType =
+    Wrap | ShrinkWrap
+    deriving (Show, Read)
 
 data PlotParams =
     PlotParams
@@ -165,8 +143,38 @@ data PlotParams =
     }
     deriving (Show)
     
-writeCSV :: ODEIVP Fn -> FilePath -> Bool -> IO ()
-writeCSV ivp outputFileName shouldWrap =
+readPlotParams :: [Char] -> Maybe PlotParams
+readPlotParams s 
+    | "Plot" `isPrefixOf` s =
+        case getIsParam of
+            Just isParam ->
+                case reads sMinusPlotParam of
+                    (activeVars, rest) : _ ->
+                        case reads rest of
+                            (boundsD, []) : _ -> 
+                                Just (PlotParams (boundsFromDoubles boundsD) activeVars isParam)
+                            _ -> errorP
+                    _ -> errorP
+            _ -> errorP
+    | s == "NoPlot" = Nothing
+    | otherwise = errorP
+    where
+    sMinusPlot = drop (length "Plot") s
+    sMinusPlotParam = drop (length "Param") sMinusPlot
+    getIsParam
+        | "Param" `isPrefixOf` sMinusPlot = Just True
+        | "Graph" `isPrefixOf` sMinusPlot = Just False
+        | otherwise = Nothing
+    errorP = error $ "Cannot parse plot specification: " ++ s
+    boundsFromDoubles (xmin, xmax, ymin, ymax) =
+        FV.Rectangle (d2r ymax) (d2r ymin) (d2r xmin) (d2r xmax)
+        where
+        d2r = dblToReal (0 :: CF)
+    
+    
+    
+writeCSV :: ODEIVP Fn -> FilePath -> WrapType -> IO ()
+writeCSV ivp outputFileName wrapType =
     do
     isClash <- doesFileExist outputFileName
     case isClash of
@@ -201,7 +209,7 @@ writeCSV ivp outputFileName shouldWrap =
         solveAndMeasure _ =
             do
             starttime <- getCPUTime
-            solverResult <- solveVtPrintSteps shouldWrap Nothing Nothing ivp (maxDegree, maxSize, maxDepth, 0)
+            solverResult <- solveVtPrintSteps wrapType Nothing Nothing ivp (maxDegree, maxSize, maxDepth, 0)
             endtime <- getCPUTime
             return $ (solverResult, (endtime - starttime) `div` 1000000000)
         
@@ -249,7 +257,7 @@ refines a1 a2 = (a2 CF.|<=? a1) == Just True
 solveVtPrintSteps ::
     (solvingInfo ~ (Maybe ([Fn],[Fn]), (CF, Maybe [CF])))
     => 
-    Bool
+    WrapType
     ->
     (Maybe PlotParams)
     ->
@@ -267,7 +275,7 @@ solveVtPrintSteps ::
             BisectionInfo solvingInfo (solvingInfo, Maybe CF)
         )
     )
-solveVtPrintSteps shouldWrap maybePlotDimens maybePDFfilename ivp (maxdegParam, maxsizeParam, minDepthParam, maxDepthParam) =
+solveVtPrintSteps wrapType maybePlotDimens maybePDFfilename ivp (maxdegParam, maxsizeParam, minDepthParam, maxDepthParam) =
     do
     putStrLn "--------------------------------------------------"
     putStrLn "demo of enclose-flow by (Konecny, Taha, Duracz 2014)"
@@ -282,7 +290,7 @@ solveVtPrintSteps shouldWrap maybePlotDimens maybePDFfilename ivp (maxdegParam, 
     putStrLn $ "minimum step size = 2^{" ++ show minStepSizeExp ++ "}"
     putStrLn $ "maximum step size = 2^{" ++ show maxStepSizeExp ++ "}"
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
-    putStrLn $ "wrapping: " ++ (if shouldWrap then "box" else "shrink")
+    putStrLn $ "wrapping: " ++ (show wrapType)
     putStrLn $ "plotting: " ++ show maybePlotDimens
     case maybeExactResult of
         Just exactResult ->
@@ -315,7 +323,7 @@ solveVtPrintSteps shouldWrap maybePlotDimens maybePDFfilename ivp (maxdegParam, 
 --    shouldShowSteps = True
     -- solver call:
     (endValues, bisectionInfoOut) =
-        solveIVPWithUncertainValue shouldWrap
+        solveIVPWithUncertainValue wrapType
             sizeLimits effCf substSplitSizeLimit delta m 
                 minStepSize maxStepSize splitImprovementThreshold
                     ivp
@@ -392,7 +400,7 @@ solveVtPrintSteps shouldWrap maybePlotDimens maybePDFfilename ivp (maxdegParam, 
 solveIVPWithUncertainValue ::
     (solvingInfo ~ (Maybe ([Fn],[Fn]), (CF, Maybe [CF])))
     =>
-    Bool ->
+    WrapType ->
     SizeLimits Fn -> 
     ArithInOut.RoundedRealEffortIndicator CF -> 
     Int -> 
@@ -411,7 +419,7 @@ solveIVPWithUncertainValue ::
         )
     )
 solveIVPWithUncertainValue
-        shouldWrap 
+        wrapType 
             sizeLimits effCf _substSplitSizeLimit
                 delta m minStepSize maxStepSize splitImprovementThreshold
                     odeivp
@@ -421,10 +429,14 @@ solveIVPWithUncertainValue
             odeivp
     where
     solveUncertainValueExactTimeBisect2 =
-        solveODEIVPUncertainValueExactTime_UsingPicard_Bisect shouldWrap True
+        solveODEIVPUncertainValueExactTime_UsingPicard_Bisect shouldWrap shouldShrinkWrap
             sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
             effDivFnInt effAddFnDom effMultFnDom effCf
+    (shouldWrap, shouldShrinkWrap) =
+        case wrapType of
+            Wrap -> (True, False)
+            ShrinkWrap -> (False, True)
 
 --    substituteInitialValueUncertainty fn =
 --        pEvalAtPointOutEff effEval initValDomBox fn
