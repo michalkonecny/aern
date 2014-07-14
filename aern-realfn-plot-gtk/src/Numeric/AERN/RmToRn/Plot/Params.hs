@@ -127,6 +127,10 @@ data Rectangle t =
     }
     deriving (Ord, Show) --, Typeable, Data)
     
+instance (Functor Rectangle)
+    where
+    fmap f (Rectangle a b c d) = Rectangle (f a) (f b) (f c) (f d)
+    
 instance (RefOrd.PartialComparison t) => Eq (Rectangle t)
     where
     (Rectangle t1 b1 l1 r1) == (Rectangle t2 b2 l2 r2) =

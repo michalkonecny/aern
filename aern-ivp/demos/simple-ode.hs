@@ -7,7 +7,7 @@ import Numeric.AERN.IVP.Examples.ODE.Simple
 import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Solver.Bisection
 import Numeric.AERN.IVP.Solver.Picard.UncertainValue
-import Numeric.AERN.IVP.Plot.UsingFnView (plotODEIVPBisectionEnclosures)
+import Numeric.AERN.IVP.Plot.UsingFnView (plotODEIVPBisectionEnclosures, readPlotParams, PlotParams(..))
 
 import Numeric.AERN.IVP.Solver.ShrinkWrap -- only for testing
 
@@ -18,36 +18,41 @@ import Numeric.AERN.RmToRn.Integration
 import Numeric.AERN.RmToRn.Differentiation
 
 import qualified 
-       Numeric.AERN.RmToRn.Plot.FnView as FV
+       Numeric.AERN.RmToRn.Plot.FnView 
+       as FV
 
 import Numeric.AERN.Poly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Interval ()
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal, dbldblToReal)
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 import qualified 
-       Numeric.AERN.DoubleBasis.Interval as CF
+       Numeric.AERN.DoubleBasis.Interval 
+       as CF
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
 --import qualified Numeric.AERN.MPFRBasis.Interval as MI
 
-import Numeric.AERN.Basics.Interval
+--import Numeric.AERN.Basics.Interval
 import Numeric.AERN.RealArithmetic.Interval ()
 
 import qualified 
-       Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+       Numeric.AERN.RealArithmetic.RefinementOrderRounding 
+       as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal)
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 --import Numeric.AERN.RealArithmetic.ExactOps
 
-import qualified Numeric.AERN.NumericOrder as NumOrd
-import Numeric.AERN.NumericOrder.Operators
+import qualified 
+       Numeric.AERN.NumericOrder 
+       as NumOrd
+--import Numeric.AERN.NumericOrder.Operators
 
 import qualified 
-       Numeric.AERN.RefinementOrder as RefOrd
-import Numeric.AERN.RefinementOrder.Operators
+       Numeric.AERN.RefinementOrder 
+       as RefOrd
+--import Numeric.AERN.RefinementOrder.Operators
 
-import Numeric.AERN.Basics.Effort
+--import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.ShowInternals
 
@@ -93,8 +98,9 @@ usage =
     putStrLn "   PlotArgs:  example 1: PlotGraph[True, False, False](0,1,-1,1)"
     putStrLn "   PlotArgs:                      [shouldPlotVar1,...]"
     putStrLn "   PlotArgs:                                      ....(xmin, xmax, ymin, ymax)"
-    putStrLn "   PlotArgs:  example 1: PlotParam[True, True, False](-1,1,-1,1)"
-    putStrLn "   PlotArgs:  example 2: NoPlot"
+    putStrLn "   PlotArgs:  example 2: BWPlotGraph[True, True, False](-1,1,-1,1)"
+    putStrLn "   PlotArgs:  example 3: PlotParam[True, True, False](-1,1,-1,1)"
+    putStrLn "   PlotArgs:  example 4: NoPlot"
 
 runWithArgs :: [String] -> IO ()
 runWithArgs [ivpName, tEndS, maybePlotDimensS, maybePDFfilenameS, 
@@ -121,6 +127,8 @@ runWithArgs [ivpName, tEndS, maybePlotDimensS, maybePDFfilenameS,
     readPDFfilename "GUI" = Nothing
     readPDFfilename pdfilename
         | ".pdf" `isSuffixOf` pdfilename = Just pdfilename
+    readPDFfilename filename =
+        error $ "Unsupported output file format: " ++ filename
 
     
 runWithArgs [ivpName, outputFileName, wrapTypeS] =
@@ -132,46 +140,7 @@ runWithArgs _ = usage
 
 data WrapType =
     Wrap | ShrinkWrap
-    deriving (Show, Read)
-
-data PlotParams =
-    PlotParams
-    {
-        plotp_rect :: FV.Rectangle CF,
-        plotp_activevars :: [Bool],
-        plotp_isParam :: Bool
-    }
-    deriving (Show)
-    
-readPlotParams :: [Char] -> Maybe PlotParams
-readPlotParams s 
-    | "Plot" `isPrefixOf` s =
-        case getIsParam of
-            Just isParam ->
-                case reads sMinusPlotParam of
-                    (activeVars, rest) : _ ->
-                        case reads rest of
-                            (boundsD, []) : _ -> 
-                                Just (PlotParams (boundsFromDoubles boundsD) activeVars isParam)
-                            _ -> errorP
-                    _ -> errorP
-            _ -> errorP
-    | s == "NoPlot" = Nothing
-    | otherwise = errorP
-    where
-    sMinusPlot = drop (length "Plot") s
-    sMinusPlotParam = drop (length "Param") sMinusPlot
-    getIsParam
-        | "Param" `isPrefixOf` sMinusPlot = Just True
-        | "Graph" `isPrefixOf` sMinusPlot = Just False
-        | otherwise = Nothing
-    errorP = error $ "Cannot parse plot specification: " ++ s
-    boundsFromDoubles (xmin, xmax, ymin, ymax) =
-        FV.Rectangle (d2r ymax) (d2r ymin) (d2r xmin) (d2r xmax)
-        where
-        d2r = dblToReal (0 :: CF)
-    
-    
+    deriving (Show, Read)    
     
 writeCSV :: ODEIVP Fn -> FilePath -> WrapType -> IO ()
 writeCSV ivp outputFileName wrapType =
@@ -247,6 +216,8 @@ writeCSV ivp outputFileName wrapType =
             reverse $ removeR $ reverse rest1
             where
             removeR ('>' : rest2 ) = rest2
+            removeR _ = error "internal error: removeR"
+        removeBracks _ = error "internal error: removeBracks"
 
 refinesVec :: [CF] -> [CF] -> Bool
 refinesVec vec1 vec2 =
@@ -312,11 +283,13 @@ solveVtPrintSteps wrapType maybePlotDimens maybePDFfilename ivp (maxdegParam, ma
     putStrLn "-------------------------------------------------"
     case maybePlotDimens of
         Nothing -> return ()
-        Just (PlotParams rect activevars shouldUseParamPlot) -> 
+        Just (PlotParams rectDbl activevars shouldUseParamPlot isBW) -> 
             plotODEIVPBisectionEnclosures
-                rect activevars 
+                rect activevars isBW
                 shouldUseParamPlot effCf (2^^(-8 :: Int) :: CF) ivp bisectionInfoOut
                 maybePDFfilename
+            where
+            rect = fmap (dblToReal 0) rectDbl :: FV.Rectangle CF
     return (endValues, bisectionInfoOut)
     where
     shouldShowSteps = False
@@ -365,18 +338,20 @@ solveVtPrintSteps wrapType maybePlotDimens maybePDFfilename ivp (maxdegParam, ma
             (tSmallestSoFarL, tPrevL) =
                 aux tPrev tSmallestSoFar left
     
-    showStepInfo (n, segInfo@(_, (t, _))) =
-        "step " ++ show n ++ ": t = " ++ show t ++ "\n" ++ (showSegInfo "    " segInfo)
-    printStepsInfo n (BisectionNoSplit segInfo) =
-        do
-        putStrLn $ showStepInfo (n, segInfo)
-        return $ n + 1
-    printStepsInfo n (BisectionSplit _ left maybeRight) =
-        do
-        n2 <- printStepsInfo n left
-        case maybeRight of
-            Just right -> printStepsInfo n2 right
-            Nothing -> return $ n2 + 1
+--    showStepInfo (n, segInfo@(_, (t, _))) =
+--        "step " ++ show n ++ ": t = " ++ show t ++ "\n" ++ (showSegInfo "    " segInfo)
+--    showStepInfo _ =
+--        error "internal error: showStepInfo"
+--    printStepsInfo n (BisectionNoSplit segInfo) =
+--        do
+--        putStrLn $ showStepInfo (n, segInfo)
+--        return $ n + 1
+--    printStepsInfo n (BisectionSplit _ left maybeRight) =
+--        do
+--        n2 <- printStepsInfo n left
+--        case maybeRight of
+--            Just right -> printStepsInfo n2 right
+--            Nothing -> return $ n2 + 1
     
     showSegInfo indent (_, (t, maybeValues)) =
         unlines $ map showComponent $ zip componentNames valueSs
@@ -505,6 +480,7 @@ testShrinkWrap =
         sR = fromList [("s", 1)]
         tL = fromList [("t", -1)]
         tR = fromList [("t", 1)]
+    getSides _ = error "internal error: getSides"
     
     Just result =
         shrinkWrap 

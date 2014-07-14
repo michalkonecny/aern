@@ -18,7 +18,9 @@ module Numeric.AERN.IVP.Plot.UsingFnView
 (
     plotODEIVPBisectionEnclosures,
     plotHybIVPBisectionEnclosures,
-    plotHybIVPListEnclosures
+    plotHybIVPListEnclosures,
+    PlotParams(..),
+    readPlotParams
 )
 where
 
@@ -53,9 +55,45 @@ import Control.Concurrent.STM
 
 import qualified Data.Map as Map
 import qualified Data.List as List
+import Data.List (isPrefixOf, isSuffixOf)
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
+
+
+data PlotParams =
+    PlotParams
+    {
+        plotp_rect :: FV.Rectangle Double,
+        plotp_activevars :: [Bool],
+        plotp_isParam :: Bool,
+        plotp_isBW :: Bool
+    }
+    deriving (Show)
+    
+readPlotParams :: String -> Maybe PlotParams
+readPlotParams s 
+    | "Plot" `isPrefixOf` s = aux False $ drop (length "Plot") s
+    | "BWPlot" `isPrefixOf` s = aux True $ drop (length "BWPlot") s
+    | s == "NoPlot" = Nothing
+    | otherwise = errorP
+    where
+    aux isBW sMinusPlot 
+        | "Param" `isPrefixOf` sMinusPlot = aux2 True $ drop (length "Param") sMinusPlot
+        | "Graph" `isPrefixOf` sMinusPlot = aux2 False $ drop (length "Graph") sMinusPlot
+        | otherwise = errorP
+        where
+        aux2 isParam sMinusPlotParam = 
+            case reads sMinusPlotParam of
+                (activeVars, rest) : _ ->
+                    case reads rest of
+                        (boundsD, []) : _ -> 
+                            Just (PlotParams (boundsFromDoubles boundsD) activeVars isParam isBW)
+                        _ -> errorP
+                _ -> errorP
+    errorP = error $ "Cannot parse plot specification: " ++ s
+    boundsFromDoubles (xmin, xmax, ymin, ymax) =
+        FV.Rectangle ymax ymin xmin xmax
 
 plotODEIVPBisectionEnclosures :: 
     (Var f ~ String,
@@ -73,6 +111,7 @@ plotODEIVPBisectionEnclosures ::
     =>
     FV.Rectangle (Domain f) -- ^ initial canvas viewport
     -> [Bool] -- ^ for each variable, whether it should be plotted
+    -> Bool -- ^ True -> plot all components in black 
     -> Bool -- ^ True -> use parametric plot (using the active functions - there have to be exactly two of them) 
     -> ArithInOut.RoundedRealEffortIndicator (Domain f)
     -> Domain f
@@ -81,7 +120,7 @@ plotODEIVPBisectionEnclosures ::
     -> Maybe String
     -> IO ()
 plotODEIVPBisectionEnclosures 
-        rect activevarsPre shouldUseParamPlot effCF plotMinSegSize 
+        rect activevarsPre isBW shouldUseParamPlot effCF plotMinSegSize 
         (ivp :: ODEIVP f) bisectionInfo 
         maybePDFFilename =
     case maybePDFFilename of
@@ -176,8 +215,11 @@ plotODEIVPBisectionEnclosures
         where
         addMetaToFnNames names =
             zip3 names colourList enabledList
-        colourList = 
-            cycle $ take n $ cycle [blue, green, red]
+        colourList 
+            | isBW =
+                repeat black
+            | otherwise = 
+                cycle $ take n $ cycle [blue, green, red]
         enabledList 
             | shouldUseParamPlot = repeat True
             | otherwise = cycle activevars
@@ -623,8 +665,8 @@ plotHybIVPListEnclosures effCF _plotMinSegSize ivp segmentsInfo =
         where
         colourCycle = cycle $ map snd $ 
             zip componentNames 
-                (cycle [blue, green, red, black, orange, purple, magenta])
---                (cycle [black])
+--                (cycle [blue, green, red, black, orange, purple, magenta])
+                (cycle [black])
 
 black = FV.defaultFnPlotStyle
     { 
