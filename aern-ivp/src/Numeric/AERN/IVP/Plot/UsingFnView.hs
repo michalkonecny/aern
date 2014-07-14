@@ -117,7 +117,7 @@ plotODEIVPBisectionEnclosures ::
     -> Domain f
     -> ODEIVP f
     -> BisectionInfo (Maybe ([f],[f]), t) splitReason
-    -> Maybe String
+    -> Maybe FilePath
     -> IO ()
 plotODEIVPBisectionEnclosures 
         rect activevarsPre isBW shouldUseParamPlot effCF plotMinSegSize 
@@ -208,7 +208,7 @@ plotODEIVPBisectionEnclosures
         FV.simpleFnMetaData
             sampleFn
             rect
-            Nothing
+            (Just (1,1,1,1))
             200
             tVar
             (zip segNames $ map addMetaToFnNames fnNames)
@@ -219,7 +219,7 @@ plotODEIVPBisectionEnclosures
             | isBW =
                 repeat black
             | otherwise = 
-                cycle $ take n $ cycle [blue, green, red]
+                cycle $ take n $ cycle [blue, green, red, black, orange, purple, magenta]
         enabledList 
             | shouldUseParamPlot = repeat True
             | otherwise = cycle activevars
@@ -316,30 +316,54 @@ plotHybIVPBisectionEnclosures ::
      Show f, Show (Var f), Show (Domain f)
     ) 
     =>
+    FV.Rectangle (Domain f) -- ^ initial canvas viewport
+    -> [Bool] -- ^ for each variable, whether it should be plotted
+    -> Bool -- ^ True -> plot all components in black 
+    -> Bool -- ^ True -> use parametric plot (using the active functions - there have to be exactly two of them) 
+    ->
     ArithInOut.RoundedRealEffortIndicator (Domain f)
     -> Bool 
     -> Domain f
     -> HybridIVP f
     -> BisectionInfo (t, t1, [(HybSysMode, EventInfo f)]) splitReason
+    -> Maybe FilePath
     -> IO ()
-plotHybIVPBisectionEnclosures effCF shouldShowEventTreeEnclosures plotMinSegSize ivp bisectionInfo =
-    do
-    _ <- Gtk.unsafeInitGUIForThreadedRTS
-    fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
-    fnMetaTV <- atomically $ newTVar $ fnmeta
-    _ <- FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
-    Gtk.mainGUI
+plotHybIVPBisectionEnclosures 
+        rect activevarsPre isBW shouldUseParamPlot effCF 
+        shouldShowEventTreeEnclosures plotMinSegSize ivp bisectionInfo 
+        maybePDFFilename =
+    case maybePDFFilename of
+        Nothing ->
+            do
+            _ <- Gtk.unsafeInitGUIForThreadedRTS
+            fnDataTV <- atomically $ newTVar $ FV.FnData $ fnsPlotSpec
+            fnMetaTV <- atomically $ newTVar $ fnmeta
+            _ <- FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
+            Gtk.mainGUI
+        Just pdffilename ->
+            do
+            FV.plotToPDFFile sampleFn effDrawFn effCF canvasParams 512 512 fnsActive fnsPlotSpec fnsStyles pdffilename
+            where
+            fnsStyles = (map $ const black) $ concat $ FV.dataFnStyles fnmeta
+            canvasParams = FV.dataDefaultCanvasParams fnmeta
+            fnsActive = concat $ FV.dataDefaultActiveFns fnmeta
     where
+    fnsPlotSpec = addPlotVar fns
+    
     effDrawFn = cairoDrawFnDefaultEffort sampleFn
     effEval = evaluationDefaultEffort sampleFn
     ((sampleFn : _) : _) = fns 
     sampleCf = getSampleDomValue sampleFn
     
     componentNames = hybsys_componentNames $ hybivp_system ivp
+    n = length componentNames
     tStart = hybivp_tStart ivp
     tEnd = hybivp_tEnd ivp
     tVar = hybivp_tVar ivp
     
+    activevars =
+        take n $ activevarsPre ++ (repeat False)
+
     addPlotVar = map $ map addV
         where
         addV fn = (FV.GraphPlotFn fn, tVar)
@@ -402,50 +426,52 @@ plotHybIVPBisectionEnclosures effCF shouldShowEventTreeEnclosures plotMinSegSize
             zipWith addName fnVec componentNames
             where
             addName fn compName = (fn, namePrefix ++ compName)
-    fnmeta = 
-        (FV.defaultFnMetaData sampleFn)
-        {
-            FV.dataFnGroupNames = segNames, -- map ("segment " ++) (map show [1..segs]),
-            FV.dataFnNames = fnNames,
-            FV.dataFnStyles = map giveColours fnNames,
-            FV.dataDomName = "t",
-            FV.dataDomL = tStart,
-            FV.dataDomR = tEnd,
-            FV.dataValLO = neg domainHalf,
-            FV.dataValHI = domainHalf,
-            FV.dataDefaultActiveFns = map whichActive fnNames,
-            FV.dataDefaultEvalPoint = tEnd,
-            FV.dataDefaultCanvasParams =
-                (FV.defaultCanvasParams sampleCf)
-                {
-                    FV.cnvprmCoordSystem = 
-                        FV.CoordSystemLinear $ 
-                            FV.Rectangle  domainHalf (neg domainHalf) tStart tEnd
-                    ,
-                    FV.cnvprmSamplesPerUnit = 200
-                    ,
-                    FV.cnvprmBackgroundColour = Just (1,1,1,1)
-                }
-        }
+    fnmeta =
+        FV.simpleFnMetaData
+            sampleFn
+            rect
+            (Just (1,1,1,1))
+            200
+            tVar
+            (zip segNames $ map addMetaToFnNames fnNames)
         where
-        domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
-    whichActive list =
-        take (length list) activityCycle 
-        where
-        activityCycle = cycle $ map snd $ zip componentNames $ 
---            True : (repeat True) 
-            True : (repeat False) 
---            True : False : False : True : (repeat False) 
---            True : False : False : False : True : (repeat False) 
-    
-    giveColours list =
-        take (length list) colourCycle
-        where
-        colourCycle = cycle $ map snd $ 
-            zip componentNames 
---                (cycle [blue, green, red, black])
-                (cycle [black]) 
-
+        addMetaToFnNames names =
+            zip3 names colourList enabledList
+        colourList 
+            | isBW =
+                repeat black
+            | otherwise = 
+                cycle $ take n $ cycle [blue, green, red, black, orange, purple, magenta]
+        enabledList 
+            | shouldUseParamPlot = repeat True
+            | otherwise = cycle activevars
+--    fnmeta = 
+--        (FV.defaultFnMetaData sampleFn)
+--        {
+--            FV.dataFnGroupNames = segNames, -- map ("segment " ++) (map show [1..segs]),
+--            FV.dataFnNames = fnNames,
+--            FV.dataFnStyles = map giveColours fnNames,
+--            FV.dataDomName = "t",
+--            FV.dataDomL = tStart,
+--            FV.dataDomR = tEnd,
+--            FV.dataValLO = neg domainHalf,
+--            FV.dataValHI = domainHalf,
+--            FV.dataDefaultActiveFns = map whichActive fnNames,
+--            FV.dataDefaultEvalPoint = tEnd,
+--            FV.dataDefaultCanvasParams =
+--                (FV.defaultCanvasParams sampleCf)
+--                {
+--                    FV.cnvprmCoordSystem = 
+--                        FV.CoordSystemLinear $ 
+--                            FV.Rectangle  domainHalf (neg domainHalf) tStart tEnd
+--                    ,
+--                    FV.cnvprmSamplesPerUnit = 200
+--                    ,
+--                    FV.cnvprmBackgroundColour = Just (1,1,1,1)
+--                }
+--        }
+--        where
+--        domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
 
 aggregateSequencesOfTinySegments effEval componentNames tVar plotMinSegSize fnsAndNames2 
     = aggrNewSegm [] [] [] $ zip ([1..]::[Int]) fnsAndNames2
@@ -523,6 +549,11 @@ plotHybIVPListEnclosures ::
      solvingInfoEvents ~ (Domain f, Maybe (HybridSystemUncertainState (Domain f)), EventInfo f)
      ) 
     =>
+    FV.Rectangle (Domain f) -- ^ initial canvas viewport
+    -> [Bool] -- ^ for each variable, whether it should be plotted
+    -> Bool -- ^ True -> plot all components in black 
+    -> Bool -- ^ True -> use parametric plot (using the active functions - there have to be exactly two of them) 
+    ->
     ArithInOut.RoundedRealEffortIndicator (Domain f)
     -> 
     Domain f
@@ -544,34 +575,103 @@ plotHybIVPListEnclosures ::
      )
     ]
     -> 
+    Maybe FilePath 
+    -> 
     IO ()
-plotHybIVPListEnclosures effCF _plotMinSegSize ivp segmentsInfo =
-    do
-    Gtk.unsafeInitGUIForThreadedRTS
-    fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
-    fnMetaTV <- atomically $ newTVar $ fnmeta
-    FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
-    Gtk.mainGUI
+plotHybIVPListEnclosures 
+        rect activevarsPre isBW shouldUseParamPlot 
+        effCF _plotMinSegSize (ivp :: HybridIVP f) segmentsInfo 
+        maybePDFFilename =
+    case maybePDFFilename of
+        Nothing ->
+            do
+            _ <- Gtk.unsafeInitGUIForThreadedRTS
+            fnDataTV <- atomically $ newTVar $ FV.FnData $ fnsPlotSpec
+            fnMetaTV <- atomically $ newTVar $ fnmeta
+            _ <- FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
+            Gtk.mainGUI
+        Just pdffilename ->
+            do
+            FV.plotToPDFFile sampleFn effDrawFn effCF canvasParams 512 512 fnsActive fnsPlotSpec fnsStyles pdffilename
+            where
+            fnsStyles = (map $ const black) $ concat $ FV.dataFnStyles fnmeta
+            canvasParams = FV.dataDefaultCanvasParams fnmeta
+            fnsActive = concat $ FV.dataDefaultActiveFns fnmeta
     where
+    fnsPlotSpec = addPlotVar fns
     effDrawFn = cairoDrawFnDefaultEffort sampleFn
     effEval = evaluationDefaultEffort sampleFn
     ((sampleFn : _) : _) = fns 
-    sampleCf = getSampleDomValue sampleFn
+--    sampleCf = getSampleDomValue sampleFn
     
     componentNames = hybsys_componentNames $ hybivp_system ivp
-    tStart = hybivp_tStart ivp
-    tEnd = hybivp_tEnd ivp
-    tVar = hybivp_tVar ivp
-    
-    addPlotVar = map $ map addV
+    n = length componentNames
+
+    activevars =
+        take n $ activevarsPre ++ (repeat False)
+
+    activevarNames = pickByActivevars componentNames 
+
+    -- function to pick from a list of length componentNames those elements that correspond to active vars:
+    pickByActivevars :: [a] -> [a]
+    pickByActivevars list =
+        map snd $ filter fst $ zip activevars list
+    -- function to pick from a list of length componentNames those elements that correspond to active vars:
+    pickByActivevarsCycle :: [a] -> [[a]]
+    pickByActivevarsCycle [] = []
+    pickByActivevarsCycle list =
+        pickByActivevars batch : pickByActivevarsCycle rest
         where
-        addV fn = (FV.GraphPlotFn fn, tVar)
+        (batch, rest) = splitAt n list
+--    pickByActivevarsCycle _ = error $ "plotODEIVPBisectionEnclosures: pickByActivevarsCycle: list not divisible by n"
     
-    (fns, fnNames, groupNames) = 
-        unzip3 $
-            map getFnsFromSegModeInfo $ 
-                concat $ map getSegModeInfo
-                    $ zip ([1..]::[Int]) segmentsInfo
+
+    tVar = hybivp_tVar ivp
+
+    addPlotVar fns2
+        | shouldUseParamPlot
+            = map (map addVParam . pickByActivevarsCycle) fns2
+        | otherwise 
+            = map (map addV) fns2
+        where
+        addV fn = (FV.GraphPlotFn (fn :: f), tVar)
+        addVParam [fnX, fnY] = (FV.ParamPlotFns (fnX, fnY), tVar)
+        addVParam _ = errorParamFnCount 
+
+    errorParamFnCount =
+            error 
+            "plotHybIVPListEnclosures: In a parameteric plot there have to be exactly two active functions."
+            
+-- The following code has been copied from ODE plotter above:
+
+--    (fns, fnNamesPre, groupNames) 
+--        | shouldUseParamPlot =
+--            (fns2, fnNamesPre2, segNames2)
+--        | otherwise = 
+--            aggregateSequencesOfTinySegments2 fnsAndNames
+--        where
+--        (fns2, fnNamesPre2) = unzip $ (map unzip fnsAndNames)
+--        segNames2 = map snd $ zip fnNamesPre2 $ ["segment " ++ show i | i <- [1..] :: [Int]]
+--    fnNames
+--        | shouldUseParamPlot = 
+--            fnNamesActiveJoined
+--        | otherwise = 
+--            fnNamesPre 
+--        where
+--        fnNamesActiveJoined =
+--            map ((map (const joinedActiveVarsName)) . pickByActivevarsCycle) fnNamesPre
+--            where
+--            joinedActiveVarsName = "(" ++ List.intercalate "," activevarNames ++ ")"
+
+    
+    (fns, fnNames, groupNames) 
+        | shouldUseParamPlot =
+            error "Parametric plot not yet supported."
+        | otherwise = 
+            unzip3 $
+                map getFnsFromSegModeInfo $ 
+                    concat $ map getSegModeInfo
+                        $ zip ([1..]::[Int]) segmentsInfo
         where
         getSegModeInfo (segNo, (_, _, modeSolvingInfoMap)) =
             map (\i -> (segNo,i)) $ Map.toList modeSolvingInfoMap
@@ -590,10 +690,10 @@ plotHybIVPListEnclosures effCF _plotMinSegSize ivp segmentsInfo =
                         zip ([1..]::[Int]) $
                             bisectionInfoGetLeafSegInfoSequence bisectionInfo
                 where
-                getFnsFromSegInfo (n, (Just (fnVec, _), _)) =
+                getFnsFromSegInfo (i, (Just (fnVec, _), _)) =
                     nameFnVec fnVec prefix
                     where
-                    prefix = "noev" ++ (show n)
+                    prefix = "noev" ++ (show i)
                 getFnsFromSegInfo _ = []
             fnsAndNamesEvents =
                 case maybeEventSolvingInfo of
@@ -622,51 +722,54 @@ plotHybIVPListEnclosures effCF _plotMinSegSize ivp segmentsInfo =
                 zipWith addName fnVec componentNames
                 where
                 addName fn compName = (fn, namePrefix ++ "." ++ compName)
-    fnmeta = 
-        (FV.defaultFnMetaData sampleFn)
-        {
-            FV.dataFnGroupNames = groupNames,
-            FV.dataFnNames = fnNames,
-            FV.dataFnStyles = map giveColours fnNames,
-            FV.dataDomName = tVar,
-            FV.dataDomL = tStart,
-            FV.dataDomR = tEnd,
-            FV.dataValLO = neg domainHalf,
-            FV.dataValHI = domainHalf,
-            FV.dataDefaultActiveFns = map whichActive fnNames,
-            FV.dataDefaultEvalPoint = tEnd,
-            FV.dataDefaultCanvasParams =
-                (FV.defaultCanvasParams sampleCf)
-                {
-                    FV.cnvprmCoordSystem = 
-                        FV.CoordSystemLinear $ 
-                            FV.Rectangle  domainHalf (neg domainHalf) tStart tEnd
-                    ,
-                    FV.cnvprmSamplesPerUnit = 200
-                    ,
-                    FV.cnvprmBackgroundColour = Just (1,1,1,1)
-                }
-        }
+    fnmeta =
+        FV.simpleFnMetaData
+            sampleFn
+            rect
+            (Just (1,1,1,1))
+            200
+            tVar
+            (zip groupNames $ map addMetaToFnNames fnNames)
         where
-        domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
-    whichActive list =
-        take (length list) activityCycle 
-        where
-        activityCycle = cycle $ map snd $ zip componentNames $ 
---            True : (repeat True)
-            True : (repeat False) 
---            True : True : (repeat False) 
---            True : False : True : (repeat False) 
---            True : False : False : True : (repeat False) 
---            True : False : False : False : True : (repeat False) 
-    
-    giveColours list =
-        take (length list) colourCycle
-        where
-        colourCycle = cycle $ map snd $ 
-            zip componentNames 
---                (cycle [blue, green, red, black, orange, purple, magenta])
-                (cycle [black])
+        addMetaToFnNames names =
+            zip3 names colourList enabledList
+        colourList 
+            | isBW =
+                repeat black
+            | otherwise = 
+                cycle $ take n $ cycle [blue, green, red, black, orange, purple, magenta]
+        enabledList 
+            | shouldUseParamPlot = repeat True
+            | otherwise = cycle activevars
+
+--    fnmeta = 
+--        (FV.defaultFnMetaData sampleFn)
+--        {
+--            FV.dataFnGroupNames = groupNames,
+--            FV.dataFnNames = fnNames,
+--            FV.dataFnStyles = map giveColours fnNames,
+--            FV.dataDomName = tVar,
+--            FV.dataDomL = tStart,
+--            FV.dataDomR = tEnd,
+--            FV.dataValLO = neg domainHalf,
+--            FV.dataValHI = domainHalf,
+--            FV.dataDefaultActiveFns = activevars,
+--            FV.dataDefaultEvalPoint = tEnd,
+--            FV.dataDefaultCanvasParams =
+--                (FV.defaultCanvasParams sampleCf)
+--                {
+--                    FV.cnvprmCoordSystem = 
+--                        FV.CoordSystemLinear $ 
+--                            FV.Rectangle  domainHalf (neg domainHalf) tStart tEnd
+--                    ,
+--                    FV.cnvprmSamplesPerUnit = 200
+--                    ,
+--                    FV.cnvprmBackgroundColour = Just (1,1,1,1)
+--                }
+--        }
+--        where
+--        domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
+--    
 
 black = FV.defaultFnPlotStyle
     { 

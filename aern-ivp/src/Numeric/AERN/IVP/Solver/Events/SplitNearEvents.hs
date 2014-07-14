@@ -108,12 +108,14 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents ::
     ArithInOut.MixedAddEffortIndicator f (Domain f) ->
     ArithInOut.MixedMultEffortIndicator f (Domain f) ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
+    Domain f {-^ event localisation min step size @s@ -} -> 
+    Domain f {-^ event localisation max step size @s@ -} -> 
     Int {-^ maximum number of nodes in an event tree -} -> 
     Domain f {-^ initial widening @delta@ -}  ->
     Int {-^ @m@ -} -> 
     Var f {-^ @t0@ - the initial time variable -} ->
-    Domain f {-^ min step size @s@ -} -> 
-    Domain f {-^ max step size @s@ -} -> 
+    Domain f {-^ ode solving min step size @s@ -} -> 
+    Domain f {-^ ode solving max step size @s@ -} -> 
     Imprecision (Domain f) {-^ split improvement threshold @eps@ -} ->
     HybridIVP f
     ->
@@ -139,7 +141,8 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
         sizeLimits effSizeLims effPEval effCompose effEval effInteg effDeriv effInclFn 
             effAddFn effMultFn effAbsFn effMinmaxFn 
             effDivFnInt effAddFnDom effMultFnDom effDom
-            maxNodes delta m t0Var minStepSize maxStepSize splitImprovementThreshold
+            locMinStepSize locMaxStepSize maxNodes 
+            delta m t0Var odeMinStepSize odeMaxStepSize splitImprovementThreshold
                 hybivpG
     = 
     solve hybivpG
@@ -149,7 +152,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
             solveHybridNoSplitting
             solveODEWithSplitting
                 effEval effPEval effDom 
-                    minStepSize maxStepSize
+                    locMinStepSize locMaxStepSize
                         hybivp
 
     solveODEWithSplitting =
@@ -158,7 +161,7 @@ solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents
                 sizeLimits effSizeLims effCompose effEval effInteg effDeriv effInclFn 
                 effAddFn effMultFn effAbsFn effMinmaxFn 
                 effDivFnInt effAddFnDom effMultFnDom effDom
-                    delta m minStepSize maxStepSize splitImprovementThreshold
+                    delta m odeMinStepSize odeMaxStepSize splitImprovementThreshold
         where
         shouldWrap = True
         shouldShrinkWrap = False
