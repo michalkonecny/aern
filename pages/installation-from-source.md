@@ -88,7 +88,7 @@ Plot some function enclosures:
 Compute and plot an enclosure of an ODE IVP with uncertain initial value:
 
 ```sh
-> ~/.cabal/bin/simple-ode ivpSpringMass-uv "PlotGraph[True,False](0,10,-1.5,1.5)" GUI False 30 200 -10 -10 10
+> ~/.cabal/bin/simple-ode ivpSpringMass-uv 10 "PlotGraph[True,False](0,10,-1.5,1.5)" GUI ShrinkWrap 30 200 -10 -10
 ```
 
 Compute and plot an enclosure of a hybrid system with Zeno behaviour:

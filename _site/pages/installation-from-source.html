@@ -122,7 +122,7 @@
 <p>Plot some function enclosures:</p>
 <pre class="sh"><code>&gt; ~/.cabal/bin/plot minmax 10</code></pre>
 <p>Compute and plot an enclosure of an ODE IVP with uncertain initial value:</p>
-<pre class="sh"><code>&gt; ~/.cabal/bin/simple-ode ivpSpringMass-uv &quot;PlotGraph[True,False](0,10,-1.5,1.5)&quot; GUI False 30 200 -10 -10 10</code></pre>
+<pre class="sh"><code>&gt; ~/.cabal/bin/simple-ode ivpSpringMass-uv 10 &quot;PlotGraph[True,False](0,10,-1.5,1.5)&quot; GUI ShrinkWrap 30 200 -10 -10</code></pre>
 <p>Compute and plot an enclosure of a hybrid system with Zeno behaviour:</p>
 <pre class="sh"><code>&gt; ~/.cabal/bin/simple-events locate evtree bouncingBallFloorDropEnergy 4.4 3 10 3 True 10 </code></pre>
 <p>You can also execute various demos using ghci.</p>

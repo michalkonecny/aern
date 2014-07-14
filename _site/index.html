@@ -231,7 +231,7 @@ Plot how x_n depends on n \in [0,10] when r = 4 using the explicit formula.
 x'' = -x\qquad x(0) \in 1\pm 0.125\quad x'(0) \in 0\pm 0.125
 \]</span> which is formally specified in the module <a href="https://github.com/michalkonecny/aern/blob/master/aern-ivp/src/Numeric/AERN/IVP/Examples/ODE/Simple.hs">Numeric.AERN.IVP.Examples.ODE.Simple</a> under the name “ivpSpringMass_uv”.</p>
 <p>To enclose the solutions of this system, we can run <code>simple-ode</code> as follows:</p>
-<pre><code>simple-ode ivpSpringMass-uv &quot;PlotGraph[True,False](0,10,-1.5,1.5)&quot; GUI False 30 200 -10 -10 10</code></pre>
+<pre><code>~/.cabal/bin/simple-ode ivpSpringMass-uv 10 &quot;PlotGraph[True,False](0,10,-1.5,1.5)&quot; GUI ShrinkWrap 30 200 -10 -10</code></pre>
 <p>producing the following enclosure:</p>
 <p><a href="./img/simple-ode-SpringMass-uv-PlotGraph-0to10x-1.5to1.5-False-30-200--10--10-10.png"> <img src="./img/simple-ode-SpringMass-uv-PlotGraph-0to10x-1.5to1.5-False-30-200--10--10-10.png" height="300" alt="Enclosure of spring mass IVP with uncertain initial condition"> </a></p>
 <p>As an example system with chaotic behaviour, consider the classical instance of the <a href="http://en.wikipedia.org/wiki/Lorenz_system">Lorenz initial value problem</a>, given by the following ordinary differential equation (ODE) and initial value: <span class="math">\[
@@ -250,7 +250,7 @@ z(0) &amp; \in &amp; 36\pm\delta
 \delta = 0.01
 \]</span> which is formally specified in the module <a href="https://github.com/michalkonecny/aern/blob/master/aern-ivp/src/Numeric/AERN/IVP/Examples/ODE/Simple.hs">Numeric.AERN.IVP.Examples.ODE.Simple</a> under the name “ivpLorenz_uv”.</p>
 <p>To enclose the solutions of this system, we can run <code>simple-ode</code> as follows:</p>
-<pre><code>simple-ode ivpLorenz-uv &quot;PlotParam[True,True](-20,20,-30,30)&quot; GUI False 12 200 8 8 4</code></pre>
+<pre><code>~/.cabal/bin/simple-ode ivpLorenz-uv 4 &quot;PlotParam[True,True](-20,20,-30,30)&quot; GUI ShrinkWrap 12 200 8 8</code></pre>
 <p>producing an enclosure whose projection to the <span class="math">\(x\)</span>-<span class="math">\(y\)</span> plane looks as follows:</p>
 <p><a href="./img/simple-ode-ivpLorenz-uv-PlotParam-20to20x-30to30-False-12-200-6-6-4.png"> <img src="./img/simple-ode-ivpLorenz-uv-PlotParam-20to20x-30to30-False-12-200-6-6-4.png" height="300" alt="Enclosure of spring mass IVP with uncertain initial condition"> </a></p>
 <p>AERN solve-ode is an experimental solver using an unusual method. It is based on a direct implementation of the interval Picard operator introduced by <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.122.1105">Edalat &amp; Pattinson (2007)</a>. This method of computing solutions is simple, almost correct by construction. Thus one can have a high level of confidence that the solver produces enclosures that contain the exact solution(s). Established enclosure ODE solvers such as <a href="http://www.cas.mcmaster.ca/~nedialk/Software/VNODE/VNODE.shtml">VNODE</a> and <a href="http://www.bt.pa.msu.edu/index_cosy.htm">COSY</a> use more complex methods and are more optimised. The AERN solve-ode solver does not compete with the established solvers in terms of speed and ability to enclose solutions over long time intervals but we expect it will be easier to validate and verify than the established solvers.</p>

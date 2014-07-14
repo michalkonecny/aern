@@ -19,7 +19,7 @@ under the name "ivpSpringMass_uv".
 To enclose the solutions of this system, we can run <code>simple-ode</code>
 as follows:
 
-    simple-ode ivpSpringMass-uv "PlotGraph[True,False](0,10,-1.5,1.5)" GUI False 30 200 -10 -10 10
+    ~/.cabal/bin/simple-ode ivpSpringMass-uv 10 "PlotGraph[True,False](0,10,-1.5,1.5)" GUI ShrinkWrap 30 200 -10 -10
 
 producing the following enclosure:
 
@@ -55,7 +55,7 @@ under the name "ivpLorenz_uv".
 To enclose the solutions of this system, we can run <code>simple-ode</code>
 as follows:
 
-    simple-ode ivpLorenz-uv "PlotParam[True,True](-20,20,-30,30)" GUI False 12 200 8 8 4
+    ~/.cabal/bin/simple-ode ivpLorenz-uv 4 "PlotParam[True,True](-20,20,-30,30)" GUI ShrinkWrap 12 200 8 8
 
 producing an enclosure whose projection to the $x$-$y$ plane looks as follows:
 
