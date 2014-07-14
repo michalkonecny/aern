@@ -41,10 +41,10 @@ data ODEIVP f =
     {
         odeivp_description :: String
     ,
-        odeivp_field :: [f] -> [f]
-    ,
         odeivp_componentNames :: [Var f]
     , 
+        odeivp_field :: [f] -> [f]
+    ,
         odeivp_tVar :: Var f -- ^ @tVar@
     ,
         odeivp_tStart :: Domain f -- ^ @tStart@
@@ -66,6 +66,8 @@ data ODEIVP f =
             must satisfy @tStart <= t0End <= tEnd@;
             with exact initial time, we have @t0End = tStart@
         -}
+    ,
+        odeivp_intersectDomain :: [Domain f] -> Maybe [Domain f]
     ,
         odeivp_valuePlotExtents :: [(Domain f, Domain f)]
     ,

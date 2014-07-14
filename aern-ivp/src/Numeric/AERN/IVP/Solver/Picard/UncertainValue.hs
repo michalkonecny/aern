@@ -12,7 +12,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Uncertain initial value ODE solvers using interval Piracd methods.
+    Uncertain initial value ODE solvers using interval Picard methods.
 -}
 
 module Numeric.AERN.IVP.Solver.Picard.UncertainValue
@@ -108,7 +108,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect ::
     ODEIVP f
     ->
     (
-        Maybe [Domain f]
+        (Maybe [Domain f])
     ,
         (
             BisectionInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
@@ -125,9 +125,9 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
         error "aern-ivp: solveUncertainValueExactTime called with an uncertain time IVP"
     | otherwise =
         case solve odeivpG of
-            (Nothing, bisectionInfo) ->
+            ((Nothing, _), bisectionInfo) ->
                 (Nothing, bisectionInfo)
-            (Just (_, parameterisedInitialValues), bisectionInfo) ->
+            ((Just (_, parameterisedInitialValues), _), bisectionInfo) ->
                 (Just $ map (getRangeFullEval effEval) parameterisedInitialValues, bisectionInfo)
     where
 --    tVar = odeivp_tVar odeivpG
@@ -148,23 +148,30 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect
             solveODEIVPNoSplitting 
                 (measureImpr) 
                 (makeFnVec)
+                (intersectDomain)
                 effDom splitImprovementThreshold minStepSize maxStepSize
                     odeivp
     measureImpr (_, parameterisedInitialValues) =
         measureResultImprecision effAddDom ranges
         where
         ranges = map (getRange effEval) parameterisedInitialValues
+    intersectDomain r@(_, parameterisedInitialValues) =
+        case odeivp_intersectDomain odeivpG ranges of
+            Just _ -> Just r
+            Nothing -> Nothing
+        where
+        ranges = map (getRange effEval) parameterisedInitialValues
     makeFnVec (_, parameterisedInitialValues) =
         makeFnVecFromParamInitialValuesOut effAddFn effMultFn effSizeLims componentNames parameterisedInitialValues
     solveODEIVPNoSplitting odeivp = 
-        trace 
-        (
-            "solveODEIVPNoSplitting:"
-            ++ "\n  tStart = " ++ show (odeivp_tStart odeivp) 
-            ++ "\n  tEnd = " ++ show (odeivp_tEnd odeivp) 
-            ++ "\n  resultImprecision = " ++ show imprec 
-        )
-        $
+--        trace 
+--        (
+--            "solveODEIVPNoSplitting:"
+--            ++ "\n  tStart = " ++ show (odeivp_tStart odeivp) 
+--            ++ "\n  tEnd = " ++ show (odeivp_tEnd odeivp) 
+--            ++ "\n  resultImprecision = " ++ show imprec 
+--        )
+--        $
         case imprecisionOverLimit  of
             True -> (Nothing, (odeivp_tEnd odeivp, Nothing))
             False -> result

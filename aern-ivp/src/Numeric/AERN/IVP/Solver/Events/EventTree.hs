@@ -373,14 +373,17 @@ solveHybridIVP_UsingPicardAndEventTree
         ODEIVP
         {
             odeivp_description = "ODE for " ++ show mode,
-            odeivp_field = field,
             odeivp_componentNames = componentNames,
+            odeivp_intersectDomain = Just,
+            odeivp_field = field,
             odeivp_tVar = tVar,
             odeivp_tStart = tStart,
             odeivp_tEnd = tEnd,
             odeivp_makeInitialValueFnVec = makeInitValueFnVec,
             odeivp_t0End = t0End,
-            odeivp_maybeExactValuesAtTEnd = Nothing
+            odeivp_maybeExactValuesAtTEnd = Nothing,
+            odeivp_valuePlotExtents = error "odeivp_valuePlotExtents deliberately not set",
+            odeivp_enclosureRangeWidthLimit = (zero tStart) ArithInOut.<+>| (100000 :: Int) 
         }
         where
         Just field = Map.lookup mode modeFields
@@ -426,7 +429,7 @@ detectEventsWithoutLocalisation effEval eventSpecMap modeInvariant (tStart,tEnd)
         where
         fnVecBeforeEventOnD = map (evalAtPointOutEff effEval boxD) fnVecBeforeEvent
         boxD = fromList [(tVar, d)]
-    invariantIndecisiveThroughoutDom d =
+    invariantIndecisiveThroughoutDom _d =
         False -- TODO
     [(tVar,_)] = toAscList $ getDomainBox sampleFn
     (sampleFn : _) = fnVecBeforeEvent

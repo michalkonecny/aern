@@ -158,8 +158,9 @@ ivpExpDecay_ev sampleFn =
         ODEIVP
         {
             odeivp_description = "x' = -x; x(" ++ show tStart ++ ") = " ++ show initialValues,
-            odeivp_field = \ [x] -> [neg x],
             odeivp_componentNames = ["x"],
+            odeivp_field = \ [x] -> [neg x],
+            odeivp_intersectDomain = Just,
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0, 
@@ -197,8 +198,9 @@ ivpExpDecay_uv sampleFn =
         ODEIVP
         {
             odeivp_description = "x' = -x; x(" ++ show tStart ++ ") ∊ " ++ show initialValues,
-            odeivp_field = \ [x] -> [neg x],
             odeivp_componentNames = ["x"],
+            odeivp_field = \ [x] -> [neg x],
+            odeivp_intersectDomain = Just,
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0, 
@@ -238,8 +240,9 @@ ivpSpringMass_ev sampleFn =
         ODEIVP
         {
             odeivp_description = "x'' = -x; (x,x')(" ++ show tStart ++ ") = " ++ show initialValues,
-            odeivp_field = \ [x,x'] -> [x',neg x],
             odeivp_componentNames = ["x", "x'"],
+            odeivp_intersectDomain = Just,
+            odeivp_field = \ [x,x'] -> [x',neg x],
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0,
@@ -279,8 +282,9 @@ ivpSpringMass_uv sampleFn =
         ODEIVP
         {
             odeivp_description = "x'' = -x; (x,x')(" ++ show tStart ++ ") ∊ " ++ show initialValues,
-            odeivp_field = \ [x,x'] -> [x',neg x],
             odeivp_componentNames = ["x", "x'"],
+            odeivp_intersectDomain = Just,
+            odeivp_field = \ [x,x'] -> [x',neg x],
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0,
@@ -331,8 +335,9 @@ ivpSpringMassAir_ev sampleFn =
         ODEIVP
         {
             odeivp_description = "x'' = -x - x'*|x'|; (x,x')(" ++ show tStart ++ ") = " ++ show initialValues,
-            odeivp_field = \ [x,x'] -> [x',neg (x <+> (x' <*> (myAbs x')))],
             odeivp_componentNames = ["x", "x'"],
+            odeivp_intersectDomain = Just,
+            odeivp_field = \ [x,x'] -> [x',neg (x <+> (x' <*> (myAbs x')))],
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0,
@@ -376,8 +381,9 @@ ivpCubicSpringMass_triple sampleFn =
         ODEIVP
         {
             odeivp_description = "x1' = x2 + a*x1, x2' = -x1^3 + a*(x2-x1), a = 0.001",
-            odeivp_field = fieldAll6,
             odeivp_componentNames = ["x", "x'", "y", "y'", "z", "z'"],
+            odeivp_intersectDomain = Just,
+            odeivp_field = fieldAll6,
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0,
@@ -424,8 +430,9 @@ ivpCubicSpringMass_monoCheck sampleFn =
         ODEIVP
         {
             odeivp_description = "x1' = x2 + a*x1, x2' = -x1^3 + a*(x2-x1), a = 0.001",
-            odeivp_field = field,
             odeivp_componentNames = ["x1", "x2", "x1d1", "x2d1", "x1d2", "x2d2"],
+            odeivp_intersectDomain = Just,
+            odeivp_field = field,
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0,
@@ -482,8 +489,9 @@ ivpFallAir_ishii sampleFn =
         ODEIVP
         {
             odeivp_description = "x'' = -9.8+(x'*x')/1000; (x,x')(" ++ show tStart ++ ") ∊ " ++ show initialValues,
-            odeivp_field = \ [_x,x'] -> [x',(-9.8 :: Double) |<+>  x' <*> x' </>| (1000 :: Double)],
             odeivp_componentNames = ["x", "x'"],
+            odeivp_intersectDomain = Just,
+            odeivp_field = \ [_x,x'] -> [x',(-9.8 :: Double) |<+>  x' <*> x' </>| (1000 :: Double)],
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0,
@@ -527,12 +535,13 @@ ivpLorenz_ev sampleFn =
         ODEIVP
         {
             odeivp_description = "x' = 10(y-x), y' = x(28-z)-y, z' = xy - 8z/3; (x,y,z)(" ++ show tStart ++ ") ∊ " ++ show initialValues,
+            odeivp_componentNames = ["x", "y", "z"],
+            odeivp_intersectDomain = Just,
             odeivp_field = \ [x,y,z] -> 
                 [(10 :: Double) |<*> (y <-> x),
                   (x <*> ((28 :: Double) |<+> (neg z))) <-> y,
                   (x <*> y) <-> (((8 :: Double) |<*> z) </>| (3 :: Double))
                 ],
-            odeivp_componentNames = ["x", "y", "z"],
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0,
@@ -578,12 +587,13 @@ ivpLorenz_uv sampleFn =
         ODEIVP
         {
             odeivp_description = "x' = 10(y-x), y' = x(28-z)-y, z' = xy - 8z/3; (x,y,z)(" ++ show tStart ++ ") ∊ " ++ show initialValues,
+            odeivp_componentNames = ["x", "y", "z"],
+            odeivp_intersectDomain = Just,
             odeivp_field = \ [x,y,z] -> 
                 [(10 :: Double) |<*> (y <-> x),
                   (x <*> ((28 :: Double) |<+> (neg z))) <-> y,
                   (x <*> y) <-> (((8 :: Double) |<*> z) </>| (3 :: Double))
                 ],
-            odeivp_componentNames = ["x", "y", "z"],
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0,
@@ -634,12 +644,13 @@ ivpRoessler sampleFn =
             odeivp_description = 
                 "Rössler attractor: x' = -y - z; y' = x + 0.2y; z' = 0.2 + z(x-5.7); "
                 ++ "x(0) = 0, y(0) ∊ -8.38095+-0.01, z(0) ∊ 0.0295902+-0.01",
+            odeivp_componentNames = ["x", "y", "z"],
+            odeivp_intersectDomain = Just,
             odeivp_field = \ [x,y,z] -> 
                 [neg $ y <+> z, 
                  x <+> ((0.2 :: Double) |<*> y),
                  (0.2 :: Double) |<+> (z <*> ((-5.7 :: Double) |<+> x))
                 ],
-            odeivp_componentNames = ["x", "y", "z"],
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0,
@@ -690,11 +701,12 @@ ivpVanDerPol_ev sampleFn =
             odeivp_description = 
                 "Van der Pol oscillator: x' = y; y' = \\mu*(1 - x^2)*y - x; \\mu = " ++ show mu ++ "; " 
                 ++ "x(0) = " ++ show initialX ++ ", y(0) = " ++ show initialY,
+            odeivp_componentNames = ["x", "y"],
+            odeivp_intersectDomain = Just,
             odeivp_field = \ [x,y] -> 
                 [y, 
                  ((mu |<*> y) <*> ((1::Double) |<+> (neg x <*> x))) <+> (neg x)
                 ],
-            odeivp_componentNames = ["x", "y"],
             odeivp_tVar = "t",
             odeivp_tStart = toDom 0,
             odeivp_t0End = toDom 0,
