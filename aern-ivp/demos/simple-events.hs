@@ -12,21 +12,33 @@ import Numeric.AERN.IVP.Solver.Events.EventTree
 import Numeric.AERN.IVP.Solver.Events.Bisection
 import Numeric.AERN.IVP.Solver.Events.SplitNearEvents
 import Numeric.AERN.IVP.Plot.UsingFnView 
-    (plotHybIVPBisectionEnclosures, plotHybIVPListEnclosures)
+    (plotHybIVPBisectionEnclosures, plotHybIVPListEnclosures,
+     PlotParams(..), readPlotParams)
 
 import Numeric.AERN.Poly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Plot ()
 
 import Numeric.AERN.RmToRn
 
+import qualified 
+       Numeric.AERN.RmToRn.Plot.FnView 
+       as FV
+
+--import Numeric.AERN.Basics.Interval
+
 import Numeric.AERN.RealArithmetic.Basis.Double ()
-import qualified Numeric.AERN.DoubleBasis.Interval as CF
+import qualified 
+       Numeric.AERN.DoubleBasis.Interval 
+       as CF
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
 --import qualified Numeric.AERN.MPFRBasis.Interval as MI
 
 --import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import qualified 
+       Numeric.AERN.RealArithmetic.RefinementOrderRounding 
+       as ArithInOut
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal)
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 import Numeric.AERN.RealArithmetic.ExactOps
 --import Numeric.AERN.RealArithmetic.Measures
@@ -44,7 +56,7 @@ import Numeric.AERN.Basics.SizeLimits
 --import Data.List (intercalate)
 import qualified Data.Set as Set
 import qualified Data.Map as Map
-
+import Data.List (isSuffixOf)
 
 import System.IO
 import System.Environment
@@ -66,12 +78,14 @@ _ = unsafePrint -- stop the unused warning
 --import qualified Data.List as List
 
 type CF = CF.DI
-type Poly = IntPoly String CF
+
+type Fn = IntPoly String CF
+--type Fn = Interval (IntPoly String CF)
 
 sampleCf :: CF
 sampleCf = 0
 
-samplePoly :: Poly
+samplePoly :: Fn
 samplePoly = makeSampleWithVarsDoms 10 10 ["x"] [sampleCf]
 
 main :: IO ()
@@ -79,18 +93,25 @@ main =
     do
     hSetBuffering stdout LineBuffering
     args <- getArgs
-    case length args of
-        9 -> runOnce args
-        _ -> usage
+    runWithArgs args
         
 usage :: IO ()
 usage =
     do
 --    putStrLn "Usage A: simple-events [locate|bisect] [evtree|pwl] <ivp name> <end time> <output file name>"
-    putStrLn "Usage: simple-events [locate|bisect] [evtree|pwl] <ivp name> <end time> <maxDeg> <maxUnitSplitDepth> <minUnitSplitDepth> <True|False-plot steps?> <maxEvalSplitSize>"
+    putStrLn $ "Usage: simple-events <ivp name> <end time> \"<PlotArgs>\" <<output>.pdf|GUI> " 
+                ++ " [locate|bisect] [evtree|pwl] <LOCmaxUnitSplitDepth> <LOCminUnitSplitDepth>"
+                ++ " <maxDeg> <maxTermSize> <ODEmaxUnitSplitDepth> <ODEminUnitSplitDepth>"
+    putStrLn "   PlotArgs:  example 1: PlotGraph[True, False, False](0,1,-1,1)"
+    putStrLn "   PlotArgs:                      [shouldPlotVar1,...]"
+    putStrLn "   PlotArgs:                                      ....(xmin, xmax, ymin, ymax)"
+    putStrLn "   PlotArgs:  example 2: BWPlotGraph[True, True, False](-1,1,-1,1)"
+    putStrLn "   PlotArgs:  example 3: PlotParam[True, True, False](-1,1,-1,1)"
+    putStrLn "   PlotArgs:  example 4: NoPlot"
 
 data TopLevelStrategy =
     TopLevelBisect | TopLevelLocate
+    deriving (Show)
 
 topLevelStrategyFromS :: String -> TopLevelStrategy
 topLevelStrategyFromS "bisect" = TopLevelBisect
@@ -99,28 +120,47 @@ topLevelStrategyFromS s = error $ "unknown top level strategy: " ++ s
 
 data BasicStepType =
     BasicStepEvTree | BasicStepPWL
+    deriving (Show)
 
 basicStepTypeFromS :: String -> BasicStepType
 basicStepTypeFromS "evtree" = BasicStepEvTree 
 basicStepTypeFromS "pwl" = BasicStepPWL 
 basicStepTypeFromS s = error $ "unknown basic step type: " ++ s 
 
-runOnce :: [String] -> IO ()
-runOnce [topLevelStrategyS, basicStepTypeS, ivpName, endTimeS, maxDegS, depthS, minDepthS, shouldPlotStepsS, maxSplitSizeS] =
+runWithArgs :: [String] -> IO ()
+runWithArgs 
+    [ivpName, tEndS, maybePlotDimensS, maybePDFfilenameS,
+     topLevelStrategyS, basicStepTypeS, locMaxDepthS, locMinDepthS,
+     maxDegS, maxSizeS, odeMaxDepthS, odeMinDepthS] =
     do
     putStrLn $ hybivp_description ivp
-    let maxDeg = read maxDegS :: Int
-    let depth = read depthS :: Int
-    let minDepth = read minDepthS :: Int
-    let maxSplitSize = read maxSplitSizeS :: Int
-    let shouldPlotSteps = read shouldPlotStepsS :: Bool
-    let topLevelStrategy = topLevelStrategyFromS topLevelStrategyS
-    let basicStepType = basicStepTypeFromS basicStepTypeS
-    solveEventsPrintSteps topLevelStrategy basicStepType shouldPlotSteps ivp (maxDeg, depth, minDepth, maxSplitSize)
+    solveEventsPrintSteps ivp 
+        maybePlotDimens maybePDFfilename 
+        (topLevelStrategy, basicStepType, locMaxDepth, locMinDepth) 
+        (maxDeg, maxSize, odeMaxDepth, odeMinDepth)
     return ()
     where
-    ivp = ivpByNameReportError ivpName endTimeDbl samplePoly
-    endTimeDbl = read endTimeS :: Double
+    ivp = ivpByNameReportError ivpName tEndD samplePoly
+
+    topLevelStrategy = topLevelStrategyFromS topLevelStrategyS
+    basicStepType = basicStepTypeFromS basicStepTypeS
+
+    maybePlotDimens = readPlotParams maybePlotDimensS :: Maybe PlotParams
+    maybePDFfilename = readPDFfilename maybePDFfilenameS :: Maybe String
+    maxDeg = read maxDegS :: Int
+    maxSize = read maxSizeS :: Int
+    odeMaxDepth = read odeMaxDepthS :: Int
+    odeMinDepth = read odeMinDepthS :: Int
+    locMaxDepth = read locMaxDepthS :: Int
+    locMinDepth = read locMinDepthS :: Int
+    tEndD = read tEndS :: Double
+    readPDFfilename "GUI" = Nothing
+    readPDFfilename pdfilename
+        | ".pdf" `isSuffixOf` pdfilename = Just pdfilename
+    readPDFfilename filename =
+        error $ "Unsupported output file format: " ++ filename
+
+runWithArgs _ = usage
     
 refinesVec :: [CF] -> [CF] -> Bool
 refinesVec vec1 vec2 =
@@ -132,27 +172,17 @@ refines a1 a2 =
 --    tolerance = 2 ^^ (-50)
 
 solveEventsPrintSteps :: 
---    (solvingInfo ~ (CF, Maybe (HybridSystemUncertainState CF), [(HybSysMode, EventInfo Poly)]))
---    =>
---    (
---     solvingInfoODESegment ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])),
---     solvingInfoODE ~ BisectionInfo solvingInfoODESegment (solvingInfoODESegment, Maybe CF),
---     solvingInfoEvents ~ (CF, Maybe (HybridSystemUncertainState CF), EventInfo Poly)
---    )
---    =>
-    TopLevelStrategy ->
-    BasicStepType ->
-    Bool
-    ->
-    HybridIVP Poly 
-    -> 
+    HybridIVP Fn -> 
+    (Maybe PlotParams) ->
+    (Maybe FilePath) ->
+    (TopLevelStrategy, BasicStepType, Int, Int) ->
     (Int, Int, Int, Int) 
     -> 
     IO ()
-solveEventsPrintSteps 
-        topLevelStrategy basicStepType
-        shouldPlotSteps 
-        ivp (maxdegParam, depthParam, minDepthParam, maxSplitSizeParam) =
+solveEventsPrintSteps ivp 
+        maybePlotDimens maybePDFfilename 
+        (topLevelStrategy, basicStepType, locMaxDepth, locMinDepth) 
+        (maxDeg, maxSize, odeMaxDepth, odeMinDepth) =
     do
     case basicStepType of
         BasicStepPWL -> error "PWL not fully implemented yet."
@@ -162,12 +192,17 @@ solveEventsPrintSteps
     putStrLn "---------------------------------------------------------"
     putStrLn $ "solving: " ++ description
     putStrLn "-------------------------------------------------"
-    putStrLn $ "maxdeg = " ++ show maxdeg
-    putStrLn $ "maxsize = " ++ show maxsize
+    putStrLn $ "top level strategy: " ++ show topLevelStrategy
+    putStrLn $ "basic step type: " ++ show basicStepType
+    putStrLn $ "event location minimum step size = 2^{" ++ show (- locMaxDepth) ++ "}"
+    putStrLn $ "event location maximum step size = 2^{" ++ show (- locMinDepth) ++ "}"
+    putStrLn $ "substSplitSizeLimit = " ++ show substSplitSizeLimit
+    putStrLn $ "maxdeg = " ++ show maxDeg
+    putStrLn $ "maxsize = " ++ show maxSize
     putStrLn $ "delta = " ++ show delta
     putStrLn $ "m = " ++ show m
-    putStrLn $ "substSplitSizeLimit = " ++ show substSplitSizeLimit
-    putStrLn $ "minimum step size = 2^{" ++ show minStepSizeExp ++ "}"
+    putStrLn $ "ODE minimum step size = 2^{" ++ show (- odeMaxDepth) ++ "}"
+    putStrLn $ "ODE maximum step size = 2^{" ++ show (- odeMinDepth) ++ "}"
     putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
     case maybeExactResult of
         Just exactResult ->
@@ -203,10 +238,18 @@ solveEventsPrintSteps
     putStrLn $ "event count = " ++ show eventCount
     putStrLn "-------------------------------------------------"
 
-    case (shouldPlotSteps, topLevelStrategy) of
-        (False, _) -> return ()
-        (_, TopLevelBisect) -> plotHybIVPBisectionEnclosures effCf False (2^^(-8 :: Int) :: CF) ivp bisectionInfo
-        (_, TopLevelLocate) -> plotHybIVPListEnclosures effCf (2^^(-12 :: Int) :: CF) ivp segmentsInfo
+    case (maybePlotDimens, topLevelStrategy) of
+        (Nothing, _) -> return ()
+        (Just (PlotParams rectDbl activevars shouldUseParamPlot isBW), TopLevelBisect) ->
+            plotHybIVPBisectionEnclosures rect activevars isBW shouldUseParamPlot
+                effCf False (2^^(-8 :: Int) :: CF) ivp bisectionInfo maybePDFfilename
+            where
+            rect = fmap (dblToReal 0) rectDbl :: FV.Rectangle CF
+        (Just (PlotParams rectDbl activevars shouldUseParamPlot isBW), TopLevelLocate) -> 
+            plotHybIVPListEnclosures rect activevars isBW shouldUseParamPlot
+                effCf (2^^(-12 :: Int) :: CF) ivp segmentsInfo maybePDFfilename
+            where
+            rect = fmap (dblToReal 0) rectDbl :: FV.Rectangle CF
     return ()
 --    return (maybeEndState, segmentsInfo)
 --    return (maybeEndState, bisectionInfo)
@@ -217,29 +260,29 @@ solveEventsPrintSteps
     (maybeEndStateBisect, bisectionInfo) =
         solveHybridIVPBisect
             sizeLimits effCf substSplitSizeLimit
-                delta m minStepSize maxStepSize splitImprovementThreshold
+                delta m locMinStepSize locMaxStepSize splitImprovementThreshold
                     "t0" 
                         ivp
     (maybeEndStateLocate, segmentsInfo) =
         solveHybridIVPLocate
             sizeLimits effCf substSplitSizeLimit
-                maxNodes
-                delta m minStepSize maxStepSize splitImprovementThreshold
+                locMinStepSize locMaxStepSize maxNodes
+                delta m odeMinStepSize odeMaxStepSize splitImprovementThreshold
                     "t0" 
                         ivp
     -- parameters:
     delta = 1
-    maxdeg = maxdegParam
-    maxsize = 50
-    m = 200
+    m = 200 -- max number of Picard iterations
 --    m = 20
-    maxNodes = 100
-    substSplitSizeLimit = maxSplitSizeParam -- 2^t0maxdeg
---    minStepSizeExp = -4 :: Int
-    minStepSizeExp = - depthParam
-    minStepSize = 2^^minStepSizeExp
-    maxStepSizeExp = - minDepthParam
-    maxStepSize = 2^^maxStepSizeExp
+    maxNodes = 100 -- max event tree size
+    substSplitSizeLimit = 10
+--    substSplitSizeLimit = maxSplitSizeParam -- 2^t0maxdeg
+
+    locMinStepSize = 2^^(-locMaxDepth)
+    locMaxStepSize = 2^^(-locMinDepth)
+    odeMinStepSize = 2^^(-odeMaxDepth)
+    odeMaxStepSize = 2^^(-odeMinDepth)
+    
 --        fst $ RefOrd.getEndpointsOut $ 10^^(-3::Int)
     splitImprovementThreshold = 2^^(-48 :: Int)
     
@@ -255,7 +298,7 @@ solveEventsPrintSteps
     effJoinCf = RefOrd.joinmeetDefaultEffort sampleCf
     sizeLimits =
         getSizeLimits $
-            makeSampleWithVarsDoms maxdeg maxsize [] []
+            makeSampleWithVarsDoms maxDeg maxSize [] []
             
     getErrorState exactState approxState
         | not (exactModeSet `Set.isSubsetOf` approxModeSet) =
@@ -419,9 +462,9 @@ solveEventsPrintSteps
 ----            showEventInfo (indent ++ "  ") (show . fst) eventInfo
 
 solveHybridIVPBisect ::
-    (solvingInfo ~ (CF, Maybe (HybridSystemUncertainState CF), [(HybSysMode, EventInfo Poly)]))
+    (solvingInfo ~ (CF, Maybe (HybridSystemUncertainState CF), [(HybSysMode, EventInfo Fn)]))
     =>
-    SizeLimits Poly -> 
+    SizeLimits Fn -> 
     ArithInOut.RoundedRealEffortIndicator CF ->
     Int -> 
     CF ->
@@ -429,8 +472,8 @@ solveHybridIVPBisect ::
     CF ->
     CF ->
     CF ->
-    Var Poly ->
-    HybridIVP Poly 
+    Var Fn ->
+    HybridIVP Fn 
     ->
     (
      Maybe (HybridSystemUncertainState CF)
@@ -468,22 +511,24 @@ solveHybridIVPBisect
 
 solveHybridIVPLocate ::
     (
-     solvingInfoODESegment ~ (Maybe ([Poly],[Poly]), (CF, Maybe [CF])),
+     solvingInfoODESegment ~ (Maybe ([Fn],[Fn]), (CF, Maybe [CF])),
      solvingInfoODE ~ BisectionInfo solvingInfoODESegment (solvingInfoODESegment, Maybe CF),
-     solvingInfoEvents ~ (CF, Maybe (HybridSystemUncertainState CF), EventInfo Poly)
+     solvingInfoEvents ~ (CF, Maybe (HybridSystemUncertainState CF), EventInfo Fn)
     )
     =>
-    SizeLimits Poly -> 
+    SizeLimits Fn -> 
     ArithInOut.RoundedRealEffortIndicator CF ->
     Int -> 
+    CF ->
+    CF ->
     Int ->
     CF ->
     Int ->
     CF ->
     CF ->
     CF ->
-    Var Poly ->
-    HybridIVP Poly 
+    Var Fn ->
+    HybridIVP Fn 
     ->
     (
         Maybe (HybridSystemUncertainState CF)
@@ -505,8 +550,8 @@ solveHybridIVPLocate ::
     )
 solveHybridIVPLocate
         sizeLimits effCf substSplitSizeLimit
-            maxNodes
-            delta m minStepSize maxStepSize splitImprovementThreshold 
+            locMinStepSize locMaxStepSize maxNodes
+            delta m odeMinStepSize odeMaxStepSize splitImprovementThreshold
                 t0Var
                     hybivp
     =
@@ -517,8 +562,8 @@ solveHybridIVPLocate
             sizeLimits effSizeLims effPEval effCompose effEval effInteg effDeriv effInclFn 
                 effAddFn effMultFn effAbsFn effMinmaxFn 
                 effDivFnInt effAddFnDom effMultFnDom effCf
-                maxNodes
-                delta m t0Var minStepSize maxStepSize splitImprovementThreshold
+                locMinStepSize locMaxStepSize maxNodes
+                delta m t0Var odeMinStepSize odeMaxStepSize splitImprovementThreshold
                     hybivp
 
     effSizeLims = effIP
@@ -547,7 +592,7 @@ solveHybridIVPLocate
 
 
 makeSampleWithVarsDoms :: 
-     Int -> Int -> [Var Poly] -> [CF] -> Poly
+     Int -> Int -> [Var Fn] -> [CF] -> Fn
 makeSampleWithVarsDoms maxdeg maxsize vars doms =
     newConstFn sizeLimits varDoms sampleCf
     where

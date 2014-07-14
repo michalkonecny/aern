@@ -56,7 +56,7 @@ import qualified
 import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.ShowInternals
 
-import Data.List (isPrefixOf, isSuffixOf)
+import Data.List (isSuffixOf)
 
 import System.IO
 import System.Environment
