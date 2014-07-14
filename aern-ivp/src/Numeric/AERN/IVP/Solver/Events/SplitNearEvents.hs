@@ -268,7 +268,7 @@ solveHybridIVP_SplitNearEvents
     {-
         overview:
         
-        (1) apply solveODEWithSplitting over T for each initial mode/value combination DONE
+        (1) apply solveODEWithSplitting over T for each initial mode/value combination
         (2) for each computed enclosure, locate the first event on T, obtaining:
             (maybe) interval T_mode \subseteq T where first event must occur + set of possible event types
         (3) compute (maybe) T_e as follows: the left endpoint is the leftmost point of all T_mode,
@@ -474,7 +474,6 @@ solveHybridIVP_SplitNearEvents
                 eventSpecMap = hybsys_eventSpecification hybsys mode
                 Just modeInvariant =
                     Map.lookup mode modeInvariants
-                modeInvariants = hybsys_modeInvariants $ hybivp_system hybivp
                 
                 checkConditionOnBisectedFunction valueCondition dom =
                     bisectionInfoCheckCondition effDom condition bisectionInfo (tStart, tEnd) dom
@@ -534,8 +533,9 @@ solveHybridIVP_SplitNearEvents
             ODEIVP
             {
                 odeivp_description = "ODE for " ++ show mode,
-                odeivp_field = field,
                 odeivp_componentNames = componentNames,
+                odeivp_intersectDomain = modeInvariant,
+                odeivp_field = field,
                 odeivp_tVar = tVar,
                 odeivp_tStart = tStart,
                 odeivp_tEnd = tEnd,
@@ -548,6 +548,7 @@ solveHybridIVP_SplitNearEvents
             where
             makeInitValueFnVec = makeFnVecFromInitialValues componentNames initialValues
             Just field = Map.lookup mode modeFields
+            Just modeInvariant = Map.lookup mode modeInvariants
         
         tVar = hybivp_tVar hybivp
         tStart = hybivp_tStart hybivp
@@ -564,3 +565,4 @@ solveHybridIVP_SplitNearEvents
         hybsys = hybivp_system hybivp
         componentNames = hybsys_componentNames hybsys
         modeFields = hybsys_modeFields hybsys
+        modeInvariants = hybsys_modeInvariants hybsys

@@ -4,7 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.IVP.Solver.Events.Locate
-    Description :  hybrid system simulation  
+    Description :  Event localisation logic
     Copyright   :  (c) Michal Konecny
     License     :  BSD3
 
@@ -12,7 +12,7 @@
     Stability   :  experimental
     Portability :  portable
     
-    Hybrid system simulation.
+    The logic of searching for the first potential event in a hybrid system.
 -}
 
 module Numeric.AERN.IVP.Solver.Events.Locate
@@ -36,7 +36,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 --import Numeric.AERN.Basics.Consistency
 
-import qualified Data.Map as Map
+--import qualified Data.Map as Map
 import qualified Data.Set as Set
 --import qualified Data.List as List
 
@@ -90,11 +90,11 @@ locateFirstDipAmongMultipleFns ::
     (dom, dom) {-^ domain to search over -} -> 
     LocateDipResult dom eventId
 locateFirstDipAmongMultipleFns 
-    stepLimit 
-    eventsCertainlyInactiveOnDom
-    invariantCertainlyViolatedOnDom
-    invariantIndecisiveThroughoutDom
-    (tStart, tEnd) =
+        stepLimit 
+        eventsCertainlyInactiveOnDom
+        invariantCertainlyViolatedOnDom
+        invariantIndecisiveThroughoutDom
+        (tStart, tEnd) =
 --    unsafePrint
 --    (
 --        "locateFirstDipAmongMultipleFns:"

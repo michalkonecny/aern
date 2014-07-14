@@ -311,6 +311,8 @@ solveODEIVPByBisectingT ::
     ->
     (result -> ODEInitialValues f) -- ^ how to change initial conditions
     ->
+    (result -> Maybe result)
+    ->
     ArithInOut.RoundedRealEffortIndicator (Domain f) 
     ->
     (Domain f) -- ^ splitting improvement threshold
@@ -322,14 +324,16 @@ solveODEIVPByBisectingT ::
     (ODEIVP f)  -- ^ problem to solve
     ->
     (
-        Maybe result
+        (Maybe result,
+         Bool -- if the result is Nothing, is it because the solution strayed outside the domain?
+        )
     ,
         (
             BisectionInfo solvingInfo (solvingInfo, Maybe (Imprecision (Domain f)))
         )
     )
 solveODEIVPByBisectingT
-        solver measureResultImprecision makeMakeInitValFnVec
+        solver measureResultImprecision makeMakeInitValFnVec intersectDomain
             effDom splitImprovementThreshold minStepSize maxStepSize
                 odeivpG 
     =
@@ -371,6 +375,7 @@ solveODEIVPByBisectingT
                         | (improvementBy >? splitImprovementThreshold) /= Just True -> 
                             directComputation -- split once computations succeeded but brought no noticeable improvement
                     _
+                        | midStateIsOutsideDomain -> splitComputation
                         | splitComputationFailed -> directComputation
                         | otherwise -> splitComputation -- splitting either brought noticeable improvement or some computation failed 
         tStart = odeivp_tStart odeivp
@@ -383,8 +388,8 @@ solveODEIVPByBisectingT
 
         (directComputation, directInfo, directComputationFailed) =
             case maybeDirectResult of
-                Just resultOut -> ((Just resultOut, BisectionNoSplit directInfo2), directInfo2, False)
-                _ -> ((Nothing, BisectionNoSplit directInfo2), directInfo2, True)
+                Just resultOut -> (((Just resultOut, False), BisectionNoSplit directInfo2), directInfo2, False)
+                _ -> ((((Nothing, False), BisectionNoSplit directInfo2)), directInfo2, True)
             where 
             (maybeDirectResult, _) = directInfo2
             directInfo2 =
@@ -415,35 +420,40 @@ solveODEIVPByBisectingT
                 
         splitComputationFailed =
             case splitComputation of
-                (Just _, _) -> False
+                ((Just _, _), _) -> False
                 _ -> True
+        ((_, midStateIsOutsideDomain), _) = splitComputation 
         splitComputation =
-            (maybeState, BisectionSplit (directInfo, maybeSplitImprovement) infoL maybeInfoR)
+            ((maybeState, midStateIsOutsideDomain), BisectionSplit (directInfo, maybeSplitImprovement) infoL maybeInfoR)
             where
-            (maybeMidState, infoL) =
+            ((maybeMidState, midStateIsOutsideDomainL), infoL) =
                 splitSolve odeivpL (Just infoL1) -- avoid re-running the solver for the left half-segment
-            (maybeState, maybeInfoR) =
+            ((maybeState, maybeInfoR), midStateIsOutsideDomain) =
                 case maybeMidState of
                     Just midState ->
-                        case splitSolve odeivpR ifLisL1maybeInfoR1 of
-                            (maybeState2, infoR) -> (maybeState2, Just infoR)
-                        where
-                        ifLisL1maybeInfoR1 =
-                            case infoL of
-                                (BisectionNoSplit _) -> maybeInfoR1 
-                                    -- We can reuse a pre-computed solution for the right half-segment because
-                                    -- the chosen computation on the left segment did not split any further
-                                    -- and is thus equivalent to the preliminary split-once computation above.  
-                                _ -> Nothing
-                        odeivpR =
-                            odeivp
-                            {
-                                odeivp_tStart = tMid,
-                                odeivp_t0End = tMid, -- exact initial time
-                                odeivp_makeInitialValueFnVec =
-                                    makeMakeInitValFnVec  midState
-                            }
-                    Nothing -> (Nothing, Nothing)
+                        case intersectDomain midState of
+                            Just midState2 ->
+                                case splitSolve odeivpR ifLisL1maybeInfoR1 of
+                                    ((maybeState2, midStateIsOutsideDomain2), infoR) -> 
+                                        ((maybeState2, Just infoR), midStateIsOutsideDomain2)
+                                where
+                                ifLisL1maybeInfoR1 =
+                                    case infoL of
+                                        (BisectionNoSplit _) -> maybeInfoR1 
+                                            -- We can reuse a pre-computed solution for the right half-segment because
+                                            -- the chosen computation on the left segment did not split any further
+                                            -- and is thus equivalent to the preliminary split-once computation above.  
+                                        _ -> Nothing
+                                odeivpR =
+                                    odeivp
+                                    {
+                                        odeivp_tStart = tMid,
+                                        odeivp_t0End = tMid, -- exact initial time
+                                        odeivp_makeInitialValueFnVec =
+                                            makeMakeInitValFnVec  midState2
+                                    }
+                            Nothing -> ((Nothing, Nothing), True)
+                    Nothing -> ((Nothing, Nothing), midStateIsOutsideDomainL)
         odeivpL =
             odeivp
             {
@@ -454,7 +464,7 @@ solveODEIVPByBisectingT
         
         maybeSplitImprovement =
             case (directComputation, splitOnceComputation) of
-                ((Just directResult, _), Just splitOnceResult) -> 
+                (((Just directResult, _), _), Just splitOnceResult) -> 
                         measureImprovementVec directResult splitOnceResult
                 _ -> Nothing
 
