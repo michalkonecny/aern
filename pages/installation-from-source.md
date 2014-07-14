@@ -70,12 +70,31 @@ On subsequent executions, the script is likely to give a warning about dangerous
 
   6. You can now execute a demo or a test suite to check the installation has been successful, eg:
 
+Test arithmetic of intervals with Double endpoints:
+
 ```sh
 > ~/.cabal/bin/testAERN-Real-Double
-> ~/.cabal/bin/
-> cp aern-realfn-plot-gtk/FnView.glade .
+```
+
+Before running examples that produce plots, make sure your current folder contains
+the file `FnView.glade`.  The base folder of the `aern` repository contains this file already.
+
+Plot some function enclosures:
+
+```sh
 > ~/.cabal/bin/plot minmax 10
+```
+
+Compute and plot an enclosure of an ODE IVP with uncertain initial value:
+
+```sh
 > ~/.cabal/bin/simple-ode ivpSpringMass-uv "PlotGraph[True,False](0,10,-1.5,1.5)" GUI False 30 200 -10 -10 10
 ```
 
-You can also execute the various demos using ghci.
+Compute and plot an enclosure of a hybrid system with Zeno behaviour:
+
+```sh
+> ~/.cabal/bin/simple-events locate evtree bouncingBallFloorDropEnergy 4.4 3 10 3 True 10 
+```
+
+You can also execute various demos using ghci.

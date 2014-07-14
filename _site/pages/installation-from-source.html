@@ -116,12 +116,16 @@
 <ol start="6" style="list-style-type: decimal">
 <li>You can now execute a demo or a test suite to check the installation has been successful, eg:</li>
 </ol>
-<pre class="sh"><code>&gt; ~/.cabal/bin/testAERN-Real-Double
-&gt; ~/.cabal/bin/
-&gt; cp aern-realfn-plot-gtk/FnView.glade .
-&gt; ~/.cabal/bin/plot minmax 10
-&gt; ~/.cabal/bin/simple-ode ivpSpringMass-uv &quot;PlotGraph[True,False](0,10,-1.5,1.5)&quot; GUI False 30 200 -10 -10 10</code></pre>
-<p>You can also execute the various demos using ghci.</p>
+<p>Test arithmetic of intervals with Double endpoints:</p>
+<pre class="sh"><code>&gt; ~/.cabal/bin/testAERN-Real-Double</code></pre>
+<p>Before running examples that produce plots, make sure your current folder contains the file <code>FnView.glade</code>. The base folder of the <code>aern</code> repository contains this file already.</p>
+<p>Plot some function enclosures:</p>
+<pre class="sh"><code>&gt; ~/.cabal/bin/plot minmax 10</code></pre>
+<p>Compute and plot an enclosure of an ODE IVP with uncertain initial value:</p>
+<pre class="sh"><code>&gt; ~/.cabal/bin/simple-ode ivpSpringMass-uv &quot;PlotGraph[True,False](0,10,-1.5,1.5)&quot; GUI False 30 200 -10 -10 10</code></pre>
+<p>Compute and plot an enclosure of a hybrid system with Zeno behaviour:</p>
+<pre class="sh"><code>&gt; ~/.cabal/bin/simple-events locate evtree bouncingBallFloorDropEnergy 4.4 3 10 3 True 10 </code></pre>
+<p>You can also execute various demos using ghci.</p>
     
     <hr class="divider">
     <footer>
