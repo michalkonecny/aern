@@ -185,6 +185,7 @@ data DataChange
 -}
 updateValueDisplay ::
     (ArithInOut.Convertible Double (Domain f),
+     RefOrd.PartialComparison (Domain f),
      CanEvaluate f, 
      Show (Domain f))
     =>
@@ -217,23 +218,39 @@ updateValueDisplay effFromDouble effEval widgets dynWidgetsRef _state (fndata, _
             map (map $ show . getDimValue1Or2) $ dataFns fndata
             where
             getDimValue1Or2 (GraphPlotFn fns, plotVar) =
-                GraphPlotFn $ map (getDimValue plotVar) fns 
+                GraphPlotFn $ 
+                    map (getDimValue plotVar) $ 
+                        filter (pointInDom plotVar) fns
             getDimValue1Or2 (ParamPlotFns fnPairs, plotVar) =
-                ParamPlotFns $ map (getDimValues plotVar) fnPairs
-            getDimValues plotVar  (fnX, fnY) =
-                (getDimValue plotVar fnX, getDimValue plotVar fnY) 
-            getDimValue plotVar fn =
-                evalAtPointOutEff effEval evalPt fn
+                ParamPlotFns $ 
+                    map (getDimValue2 plotVar) $ 
+                        filter (pointInDom2 plotVar) fnPairs
+            pointInDom2 var (fnX, _fnY) = pointInDom var fnX
+            pointInDom var fn = 
+                case lookupVar dombox var of
+                    Just dom -> (dom RefOrd.|<=? evalPointDom) == Just True
+                    Nothing -> False
                 where
-                evalPt =
-                    insertVar plotVar evalPointDom dombox 
+                dombox = getDomainBox fn
+                sampleDom = getSampleDomValue fn
                 evalPointDom =
                     ArithInOut.convertOutEff effFromDouble sampleDom evalPointD
+            getDimValue2 plotVar  (fnX, fnY) =
+                (getDimValue plotVar fnX, getDimValue plotVar fnY) 
+            getDimValue plotVar fn =
+                evalAtPointOutEff effEval evalDombox fn
+                where
+                evalDombox =
+                    insertVar plotVar evalPointDom dombox 
                 sampleDom = getSampleDomValue fn
                 dombox = getDomainBox fn
+                evalPointDom =
+                    ArithInOut.convertOutEff effFromDouble sampleDom evalPointD
 
 updateValueDisplayTV :: 
-      (Show (Domain f), ArithInOut.Convertible Double (Domain f),
+      (Show (Domain f), 
+       ArithInOut.Convertible Double (Domain f),
+       RefOrd.PartialComparison (Domain f),
        CanEvaluate f) 
       =>
       ArithInOut.ConvertEffortIndicator Double (Domain f)
