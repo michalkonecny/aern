@@ -91,7 +91,7 @@ addPlotVar ::
 addPlotVar fns =
     map (map addV) fns
     where
-    addV fn = (GraphPlotFn fn, plotVar)
+    addV fn = (GraphPlotFn [fn], plotVar)
         where
         (plotVar : _) = vars
         vars = map fst $ getVarDoms fn   

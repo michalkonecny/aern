@@ -177,8 +177,8 @@ plotODEIVPBisectionEnclosures
         | otherwise 
             = map (map addV) fns2
         where
-        addV fn = (FV.GraphPlotFn (fn :: f), tVar)
-        addVParam [fnX, fnY] = (FV.ParamPlotFns (fnX, fnY), tVar)
+        addV fn = (FV.GraphPlotFn [(fn :: f)], tVar)
+        addVParam [fnX, fnY] = (FV.ParamPlotFns [(fnX, fnY)], tVar)
         addVParam _ = errorParamFnCount 
         
     errorParamFnCount =
@@ -366,7 +366,7 @@ plotHybIVPBisectionEnclosures
 
     addPlotVar = map $ map addV
         where
-        addV fn = (FV.GraphPlotFn fn, tVar)
+        addV fn = (FV.GraphPlotFn [fn], tVar)
     (fns, fnNames, segNames) = 
         aggregateSequencesOfTinySegments effEval componentNames tVar plotMinSegSize fnsAndNames 
     fnsAndNames =
@@ -634,8 +634,8 @@ plotHybIVPListEnclosures
         | otherwise 
             = map (map addV) fns2
         where
-        addV fn = (FV.GraphPlotFn (fn :: f), tVar)
-        addVParam [fnX, fnY] = (FV.ParamPlotFns (fnX, fnY), tVar)
+        addV fn = (FV.GraphPlotFn [(fn :: f)], tVar)
+        addVParam [fnX, fnY] = (FV.ParamPlotFns [(fnX, fnY)], tVar)
         addVParam _ = errorParamFnCount 
 
     errorParamFnCount =
