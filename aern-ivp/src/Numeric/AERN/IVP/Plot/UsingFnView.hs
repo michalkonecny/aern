@@ -37,9 +37,9 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal)
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
-import Numeric.AERN.RealArithmetic.ExactOps
+--import Numeric.AERN.RealArithmetic.ExactOps
 
---import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.NumericOrder.Operators
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
@@ -55,7 +55,7 @@ import Control.Concurrent.STM
 
 import qualified Data.Map as Map
 import qualified Data.List as List
-import Data.List (isPrefixOf, isSuffixOf)
+import Data.List (isPrefixOf)
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -143,8 +143,8 @@ plotODEIVPBisectionEnclosures
     
     effDrawFn = cairoDrawFnDefaultEffort sampleFn
     effEval = evaluationDefaultEffort sampleFn
-    ((sampleFn : _) : _) = fns
-    sampleCf = getSampleDomValue sampleFn
+    (((sampleFn : _) : _) : _) = fns
+--    sampleCf = getSampleDomValue sampleFn
     
     componentNames = odeivp_componentNames ivp
     n = length componentNames
@@ -177,15 +177,19 @@ plotODEIVPBisectionEnclosures
         | otherwise 
             = map (map addV) fns2
         where
-        addV fn = (FV.GraphPlotFn [(fn :: f)], tVar)
-        addVParam [fnX, fnY] = (FV.ParamPlotFns [(fnX, fnY)], tVar)
+        addV fs = (FV.GraphPlotFn (fs :: [f]), tVar)
+        addVParam [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY), tVar)
         addVParam _ = errorParamFnCount 
         
     errorParamFnCount =
             error 
             "plotODEIVPBisectionEnclosures: In a parameteric plot there have to be exactly two active functions."
             
-    (fns, fnNamesPre, segNames) 
+    fns = [List.transpose fns3]
+    segNames = ["variables"]
+    fnNamesPre = [componentNames]
+            
+    (fns3, _fnNamesPre3, segNames3) 
         | shouldUseParamPlot =
             (fns2, fnNamesPre2, segNames2)
         | otherwise = 
@@ -224,24 +228,27 @@ plotODEIVPBisectionEnclosures
             | shouldUseParamPlot = repeat True
             | otherwise = cycle activevars
 
+
+--    fns = 
     fnsAndNames = 
         map getFnsFromSegInfo $
             bisectionInfoGetLeafSegInfoSequence bisectionInfo
         where
         getFnsFromSegInfo (Just (fnVec, _), _) 
-            | notTooThick =
+--            | notTooThick 
+                =
                 zip fnVec componentNames
             where
-            notTooThick =
-                True 
+--            notTooThick =
+--                True 
 --                and $ map withdOK fnVec
-            withdOK fn =
-                ((ArithInOut.absOut val) <? (one sampleCf)) == (Just True) 
-                where
-                val = zero sampleCf 
---                    evalAtPointOutEff effEval domPt fn
---                domPt = getSampleFromInsideDomainBox fn domBox
---                domBox = getDomainBox fn 
+--            withdOK fn =
+--                ((ArithInOut.absOut val) <? (one sampleCf)) == (Just True) 
+--                where
+--                val = zero sampleCf 
+----                    evalAtPointOutEff effEval domPt fn
+----                domPt = getSampleFromInsideDomainBox fn domBox
+----                domBox = getDomainBox fn 
         getFnsFromSegInfo _ = []
     aggregateSequencesOfTinySegments2 fnsAndNames2 = 
         aggrNewSegm [] [] [] $ zip ([1..]::[Int]) fnsAndNames2
@@ -352,13 +359,13 @@ plotHybIVPBisectionEnclosures
     
     effDrawFn = cairoDrawFnDefaultEffort sampleFn
     effEval = evaluationDefaultEffort sampleFn
-    ((sampleFn : _) : _) = fns 
-    sampleCf = getSampleDomValue sampleFn
+    (((sampleFn : _) : _) : _) = fns 
+--    sampleCf = getSampleDomValue sampleFn
     
     componentNames = hybsys_componentNames $ hybivp_system ivp
     n = length componentNames
-    tStart = hybivp_tStart ivp
-    tEnd = hybivp_tEnd ivp
+--    tStart = hybivp_tStart ivp
+--    tEnd = hybivp_tEnd ivp
     tVar = hybivp_tVar ivp
     
     activevars =
@@ -366,8 +373,18 @@ plotHybIVPBisectionEnclosures
 
     addPlotVar = map $ map addV
         where
-        addV fn = (FV.GraphPlotFn [fn], tVar)
-    (fns, fnNames, segNames) = 
+        addV fs = (FV.GraphPlotFn fs, tVar)
+        
+    fns = [List.transpose $ splitUpGroups fns3]
+        where
+        splitUpGroups [] = []
+        splitUpGroups ([] : gs) = splitUpGroups gs
+        splitUpGroups (g : gs) =
+            (take n g) : (splitUpGroups ((drop n g) : gs)) 
+    segNames = ["variables"]
+    fnNames = [componentNames]
+        
+    (fns3, _fnNames3, _segNames3) = 
         aggregateSequencesOfTinySegments effEval componentNames tVar plotMinSegSize fnsAndNames 
     fnsAndNames =
         concat $ map maybeAggregateSegment fnAndNameVectors
@@ -394,7 +411,7 @@ plotHybIVPBisectionEnclosures
                 unifiedRangeVector = foldl1 (zipWith (</\>)) rangeVectors 
                 rangeVectors = map (map getRange) fnVectorsInSegment
                 fnVectorsInSegment@((sampleFnInSegment : _) : _) = map (map fst) fnAndNameVectorsInSegment
-                nameVectorsInSegment = map (map snd) fnAndNameVectorsInSegment
+--                nameVectorsInSegment = map (map snd) fnAndNameVectorsInSegment
                 getRange fn =
                     evalAtPointOutEff effEval2 dombox fn
                     where
@@ -473,6 +490,19 @@ plotHybIVPBisectionEnclosures
 --        where
 --        domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
 
+aggregateSequencesOfTinySegments :: 
+      (ArithInOut.RoundedAdd (Domain a),
+       RefOrd.IntervalLike (Domain a), CanEvaluate a, HasConstFns a,
+       NumOrd.PartialComparison
+         (Domain a),
+       RefOrd.RoundedLattice a) 
+      =>
+      EvaluationEffortIndicator a
+      -> [String]
+      -> Var a
+      -> Domain a
+      -> [[(a, String)]]
+      -> ([[a]], [[String]], [String])
 aggregateSequencesOfTinySegments effEval componentNames tVar plotMinSegSize fnsAndNames2 
     = aggrNewSegm [] [] [] $ zip ([1..]::[Int]) fnsAndNames2
     where
@@ -601,7 +631,7 @@ plotHybIVPListEnclosures
     fnsPlotSpec = addPlotVar fns
     effDrawFn = cairoDrawFnDefaultEffort sampleFn
     effEval = evaluationDefaultEffort sampleFn
-    ((sampleFn : _) : _) = fns 
+    (((sampleFn : _) : _) : _) = fns 
 --    sampleCf = getSampleDomValue sampleFn
     
     componentNames = hybsys_componentNames $ hybivp_system ivp
@@ -610,7 +640,7 @@ plotHybIVPListEnclosures
     activevars =
         take n $ activevarsPre ++ (repeat False)
 
-    activevarNames = pickByActivevars componentNames 
+--    activevarNames = pickByActivevars componentNames 
 
     -- function to pick from a list of length componentNames those elements that correspond to active vars:
     pickByActivevars :: [a] -> [a]
@@ -634,8 +664,8 @@ plotHybIVPListEnclosures
         | otherwise 
             = map (map addV) fns2
         where
-        addV fn = (FV.GraphPlotFn [(fn :: f)], tVar)
-        addVParam [fnX, fnY] = (FV.ParamPlotFns [(fnX, fnY)], tVar)
+        addV fs = (FV.GraphPlotFn (fs :: [f]), tVar)
+        addVParam [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY), tVar)
         addVParam _ = errorParamFnCount 
 
     errorParamFnCount =
@@ -663,8 +693,16 @@ plotHybIVPListEnclosures
 --            where
 --            joinedActiveVarsName = "(" ++ List.intercalate "," activevarNames ++ ")"
 
-    
-    (fns, fnNames, groupNames) 
+    fns = [List.transpose $ splitUpGroups fns3]
+        where
+        splitUpGroups [] = []
+        splitUpGroups ([] : gs) = splitUpGroups gs
+        splitUpGroups (g : gs) =
+            (take n g) : (splitUpGroups ((drop n g) : gs)) 
+    groupNames = ["variables"]
+    fnNames = [componentNames]
+            
+    (fns3, _fnNames3, _groupNames3) 
         | shouldUseParamPlot =
             error "Parametric plot not yet supported."
         | otherwise = 
@@ -771,37 +809,44 @@ plotHybIVPListEnclosures
 --        domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
 --    
 
+black :: FV.FnPlotStyle
 black = FV.defaultFnPlotStyle
     { 
         FV.styleOutlineColour = Just (0,0,0,1), 
         FV.styleFillColour = Just (0,0,0,0.1),
         FV.styleOutlineThickness = 1
     } 
+blue :: FV.FnPlotStyle
 blue = FV.defaultFnPlotStyle 
     { 
         FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
         FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
     } 
+green :: FV.FnPlotStyle
 green = FV.defaultFnPlotStyle 
     { 
         FV.styleOutlineColour = Just (0.1,0.8,0.1,1), 
         FV.styleFillColour = Just (0.1,0.8,0.1,0.1) 
     } 
+red :: FV.FnPlotStyle
 red = FV.defaultFnPlotStyle 
     { 
         FV.styleOutlineColour = Just (0.8,0.1,0.1,1), 
         FV.styleFillColour = Just (0.8,0.1,0.1,0.1) 
     } 
+orange :: FV.FnPlotStyle
 orange = FV.defaultFnPlotStyle 
     { 
         FV.styleOutlineColour = Just (1,0.7,0.2,1), 
         FV.styleFillColour = Just (1,0.7,0.2,0.1) 
     } 
+purple :: FV.FnPlotStyle
 purple = FV.defaultFnPlotStyle 
     { 
         FV.styleOutlineColour = Just (0.7,0.4,1,1), 
         FV.styleFillColour = Just (0.7,0.4,1,0.1) 
     } 
+magenta :: FV.FnPlotStyle
 magenta = FV.defaultFnPlotStyle 
     { 
         FV.styleOutlineColour = Just (0, 0.8,0.8,1), 
