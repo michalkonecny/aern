@@ -81,7 +81,7 @@ addPlotVar :: [[Fn]] -> [[(FV.GraphOrParamPlotFn Fn, String)]]
 addPlotVar fns =
     map (map addV) fns
     where
-    addV fn = (FV.GraphPlotFn fn, tVar)
+    addV fn = (FV.GraphPlotFn [fn], tVar)
     
 getFns :: String -> Double -> Int -> Int -> [String] ->(([[Fn]], [CF]), FV.FnMetaData Fn)
 getFns name tEndDbl maxdeg maxsize otherArgs =

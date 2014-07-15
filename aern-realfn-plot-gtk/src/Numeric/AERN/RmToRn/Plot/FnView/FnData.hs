@@ -40,17 +40,17 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 data FnData f =
     FnData
     {
-        dataFns :: [[(GraphOrParamPlotFn f, Var f)]] -- ^ groups of functions to plot
+        dataFns :: [[(GraphOrParamPlotFn f, Var f)]] -- ^ groups of (piece-wise) functions to plot
     }
     
 data GraphOrParamPlotFn f
-    = GraphPlotFn f
-    | ParamPlotFns (f,f)
+    = GraphPlotFn [f]
+    | ParamPlotFns [(f,f)]
     
 instance (Show f) => Show (GraphOrParamPlotFn f)
     where
     show (GraphPlotFn v) = show v
-    show (ParamPlotFns (v1,v2)) = show (v1,v2)
+    show (ParamPlotFns v) = show v
 
 data FnMetaData f =
     FnMetaData

@@ -170,10 +170,10 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams w h fnsActive fns fnsS
     drawFn ::
         ((GraphOrParamPlotFn f, Var f), FnPlotStyle) ->
         Render ()
-    drawFn ((GraphPlotFn fn, plotVar), style) =
-        cairoDrawFnGraph effDraw canvasParams toScreenCoordsFromUnit style plotVar fn
-    drawFn ((ParamPlotFns fnXY, plotVar), style) =
-        cairoDrawFnParameteric effDraw canvasParams toScreenCoordsFromUnit style plotVar fnXY
+    drawFn ((GraphPlotFn fs, plotVar), style) =
+        mapM_ (cairoDrawFnGraph effDraw canvasParams toScreenCoordsFromUnit style plotVar) fs
+    drawFn ((ParamPlotFns fsXY, plotVar), style) =
+        mapM_ (cairoDrawFnParameteric effDraw canvasParams toScreenCoordsFromUnit style plotVar) fsXY
         
     drawAxes 
         | cnvprmShowAxes canvasParams =
