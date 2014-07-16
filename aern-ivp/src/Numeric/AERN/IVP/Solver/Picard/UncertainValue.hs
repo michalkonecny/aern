@@ -76,6 +76,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard_Bisect ::
      ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f),
+     Eq (Var f),
      Domain f ~ Imprecision (Domain f),
      solvingInfo ~ (Maybe ([f],[f]), (Domain f, Maybe [Domain f])), 
      Show f, Show (Domain f), Show (Var f))
@@ -246,6 +247,7 @@ measureFunctionImprecision ::
      ArithInOut.RoundedReal (Domain f), 
      ArithInOut.RoundedSubtr f,
      CanEvaluate f,
+     Eq (Var f),
      Show (Domain f), Show f
     )
     =>
@@ -283,7 +285,8 @@ measureFunctionImprecision effEval effAddFn effAddDom fnVec =
 getRange ::
     (CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
-     RefOrd.IntervalLike (Domain f)) 
+     RefOrd.IntervalLike (Domain f),
+     Eq (Var f)) 
     =>
     EvaluationEffortIndicator f -> 
     f -> Domain f
@@ -302,14 +305,16 @@ getRangeFullEval effEval fn =
 getRangeBySamples ::
     (CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
-     RefOrd.IntervalLike (Domain f)) 
+     RefOrd.IntervalLike (Domain f),
+     Eq (Var f)) 
     =>
     EvaluationEffortIndicator f -> 
     f -> Domain f
 getRangeBySamples effEval fn =
     foldl1 (RefOrd.</\>) values 
     where
-    values = map head $ evalSamplesEff effEval 1 (getDomainBox fn) [fn]
+    values = map head $ evalSamplesEff effEval 1 (getDomainBox fn) allVars [fn]
+    allVars = getVars $ getDomainBox fn
 
 solveODEIVPUncertainValueExactTime_UsingPicard ::
     (CanAddVariables f,
@@ -334,6 +339,7 @@ solveODEIVPUncertainValueExactTime_UsingPicard ::
      ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike (Domain f),
      HasAntiConsistency (Domain f),
+     Eq (Var f),
      Domain f ~ Imprecision (Domain f),
      solvingInfo ~ (Domain f, Maybe [Domain f]), 
      Show f, Show (Domain f), Show (Var f))

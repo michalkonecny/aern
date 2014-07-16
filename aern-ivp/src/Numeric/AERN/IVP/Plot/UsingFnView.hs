@@ -178,7 +178,7 @@ plotODEIVPBisectionEnclosures
             = map (map addV) fns2
         where
         addV fs = (FV.GraphPlotFn (fs :: [f]), tVar)
-        addVParam [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY), tVar)
+        addVParam [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY) [], tVar)
         addVParam _ = errorParamFnCount 
         
     errorParamFnCount =
@@ -676,7 +676,7 @@ plotHybIVPListEnclosures
             = map (map addV) fns2
         where
         addV fs = (FV.GraphPlotFn (fs :: [f]), tVar)
-        addVParam [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY), tVar)
+        addVParam [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY) [], tVar)
         addVParam _ = errorParamFnCount 
 
     errorParamFnCount =
@@ -779,7 +779,7 @@ plotHybIVPListEnclosures
             sampleFn
             rect
             (Just (1,1,1,1))
-            (if shouldUseParamPlot then 20 else 200)
+            (if shouldUseParamPlot then 50 else 200)
             tVar
             (zip groupNames $ map addMetaToFnNames fnNames)
         where

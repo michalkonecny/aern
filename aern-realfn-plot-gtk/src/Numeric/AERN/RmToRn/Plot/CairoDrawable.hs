@@ -55,6 +55,7 @@ class
         ((Domain f, Domain f) -> (Double, Double)) {-^ conversion from [0,1]^2 (origin bottom left) to screen coords -} ->
         FnPlotStyle ->
         Var f {-^ the variable to parametrise by; the remaining variables are all substituted with their full range -} ->
+        [Var f] {-^ variables that should not be substituted with their full domain but sampled, potentially resulting in a non-rectangular shape -} ->
         [(f, f)] {-^ one function to map to the x axis, one to the y axis, the function pair is given piecewise -} -> 
         Render ()
 

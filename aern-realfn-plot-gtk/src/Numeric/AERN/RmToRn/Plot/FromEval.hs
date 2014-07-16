@@ -53,6 +53,7 @@ instance
      CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
+     Eq (Var f),
      Show (Domain f), Show (Var f), Show (VarBox f (Domain f))
     )
     =>
@@ -258,6 +259,7 @@ cairoDrawFnParametericFromEval ::
      CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
+     Eq (Var f),
      Show (Domain f), Show (Var f), Show (VarBox f (Domain f))
     )
     =>
@@ -266,12 +268,13 @@ cairoDrawFnParametericFromEval ::
     ((Domain f, Domain f) -> (Double, Double)) ->
     FnPlotStyle ->
     Var f ->
+    [Var f] ->
     [(f,f)] ->
     Render ()
 cairoDrawFnParametericFromEval 
         (effEval, (effReal, effGetE, effConsistency))
         canvasParams toScreenCoords 
-        style plotVar fnPairs -- (fnX, fnY) 
+        style plotVar scanVars fnPairs 
     | null fnPairs = return ()
     | otherwise =
     plotSampleBoxes
@@ -324,7 +327,7 @@ cairoDrawFnParametericFromEval
         map auxEval relevantFnPairs
         where
         auxEval (fnX, fnY) =
-            evalSamplesEff effEval 2 area [fnX, fnY]
+            evalSamplesEff effEval 2 area scanVars [fnX, fnY]
             where
             area = insertVar plotVar d $ getDomainBox fnX 
         relevantFnPairs = 

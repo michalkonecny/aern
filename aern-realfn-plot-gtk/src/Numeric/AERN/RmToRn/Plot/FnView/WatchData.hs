@@ -215,14 +215,14 @@ updateValueDisplay effFromDouble effEval widgets dynWidgetsRef _state (fndata, _
         where
         eval :: Double -> [[String]] 
         eval evalPointD =
-            map (map $ show . getDimValue1Or2) $ dataFns fndata
+            map (map $ getDimValue1Or2) $ dataFns fndata
             where
             getDimValue1Or2 (GraphPlotFn fns, plotVar) =
-                GraphPlotFn $ 
+                show $ 
                     map (getDimValue plotVar) $ 
                         filter (pointInDom plotVar) fns
-            getDimValue1Or2 (ParamPlotFns fnPairs, plotVar) =
-                ParamPlotFns $ 
+            getDimValue1Or2 (ParamPlotFns fnPairs _, plotVar) =
+                show $ 
                     map (getDimValue2 plotVar) $ 
                         filter (pointInDom2 plotVar) fnPairs
             pointInDom2 var (fnX, _fnY) = pointInDom var fnX
