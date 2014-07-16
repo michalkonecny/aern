@@ -823,45 +823,50 @@ plotHybIVPListEnclosures
 --        domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
 --    
 
+baseStyle :: FV.FnPlotStyle
+baseStyle = FV.defaultFnPlotStyle
+    {
+        FV.styleOutlineThickness = 1
+    }
+
 black :: FV.FnPlotStyle
-black = FV.defaultFnPlotStyle
+black = baseStyle
     { 
         FV.styleOutlineColour = Just (0,0,0,1), 
-        FV.styleFillColour = Just (0,0,0,0.1),
-        FV.styleOutlineThickness = 1
+        FV.styleFillColour = Just (0,0,0,0.1)
     } 
 blue :: FV.FnPlotStyle
-blue = FV.defaultFnPlotStyle 
+blue = baseStyle 
     { 
         FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
         FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
     } 
 green :: FV.FnPlotStyle
-green = FV.defaultFnPlotStyle 
+green = baseStyle 
     { 
         FV.styleOutlineColour = Just (0.1,0.8,0.1,1), 
         FV.styleFillColour = Just (0.1,0.8,0.1,0.1) 
     } 
 red :: FV.FnPlotStyle
-red = FV.defaultFnPlotStyle 
+red = baseStyle 
     { 
         FV.styleOutlineColour = Just (0.8,0.1,0.1,1), 
         FV.styleFillColour = Just (0.8,0.1,0.1,0.1) 
     } 
 orange :: FV.FnPlotStyle
-orange = FV.defaultFnPlotStyle 
+orange = baseStyle 
     { 
         FV.styleOutlineColour = Just (1,0.7,0.2,1), 
         FV.styleFillColour = Just (1,0.7,0.2,0.1) 
     } 
 purple :: FV.FnPlotStyle
-purple = FV.defaultFnPlotStyle 
+purple = baseStyle 
     { 
         FV.styleOutlineColour = Just (0.7,0.4,1,1), 
         FV.styleFillColour = Just (0.7,0.4,1,0.1) 
     } 
 magenta :: FV.FnPlotStyle
-magenta = FV.defaultFnPlotStyle 
+magenta = baseStyle 
     { 
         FV.styleOutlineColour = Just (0, 0.8,0.8,1), 
         FV.styleFillColour = Just (0, 0.8,0.8,0.1) 
