@@ -165,7 +165,7 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams w h fnsActive fns fnsS
         collectFns restActive restFns restStyles
     collectFns (True:restActive) (fn:restFns) (col:restStyles) = 
         (fn, col) : (collectFns restActive restFns restStyles)
-    collectFns _ _ _ = error "FV: Canvas internal error."
+    collectFns _ _ _ = error "FV: Canvas: collectFns: internal error"
     
     drawFn ::
         ((GraphOrParamPlotFn f, Var f), FnPlotStyle) ->
