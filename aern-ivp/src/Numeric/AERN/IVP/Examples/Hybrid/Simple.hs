@@ -21,7 +21,9 @@ import Numeric.AERN.IVP.Specification.Hybrid
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
 
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import qualified 
+       Numeric.AERN.RealArithmetic.RefinementOrderRounding 
+       as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (dblToReal)
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
@@ -29,10 +31,14 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 
 import Numeric.AERN.RealArithmetic.ExactOps
 
-import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified 
+       Numeric.AERN.RefinementOrder 
+       as RefOrd
 import Numeric.AERN.RefinementOrder.Operators
 
-import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified 
+       Numeric.AERN.NumericOrder 
+       as NumOrd
 import Numeric.AERN.NumericOrder.Operators
 
 import Numeric.AERN.Basics.Consistency
@@ -1655,66 +1661,79 @@ ivpBouncingBallCircle (sampleFn :: f) =
     where
     g = toD gD; gD = 1
     e = toD eD; eD = 0.5
+    initX1 = toD 0.2 -- Zeno with 0.191, non-Zeno with 0.192
+    initX2 = toD 1.2
+    initV1 = toD 0
+    initV2 = toD 0
+    initD = toD 1.48 -- = 0.2^2 + 1.2^2 = 0.04 + 1.44
+    initS = toD 0
+    initR = neg g <*> initX2
+
 --    energyWith x1 _x2 v1 v2 = 
 --        (v1 <*> v1 <+> v2 <*> v2 <+> (toD 2) <*> g <*> x1)
     system =
         HybridSystem
         {
-            hybsys_componentNames = ["x1","x2","v1","v2"],
+            hybsys_componentNames = ["x1","x2","v1","v2","d","s","r"],
             hybsys_modeFields = Map.fromList [(modeMove, odeMove)],
             hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
             hybsys_eventSpecification = eventSpecMap
         }
     modeMove = HybSysMode "move"
     odeMove :: [f] -> [f]
-    odeMove [x1,x2,v1,v2] = 
+    odeMove [x1,x2,v1,v2,_d,s,r] = 
         [v1, 
          v2, 
          newConstFnFromSample x1 (toD 0), 
-         newConstFnFromSample x2 (neg g)
+         newConstFnFromSample x2 (neg g),
+         (2 :: Double) ArithInOut.|<*> s,
+         r,
+         (-3 * gD) ArithInOut.|<*> v2
         ]
     odeMove _ = error "odeMove: internal error"
-    invariantMove [x1,x2,v1,v2] =
+    invariantMove [x1,x2,v1,v2,d,s,r] =
         do
-        -- x1^2 + x2^2 >= 1:
-        let dist2 = (x1<^>2) <+> (x2<^>2)
-        dist2M1NN <- makeNonneg (dist2 <-> one)
+        -- d >= 1:
+        dM1NN <- makeNonneg (d <-> one)
+        -- d = x1^2 + x2^2
         x1New <- 
             case (x1 >? z) of
                 Just True -> 
-                    isect x1 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ dist2M1NN <+> one <-> (x2<^>2))
+                    isect x1 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ dM1NN <+> one <-> (x2<^>2))
                 _ -> return x1
         x2New <- 
             case (x2 >? z) of
                 Just True -> 
-                    isect x2 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ dist2M1NN <+> one <-> (x1<^>2))
+                    isect x2 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ dM1NN <+> one <-> (x1<^>2))
                 _ -> return x2
-        return [x1New,x2New,v1,v2]
+        dNew <- isect (dM1NN <+> one) ((x1<^>2) <+> (x2<^>2)) 
+                
+        return [x1New,x2New,v1,v2,dNew,s,r]
     invariantMove _ = error "invariantMove: internal error"
     eventBounce = HybSysEventKind "bc"
-    pruneBounce _ [x1,x2,v1,v2] =
+    pruneBounce _ [x1,x2,v1,v2,d,s,r] =
         do
-        let dist2 = (x1<^>2) <+> (x2<^>2)
-        _ <- isect z (dist2 <-> one)        
+        _ <- isect z (d <-> one)
         x1New <- isect x1 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ one <-> (x2<^>2))
         x2New <- isect x2 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ one <-> (x1<^>2))
-        let sp = (x1New <*> v1) <+> (x2New <*> v2)
-        _spNP <- makeNonpos sp
-        return $ [x1New,x2New,v1,v2]
+        sNP <- makeNonpos s
+        return $ [x1New,x2New,v1,v2,one,sNP,r]
     pruneBounce _ _ = error "pruneBounce: internal error"
-    resetBounce [x1,x2,v1,v2] = 
+    resetBounce [x1,x2,v1,v2,d,s,r] = 
         [x1, 
          x2,
          v1 <-> c <*> x1,
-         v2 <-> c <*> x2 
-        ] -- deliberately lose precision to facilitate quicker event tree convergence (HACK!)
+         v2 <-> c <*> x2,
+         d,
+         (neg e) <*> s,
+         r <-> (s<^>2)<*>(one <-> e<^>2)
+        ]
         where
-        sp = (x1 <*> v1) <+> (x2 <*> v2)
-        c = (toD 1 <+> e) <*> sp
+        c = (one <+> e) <*> s
     resetBounce _ = error "resetBounce: internal error"
     eventSpecMap _mode =
         Map.singleton eventBounce $
-            (modeMove, resetBounce, [True, True, True, True], pruneBounce)
+            (modeMove, resetBounce, [True, True, True, True, True, True, True], pruneBounce)
     
     ivp :: HybridIVP f
     ivp =
@@ -1736,11 +1755,10 @@ ivpBouncingBallCircle (sampleFn :: f) =
         ++ "; x2(" ++ show tStart ++ ") = " ++ show initX2
         ++ ", v1(" ++ show tStart ++ ") = " ++ show initV1
         ++ ", v2(" ++ show tStart ++ ") = " ++ show initV2
-    initValues = [initX1, initX2, initV1, initV2] 
-    initX1 = toD 0.2
-    initX2 = toD 1.3
-    initV1 = toD 0
-    initV2 = toD 0
+        ++ ", d(" ++ show tStart ++ ") = " ++ show initD
+        ++ ", s(" ++ show tStart ++ ") = " ++ show initS
+        ++ ", r(" ++ show tStart ++ ") = " ++ show initR
+    initValues = [initX1, initX2, initV1, initV2, initD, initS, initR] 
     tStart = hybivp_tStart ivp
     z = toD 0
     one = toD 1
