@@ -80,6 +80,7 @@ ivpByNameMap sampleFn =
         ("bouncingBallAirEnergy", ivpBouncingBallAirEnergy sampleFn),
         ("bouncingBallCubicDrag", ivpBouncingBallCubicDrag sampleFn),
         ("bouncingBallCubicDragEnergy", ivpBouncingBallCubicDragEnergy sampleFn),
+        ("bouncingBallCircle", ivpBouncingBallCircle sampleFn),
         ("2BeadColumnEnergy", ivp2BeadColumnEnergy sampleFn),
         ("2BeadColumnEnergyVDiff", ivp2BeadColumnEnergyVDiff sampleFn),
 --        ,
@@ -1630,6 +1631,122 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
     sampleDom = getSampleDomValue sampleFn
 
 
+{-|
+    A bouncing ball on a circle, as described in 
+    http://www.bipedalrobotics.com/uploads/8/0/6/8/8068963/lyapunov_zeno_2012.pdf
+-}
+ivpBouncingBallCircle :: 
+    (Var f ~ String,
+     HasConstFns f,
+     Neg f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     HasConsistency (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show (Domain f)
+    )
+    => 
+    f -> 
+    HybridIVP f
+ivpBouncingBallCircle (sampleFn :: f) =
+    ivp
+    where
+    g = toD gD; gD = 1
+    e = toD eD; eD = 0.5
+--    energyWith x1 _x2 v1 v2 = 
+--        (v1 <*> v1 <+> v2 <*> v2 <+> (toD 2) <*> g <*> x1)
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x1","x2","v1","v2"],
+            hybsys_modeFields = Map.fromList [(modeMove, odeMove)],
+            hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
+            hybsys_eventSpecification = eventSpecMap
+        }
+    modeMove = HybSysMode "move"
+    odeMove :: [f] -> [f]
+    odeMove [x1,x2,v1,v2] = 
+        [v1, 
+         v2, 
+         newConstFnFromSample x1 (toD 0), 
+         newConstFnFromSample x2 (neg g)
+        ]
+    odeMove _ = error "odeMove: internal error"
+    invariantMove [x1,x2,v1,v2] =
+        do
+        -- x1^2 + x2^2 >= 1:
+        let dist2 = (x1<^>2) <+> (x2<^>2)
+        dist2M1NN <- makeNonneg (dist2 <-> one)
+        x1New <- 
+            case (x1 >? z) of
+                Just True -> 
+                    isect x1 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ dist2M1NN <+> one <-> (x2<^>2))
+                _ -> return x1
+        x2New <- 
+            case (x2 >? z) of
+                Just True -> 
+                    isect x2 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ dist2M1NN <+> one <-> (x1<^>2))
+                _ -> return x2
+        return [x1New,x2New,v1,v2]
+    invariantMove _ = error "invariantMove: internal error"
+    eventBounce = HybSysEventKind "bc"
+    pruneBounce _ [x1,x2,v1,v2] =
+        do
+        let dist2 = (x1<^>2) <+> (x2<^>2)
+        _ <- isect z (dist2 <-> one)        
+        x1New <- isect x1 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ one <-> (x2<^>2))
+        x2New <- isect x2 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ one <-> (x1<^>2))
+        let sp = (x1New <*> v1) <+> (x2New <*> v2)
+        _spNP <- makeNonpos sp
+        return $ [x1New,x2New,v1,v2]
+    pruneBounce _ _ = error "pruneBounce: internal error"
+    resetBounce [x1,x2,v1,v2] = 
+        [x1, 
+         x2,
+         v1 <-> c <*> x1,
+         v2 <-> c <*> x2 
+        ] -- deliberately lose precision to facilitate quicker event tree convergence (HACK!)
+        where
+        sp = (x1 <*> v1) <+> (x2 <*> v2)
+        c = (toD 1 <+> e) <*> sp
+    resetBounce _ = error "resetBounce: internal error"
+    eventSpecMap _mode =
+        Map.singleton eventBounce $
+            (modeMove, resetBounce, [True, True, True, True], pruneBounce)
+    
+    ivp :: HybridIVP f
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = z,
+            hybivp_tEnd = z,
+            hybivp_initialStateEnclosure = 
+                Map.singleton modeMove initValues,
+            hybivp_maybeExactStateAtTEnd = Nothing
+        }
+    description =
+        "BB-O"
+--        "" ++ "if x = 0 && v <= 0 then post(v) = -v/2, post(r) = r/4 else x''= -10, r' = 0, r = v^2+20x, x >= 0, r >= 0)" 
+        ++ "; x1(" ++ show tStart ++ ") = " ++ show initX1
+        ++ "; x2(" ++ show tStart ++ ") = " ++ show initX2
+        ++ ", v1(" ++ show tStart ++ ") = " ++ show initV1
+        ++ ", v2(" ++ show tStart ++ ") = " ++ show initV2
+    initValues = [initX1, initX2, initV1, initV2] 
+    initX1 = toD 0.2
+    initX2 = toD 1.3
+    initV1 = toD 0
+    initV2 = toD 0
+    tStart = hybivp_tStart ivp
+    z = toD 0
+    one = toD 1
+    toD = dblToReal sampleDom
+--    toDInterval l r = (toD l) </\> (toD r)
+    sampleDom = getSampleDomValue sampleFn
 
 --ivpBouncingBallVibr_AtTime :: 
 --    (Var f ~ String,
