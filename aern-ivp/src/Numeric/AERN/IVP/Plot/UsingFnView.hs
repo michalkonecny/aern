@@ -779,7 +779,7 @@ plotHybIVPListEnclosures
             sampleFn
             rect
             (Just (1,1,1,1))
-            200
+            (if shouldUseParamPlot then 20 else 200)
             tVar
             (zip groupNames $ map addMetaToFnNames fnNames)
         where
