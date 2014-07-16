@@ -247,7 +247,7 @@ solveEventsPrintSteps ivp
             rect = fmap (dblToReal 0) rectDbl :: FV.Rectangle CF
         (Just (PlotParams rectDbl activevars shouldUseParamPlot isBW), TopLevelLocate) -> 
             plotHybIVPListEnclosures rect activevars isBW shouldUseParamPlot
-                effCf (2^^(-12 :: Int) :: CF) ivp segmentsInfo maybePDFfilename
+                effCf plotEffIP (2^^(-12 :: Int) :: CF) ivp segmentsInfo maybePDFfilename
             where
             rect = fmap (dblToReal 0) rectDbl :: FV.Rectangle CF
     return ()
@@ -259,13 +259,13 @@ solveEventsPrintSteps ivp
         TopLevelLocate -> maybeEndStateLocate
     (maybeEndStateBisect, bisectionInfo) =
         solveHybridIVPBisect
-            sizeLimits effCf substSplitSizeLimit
+            sizeLimits effCf effIP
                 delta m locMinStepSize locMaxStepSize splitImprovementThreshold
                     "t0" 
                         ivp
     (maybeEndStateLocate, segmentsInfo) =
         solveHybridIVPLocate
-            sizeLimits effCf substSplitSizeLimit
+            sizeLimits effCf effIP
                 locMinStepSize locMaxStepSize maxNodes
                 delta m odeMinStepSize odeMaxStepSize splitImprovementThreshold
                     "t0" 
@@ -275,8 +275,9 @@ solveEventsPrintSteps ivp
     m = 200 -- max number of Picard iterations
 --    m = 20
     maxNodes = 100 -- max event tree size
-    substSplitSizeLimit = 10
+    substSplitSizeLimit = 100
 --    substSplitSizeLimit = maxSplitSizeParam -- 2^t0maxdeg
+    plotSubstSplitSizeLimit = 100
 
     locMinStepSize = 2^^(-locMaxDepth)
     locMaxStepSize = 2^^(-locMinDepth)
@@ -285,6 +286,19 @@ solveEventsPrintSteps ivp
     
 --        fst $ RefOrd.getEndpointsOut $ 10^^(-3::Int)
     splitImprovementThreshold = 2^^(-48 :: Int)
+
+    effIP = 
+        (ipolylimits_effort sizeLimits)
+        {
+            ipolyeff_cfRoundedRealEffort = effCf,
+            ipolyeff_evalMaxSplitSize = substSplitSizeLimit
+        }
+    
+    plotEffIP = 
+        effIP
+        {
+            ipolyeff_evalMaxSplitSize = plotSubstSplitSizeLimit
+        }
     
     -- auxiliary:
     description = hybivp_description ivp
@@ -466,7 +480,7 @@ solveHybridIVPBisect ::
     =>
     SizeLimits Fn -> 
     ArithInOut.RoundedRealEffortIndicator CF ->
-    Int -> 
+    IntPolyEffort CF -> 
     CF ->
     Int ->
     CF ->
@@ -481,7 +495,7 @@ solveHybridIVPBisect ::
      BisectionInfo solvingInfo (solvingInfo, Maybe CF)
     )
 solveHybridIVPBisect 
-        sizeLimits effCf substSplitSizeLimit
+        sizeLimits effCf effIP
             delta m minStepSize maxStepSize splitImprovementThreshold 
                 t0Var
                     hybivp
@@ -502,12 +516,6 @@ solveHybridIVPBisect
     effMultFn = effIP
     effAddFnDom = effIP
     effInclFn = effIP
-    effIP = 
-        (ipolylimits_effort sizeLimits)
-        {
-            ipolyeff_cfRoundedRealEffort = effCf,
-            ipolyeff_evalMaxSplitSize = substSplitSizeLimit
-        }
 
 solveHybridIVPLocate ::
     (
@@ -518,7 +526,7 @@ solveHybridIVPLocate ::
     =>
     SizeLimits Fn -> 
     ArithInOut.RoundedRealEffortIndicator CF ->
-    Int -> 
+    IntPolyEffort CF -> 
     CF ->
     CF ->
     Int ->
@@ -549,7 +557,7 @@ solveHybridIVPLocate ::
         ]
     )
 solveHybridIVPLocate
-        sizeLimits effCf substSplitSizeLimit
+        sizeLimits effCf effIP
             locMinStepSize locMaxStepSize maxNodes
             delta m odeMinStepSize odeMaxStepSize splitImprovementThreshold
                 t0Var
@@ -582,12 +590,6 @@ solveHybridIVPLocate
     effMultFnDom = effIP
     effDivFnInt = effIP
     effInclFn = effIP
-    effIP = 
-        (ipolylimits_effort sizeLimits)
-        {
-            ipolyeff_cfRoundedRealEffort = effCf,
-            ipolyeff_evalMaxSplitSize = substSplitSizeLimit
-        }
 
 
 
