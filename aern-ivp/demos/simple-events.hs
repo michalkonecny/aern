@@ -277,7 +277,7 @@ solveEventsPrintSteps ivp
     maxNodes = 100 -- max event tree size
     substSplitSizeLimit = 100
 --    substSplitSizeLimit = maxSplitSizeParam -- 2^t0maxdeg
-    plotSubstSplitSizeLimit = 100
+    plotSubstSplitSizeLimit = 10
 
     locMinStepSize = 2^^(-locMaxDepth)
     locMaxStepSize = 2^^(-locMinDepth)

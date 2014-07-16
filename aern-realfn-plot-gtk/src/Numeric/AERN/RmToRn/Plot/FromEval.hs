@@ -115,13 +115,14 @@ cairoDrawFnGraphFromEval ::
     ((Domain f, Domain f) -> (Double, Double)) ->
     FnPlotStyle ->
     Var f ->
-    f ->
+    [f] ->
     Render ()
 cairoDrawFnGraphFromEval 
-        eff@(effEval, (effReal, effGetE, effConsistency))
+        (effEval, (effReal, effGetE, effConsistency))
         canvasParams toScreenCoords 
-        style plotVar fn 
-    = 
+        style plotVar fns
+    | null fns = return ()
+    | otherwise = 
 --    unsafePrint (
 --        "cairoDrawFnFromEval: starting"
 --        ++ "\n dom = " ++ show dom
@@ -174,11 +175,18 @@ cairoDrawFnGraphFromEval
                     (xC,yC) = translateToCoordSystem effReal coordSystem pt
                     (xD, yD) = toScreenCoords (xC,yC)
             enclosureValues =
-                map evalPt $ map mkPt partition
-            mkPt d =
-                insertVar plotVar d dombox
-            evalPt pt =
-                evalAtPointOutEff effEval pt fn
+                map evalPt partition
+            evalPt d =
+                foldl1 (</\>) $ map  auxEval relevantFns
+                where
+                auxEval fn = evalAtPointOutEff effEval pt fn
+                    where
+                    pt = insertVar plotVar d $ getDomainBox fn
+                relevantFns = 
+                    map snd $ filter hasD $ zip doms fns
+                hasD (dom2, _) =
+                    (dom2 RefOrd.|<=? d) == Just True
+
             partition =
                 [domLO] ++ (map ithPt [1..(segCnt -1)]) ++ [domHI]
                 where
@@ -187,20 +195,16 @@ cairoDrawFnGraphFromEval
                 ithPt i =
                     ((domLO <*>| (segCnt - i)) <+> (domHI <*>| i)) </>| segCnt
                 segCnt =
-                    getSegmentCount segPerUnit coordSystem visibleDom 
-                        -- in hsreals this was dom instead of visibleDom 
-                getSegmentCount segPerUnit coordSystem dom = 
---                        unsafePrint ("cairoDrawFnFromEval: getSegmentCount: dom = " ++ show dom ++ " domWidthScreen = " ++ show domWidthScreen) $
                     case ArithUpDn.convertUpEff effToInt 0 (segPerUnit |<*> domWidthScreen) of
                         Just cnt -> (cnt :: Int)
                     where
                     domWidthScreen = 
                         NumOrd.minOutEff effMinmax c1 $ domHIScreen <-> domLOScreen
                     (domLOScreen, _) = 
-                        translateToCoordSystem effReal coordSystem (domLO, c1)
+                        translateToCoordSystem effReal coordSystem (domLO2, c1)
                     (domHIScreen, _) = 
-                        translateToCoordSystem effReal coordSystem (domHI, c1)
-                    (domLO, domHI) = RefOrd.getEndpointsOutEff effGetE dom
+                        translateToCoordSystem effReal coordSystem (domHI2, c1)
+                    (domLO2, domHI2) = RefOrd.getEndpointsOutEff effGetE visibleDom
                     c1 = one sampleDF
 --            pickActiveVals vals =
 --                fst $ unzip $ filter snd $ zip vals activeDimensions
@@ -210,14 +214,18 @@ cairoDrawFnGraphFromEval
         dom <\/> (vdomLO </\> vdomHI)
         where
         (_,_,vdomLO, vdomHI) = getVisibleDomExtents coordSystem
-    dom =
-        case lookupVar dombox plotVar of 
-            Just dom -> dom
-            _ -> error $ 
-                "aern-realfn-plot-gtk error: plotVar not present in dombox:"
-                ++ "\n  plotVar = " ++ show plotVar 
-                ++ "\n  dombox = " ++ show dombox 
-    dombox = getDomainBox fn
+    dom = foldl1 (</\>) doms
+    doms = 
+        map getPlotDom domboxes
+        where
+        getPlotDom dombox =
+            case lookupVar dombox plotVar of 
+                Just dom2 -> dom2
+                _ -> error $ 
+                    "aern-realfn-plot-gtk error: plotVar not present in dombox:"
+                    ++ "\n  plotVar = " ++ show plotVar 
+                    ++ "\n  dombox = " ++ show dombox 
+    domboxes = map getDomainBox fns
     coordSystem = cnvprmCoordSystem canvasParams
     segPerUnit = cnvprmSamplesPerUnit canvasParams
 --    activeDimensions = cnvprmPlotDimensions canvasParams
@@ -240,7 +248,6 @@ cairoDrawFnGraphFromEval
     effDivInt =
         ArithInOut.mxfldEffortDiv sampleDF sampleI $ ArithInOut.rrEffortIntMixedField sampleDF effReal
     
-    sampleF = fn
     sampleDF = dom
     sampleI = 1 :: Int
     
@@ -259,13 +266,14 @@ cairoDrawFnParametericFromEval ::
     ((Domain f, Domain f) -> (Double, Double)) ->
     FnPlotStyle ->
     Var f ->
-    (f,f) ->
+    [(f,f)] ->
     Render ()
 cairoDrawFnParametericFromEval 
-        eff@(effEval, (effReal, effGetE, effConsistency))
+        (effEval, (effReal, effGetE, effConsistency))
         canvasParams toScreenCoords 
-        style plotVar (fnX, fnY) 
-    = 
+        style plotVar fnPairs -- (fnX, fnY) 
+    | null fnPairs = return ()
+    | otherwise =
     plotSampleBoxes
     where
     plotSampleBoxes =
@@ -311,11 +319,18 @@ cairoDrawFnParametericFromEval
                 (xC,yC) = translateToCoordSystem effReal coordSystem pt
                 (xD,yD) = toScreenCoords (xC,yC)
     enclosureSamples =
-        map evalAreaUsingSamples $ map mkArea partition
-    mkArea d =
-        insertVar plotVar d dombox
-    evalAreaUsingSamples area =
-        evalSamplesEff effEval 2 area [fnX, fnY] 
+        concat $ map evalAreaUsingSamples partition
+    evalAreaUsingSamples d =
+        map auxEval relevantFnPairs
+        where
+        auxEval (fnX, fnY) =
+            evalSamplesEff effEval 2 area [fnX, fnY]
+            where
+            area = insertVar plotVar d $ getDomainBox fnX 
+        relevantFnPairs = 
+            map snd $ filter hasD $ zip doms fnPairs
+        hasD (dom2, _) =
+            (dom2 RefOrd.|<=? d) == Just True
     partition =
         [domLO] ++ (map ithPt [1..(segCnt -1)]) ++ [domHI]
         where
@@ -327,14 +342,18 @@ cairoDrawFnParametericFromEval
         segCnt = round $ (fromInteger $ toInteger segPerUnit) * domSize
         domSize :: Double
         Just domSize = ArithUpDn.convertUp 0 $ domHI <-> domLO
-    dom =
-        case lookupVar dombox plotVar of 
-            Just dom2 -> dom2
-            _ -> error $ 
-                "aern-realfn-plot-gtk error: plotVar not present in dombox:"
-                ++ "\n  plotVar = " ++ show plotVar 
-                ++ "\n  dombox = " ++ show dombox 
-    dombox = getDomainBox fnX
+    dom = foldl1 (RefOrd.</\>) doms 
+    doms = 
+        map getPlotDom domboxes
+        where
+        getPlotDom dombox =
+            case lookupVar dombox plotVar of 
+                Just dom2 -> dom2
+                _ -> error $ 
+                    "aern-realfn-plot-gtk error: plotVar not present in dombox:"
+                    ++ "\n  plotVar = " ++ show plotVar 
+                    ++ "\n  dombox = " ++ show dombox 
+    domboxes = map getDomainBox $ map fst fnPairs
     coordSystem = cnvprmCoordSystem canvasParams
     segPerUnit = cnvprmSamplesPerUnit canvasParams
 --    activeDimensions = cnvprmPlotDimensions canvasParams
@@ -354,9 +373,7 @@ cairoDrawFnParametericFromEval
     effDivInt =
         ArithInOut.mxfldEffortDiv sampleDF sampleI $ ArithInOut.rrEffortIntMixedField sampleDF effReal
     
-    sampleF = fnX
+    sampleF = fst $ head fnPairs
     sampleDF = dom
     sampleI = 1 :: Int
-    
---    sampleFn = fn
     
