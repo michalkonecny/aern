@@ -45,12 +45,12 @@ data FnData f =
     
 data GraphOrParamPlotFn f
     = GraphPlotFn [f]
-    | ParamPlotFns [(f,f)]
+    | ParamPlotFns [(f,f)] [Var f]
     
 instance (Show f) => Show (GraphOrParamPlotFn f)
     where
     show (GraphPlotFn v) = show v
-    show (ParamPlotFns v) = show v
+    show (ParamPlotFns v _scanVars) = show v
 
 data FnMetaData f =
     FnMetaData
