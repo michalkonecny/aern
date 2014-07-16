@@ -29,6 +29,8 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Consistency
 
+--import qualified Data.List as List
+
 --import Numeric.AERN.Misc.Debug
 
 class (HasDomainBox f) => CanEvaluateOtherType f
@@ -99,14 +101,16 @@ evalAtPointIn dombox f =
 evalSamplesEff :: 
     (ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike (Domain f), 
-     CanEvaluate f) 
+     CanEvaluate f,
+     Eq (Var f)) 
     =>
     EvaluationEffortIndicator f -> 
     Int {-^ @n@ - Take (n+1) samples in each dimension. -} -> 
-    DomainBox f {-^ @area@ - Area to evaluate the functions over -} -> 
+    DomainBox f {-^ @area@ - Area to evaluate the functions over -} ->
+    [Var f] {-^ variables to sample from and not substitute with their full domain -} -> 
     [f] {-^ @[f1, f2, ...]@ - Functions to evaluate -} -> 
     [[Domain f]] -- ^ @[[f1(sample1), f2(sample1), ...], [f1(sample2), f2(sample2), ...], ]@ 
-evalSamplesEff effEval n area (fns :: [f]) =
+evalSamplesEff effEval n area scanVars (fns :: [f]) =
     map evalPt points
     where
     evalPt pt =
@@ -116,7 +120,8 @@ evalSamplesEff effEval n area (fns :: [f]) =
         where
         addChoices (var, a) 
             | aIsExact = [(var, a)]
-            | otherwise = [(var, aPicked) | aPicked <- choices]
+            | var `elem` scanVars = [(var, aPicked) | aPicked <- choices]
+            | otherwise = [(var, a)]
             where
             aIsExact = (aL NumOrd.==? aR) == Just True
             choices = 
