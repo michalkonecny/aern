@@ -187,9 +187,11 @@ plotODEIVPBisectionEnclosures
             
     fns = [List.transpose fns3]
     segNames = ["variables"]
-    fnNamesPre = [componentNames]
+    fnNamesPre
+        | shouldUseParamPlot = [[concat $ pickByActivevars componentNames]]
+        | otherwise = [componentNames]
             
-    (fns3, _fnNamesPre3, segNames3) 
+    (fns3, _fnNamesPre3, _segNames3) 
         | shouldUseParamPlot =
             (fns2, fnNamesPre2, segNames2)
         | otherwise = 
@@ -371,6 +373,11 @@ plotHybIVPBisectionEnclosures
     activevars =
         take n $ activevarsPre ++ (repeat False)
 
+    -- function to pick from a list of length componentNames those elements that correspond to active vars:
+    pickByActivevars :: [a] -> [a]
+    pickByActivevars list =
+        map snd $ filter fst $ zip activevars list
+
     addPlotVar = map $ map addV
         where
         addV fs = (FV.GraphPlotFn fs, tVar)
@@ -382,7 +389,9 @@ plotHybIVPBisectionEnclosures
         splitUpGroups (g : gs) =
             (take n g) : (splitUpGroups ((drop n g) : gs)) 
     segNames = ["variables"]
-    fnNames = [componentNames]
+    fnNames 
+        | shouldUseParamPlot = [[concat $ pickByActivevars componentNames]]
+        | otherwise = [componentNames]
         
     (fns3, _fnNames3, _segNames3) = 
         aggregateSequencesOfTinySegments effEval componentNames tVar plotMinSegSize fnsAndNames 
@@ -700,12 +709,15 @@ plotHybIVPListEnclosures
         splitUpGroups (g : gs) =
             (take n g) : (splitUpGroups ((drop n g) : gs)) 
     groupNames = ["variables"]
-    fnNames = [componentNames]
+    fnNames 
+        | shouldUseParamPlot = [[concat $ pickByActivevars componentNames]]
+        | otherwise = [componentNames]
             
     (fns3, _fnNames3, _groupNames3) 
-        | shouldUseParamPlot =
-            error "Parametric plot not yet supported."
-        | otherwise = 
+--        | shouldUseParamPlot =
+--            error "Parametric plot not yet supported."
+--        | otherwise 
+        = 
             unzip3 $
                 map getFnsFromSegModeInfo $ 
                     concat $ map getSegModeInfo
