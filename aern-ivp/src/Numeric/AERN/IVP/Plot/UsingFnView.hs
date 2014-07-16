@@ -594,7 +594,9 @@ plotHybIVPListEnclosures ::
     -> Bool -- ^ True -> use parametric plot (using the active functions - there have to be exactly two of them) 
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f)
-    -> 
+    ->
+    CairoDrawFnEffortIndicator f 
+    ->
     Domain f
     -> 
     HybridIVP f
@@ -619,7 +621,7 @@ plotHybIVPListEnclosures ::
     IO ()
 plotHybIVPListEnclosures 
         rect activevarsPre isBW shouldUseParamPlot 
-        effCF _plotMinSegSize (ivp :: HybridIVP f) segmentsInfo 
+        effCF effDrawFn _plotMinSegSize (ivp :: HybridIVP f) segmentsInfo 
         maybePDFFilename =
     case maybePDFFilename of
         Nothing ->
@@ -638,7 +640,7 @@ plotHybIVPListEnclosures
             fnsActive = concat $ FV.dataDefaultActiveFns fnmeta
     where
     fnsPlotSpec = addPlotVar fns
-    effDrawFn = cairoDrawFnDefaultEffort sampleFn
+--    effDrawFn = cairoDrawFnDefaultEffort sampleFn
     effEval = evaluationDefaultEffort sampleFn
     (((sampleFn : _) : _) : _) = fns 
 --    sampleCf = getSampleDomValue sampleFn

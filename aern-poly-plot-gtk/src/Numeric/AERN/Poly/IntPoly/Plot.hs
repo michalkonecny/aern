@@ -47,11 +47,33 @@ instance
     CairoDrawableFn (IntPoly var cf)
     where
     type CairoDrawFnEffortIndicator (IntPoly var cf) =
-        CairoDrawEffortIndicatorFnFromEval (IntPoly var cf)
-    cairoDrawFnDefaultEffort =
-        cairoDrawFnDefaultEffortFromEval
-    cairoDrawFnGraph = 
-        cairoDrawFnGraphFromEval 
-    cairoDrawFnParameteric = 
-        cairoDrawFnParametericFromEval 
+        IntPolyEffort cf
+    cairoDrawFnDefaultEffort (IntPoly cfg _) =
+        ipolycfg_effort cfg
+    cairoDrawFnGraph effIP = 
+        cairoDrawFnGraphFromEval $ convertEff effIP 
+    cairoDrawFnParameteric effIP = 
+        cairoDrawFnParametericFromEval $ convertEff effIP 
+        
+convertEff :: 
+    HasConsistency cf 
+    =>
+    IntPolyEffort cf
+    -> 
+    CairoDrawEffortIndicatorFnFromEval (IntPoly var cf)
+convertEff effIP =
+    (
+       effIP
+       ,
+       (
+        ipolyeff_cfRoundedRealEffort effIP
+        ,
+        ipolyeff_cfGetEndpointsEffort effIP
+        ,
+        consistencyDefaultEffort sampleDF
+       )
+    )
+    where
+    sampleDF = ipolyeff_sampleCf effIP
+    
         
