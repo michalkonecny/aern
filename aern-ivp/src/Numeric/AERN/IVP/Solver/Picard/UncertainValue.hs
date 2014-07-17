@@ -313,7 +313,7 @@ getRangeBySamples ::
 getRangeBySamples effEval fn =
     foldl1 (RefOrd.</\>) values 
     where
-    values = map head $ evalSamplesEff effEval 1 (getDomainBox fn) allVars [fn]
+    values = map head $ evalSamplesAlongEdgesEff effEval 1 (getDomainBox fn) allVars [fn]
     allVars = getVars $ getDomainBox fn
 
 solveODEIVPUncertainValueExactTime_UsingPicard ::
