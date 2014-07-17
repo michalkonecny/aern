@@ -58,8 +58,8 @@ import qualified Data.Map as Map
 import qualified Data.List as List
 import Data.List (isPrefixOf)
 
-import Numeric.AERN.Misc.Debug
-_ = unsafePrint
+import Debug.Trace
+_ = trace
 
 plotArgsHelpLines :: [String]
 plotArgsHelpLines =
@@ -72,17 +72,20 @@ plotArgsHelpLines =
         "   PlotArgs:  example 4: NoPlot"
     ]
 
-data IVPPlotArgs =
+data IVPPlotArgs var =
     IVPPlotArgs
     {
         plotp_rect :: FV.Rectangle Double,
         plotp_activevars :: [Bool],
-        plotp_isParam :: Maybe Int, -- sampling frequency for parametric plot
+        plotp_isParam :: Maybe (Int, [var]), -- sampling frequency for parametric plot
         plotp_isBW :: Bool
     }
     deriving (Show)
     
-readIVPPlotArgs :: String -> Maybe IVPPlotArgs
+readIVPPlotArgs ::
+    (Read var)
+    =>
+    String -> Maybe (IVPPlotArgs var)
 readIVPPlotArgs sOrig
     | "Plot" `isPrefixOf` sOrig = readPlotType False $ drop (length "Plot") sOrig
     | "BWPlot" `isPrefixOf` sOrig = readPlotType True $ drop (length "BWPlot") sOrig
@@ -90,26 +93,36 @@ readIVPPlotArgs sOrig
     | otherwise = errorP
     where
     readPlotType isBW s 
-        | "Param" `isPrefixOf` s =
-            readSamplingFreq $ drop (length "Param") s 
         | "Graph" `isPrefixOf` s = 
             readActiveVars Nothing $ drop (length "Graph") s
+        | "Param" `isPrefixOf` s =
+            readParamPlotArgs $ drop (length "Param") s 
         | otherwise = errorP
         where
-        readSamplingFreq ('(' : s2) =
-            case reads s2 of
-                (samplingFreq, ')' : sRest) : _ ->
-                    readActiveVars (Just samplingFreq) sRest
-                _ -> errorP
-        readSamplingFreq _ = errorP
-        readActiveVars isParam s2 = 
+        readActiveVars maybeParamPlotArgs s2 = 
             case reads s2 of
                 (activeVars, sRest) : _ ->
                     case reads sRest of
                         (boundsD, []) : _ -> 
-                            Just (IVPPlotArgs (boundsFromDoubles boundsD) activeVars isParam isBW)
+                            Just (IVPPlotArgs (boundsFromDoubles boundsD) activeVars maybeParamPlotArgs isBW)
                         _ -> errorP
                 _ -> errorP
+        readParamPlotArgs ('(' : s2) =
+            case reads s2 of
+                (samplingFreq, ',' : sRest) : _ ->
+                    readScanVars samplingFreq sRest
+                _ -> errorP
+        readParamPlotArgs _ = errorP
+        readScanVars samplingFreq s2 =
+            case List.findIndex (== ')') s2 of
+                Just i2 ->
+                    case reads $ "[" ++ (take i2 s2) ++ "]" of
+                        (scanVars, []) : _ -> 
+                            readActiveVars (Just (samplingFreq, scanVars)) (drop (i2+1) s2)
+                        _ -> errorP
+                _ -> errorP
+            where
+            
     errorP = error $ "Cannot parse plot specification: " ++ sOrig
     boundsFromDoubles (xmin, xmax, ymin, ymax) =
         FV.Rectangle ymax ymin xmin xmax
@@ -131,7 +144,7 @@ plotODEIVPBisectionEnclosures ::
     FV.Rectangle (Domain f) -- ^ initial canvas viewport
     -> [Bool] -- ^ for each variable, whether it should be plotted
     -> Bool -- ^ True -> plot all components in black 
-    -> Maybe Int -- ^ Just samplingFreq -> use parametric plot (using the active functions - there have to be exactly two of them) 
+    -> Maybe (Int, [Var f]) -- ^ Just (samplingFreq, scanVars) -> use parametric plot (using the active functions - there have to be exactly two of them) 
     -> ArithInOut.RoundedRealEffortIndicator (Domain f)
     -> Domain f
     -> ODEIVP f
@@ -139,9 +152,10 @@ plotODEIVPBisectionEnclosures ::
     -> Maybe FilePath
     -> IO ()
 plotODEIVPBisectionEnclosures 
-        rect activevarsPre isBW maybeParamPlotFreq effCF plotMinSegSize 
+        rect activevarsPre isBW maybeParamPlotArgs effCF plotMinSegSize 
         (ivp :: ODEIVP f) bisectionInfo 
         maybePDFFilename =
+--    trace ("plotODEIVPBisectionEnclosures: maybeParamPlotArgs = " ++  show maybeParamPlotArgs) $
     case maybePDFFilename of
         Nothing ->
             do
@@ -158,7 +172,7 @@ plotODEIVPBisectionEnclosures
             canvasParams = FV.dataDefaultCanvasParams fnmeta
             fnsActive = concat $ FV.dataDefaultActiveFns fnmeta
     where
-    shouldUseParamPlot = case maybeParamPlotFreq of Just _ -> True; _ -> False
+    shouldUseParamPlot = case maybeParamPlotArgs of Just _ -> True; _ -> False
     
     fnsPlotSpec = addPlotVar fns
     
@@ -192,15 +206,16 @@ plotODEIVPBisectionEnclosures
         (batch, rest) = splitAt n list
 --    pickByActivevarsCycle _ = error $ "plotODEIVPBisectionEnclosures: pickByActivevarsCycle: list not divisible by n"
     
-    addPlotVar fns2
-        | shouldUseParamPlot
-            = map (map addVParam . pickByActivevarsCycle) fns2
-        | otherwise 
-            = map (map addV) fns2
+    addPlotVar fns2 =
+        case maybeParamPlotArgs of
+            Just (_, scanVars) ->
+                map (map (addVParam scanVars) . pickByActivevarsCycle) fns2
+            _ ->
+                map (map addV) fns2
         where
         addV fs = (FV.GraphPlotFn (fs :: [f]), tVar)
-        addVParam [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY) [], tVar)
-        addVParam _ = errorParamFnCount 
+        addVParam scanVars [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY) scanVars, tVar)
+        addVParam scanVars _ = errorParamFnCount 
         
     errorParamFnCount =
             error 
@@ -236,7 +251,7 @@ plotODEIVPBisectionEnclosures
             sampleFn
             rect
             (Just (1,1,1,1))
-            (case maybeParamPlotFreq of Just freq -> freq; _ -> 200)
+            (case maybeParamPlotArgs of Just (freq, _) -> freq; _ -> 200)
             tVar
             (zip segNames $ map addMetaToFnNames fnNames)
         where
@@ -349,7 +364,8 @@ plotHybIVPBisectionEnclosures ::
     FV.Rectangle (Domain f) -- ^ initial canvas viewport
     -> [Bool] -- ^ for each variable, whether it should be plotted
     -> Bool -- ^ True -> plot all components in black 
-    -> Maybe Int -- ^ Just samplingFreq -> use parametric plot (using the active functions - there have to be exactly two of them) 
+    -> Maybe (Int, [Var f]) 
+        -- ^ Just (samplingFreq, scanVars) -> use parametric plot (using the active functions - there have to be exactly two of them) 
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f)
     -> Bool 
@@ -359,7 +375,7 @@ plotHybIVPBisectionEnclosures ::
     -> Maybe FilePath
     -> IO ()
 plotHybIVPBisectionEnclosures 
-        rect activevarsPre isBW maybeParamPlotFreq effCF 
+        rect activevarsPre isBW maybeParamPlotArgs effCF 
         shouldShowEventTreeEnclosures plotMinSegSize ivp bisectionInfo 
         maybePDFFilename =
     case maybePDFFilename of
@@ -378,7 +394,7 @@ plotHybIVPBisectionEnclosures
             canvasParams = FV.dataDefaultCanvasParams fnmeta
             fnsActive = concat $ FV.dataDefaultActiveFns fnmeta
     where
-    shouldUseParamPlot = case maybeParamPlotFreq of Just _ -> True; _ -> False
+    shouldUseParamPlot = case maybeParamPlotArgs of Just _ -> True; _ -> False
 
     fnsPlotSpec = addPlotVar fns
     
@@ -480,7 +496,7 @@ plotHybIVPBisectionEnclosures
             sampleFn
             rect
             (Just (1,1,1,1))
-            (case maybeParamPlotFreq of Just freq -> freq; _ -> 200)
+            (case maybeParamPlotArgs of Just (freq, _) -> freq; _ -> 200)
             tVar
             (zip segNames $ map addMetaToFnNames fnNames)
         where
@@ -614,7 +630,8 @@ plotHybIVPListEnclosures ::
     FV.Rectangle (Domain f) -- ^ initial canvas viewport
     -> [Bool] -- ^ for each variable, whether it should be plotted
     -> Bool -- ^ True -> plot all components in black 
-    -> Maybe Int -- ^ Just samplingFreq -> use parametric plot (using the active functions - there have to be exactly two of them) 
+    -> Maybe (Int, [Var f]) 
+        -- ^ Just (samplingFreq, scanVars) -> use parametric plot (using the active functions - there have to be exactly two of them) 
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f)
     ->
@@ -643,7 +660,7 @@ plotHybIVPListEnclosures ::
     -> 
     IO ()
 plotHybIVPListEnclosures 
-        rect activevarsPre isBW maybeParamPlotFreq 
+        rect activevarsPre isBW maybeParamPlotArgs 
         effCF effDrawFn _plotMinSegSize (ivp :: HybridIVP f) segmentsInfo 
         maybePDFFilename =
     case maybePDFFilename of
@@ -662,7 +679,7 @@ plotHybIVPListEnclosures
             canvasParams = FV.dataDefaultCanvasParams fnmeta
             fnsActive = concat $ FV.dataDefaultActiveFns fnmeta
     where
-    shouldUseParamPlot = case maybeParamPlotFreq of Just _ -> True; _ -> False
+    shouldUseParamPlot = case maybeParamPlotArgs of Just _ -> True; _ -> False
 
     fnsPlotSpec = addPlotVar fns
 --    effDrawFn = cairoDrawFnDefaultEffort sampleFn
@@ -703,6 +720,17 @@ plotHybIVPListEnclosures
         addV fs = (FV.GraphPlotFn (fs :: [f]), tVar)
         addVParam [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY) [], tVar)
         addVParam _ = errorParamFnCount 
+
+    addPlotVar fns2 =
+        case maybeParamPlotArgs of
+            Just (_, scanVars) ->
+                map (map (addVParam scanVars) . pickByActivevarsCycle) fns2
+            _ ->
+                map (map addV) fns2
+        where
+        addV fs = (FV.GraphPlotFn (fs :: [f]), tVar)
+        addVParam scanVars [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY) scanVars, tVar)
+        addVParam scanVars _ = errorParamFnCount 
 
     errorParamFnCount =
             error 
@@ -804,7 +832,7 @@ plotHybIVPListEnclosures
             sampleFn
             rect
             (Just (1,1,1,1))
-            (case maybeParamPlotFreq of Just freq -> freq; _ -> 200)
+            (case maybeParamPlotArgs of Just (freq, _) -> freq; _ -> 200)
             tVar
             (zip groupNames $ map addMetaToFnNames fnNames)
         where

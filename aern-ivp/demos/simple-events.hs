@@ -140,7 +140,7 @@ runWithArgs
     topLevelStrategy = topLevelStrategyFromS topLevelStrategyS
     basicStepType = basicStepTypeFromS basicStepTypeS
 
-    maybePlotDimens = readIVPPlotArgs maybePlotDimensS :: Maybe IVPPlotArgs
+    maybePlotDimens = readIVPPlotArgs maybePlotDimensS :: Maybe (IVPPlotArgs (Var Fn))
     maybePDFfilename = readPDFfilename maybePDFfilenameS :: Maybe String
     maxDeg = read maxDegS :: Int
     maxSize = read maxSizeS :: Int
@@ -168,7 +168,7 @@ refines a1 a2 =
 
 solveEventsPrintSteps :: 
     HybridIVP Fn -> 
-    (Maybe IVPPlotArgs) ->
+    (Maybe (IVPPlotArgs (Var Fn))) ->
     (Maybe FilePath) ->
     (TopLevelStrategy, BasicStepType, Int, Int) ->
     (Int, Int, Int, Int) 
@@ -235,13 +235,13 @@ solveEventsPrintSteps ivp
 
     case (maybePlotDimens, topLevelStrategy) of
         (Nothing, _) -> return ()
-        (Just (IVPPlotArgs rectDbl activevars shouldUseParamPlot isBW), TopLevelBisect) ->
-            plotHybIVPBisectionEnclosures rect activevars isBW shouldUseParamPlot
+        (Just (IVPPlotArgs rectDbl activevars maybeParamPlotArgs isBW), TopLevelBisect) ->
+            plotHybIVPBisectionEnclosures rect activevars isBW maybeParamPlotArgs
                 effCf False (2^^(-8 :: Int) :: CF) ivp bisectionInfo maybePDFfilename
             where
             rect = fmap (dblToReal 0) rectDbl :: FV.Rectangle CF
-        (Just (IVPPlotArgs rectDbl activevars shouldUseParamPlot isBW), TopLevelLocate) -> 
-            plotHybIVPListEnclosures rect activevars isBW shouldUseParamPlot
+        (Just (IVPPlotArgs rectDbl activevars maybeParamPlotArgs isBW), TopLevelLocate) -> 
+            plotHybIVPListEnclosures rect activevars isBW maybeParamPlotArgs
                 effCf plotEffIP (2^^(-12 :: Int) :: CF) ivp segmentsInfo maybePDFfilename
             where
             rect = fmap (dblToReal 0) rectDbl :: FV.Rectangle CF
