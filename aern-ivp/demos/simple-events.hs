@@ -13,7 +13,7 @@ import Numeric.AERN.IVP.Solver.Events.Bisection
 import Numeric.AERN.IVP.Solver.Events.SplitNearEvents
 import Numeric.AERN.IVP.Plot.UsingFnView 
     (plotHybIVPBisectionEnclosures, plotHybIVPListEnclosures,
-     PlotParams(..), readPlotParams)
+     IVPPlotArgs(..), readIVPPlotArgs, plotArgsHelpLines)
 
 import Numeric.AERN.Poly.IntPoly
 import Numeric.AERN.Poly.IntPoly.Plot ()
@@ -102,12 +102,7 @@ usage =
     putStrLn $ "Usage: simple-events <ivp name> <end time> \"<PlotArgs>\" <<output>.pdf|GUI> " 
                 ++ " [locate|bisect] [evtree|pwl] <LOCmaxUnitSplitDepth> <LOCminUnitSplitDepth>"
                 ++ " <maxDeg> <maxTermSize> <ODEmaxUnitSplitDepth> <ODEminUnitSplitDepth>"
-    putStrLn "   PlotArgs:  example 1: PlotGraph[True, False, False](0,1,-1,1)"
-    putStrLn "   PlotArgs:                      [shouldPlotVar1,...]"
-    putStrLn "   PlotArgs:                                      ....(xmin, xmax, ymin, ymax)"
-    putStrLn "   PlotArgs:  example 2: BWPlotGraph[True, True, False](-1,1,-1,1)"
-    putStrLn "   PlotArgs:  example 3: PlotParam[True, True, False](-1,1,-1,1)"
-    putStrLn "   PlotArgs:  example 4: NoPlot"
+    putStr $ unlines $ plotArgsHelpLines 
 
 data TopLevelStrategy =
     TopLevelBisect | TopLevelLocate
@@ -145,7 +140,7 @@ runWithArgs
     topLevelStrategy = topLevelStrategyFromS topLevelStrategyS
     basicStepType = basicStepTypeFromS basicStepTypeS
 
-    maybePlotDimens = readPlotParams maybePlotDimensS :: Maybe PlotParams
+    maybePlotDimens = readIVPPlotArgs maybePlotDimensS :: Maybe IVPPlotArgs
     maybePDFfilename = readPDFfilename maybePDFfilenameS :: Maybe String
     maxDeg = read maxDegS :: Int
     maxSize = read maxSizeS :: Int
@@ -173,7 +168,7 @@ refines a1 a2 =
 
 solveEventsPrintSteps :: 
     HybridIVP Fn -> 
-    (Maybe PlotParams) ->
+    (Maybe IVPPlotArgs) ->
     (Maybe FilePath) ->
     (TopLevelStrategy, BasicStepType, Int, Int) ->
     (Int, Int, Int, Int) 
@@ -240,12 +235,12 @@ solveEventsPrintSteps ivp
 
     case (maybePlotDimens, topLevelStrategy) of
         (Nothing, _) -> return ()
-        (Just (PlotParams rectDbl activevars shouldUseParamPlot isBW), TopLevelBisect) ->
+        (Just (IVPPlotArgs rectDbl activevars shouldUseParamPlot isBW), TopLevelBisect) ->
             plotHybIVPBisectionEnclosures rect activevars isBW shouldUseParamPlot
                 effCf False (2^^(-8 :: Int) :: CF) ivp bisectionInfo maybePDFfilename
             where
             rect = fmap (dblToReal 0) rectDbl :: FV.Rectangle CF
-        (Just (PlotParams rectDbl activevars shouldUseParamPlot isBW), TopLevelLocate) -> 
+        (Just (IVPPlotArgs rectDbl activevars shouldUseParamPlot isBW), TopLevelLocate) -> 
             plotHybIVPListEnclosures rect activevars isBW shouldUseParamPlot
                 effCf plotEffIP (2^^(-12 :: Int) :: CF) ivp segmentsInfo maybePDFfilename
             where
