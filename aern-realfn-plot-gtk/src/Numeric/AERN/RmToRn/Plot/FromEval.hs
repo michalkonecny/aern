@@ -36,13 +36,11 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 import Numeric.AERN.Basics.Interval
-import Numeric.AERN.RmToRn.Interval
-
-import Numeric.AERN.Misc.Debug
+import Numeric.AERN.RmToRn.Interval ()
 
 import Graphics.Rendering.Cairo
 
-import qualified Data.Map as Map
+--import qualified Data.Map as Map
 --import qualified Data.List as List
 
 import Debug.Trace
@@ -280,12 +278,12 @@ cairoDrawFnParametericFromEval
     plotSampleBoxes
     where
     plotSampleBoxes =
-        mapM_ plotValueSample enclosureSamples
-    plotValueSample outlinePoints =
+        mapM_ plotValueSample enclosureFacesForPartition
+    plotValueSample face =
 --        trace
 --        (
---            "plotValueSample: " ++ show (length outlinePoints) ++ " outlinePoints = "
---            ++ (unlines $ map show outlinePoints)
+--            "plotValueSample: " ++ show (length face) ++ " face = "
+--            ++ (unlines $ map show face)
 --        ) $
         do
         -- fill the box first:
@@ -293,7 +291,7 @@ cairoDrawFnParametericFromEval
             Just (r,g,b,a) ->
                 do
                 setSourceRGBA r g b a
-                drawOutline
+                drawFace face
                 fill
             _ -> return ()
         -- then draw the box outline:
@@ -301,48 +299,59 @@ cairoDrawFnParametericFromEval
             Just (r,g,b,a) ->
                 do 
                 setSourceRGBA r g b a
-                drawOutline
+                drawFace face
                 setLineCap LineCapRound
                 setLineJoin LineJoinRound
                 setLineWidth $ styleOutlineThickness style
                 stroke
             _ -> return ()
         where
-        drawOutline =
+        drawFace outlinePoints =
             do
-            moveToPt point1
-            mapM_ lineToPt points
+            drawOutline
+            drawVertices
             where
-            point1 = last points
+            drawOutline =
+                do
+                moveToPt (last points)
+                mapM_ lineToPt points
+            drawVertices =
+                do
+                mapM_ drawVertex points
             points = map (\[a,b] -> (a,b)) outlinePoints
             moveToPt = usePt moveTo 
             lineToPt = usePt lineTo 
-            usePt fn (xI, yI) =
+            usePt pointOp (xI, yI) =
+                do
+                pointOp xCentreD yCentreD
+                where
+                (xCentreD, yCentreD) = t (xCentre, yCentre)
+                xCentre = (xL <+> xR) </>| (2 :: Int)
+                yCentre = (yL <+> yR) </>| (2 :: Int)
+                (xL, xR) = RefOrd.getEndpointsOut xI
+                (yL, yR) = RefOrd.getEndpointsOut yI
+                
+            drawVertex (xI, yI) =
                 do 
-                fn xCentreD yCentreD
                 moveTo x1D y1D
                 lineTo x2D y2D
                 lineTo x3D y3D
                 lineTo x4D y4D
                 lineTo x1D y1D
-                moveTo xCentreD yCentreD
                 where
                 (xL, xR) = RefOrd.getEndpointsOut xI
                 (yL, yR) = RefOrd.getEndpointsOut yI
-                xCentre = (xL <+> xR) </>| (2 :: Int)
-                yCentre = (yL <+> yR) </>| (2 :: Int)
-                (xCentreD, yCentreD) = t (xCentre, yCentre)
                 (x1D, y1D) = t (xL, yL)
                 (x2D, y2D) = t (xR, yL)
                 (x3D, y3D) = t (xR, yR)
                 (x4D, y4D) = t (xL, yR)
-                t pt =
-                    toScreenCoords $
-                        translateToCoordSystem effReal coordSystem pt
+            t pt =
+                toScreenCoords $
+                    translateToCoordSystem effReal coordSystem pt
                 
-    enclosureSamples =
-        concat $ map evalAreaUsingSamples partition
-    evalAreaUsingSamples d =
+    enclosureFacesForPartition =
+        concat $ map evalAreaFacesUsingSamples partition
+    evalAreaFacesUsingSamples d =
         concat $ map auxEval relevantFnPairs
         where
         auxEval (fnX, fnY) =
@@ -385,9 +394,9 @@ cairoDrawFnParametericFromEval
     (<*>|) = ArithInOut.mixedMultOutEff effMultInt
     (</>|) = ArithInOut.mixedDivOutEff effDivInt
     
-    effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDF effReal
-    effJoinMeet = ArithInOut.rrEffortJoinMeet sampleDF effReal
-    effToInt = ArithInOut.rrEffortToInt sampleDF effReal
+--    effMinmax = ArithInOut.rrEffortMinmaxInOut sampleDF effReal
+--    effJoinMeet = ArithInOut.rrEffortJoinMeet sampleDF effReal
+--    effToInt = ArithInOut.rrEffortToInt sampleDF effReal
     effAdd =
         ArithInOut.fldEffortAdd sampleDF $ ArithInOut.rrEffortField sampleDF effReal
     effMultInt =
@@ -395,7 +404,7 @@ cairoDrawFnParametericFromEval
     effDivInt =
         ArithInOut.mxfldEffortDiv sampleDF sampleI $ ArithInOut.rrEffortIntMixedField sampleDF effReal
     
-    sampleF = fst $ head fnPairs
+--    sampleF = fst $ head fnPairs
     sampleDF = dom
     sampleI = 1 :: Int
     
