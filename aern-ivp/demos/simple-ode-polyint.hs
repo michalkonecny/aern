@@ -7,7 +7,9 @@ import Numeric.AERN.IVP.Examples.ODE.Simple
 import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Solver.Bisection
 import Numeric.AERN.IVP.Solver.Picard.UncertainValue
-import Numeric.AERN.IVP.Plot.UsingFnView (plotODEIVPBisectionEnclosures, readPlotParams, PlotParams(..))
+import Numeric.AERN.IVP.Plot.UsingFnView 
+    (plotODEIVPBisectionEnclosures, readIVPPlotArgs, 
+     IVPPlotArgs(..), plotArgsHelpLines)
 
 import Numeric.AERN.IVP.Solver.ShrinkWrap -- only for testing
 
@@ -56,7 +58,7 @@ import qualified
 import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.ShowInternals
 
-import Data.List (isPrefixOf, isSuffixOf)
+import Data.List (isSuffixOf)
 
 import System.IO
 import System.Environment
@@ -95,13 +97,8 @@ usage =
 --    putStrLn "Usage A: simple-uv-et <ivp name> <output>.csv [Wrap|ShrinkWrap]"
     putStrLn $ "Usage: simple-uv-et <ivp name> <end time> \"<PlotArgs>\" [<output>.pdf|GUI]" 
                 ++ " [Wrap|ShrinkWrap] <maxDeg> <maxTermSize> <maxUnitSplitDepth> <minUnitSplitDepth>"
-    putStrLn "   PlotArgs:  example 1: PlotGraph[True, False, False](0,1,-1,1)"
-    putStrLn "   PlotArgs:                      [shouldPlotVar1,...]"
-    putStrLn "   PlotArgs:                                      ....(xmin, xmax, ymin, ymax)"
-    putStrLn "   PlotArgs:  example 2: BWPlotGraph[True, True, False](-1,1,-1,1)"
-    putStrLn "   PlotArgs:  example 3: PlotParam[True, True, False](-1,1,-1,1)"
-    putStrLn "   PlotArgs:  example 4: NoPlot"
-
+    putStr $ unlines $ plotArgsHelpLines 
+    
 runWithArgs :: [String] -> IO ()
 runWithArgs [ivpName, tEndS, maybePlotDimensS, maybePDFfilenameS, 
                 wrapTypeS, maxDegS, maxSizeS, maxDepthS, minDepthS] =
@@ -117,7 +114,7 @@ runWithArgs [ivpName, tEndS, maybePlotDimensS, maybePDFfilenameS,
         }
     ivp = ivpByNameReportError ivpName sampleFn
     wrapType = read wrapTypeS :: WrapType
-    maybePlotDimens = readPlotParams maybePlotDimensS :: Maybe PlotParams
+    maybePlotDimens = readIVPPlotArgs maybePlotDimensS :: Maybe IVPPlotArgs
     maybePDFfilename = readPDFfilename maybePDFfilenameS :: Maybe String
     maxDeg = read maxDegS :: Int
     maxSize = read maxSizeS :: Int
@@ -230,7 +227,7 @@ solveVtPrintSteps ::
     => 
     WrapType
     ->
-    (Maybe PlotParams)
+    (Maybe IVPPlotArgs)
     ->
     (Maybe FilePath)
     ->
@@ -283,7 +280,7 @@ solveVtPrintSteps wrapType maybePlotDimens maybePDFfilename ivp (maxdegParam, ma
     putStrLn "-------------------------------------------------"
     case maybePlotDimens of
         Nothing -> return ()
-        Just (PlotParams rectDbl activevars shouldUseParamPlot isBW) -> 
+        Just (IVPPlotArgs rectDbl activevars shouldUseParamPlot isBW) -> 
             plotODEIVPBisectionEnclosures
                 rect activevars isBW
                 shouldUseParamPlot effCf (2^^(-8 :: Int) :: CF) ivp bisectionInfoOut

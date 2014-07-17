@@ -19,8 +19,9 @@ module Numeric.AERN.IVP.Plot.UsingFnView
     plotODEIVPBisectionEnclosures,
     plotHybIVPBisectionEnclosures,
     plotHybIVPListEnclosures,
-    PlotParams(..),
-    readPlotParams
+    plotArgsHelpLines,
+    IVPPlotArgs(..),
+    readIVPPlotArgs
 )
 where
 
@@ -60,38 +61,56 @@ import Data.List (isPrefixOf)
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
 
+plotArgsHelpLines :: [String]
+plotArgsHelpLines =
+    [
+        "   PlotArgs:  example 1: PlotGraph[True, False, False](0,1,-1,1)",
+        "   PlotArgs:                      [shouldPlotVar1,...]",
+        "   PlotArgs:                                      ....(xmin, xmax, ymin, ymax)",
+        "   PlotArgs:  example 2: BWPlotGraph[True, True, False](-1,1,-1,1)",
+        "   PlotArgs:  example 3: PlotParam(10)[True, True, False](-1,1,-1,1)",
+        "   PlotArgs:  example 4: NoPlot"
+    ]
 
-data PlotParams =
-    PlotParams
+data IVPPlotArgs =
+    IVPPlotArgs
     {
         plotp_rect :: FV.Rectangle Double,
         plotp_activevars :: [Bool],
-        plotp_isParam :: Bool,
+        plotp_isParam :: Maybe Int, -- sampling frequency for parametric plot
         plotp_isBW :: Bool
     }
     deriving (Show)
     
-readPlotParams :: String -> Maybe PlotParams
-readPlotParams s 
-    | "Plot" `isPrefixOf` s = aux False $ drop (length "Plot") s
-    | "BWPlot" `isPrefixOf` s = aux True $ drop (length "BWPlot") s
-    | s == "NoPlot" = Nothing
+readIVPPlotArgs :: String -> Maybe IVPPlotArgs
+readIVPPlotArgs sOrig
+    | "Plot" `isPrefixOf` sOrig = readPlotType False $ drop (length "Plot") sOrig
+    | "BWPlot" `isPrefixOf` sOrig = readPlotType True $ drop (length "BWPlot") sOrig
+    | sOrig == "NoPlot" = Nothing
     | otherwise = errorP
     where
-    aux isBW sMinusPlot 
-        | "Param" `isPrefixOf` sMinusPlot = aux2 True $ drop (length "Param") sMinusPlot
-        | "Graph" `isPrefixOf` sMinusPlot = aux2 False $ drop (length "Graph") sMinusPlot
+    readPlotType isBW s 
+        | "Param" `isPrefixOf` s =
+            readSamplingFreq $ drop (length "Param") s 
+        | "Graph" `isPrefixOf` s = 
+            readActiveVars Nothing $ drop (length "Graph") s
         | otherwise = errorP
         where
-        aux2 isParam sMinusPlotParam = 
-            case reads sMinusPlotParam of
-                (activeVars, rest) : _ ->
-                    case reads rest of
+        readSamplingFreq ('(' : s2) =
+            case reads s2 of
+                (samplingFreq, ')' : sRest) : _ ->
+                    readActiveVars (Just samplingFreq) sRest
+                _ -> errorP
+        readSamplingFreq _ = errorP
+        readActiveVars isParam s2 = 
+            case reads s2 of
+                (activeVars, sRest) : _ ->
+                    case reads sRest of
                         (boundsD, []) : _ -> 
-                            Just (PlotParams (boundsFromDoubles boundsD) activeVars isParam isBW)
+                            Just (IVPPlotArgs (boundsFromDoubles boundsD) activeVars isParam isBW)
                         _ -> errorP
                 _ -> errorP
-    errorP = error $ "Cannot parse plot specification: " ++ s
+    errorP = error $ "Cannot parse plot specification: " ++ sOrig
     boundsFromDoubles (xmin, xmax, ymin, ymax) =
         FV.Rectangle ymax ymin xmin xmax
 
@@ -112,7 +131,7 @@ plotODEIVPBisectionEnclosures ::
     FV.Rectangle (Domain f) -- ^ initial canvas viewport
     -> [Bool] -- ^ for each variable, whether it should be plotted
     -> Bool -- ^ True -> plot all components in black 
-    -> Bool -- ^ True -> use parametric plot (using the active functions - there have to be exactly two of them) 
+    -> Maybe Int -- ^ Just samplingFreq -> use parametric plot (using the active functions - there have to be exactly two of them) 
     -> ArithInOut.RoundedRealEffortIndicator (Domain f)
     -> Domain f
     -> ODEIVP f
@@ -120,7 +139,7 @@ plotODEIVPBisectionEnclosures ::
     -> Maybe FilePath
     -> IO ()
 plotODEIVPBisectionEnclosures 
-        rect activevarsPre isBW shouldUseParamPlot effCF plotMinSegSize 
+        rect activevarsPre isBW maybeParamPlotFreq effCF plotMinSegSize 
         (ivp :: ODEIVP f) bisectionInfo 
         maybePDFFilename =
     case maybePDFFilename of
@@ -139,6 +158,8 @@ plotODEIVPBisectionEnclosures
             canvasParams = FV.dataDefaultCanvasParams fnmeta
             fnsActive = concat $ FV.dataDefaultActiveFns fnmeta
     where
+    shouldUseParamPlot = case maybeParamPlotFreq of Just _ -> True; _ -> False
+    
     fnsPlotSpec = addPlotVar fns
     
     effDrawFn = cairoDrawFnDefaultEffort sampleFn
@@ -215,7 +236,7 @@ plotODEIVPBisectionEnclosures
             sampleFn
             rect
             (Just (1,1,1,1))
-            200
+            (case maybeParamPlotFreq of Just freq -> freq; _ -> 200)
             tVar
             (zip segNames $ map addMetaToFnNames fnNames)
         where
@@ -328,7 +349,7 @@ plotHybIVPBisectionEnclosures ::
     FV.Rectangle (Domain f) -- ^ initial canvas viewport
     -> [Bool] -- ^ for each variable, whether it should be plotted
     -> Bool -- ^ True -> plot all components in black 
-    -> Bool -- ^ True -> use parametric plot (using the active functions - there have to be exactly two of them) 
+    -> Maybe Int -- ^ Just samplingFreq -> use parametric plot (using the active functions - there have to be exactly two of them) 
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f)
     -> Bool 
@@ -338,7 +359,7 @@ plotHybIVPBisectionEnclosures ::
     -> Maybe FilePath
     -> IO ()
 plotHybIVPBisectionEnclosures 
-        rect activevarsPre isBW shouldUseParamPlot effCF 
+        rect activevarsPre isBW maybeParamPlotFreq effCF 
         shouldShowEventTreeEnclosures plotMinSegSize ivp bisectionInfo 
         maybePDFFilename =
     case maybePDFFilename of
@@ -357,6 +378,8 @@ plotHybIVPBisectionEnclosures
             canvasParams = FV.dataDefaultCanvasParams fnmeta
             fnsActive = concat $ FV.dataDefaultActiveFns fnmeta
     where
+    shouldUseParamPlot = case maybeParamPlotFreq of Just _ -> True; _ -> False
+
     fnsPlotSpec = addPlotVar fns
     
     effDrawFn = cairoDrawFnDefaultEffort sampleFn
@@ -457,7 +480,7 @@ plotHybIVPBisectionEnclosures
             sampleFn
             rect
             (Just (1,1,1,1))
-            200
+            (case maybeParamPlotFreq of Just freq -> freq; _ -> 200)
             tVar
             (zip segNames $ map addMetaToFnNames fnNames)
         where
@@ -591,7 +614,7 @@ plotHybIVPListEnclosures ::
     FV.Rectangle (Domain f) -- ^ initial canvas viewport
     -> [Bool] -- ^ for each variable, whether it should be plotted
     -> Bool -- ^ True -> plot all components in black 
-    -> Bool -- ^ True -> use parametric plot (using the active functions - there have to be exactly two of them) 
+    -> Maybe Int -- ^ Just samplingFreq -> use parametric plot (using the active functions - there have to be exactly two of them) 
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f)
     ->
@@ -620,7 +643,7 @@ plotHybIVPListEnclosures ::
     -> 
     IO ()
 plotHybIVPListEnclosures 
-        rect activevarsPre isBW shouldUseParamPlot 
+        rect activevarsPre isBW maybeParamPlotFreq 
         effCF effDrawFn _plotMinSegSize (ivp :: HybridIVP f) segmentsInfo 
         maybePDFFilename =
     case maybePDFFilename of
@@ -639,6 +662,8 @@ plotHybIVPListEnclosures
             canvasParams = FV.dataDefaultCanvasParams fnmeta
             fnsActive = concat $ FV.dataDefaultActiveFns fnmeta
     where
+    shouldUseParamPlot = case maybeParamPlotFreq of Just _ -> True; _ -> False
+
     fnsPlotSpec = addPlotVar fns
 --    effDrawFn = cairoDrawFnDefaultEffort sampleFn
     effEval = evaluationDefaultEffort sampleFn
@@ -779,7 +804,7 @@ plotHybIVPListEnclosures
             sampleFn
             rect
             (Just (1,1,1,1))
-            (if shouldUseParamPlot then 50 else 200)
+            (case maybeParamPlotFreq of Just freq -> freq; _ -> 200)
             tVar
             (zip groupNames $ map addMetaToFnNames fnNames)
         where
