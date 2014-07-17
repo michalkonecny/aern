@@ -151,15 +151,22 @@ evalSamplesAlongFacesEff effEval n area scanVars (fns :: [f]) =
     map (map evalPt) faces
     where
     faces =
-        concat $ [mkFacesWithVars v1 v2 | v1 <- scanVars, v2 <- scanVars, v1 < v2 ]
+        case scanVars of
+            _ : _ : _ -> -- at least 2 variables to scan
+                concat $ [mkFacesWithVars v1 v2 | v1 <- scanVars, v2 <- scanVars, v1 < v2 ]
+            [v] ->
+                mkFacesWithVars v v
+            _ ->
+                [[area]]
+                
     mkFacesWithVars v1 v2 =
         map addAreaAndV1V2 $ allCombinations $ map (valueChoicesForVar 1) otherVars
         where
         addAreaAndV1V2 varValueList =
             edge [v1L] v2Increasing
-            ++ edge v1Increasing [v2R]
-            ++ edge [v1R] v2Decreasing
-            ++ edge v1Decreasing [v2L]
+            ++ edge (tail v1Increasing) [v2R]
+            ++ edge [v1R] (tail v2Decreasing)
+            ++ edge (tail v1Decreasing) [v2L]
             where
             v1L : _ = v1Increasing
             v1R : _ = v1Decreasing
