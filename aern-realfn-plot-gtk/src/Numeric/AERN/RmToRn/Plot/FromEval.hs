@@ -53,7 +53,7 @@ instance
      CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
-     Eq (Var f),
+     Eq (Var f), Ord (Var f),
      Show (Domain f), Show (Var f), Show (VarBox f (Domain f))
     )
     =>
@@ -259,7 +259,7 @@ cairoDrawFnParametericFromEval ::
      CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
-     Eq (Var f),
+     Eq (Var f), Ord (Var f), 
      Show (Domain f), Show (Var f), Show (VarBox f (Domain f))
     )
     =>
@@ -343,10 +343,10 @@ cairoDrawFnParametericFromEval
     enclosureSamples =
         concat $ map evalAreaUsingSamples partition
     evalAreaUsingSamples d =
-        map auxEval relevantFnPairs
+        concat $ map auxEval relevantFnPairs
         where
         auxEval (fnX, fnY) =
-            evalSamplesEff effEval 2 area scanVars [fnX, fnY]
+            evalSamplesAlongFacesEff effEval 2 area scanVars [fnX, fnY]
             where
             area = insertVar plotVar d $ getDomainBox fnX 
         relevantFnPairs = 

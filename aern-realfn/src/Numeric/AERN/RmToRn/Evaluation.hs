@@ -29,7 +29,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Consistency
 
---import qualified Data.List as List
+import qualified Data.List as List
 
 --import Numeric.AERN.Misc.Debug
 
@@ -98,19 +98,21 @@ evalAtPointIn ::
 evalAtPointIn dombox f =
     evalAtPointInEff (evaluationDefaultEffort f) dombox f
     
-evalSamplesEff :: 
+    
+-- TODO: move the following 3 functions to another module
+evalSamplesAlongEdgesEff :: 
     (ArithInOut.RoundedReal (Domain f), 
      RefOrd.IntervalLike (Domain f), 
      CanEvaluate f,
      Eq (Var f)) 
     =>
     EvaluationEffortIndicator f -> 
-    Int {-^ @n@ - Take (n+1) samples in each dimension. -} -> 
+    Int {-^ @n@ - Take (n+1) samples along each edge of each face. -} -> 
     DomainBox f {-^ @area@ - Area to evaluate the functions over -} ->
-    [Var f] {-^ variables to sample from and not substitute with their full domain -} -> 
+    [Var f] {-^ variables that define the box, the rest will be substituted with their full domain -} -> 
     [f] {-^ @[f1, f2, ...]@ - Functions to evaluate -} -> 
-    [[Domain f]] -- ^ @[[f1(sample1), f2(sample1), ...], [f1(sample2), f2(sample2), ...], ]@ 
-evalSamplesEff effEval n area scanVars (fns :: [f]) =
+    [[Domain f]] -- ^ @[[[f1(sample1), f2(sample1), ...], ...], [[f1(sample2), f2(sample2), ...], ...], ]@ 
+evalSamplesAlongEdgesEff effEval n area scanVars (fns :: [f]) =
     map evalPt points
     where
     evalPt pt =
@@ -129,6 +131,82 @@ evalSamplesEff effEval n area scanVars (fns :: [f]) =
                 where
                 midPoint i = ((aL <*>| i) <+> (aR <*>| (n - i))) </>| n
             (aL, aR) = RefOrd.getEndpointsOut a
+        
+    areaCoords :: [(Var f, Domain f)]
+    areaCoords = toAscList area
+        
+evalSamplesAlongFacesEff :: 
+    (ArithInOut.RoundedReal (Domain f), 
+     RefOrd.IntervalLike (Domain f), 
+     CanEvaluate f,
+     Eq (Var f), Ord (Var f), Show (Var f), Show (Domain f)) 
+    =>
+    EvaluationEffortIndicator f -> 
+    Int {-^ @n@ - Take (n+1) samples along each edge of each face. -} -> 
+    DomainBox f {-^ @area@ - Area to evaluate the functions over -} ->
+    [Var f] {-^ variables that define the box, the rest will be substituted with their full domain -} -> 
+    [f] {-^ @[f1, f2, ...]@ - Functions to evaluate -} -> 
+    [[[Domain f]]] -- ^ @[[[f1(sample1), f2(sample1), ...], ...], [[f1(sample2), f2(sample2), ...], ...], ]@ 
+evalSamplesAlongFacesEff effEval n area scanVars (fns :: [f]) =
+    map (map evalPt) faces
+    where
+    faces =
+        concat $ [mkFacesWithVars v1 v2 | v1 <- scanVars, v2 <- scanVars, v1 < v2 ]
+    mkFacesWithVars v1 v2 =
+        map addAreaAndV1V2 $ allCombinations $ map (valueChoicesForVar 1) otherVars
+        where
+        addAreaAndV1V2 varValueList =
+            edge [v1L] v2Increasing
+            ++ edge v1Increasing [v2R]
+            ++ edge [v1R] v2Decreasing
+            ++ edge v1Decreasing [v2L]
+            where
+            v1L : _ = v1Increasing
+            v1R : _ = v1Decreasing
+            v2L : _ = v2Increasing
+            v2R : _ = v2Decreasing
+            v1Decreasing = reverse v1Increasing
+            v2Decreasing = reverse v2Increasing
+            v1Increasing = map snd $ valueChoicesForVar n v1
+            v2Increasing = map snd $ valueChoicesForVar n v2
+            edge v1values v2values =  
+                [addV1V2 v1v v2v | v1v <- v1values, v2v <- v2values]
+                where
+                addV1V2 v1v v2v =
+                    foldl insertVarValue faceFixedArea [(v1, v1v), (v2, v2v)]
+                faceFixedArea =
+                    foldl insertVarValue area varValueList
+                insertVarValue area1 (var, value) =
+                    insertVar var value area1
+        valueChoicesForVar m var =
+            case lookupVar area var of
+                Just a ->
+                    map (\ v -> (var, v)) $
+                    [aL] ++ [midPoint i  | i <- [1..(m-1)]] ++ [aR]
+                    where
+                    midPoint i = ((aL <*>| i) <+> (aR <*>| (m - i))) </>| m
+                    (aL, aR) = RefOrd.getEndpointsOut a
+                _ -> error $ 
+                        "evalSamplesAlongFacesEff: variable " ++ show var 
+                        ++ " not found in the area " ++ show (toAscList area)
+        otherVars = scanVars List.\\ [v1, v2]
+        
+    evalPt pt =
+        map (evalAtPointOutEff effEval pt) fns
+--    points =
+--        map fromAscList $ allCombinations $ map addChoices areaCoords
+--        where
+--        addChoices (var, a) 
+--            | aIsExact = [(var, a)]
+--            | var `elem` scanVars = [(var, aPicked) | aPicked <- choices]
+--            | otherwise = [(var, a)]
+--            where
+--            aIsExact = (aL NumOrd.==? aR) == Just True
+--            choices = 
+--                [aL, aR] ++ [midPoint i  | i <- [1..(n-1)]]
+--                where
+--                midPoint i = ((aL <*>| i) <+> (aR <*>| (n - i))) </>| n
+--            (aL, aR) = RefOrd.getEndpointsOut a
         
     areaCoords :: [(Var f, Domain f)]
     areaCoords = toAscList area
