@@ -317,10 +317,29 @@ cairoDrawFnParametericFromEval
             points = map (\[a,b] -> (a,b)) outlinePoints
             moveToPt = usePt moveTo 
             lineToPt = usePt lineTo 
-            usePt fn pt = fn xD yD
+            usePt fn (xI, yI) =
+                do 
+                fn xCentreD yCentreD
+                moveTo x1D y1D
+                lineTo x2D y2D
+                lineTo x3D y3D
+                lineTo x4D y4D
+                lineTo x1D y1D
+                moveTo xCentreD yCentreD
                 where
-                (xC,yC) = translateToCoordSystem effReal coordSystem pt
-                (xD,yD) = toScreenCoords (xC,yC)
+                (xL, xR) = RefOrd.getEndpointsOut xI
+                (yL, yR) = RefOrd.getEndpointsOut yI
+                xCentre = (xL <+> xR) </>| (2 :: Int)
+                yCentre = (yL <+> yR) </>| (2 :: Int)
+                (xCentreD, yCentreD) = t (xCentre, yCentre)
+                (x1D, y1D) = t (xL, yL)
+                (x2D, y2D) = t (xR, yL)
+                (x3D, y3D) = t (xR, yR)
+                (x4D, y4D) = t (xL, yR)
+                t pt =
+                    toScreenCoords $
+                        translateToCoordSystem effReal coordSystem pt
+                
     enclosureSamples =
         concat $ map evalAreaUsingSamples partition
     evalAreaUsingSamples d =
