@@ -284,11 +284,6 @@ functionsSpringMass subname =
             "usp" -> fnsSpringMass False True initValuesSpringMass_us
             _ -> error "functionsSpringMass: internal error"
             
-    isEV =
-        case subname of
-            "evep" -> True
-            _ -> False            
-
     initValuesSpringMass_ev :: [CF]
     initValuesSpringMass_ev = [1,0]
     
@@ -379,11 +374,9 @@ functionsSpringMass subname =
         fnmeta = 
             FV.simpleFnMetaData
                 sampleFn
---                (FV.Rectangle  1.125 (-1.125) (-0.5) (tEnd <+> 0.5)) -- initial plotting region
---                (FV.Rectangle  1.25 (-1.125) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
-                (FV.Rectangle  1.25 (0) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
+                (FV.Rectangle  1 (0) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
                 (Just (1,1,1,1))
-                200 -- samplesPerUnit
+                1600 -- samplesPerUnit
                 tVar
                 segmentInfo
                 
