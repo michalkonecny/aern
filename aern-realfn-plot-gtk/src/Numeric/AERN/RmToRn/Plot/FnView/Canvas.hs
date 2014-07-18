@@ -165,7 +165,11 @@ drawFunctions (sampleF :: f) effDraw effReal canvasParams w h fnsActive fns fnsS
         collectFns restActive restFns restStyles
     collectFns (True:restActive) (fn:restFns) (col:restStyles) = 
         (fn, col) : (collectFns restActive restFns restStyles)
-    collectFns _ _ _ = error "FV: Canvas: collectFns: internal error"
+    collectFns _ _ _ = 
+        error $ 
+            "FV: Canvas: mismatch in fnMeta: |fns| = " ++ show (length fns) 
+            ++ "; |fnsStyles| = " ++ show (length fnsStyles)
+            ++ "; fnsActive = " ++ show fnsActive 
     
     drawFn ::
         ((GraphOrParamPlotFn f, Var f), FnPlotStyle) ->
