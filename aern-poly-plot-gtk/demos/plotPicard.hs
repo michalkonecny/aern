@@ -31,6 +31,7 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 --import Numeric.AERN.Basics.Effort
 --import Numeric.AERN.Basics.Consistency
 --import Numeric.AERN.Basics.ShowInternals
+import Numeric.AERN.Basics.SizeLimits
 
 import qualified Graphics.UI.Gtk as Gtk
 
@@ -38,12 +39,12 @@ import qualified Graphics.UI.Gtk as Gtk
 import Control.Concurrent.STM
 
 import qualified Data.Map as Map
---import qualified Data.List as List
+import qualified Data.List as List
 
 import System.Environment
 
-import Numeric.AERN.Misc.Debug
-_ = unsafePrint
+import Debug.Trace
+_ = trace
 
 --type CF = Interval MPFR
 type CF = CF.DI
@@ -77,15 +78,15 @@ main =
     -- fire up the GUI:
     Gtk.mainGUI
     
-addPlotVar :: [[Fn]] -> [[(FV.GraphOrParamPlotFn Fn, String)]]
+addPlotVar :: [[[Fn]]] -> [[(FV.GraphOrParamPlotFn Fn, String)]]
 addPlotVar fns =
     map (map addV) fns
     where
-    addV fn = (FV.GraphPlotFn [fn], tVar)
+    addV fn = (FV.GraphPlotFn fn, tVar)
     
 getFns :: 
     String -> Double -> Int -> Int -> [String] ->
-    (([[Fn]], [CF]), FV.FnMetaData Fn)
+    (([[[Fn]]], [CF]), FV.FnMetaData Fn)
 getFns name tEndDbl maxdeg maxsize otherArgs =
     case Map.lookup name functionMap of
         Just mkFns ->
@@ -100,7 +101,7 @@ functions ::
     [(
        String
      ,
-       Double -> Int -> Int -> [String] -> (([[Fn]], [CF]), FV.FnMetaData Fn)
+       Double -> Int -> Int -> [String] -> (([[[Fn]]], [CF]), FV.FnMetaData Fn)
      )
     ]
 functions =
@@ -117,6 +118,7 @@ functions =
         ("vanderpol-exact-initval-flow", functionsVanDerPol "evp"),
         ("vanderpol-uncertain-initval-naive", functionsVanDerPol "uv"),
         ("vanderpol-uncertain-initval-flow", functionsVanDerPol "uvp"),
+        ("springmass-exact-initval-EP", functionsSpringMass "evep"),
         ("springmass-exact-initval-classical", functionsSpringMass "evc"),
         ("springmass-exact-initval-naive", functionsSpringMass "ev"),
         ("springmass-exact-initval-flow", functionsSpringMass "evp"),
@@ -133,7 +135,7 @@ functions =
 ---------------------------------
 
 functionsExpDwindle ::
-    String -> Double -> Int -> Int -> [String] -> (([[Fn]], [CF]), FV.FnMetaData Fn)
+    String -> Double -> Int -> Int -> [String] -> (([[[Fn]]], [CF]), FV.FnMetaData Fn)
 functionsExpDwindle subname =
     functionsExpDwindleSub
     where
@@ -165,7 +167,7 @@ functionsExpDwindle subname =
         tEnd = constructCF tEndDbl tEndDbl
 
         functions2 =
-            picardOnPartitionWrapping False
+            picardStepwise False
                 useFlow
                 fieldExp
                 paramVars initValues
@@ -197,7 +199,7 @@ functionsExpDwindle subname =
 
 ---------------------------------
 functionsExpMirror ::
-    String -> Double -> Int -> Int -> [String] -> (([[Fn]], [CF]), FV.FnMetaData Fn)
+    String -> Double -> Int -> Int -> [String] -> (([[[Fn]]], [CF]), FV.FnMetaData Fn)
 functionsExpMirror subname =
     functionsExpMirrorSub
     where
@@ -233,7 +235,7 @@ functionsExpMirror subname =
         tEnd = constructCF tEndDbl tEndDbl
         
         functions2 =
-            picardOnPartitionWrapping False
+            picardStepwise False
                 useFlow
                 (fieldExpMirror bezdeg) 
                 paramVars initValues
@@ -266,14 +268,15 @@ functionsExpMirror subname =
 
 ---------------------------------
 functionsSpringMass :: 
-    String -> Double -> Int -> Int -> [String] -> (([[Fn]], [CF]), FV.FnMetaData Fn)
+    String -> Double -> Int -> Int -> [String] -> (([[[Fn]]], [CF]), FV.FnMetaData Fn)
 functionsSpringMass subname =
     functionsSpringMassSub
     where
     functionsSpringMassSub =
         case subname of
-            "ev" -> fnsSpringMass False False initValuesSpringMass_ev
+            "evep" -> fnsSpringMassEP initValuesSpringMass_ev
             "evc" -> fnsSpringMass True False initValuesSpringMass_ev
+            "ev" -> fnsSpringMass False False initValuesSpringMass_ev
             "evp" -> fnsSpringMass False True initValuesSpringMass_ev
             "ue" -> fnsSpringMass False False initValuesSpringMass_ue
             "uep" -> fnsSpringMass False True initValuesSpringMass_ue
@@ -281,6 +284,11 @@ functionsSpringMass subname =
             "usp" -> fnsSpringMass False True initValuesSpringMass_us
             _ -> error "functionsSpringMass: internal error"
             
+    isEV =
+        case subname of
+            "evep" -> True
+            _ -> False            
+
     initValuesSpringMass_ev :: [CF]
     initValuesSpringMass_ev = [1,0]
     
@@ -303,7 +311,7 @@ functionsSpringMass subname =
         bisectDepth = read bisectDepthS
 
         functions2 =
-            picardOnPartitionWrapping useClassical
+            picardStepwise useClassical
                 useFlow
                 fieldSpringMass 
                 paramVars initValues
@@ -322,24 +330,77 @@ functionsSpringMass subname =
             FV.simpleFnMetaData
                 sampleFn
 --                (FV.Rectangle  1.125 (-1.125) (-0.5) (tEnd <+> 0.5)) -- initial plotting region
-                (FV.Rectangle  1.125 (-0.1) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
+--                (FV.Rectangle  1.25 (-1.125) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
+                (FV.Rectangle  1.25 (0) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
                 (Just (1,1,1,1))
                 200 -- samplesPerUnit
                 tVar
-                [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
+                segmentInfo
+                
             where
-            functionInfos =
-                zip3 
-                    fnNames
-                    (concat $ repeat [blue, green]) -- styles 
---                    (repeat black) -- styles 
-                    (reverse $ True : True : replicate (2*iters - 2) False) -- show only the last iteration by default
-            fnNames =
-                concat $ map (\nS -> ["y" ++ nS, "y'" ++ nS]) $ map show ([1..iters] :: [Int])
+            segmentInfo =
+                [("segment " ++ show i, functionInfos) | i <- [1..segmentCount]]
+                where 
+                segmentCount :: Int
+                segmentCount = 2^bisectDepth
+                functionInfos =
+                    zip3 
+                        fnNames
+                        (concat $ repeat [blue, green]) -- styles 
+                        (reverse $ True : True : replicate (2*iters - 2) False) -- show only the last iteration by default
+                fnNames = 
+                    concat $ map (\nS -> ["y" ++ nS, "y'" ++ nS]) $ map show ([1..iters] :: [Int])
+
+    fnsSpringMassEP initValues tEndDbl maxdeg maxsize otherArgs = 
+--        trace ( 
+--            "fnsSpringMassEP:" 
+--            ++ "\n fnmeta = " ++ show fnmeta 
+--        ) $
+        (functions2, fnmeta)
+        where
+        [itersS, bisectDepthS] = otherArgs
+        iters = read itersS
+        bisectDepth = read bisectDepthS
+
+        functions2 =
+            picardOnPiecewiseFn
+                fieldSpringMass 
+                initValues
+                (partitionDom tDom bisectDepth)
+                initialWidening
+                (limitsDS maxdeg maxsize) 
+                iters
+            where
+            initialWidening = 0.2
+
+        tDom = constructCF 0 tEndDbl
+        tEnd = constructCF tEndDbl tEndDbl
+    
+        fnmeta = 
+            FV.simpleFnMetaData
+                sampleFn
+--                (FV.Rectangle  1.125 (-1.125) (-0.5) (tEnd <+> 0.5)) -- initial plotting region
+--                (FV.Rectangle  1.25 (-1.125) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
+                (FV.Rectangle  1.25 (0) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
+                (Just (1,1,1,1))
+                200 -- samplesPerUnit
+                tVar
+                segmentInfo
+                
+            where
+            segmentInfo = 
+                [("iteration " ++ show i, functionInfos False) | i <- [1..iters-1]] ++
+                [("iteration " ++ show iters, functionInfos True)]
+                where
+                functionInfos visible =
+                    zip3 
+                        ["y", "y'"]
+                        [blue, green] -- styles 
+                        [visible, visible] -- show only the last iteration by default
 
 ---------------------------------
 functionsVanDerPol :: 
-    String -> Double -> Int -> Int -> [String] -> (([[Fn]], [CF]), FV.FnMetaData Fn)
+    String -> Double -> Int -> Int -> [String] -> (([[[Fn]]], [CF]), FV.FnMetaData Fn)
 functionsVanDerPol subname =
     functionsVanDerPolSub
     where
@@ -371,7 +432,7 @@ functionsVanDerPol subname =
         bisectDepth = read bisectDepthS
 
         functions2 = 
-            picardOnPartitionWrapping False
+            picardStepwise False
                 useFlow
                 fieldVanDerPol 
                 paramVars initValues
@@ -403,14 +464,14 @@ functionsVanDerPol subname =
                 concat $ map (\nS -> ["y" ++ nS, "y'" ++ nS]) $ map show ([1..iters] :: [Int])
 
     
-    
+
 
 {-|
     Apply the interval Picard operator solver on a partition of time, step by step.
     The initial values for each segment are computed by box-wrapping
     the enclosures on the previous segment and taking their intersection.
 -}
-picardOnPartitionWrapping :: 
+picardStepwise :: 
     Bool -- ^ use classical Picard operator (this no explicit error margins, no checking of inclusion) 
     -> Bool -- ^ whether to parametrise the solving over uncertainty in initial values 
     -> ([Fn] -> [Fn]) -- ^ field
@@ -420,20 +481,22 @@ picardOnPartitionWrapping ::
     -> Double -- ^ initial widening
     -> IntPolySizeLimits CF -- ^ limits on polynomials
     -> Int -- ^ number of iterations of the Picard operator
-    -> ([[Fn]], [CF])
-picardOnPartitionWrapping
+    -> ([[[Fn]]], [CF])
+picardStepwise
         useClassical
         useFlow
         field 
-        paramVars initValues 
+        paramVars 
+        initValues 
         partition 
         initialWidening
-        limits iters 
+        limits 
+        iters 
     =
     foldl picardOnSegment ([],initValues) partition
     where
     picardOnSegment (resultsForPrevSegments, segmentInitValues) segment =
-        (resultsForPrevSegments ++ [concat enclosures], nextSegmentInitValues)
+        (resultsForPrevSegments ++ [map (\a -> [a]) $ concat enclosures], nextSegmentInitValues)
         where
         nextSegmentInitValues =
             intersectBoxes $ 
@@ -463,7 +526,7 @@ picardOnPartitionWrapping
                 foldl1 (zipWith (RefOrd.<\/>)) boxes 
         enclosures =
             take iters $  
-            iterate (picardOp field initValsFns) initialApprox
+            iterate (picardOp limits field initValsFns) initialApprox
             where
             initialApprox 
                 | useClassical =
@@ -483,6 +546,63 @@ picardOnPartitionWrapping
             varDomsTDomParam =
                 (tVar, segment) : zip paramVars segmentInitValues
 
+
+picardOnPiecewiseFn ::
+    ([Fn] -> [Fn])
+    -> [CF] -- ^ initial values
+    -> [CF] -- ^ partition of time
+    -> Double -- ^ initial widening
+    -> IntPolySizeLimits CF -- ^ limits on polynomials
+    -> Int -- ^ number of iterations of the Picard operator
+    -> ([[[Fn]]], [CF])
+picardOnPiecewiseFn
+        field
+        initValues
+        partition
+        initialWidening
+        limits
+        iters
+    =
+    (fns, result)
+    where
+    result = snd $ last iterations
+    fns = map (List.transpose . map snd) $ map fst iterations
+    iterations =
+        take iters $ iterate applyPicard (initialApprox, initValues)
+    initialApprox = 
+        map makeSegment partition
+        where
+        makeSegment segmentDom =
+            (segmentDom, map (initValConstant segmentDom initialWidening) initValues)
+    initValConstant dom w initVal =
+        newConstFn limits [(tVar, dom)] $
+            initVal <+>| (constructCF (-w) w)
+    applyPicard (pwFunction, _) =
+        foldl picardOnSegment ([],initValues) pwFunction
+        where
+        picardOnSegment (resultsForPrevSegments, segmentInitValues) (segmentDom, segmentFns) =
+            (resultsForPrevSegments ++ [(segmentDom, segmentFnsNew)], nextSegmentInitValues)
+            where
+            segmentFnsNew = 
+                map (changeSizeLimitsOut limits) segmentFnsPre
+            nextSegmentInitValues =
+                map evaluateAtEndpoint $ segmentFnsPre
+            evaluateAtEndpoint fn =
+                evalAtPointOutEff effEval endPtBox fn
+                where
+                endPtBox = insertVar tVar endPt $ getDomainBox fn
+                (_, endPt) = RefOrd.getEndpointsOut segmentDom
+            segmentFnsPre =
+                picardOp limitsIncreased field segmentInitValuesFns segmentFns
+                where
+                segmentInitValuesFns =
+                    map (initValConstant segmentDom 0) segmentInitValues
+                limitsIncreased =
+                    limits
+                    {
+                        ipolylimits_maxdeg = 1 + (ipolylimits_maxdeg limits)
+                    } 
+
 partitionDom :: CF -> Int -> [CF]
 partitionDom tDom bisectDepth =
     (iterate bisectAll [tDom]) !! bisectDepth
@@ -493,17 +613,19 @@ partitionDom tDom bisectDepth =
         (aL, aR) = CF.bisect Nothing a 
 
 
-
 picardOp ::
+    SizeLimits Fn ->
     ([Fn] -> [Fn]) ->
     [Fn] {-^ initial values -} -> 
     [Fn] {-^ approximates of y -} -> 
     [Fn] {-^ improved approximates of y -}
-picardOp field y0 yPrev =
+picardOp limitsIntegr field y0 yPrev =
     zipWith picardOneFn y0 $ field yPrev
     where
     picardOneFn y0_i xd_i =
-        y0_i <+> primitFn xd_i
+        (setLimits y0_i) <+> primitFn (setLimits xd_i)
+        where
+        setLimits = changeSizeLimitsOut limitsIntegr
     primitFn xd =
         primitiveFunctionOutEff effInteg xd tVar
     
