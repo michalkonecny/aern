@@ -106,6 +106,8 @@ functions ::
     ]
 functions =
     [
+        ("expdwindle-exact-initval-EP", functionsExpDwindle "evEP"),
+        ("expdwindle-uncertain-initval-EP", functionsExpDwindle "uvEP"),
         ("expdwindle-exact-initval-naive", functionsExpDwindle "ev"),
         ("expdwindle-exact-initval-flow", functionsExpDwindle "evp"),
         ("expdwindle-uncertain-initval-naive", functionsExpDwindle "uv"),
@@ -118,7 +120,7 @@ functions =
         ("vanderpol-exact-initval-flow", functionsVanDerPol "evp"),
         ("vanderpol-uncertain-initval-naive", functionsVanDerPol "uv"),
         ("vanderpol-uncertain-initval-flow", functionsVanDerPol "uvp"),
-        ("springmass-exact-initval-EP", functionsSpringMass "evep"),
+        ("springmass-exact-initval-EP", functionsSpringMass "evEP"),
         ("springmass-exact-initval-classical", functionsSpringMass "evc"),
         ("springmass-exact-initval-naive", functionsSpringMass "ev"),
         ("springmass-exact-initval-flow", functionsSpringMass "evp"),
@@ -141,6 +143,8 @@ functionsExpDwindle subname =
     where
     functionsExpDwindleSub =
         case subname of
+            "evEP" -> fnsExpEP initValuesExp_ev
+            "uvEP" -> fnsExpEP initValuesExp_uv
             "ev" -> fnsExp False initValuesExp_ev
             "evp" -> fnsExp True initValuesExp_ev
             "uv" -> fnsExp False initValuesExp_uv
@@ -151,7 +155,13 @@ functionsExpDwindle subname =
     initValuesExp_ev = [1]
 
     initValuesExp_uv :: [CF]
-    initValuesExp_uv = [(-1) </\> 1]
+--    initValuesExp_uv = [(-1) </\> 1]
+--    initValuesExp_uv = [(-1) </\> 0]
+--    initValuesExp_uv = [0 </\> 1]
+--    initValuesExp_uv = [(-1) </\> (-0.5)]
+--    initValuesExp_uv = [(-0.5) </\> 0]
+--    initValuesExp_uv = [0 </\> 0.5]
+    initValuesExp_uv = [0.5 </\> 1]
 
     fieldExp :: [Fn] -> [Fn]
     fieldExp [y] = [(-1 :: Int) |<*> y] -- y' = -y
@@ -182,7 +192,7 @@ functionsExpDwindle subname =
             FV.simpleFnMetaData
                 sampleFn 
                 (FV.Rectangle  1 (-1) 0 (tEnd)) -- initial plotting region
-                Nothing
+                (Just (1,1,1,1))
                 200 -- samplesPerUnit
                 tVar
                 [("segment " ++ show i, functionInfos) | i <- [1..2^bisectDepth] :: [Int]]
@@ -195,7 +205,43 @@ functionsExpDwindle subname =
             fnNames =
                 map ("y" ++) $ map show ([1..iters] :: [Int])
     
+    fnsExpEP initValues tEndDbl maxdeg maxsize otherArgs =
+        (functions2, fnmeta) 
+        where
+        [itersS, bisectDepthS] = otherArgs
+        iters = read itersS
+        bisectDepth = read bisectDepthS
+        tDom = constructCF 0 tEndDbl
+        tEnd = constructCF tEndDbl tEndDbl
 
+        functions2 =
+            picardOnPiecewiseFn
+                fieldExp
+                initValues
+                (partitionDom tDom bisectDepth)
+                initialWidening
+                (limitsDS maxdeg maxsize) iters
+            where
+            initialWidening = 0.2
+        
+        fnmeta =
+            FV.simpleFnMetaData
+                sampleFn 
+                (FV.Rectangle  3 (-3) 0 (tEnd)) -- initial plotting region
+                (Just (1,1,1,1))
+                1600 -- samplesPerUnit
+                tVar
+                segmentInfo
+            where
+            segmentInfo = 
+                [("iteration " ++ show i, functionInfos False) | i <- [1..iters-1]] ++
+                [("iteration " ++ show iters, functionInfos True)]
+                where
+                functionInfos visible =
+                    zip3 
+                        ["y"]
+                        [blue] -- styles 
+                        [visible] -- show only the last iteration by default
 
 ---------------------------------
 functionsExpMirror ::
@@ -274,7 +320,7 @@ functionsSpringMass subname =
     where
     functionsSpringMassSub =
         case subname of
-            "evep" -> fnsSpringMassEP initValuesSpringMass_ev
+            "evEP" -> fnsSpringMassEP initValuesSpringMass_ev
             "evc" -> fnsSpringMass True False initValuesSpringMass_ev
             "ev" -> fnsSpringMass False False initValuesSpringMass_ev
             "evp" -> fnsSpringMass False True initValuesSpringMass_ev
@@ -326,7 +372,7 @@ functionsSpringMass subname =
                 sampleFn
 --                (FV.Rectangle  1.125 (-1.125) (-0.5) (tEnd <+> 0.5)) -- initial plotting region
 --                (FV.Rectangle  1.25 (-1.125) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
-                (FV.Rectangle  1.25 (0) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
+                (FV.Rectangle  1 (0) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
                 (Just (1,1,1,1))
                 200 -- samplesPerUnit
                 tVar
@@ -374,12 +420,11 @@ functionsSpringMass subname =
         fnmeta = 
             FV.simpleFnMetaData
                 sampleFn
-                (FV.Rectangle  1 (0) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
+                (FV.Rectangle  1.2 (0) (-0.1) (tEnd <+> 0.1)) -- initial plotting region
                 (Just (1,1,1,1))
                 1600 -- samplesPerUnit
                 tVar
                 segmentInfo
-                
             where
             segmentInfo = 
                 [("iteration " ++ show i, functionInfos False) | i <- [1..iters-1]] ++
