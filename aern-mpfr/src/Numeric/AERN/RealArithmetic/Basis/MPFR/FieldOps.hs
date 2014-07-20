@@ -42,10 +42,14 @@ instance RoundedAddEffort MPFR where
 instance RoundedAdd MPFR where
     addUpEff _ d1 d2 = 
         detectNaNUp ("addition " ++ show d1 ++ " +^ " ++ show d2 ) $ 
-            M.add M.Up (M.getPrec d1) d1 d2
+            M.add M.Up (getPrec2 d1 d2) d1 d2
     addDnEff _ d1 d2 =
         detectNaNDn ("addition " ++ show d1 ++ " +. " ++ show d2 ) $ 
-            M.add M.Down (M.getPrec d1) d1 d2
+            M.add M.Down (getPrec2 d1 d2) d1 d2
+    
+getPrec2 :: MPFR -> MPFR -> M.Precision
+getPrec2 d1 d2 =
+    (M.getPrec d1) `max` (M.getPrec d2)
     
 instance RoundedSubtr MPFR
 
@@ -69,7 +73,7 @@ instance RoundedMultiply MPFR where
 --            ++ " " ++ show d1 ++ " * " ++ show d2 ++ " = " 
 --        ) $
         detectNaNUp ("multiplication " ++ show d1 ++ " *^ " ++ show d2 ) $ 
-            M.mul M.Up (M.getPrec d1) d1 d2
+            M.mul M.Up (getPrec2 d1 d2) d1 d2
     multDnEff _ d1 d2 = 
 --        unsafePrintReturn
 --        (
@@ -77,7 +81,7 @@ instance RoundedMultiply MPFR where
 --            ++ " " ++ show d1 ++ " * " ++ show d2 ++ " = " 
 --        ) $
         detectNaNDn ("multiplication " ++ show d1 ++ " *. " ++ show d2 ) $ 
-            M.mul M.Down (M.getPrec d1) d1 d2
+            M.mul M.Down (getPrec2 d1 d2) d1 d2
 
 
 instance RoundedPowerNonnegToNonnegIntEffort MPFR where
@@ -107,10 +111,10 @@ instance RoundedDivideEffort MPFR where
 instance RoundedDivide MPFR where
     divUpEff _ d1 d2 = 
         detectNaNUp ("division " ++ show d1 ++ " *^ " ++ show d2 ) $ 
-            M.div M.Up (M.getPrec d1) d1 d2
+            M.div M.Up (getPrec2 d1 d2) d1 d2
     divDnEff _ d1 d2 = 
         detectNaNDn ("division " ++ show d1 ++ " *. " ++ show d2 ) $ 
-            M.div M.Down (M.getPrec d1) d1 d2
+            M.div M.Down (getPrec2 d1 d2) d1 d2
 
 instance RoundedRingEffort MPFR
     where
