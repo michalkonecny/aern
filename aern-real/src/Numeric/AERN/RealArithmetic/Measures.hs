@@ -150,12 +150,12 @@ iterateUntilAccurate ::
     NumOrd.PartialComparison (Imprecision t),
     EffortIndicator eff) 
     =>
+    eff {-^ @initEff@ the initial effort -} -> 
     Int {-^ @iterLimit@ maximum number of different efforts to try out -} -> 
     Imprecision t {-^ @maxImprecision@ imprecision threshold for the result -} -> 
-    eff {-^ @initEff@ the initial effort -} -> 
     (eff -> t) {-^ the function to compute -} -> 
     [(eff,t)] {-^ the efforts that were tried and the corresponding results -}
-iterateUntilAccurate iterLimit maxImprecision initEff fn =
+iterateUntilAccurate initEff iterLimit maxImprecision fn =
     stopWhenAccurate $ 
         take iterLimit $ 
             zip efforts (map fn efforts)

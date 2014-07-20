@@ -46,9 +46,15 @@ main =
     items iters digits =
         -- invoke an iRRAM-style procedure for automatic precision/effort incrementing 
         --    on the computation of iters-many iterations of the logistic map:
-        iterateUntilAccurate maxIncrements maxImprecision initPrec logisticMapWithPrec
+        (iterateUntilAccurate initPrec maxAttempts maxImprecision) 
+            logisticMapWithPrec
         where
+        initPrec = 50 -- try with the precision first
+        maxAttempts = 100 -- try to increase precision 100 times before giving up
+        maxImprecision = (ensurePrecision 1000 10)^^(-digits) -- target result precision
+        
         logisticMapWithPrec prec = 
+            -- iterate logistic map iters times, using precision prec
             (iterate (logisticMap r) x0Prec) !! (iters - 1)
             where
             x0Prec = ensurePrecision prec x0
@@ -59,13 +65,6 @@ main =
             x0 :: RealApprox
             x0 = 0.5 -- 0.671875
         
-        maxImprecision :: RealApprox
-        maxImprecision = (ensurePrecision 1000 10)^^(-digits)
-        
-        initPrec :: Precision
-        initPrec = 50
-        
-        maxIncrements = 100
     
     reportItem digits (prec, res) =    
         putStrLn $ formatRes prec res 
