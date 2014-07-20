@@ -98,5 +98,16 @@ Executable demoAERN-Real-MPFR-Minimal
         aern-real == 0.5.*,
         aern-interval == 0.5.*
 
+Executable demoAERN-Real-MPFR-LogisticMap
+  hs-source-dirs: src, demos
+  main-is: LogisticMap.hs
+  Build-Depends:
+        base >= 4.4,
+        QuickCheck >= 2.4,
+        hmpfr >= 0.3.3,
+        aern-order == 0.5.*,
+        aern-real == 0.5.*,
+        aern-interval == 0.5.*
+
       
     
