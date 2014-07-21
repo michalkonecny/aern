@@ -23,8 +23,6 @@ import Numeric.AERN.RmToRn.Plot.CairoDrawable
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.Evaluation
 
-import Numeric.AERN.Basics.Consistency
-
 import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
@@ -47,8 +45,7 @@ import Debug.Trace
 _ = trace
 
 instance 
-    (HasAntiConsistency (Domain f),
-     CanEvaluate f,
+    (CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
      Eq (Var f), Ord (Var f),
@@ -63,22 +60,18 @@ instance
     cairoDrawFnGraph = cairoDrawFnGraphFromEval
     cairoDrawFnParameteric = cairoDrawFnParametericFromEval
     
-type CairoDrawEffortIndicatorFnFromEval f =
-    (
-     EvaluationEffortIndicator f
+data CairoDrawEffortIndicatorFnFromEval f =
+    CairoDrawEffortIndicatorFnFromEval
+    {
+        draweff_evalF :: EvaluationEffortIndicator f
     ,
-    ( 
-     ArithInOut.RoundedRealEffortIndicator (Domain f)
-     ,
-     RefOrd.GetEndpointsEffortIndicator (Domain f)
-     ,
-     ConsistencyEffortIndicator (Domain f)
-     )
-    )
+        draweff_realD :: ArithInOut.RoundedRealEffortIndicator (Domain f)
+    ,
+        draweff_getEndpointsD :: RefOrd.GetEndpointsEffortIndicator (Domain f)
+    }
 
 cairoDrawFnDefaultEffortFromEval ::
-    (HasAntiConsistency (Domain f),
-     CanEvaluate f,
+    (CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
      Show (Domain f)
@@ -87,23 +80,19 @@ cairoDrawFnDefaultEffortFromEval ::
     f ->
     CairoDrawEffortIndicatorFnFromEval f
 cairoDrawFnDefaultEffortFromEval sampleF =
-    (
-       evaluationDefaultEffort sampleF
-       ,
-       (
-        ArithInOut.roundedRealDefaultEffort sampleDF
-        ,
-        RefOrd.getEndpointsDefaultEffort sampleDF
-        ,
-        consistencyDefaultEffort sampleDF
-       )
-    )
+    CairoDrawEffortIndicatorFnFromEval
+    {
+        draweff_evalF = evaluationDefaultEffort sampleF
+    ,
+        draweff_realD = ArithInOut.roundedRealDefaultEffort sampleDF
+    ,
+        draweff_getEndpointsD = RefOrd.getEndpointsDefaultEffort sampleDF
+    }    
     where
     sampleDF = getSampleDomValue sampleF
 
 cairoDrawFnGraphFromEval ::
-    (HasAntiConsistency (Domain f),
-     CanEvaluate f,
+    (CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
      Show (Domain f), Show (Var f), Show (VarBox f (Domain f))
@@ -117,7 +106,7 @@ cairoDrawFnGraphFromEval ::
     [f] ->
     Render ()
 cairoDrawFnGraphFromEval 
-        (effEval, (effReal, effGetE, effConsistency))
+        (CairoDrawEffortIndicatorFnFromEval effEval effReal effGetE)
         canvasParams toScreenCoords 
         style plotVar fns
     | null fns = return ()
@@ -127,8 +116,8 @@ cairoDrawFnGraphFromEval
 --        ++ "\n dom = " ++ show dom
 --        ++ "\n canvasParams = " ++ show canvasParams
 --    ) $ 
-    case isAntiConsistentEff effConsistency visibleDom of
-        Just False ->
+    case visibleDomL NumOrd.<=? visibleDomR of
+        Just True ->
 --            unsafePrint (
 --                "cairoDrawFnFromEval: visible domain not anti-consistent"
 --                ++ "\n partition = " ++ show partition
@@ -196,6 +185,7 @@ cairoDrawFnGraphFromEval
                 segCnt =
                     case ArithUpDn.convertUpEff effToInt 0 (segPerUnit |<*> domWidthScreen) of
                         Just cnt -> (cnt :: Int)
+                        _ -> error $ "cairoDrawFnFromEval: segCnt: internal error"
                     where
                     domWidthScreen = 
                         NumOrd.minOutEff effMinmax c1 $ domHIScreen <-> domLOScreen
@@ -209,6 +199,7 @@ cairoDrawFnGraphFromEval
 --                fst $ unzip $ filter snd $ zip vals activeDimensions
         _ -> return ()
     where
+    (visibleDomL, visibleDomR) = RefOrd.getEndpointsOutEff effGetE visibleDom
     visibleDom = 
         dom <\/> (vdomLO </\> vdomHI)
         where
@@ -253,8 +244,7 @@ cairoDrawFnGraphFromEval
 
 
 cairoDrawFnParametericFromEval ::
-    (HasAntiConsistency (Domain f),
-     CanEvaluate f,
+    (CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
      Eq (Var f), Ord (Var f), 
@@ -270,7 +260,7 @@ cairoDrawFnParametericFromEval ::
     [(f,f)] ->
     Render ()
 cairoDrawFnParametericFromEval 
-        (effEval, (effReal, effGetE, effConsistency))
+        (CairoDrawEffortIndicatorFnFromEval effEval effReal effGetE)
         canvasParams toScreenCoords 
         style plotVar scanVars fnPairs 
     | null fnPairs = return ()
