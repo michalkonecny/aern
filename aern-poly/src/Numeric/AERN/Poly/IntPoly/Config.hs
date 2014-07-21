@@ -476,8 +476,8 @@ instance
     where
     effortIncrementVariants (IntPolyEffort sampleCf e1O e2O e3O e4O e5O e6O e7O) =
         [IntPolyEffort sampleCf e1 e2 e3 e4 e5 e6 e7| 
-            ((e1, e2, e3), (e4, e5, e6), e7) 
-                <- effortIncrementVariants ((e1O, e2O, e3O), (e4O, e5O, e6O), e7O) ]
+            ((e1, e2, e3), (Int1To1000 e4, Int1To10 e5, Int1To10 e6), Int1To1000 e7) 
+                <- effortIncrementVariants ((e1O, e2O, e3O), (Int1To1000 e4O, Int1To10 e5O, Int1To10 e6O), Int1To1000 e7O) ]
     effortRepeatIncrement (IntPolyEffort sampleCf i1 i2 i3 i4 i5 i6 i7, IntPolyEffort _ j1 j2 j3 j4 j5 j6 j7) = 
         IntPolyEffort sampleCf
             (effortRepeatIncrement (i1, j1)) 
@@ -489,5 +489,5 @@ instance
             (effortRepeatIncrement (i7, j7)) 
     effortIncrementSequence (IntPolyEffort sampleCf e1O e2O e3O e4O e5O e6O e7O) =
         [IntPolyEffort sampleCf e1 e2 e3 e4 e5 e6 e7 | 
-            ((e1, e2, e3), (e4, e5, e6), e7) 
-                <- effortIncrementSequence ((e1O, e2O, e3O), (e4O, e5O, e6O), e7O) ]
+            ((e1, e2, e3), (Int1To1000 e4, Int1To10 e5, Int1To10 e6), Int1To1000 e7) 
+                <- effortIncrementVariants ((e1O, e2O, e3O), (Int1To1000 e4O, Int1To10 e5O, Int1To10 e6O), Int1To1000 e7O) ]
