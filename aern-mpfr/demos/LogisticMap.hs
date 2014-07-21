@@ -60,13 +60,13 @@ main =
         maxImprecision = 10^^(-digits) -- target result precision
         
     -- print the result of an attempt, printing sufficiently many digits, according to the digits parameter
-    reportAttempt digits (prec, res) =    
+    reportAttempt digits (prec, res, imprecision) =    
         putStrLn $ formatRes prec res 
         where
         formatRes prec res =
             show prec ++ ": " 
             ++ (showInternals shouldShowInternals res) 
-            ++ "; prec = " ++ (show $ imprecisionOf res)
+            ++ "; prec = " ++ (show imprecision)
         shouldShowInternals = (digitsW+2, False)
         digitsW = fromIntegral digits        
        
