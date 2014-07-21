@@ -303,7 +303,7 @@ instance
     distanceDefaultEffort p =
         evaluationDefaultEffort p
     distanceBetweenEff eff p1 p2 =
-        evalAtPointOutEff eff dombox diff
+        ArithInOut.absOutEff effAbs $ evalAtPointOutEff eff dombox diff
         where
         dombox = getDomainBox diff
         diff = polyJoinWith (zero sampleCf) (uncurry $ ArithInOut.subtrOutEff effAdd) (p1, p2) 
@@ -311,6 +311,8 @@ instance
         effAdd = 
             ArithInOut.fldEffortAdd sampleCf $ 
                 ArithInOut.rrEffortField sampleCf effCf
+        effAbs = 
+            ArithInOut.rrEffortAbs sampleCf effCf
         effCf = ipolyeff_cfRoundedRealEffort eff
         
 
