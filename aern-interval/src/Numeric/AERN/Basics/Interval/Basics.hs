@@ -18,7 +18,8 @@
 -}
 module Numeric.AERN.Basics.Interval.Basics 
 (
-   Interval(..), 
+   Interval(..),
+   IntervalApprox(..),
    IntervalOrderEffort(..), defaultIntervalOrderEffort, 
    getEndpoints, fromEndpoints, mapBothEndpoints, mapEachEndpoint, mapEndpointPair 
 )
@@ -49,6 +50,13 @@ data Interval e =
     { 
         leftEndpoint :: !e,
         rightEndpoint :: !e
+    }
+    
+data IntervalApprox e =
+    IntervalApprox
+    {
+        intervalOuter :: Interval e,
+        intervalInner :: Interval e
     }
     
 data IntervalOrderEffort e =
@@ -131,11 +139,19 @@ instance (ShowInternals e, NumOrd.PartialComparison e) => (Show (Interval e))
     where
     show i = showInternals (defaultShowIndicator i) i
 
+deriving instance (ShowInternals e, NumOrd.PartialComparison e) => (Show (IntervalApprox e))
+
 instance (HasSizeLimits e) => HasSizeLimits (Interval e)
     where
     type SizeLimits (Interval e) = SizeLimits e
     getSizeLimits (Interval l _r) = getSizeLimits l
     defaultSizeLimits (Interval l _r) = defaultSizeLimits l
+    
+instance (HasSizeLimits e) => HasSizeLimits (IntervalApprox e)
+    where
+    type SizeLimits (IntervalApprox e) = SizeLimits e
+    getSizeLimits (IntervalApprox o _i) = getSizeLimits o
+    defaultSizeLimits (IntervalApprox o _i) = defaultSizeLimits o
     
 instance (CanChangeSizeLimits e) => CanChangeSizeLimits (Interval e)
     where
@@ -152,10 +168,26 @@ instance (CanChangeSizeLimits e) => CanChangeSizeLimits (Interval e)
     changeSizeLimitsDnEff = error $ "AERN: changeSizeLimitsDnEff not defined for type Interval."
     changeSizeLimitsUpEff = error $ "AERN: changeSizeLimitsUpEff not defined for type Interval."
 
+instance (CanChangeSizeLimits e) => CanChangeSizeLimits (IntervalApprox e)
+    where
+    type SizeLimitsChangeEffort (IntervalApprox e) = SizeLimitsChangeEffort e
+    sizeLimitsChangeDefaultEffort (IntervalApprox o _i) = sizeLimitsChangeDefaultEffort o
+    changeSizeLimitsOutEff eff newSizeLimits (IntervalApprox o i) = 
+        IntervalApprox 
+            (changeSizeLimitsOutEff eff newSizeLimits o) 
+            (changeSizeLimitsInEff eff newSizeLimits i)
+    changeSizeLimitsInEff = error $ "AERN: changeSizeLimitsInEff not defined for type IntervalApprox."
+    changeSizeLimitsDnEff = error $ "AERN: changeSizeLimitsDnEff not defined for type IntervalApprox."
+    changeSizeLimitsUpEff = error $ "AERN: changeSizeLimitsUpEff not defined for type IntervalApprox."
+
 instance (NFData e) => NFData (Interval e) where
     rnf (Interval l r) =
         rnf l `seq` rnf r `seq` () 
 --        l `seq` r `seq` () 
+
+instance (NFData e) => NFData (IntervalApprox e) where
+    rnf (IntervalApprox o i) =
+        rnf o `seq` rnf i `seq` () 
 
 -- | Given an argument interval 'i' 'getEndpoints' returns the endpoint pair 
 --   ('leftEndpoint' 'i','rightEndpoint' 'i').

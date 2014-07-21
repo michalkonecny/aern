@@ -49,6 +49,21 @@ instance
     getNSamplesFromInsideDomainBox (Interval l _) = getNSamplesFromInsideDomainBox l
     getSampleFromInsideDomainBox (Interval l _) = getSampleFromInsideDomainBox l
     
+instance
+    (HasDomainBox f)
+    =>
+    (HasDomainBox (IntervalApprox f))
+    where
+    type (Var (IntervalApprox f)) = Var f
+    type (Domain (IntervalApprox f)) = Domain f
+    type (VarBox (IntervalApprox f)) = VarBox f
+    getSampleDomValue (IntervalApprox o _) = getSampleDomValue o
+    defaultDomSplit (IntervalApprox o _) = defaultDomSplit o
+    getDomainBox (IntervalApprox o _) = getDomainBox o
+    getVarDoms (IntervalApprox o _) = getVarDoms o
+    getNSamplesFromInsideDomainBox (IntervalApprox o _) = getNSamplesFromInsideDomainBox o
+    getSampleFromInsideDomainBox (IntervalApprox o _) = getSampleFromInsideDomainBox o
+    
     
 instance
     CanAdjustDomains f
@@ -59,6 +74,16 @@ instance
          where
          lN = adjustDomain l var dom
          rN = adjustDomain r var dom
+    
+instance
+    CanAdjustDomains f
+    => 
+    CanAdjustDomains (IntervalApprox f)
+    where
+    adjustDomain (IntervalApprox o i) var dom = IntervalApprox oN iN
+         where
+         oN = adjustDomain o var dom
+         iN = adjustDomain i var dom
     
 instance 
     (HasProjections f,
@@ -71,6 +96,17 @@ instance
         (l,r) = RefOrd.getEndpointsOut p
         p = newProjection sizeLims dombox vars
 
+instance 
+    (HasProjections f,
+     RefOrd.IntervalLike f)
+    => 
+    HasProjections (IntervalApprox f)
+    where
+    newProjection sizeLims dombox vars = IntervalApprox o i
+        where
+        i = o -- TODO: this is wrong with degree 0, introduce newProjectionOut and newProjectionIn?
+        o = newProjection sizeLims dombox vars
+
 instance
     (HasConstFns f,
      RefOrd.IntervalLike f) 
@@ -81,6 +117,17 @@ instance
         where
         (l,r) = RefOrd.getEndpointsOut p
         p = newConstFn sizeLims dombox value
+
+instance
+    (HasConstFns f,
+     RefOrd.IntervalLike f) 
+    => 
+    HasConstFns (IntervalApprox f) 
+    where
+    newConstFn sizeLims dombox value = IntervalApprox o i
+        where
+        i = o
+        o = newConstFn sizeLims dombox value
 
 instance 
     CanAddVariables f 
@@ -133,6 +180,21 @@ instance
         where
         lVal = evalAtPointOutEff effEval dombox l
         rVal = evalAtPointOutEff effEval dombox r
+
+instance
+    (CanEvaluate f, 
+     RefOrd.IntervalLike (Domain f)) 
+    =>
+    (CanEvaluate (IntervalApprox f))
+    where
+    type EvaluationEffortIndicator (IntervalApprox f) =
+        (EvaluationEffortIndicator f, RefOrd.FromEndpointsEffortIndicator (Domain f))
+    evaluationDefaultEffort (IntervalApprox o _) =
+        evaluationDefaultEffort o 
+    evalAtPointOutEff eff dombox (IntervalApprox o i) =
+        evalAtPointOutEff eff dombox o 
+    evalAtPointInEff =
+        error $ "AERN: inner rounded evalAtPointInEff not defined for IntervalApprox"
 
 instance
     (CanPartiallyEvaluate f, 

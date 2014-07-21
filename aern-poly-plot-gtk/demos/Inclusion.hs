@@ -1,27 +1,27 @@
 module Main where
 
+---- Imports -----
+
 import Numeric.AERN.Poly.IntPoly (IntPoly(..), defaultIntPolySizeLimits, IntPolySizeLimits(..))
-import Numeric.AERN.Poly.IntPoly.Plot (CairoDrawEffortIndicatorFnFromEval(..))
-import Numeric.AERN.Basics.Interval (Interval)
+--import Numeric.AERN.Poly.IntPoly.Plot (CairoDrawEffortIndicatorFnFromEval(..))
+import Numeric.AERN.Basics.Interval (Interval, IntervalApprox)
 
 import Numeric.AERN.RmToRn 
-        (Domain, fromAscList, getVarDoms, 
+        (getVarDoms, 
          newConstFn, newProjection,
-         evaluationDefaultEffort, evalAtPointOutEff)
+         evaluationDefaultEffort)
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
 
 -- real arithmetic operators and imprecision measure:
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((|<*>), (>+<))
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding 
     (RoundedReal, roundedRealDefaultEffort,
-     expOutEff, expInEff, expDefaultEffort)
-import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate, iterateUntilAccurate2)
+     expOutEff, expDefaultEffort)
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
         (ExpThinEffortIndicator(..))
 
-import Numeric.AERN.RefinementOrder ((</\>), (>/\<))
+import Numeric.AERN.RefinementOrder ((</\>))
 
 
 import qualified 
@@ -38,12 +38,14 @@ import Control.Concurrent.STM (atomically, newTVar)
 import System.IO (stdout, hSetBuffering, BufferMode(LineBuffering))
 import System.Environment (getArgs)
 
+---- End of imports -----
+
 
 --type CF = Interval MPFR
 type CF = Interval Double
 type Poly = IntPoly String CF
-type PI = Interval Poly
-type Fn = PI
+type PIX = IntervalApprox Poly
+type Fn = PIX
 
 usage :: String
 usage = "Usage: Inclusion <maxdeg> <exp taylor degree>"
@@ -70,22 +72,32 @@ main =
 inclusionFunctions :: Int -> Int -> ([[Fn]], FV.FnMetaData Fn)
 inclusionFunctions maxdeg expTaylorDeg = (fnGroups, fnmeta)
     where
-    fnGroups = [[expSXOut, expXpmDeltaOut, expXpmDeltaIn]]
+    fnGroups = [[expSX, expXpmDelta]]
 
-    expXpmDeltaOut = expOutEff effExp xpmDeltaOut
-    expXpmDeltaIn = expInEff effExp xpmDeltaIn
+    expXpmDelta = expOutEff effExp xpmDelta
 
-    xpmDeltaOut = x + (delta </\> (- delta))
-    xpmDeltaIn = x >+< (delta >/\< (- delta))
-    delta = newConstFn limits [("x", dom)] 0.1
+    xpmDelta = x + pmDelta
+        where
+        pmDelta = newConstFn limits [("x", dom)] $ (- deltaD) </\> deltaD
+        deltaD = 0.1
     
-    expSXOut = expOutEff effExp $ s * x
-    s =  newConstFn limits [("x", dom)] 0.91
+    expSX = expOutEff effExp $ s * x
+        where
+        s =  newConstFn limits [("x", dom)] 0.91
     
---    xPlus1 = x + 1
     x = newProjection limits [("x", dom)] "x"
     dom = (0) </\> 1
 --    dom = (-0.2) </\> 0.2
+
+    limits = 
+        (defaultIntPolySizeLimits sampleCF cfLimits arity)
+        {
+            ipolylimits_maxdeg = maxdeg
+        }
+        where
+        sampleCF = 0
+        cfLimits = ()
+        arity = 1
 
     effExp = 
         (expDefaultEffort x)
@@ -105,96 +117,26 @@ inclusionFunctions maxdeg expTaylorDeg = (fnGroups, fnmeta)
         sampleFn = x
         functionInfos =
             zip3 
-                ["exp(0.9*x)", "Out(exp(x+-0.1))", "In(exp(x+-0.1))"]
+                ["exp(0.9*x)", "(exp(x+-0.1))"]
                 [black, blue, blue] -- styles 
                 (repeat True) -- show everything by default
 
-    limits = 
-        (defaultIntPolySizeLimits sampleCF cfLimits arity)
-        {
-            ipolylimits_maxdeg = maxdeg
-        }
-        where
-        sampleCF = 0
-        cfLimits = ()
-        arity = 1
-    
-
-logisticMapIterateNTimes ::
-    (Num real, RoundedReal real)
-    =>
-    Rational {-^ @r@ scaling constant -} -> 
-    real {-^ @x0@ initial value  -} ->
-    Int {-^ @n@ number of iterations -} ->
-    [real] {-^ @logisticMap^n(x0)@ -} 
-
-logisticMapIterateNTimes r x0 n = 
-    take (n+1) $ (iterate (logisticMap r) x0)
-    
-logisticMap ::
-    (Num real, RoundedReal real)
-    =>
-    Rational {-^ scaling constant r -} -> 
-    real {-^ previous value x -} ->
-    real {-^ rx(1-x) -} 
-
-logisticMap r xPrev =
-    r |<*> (xPrev * (1 - xPrev))
-        
-addPlotMetainfo ::
-    [Fn] ->
-    ([[Fn]], FV.FnMetaData Fn)
-addPlotMetainfo fns =
-    ([fns], fnMeta)
-    where
-    fnMeta =  
-            FV.simpleFnMetaData
-                sampleFn 
-                (FV.Rectangle  1 (0) 0 1) -- initial plotting region
-                Nothing
-                200 -- samplesPerUnit
-                "x"
-                [("LM iterations", functionInfos)]
-            where
-            functionInfos =
-                zip3 
-                    ["x" ++ show i | i <- [1..iters]]
-                    (repeat blue) -- styles 
-                    (repeat True) -- show all iterations by default
-            iters = length fns
-    sampleFn : _ = fns
 
 plot :: ([[Fn]], FV.FnMetaData Fn) -> IO ()
 plot (fns, fnmeta) =
     do
-    putStrLn $ "last fn  = " ++ show lastFn
-    putStrLn $ "impresision of iterations = " ++ show (map imprecisionOf $ head fns)
     -- enable multithreaded GUI:
     _ <- Gtk.unsafeInitGUIForThreadedRTS
     fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
     fnMetaTV <- atomically $ newTVar $ fnmeta
     _ <- FV.new sampleFn effDrawFn effCF effEval (fnDataTV, fnMetaTV) Nothing
---    Concurrent.forkIO $ signalFn fnMetaTV
     Gtk.mainGUI
     where
     ((sampleFn :_) :_) = fns 
-    lastFn = head $ reverse $ head fns 
     effDrawFn = 
         (cairoDrawFnDefaultEffort sampleFn)
---        {
---            draweff_evalF = effEval
---        }
     effEval = 
         (evaluationDefaultEffort sampleFn)
---        (ipolyeff2, othereff)
---        where
---        ipolyeff2 =
---            ipolyeff
---            {
---                ipolyeff_evalMaxSplitSize = 1000
---            }
---        (ipolyeff, othereff) =
---            (evaluationDefaultEffort sampleFn)
     effCF = roundedRealDefaultEffort (0:: CF)
     --effCF = (100, (100,())) -- MPFR
 

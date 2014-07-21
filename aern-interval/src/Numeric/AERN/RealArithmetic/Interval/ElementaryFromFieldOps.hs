@@ -45,14 +45,14 @@ import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.ShowInternals
 
+
 instance
     (ArithInOut.RoundedReal (Interval e),
      -- MK has no idea why the following three are not automatically deduced from the above...
      ArithUpDn.RoundedReal e,
      ArithInOut.RoundedAddEffort (Distance e),
      RefOrd.RoundedLatticeEffort (Distance e),
-     EffortIndicator
-                        (ArithInOut.FieldOpsEffortIndicator (Distance e))
+     EffortIndicator (ArithInOut.FieldOpsEffortIndicator (Distance e))
      )
     => 
     (ArithInOut.RoundedExponentiationEffort (Interval e))
@@ -61,6 +61,22 @@ instance
         ExpThinEffortIndicator (Interval e) 
     expDefaultEffort i =
         expThinDefaultEffort i 10
+
+instance
+    (ArithInOut.RoundedReal (Interval e),
+     -- MK has no idea why the following three are not automatically deduced from the above...
+     ArithUpDn.RoundedReal e,
+     ArithInOut.RoundedAddEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     EffortIndicator (ArithInOut.FieldOpsEffortIndicator (Distance e))
+     )
+    => 
+    (ArithInOut.RoundedExponentiationEffort (IntervalApprox e))
+    where
+    type ExpEffortIndicator (IntervalApprox e) =
+        ExpThinEffortIndicator (Interval e) 
+    expDefaultEffort (IntervalApprox o _i) =
+        ArithInOut.expDefaultEffort o
 
 
 instance
@@ -99,6 +115,26 @@ instance
                 eff 
                 (Interval r r)
 
+instance
+    (ArithInOut.RoundedReal (Interval e), 
+     -- MK has no idea why the following three are not automatically deduced from the above...
+     ArithUpDn.RoundedReal e,
+     ShowInternals e,
+     ArithInOut.RoundedAddEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e),
+     EffortIndicator (ArithInOut.FieldOpsEffortIndicator (Distance e)),
+     --
+     NumOrd.HasExtrema e)
+    => 
+    (ArithInOut.RoundedExponentiation (IntervalApprox e))
+    where
+    expOutEff eff (IntervalApprox o i) 
+        = IntervalApprox resO resI
+        where
+        resO = ArithInOut.expOutEff eff o
+        resI = ArithInOut.expInEff eff i
+    expInEff = error "AERN: expInEff not defined for IntervalApprox"
+
 instance 
     (ArithUpDn.RoundedReal e) 
     => 
@@ -108,6 +144,16 @@ instance
     sqrtDefaultEffort (Interval l _) =
         sqrtThinDefaultEffort l 10 
 
+instance 
+    (ArithUpDn.RoundedReal e) 
+    => 
+    (ArithInOut.RoundedSquareRootEffort (IntervalApprox e))
+    where
+    type SqrtEffortIndicator (IntervalApprox e) = 
+        SqrtThinEffortIndicator e 
+    sqrtDefaultEffort (IntervalApprox o _i) =
+        ArithInOut.sqrtDefaultEffort o
+    
 instance 
     (ArithUpDn.RoundedReal e, Show e) 
     => 
@@ -131,4 +177,16 @@ instance
         (sqrtRL, _) = sqrtOutThinArg eff r
         effComp = 
             ArithUpDn.rrEffortComp l $ sqrteff_arith eff 
+                
+instance 
+    (ArithUpDn.RoundedReal e, Show e) 
+    => 
+    (ArithInOut.RoundedSquareRoot (IntervalApprox e))
+    where
+    sqrtOutEff eff (IntervalApprox o i) 
+        = IntervalApprox resO resI
+        where
+        resO = ArithInOut.sqrtOutEff eff o
+        resI = ArithInOut.sqrtInEff eff i
+    sqrtInEff = error "AERN: expInEff not defined for IntervalApprox"
                 
