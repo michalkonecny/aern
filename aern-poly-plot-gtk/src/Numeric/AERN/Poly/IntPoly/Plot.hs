@@ -62,18 +62,13 @@ convertEff ::
     -> 
     CairoDrawEffortIndicatorFnFromEval (IntPoly var cf)
 convertEff effIP =
-    (
-       effIP
-       ,
-       (
-        ipolyeff_cfRoundedRealEffort effIP
-        ,
-        ipolyeff_cfGetEndpointsEffort effIP
-        ,
-        consistencyDefaultEffort sampleDF
-       )
-    )
-    where
-    sampleDF = ipolyeff_sampleCf effIP
+    CairoDrawEffortIndicatorFnFromEval
+    {
+        draweff_evalF = effIP
+    ,
+        draweff_realD = ipolyeff_cfRoundedRealEffort effIP
+    ,
+        draweff_getEndpointsD = ipolyeff_cfGetEndpointsEffort effIP
+    }    
     
         
