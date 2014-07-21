@@ -66,6 +66,7 @@ instance
      Show cf, Show (SizeLimits cf), 
      ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
+     Arbitrary cf,
      NumOrd.PartialComparison (Imprecision cf), 
      RefOrd.IntervalLike cf) 
     => 
@@ -139,6 +140,7 @@ instance
      ArithInOut.RoundedMixedAdd (Interval e) (Interval e),
      Show (Imprecision (Interval e)),
      NumOrd.PartialComparison (Imprecision (Interval e)),
+     Arbitrary (Interval e),
      Arbitrary (RefOrd.GetEndpointsEffortIndicator (Interval e)),
      Arbitrary (ArithInOut.MixedMultEffortIndicator (Interval e) (Interval e)),
      Arbitrary (ArithInOut.MixedAddEffortIndicator (Interval e) (Interval e)),
@@ -192,6 +194,7 @@ instance
      ArithInOut.RoundedMixedAdd (Interval e) (Interval e),
      Show (Imprecision (Interval e)),
      NumOrd.PartialComparison (Imprecision (Interval e)),
+     Arbitrary (Interval e),
      Arbitrary (RefOrd.GetEndpointsEffortIndicator (Interval e)),
      Arbitrary (ArithInOut.MixedMultEffortIndicator (Interval e) (Interval e)),
      Arbitrary (ArithInOut.MixedAddEffortIndicator (Interval e) (Interval e)),
@@ -221,6 +224,7 @@ instance
                         fixedRandSeqQuantityOfSize 
                         area indices rels of
                     Just gen -> gen
+                    _ -> error "IntPoly.NumericOrder: arbitraryTupleInAreaRelatedBy: internal error"
         where
         fixedRandSeqQuantityOfSize :: Int -> Int
         fixedRandSeqQuantityOfSize size

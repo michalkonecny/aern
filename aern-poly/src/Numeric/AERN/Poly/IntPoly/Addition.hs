@@ -52,11 +52,13 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Consistency
+import Numeric.AERN.Basics.SizeLimits (SizeLimits)
 
 --import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
 
+import Test.QuickCheck (Arbitrary)
 
 instance
     (ArithInOut.RoundedReal cf, EffortIndicator (IntPolyEffort cf)) => 
@@ -68,19 +70,23 @@ instance
         ipolycfg_effort cfg 
     
 instance
-    (ArithInOut.RoundedReal cf,
+    (RefOrd.IntervalLike cf, 
+     ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf, 
+     NumOrd.PartialComparison cf,
+     EffortIndicator (SizeLimits cf), 
+     Arbitrary cf,
      NumOrd.PartialComparison (Imprecision cf),
-     RefOrd.IntervalLike cf,  
-     HasAntiConsistency cf,
      Ord var, 
      Show var, Show cf) 
     =>
     ArithInOut.RoundedAdd (IntPoly var cf) 
     where
-    addOutEff eff (IntPoly cfg terms1) (IntPoly _ terms2) =
+    addOutEff eff (IntPoly cfg1 terms1) (IntPoly cfg2 terms2) =
         reducePolyTermCountOut effCf $ 
             IntPoly cfg $ addTerms (<+>) terms1 terms2
         where
+        cfg = combineIntPolyCfgs cfg1 cfg2
         (<+>) = ArithInOut.addOutEff effAdd
         effAdd = ArithInOut.fldEffortAdd sampleCf $ ArithInOut.rrEffortField sampleCf effCf
         effCf = ipolyeff_cfRoundedRealEffort eff
@@ -97,10 +103,13 @@ instance
 --        sample = ipolycfg_sample_cf cfg
 
 instance
-    (ArithInOut.RoundedReal cf,
+    (RefOrd.IntervalLike cf, 
+     ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf, 
+     NumOrd.PartialComparison cf,
+     EffortIndicator (SizeLimits cf), 
+     Arbitrary cf,
      NumOrd.PartialComparison (Imprecision cf),
-     RefOrd.IntervalLike cf,  
-     HasAntiConsistency cf,
      Ord var, 
      Show var, Show cf) 
     =>

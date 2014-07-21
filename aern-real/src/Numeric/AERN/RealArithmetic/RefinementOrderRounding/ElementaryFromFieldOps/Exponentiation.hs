@@ -76,6 +76,8 @@ instance
     effortIncrementSequence (ExpThinEffortIndicator e1O e2O) =
         [ExpThinEffortIndicator e1 e2 | 
             (e1, e2) <- effortIncrementSequence (e1O, e2O) ]
+    effortCombine  (ExpThinEffortIndicator i1 i2) (ExpThinEffortIndicator j1 j2) =
+        ExpThinEffortIndicator (effortCombine i1 j1) (effortCombine i2 j2)
 
 expThinDefaultEffort :: 
    (ArithInOut.RoundedReal t) 

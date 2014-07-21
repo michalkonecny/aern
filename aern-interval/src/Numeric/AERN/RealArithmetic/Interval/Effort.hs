@@ -80,6 +80,8 @@ instance
     effortIncrementSequence (IntervalRealEffort e1O) =
         [IntervalRealEffort e1 | 
             (e1) <- effortIncrementSequence (e1O) ]
+    effortCombine (IntervalRealEffort i1) (IntervalRealEffort j1) =
+        IntervalRealEffort (effortCombine i1 j1) 
 
 intrealeff_intordeff ::
     (ArithUpDn.RoundedReal e)

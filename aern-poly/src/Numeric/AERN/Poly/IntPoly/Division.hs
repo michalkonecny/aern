@@ -54,6 +54,8 @@ import Numeric.AERN.Basics.Effort (EffortIndicator)
 
 --import Numeric.AERN.Misc.Debug
 
+import Test.QuickCheck (Arbitrary)
+
 
 instance
     (EffortIndicator (IntPolyEffort cf),
@@ -74,6 +76,7 @@ instance
     ArithInOut.RoundedReal cf,
     NumOrd.PartialComparison (Imprecision cf),
     HasAntiConsistency cf, 
+    Arbitrary cf,
     ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
     =>
     ArithInOut.RoundedDivide (IntPoly var cf) 
@@ -92,6 +95,7 @@ divOutEffUsingRecip ::
     HasAntiConsistency cf, ArithInOut.RoundedReal cf,
     NumOrd.PartialComparison (Imprecision cf),
     RefOrd.IntervalLike cf,
+    Arbitrary cf,
     ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
    =>
    (ArithInOut.RingOpsEffortIndicator (IntPoly var cf),
