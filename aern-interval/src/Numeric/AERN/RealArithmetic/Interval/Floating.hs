@@ -67,6 +67,13 @@ instance
                     ++ "\n                    or with NumericOrder.pCompareEff"
 
 instance
+    (NumOrd.PartialComparison e, NumOrd.RoundedLatticeEffort e, ShowInternals e) =>
+    Eq (IntervalApprox e)
+    where
+    (IntervalApprox o1 i1) == (IntervalApprox o2 i2) = 
+        (o1 == o2) && (i1 == i2)
+
+instance
     (NumOrd.PartialComparison e, ShowInternals e, NumOrd.RoundedLattice e) =>
     Ord (Interval e)
     where
@@ -86,7 +93,22 @@ instance
     max i1 i2 = NumOrd.maxOut i1 i2
     min i1 i2 = NumOrd.minOut i1 i2
 
-instance 
+instance
+    (NumOrd.PartialComparison e, ShowInternals e, NumOrd.RoundedLattice e) =>
+    Ord (IntervalApprox e)
+    where
+    compare (IntervalApprox o1 _i1) (IntervalApprox o2 _i2) = 
+        compare o1 o2
+    max (IntervalApprox o1 i1) (IntervalApprox o2 i2) =
+        IntervalApprox
+            (NumOrd.maxOut o1 o2)
+            (NumOrd.maxIn i1 i2)
+    min (IntervalApprox o1 i1) (IntervalApprox o2 i2) =
+        IntervalApprox
+            (NumOrd.minOut o1 o2)
+            (NumOrd.minIn i1 i2)
+
+instance
     (ArithUpDn.Convertible Integer e, 
      HasSampleFromContext e, 
      ShowInternals e,
@@ -112,6 +134,34 @@ instance
     signum _ =
         error $ "signum not implemented for Interval"
 
+instance
+    (ArithUpDn.Convertible Integer e, 
+     HasSampleFromContext e, 
+     ShowInternals e,
+     ArithUpDn.RoundedReal e,
+     ArithInOut.RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e)) 
+    => 
+    Num (IntervalApprox e)
+    where
+    negate (IntervalApprox o i) = (IntervalApprox (-o) (-i))
+    (IntervalApprox o1 i1) + (IntervalApprox o2 i2) =
+        IntervalApprox (o1 <+> o2) (i1 >+< i2)
+    (IntervalApprox o1 i1) * (IntervalApprox o2 i2) =
+        IntervalApprox (o1 <*> o2) (i1 >*< i2)
+    abs (IntervalApprox o i) = (IntervalApprox (ArithInOut.absOut o) (ArithInOut.absIn i))
+    fromInteger n =
+        IntervalApprox resultOut resultIn 
+        where
+        (resultOut, resultIn) =
+            (ArithInOut.convertOut sampleInterval n, ArithInOut.convertIn sampleInterval n)
+            where
+            sampleInterval = Interval sample sample
+            sample :: e
+            sample = sampleFromContext
+    signum _ =
+        error $ "signum not implemented for IntervalApprox"
+
 instance 
     (HasSampleFromContext e, 
      Eq e, ShowInternals e,
@@ -133,6 +183,28 @@ instance
             sample :: e
             sample = sampleFromContext
 
+instance 
+    (HasSampleFromContext e, 
+     Eq e, ShowInternals e,
+     NumOrd.HasExtrema e,
+     ArithUpDn.RoundedReal e, 
+     ArithInOut.RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e))
+    => 
+    Fractional (IntervalApprox e)
+    where
+    (IntervalApprox o1 i1) / (IntervalApprox o2 i2) =
+        IntervalApprox (o1 </> o2) (i1 >/< i2)
+    fromRational r = 
+        IntervalApprox resultOut resultIn
+        where
+        (resultOut, resultIn) =
+            (ArithInOut.convertOut sampleInterval r, ArithInOut.convertIn sampleInterval r) 
+            where
+            sampleInterval = Interval sample sample
+            sample :: e
+            sample = sampleFromContext
+
 instance
     (HasSampleFromContext e,
      Eq e,
@@ -149,3 +221,21 @@ instance
     pi = error $ "AERN: Floating instance of Interval data type: for the pi constant use piOut or piIn with a sample value parameter to determine the precision from."
     exp = ArithInOut.expOut
     sqrt = ArithInOut.sqrtOut
+
+instance
+    (HasSampleFromContext e,
+     Eq e,
+     ShowInternals e,
+     ArithUpDn.RoundedReal e,
+     ArithInOut.RoundedFieldEffort (Distance e),
+     RefOrd.RoundedLatticeEffort (Distance e), 
+     NumOrd.HasExtrema e,
+     ArithUpDn.RoundedSpecialConst e,
+     ArithInOut.RoundedExponentiation (Interval e),
+     ArithInOut.RoundedSquareRoot (Interval e)) =>
+    Floating (IntervalApprox e)
+    where
+    pi = error $ "AERN: Floating instance of IntervalApprox data type: for the pi constant use piOut or piIn with a sample value parameter to determine the precision from."
+    exp (IntervalApprox o i) = IntervalApprox (ArithInOut.expOut o) (ArithInOut.expIn i)
+    sqrt (IntervalApprox o i) = IntervalApprox (ArithInOut.sqrtOut o) (ArithInOut.sqrtIn i)
+    

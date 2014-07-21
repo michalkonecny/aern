@@ -79,6 +79,8 @@ main =
         formattedRes =
             show prec ++ ": " 
             ++ "; prec = " ++ (show imprecision)
+            ++ "\n res = " ++ (show $ last res)
+            ++ "\n 1 + res = " ++ (show $ 1 + (last res))
 
     attemptsWithIncreasingEffort iters digits =
         -- invoke an iRRAM-style procedure for automatic precision/effort incrementing 

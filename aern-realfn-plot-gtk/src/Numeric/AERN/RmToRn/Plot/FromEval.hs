@@ -62,6 +62,38 @@ instance
     cairoDrawFnGraph = cairoDrawFnGraphFromEval
     cairoDrawFnParameteric = cairoDrawFnParametericFromEval
     
+instance 
+    (CanEvaluate f,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     Eq (Var f), Ord (Var f),
+     Show (Domain f), Show (Var f), Show (VarBox f (Domain f))
+    )
+    =>
+    (CairoDrawableFn (IntervalApprox f))
+    where
+    type CairoDrawFnEffortIndicator (IntervalApprox f) =
+        CairoDrawEffortIndicatorFnFromEval (Interval f)
+    cairoDrawFnDefaultEffort (IntervalApprox o _) = cairoDrawFnDefaultEffortFromEval o
+    cairoDrawFnGraph
+            eff
+            canvasParams toScreenCoords 
+            style plotVar fns =
+        do
+        cairoDrawFnGraph eff canvasParams toScreenCoords style plotVar $ map intervalOuter fns
+        cairoDrawFnGraph eff canvasParams toScreenCoords style plotVar $ map intervalInner fns
+        
+    cairoDrawFnParameteric
+            eff
+            canvasParams toScreenCoords 
+            style plotVar scanVars fnPairs = 
+        do
+        cairoDrawFnParameteric eff canvasParams toScreenCoords style plotVar scanVars $ map getOuters fnPairs
+        cairoDrawFnParameteric eff canvasParams toScreenCoords style plotVar scanVars $ map getInners fnPairs
+        where
+        getOuters (f1, f2) = (intervalOuter f1, intervalOuter f2)
+        getInners (f1, f2) = (intervalInner f1, intervalInner f2)
+
 data CairoDrawEffortIndicatorFnFromEval f =
     CairoDrawEffortIndicatorFnFromEval
     {
