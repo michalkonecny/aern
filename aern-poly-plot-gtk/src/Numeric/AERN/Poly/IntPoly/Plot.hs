@@ -18,6 +18,7 @@
 
 module Numeric.AERN.Poly.IntPoly.Plot
 (
+    CairoDrawEffortIndicatorFnFromEval(..)
 )
 where
     

@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 --{-# LANGUAGE ScopedTypeVariables #-}
 {-|
     Module      :  Numeric.AERN.RmToRn.Plot.FromEval
@@ -69,6 +70,13 @@ data CairoDrawEffortIndicatorFnFromEval f =
     ,
         draweff_getEndpointsD :: RefOrd.GetEndpointsEffortIndicator (Domain f)
     }
+
+deriving instance
+    (Show (EvaluationEffortIndicator f),
+     Show (ArithInOut.RoundedRealEffortIndicator (Domain f)),
+     Show (RefOrd.GetEndpointsEffortIndicator (Domain f)))
+    => 
+    Show (CairoDrawEffortIndicatorFnFromEval f) 
 
 cairoDrawFnDefaultEffortFromEval ::
     (CanEvaluate f,

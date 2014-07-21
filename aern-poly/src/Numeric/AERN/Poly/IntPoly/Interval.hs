@@ -48,7 +48,7 @@ import Numeric.AERN.RealArithmetic.Interval (IntervalRealEffort(..), intrealeff_
 import Numeric.AERN.RmToRn.Interval ()
 
 import Numeric.AERN.Basics.Consistency
-import Numeric.AERN.Basics.Effort
+--import Numeric.AERN.Basics.Effort
 
 --import qualified Data.IntMap as IntMap
 --import qualified Data.Map as Map
