@@ -315,6 +315,20 @@ instance
             ArithInOut.rrEffortAbs sampleCf effCf
         effCf = ipolyeff_cfRoundedRealEffort eff
         
+instance 
+    (Ord var, Show var, Show cf, Show (SizeLimits cf),
+     ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf, 
+     RefOrd.IntervalLike cf)
+    => 
+    (HasImprecision (IntPoly var cf))
+    where
+    type Imprecision (IntPoly var cf) = cf
+    type ImprecisionEffortIndicator (IntPoly var cf) =
+        IntPolyEffort cf
+    imprecisionDefaultEffort p =
+        evaluationDefaultEffort p
+    imprecisionOfEff eff p = distanceBetweenEff eff p p
 
 --instance
 --    (Ord var, Show var,

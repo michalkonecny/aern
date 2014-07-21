@@ -34,8 +34,9 @@ import System.Environment (getArgs)
 
 --type CF = Interval MPFR
 type CF = Interval Double
-type FnEndpt = IntPoly String CF
-type Fn = Interval FnEndpt
+type Poly = IntPoly String CF
+type PI = Interval Poly
+type Fn = PI
 
 usage :: String
 usage = "Usage: LogisticMap <number of iterations> <result digits>"
