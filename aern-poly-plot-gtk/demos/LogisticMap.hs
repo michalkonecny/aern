@@ -1,10 +1,10 @@
 module Main where
 
-import Numeric.AERN.Poly.IntPoly (IntPoly(..), defaultIntPolySizeLimits)
-import Numeric.AERN.Poly.IntPoly.Plot ()
+import Numeric.AERN.Poly.IntPoly (IntPoly(..), defaultIntPolySizeLimits, IntPolyEffort(..))
+import Numeric.AERN.Poly.IntPoly.Plot (CairoDrawEffortIndicatorFnFromEval(..))
 import Numeric.AERN.Basics.Interval (Interval)
 
-import Numeric.AERN.RmToRn (Domain, newProjection, getVarDoms, evaluationDefaultEffort)
+import Numeric.AERN.RmToRn (Domain, fromAscList, newProjection, getVarDoms, evaluationDefaultEffort, evalAtPointOutEff)
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
@@ -12,7 +12,7 @@ import Numeric.AERN.RealArithmetic.Basis.Double ()
 -- real arithmetic operators and imprecision measure:
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((|<*>))
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (RoundedReal, roundedRealDefaultEffort)
-import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate)
+import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate, iterateUntilAccurate2)
 
 import Numeric.AERN.RefinementOrder ((</\>))
 
@@ -70,19 +70,19 @@ main =
 
     where
     -- print the result of an attempt
-    reportAttempt (prec, res) =
+    reportAttempt (prec, res, imprecision) =
         do    
         putStrLn formattedRes
         return res 
         where
         formattedRes =
             show prec ++ ": " 
-            ++ "; prec = " ++ (show $ imprecisionOf res)
+            ++ "; prec = " ++ (show imprecision)
 
     attemptsWithIncreasingEffort iters digits =
         -- invoke an iRRAM-style procedure for automatic precision/effort incrementing 
         --    on the computation of iters-many iterations of the logistic map:
-        iterateUntilAccurate initEffort maxAttempts maxImprecision $ 
+        iterateUntilAccurate2 initEffort maxAttempts maxAttemptJump maxImprecision $ 
             \ eff -> logisticMapIterateNTimes r (identityFunctionWithEffort eff x0Domain) iters
         where
         initEffort = 
@@ -92,6 +92,7 @@ main =
             cfLimits = ()
             arity = 1
         maxAttempts = 100 -- try to increase precision 100 times before giving up
+        maxAttemptJump = 30
         maxImprecision = 10^^(-digits) -- target result precision
         
         identityFunctionWithEffort eff dom =
@@ -127,7 +128,7 @@ addPlotMetainfo fns =
     fnMeta =  
             FV.simpleFnMetaData
                 sampleFn 
-                (FV.Rectangle  2 (-2) 0 1) -- initial plotting region
+                (FV.Rectangle  1 (0) 0 1) -- initial plotting region
                 Nothing
                 200 -- samplesPerUnit
                 "x"
@@ -144,6 +145,8 @@ addPlotMetainfo fns =
 plot :: ([[Fn]], FV.FnMetaData Fn) -> IO ()
 plot (fns, fnmeta) =
     do
+    putStrLn $ "last fn  = " ++ show lastFn
+    putStrLn $ "impresision of iterations = " ++ show (map imprecisionOf $ head fns)
     -- enable multithreaded GUI:
     _ <- Gtk.unsafeInitGUIForThreadedRTS
     fnDataTV <- atomically $ newTVar $ FV.FnData $ addPlotVar fns
@@ -153,8 +156,23 @@ plot (fns, fnmeta) =
     Gtk.mainGUI
     where
     ((sampleFn :_) :_) = fns 
-    effDrawFn = cairoDrawFnDefaultEffort sampleFn
-    effEval = evaluationDefaultEffort sampleFn
+    lastFn = head $ reverse $ head fns 
+    effDrawFn = 
+        (cairoDrawFnDefaultEffort sampleFn)
+--        {
+--            draweff_evalF = effEval
+--        }
+    effEval = 
+        (evaluationDefaultEffort sampleFn)
+--        (ipolyeff2, othereff)
+--        where
+--        ipolyeff2 =
+--            ipolyeff
+--            {
+--                ipolyeff_evalMaxSplitSize = 1000
+--            }
+--        (ipolyeff, othereff) =
+--            (evaluationDefaultEffort sampleFn)
     effCF = roundedRealDefaultEffort (0:: CF)
     --effCF = (100, (100,())) -- MPFR
 

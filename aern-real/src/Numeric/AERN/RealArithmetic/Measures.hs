@@ -27,6 +27,9 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
+import Debug.Trace
+_ = trace
+
 {-|
    Ability to measure a distance.  Distance
    should be a numeric type approximating the
@@ -148,29 +151,98 @@ instance
 iterateUntilAccurate :: 
     (HasImprecision t,
     NumOrd.PartialComparison (Imprecision t),
+    Show (Imprecision t),
     EffortIndicator eff) 
     =>
     eff {-^ @initEff@ the initial effort -} -> 
     Int {-^ @iterLimit@ maximum number of different efforts to try out -} -> 
     Imprecision t {-^ @maxImprecision@ imprecision threshold for the result -} -> 
     (eff -> t) {-^ the function to compute -} -> 
-    [(eff,t)] {-^ the efforts that were tried and the corresponding results -}
-iterateUntilAccurate initEff iterLimit maxImprecision fn =
+    [(eff,t,Imprecision t)] {-^ the efforts that were tried and the corresponding results -}
+iterateUntilAccurate initEff iterLimit maxImprecision fnEff =
     stopWhenAccurate $ 
         take iterLimit $ 
-            zip efforts (map fn efforts)
+            map addImprecision $ zip efforts (map fnEff efforts)
     where
     efforts = effortIncrementSequence initEff
 
+    addImprecision (eff, fn) = (eff, fn, imprecisionOf fn)
+
     stopWhenAccurate [] = []
-    stopWhenAccurate ((eff, result) : rest)
-        | accurateEnough = [(eff, result)]
-        | otherwise = (eff, result) : (stopWhenAccurate rest)
+    stopWhenAccurate ((eff, result, resultImprecision) : rest)
+        | accurateEnough = [(eff, result, resultImprecision)]
+        | otherwise = (eff, result, resultImprecision) : (stopWhenAccurate rest)
         where
         accurateEnough =
             (maxImprecision NumOrd.>=? resultImprecision) == Just True
-        resultImprecision =
-            imprecisionOfEff effImpr result
-        effImpr =
-            imprecisionDefaultEffort result
          
+{-|
+    A generic function that applies a given approximate function
+    repeatedly with increasing effort until the required accuracy
+    is reached.
+    
+    This function is a bit more sophisticated than iterateUntilAccurate.
+    It tries to keep repeating incrementing individual effort components
+    until an improvement is made. 
+-}
+iterateUntilAccurate2 :: 
+    (HasImprecision t,
+    NumOrd.PartialComparison (Imprecision t),
+    RefOrd.IntervalLike (Imprecision t),
+    Show (Imprecision t),
+    EffortIndicator eff) 
+    =>
+    eff {-^ @initEff@ the initial effort -} -> 
+    Int {-^ @iterLimit@ maximum number of different efforts to try out -} -> 
+    Int {-^ @improvementDepth@ maximum length of effort improvement chain to try -} -> 
+    Imprecision t {-^ @maxImprecision@ imprecision threshold for the result -} -> 
+    (eff -> t) {-^ the function to compute -} -> 
+    [(eff,t,Imprecision t)] {-^ the efforts that were tried and the corresponding results -}
+iterateUntilAccurate2 initEff iterLimit maxJump maxImprecision fnEff =
+    keepImprovingEffort iterLimit $ useEffort initEff
+    where
+    useEffort eff =
+        (eff, fn, imprecisionOf fn)
+        where
+        fn = fnEff eff
+    keepImprovingEffort remainingAttempts prevResult@(prevEff, _, prevImprecision) 
+        | prevImprecision `imprecisionLessThan` maxImprecision = -- done!
+            [prevResult]
+        | remainingAttempts == 0 = -- ran out of attempts, give up...
+            [prevResult]
+        | otherwise =
+            case maybeNextResultN of
+                (Just nextResult@(_, _, nextImprecision)) -> 
+--                    trace ("iterateUntilAccurate2: keepImprovingEffort: "
+--                        ++ "\n possibleResults = " ++ (unlines $ map show $ map (\(a,_,b) -> (b,a)) possibleResultsN) 
+--                    ) $
+                    prevResult : keepImprovingEffort (remainingAttempts - 1) nextResult
+                _ ->
+                    [prevResult]   
+        where
+        maybeNextResultN = getBestResult Nothing possibleResultsN
+        possibleResultsN = map useEffort possibleEffortsN
+        
+        possibleEfforts1 = effortIncrementVariants prevEff
+        possibleEffortsN = concat $ map (take maxJump . repeatTheImprovement) possibleEfforts1
+            where
+            repeatTheImprovement eff = drop 1 $ aux (prevEff, eff)
+                where
+                aux (eff1, eff2) = eff1 : aux (eff2, eff3)
+                    where
+                    eff3 = effortRepeatIncrement (eff1, eff2)  
+        
+    getBestResult maybeBestSoFar [] = maybeBestSoFar
+    getBestResult Nothing (result : rest) = getBestResult (Just result) rest 
+    getBestResult (Just bestSoFar@(_,_,bestSoFarImprecision)) (result@(_,_,imprecision) : rest) 
+        | imprecision `imprecisionLessThan` bestSoFarImprecision =  
+            getBestResult (Just result) rest
+        | otherwise =
+            getBestResult (Just bestSoFar) rest
+         
+    i1 `imprecisionLessThan` i2 =
+        (i1R NumOrd.<? i2R) == Just True
+        where
+        (_, i1R) = RefOrd.getEndpointsOut i1
+        (_, i2R) = RefOrd.getEndpointsOut i2
+            
