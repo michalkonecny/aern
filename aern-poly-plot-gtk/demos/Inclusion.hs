@@ -1,20 +1,27 @@
 module Main where
 
-import Numeric.AERN.Poly.IntPoly (IntPoly(..), defaultIntPolySizeLimits)
-import Numeric.AERN.Poly.IntPoly.Plot ()
+import Numeric.AERN.Poly.IntPoly (IntPoly(..), defaultIntPolySizeLimits, IntPolySizeLimits(..))
+import Numeric.AERN.Poly.IntPoly.Plot (CairoDrawEffortIndicatorFnFromEval(..))
 import Numeric.AERN.Basics.Interval (Interval)
 
-import Numeric.AERN.RmToRn (Domain, newProjection, getVarDoms, evaluationDefaultEffort)
+import Numeric.AERN.RmToRn 
+        (Domain, fromAscList, getVarDoms, 
+         newConstFn, newProjection,
+         evaluationDefaultEffort, evalAtPointOutEff)
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
 
 -- real arithmetic operators and imprecision measure:
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((|<*>))
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding (RoundedReal, roundedRealDefaultEffort)
-import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate2)
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((|<*>), (>+<))
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding 
+    (RoundedReal, roundedRealDefaultEffort,
+     expOutEff, expInEff, expDefaultEffort)
+import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate, iterateUntilAccurate2)
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
+        (ExpThinEffortIndicator(..))
 
-import Numeric.AERN.RefinementOrder ((</\>))
+import Numeric.AERN.RefinementOrder ((</\>), (>/\<))
 
 
 import qualified 
@@ -39,20 +46,14 @@ type PI = Interval Poly
 type Fn = PI
 
 usage :: String
-usage = "Usage: LogisticMap <number of iterations> <result digits>"
+usage = "Usage: Inclusion <maxdeg> <exp taylor degree>"
 
 processArgs :: [String] -> (Int, Int)
-processArgs [itersS, digitsS] =
-    case (reads itersS, reads digitsS) of
-        ((iters, []):_,(digits, []):_) -> (iters, digits)
+processArgs [maxdegS, expTaylorS] =
+    case (reads maxdegS, reads expTaylorS) of
+        ((maxdeg, []):_,(expTaylor, []):_) -> (maxdeg, expTaylor)
         _ -> error $ usage
 processArgs _ = error $ usage
-
-r :: Rational
-r = 375 / 100
-
-x0Domain :: Domain Fn
-x0Domain = 0 </\> 1 -- ie interval covering both 0 and 1
 
 main :: IO ()
 main =
@@ -61,43 +62,63 @@ main =
     hSetBuffering stdout LineBuffering
     -- process command line arguments:
     args <- getArgs
-    let (iters, digits) = processArgs args 
-
-    -- compute the iterations using various efforts and report progress:
-    functions <- mapM reportAttempt $ attemptsWithIncreasingEffort iters digits
+    let (maxdeg, expTaylor) = processArgs args 
 
     -- plot the enclosures for all iterations computed in the last attempt:
-    plot $ addPlotMetainfo (last functions :: [Fn])
+    plot $ inclusionFunctions maxdeg expTaylor
 
+inclusionFunctions :: Int -> Int -> ([[Fn]], FV.FnMetaData Fn)
+inclusionFunctions maxdeg expTaylorDeg = (fnGroups, fnmeta)
     where
-    -- print the result of an attempt
-    reportAttempt (prec, res, imprecision) =
-        do    
-        putStrLn formattedRes
-        return res 
-        where
-        formattedRes =
-            show prec ++ ": " 
-            ++ "; prec = " ++ (show imprecision)
+    fnGroups = [[expSXOut, expXpmDeltaOut, expXpmDeltaIn]]
 
-    attemptsWithIncreasingEffort iters digits =
-        -- invoke an iRRAM-style procedure for automatic precision/effort incrementing 
-        --    on the computation of iters-many iterations of the logistic map:
-        iterateUntilAccurate2 initEffort maxAttempts maxAttemptJump maxImprecision $ 
-            \ eff -> logisticMapIterateNTimes r (identityFunctionWithEffort eff x0Domain) iters
+    expXpmDeltaOut = expOutEff effExp xpmDeltaOut
+    expXpmDeltaIn = expInEff effExp xpmDeltaIn
+
+    xpmDeltaOut = x + (delta </\> (- delta))
+    xpmDeltaIn = x >+< (delta >/\< (- delta))
+    delta = newConstFn limits [("x", dom)] 0.1
+    
+    expSXOut = expOutEff effExp $ s * x
+    s =  newConstFn limits [("x", dom)] 0.91
+    
+--    xPlus1 = x + 1
+    x = newProjection limits [("x", dom)] "x"
+    dom = (0) </\> 1
+--    dom = (-0.2) </\> 0.2
+
+    effExp = 
+        (expDefaultEffort x)
+        {
+            expeff_taylorDeg = expTaylorDeg            
+        }
+
+    fnmeta =
+        FV.simpleFnMetaData
+            sampleFn 
+            (FV.Rectangle  3 (0) (0) 1) -- initial plotting region
+            (Just (1,1,1,1))
+            200 -- samplesPerUnit
+            "x"
+            [("inclusion", functionInfos)]
         where
-        initEffort = 
-            defaultIntPolySizeLimits sampleCF cfLimits arity -- try with this effort first
-            where
-            sampleCF = 0
-            cfLimits = ()
-            arity = 1
-        maxAttempts = 100 -- try to increase precision 100 times before giving up
-        maxAttemptJump = 30
-        maxImprecision = 10^^(-digits) -- target result precision
-        
-        identityFunctionWithEffort eff dom =
-            newProjection eff [("x", dom)] "x"
+        sampleFn = x
+        functionInfos =
+            zip3 
+                ["exp(0.9*x)", "Out(exp(x+-0.1))", "In(exp(x+-0.1))"]
+                [black, blue, blue] -- styles 
+                (repeat True) -- show everything by default
+
+    limits = 
+        (defaultIntPolySizeLimits sampleCF cfLimits arity)
+        {
+            ipolylimits_maxdeg = maxdeg
+        }
+        where
+        sampleCF = 0
+        cfLimits = ()
+        arity = 1
+    
 
 logisticMapIterateNTimes ::
     (Num real, RoundedReal real)
@@ -127,20 +148,20 @@ addPlotMetainfo fns =
     ([fns], fnMeta)
     where
     fnMeta =  
-        FV.simpleFnMetaData
-            sampleFn 
-            (FV.Rectangle  1 (0) 0 1) -- initial plotting region
-            Nothing
-            200 -- samplesPerUnit
-            "x"
-            [("LM iterations", functionInfos)]
-        where
-        functionInfos =
-            zip3 
-                ["x" ++ show i | i <- [1..iters]]
-                (repeat blue) -- styles 
-                (repeat True) -- show all iterations by default
-        iters = length fns
+            FV.simpleFnMetaData
+                sampleFn 
+                (FV.Rectangle  1 (0) 0 1) -- initial plotting region
+                Nothing
+                200 -- samplesPerUnit
+                "x"
+                [("LM iterations", functionInfos)]
+            where
+            functionInfos =
+                zip3 
+                    ["x" ++ show i | i <- [1..iters]]
+                    (repeat blue) -- styles 
+                    (repeat True) -- show all iterations by default
+            iters = length fns
     sampleFn : _ = fns
 
 plot :: ([[Fn]], FV.FnMetaData Fn) -> IO ()
