@@ -375,25 +375,27 @@ instance
     =>
     (EffortIndicator (IntPolySizeLimits cf))
     where
-    -- TODO: properly incorporate IntPolyEffort:
     effortIncrementVariants (IntPolySizeLimits cfLimits maxdeg maxsize effort) =
-        map recreateLimits $ effortIncrementVariants (Int1To10 maxdeg, Int1To1000 maxsize)
+        map recreateLimits $ effortIncrementVariants (Int1To10 maxdeg, Int1To1000 maxsize, effort)
         where
-        recreateLimits (Int1To10 md, Int1To1000 ms) =
-            IntPolySizeLimits cfLimits md ms effort
+        recreateLimits (Int1To10 md, Int1To1000 ms, effort2) =
+            IntPolySizeLimits cfLimits md msAdj effort2
+            where
+            msAdj = ms + (md - maxdeg) -- when increasing degree, automatically increase size limit by the same amount
     effortIncrementSequence (IntPolySizeLimits cfLimits maxdeg maxsize effort) =
-        map recreateLimits $ effortIncrementSequence (Int1To10 maxdeg, Int1To1000 maxsize)
+        map recreateLimits $ effortIncrementSequence (Int1To10 maxdeg, Int1To1000 maxsize, effort)
         where
-        recreateLimits (Int1To10 md, Int1To1000 ms) =
-            IntPolySizeLimits cfLimits md ms effort
+        recreateLimits (Int1To10 md, Int1To1000 ms, effort2) =
+            IntPolySizeLimits cfLimits md ms effort2
     effortRepeatIncrement 
             (IntPolySizeLimits cfLimits1 maxdeg1 maxsize1 effort1, 
-             IntPolySizeLimits cfLimits2 maxdeg2 maxsize2 _effort2)
+             IntPolySizeLimits cfLimits2 maxdeg2 maxsize2 effort2)
         =
-        IntPolySizeLimits (effortRepeatIncrement (cfLimits1, cfLimits2)) md ms effort1
+        IntPolySizeLimits (effortRepeatIncrement (cfLimits1, cfLimits2)) md ms effort
         where
         Int1To10 md = effortRepeatIncrement (Int1To10 maxdeg1, Int1To10 maxdeg2)  
         Int1To1000 ms = effortRepeatIncrement (Int1To1000 maxsize1, Int1To1000 maxsize2)  
+        effort = effortRepeatIncrement (effort1, effort2)  
 
 instance 
     (
