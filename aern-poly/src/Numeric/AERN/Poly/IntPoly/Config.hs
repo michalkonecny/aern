@@ -37,7 +37,7 @@ import Numeric.AERN.Basics.Consistency
 import Test.QuickCheck (Arbitrary, arbitrary, vectorOf)
 import Data.List (elemIndex)
 
-import Control.Applicative
+--import Control.Applicative
 
 data IntPolyCfg var cf =
     IntPolyCfg
@@ -58,6 +58,28 @@ defaultIntPolyCfg ::
     cf -> IntPolySizeLimits cf -> IntPolyCfg var cf
 defaultIntPolyCfg sampleCf limits =
     IntPolyCfg [] [] [] sampleCf limits
+
+combineIntPolyCfgs ::
+    (Show cf,
+     RefOrd.IntervalLike cf, 
+     ArithInOut.RoundedReal cf, 
+     HasAntiConsistency cf, 
+     NumOrd.PartialComparison cf,
+     EffortIndicator (SizeLimits cf), 
+     Arbitrary cf)
+    =>
+    IntPolyCfg var cf ->
+    IntPolyCfg var cf ->
+    IntPolyCfg var cf
+combineIntPolyCfgs cfg1 cfg2 =
+    cfg1
+    {
+        ipolycfg_limits = effortCombine limits1 limits2
+    }
+    where
+    limits1 = ipolycfg_limits cfg1
+    limits2 = ipolycfg_limits cfg2
+    _ = [cfg1, cfg2]
 
 data IntPolyEffort cf =
     IntPolyEffort
@@ -396,6 +418,15 @@ instance
         Int1To10 md = effortRepeatIncrement (Int1To10 maxdeg1, Int1To10 maxdeg2)  
         Int1To1000 ms = effortRepeatIncrement (Int1To1000 maxsize1, Int1To1000 maxsize2)  
         effort = effortRepeatIncrement (effort1, effort2)  
+    effortCombine 
+            (IntPolySizeLimits cfLimits1 maxdeg1 maxsize1 effort1) 
+            (IntPolySizeLimits cfLimits2 maxdeg2 maxsize2 effort2)
+        =
+        IntPolySizeLimits
+            (effortCombine cfLimits1 cfLimits2)
+            (effortCombine maxdeg1 maxdeg2)
+            (effortCombine maxsize1 maxsize2)
+            (effortCombine effort1 effort2)
 
 instance 
     (
@@ -478,7 +509,9 @@ instance
         [IntPolyEffort sampleCf e1 e2 e3 e4 e5 e6 e7| 
             ((e1, e2, e3), (Int1To1000 e4, Int1To10 e5, Int1To10 e6), Int1To1000 e7) 
                 <- effortIncrementVariants ((e1O, e2O, e3O), (Int1To1000 e4O, Int1To10 e5O, Int1To10 e6O), Int1To1000 e7O) ]
-    effortRepeatIncrement (IntPolyEffort sampleCf i1 i2 i3 i4 i5 i6 i7, IntPolyEffort _ j1 j2 j3 j4 j5 j6 j7) = 
+    effortRepeatIncrement
+            (IntPolyEffort sampleCf i1 i2 i3 i4 i5 i6 i7, 
+             IntPolyEffort _        j1 j2 j3 j4 j5 j6 j7) = 
         IntPolyEffort sampleCf
             (effortRepeatIncrement (i1, j1)) 
             (effortRepeatIncrement (i2, j2)) 
@@ -491,3 +524,18 @@ instance
         [IntPolyEffort sampleCf e1 e2 e3 e4 e5 e6 e7 | 
             ((e1, e2, e3), (Int1To1000 e4, Int1To10 e5, Int1To10 e6), Int1To1000 e7) 
                 <- effortIncrementVariants ((e1O, e2O, e3O), (Int1To1000 e4O, Int1To10 e5O, Int1To10 e6O), Int1To1000 e7O) ]
+    effortCombine
+            (IntPolyEffort sampleCf i1 i2 i3 i4 i5 i6 i7) 
+            (IntPolyEffort _        j1 j2 j3 j4 j5 j6 j7) = 
+        IntPolyEffort
+            sampleCf
+            (effortCombine i1 j1) 
+            (effortCombine i2 j2) 
+            (effortCombine i3 j3) 
+            (effortCombine i4 j4) 
+            (effortCombine i5 j5) 
+            (effortCombine i6 j6) 
+            (effortCombine i7 j7) 
+        
+        
+             

@@ -69,6 +69,8 @@ import Numeric.AERN.Basics.Consistency
 
 --import qualified Data.IntMap as IntMap
 
+import Test.QuickCheck (Arbitrary)
+
 {----- addition up/dn via out -----}    
 
 instance
@@ -87,6 +89,7 @@ instance
      NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf,  
      HasAntiConsistency cf,
+     Arbitrary cf,
      Ord var, 
      Show var, Show cf) 
     =>
@@ -106,6 +109,7 @@ instance
      NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf,  
      HasAntiConsistency cf,
+     Arbitrary cf,
      Ord var, 
      Show var, Show cf) 
     =>
@@ -130,6 +134,7 @@ instance
      NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf,  
      HasAntiConsistency cf,
+     Arbitrary cf,
      Ord var, 
      Show var, Show cf) 
     =>
@@ -229,6 +234,7 @@ instance
     (ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
      RefOrd.IntervalLike cf,
+     Arbitrary cf,
      Show var, Ord var, Show cf,
      NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
     =>
@@ -258,6 +264,7 @@ instance
     NumOrd.PartialComparison (Imprecision cf),
     HasAntiConsistency cf, 
     RefOrd.IntervalLike cf,
+    Arbitrary cf,
     ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
     =>
     ArithUpDn.RoundedDivide (IntPoly var cf) 
@@ -294,6 +301,7 @@ instance
     Ord var, Show var, Show cf,
     HasAntiConsistency cf, ArithInOut.RoundedReal cf,
     RefOrd.IntervalLike cf,
+    Arbitrary cf,
     ArithInOut.RoundedMixedField (IntPoly var cf) cf, 
     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
     =>
@@ -525,6 +533,7 @@ instance
      NumOrd.PartialComparison (Imprecision (Interval e)),
      RefOrd.IntervalLike (Interval e),  
      HasAntiConsistency (Interval e),
+     Arbitrary (Interval e),
      Ord var, 
      Show var, Show (Interval e)) 
     =>
@@ -636,6 +645,7 @@ instance
      ArithInOut.RoundedMixedRing (Interval e) (Interval e),
      HasAntiConsistency (Interval e),
      RefOrd.IntervalLike (Interval e),
+     Arbitrary (Interval e),
      Show var, Ord var, Show (Interval e),
      NumOrd.PartialComparison (Imprecision (Interval e)), Show (Imprecision (Interval e)))
     =>
@@ -918,6 +928,7 @@ instance
     (ArithInOut.RoundedReal (Interval e),
      ArithInOut.RoundedMixedField (Interval e) (Interval e),
      HasAntiConsistency (Interval e),
+     Arbitrary (Interval e),
      Show var, Ord var, Show (Interval e),
      NumOrd.PartialComparison (Imprecision (Interval e)), Show (Imprecision (Interval e)))
     =>

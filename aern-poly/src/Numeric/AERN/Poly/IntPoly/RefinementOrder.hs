@@ -60,11 +60,14 @@ import Numeric.AERN.Basics.Consistency
 
 --import Numeric.AERN.Misc.Debug
 
+import Test.QuickCheck (Arbitrary)
+
 instance
     (Ord var, Show var, 
      Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
+     Arbitrary cf,
      NumOrd.PartialComparison (Imprecision cf), 
      RefOrd.IntervalLike cf) 
     => 

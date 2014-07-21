@@ -77,6 +77,8 @@ instance
     effortIncrementSequence (SqrtThinEffortIndicator e1O e2O) =
         [SqrtThinEffortIndicator e1 e2 | 
             (e1, e2) <- effortIncrementSequence (e1O, e2O) ]
+    effortCombine  (SqrtThinEffortIndicator i1 i2) (SqrtThinEffortIndicator j1 j2) =
+        SqrtThinEffortIndicator (effortCombine i1 j1) (effortCombine i2 j2)
 
 sqrtThinDefaultEffort :: 
    (ArithUpDn.RoundedReal e) 

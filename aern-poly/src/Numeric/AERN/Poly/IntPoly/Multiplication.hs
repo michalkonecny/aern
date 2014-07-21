@@ -55,12 +55,14 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.Basics.Interval (Interval)
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Effort (EffortIndicator)
+import Numeric.AERN.Basics.SizeLimits (SizeLimits)
 --import Numeric.AERN.Basics.ShowInternals
 
 --import Numeric.AERN.Misc.Debug
 
 import qualified Data.IntMap as IntMap
 
+import Test.QuickCheck (Arbitrary)
 
 instance
     (EffortIndicator (IntPolyEffort cf)) =>
@@ -76,6 +78,7 @@ instance
      NumOrd.PartialComparison (Imprecision cf),
      HasAntiConsistency cf,
      RefOrd.IntervalLike cf, 
+     Arbitrary cf,
      Ord var, Show var, Show cf) 
     =>
     ArithInOut.RoundedMultiply (IntPoly var cf) 
@@ -89,11 +92,12 @@ multPolysOut ::
      RefOrd.IntervalLike cf,
      ArithInOut.RoundedReal cf, 
      NumOrd.PartialComparison (Imprecision cf),
-     HasAntiConsistency cf) 
+     HasAntiConsistency cf,
+     Arbitrary cf) 
     =>
     (ArithInOut.RoundedRealEffortIndicator cf) -> 
     IntPoly var cf -> IntPoly var cf -> IntPoly var cf
-multPolysOut eff p1@(IntPoly cfg terms1) (IntPoly _ terms2)
+multPolysOut eff p1@(IntPoly cfg1 terms1) (IntPoly cfg2 terms2)
     =
     reducePolyTermCountOut eff $ 
         reducePolyDegreeOut eff $ 
@@ -103,6 +107,7 @@ multPolysOut eff p1@(IntPoly cfg terms1) (IntPoly _ terms2)
                     let (<*>>) = ArithInOut.multOutEff effMult in
                     multTerms (<+>>) (<*>>) terms1 terms2
     where
+    cfg = combineIntPolyCfgs cfg1 cfg2
     effMult = ArithInOut.fldEffortMult sample $ ArithInOut.rrEffortField sample eff
     effAdd = ArithInOut.fldEffortAdd sample $ ArithInOut.rrEffortField sample eff
     sample = getSampleDomValue p1
@@ -356,6 +361,7 @@ instance
     (ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
      RefOrd.IntervalLike cf,
+     Arbitrary cf,
      Show var, Ord var, Show cf,
      NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
     =>
@@ -474,6 +480,7 @@ instance
      ArithInOut.RoundedMixedRing cf (Interval e),
      HasAntiConsistency cf,
      RefOrd.IntervalLike cf,
+     Arbitrary cf,
      Show var, Ord var, Show cf,
      NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
     =>
@@ -737,6 +744,7 @@ instance
      ArithInOut.RoundedMixedField cf (Interval e),
      HasAntiConsistency cf,
      RefOrd.IntervalLike cf,
+     Arbitrary cf,
      Show var, Ord var, Show cf,
      NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
     =>

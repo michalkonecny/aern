@@ -55,11 +55,9 @@ import qualified Numeric.AERN.NumericOrder as NumOrd
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.SizeLimits
 
-import Numeric.AERN.Misc.Debug
-
 import qualified Data.Set as Set
 
-_ = unsafePrint
+import Test.QuickCheck (Arbitrary)
 
 --import qualified Data.IntMap as IntMap
 --import qualified Data.Map as Map
@@ -68,7 +66,8 @@ instance
     (Ord var, Show var,
      ArithInOut.RoundedReal cf, 
      HasAntiConsistency cf,
-     RefOrd.IntervalLike cf, 
+     RefOrd.IntervalLike cf,
+     Arbitrary cf,
      Show cf, Show (SizeLimits cf),
      Show (Imprecision cf),
      NumOrd.PartialComparison (Imprecision cf))
@@ -93,6 +92,7 @@ polyPolyEvalOps ::
      RefOrd.IntervalLike cf, 
      ArithInOut.RoundedReal cf,
      HasAntiConsistency cf,
+     Arbitrary cf,
      NumOrd.PartialComparison (Imprecision cf),
      Show (Imprecision cf))
     =>
@@ -148,6 +148,7 @@ instance
      Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf, 
      HasAntiConsistency cf,
+     Arbitrary cf,
      Show (Imprecision cf),
      NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf)
@@ -167,6 +168,7 @@ instance
      Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf, 
      HasAntiConsistency cf,
+     Arbitrary cf,
      Show (Imprecision cf),
      NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf)
@@ -250,6 +252,7 @@ polyComposeVarsOutEff ::
      Show (Imprecision cf),
      NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf,
+     Arbitrary cf,
      f ~ (IntPoly var cf))
     =>
     CompositionEffortIndicator f ->
@@ -289,6 +292,7 @@ polyComposeVarsInEff ::
      Show cf, Show (SizeLimits cf),
      ArithInOut.RoundedReal cf, 
      HasAntiConsistency cf,
+     Arbitrary cf,
      Show (Imprecision cf),
      NumOrd.PartialComparison (Imprecision cf),
      RefOrd.IntervalLike cf,

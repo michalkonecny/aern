@@ -104,6 +104,8 @@ instance
     effortIncrementSequence (IntervalOrderEffort e1O e2O) =
         [IntervalOrderEffort e1 e2 | 
             (e1, e2) <- effortIncrementSequence (e1O, e2O) ]
+    effortCombine (IntervalOrderEffort i1 i2) (IntervalOrderEffort j1 j2) =
+        IntervalOrderEffort (effortCombine i1 j1) (effortCombine i2 j2) 
 
     
 instance (ShowInternals e, NumOrd.PartialComparison e) => (ShowInternals (Interval e))

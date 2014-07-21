@@ -39,5 +39,7 @@ instance EffortIndicator M.Precision where
         map (p +) fibsp2p
         where
         fibsp2p = scanl (+) p (p:fibsp2p)
+    effortCombine = max
+        
     
     
