@@ -3,7 +3,7 @@ module Main where
 ---- Imports -----
 
 import Numeric.AERN.Poly.IntPoly (IntPoly(..), defaultIntPolySizeLimits, IntPolySizeLimits(..))
---import Numeric.AERN.Poly.IntPoly.Plot (CairoDrawEffortIndicatorFnFromEval(..))
+import Numeric.AERN.Poly.IntPoly.Plot ()
 import Numeric.AERN.Basics.Interval (Interval, IntervalApprox)
 
 import Numeric.AERN.RmToRn 
