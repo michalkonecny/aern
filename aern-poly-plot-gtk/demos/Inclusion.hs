@@ -9,7 +9,7 @@ import Numeric.AERN.Basics.Interval
 
 import Numeric.AERN.RmToRn 
         (getVarDoms, 
-         newConstFn, newProjection,
+         newProjection,
          evaluationDefaultEffort)
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
@@ -29,7 +29,7 @@ import qualified
        as FV
 import Numeric.AERN.RmToRn.Plot.CairoDrawable (cairoDrawFnDefaultEffort)
 
-import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate)
+import Numeric.AERN.RealArithmetic.Measures (iterateUntilAccurate)
 
 import Numeric.AERN.Basics.Effort (Int1To100(..), Int1To10(..))
 
