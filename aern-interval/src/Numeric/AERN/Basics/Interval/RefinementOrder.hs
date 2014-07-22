@@ -140,6 +140,32 @@ refordPCompareInFullIntervalsEff effort (l1, r1) (l2, r2)
     jf = Just False
         
 
+{-
+    Beware, the following instance does not test inclusion of the two approximated intervals.
+    This instance compares that one approximation permits a subset of intervals
+    that the other approximation permits.
+-}
+instance 
+    (NumOrd.PartialComparison e, NumOrd.RoundedLatticeEffort e) 
+    => 
+    (RefOrd.PartialComparison (IntervalApprox e))
+    where
+    type PartialCompareEffortIndicator (IntervalApprox e) = 
+        IntervalOrderEffort e 
+    pCompareDefaultEffort (IntervalApprox o _) = 
+        defaultIntervalOrderEffort o
+    pCompareEff effort ia1 ia2 =
+        case partialInfo2PartialOrdering $ RefOrd.pCompareInFullEff effort ia1 ia2 of
+            [ord] -> Just ord
+            _ -> Nothing
+    pCompareInFullEff effort (IntervalApprox o1 i1) (IntervalApprox o2 i2)
+        =
+        compOuter `partialOrderingPartialInfoAnd` compInner
+        where
+        compOuter = RefOrd.pCompareInFullEff effort o1 o2  
+        compInner = RefOrd.pCompareInFullEff effort i2 i1
+    
+
 instance (NumOrd.HasExtrema e) => (RefOrd.HasTop (Interval e))
     where
     top (Interval sampleE _) = 

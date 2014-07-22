@@ -15,6 +15,7 @@ module Numeric.AERN.Basics.PartialOrdering
     PartialOrderingPartialInfo(..),
     partialOrderingPartialInfoAllNothing,
     partialOrderingPartialInfoAllFalse,
+    partialOrderingPartialInfoAnd,
     PartialOrdering(..),
     partialOrdering2PartialInfo,
     partialInfo2PartialOrdering,
@@ -89,6 +90,16 @@ partialOrderingPartialInfoAllNothing =
 
 jf = Just False
 jt = Just True
+
+partialOrderingPartialInfoAnd :: 
+    PartialOrderingPartialInfo -> PartialOrderingPartialInfo -> PartialOrderingPartialInfo
+partialOrderingPartialInfoAnd comp1 comp2 =
+    PartialOrderingPartialInfo (t i1 j1) (t i2 j2) (t i3 j3) (t i4 j4) (t i5 j5) (t i6 j6)
+    where
+    (PartialOrderingPartialInfo i1 i2 i3 i4 i5 i6) = comp1 
+    (PartialOrderingPartialInfo j1 j2 j3 j4 j5 j6) = comp2
+    t (Just a) (Just b) = Just $ a && b
+    t _ _ = Nothing
 
 {-| Like 'Prelude.Ordering' but with a non-comparable option
  -}
