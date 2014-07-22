@@ -309,6 +309,25 @@ instance
             r = NumOrd.maxDnEff effMinmax r1 r2
             effMinmax = intordeff_eMinmax effort
 
+intervalApproxUnionEff :: 
+    (NumOrd.PartialComparison e, NumOrd.RoundedLattice e) 
+    =>
+    IntervalOrderEffort e
+    -> IntervalApprox e -> IntervalApprox e -> IntervalApprox e
+intervalApproxUnionEff effort (IntervalApprox o1 i1) (IntervalApprox o2 i2) =
+    IntervalApprox 
+        (RefOrd.meetOutEff effort o1 o2) 
+        (RefOrd.meetInEff effort i1 i2)
+
+intervalApproxUnion :: 
+    (NumOrd.PartialComparison e, NumOrd.RoundedLattice e) 
+    =>
+    IntervalApprox e -> IntervalApprox e -> IntervalApprox e
+intervalApproxUnion ia1@(IntervalApprox o _) ia2 =
+    intervalApproxUnionEff effort ia1 ia2
+    where
+    effort = RefOrd.joinmeetDefaultEffort o
+
 instance
     (NumOrd.RoundedLattice e, NumOrd.RoundedLatticeInPlace e, 
      NumOrd.PartialComparison e)
