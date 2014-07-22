@@ -78,9 +78,9 @@ plotERF =
     FV.plotFns 
         [("erf example", 
             [
-             (("erf(x) [maxdeg = 10]", FV.blue, True), erf 10 5),
-             (("erf(x) [maxdeg = 15]", FV.blue, True), erf 15 5),
-             (("erf(x) [maxdeg = 20]", FV.blue, True), erf 20 5),
+--             (("erf(x) [maxdeg = 10]", FV.blue, True), erf 10 5),
+--             (("erf(x) [maxdeg = 15]", FV.blue, True), erf 15 5),
+--             (("erf(x) [maxdeg = 20]", FV.blue, True), erf 20 5),
              (("erf(x) [maxdeg = 25]", FV.black, True), erf 25 5)
             ]
          )
