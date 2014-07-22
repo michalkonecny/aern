@@ -4,7 +4,7 @@ module Main where
 import qualified Numeric.AERN.MPFRBasis.Interval as MI
 
 -- real arithmetic operators and imprecision measure:
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((|<*>))
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((|*))
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (RoundedReal)
 import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate)
 
@@ -55,7 +55,7 @@ main =
         iterateUntilAccurate initPrec maxAttempts maxImprecision $ 
             \ prec -> logisticMapIterateNTimes r (fromRationalWithPrec prec x0) iters
         where
-        initPrec = 50 -- try with the precision first
+        initPrec = 50 -- try with this precision first
         maxAttempts = 100 -- try to increase precision 100 times before giving up
         maxImprecision = 10^^(-digits) -- target result precision
         
@@ -74,7 +74,7 @@ fromRationalWithPrec ::
     Precision -> Rational -> RealApprox
     
 fromRationalWithPrec prec x =
-    x |<*> (changeSizeLimitsOut prec 1)
+    x |* (changeSizeLimitsOut prec 1)
     -- The operator |<*> stands for mixed-type outwards-rounded multiplication.
     -- The <> surrounding the operator * indicate outwards rounding.
     -- The | preceding the operator <*> indicate that the type of the first
@@ -100,6 +100,6 @@ logisticMap ::
     real {-^ rx(1-x) -} 
 
 logisticMap r xPrev =
-    r |<*> (xPrev * (1 - xPrev))
+    r |* (xPrev * (1 - xPrev))
         
              
