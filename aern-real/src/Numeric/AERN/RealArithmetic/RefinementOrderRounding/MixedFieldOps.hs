@@ -33,11 +33,22 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-infixr 6 |<+>, |>+<
-infixl 6 <+>|, >+<|
-infixr 7 |<*>, |>*<
-infixl 7 <*>|, >*<|
-infixl 7 </>|, >/<|
+infixr 6 |<+>, |>+<, |+
+infixl 6 <+>|, >+<|, +|
+infixr 7 |<*>, |>*<, |*
+infixl 7 <*>|, >*<|, *|
+infixl 7 </>|, >/<|, /|
+
+(|+) :: (RoundedMixedAdd t tn) => tn -> t -> t
+(|+) = (|<+>)
+(+|) :: (RoundedMixedAdd t tn) => t -> tn -> t
+(+|) = (<+>|)
+(|*) :: (RoundedMixedMultiply t tn) => tn -> t -> t
+(|*) = (|<*>)
+(*|) :: (RoundedMixedMultiply t tn) => t -> tn -> t
+(*|) = (<*>|)
+(/|) :: (RoundedMixedDivide t tn) => t -> tn -> t
+(/|) = (</>|)
 
 class
     (EffortIndicator (MixedAddEffortIndicator t tn))

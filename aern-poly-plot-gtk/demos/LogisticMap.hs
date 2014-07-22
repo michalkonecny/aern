@@ -10,11 +10,11 @@ import Numeric.AERN.RealArithmetic.Basis.Double ()
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
 
 -- real arithmetic operators and imprecision measure:
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((|<*>))
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((|*))
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (RoundedReal, roundedRealDefaultEffort)
 import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate2)
 
-import Numeric.AERN.RefinementOrder ((</\>))
+import Numeric.AERN.RefinementOrder ((/\))
 
 
 import qualified 
@@ -52,7 +52,7 @@ r :: Rational
 r = 375 / 100
 
 x0Domain :: Domain Fn
-x0Domain = 0 </\> 1 -- ie interval covering both 0 and 1
+x0Domain = 0 /\ 1 -- ie interval covering both 0 and 1
 
 main :: IO ()
 main =
@@ -120,7 +120,7 @@ logisticMap ::
     real {-^ rx(1-x) -} 
 
 logisticMap r xPrev =
-    r |<*> (xPrev * (1 - xPrev))
+    r |* (xPrev * (1 - xPrev))
         
 addPlotMetainfo ::
     [Fn] ->

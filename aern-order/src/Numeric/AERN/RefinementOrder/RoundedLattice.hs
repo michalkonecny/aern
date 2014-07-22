@@ -36,8 +36,10 @@ import Test.QuickCheck
 import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
-infixr 3 </\>, >/\<, <⊓>, >⊓< 
-infixr 2 <\/>, >\/<, <⊔>, >⊔< 
+infixr 3 </\>, >/\<, <⊓>, >⊓<, /\, ⊓
+infixr 2 <\/>, >\/<, <⊔>, >⊔<, \/, ⊔
+
+
 
 {-|
     A type with outward-rounding lattice operations.
@@ -63,10 +65,14 @@ joinOut a = joinOutEff (joinmeetDefaultEffort a) a
 -- | Outward rounded join with default effort
 (<\/>) :: (RoundedLattice t) => t -> t -> t 
 (<\/>) = joinOut 
+(\/) :: (RoundedLattice t) => t -> t -> t
+(\/) = (<\/>)
 
 {-| Convenience Unicode notation for '<\/>' -}
 (<⊔>) :: (RoundedLattice t) => t -> t -> t
 (<⊔>) = (<\/>)
+(⊔) :: (RoundedLattice t) => t -> t -> t
+(⊔) = (<\/>)
 
 -- | Inward rounded join with default effort
 joinIn :: (RoundedLattice t) => t -> t -> t
@@ -87,10 +93,14 @@ meetOut a = meetOutEff (joinmeetDefaultEffort a) a
 -- | Outward rounded meet with default effort
 (</\>) :: (RoundedLattice t) => t -> t -> t
 (</\>) = meetOut 
+(/\) :: (RoundedLattice t) => t -> t -> t
+(/\) = (</\>)
 
 {-| Convenience Unicode notation for '</\>' -}
 (<⊓>) :: (RoundedLattice t) => t -> t -> t
 (<⊓>) = (</\>)
+(⊓) :: (RoundedLattice t) => t -> t -> t
+(⊓) = (<⊓>)
 
 -- | Inward rounded meet with default effort
 meetIn :: (RoundedLattice t) => t -> t -> t
