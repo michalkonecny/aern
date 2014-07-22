@@ -72,18 +72,18 @@ main =
 inclusionFunctions :: Int -> Int -> ([[Fn]], FV.FnMetaData Fn)
 inclusionFunctions maxdeg expTaylorDeg = (fnGroups, fnmeta)
     where
-    fnGroups = [[expSX, expXpmDelta]]
+    fnGroups = [[fn1, fn2]]
 
-    expXpmDelta = expOutEff effExp xpmDelta
-
-    xpmDelta = x + pmDelta
-        where
-        pmDelta = newConstFn limits [("x", dom)] $ (- deltaD) </\> deltaD
-        deltaD = 0.1
+    fn1Name = "0.2x + exp(x)"
+    fn1 = pmDelta * x + expOutEff effExp x
     
-    expSX = expOutEff effExp $ s * x
+    fn2Name = "(exp(x+-0.2))"
+    fn2 = expOutEff effExp xpmDelta
         where
-        s =  newConstFn limits [("x", dom)] 0.91
+        xpmDelta = x + pmDelta
+    
+    pmDelta = newConstFn limits [("x", dom)] $ (- delta) </\> delta
+    delta = 0.2
     
     x = newProjection limits [("x", dom)] "x"
     dom = (0) </\> 1
@@ -112,12 +112,12 @@ inclusionFunctions maxdeg expTaylorDeg = (fnGroups, fnmeta)
             (Just (1,1,1,1))
             200 -- samplesPerUnit
             "x"
-            [("inclusion", functionInfos)]
+            [("fn1 ⊆ fn2 ?", functionInfos)]
         where
         sampleFn = x
         functionInfos =
             zip3 
-                ["exp(0.9*x)", "(exp(x+-0.1))"]
+                [fn1Name, fn2Name]
                 [black, blue, blue] -- styles 
                 (repeat True) -- show everything by default
 

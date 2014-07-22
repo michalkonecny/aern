@@ -132,15 +132,15 @@ addPlotMetainfo fns =
         FV.simpleFnMetaData
             sampleFn 
             (FV.Rectangle  1 (0) 0 1) -- initial plotting region
-            Nothing
-            200 -- samplesPerUnit
+            (Just (1,1,1,1))
+            500 -- samplesPerUnit
             "x"
             [("LM iterations", functionInfos)]
         where
         functionInfos =
             zip3 
                 ["x" ++ show i | i <- [1..iters]]
-                (repeat blue) -- styles 
+                (cycle [black, blue, red, green]) -- styles 
                 (repeat True) -- show all iterations by default
         iters = length fns
     sampleFn : _ = fns
@@ -203,3 +203,9 @@ red = FV.defaultFnPlotStyle
         FV.styleFillColour = Just (0.8,0.2,0.2,0.1) 
     } 
 
+green :: FV.FnPlotStyle
+green = FV.defaultFnPlotStyle 
+    { 
+        FV.styleOutlineColour = Just (0.1,0.8,0.1,1), 
+        FV.styleFillColour = Just (0.1,0.8,0.1,0.1) 
+    } 
