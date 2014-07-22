@@ -109,27 +109,25 @@ fnDefsMinmax :: Int -> [String] -> ([[Fn]], FV.FnMetaData Fn)
 fnDefsMinmax maxdeg otherParams = (fns, fnmeta)
     where
     fnmeta =
-        (FV.defaultFnMetaData x)
-        {
-            FV.dataFnGroupNames = ["max 1/16", "max 7/16", "max 15/16"],
-            FV.dataFnNames = 
-                [
-                    ["x", "1/16", "maxOut"]
-                , 
-                    ["x", "7/16", "maxOut"]
-                ,
-                    ["x", "15/16", "maxOut"]
-                ]
-                ,
-            FV.dataFnStyles = 
-                [
-                    [black, black, blue]
-                ,
-                    [black, black, blue]
-                ,
-                    [black, black, blue]
-                ]
-        }
+        FV.simpleFnMetaData
+            sampleFn 
+            (FV.Rectangle  1 (0) (0) 1) -- initial plotting region
+            Nothing
+            200 -- samplesPerUnit
+            "x"
+            groupInfos
+        where
+        groupInfos =
+            [
+                ("max 1/16", fnInfos "1/16"),
+                ("max 7/16", fnInfos "7/16"),
+                ("max 15/16", fnInfos "15/16")
+            ]
+        fnInfos ratioName =
+            zip3 
+                ["x", ratioName, "maxOut"]
+                [black, black, blue] -- styles 
+                (repeat True) -- show everything by default
     fns = 
         [ 
          [x, cOneOver16, 
