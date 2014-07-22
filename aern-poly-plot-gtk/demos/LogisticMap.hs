@@ -1,10 +1,13 @@
 module Main where
 
-import Numeric.AERN.Poly.IntPoly (IntPoly(..), defaultIntPolySizeLimits)
+import Numeric.AERN.Poly.IntPoly 
+    (IntPoly(..), 
+     defaultIntPolySizeLimits, IntPolySizeLimits(..), IntPolyEffort(..))
 import Numeric.AERN.Poly.IntPoly.Plot ()
 import Numeric.AERN.Basics.Interval (Interval)
 
-import Numeric.AERN.RmToRn (Domain, newProjection, getVarDoms, evaluationDefaultEffort)
+import Numeric.AERN.RmToRn 
+    (Domain, newProjection, getVarDoms, evaluationDefaultEffort)
 
 import Numeric.AERN.RealArithmetic.Basis.Double ()
 --import Numeric.AERN.RealArithmetic.Basis.MPFR
@@ -12,7 +15,7 @@ import Numeric.AERN.RealArithmetic.Basis.Double ()
 -- real arithmetic operators and imprecision measure:
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((|*))
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (RoundedReal, roundedRealDefaultEffort)
-import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate2)
+import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate)
 
 import Numeric.AERN.RefinementOrder ((/\))
 
@@ -79,27 +82,41 @@ main =
         formattedRes =
             show prec ++ ": " 
             ++ "; prec = " ++ (show imprecision)
-            ++ "\n res = " ++ (show $ last res)
-            ++ "\n 1 + res = " ++ (show $ 1 + (last res))
+--            ++ "\n res = " ++ (show $ last res)
+--            ++ "\n 1 + res = " ++ (show $ 1 + (last res))
 
     attemptsWithIncreasingEffort iters digits =
         -- invoke an iRRAM-style procedure for automatic precision/effort incrementing 
         --    on the computation of iters-many iterations of the logistic map:
-        iterateUntilAccurate2 initEffort maxAttempts maxAttemptJump maxImprecision $ 
-            \ eff -> logisticMapIterateNTimes r (identityFunctionWithEffort eff x0Domain) iters
+        iterateUntilAccurate initMaxdeg maxAttempts maxImprecision $ 
+            \ maxdeg -> logisticMapIterateNTimes r (identityFunctionWithMaxdeg maxdeg x0Domain) iters
         where
-        initEffort = 
-            defaultIntPolySizeLimits sampleCF cfLimits arity -- try with this effort first
-            where
-            sampleCF = 0
-            cfLimits = ()
-            arity = 1
+        initMaxdeg = 3  -- try with this maximum degree first
         maxAttempts = 100 -- try to increase precision 100 times before giving up
-        maxAttemptJump = 30
         maxImprecision = 10^^(-digits) -- target result precision
         
-        identityFunctionWithEffort eff dom =
-            newProjection eff [("x", dom)] "x"
+        identityFunctionWithMaxdeg maxdeg dom =
+            newProjection limits [("x", dom)] "x"
+            where
+            limits =
+                defaultLimits
+                {
+                    ipolylimits_maxdeg = maxdeg,
+                    ipolylimits_maxsize = maxdeg + 1,
+                    ipolylimits_effort = effortIncreaseEvaluationEffort
+                }
+                where
+                defaultLimits =
+                    defaultIntPolySizeLimits sampleCF cfLimits arity 
+                effortIncreaseEvaluationEffort =
+                    (ipolylimits_effort defaultLimits)
+                    {
+                        ipolyeff_evalMaxSplitSize = 1000,
+                        ipolyeff_minmaxBernsteinDegree = 4
+                    }
+                sampleCF = 0
+                cfLimits = ()
+                arity = 1
 
 logisticMapIterateNTimes ::
     (Num real, RoundedReal real)

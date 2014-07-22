@@ -832,7 +832,7 @@ plotHybIVPListEnclosures
             sampleFn
             rect
             (Just (1,1,1,1))
-            (case maybeParamPlotArgs of Just (freq, _) -> freq; _ -> 200)
+            (case maybeParamPlotArgs of Just (freq, _) -> freq; _ -> 500)
             tVar
             (zip groupNames $ map addMetaToFnNames fnNames)
         where
@@ -846,35 +846,6 @@ plotHybIVPListEnclosures
         enabledList 
             | shouldUseParamPlot = repeat True
             | otherwise = cycle activevars
-
---    fnmeta = 
---        (FV.defaultFnMetaData sampleFn)
---        {
---            FV.dataFnGroupNames = groupNames,
---            FV.dataFnNames = fnNames,
---            FV.dataFnStyles = map giveColours fnNames,
---            FV.dataDomName = tVar,
---            FV.dataDomL = tStart,
---            FV.dataDomR = tEnd,
---            FV.dataValLO = neg domainHalf,
---            FV.dataValHI = domainHalf,
---            FV.dataDefaultActiveFns = activevars,
---            FV.dataDefaultEvalPoint = tEnd,
---            FV.dataDefaultCanvasParams =
---                (FV.defaultCanvasParams sampleCf)
---                {
---                    FV.cnvprmCoordSystem = 
---                        FV.CoordSystemLinear $ 
---                            FV.Rectangle  domainHalf (neg domainHalf) tStart tEnd
---                    ,
---                    FV.cnvprmSamplesPerUnit = 200
---                    ,
---                    FV.cnvprmBackgroundColour = Just (1,1,1,1)
---                }
---        }
---        where
---        domainHalf = (tEnd <-> tStart) </>| (2 :: Double)
---    
 
 baseStyle :: FV.FnPlotStyle
 baseStyle = FV.defaultFnPlotStyle

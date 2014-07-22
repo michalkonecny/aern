@@ -4,7 +4,8 @@ module Main where
 
 import Numeric.AERN.Poly.IntPoly (IntPoly(..), defaultIntPolySizeLimits, IntPolySizeLimits(..))
 import Numeric.AERN.Poly.IntPoly.Plot ()
-import Numeric.AERN.Basics.Interval (Interval, IntervalApprox)
+import Numeric.AERN.Basics.Interval 
+    (Interval, IntervalApprox, intervalApproxIncludedIn, intervalApproxUnion)
 
 import Numeric.AERN.RmToRn 
         (getVarDoms, 
@@ -21,13 +22,16 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
         (ExpThinEffortIndicator(..))
 
-import Numeric.AERN.RefinementOrder ((</\>))
-
+import Numeric.AERN.RefinementOrder ((/\))
 
 import qualified 
        Numeric.AERN.RmToRn.Plot.FnView 
        as FV
 import Numeric.AERN.RmToRn.Plot.CairoDrawable (cairoDrawFnDefaultEffort)
+
+import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate)
+
+import Numeric.AERN.Basics.Effort (Int1To100(..), Int1To10(..))
 
 import qualified 
        Graphics.UI.Gtk 
@@ -50,10 +54,11 @@ type Fn = PIX
 usage :: String
 usage = "Usage: Inclusion <maxdeg> <exp taylor degree>"
 
-processArgs :: [String] -> (Int, Int)
+processArgs :: [String] -> Maybe (Int, Int)
+processArgs [] = Nothing
 processArgs [maxdegS, expTaylorS] =
     case (reads maxdegS, reads expTaylorS) of
-        ((maxdeg, []):_,(expTaylor, []):_) -> (maxdeg, expTaylor)
+        ((maxdeg, []):_,(expTaylor, []):_) -> Just (maxdeg, expTaylor)
         _ -> error $ usage
 processArgs _ = error $ usage
 
@@ -64,10 +69,37 @@ main =
     hSetBuffering stdout LineBuffering
     -- process command line arguments:
     args <- getArgs
-    let (maxdeg, expTaylor) = processArgs args 
+    case processArgs args of
+        Just (maxdeg, expTaylor) ->
+            do
+            plot $ inclusionFunctions maxdeg expTaylor
+        _ ->
+            do
+            results <- mapM reportAttempt inclusionResult
+            let ((Int1To100 maxdeg, Int1To10 expTaylor), _, _) = last results
+            plot $ inclusionFunctions maxdeg expTaylor
+    where
+    reportAttempt result@(eff, res, _) =
+        do
+        putStrLn $ show eff ++ ": " ++ show res
+        return result
+            
+inclusionResult :: [((Int1To100, Int1To10), Maybe Bool, Maybe ())]
+inclusionResult =
+    iterateUntilAccurate initEffort maxAttempts maxImprecision $ 
+        \ eff -> testInclusion eff
+        where
+        initEffort = (Int1To100 initMaxdeg, Int1To10 initExpTaylorDeg)
+        initMaxdeg = 3
+        initExpTaylorDeg = 1
+        maxImprecision = Just ()
+        maxAttempts = 100
+        
+        testInclusion (Int1To100 maxdeg, Int1To10 expTaylorDeg) =
+            fn1 `intervalApproxIncludedIn` fn2
+            where
+            ([[fn1, fn2]], _) = inclusionFunctions maxdeg expTaylorDeg
 
-    -- plot the enclosures for all iterations computed in the last attempt:
-    plot $ inclusionFunctions maxdeg expTaylor
 
 inclusionFunctions :: Int -> Int -> ([[Fn]], FV.FnMetaData Fn)
 inclusionFunctions maxdeg expTaylorDeg = (fnGroups, fnmeta)
@@ -78,16 +110,13 @@ inclusionFunctions maxdeg expTaylorDeg = (fnGroups, fnmeta)
     fn1 = pmDelta * x + expOutEff effExp x
     
     fn2Name = "(exp(x+-0.2))"
-    fn2 = expOutEff effExp xpmDelta
-        where
-        xpmDelta = x + pmDelta
+    fn2 = expOutEff effExp (x + pmDelta)
     
-    pmDelta = newConstFn limits [("x", dom)] $ (- delta) </\> delta
-    delta = 0.2
+    pmDelta = (- delta) `intervalApproxUnion` delta
     
-    x = newProjection limits [("x", dom)] "x"
-    dom = (0) </\> 1
---    dom = (-0.2) </\> 0.2
+    x = newProjection limits doms "x"
+    delta = newProjection limits doms "delta"
+    doms = [("x", 0 /\ 1), ("delta", 0.2 /\ 1)]
 
     limits = 
         (defaultIntPolySizeLimits sampleCF cfLimits arity)
