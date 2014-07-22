@@ -188,8 +188,8 @@ instance
     pCompareEff eff ma mb = 
         case (ma,mb) of
             (Just a, Just b) -> pCompareEff eff a b
-            (Nothing, Just _) -> Just LT
-            (Just _, Nothing) -> Just GT
+            (Nothing, Just _) -> Just GT
+            (Just _, Nothing) -> Just LT
             (Nothing, Nothing) -> Just EQ
     
 pComparePreludeCompare _ a b =
