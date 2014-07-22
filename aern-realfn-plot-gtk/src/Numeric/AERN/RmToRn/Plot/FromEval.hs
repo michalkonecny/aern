@@ -66,6 +66,7 @@ instance
     (CanEvaluate f,
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
+     RefOrd.IntervalLike f,
      Eq (Var f), Ord (Var f),
      Show (Domain f), Show (Var f), Show (VarBox f (Domain f))
     )
@@ -80,8 +81,27 @@ instance
             canvasParams toScreenCoords 
             style plotVar fns =
         do
-        cairoDrawFnGraph eff canvasParams toScreenCoords style plotVar $ map intervalOuter fns
+        cairoDrawFnGraph eff canvasParams toScreenCoords styleDarker plotVar $ map upperBound fns
         cairoDrawFnGraph eff canvasParams toScreenCoords style plotVar $ map intervalInner fns
+        cairoDrawFnGraph eff canvasParams toScreenCoords styleDarker plotVar $ map lowerBound fns
+        where
+        styleDarker = 
+            style
+            {
+                styleFillColour = fmap darken $ styleFillColour style 
+            }
+            where
+            darken (r,g,b,a) = (r,g,b,(1+a)/2)
+        upperBound fn =
+            RefOrd.fromEndpointsOut (fnInnerUpper, fnOuterUpper)
+            where
+            (_fnOuterLower, fnOuterUpper) = RefOrd.getEndpointsOut (intervalOuter fn) 
+            (_fnInnerLower, fnInnerUpper) = RefOrd.getEndpointsOut (intervalInner fn) 
+        lowerBound fn =
+            RefOrd.fromEndpointsOut (fnOuterLower, fnInnerLower)
+            where
+            (fnOuterLower, _fnOuterUpper) = RefOrd.getEndpointsOut (intervalOuter fn) 
+            (fnInnerLower, _fnInnerUpper) = RefOrd.getEndpointsOut (intervalInner fn) 
         
     cairoDrawFnParameteric
             eff
