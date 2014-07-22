@@ -9,13 +9,16 @@ import Numeric.AERN.Basics.Interval (Interval)
 import Numeric.AERN.RmToRn 
     (Domain, newProjection, getVarDoms, evaluationDefaultEffort)
 
-import Numeric.AERN.RealArithmetic.Basis.Double ()
---import Numeric.AERN.RealArithmetic.Basis.MPFR
+--import Numeric.AERN.RealArithmetic.Basis.Double ()
+import Numeric.AERN.RealArithmetic.Basis.MPFR (MPFR, Precision)
 
 -- real arithmetic operators and imprecision measure:
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators ((|*))
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding (RoundedReal, roundedRealDefaultEffort)
 import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate)
+
+-- ability to change precision of numbers:
+import Numeric.AERN.Basics.SizeLimits (changeSizeLimitsOut)
 
 import Numeric.AERN.RefinementOrder ((/\))
 
@@ -35,8 +38,8 @@ import System.IO (stdout, hSetBuffering, BufferMode(LineBuffering))
 import System.Environment (getArgs)
 
 
---type CF = Interval MPFR
-type CF = Interval Double
+type CF = Interval MPFR
+--type CF = Interval Double
 type Poly = IntPoly String CF
 type PI = Interval Poly
 type Fn = PI
@@ -44,10 +47,15 @@ type Fn = PI
 usage :: String
 usage = "Usage: LogisticMap <number of iterations> <result digits>"
 
-processArgs :: [String] -> (Int, Int)
+processArgs :: [String] -> (Int, Int, Maybe (Int, Precision))
 processArgs [itersS, digitsS] =
     case (reads itersS, reads digitsS) of
-        ((iters, []):_,(digits, []):_) -> (iters, digits)
+        ((iters, []):_,(digits, []):_) -> (iters, digits, Nothing)
+        _ -> error $ usage
+processArgs [itersS, digitsS, maxdegS, precS] =
+    case (reads itersS, reads digitsS, reads maxdegS, reads precS) of
+        ((iters, []):_,(digits, []):_, (maxdeg, []):_, (prec, []):_) -> 
+            (iters, digits, Just (maxdeg, fromInteger prec))
         _ -> error $ usage
 processArgs _ = error $ usage
 
@@ -64,10 +72,15 @@ main =
     hSetBuffering stdout LineBuffering
     -- process command line arguments:
     args <- getArgs
-    let (iters, digits) = processArgs args 
+    let (iters, digits, maybeEff) = processArgs args 
 
     -- compute the iterations using various efforts and report progress:
-    functions <- mapM reportAttempt $ attemptsWithIncreasingEffort iters digits
+    functions <-
+        case maybeEff of
+            Nothing -> 
+                mapM reportAttempt $ attemptsWithIncreasingEffort iters digits
+            Just eff ->
+                return [logisticMapIterateNTimes r (identityFunctionWithMaxdeg eff x0Domain) iters]
 
     -- plot the enclosures for all iterations computed in the last attempt:
     plot $ addPlotMetainfo (last functions :: [Fn])
@@ -88,35 +101,39 @@ main =
     attemptsWithIncreasingEffort iters digits =
         -- invoke an iRRAM-style procedure for automatic precision/effort incrementing 
         --    on the computation of iters-many iterations of the logistic map:
-        iterateUntilAccurate initMaxdeg maxAttempts maxImprecision $ 
-            \ maxdeg -> logisticMapIterateNTimes r (identityFunctionWithMaxdeg maxdeg x0Domain) iters
+        iterateUntilAccurate initEff maxAttempts maxImprecision $ 
+            \ eff -> logisticMapIterateNTimes r (identityFunctionWithMaxdeg eff x0Domain) iters
         where
-        initMaxdeg = 3  -- try with this maximum degree first
+        initEff = (initMaxdeg, initPrec)  -- try with this maximum degree first
+            where
+            initMaxdeg = 3
+            initPrec = 50
         maxAttempts = 100 -- try to increase precision 100 times before giving up
         maxImprecision = 10^^(-digits) -- target result precision
         
-        identityFunctionWithMaxdeg maxdeg dom =
-            newProjection limits [("x", dom)] "x"
-            where
-            limits =
-                defaultLimits
-                {
-                    ipolylimits_maxdeg = maxdeg,
-                    ipolylimits_maxsize = maxdeg + 1,
-                    ipolylimits_effort = effortIncreaseEvaluationEffort
-                }
-                where
-                defaultLimits =
-                    defaultIntPolySizeLimits sampleCF cfLimits arity 
-                effortIncreaseEvaluationEffort =
-                    (ipolylimits_effort defaultLimits)
-                    {
-                        ipolyeff_evalMaxSplitSize = 1000,
-                        ipolyeff_minmaxBernsteinDegree = 4
-                    }
-                sampleCF = 0
-                cfLimits = ()
-                arity = 1
+identityFunctionWithMaxdeg (maxdeg, prec) dom =
+    newProjection limits [("x", domP)] "x"
+    where
+    domP = changeSizeLimitsOut prec dom
+    limits =
+        defaultLimits
+        {
+            ipolylimits_maxdeg = maxdeg,
+            ipolylimits_maxsize = maxdeg + 1,
+            ipolylimits_effort = effortIncreaseEvaluationEffort
+        }
+        where
+        defaultLimits =
+            defaultIntPolySizeLimits sampleCF cfLimits arity 
+        effortIncreaseEvaluationEffort =
+            (ipolylimits_effort defaultLimits)
+            {
+                ipolyeff_evalMaxSplitSize = 1000,
+                ipolyeff_minmaxBernsteinDegree = 4
+            }
+        sampleCF = changeSizeLimitsOut prec 0
+        cfLimits = prec
+        arity = 1
 
 logisticMapIterateNTimes ::
     (Num real, RoundedReal real)
