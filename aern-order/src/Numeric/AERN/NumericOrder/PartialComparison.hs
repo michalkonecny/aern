@@ -172,6 +172,26 @@ instance PartialComparison Double where
 --           _ -> Just NC 
     pCompareDefaultEffort _ = ()
     
+instance PartialComparison () where
+    type PartialCompareEffortIndicator () = ()
+    pCompareDefaultEffort _ = ()
+    pCompareEff _ _ _ = Just EQ
+    
+instance
+    PartialComparison a
+    => 
+    PartialComparison (Maybe a) 
+    where
+    type PartialCompareEffortIndicator (Maybe a) = PartialCompareEffortIndicator a
+    pCompareDefaultEffort (Just sample) = pCompareDefaultEffort sample
+    pCompareDefaultEffort _ = error "pCompareDefaultEffort Nothing not defined"
+    pCompareEff eff ma mb = 
+        case (ma,mb) of
+            (Just a, Just b) -> pCompareEff eff a b
+            (Nothing, Just _) -> Just LT
+            (Just _, Nothing) -> Just GT
+            (Nothing, Nothing) -> Just EQ
+    
 pComparePreludeCompare _ a b =
     Just $ toPartialOrdering $ Prelude.compare a b
 
