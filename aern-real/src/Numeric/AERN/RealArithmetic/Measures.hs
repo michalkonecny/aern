@@ -143,6 +143,30 @@ instance
 --        fmap and $ sequence $ map (isExactEff eff) list
          
          
+instance
+    HasImprecision a
+    =>
+    HasImprecision (Maybe a)
+    where
+    type Imprecision (Maybe a) = Maybe (Imprecision a)
+    type ImprecisionEffortIndicator (Maybe a) = 
+        ImprecisionEffortIndicator a
+    imprecisionDefaultEffort maybeSample =
+        case maybeSample of
+            (Just sample) -> 
+                imprecisionDefaultEffort sample
+            _ -> error $ "(imprecisionDefaultEffort Nothing) not defined"
+    imprecisionOfEff _ Nothing = Nothing
+    imprecisionOfEff eff (Just v) = Just $ imprecisionOfEff eff v
+    
+instance
+    HasImprecision Bool
+    where
+    type Imprecision Bool = ()
+    type ImprecisionEffortIndicator Bool = ()
+    imprecisionDefaultEffort _ = ()
+    imprecisionOfEff _ _ = ()
+    
 {-|
     A generic function that applies a given approximate function
     repeatedly with increasing effort until the required accuracy
