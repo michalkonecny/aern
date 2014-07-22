@@ -165,6 +165,27 @@ instance
         compOuter = RefOrd.pCompareInFullEff effort o1 o2  
         compInner = RefOrd.pCompareInFullEff effort i2 i1
     
+intervalApproxIncludedInEff :: 
+    (NumOrd.RoundedLatticeEffort t, NumOrd.PartialComparison t) 
+    =>
+    IntervalOrderEffort t -> 
+    IntervalApprox t -> IntervalApprox t -> Maybe Bool
+intervalApproxIncludedInEff eff (IntervalApprox o1 _i1) (IntervalApprox o2 i2) =
+    case (o1 `includedIn` i2, o1 `includedIn` o2) of
+        (Just True, _) -> Just True -- outer inside inner -> inclusion proved
+        (_,Just False) -> Just False -- outer definitely not inside outer, ie outers are disjoint somewhere -> inclusion disproved 
+        _ -> Nothing
+    where
+    includedIn = RefOrd.pGeqEff eff
+
+intervalApproxIncludedIn :: 
+    (NumOrd.RoundedLatticeEffort t, NumOrd.PartialComparison t) 
+    =>
+    IntervalApprox t -> IntervalApprox t -> Maybe Bool
+intervalApproxIncludedIn ia1@(IntervalApprox o _) =
+    intervalApproxIncludedInEff eff ia1
+    where
+    eff = RefOrd.pCompareDefaultEffort o
 
 instance (NumOrd.HasExtrema e) => (RefOrd.HasTop (Interval e))
     where
