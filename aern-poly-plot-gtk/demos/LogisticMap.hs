@@ -59,8 +59,8 @@ processArgs [itersS, digitsS, maxdegS, precS] =
         _ -> error $ usage
 processArgs _ = error $ usage
 
-r :: Rational
-r = 375 / 100
+rArg :: Rational
+rArg = 375 / 100
 
 x0Domain :: Domain Fn
 x0Domain = 0 /\ 1 -- ie interval covering both 0 and 1
@@ -80,7 +80,7 @@ main =
             Nothing -> 
                 mapM reportAttempt $ attemptsWithIncreasingEffort iters digits
             Just eff ->
-                return [logisticMapIterateNTimes r (identityFunctionWithMaxdeg eff x0Domain) iters]
+                return [logisticMapIterateNTimes rArg (identityFunctionWithMaxdeg eff x0Domain) iters]
 
     -- plot the enclosures for all iterations computed in the last attempt:
     plot $ addPlotMetainfo (last functions :: [Fn])
@@ -102,7 +102,7 @@ main =
         -- invoke an iRRAM-style procedure for automatic precision/effort incrementing 
         --    on the computation of iters-many iterations of the logistic map:
         iterateUntilAccurate initEff maxAttempts maxImprecision $ 
-            \ eff -> logisticMapIterateNTimes r (identityFunctionWithMaxdeg eff x0Domain) iters
+            \ eff -> logisticMapIterateNTimes rArg (identityFunctionWithMaxdeg eff x0Domain) iters
         where
         initEff = (initMaxdeg, initPrec)  -- try with this maximum degree first
             where
@@ -175,7 +175,8 @@ addPlotMetainfo fns =
             zip3 
                 ["x" ++ show i | i <- [1..iters]]
                 (cycle [black, blue, red, green]) -- styles 
-                (repeat True) -- show all iterations by default
+                ((replicate (iters - 1) False) ++ [True]) -- show only the last iteration
+--                (repeat True) -- show all iterations
         iters = length fns
     sampleFn : _ = fns
 
