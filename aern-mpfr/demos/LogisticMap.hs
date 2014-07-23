@@ -101,5 +101,5 @@ logisticMap ::
 
 logisticMap r xPrev =
     r |* (xPrev * (1 - xPrev))
-        
+
              
