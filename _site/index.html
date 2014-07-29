@@ -107,11 +107,11 @@ x_{n+1} = rx_n(1-x_n)
 <!--
 $n$    time          computed enclosure of $x_n$                     
 -----  ------ ----   --------------------------------
-10     0.008s        $0.77910939751004...\pm 10^{-160}$
-100    0.02s         $0.38545043842252...\pm 10^{-160}$
-1000   0.5s          $0.69714851192442...\pm 10^{-160}$
-10000  72s           $0.67381614749956...\pm 10^{-160}$
-100000 72s           $0.76860294939511...\pm 10^{-160}$
+10     0.008s        $0.64536729083093...\pm 10^{-160}$
+100    0.02s         $0.88829399228403...\pm 10^{-160}$
+1000   0.5s          $0.79174674092244...\pm 10^{-160}$
+10000  72s           $0.82420480075653...\pm 10^{-160}$
+100000 72s           $0.666946708411...\pm 10^{-160}$
 -->
 
 <table class="table table-striped table-bordered">
@@ -130,7 +130,7 @@ Computed enclosure of <span class="math">\(x_n\)</span>
 </td><td>
 0.01 s
 </td><td>
-<span class="math">\(0.77910939751004...\pm 10^{-160}\)</span>
+<span class="math">\(0.645367290830...\pm 10^{-160}\)</span>
 </td>
 </tr>
 <tr>
@@ -139,7 +139,7 @@ Computed enclosure of <span class="math">\(x_n\)</span>
 </td><td>
 0.02 s
 </td><td>
-<span class="math">\(0.38545043842252...\pm 10^{-160}\)</span>
+<span class="math">\(0.888293992284...\pm 10^{-160}\)</span>
 </td>
 </tr>
 <tr>
@@ -148,16 +148,16 @@ Computed enclosure of <span class="math">\(x_n\)</span>
 </td><td>
 0.5 s
 </td><td>
-<span class="math">\(0.69714851192442...\pm 10^{-160}\)</span>
+<span class="math">\(0.791746740922...\pm 10^{-160}\)</span>
 </td>
 </tr>
 <tr>
 <td>
 <span class="math">\(10,000\)</span>
 </td><td>
-70 s
+64 s
 </td><td>
-<span class="math">\(0.67381614749956...\pm 10^{-160}\)</span>
+<span class="math">\(0.824204800756...\pm 10^{-160}\)</span>
 </td>
 </tr>
 <tr>
@@ -166,12 +166,12 @@ Computed enclosure of <span class="math">\(x_n\)</span>
 </td><td>
 3 h
 </td><td>
-<span class="math">\(0.76860294939511...\pm 10^{-160}\)</span>
+<span class="math">\(0.666946708411...\pm 10^{-160}\)</span>
 </td>
 </tr>
 </table>
 
-<p>Note that iterating the logistic map is a highly unstable computation. Evaluating it directly using Double precision gives completely meaningless results after not many iterations. For example, for 100 iterations using Double precision one gets <span class="math">\(0.66...\)</span>, while the correct number is close to <span class="math">\(0.38...\)</span>.</p>
+<p>Note that iterating the logistic map is a highly unstable computation. Evaluating it directly using Double precision gives completely meaningless results after not many iterations. For example, for 100 iterations using Double precision one gets <span class="math">\(0.66...\)</span>, while the correct number is close to <span class="math">\(0.88...\)</span>.</p>
 <p>To compute 100,000 iterations with a good precision, the program used floating-point numbers with mantissa size over 200,000 bits. Over 2 hours of the 3-hour computation time was spent trying and failing to perform the computation with various lower precisions.</p>
 <!-- 
 TODO: Demonstrate that the same formula can be used to evaluate on real numbers 

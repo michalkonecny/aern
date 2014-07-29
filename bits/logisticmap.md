@@ -20,11 +20,11 @@ $x_n$.  For example, with $r=3.75$ and $x_0=0.5$, it computes:
 <!--
 $n$    time          computed enclosure of $x_n$                     
 -----  ------ ----   --------------------------------
-10     0.008s        $0.77910939751004...\pm 10^{-160}$
-100    0.02s         $0.38545043842252...\pm 10^{-160}$
-1000   0.5s          $0.69714851192442...\pm 10^{-160}$
-10000  72s           $0.67381614749956...\pm 10^{-160}$
-100000 72s           $0.76860294939511...\pm 10^{-160}$
+10     0.008s        $0.64536729083093...\pm 10^{-160}$
+100    0.02s         $0.88829399228403...\pm 10^{-160}$
+1000   0.5s          $0.79174674092244...\pm 10^{-160}$
+10000  72s           $0.82420480075653...\pm 10^{-160}$
+100000 72s           $0.666946708411...\pm 10^{-160}$
 -->
 
 <table class="table table-striped table-bordered">
@@ -32,26 +32,26 @@ $n$    time          computed enclosure of $x_n$
 <th>$n$ (Number of iterations)</th><th>Approx. computation time</th><th>Computed enclosure of $x_n$</th>
 </tr>
 <tr>
-<td>$10$</td><td>0.01 s</td><td>$0.77910939751004...\pm 10^{-160}$</td>
+<td>$10$</td><td>0.01 s</td><td>$0.645367290830...\pm 10^{-160}$</td>
 </tr>
 <tr>
-<td>$100$</td><td>0.02 s</td><td>$0.38545043842252...\pm 10^{-160}$</td>
+<td>$100$</td><td>0.02 s</td><td>$0.888293992284...\pm 10^{-160}$</td>
 </tr>
 <tr>
-<td>$1000$</td><td>0.5 s</td><td>$0.69714851192442...\pm 10^{-160}$</td>
+<td>$1000$</td><td>0.5 s</td><td>$0.791746740922...\pm 10^{-160}$</td>
 </tr>
 <tr>
-<td>$10,000$</td><td>70 s</td><td>$0.67381614749956...\pm 10^{-160}$</td>
+<td>$10,000$</td><td>64 s</td><td>$0.824204800756...\pm 10^{-160}$</td>
 </tr>
 <tr>
-<td>$100,000$</td><td>3 h</td><td>$0.76860294939511...\pm 10^{-160}$</td>
+<td>$100,000$</td><td>3 h</td><td>$0.666946708411...\pm 10^{-160}$</td>
 </tr>
 </table>
 
 Note that iterating the logistic map is a highly unstable computation.  Evaluating 
 it directly using Double precision gives completely meaningless results 
 after not many iterations.  For example, for 100 iterations using Double
-precision one gets $0.66...$, while the correct number is close to $0.38...$. 
+precision one gets $0.66...$, while the correct number is close to $0.88...$. 
 
 To compute 100,000 iterations with a good
 precision, the program used floating-point numbers with mantissa size 
