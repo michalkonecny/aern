@@ -116,7 +116,9 @@ inclusionFunctions maxdeg expTaylorDeg = (fnGroups, fnmeta)
     
     x = newProjection limits doms "x"
     delta = newProjection limits doms "delta"
-    doms = [("x", 0 /\ 1), ("delta", 0.2 /\ 1)]
+    doms = [("x", 0 /\ 1), 
+            ("delta", 0.2 /\ 0.2)]
+--            ("delta", 0.2 /\ 1)]
 
     limits = 
         (defaultIntPolySizeLimits sampleCF cfLimits arity)
@@ -147,7 +149,7 @@ inclusionFunctions maxdeg expTaylorDeg = (fnGroups, fnmeta)
         functionInfos =
             zip3 
                 [fn1Name, fn2Name]
-                [black, blue, blue] -- styles 
+                [green, blue, red] -- styles 
                 (repeat True) -- show everything by default
 
 
@@ -185,6 +187,12 @@ blue = FV.defaultFnPlotStyle
     { 
         FV.styleOutlineColour = Just (0.1,0.1,0.8,1), 
         FV.styleFillColour = Just (0.1,0.1,0.8,0.1) 
+    } 
+green :: FV.FnPlotStyle
+green = FV.defaultFnPlotStyle 
+    { 
+        FV.styleOutlineColour = Just (0.1,0.8,0.1,1), 
+        FV.styleFillColour = Just (0.1,0.8,0.1,0.1) 
     } 
 red :: FV.FnPlotStyle
 red = FV.defaultFnPlotStyle 
