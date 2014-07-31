@@ -66,7 +66,8 @@ thickProd useInner maxdeg bernsteinDeg
             ipolylimits_effort =
                 (ipolylimits_effort defaultSizeLimits)
                 {
-                    ipolyeff_minmaxBernsteinDegree = bernsteinDeg
+                    ipolyeff_minmaxBernsteinDegree = bernsteinDeg,
+                    ipolyeff_evalMaxSplitSize = 10000
                 } 
         }
         where
@@ -89,7 +90,7 @@ thickProdExact =
         (defaultIntPolySizeLimits sampleCoeff () 1)
     sampleCoeff = 0
 
-{-| Show a plot of erf(x) over [-1,1] -}
+{-| Show a plot of erf(x) over [-1,2] -}
 plotThickProd :: IO ()
 plotThickProd = 
     FV.plotFns 
@@ -97,6 +98,20 @@ plotThickProd =
             [
              (("f(x) [outer approx.]", FV.blue, True), thickProd False 50 4),
              (("f(x) [inner approx.]", FV.green, True), thickProd True 10 2),
+                                            -- deliberately using low precision for inner approx. 
+                                            -- so that its inconsistent region is visible
+             (("f(x)", FV.black, True), thickProdExact)
+            ]
+         )
+        ]
+
+plotThickProd2 :: IO ()
+plotThickProd2 = 
+    FV.plotFns 
+        [("f(x) = [-1,1]*x", 
+            [
+             (("f(x) [outer approx.]", FV.blue, True), thickProd False 200 14),
+             (("f(x) [inner approx.]", FV.green, True), thickProd True 200 14),
                                             -- deliberately using low precision for inner approx. 
                                             -- so that its inconsistent region is visible
              (("f(x)", FV.black, True), thickProdExact)
