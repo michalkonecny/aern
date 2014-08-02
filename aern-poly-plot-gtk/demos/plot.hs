@@ -100,6 +100,8 @@ examples maxdeg otherParams =
     [
         ("minmax", fnDefsMinmax maxdeg otherParams)
     ,
+        ("abs", fnDefsAbs maxdeg otherParams)
+    ,
         ("mult1", fnDefsMult1 maxdeg otherParams)
     ,
         ("expMx2", fnDefsExpMx2 maxdeg otherParams)
@@ -173,6 +175,67 @@ fnDefsMinmax maxdeg otherParams = (fns, fnmeta)
                         (intordeff_eMinmax defaultEffort)
                         {
                             ipolyeff_minmaxBernsteinDegree = bernsteinDeg
+                        }
+                }
+        where
+        defaultEffort = NumOrd.minmaxInOutDefaultEffort sampleFn
+    maybeBernsteinDegree =
+        case otherParams of
+            [] -> Nothing
+            bernsteinDegS : _ -> Just (read bernsteinDegS)
+    sampleFn = x 
+--    sampleFnEndpt = newProjection limits varDoms "x" :: FnEndpt
+
+fnDefsAbs :: Int -> [String] -> ([[Fn]], FV.FnMetaData Fn)
+fnDefsAbs maxdeg otherParams = (fns, fnmeta)
+    where
+    fnmeta =
+        FV.simpleFnMetaData
+            sampleFn 
+            (FV.Rectangle  0.75 (-0.25) (-0.5) 0.5) -- initial plotting region
+            Nothing
+            200 -- samplesPerUnit
+            "x"
+            groupInfos
+        where
+        groupInfos =
+            [
+                ("abs", fnInfos)
+            ]
+        fnInfos =
+            zip3 
+                ["x", "-x", "abs(x)"]
+                [black, black, blue] -- styles 
+                (repeat True) -- show everything by default
+    fns = 
+        [ 
+         [x, -x, ArithInOut.absOutEff effAbs x]
+        ]
+    limits :: IntPolySizeLimits CF
+    limits =
+        (defaultIntPolySizeLimits 0 () 1)
+        {
+            ipolylimits_maxdeg = maxdeg,
+            ipolylimits_maxsize = 1000
+        } 
+
+    varDoms = zip vars doms
+    vars = ["x"]
+    doms = [constructCF (-0.5) 0.5]
+
+    x = newProjection limits varDoms "x" :: Fn
+    
+    effAbs =
+        case maybeBernsteinDegree of
+            Nothing -> defaultEffort 
+            Just bernsteinDeg ->
+                defaultEffort
+                {
+                    intordeff_eMinmax = 
+                        (intordeff_eMinmax defaultEffort)
+                        {
+                            ipolyeff_minmaxBernsteinDegree = bernsteinDeg,
+                            ipolyeff_evalMaxSplitSize = 10000
                         }
                 }
         where
