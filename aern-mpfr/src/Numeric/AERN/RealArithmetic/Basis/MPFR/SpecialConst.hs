@@ -31,7 +31,7 @@ instance
 instance 
     RoundedSpecialConst MPFR
     where
-    piUpEff prec = M.pi M.Up prec
-    piDnEff prec = M.pi M.Down prec
-    eUpEff prec = M.exp M.Up prec 1
-    eDnEff prec = M.exp M.Down prec 1
+    piUpEff prec _ = M.pi M.Up prec
+    piDnEff prec _ = M.pi M.Down prec
+    eUpEff prec _ = M.exp M.Up prec 1
+    eDnEff prec _ = M.exp M.Down prec 1

@@ -24,7 +24,7 @@ import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Exception
 import Numeric.AERN.Basics.ShowInternals
 import Numeric.AERN.RealArithmetic.Laws
-import Numeric.AERN.RealArithmetic.Measures
+--import Numeric.AERN.RealArithmetic.Measures
 import qualified Numeric.AERN.NumericOrder as NumOrd
 
 import Numeric.AERN.Misc.Debug

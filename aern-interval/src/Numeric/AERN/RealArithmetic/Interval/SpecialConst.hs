@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,25 +28,20 @@ import Numeric.AERN.Basics.Interval
 instance (ArithUpDn.RoundedSpecialConstEffort e) =>
     (ArithInOut.RoundedSpecialConstEffort (Interval e))
     where
-#if (__GLASGOW_HASKELL__ >= 704)
     type SpecialConstEffortIndicator (Interval e) = 
         ArithUpDn.SpecialConstEffortIndicator e
-#else
-    type ArithInOut.SpecialConstEffortIndicator (Interval e) = 
-        ArithUpDn.SpecialConstEffortIndicator e
-#endif
     specialConstDefaultEffort (Interval l r) = 
         ArithUpDn.specialConstDefaultEffort l
 
 instance (ArithUpDn.RoundedSpecialConst e) => 
     (ArithInOut.RoundedSpecialConst (Interval e)) 
     where
-    piInEff effort =
-        Interval (ArithUpDn.piUpEff effort) (ArithUpDn.piDnEff effort)
-    piOutEff effort =
-        Interval (ArithUpDn.piDnEff effort) (ArithUpDn.piUpEff effort)
-    eInEff effort =
-        Interval (ArithUpDn.eUpEff effort) (ArithUpDn.eDnEff effort)
-    eOutEff effort =
-        Interval (ArithUpDn.eDnEff effort) (ArithUpDn.eUpEff effort)
+    piInEff effort (Interval sample _) =
+        Interval (ArithUpDn.piUpEff effort sample) (ArithUpDn.piDnEff effort sample)
+    piOutEff effort (Interval sample _) =
+        Interval (ArithUpDn.piDnEff effort sample) (ArithUpDn.piUpEff effort sample)
+    eInEff effort (Interval sample _) =
+        Interval (ArithUpDn.eUpEff effort sample) (ArithUpDn.eDnEff effort sample)
+    eOutEff effort (Interval sample _) =
+        Interval (ArithUpDn.eDnEff effort sample) (ArithUpDn.eUpEff effort sample)
 

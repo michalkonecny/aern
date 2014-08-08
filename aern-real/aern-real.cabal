@@ -42,6 +42,7 @@ source-repository this
 
 Library
   hs-source-dirs: src
+  ghc-options:    -Wall
   Build-Depends:
         base >= 4.4,
         QuickCheck >= 2.4,
@@ -66,6 +67,7 @@ Library
                   Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace,
                   Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.Operators,
                   Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
+                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.SineCosine
   Other-modules:
     Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion,
     Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary,
