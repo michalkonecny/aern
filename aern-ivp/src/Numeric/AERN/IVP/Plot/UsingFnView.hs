@@ -214,7 +214,7 @@ plotODEIVPBisectionEnclosures
                 map (map (addVParam scanVarsList) . pickByActivevarsCycle) fns2
                 where
                 scanVarsList = 
-                    map snd $ filter fst $ zip (scanVars ++ repeat False) componentNames
+                    map snd $ filter (not . fst) $ zip (scanVars ++ repeat False) componentNames
             _ ->
                 map (map addV) fns2
         where
@@ -734,7 +734,7 @@ plotHybIVPListEnclosures
                 map (map (addVParam scanVarsList) . pickByActivevarsCycle) fns2
                 where
                 scanVarsList = 
-                    map snd $ filter fst $ zip (scanVars ++ repeat False) componentNames
+                    map snd $ filter (not . fst) $ zip (scanVars ++ repeat False) componentNames
             _ ->
                 map (map addV) fns2
                 
