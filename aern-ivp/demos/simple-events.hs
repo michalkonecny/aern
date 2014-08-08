@@ -140,7 +140,7 @@ runWithArgs
     topLevelStrategy = topLevelStrategyFromS topLevelStrategyS
     basicStepType = basicStepTypeFromS basicStepTypeS
 
-    maybePlotDimens = readIVPPlotArgs maybePlotDimensS :: Maybe (IVPPlotArgs (Var Fn))
+    maybePlotDimens = readIVPPlotArgs maybePlotDimensS :: Maybe IVPPlotArgs
     maybePDFfilename = readPDFfilename maybePDFfilenameS :: Maybe String
     maxDeg = read maxDegS :: Int
     maxSize = read maxSizeS :: Int
@@ -168,7 +168,7 @@ refines a1 a2 =
 
 solveEventsPrintSteps :: 
     HybridIVP Fn -> 
-    (Maybe (IVPPlotArgs (Var Fn))) ->
+    (Maybe IVPPlotArgs) ->
     (Maybe FilePath) ->
     (TopLevelStrategy, BasicStepType, Int, Int) ->
     (Int, Int, Int, Int) 
