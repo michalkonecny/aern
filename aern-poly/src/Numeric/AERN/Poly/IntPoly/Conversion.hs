@@ -133,12 +133,31 @@ instance
         (IntPolyEffort (Interval e))
     convertDefaultEffort sampleP@(IntPoly _cfg _) sampleI = 
         (convertToDefaultEffortStandard sampleP sampleI)
-        where
---        sampleCf = ipolycfg_sample_cf cfg
     convertUpEff eff = convertUpEffStandard (\ _ _ -> ()) eff
     convertDnEff eff = convertDnEffStandard (\ _ _ -> ()) eff
---    convertUpEff (eff, effConv) = convertUpEffStandard (\ _ _ -> effConv) eff 
---    convertDnEff (eff, effConv) = convertDnEffStandard (\ _ _ -> effConv) eff 
+
+instance
+    (Ord var, Show var,
+     cf ~ Interval e,
+     ArithInOut.RoundedReal cf,
+     HasAntiConsistency cf,
+     Show cf,  Show (SizeLimits cf))
+    =>
+    ArithInOut.Convertible (IntPoly var (Interval e)) (Interval e)
+    where
+    type ConvertEffortIndicator (IntPoly var (Interval e)) (Interval e) =
+        (IntPolyEffort (Interval e))
+    convertDefaultEffort sampleP@(IntPoly _cfg _) sampleI = 
+        (convertToDefaultEffortStandard sampleP sampleI)
+    convertOutEff eff _sampleI p = 
+        evalOtherType (evalOpsEff effEval sampleP sampleCf) varDoms p
+        where
+        varDoms = getDomainBox p
+        sampleP = p
+        sampleCf = getSampleDomValue sampleP
+        effEval = eff
+        
+    convertInEff _eff = error "convertInEff not supported by IntPoly"
 
 
 convertUpEffStandard, convertDnEffStandard ::

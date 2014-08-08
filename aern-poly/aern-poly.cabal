@@ -52,6 +52,7 @@ Library
                     Numeric.AERN.Poly.IntPoly.RefinementOrder,
                     Numeric.AERN.Poly.IntPoly.Show,
                     Numeric.AERN.Poly.IntPoly.SpecialConst,
+                    Numeric.AERN.Poly.IntPoly.Elementary,
                     Numeric.AERN.Poly.IntPoly.UpDnField
 
 executable testAERN-Poly
