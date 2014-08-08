@@ -114,7 +114,7 @@ runWithArgs [ivpName, tEndS, maybePlotDimensS, maybePDFfilenameS,
         }
     ivp = ivpByNameReportError ivpName sampleFn
     wrapType = read wrapTypeS :: WrapType
-    maybePlotDimens = readIVPPlotArgs maybePlotDimensS :: Maybe (IVPPlotArgs (Var Fn))
+    maybePlotDimens = readIVPPlotArgs maybePlotDimensS :: Maybe IVPPlotArgs
     maybePDFfilename = readPDFfilename maybePDFfilenameS :: Maybe String
     maxDeg = read maxDegS :: Int
     maxSize = read maxSizeS :: Int
@@ -227,7 +227,7 @@ solveVtPrintSteps ::
     => 
     WrapType
     ->
-    (Maybe (IVPPlotArgs (Var Fn)))
+    (Maybe IVPPlotArgs)
     ->
     (Maybe FilePath)
     ->

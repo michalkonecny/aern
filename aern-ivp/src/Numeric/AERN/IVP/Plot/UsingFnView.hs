@@ -65,27 +65,28 @@ plotArgsHelpLines :: [String]
 plotArgsHelpLines =
     [
         "   PlotArgs:  example 1: PlotGraph[True, False, False](0,1,-1,1)",
-        "   PlotArgs:                      [shouldPlotVar1,...]",
-        "   PlotArgs:                                      ....(xmin, xmax, ymin, ymax)",
+        "   PlotArgs:                      [shouldPlotVar1,...] - fill with False when not specified",
+        "   PlotArgs:                                          (xmin, xmax, ymin, ymax)",
         "   PlotArgs:  example 2: BWPlotGraph[True, True, False](-1,1,-1,1)",
-        "   PlotArgs:  example 3: PlotParam(10)[True, True, False](-1,1,-1,1)",
+        "                         BW = black & white",
+        "   PlotArgs:  example 3: PlotParam(10,[False, False, True])[True, True, False](-1,1,-1,1)",
+        "                                   10 samples per time unit",
+        "                                      [isIndependetVar1, ...] - fill with False when not specified",
         "   PlotArgs:  example 4: NoPlot"
     ]
 
-data IVPPlotArgs var =
+data IVPPlotArgs =
     IVPPlotArgs
     {
         plotp_rect :: FV.Rectangle Double,
         plotp_activevars :: [Bool],
-        plotp_isParam :: Maybe (Int, [var]), -- sampling frequency for parametric plot
+        plotp_isParam :: Maybe (Int, [Bool]), -- sampling frequency for parametric plot
         plotp_isBW :: Bool
     }
     deriving (Show)
     
 readIVPPlotArgs ::
-    (Read var)
-    =>
-    String -> Maybe (IVPPlotArgs var)
+    String -> Maybe IVPPlotArgs
 readIVPPlotArgs sOrig
     | "Plot" `isPrefixOf` sOrig = readPlotType False $ drop (length "Plot") sOrig
     | "BWPlot" `isPrefixOf` sOrig = readPlotType True $ drop (length "BWPlot") sOrig
@@ -116,12 +117,11 @@ readIVPPlotArgs sOrig
         readScanVars samplingFreq s2 =
             case List.findIndex (== ')') s2 of
                 Just i2 ->
-                    case reads $ "[" ++ (take i2 s2) ++ "]" of
+                    case reads $ (take i2 s2) of
                         (scanVars, []) : _ -> 
                             readActiveVars (Just (samplingFreq, scanVars)) (drop (i2+1) s2)
                         _ -> errorP
                 _ -> errorP
-            where
             
     errorP = error $ "Cannot parse plot specification: " ++ sOrig
     boundsFromDoubles (xmin, xmax, ymin, ymax) =
@@ -144,7 +144,9 @@ plotODEIVPBisectionEnclosures ::
     FV.Rectangle (Domain f) -- ^ initial canvas viewport
     -> [Bool] -- ^ for each variable, whether it should be plotted
     -> Bool -- ^ True -> plot all components in black 
-    -> Maybe (Int, [Var f]) -- ^ Just (samplingFreq, scanVars) -> use parametric plot (using the active functions - there have to be exactly two of them) 
+    -> Maybe (Int, [Bool]) 
+        -- ^ Just (samplingFreq, scanVars) -> use parametric plot (there have to be exactly two active functions)
+        -- ^   scanVars : variables with True are substituted by their domains, otherwise they are sampled  
     -> ArithInOut.RoundedRealEffortIndicator (Domain f)
     -> Domain f
     -> ODEIVP f
@@ -209,13 +211,16 @@ plotODEIVPBisectionEnclosures
     addPlotVar fns2 =
         case maybeParamPlotArgs of
             Just (_, scanVars) ->
-                map (map (addVParam scanVars) . pickByActivevarsCycle) fns2
+                map (map (addVParam scanVarsList) . pickByActivevarsCycle) fns2
+                where
+                scanVarsList = 
+                    map snd $ filter fst $ zip (scanVars ++ repeat False) componentNames
             _ ->
                 map (map addV) fns2
         where
         addV fs = (FV.GraphPlotFn (fs :: [f]), tVar)
-        addVParam scanVars [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY) scanVars, tVar)
-        addVParam scanVars _ = errorParamFnCount 
+        addVParam scanVarsList [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY) scanVarsList, tVar)
+        addVParam scanVarsList _ = errorParamFnCount 
         
     errorParamFnCount =
             error 
@@ -364,8 +369,9 @@ plotHybIVPBisectionEnclosures ::
     FV.Rectangle (Domain f) -- ^ initial canvas viewport
     -> [Bool] -- ^ for each variable, whether it should be plotted
     -> Bool -- ^ True -> plot all components in black 
-    -> Maybe (Int, [Var f]) 
-        -- ^ Just (samplingFreq, scanVars) -> use parametric plot (using the active functions - there have to be exactly two of them) 
+    -> Maybe (Int, [Bool]) 
+        -- ^ Just (samplingFreq, scanVars) -> use parametric plot (there have to be exactly two active functions)
+        -- ^   scanVars : variables with True are substituted by their domains, otherwise they are sampled  
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f)
     -> Bool 
@@ -630,8 +636,9 @@ plotHybIVPListEnclosures ::
     FV.Rectangle (Domain f) -- ^ initial canvas viewport
     -> [Bool] -- ^ for each variable, whether it should be plotted
     -> Bool -- ^ True -> plot all components in black 
-    -> Maybe (Int, [Var f]) 
-        -- ^ Just (samplingFreq, scanVars) -> use parametric plot (using the active functions - there have to be exactly two of them) 
+    -> Maybe (Int, [Bool]) 
+        -- ^ Just (samplingFreq, scanVars) -> use parametric plot (there have to be exactly two active functions)
+        -- ^   scanVars : variables with True are substituted by their domains, otherwise they are sampled  
     ->
     ArithInOut.RoundedRealEffortIndicator (Domain f)
     ->
@@ -724,13 +731,17 @@ plotHybIVPListEnclosures
     addPlotVar fns2 =
         case maybeParamPlotArgs of
             Just (_, scanVars) ->
-                map (map (addVParam scanVars) . pickByActivevarsCycle) fns2
+                map (map (addVParam scanVarsList) . pickByActivevarsCycle) fns2
+                where
+                scanVarsList = 
+                    map snd $ filter fst $ zip (scanVars ++ repeat False) componentNames
             _ ->
                 map (map addV) fns2
+                
         where
         addV fs = (FV.GraphPlotFn (fs :: [f]), tVar)
-        addVParam scanVars [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY) scanVars, tVar)
-        addVParam scanVars _ = errorParamFnCount 
+        addVParam scanVarsList [fsX, fsY] = (FV.ParamPlotFns (zip fsX fsY) scanVarsList, tVar)
+        addVParam _scanVarsList _ = errorParamFnCount 
 
     errorParamFnCount =
             error 
