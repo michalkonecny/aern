@@ -55,7 +55,7 @@ under the name "ivpLorenz_uv".
 To enclose the solutions of this system, we can run <code>simple-ode</code>
 as follows:
 
-    ~/.cabal/bin/simple-ode ivpLorenz-uv 4 "PlotParam[True,True](-20,20,-30,30)" GUI ShrinkWrap 12 200 8 8
+    ~/.cabal/bin/simple-ode ivpLorenz-uv 4 "PlotParam(100,[])[True,True](-20,20,-30,30)" GUI ShrinkWrap 12 200 8 8
 
 producing an enclosure whose projection to the $x$-$y$ plane looks as follows:
 
