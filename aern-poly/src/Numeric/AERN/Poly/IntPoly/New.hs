@@ -152,6 +152,74 @@ mkConstTerms value vars
 --    valueInConsistent = 
 --        (isConsistentEff (consistencyDefaultEffort value) value) == Just False
 
+{-- Basic function-approximation specific ops --}
+
+instance
+    (HasSampleFromContext cf,
+     HasSampleFromContext var,
+     Ord var, Show var, Show cf, 
+     RefOrd.IntervalLike cf, 
+     ArithInOut.RoundedReal cf, 
+     HasConsistency cf)
+    =>
+    HasSampleFromContext (IntPoly var cf)
+    where
+    sampleFromContext = 
+        newConstFn sizeLimits [(sampleFromContext, sampleCf)] sampleCf
+        where
+        sizeLimits = defaultIntPolySizeLimits sampleCf (defaultSizeLimits sampleCf) arity 
+        sampleCf = sampleFromContext
+        arity = 1
+
+instance
+    (Ord var, Show var, Show cf,
+     ArithInOut.RoundedReal cf,
+     HasConsistency cf,
+     RefOrd.IntervalLike cf)
+    =>
+    HasZero (IntPoly var cf)
+    where
+    zero sampleP = newConstFnFromSample sampleP $ zero sampleCf
+        where
+        sampleCf = getSampleDomValue sampleP
+
+instance
+    (Ord var, Show var, Show cf,
+     HasConsistency cf,
+     ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf)
+    =>
+    HasOne (IntPoly var cf)
+    where
+    one sampleP = newConstFnFromSample sampleP $ one sampleCf
+        where
+        sampleCf = getSampleDomValue sampleP
+
+instance
+    (Ord var, Show var, Show cf,
+     ArithInOut.RoundedReal cf,
+     HasConsistency cf,
+     RefOrd.IntervalLike cf)
+    =>
+    HasInfinities (IntPoly var cf)
+    where
+    plusInfinity sampleP = newConstFnFromSample sampleP $ plusInfinity sampleCf
+        where
+        sampleCf = getSampleDomValue sampleP
+    minusInfinity sampleP = newConstFnFromSample sampleP $ minusInfinity sampleCf
+        where
+        sampleCf = getSampleDomValue sampleP
+    excludesMinusInfinity (IntPoly _cfg terms) =
+        and $ termsCollectCoeffsWith excludesInfty terms
+        where
+        excludesInfty _ coeff =
+            excludesMinusInfinity coeff 
+    excludesPlusInfinity (IntPoly _cfg terms) =
+        and $ termsCollectCoeffsWith excludesInfty terms
+        where
+        excludesInfty _ coeff =
+            excludesPlusInfinity coeff 
+
 instance
     (Ord var, Show var, Show cf,
      HasConsistency cf,

@@ -28,20 +28,20 @@ class
     specialConstDefaultEffort :: t -> SpecialConstEffortIndicator t
 
 class (RoundedSpecialConstEffort t) => RoundedSpecialConst t where
-    piUpEff :: (SpecialConstEffortIndicator t) -> t
-    piDnEff :: (SpecialConstEffortIndicator t) -> t
-    eUpEff :: (SpecialConstEffortIndicator t) -> t
-    eDnEff :: (SpecialConstEffortIndicator t) -> t
+    piUpEff :: (SpecialConstEffortIndicator t) -> t -> t
+    piDnEff :: (SpecialConstEffortIndicator t) -> t -> t
+    eUpEff :: (SpecialConstEffortIndicator t) -> t -> t
+    eDnEff :: (SpecialConstEffortIndicator t) -> t -> t
 
 piUp :: (RoundedSpecialConst t) => t -> t
-piUp sample = piUpEff (specialConstDefaultEffort sample)
+piUp sample = piUpEff (specialConstDefaultEffort sample) sample
 
 piDn :: (RoundedSpecialConst t) => t -> t
-piDn sample = piDnEff (specialConstDefaultEffort sample)
+piDn sample = piDnEff (specialConstDefaultEffort sample) sample
 
 eUp :: (RoundedSpecialConst t) => t -> t
-eUp sample = eUpEff (specialConstDefaultEffort sample)
+eUp sample = eUpEff (specialConstDefaultEffort sample) sample
 
 eDn :: (RoundedSpecialConst t) => t -> t
-eDn sample = eDnEff (specialConstDefaultEffort sample)
+eDn sample = eDnEff (specialConstDefaultEffort sample) sample
 

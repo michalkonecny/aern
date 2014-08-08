@@ -3,7 +3,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-|
     Module      :  Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
-    Description :  implementation of in/out rounded exponentiation
+    Description :  out-rounded exponentiation using Taylor
     Copyright   :  (c) Michal Konecny, Jan Duracz
     License     :  BSD3
 
@@ -11,18 +11,27 @@
     Stability   :  experimental
     Portability :  portable
 
-    Implementation of in/out rounded exponentiation.
+    Out rounded exponentiation using Taylor expansion.
 -}
 
 module Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation where
 
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
+import qualified 
+       Numeric.AERN.RealArithmetic.RefinementOrderRounding 
+       as ArithInOut
 
-import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
+import qualified 
+       Numeric.AERN.RealArithmetic.NumericOrderRounding 
+       as ArithUpDn
+       (convertUpEff, convertDnEff)
 
-import qualified Numeric.AERN.RefinementOrder as RefOrd
+import qualified 
+       Numeric.AERN.RefinementOrder 
+       as RefOrd
 
-import qualified Numeric.AERN.NumericOrder as NumOrd
+import qualified 
+       Numeric.AERN.NumericOrder 
+       as NumOrd
 
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Mutable
@@ -34,14 +43,14 @@ import Control.Monad.ST (ST)
 
 import Control.Applicative
 
-import Numeric.AERN.Misc.Debug
-_ = unsafePrint
+import Debug.Trace
+_ = trace
 
 data ExpThinEffortIndicator t =
     ExpThinEffortIndicator
     {
         expeff_arith :: ArithInOut.RoundedRealEffortIndicator t,
-        expeff_taylorDeg :: Int -- ^ the highest number of iterations of Newton method to make 
+        expeff_taylorDeg :: Int -- ^ truncate the Taylor expansion at this degree 
     }
 
 instance 

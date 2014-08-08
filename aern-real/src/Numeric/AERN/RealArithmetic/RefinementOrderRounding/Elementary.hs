@@ -227,4 +227,82 @@ testsInOutSqrt (name, sample) fromArea =
         [
             testProperty "sqrt(e)^2 = e" (propSqrtSquare sample fromArea)
         ]
+
+
+
+class
+    (EffortIndicator (SineCosineEffortIndicator t))
+    => 
+    RoundedSineCosineEffort t 
+    where
+    type SineCosineEffortIndicator t
+    sincosDefaultEffort :: t -> SineCosineEffortIndicator t
+
+class (RoundedSineCosineEffort t) => RoundedSineCosine t where
+    sinInEff :: (SineCosineEffortIndicator t) -> t -> t
+    sinOutEff :: (SineCosineEffortIndicator t) -> t -> t
+    cosInEff :: (SineCosineEffortIndicator t) -> t -> t
+    cosOutEff :: (SineCosineEffortIndicator t) -> t -> t
+
+-- | Inward rounded sine and cosine with default effort
+sinIn :: (RoundedSineCosine t) => t -> t
+sinIn d = sinInEff (sincosDefaultEffort d) d
+cosIn :: (RoundedSineCosine t) => t -> t
+cosIn d = cosInEff (sincosDefaultEffort d) d
+
+-- | Outward rounded sine and cosine with default effort
+sinOut :: (RoundedSineCosine t) => t -> t
+sinOut d = sinOutEff (sincosDefaultEffort d) d
+cosOut :: (RoundedSineCosine t) => t -> t
+cosOut d = cosOutEff (sincosDefaultEffort d) d
+
+--propSineCosineSquare ::
+--    (RefOrd.PartialComparison t,
+--     RoundedSineCosine t, RoundedMultiply t, HasZero t,
+--     UpDnConversion.Convertible t Double,
+--     RoundedMixedAdd t Double,
+--     Show t, HasLegalValues t
+----     ShowInternals t,
+--     ) =>
+--    t ->
+--    (tInArea -> t) ->
+--    (UpDnConversion.ConvertEffortIndicator t Double, 
+--     MixedAddEffortIndicator t Double) ->
+--    (RefOrd.PartialCompareEffortIndicator t, 
+--     (SineCosineEffortIndicator t, 
+--      MultEffortIndicator t, 
+--      RefOrd.PartialCompareEffortIndicator t)) -> 
+--    tInArea -> Bool
+--propSineCosineSquare _ fromArea (effortToDbl, effortAddDbl) initEffort e1InArea =
+--    equalRoundingUpDn "sincos(e)^2 = e"
+--        expr1In expr1Out expr2In expr2Out 
+--        RefOrd.pLeqEff initEffort
+--    where
+--    e1Pos = fromArea e1InArea
+----        case maybeE1LowerBoundD of
+----            Just e1LowerBoundD
+----                | e1LowerBoundD <= (0 :: Double) -> 
+----                    mixedAddOutEff effortAddDbl e1 (0.5 - e1LowerBoundD)
+----                | otherwise -> e1
+----            _ -> e1
+----        where
+----        maybeE1LowerBoundD = UpDnConversion.convertDnEff effortToDbl e1  
+--    expr1In (effSineCosine, effMult, effCompare) =
+--        sincosE1 >*< sincosE1
+--        where
+--        (>*<) = multInEff effMult
+--        sincosE1 = sincosInEff effSineCosine e1Pos
+--    expr1Out (effSineCosine, effMult, effCompare) =
+--        sincosE1 <*> sincosE1
+--        where
+--        (<*>) = multOutEff effMult
+--        sincosE1 = sincosOutEff effSineCosine e1Pos
+--    expr2In _ = e1Pos
+--    expr2Out _ = e1Pos
+--
+--testsInOutSineCosine (name, sample) fromArea =
+--    testGroup (name ++ " sincos in/out") $
+--        [
+--            testProperty "sincos(e)^2 = e" (propSineCosineSquare sample fromArea)
+--        ]
     

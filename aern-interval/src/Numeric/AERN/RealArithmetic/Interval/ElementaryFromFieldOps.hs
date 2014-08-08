@@ -18,11 +18,16 @@
 module Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps 
 (
     ExpThinEffortIndicator(..), 
-    SqrtThinEffortIndicator(..)
+    SqrtThinEffortIndicator(..),
+    SineCosineThinEffortIndicator(..)
 )
 where
 
+import Numeric.AERN.RealArithmetic.Interval.SpecialConst ()
+import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps ()
+
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.SineCosine
 import Numeric.AERN.RealArithmetic.NumericOrderRounding.ElementaryFromFieldOps.Sqrt
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
@@ -30,10 +35,13 @@ import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInO
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding
         (
                 ExpEffortIndicator,
-                SqrtEffortIndicator
+                SqrtEffortIndicator,
+                SineCosineEffortIndicator
         )
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
+import  Numeric.AERN.NumericOrder.Operators
+
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 
 --import Numeric.AERN.RealArithmetic.ExactOps
@@ -189,4 +197,56 @@ instance
         resO = ArithInOut.sqrtOutEff eff o
         resI = ArithInOut.sqrtInEff eff i
     sqrtInEff = error "AERN: expInEff not defined for IntervalApprox"
+
+
+instance 
+    (ArithUpDn.RoundedReal e) 
+    => 
+    (ArithInOut.RoundedSineCosineEffort (Interval e))
+    where
+    type SineCosineEffortIndicator (Interval e) = SineCosineThinEffortIndicator (Interval e) (Interval e)
+        -- TODO: have a Scalar associated type and use this here for the coeff parameter
+    sincosDefaultEffort i =
+        sineCosineThinDefaultEffort i i 10
+
+--instance 
+--    (ArithUpDn.RoundedReal e) 
+--    => 
+--    (ArithInOut.RoundedSquareRootEffort (IntervalApprox e))
+--    where
+--    type SqrtEffortIndicator (IntervalApprox e) = 
+--        SqrtThinEffortIndicator e 
+--    sqrtDefaultEffort (IntervalApprox o _i) =
+--        ArithInOut.sqrtDefaultEffort o
+
+instance 
+    (ArithInOut.RoundedReal (Interval e),
+     ArithUpDn.RoundedReal e, 
+     Show e,
+     ArithUpDn.RoundedSpecialConst e, 
+     HasDistance e, ArithInOut.RoundedReal (Distance e),
+     ShowInternals e) 
+    => 
+    (ArithInOut.RoundedSineCosine (Interval e))
+    where
+    sinOutEff eff i =
+        sineCosineIntervalLikeOut True eff i i
+    sinInEff eff i =
+        error "inner rounded sine not defined yet"
+    cosOutEff eff i =
+        sineCosineIntervalLikeOut False eff i i
+    cosInEff eff i =
+        error "inner rounded cosine not defined yet"
                 
+--instance 
+--    (ArithUpDn.RoundedReal e, Show e) 
+--    => 
+--    (ArithInOut.RoundedSquareRoot (IntervalApprox e))
+--    where
+--    sqrtOutEff eff (IntervalApprox o i) 
+--        = IntervalApprox resO resI
+--        where
+--        resO = ArithInOut.sqrtOutEff eff o
+--        resI = ArithInOut.sqrtInEff eff i
+--    sqrtInEff = error "AERN: expInEff not defined for IntervalApprox"
+--                

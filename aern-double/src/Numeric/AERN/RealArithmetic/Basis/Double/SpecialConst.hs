@@ -25,8 +25,8 @@ instance
 instance 
     RoundedSpecialConst Double 
     where
-    piUpEff _ = encodeFloat 7074237752028441 (-51)
-    piDnEff _ = encodeFloat 7074237752028440 (-51)
-    eUpEff _ = encodeFloat 6121026514868074 (-51)
-    eDnEff _ = encodeFloat 6121026514868073 (-51)
+    piUpEff _ _ = encodeFloat 7074237752028441 (-51)
+    piDnEff _ _ = encodeFloat 7074237752028440 (-51)
+    eUpEff _ _ = encodeFloat 6121026514868074 (-51)
+    eDnEff _ _ = encodeFloat 6121026514868073 (-51)
     
