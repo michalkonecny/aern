@@ -344,7 +344,7 @@ instance
         
 
 instance
-    (EffortIndicator (IntPolyEffort cf), 
+    (RefOrd.IntervalLike cf, 
      ArithInOut.RoundedReal cf) 
     => 
     ArithInOut.RoundedRingEffort (IntPoly var cf)

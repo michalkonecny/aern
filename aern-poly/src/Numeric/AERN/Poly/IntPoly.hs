@@ -53,8 +53,10 @@ import Numeric.AERN.Poly.IntPoly.NumericOrder ()
 import Numeric.AERN.Poly.IntPoly.RefinementOrder ()
 import Numeric.AERN.Poly.IntPoly.Minmax
 import Numeric.AERN.Poly.IntPoly.SpecialConst ()
+import Numeric.AERN.Poly.IntPoly.Elementary ()
 
 import Numeric.AERN.RmToRn.Domain
+import Numeric.AERN.RmToRn.New
 
 import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import Numeric.AERN.RealArithmetic.NumericOrderRounding 
@@ -62,6 +64,7 @@ import Numeric.AERN.RealArithmetic.NumericOrderRounding
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
 import Numeric.AERN.RealArithmetic.Measures
+import Numeric.AERN.RealArithmetic.ExactOps
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
 import qualified Numeric.AERN.NumericOrder as NumOrd
@@ -112,8 +115,27 @@ instance
     rrEffortRationalMixedField _sampleP eff = eff
     rrEffortDoubleMixedField _sampleP eff = eff
 
-
-
+instance 
+    (ArithInOut.RoundedReal cf, Num cf,
+     HasSampleFromContext cf,
+     HasSampleFromContext var,
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Arbitrary cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    Num (IntPoly var cf)
+    where
+    fromInteger n =
+        newConstFnFromSample sampleP $ fromInteger n 
+        where
+        sampleP = sampleFromContext
+    negate p = neg p
+    p1 + p2 = ArithInOut.addOut p1 p2
+    p1 * p2 = ArithInOut.multOut p1 p2
+    
+    
     
 
         

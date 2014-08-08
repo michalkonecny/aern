@@ -22,9 +22,14 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 --import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
 --    ((|*))
 
+import Numeric.AERN.RealArithmetic.ExactOps (one)
+
+
 -- ability to control the effort for elementary operations: 
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
     (SineCosineThinEffortIndicator(..))
+
+
 
 -- abstract function processing operations:
 import Numeric.AERN.RmToRn 
@@ -42,13 +47,98 @@ type V = String -- names of variables
 type Poly = IntPoly V DI 
 type PI = Interval Poly
 
-{----- the error function -----}
+{----- using interval polynomials -----}
 
-
-
-{-| Show a plot of gradual construction of erf(x) over [0,1] -}
 plotSineCosine :: IO ()
 plotSineCosine = 
+    FV.plotFns 
+        [
+--         ("sin^2(x) + cos^2(x) = 1", 
+--            [
+--             (("sin(x)", FV.blue, False), sineX),
+--             (("cos(x)", FV.blue, False), cosineX)
+--             ,
+--             (("sin^2(x)", FV.blue, False), sineX * sineX),
+--             (("cos^2(x)", FV.blue, False), cosineX * cosineX),
+--             (("sin^2(x) + cos^2(x)", FV.blue, False), sineX * sineX + cosineX * cosineX)
+--            ]
+--         )
+--         ,
+         ("over thick argument",
+            [
+             (("x", FV.black, False), x),
+             (("x+1", FV.black, False), xp1),
+             (("[x,x+1]", FV.black, False), xThick),
+             (("sin(x)", FV.black, False), sineX),
+             (("sin(x+1)", FV.black, False), sinOutEff effSinCos xp1),
+             (("sin([x,x+1])", FV.red, False), sinOutEff effSinCos xThick)
+             ,
+             (("cos(x)", FV.black, False), cosineX),
+             (("cos(x+1)", FV.black, False), cosOutEff effSinCos xp1),
+             (("cos([x,x+1])", FV.red, False), cosOutEff effSinCos xThick)
+            ]
+         )
+--         ,
+--         ("sin(x^2)",
+--            [
+--             (("x*x", FV.black, False), x * x),
+--             (("sin(x*x)", FV.red, False), sineXSqr)
+--            ]
+--         )
+        ]
+    where
+    maxdeg = 500
+    taylorDeg = 19
+    
+    sineX =
+        sinOutEff effSinCos x
+    cosineX =
+        cosOutEff effSinCos x
+    sineXSqr =
+        sinOutEff effSinCos (x * x)
+
+    xp1 = x + (one x)
+    xThick = x + y
+
+    x :: Poly
+    x = newProjection sizeLimits doms "x"
+    y = newProjection sizeLimits doms "y"
+    doms = 
+        [
+            ("x", Interval (0) 4)
+            ,
+            ("y", Interval (0) 1)
+        ]
+
+    -- indicators controlling the approximation effort:
+    effSinCos =
+        (sincosDefaultEffort sampleFn)
+        {
+            sincoseff_taylorDeg = taylorDeg -- Taylor approximation degree
+        }
+
+    sizeLimits = -- restrictions on the size of the polynomials
+        defaultSizeLimits
+        {
+            ipolylimits_maxdeg = maxdeg, -- maximum degree
+            ipolylimits_maxsize = 1000, -- maximum number of terms
+            ipolylimits_effort =
+                (ipolylimits_effort defaultSizeLimits)
+                {
+                    ipolyeff_evalMaxSplitSize = 2000
+                } 
+        }
+        where
+        defaultSizeLimits = (defaultIntPolySizeLimits sampleCoeff () 1)
+    sampleCoeff = 0
+    sampleFn = x
+
+
+
+{----- using polynomial intervals -----}
+
+plotSineCosinePI :: IO ()
+plotSineCosinePI = 
     FV.plotFns 
         [
          ("sin^2(x) + cos^2(x) = 1", 
@@ -59,7 +149,8 @@ plotSineCosine =
              (("cos^2(x)", FV.blue, False), cosineX * cosineX),
              (("sin^2(x) + cos^2(x)", FV.blue, False), sineX * sineX + cosineX * cosineX)
             ]
-         ),
+         )
+         ,
          ("over thick argument",
             [
              (("x", FV.black, False), x),

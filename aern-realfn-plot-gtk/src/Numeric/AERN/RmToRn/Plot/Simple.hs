@@ -45,8 +45,11 @@ import Control.Concurrent.STM
 -}
 plotFns ::
     (fnInfo ~ (String, FnPlotStyle, Bool),
-     RoundedRealFn f, 
      CairoDrawableFn f,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     CanEvaluate f,
+     RefOrd.PartialComparison (Domain f),
      Show f, Show (Domain f), Show (Var f)) 
     =>
     [(String, [(fnInfo, f)])] -> 

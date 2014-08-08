@@ -158,43 +158,53 @@ sineCosineIntervalLikeOut isSine eff sampleCoeff x =
 --        ++ "\n  plusMinusPiHalf = " ++ show plusMinusPiHalf
 --    ) $
     case True of
+        _ | isSine && xIsThin ->
+             sineTaylorAt0 eff sampleCoeff xNear0
         -- sin(x) with x in [-pi/2, pi/2]; no need to shift x:
         _ | isSine && (xRangeNear0                  |>=? plusMinusPiHalf) == Just True ->
-            sineNear0 xNear0
+            sineViaEndpointsNear0 xNear0
             
         -- sin(x) with x in [pi/2, 3pi/2]; use sin(x) = -sin(x - pi):
         _ | isSine && (xRangeNear0 <+> (neg pi)     |>=? plusMinusPiHalf) == Just True ->
-            neg $ sineNear0 (xNear0 <+>| (neg pi))
+            neg $ sineViaEndpointsNear0 (xNear0 <+>| (neg pi))
             
         -- sin(x) with x in [-pi, 0]; use sin(x) = -cos(x + pi/2):
         _ | isSine && (xRangeNear0 <+> piHalf       |>=? plusMinusPiHalf) == Just True ->
-            neg $ cosineNear0 (xNear0 <+>| piHalf)
+            neg $ cosineViaEndpointsNear0 (xNear0 <+>| piHalf)
             
         -- sin(x) with x in [0, pi]; use sin(x) = cos(x - pi/2):
         _ | isSine && (xRangeNear0 <+> (neg piHalf) |>=? plusMinusPiHalf) == Just True ->
-            cosineNear0 (xNear0 <+>| (neg piHalf))
+            cosineViaEndpointsNear0 (xNear0 <+>| (neg piHalf))
             
 
+        _ | isCosine && xIsThin ->
+             cosineTaylorAt0 eff sampleCoeff xNear0
         -- cos(x) with x in [-pi, 0]; use cos(x) = sin(x + pi/2):
         _ | isCosine && (xRangeNear0 <+> piHalf       |>=? plusMinusPiHalf) == Just True ->
-            sineNear0 (xNear0 <+>| piHalf)
+            sineViaEndpointsNear0 (xNear0 <+>| piHalf)
             
         -- cos(x) with x in [0, pi]; use cos(x) = -sin(x - pi/2):
         _ | isCosine && (xRangeNear0 <+> (neg piHalf) |>=? plusMinusPiHalf) == Just True ->
-            neg $ sineNear0 (xNear0 <+>| (neg piHalf))
+            neg $ sineViaEndpointsNear0 (xNear0 <+>| (neg piHalf))
 
         -- cos(x) with x in [-pi/2, pi/2]; no need to shift x:
         _ | isCosine && (xRangeNear0                  |>=? plusMinusPiHalf) == Just True ->
-            cosineNear0 xNear0
+            cosineViaEndpointsNear0 xNear0
 
         -- cos(x) with x in [pi/2, 3pi/2]; use cos(x) = -cos(x - pi):
         _ | isCosine && (xRangeNear0 <+> (neg pi)     |>=? plusMinusPiHalf) == Just True ->
-            neg $ cosineNear0 (xNear0 <+>| (neg pi))
+            neg $ cosineViaEndpointsNear0 (xNear0 <+>| (neg pi))
             
         _ ->
             RefOrd.fromEndpointsOut (neg $ one x, one x) 
     where
     isCosine = not isSine
+    
+    xIsThin = 
+        (xL ==? xR) == Just True
+        where
+        (xL, xR) = RefOrd.getEndpointsOut x
+    
     (xRangeNear0, xNear0) = 
         (xRange <+> (neg k2pi),
          x <+>| (neg k2pi))
@@ -206,6 +216,7 @@ sineCosineIntervalLikeOut isSine eff sampleCoeff x =
                 _ -> error "sineCosineIntervalLike: parameter cannot be bounded"
         kAsCoeff =
             (0.5 :: Double) |<+> (xRange </> ((2 :: Int)|<*>pi))
+            
     plusMinusPiHalf = RefOrd.fromEndpointsOut (neg piHalf, piHalf)
     piHalf = pi </>| (2 :: Int)
     pi = ArithInOut.piOut sampleCoeff
@@ -215,31 +226,22 @@ sineCosineIntervalLikeOut isSine eff sampleCoeff x =
         where
         effToCoeff = sincoseff_toCoeff eff
 
-    sineNear0 x0 
-        | x0IsThin = sineTaylorAt0 eff sampleCoeff x0
-        | otherwise = sineViaEndpoints
+    sineViaEndpointsNear0 x0 =
+        RefOrd.fromEndpointsOut (sLDn, sRUp)
         where
-        x0IsThin = 
-            (x0L ==? x0R) == Just True
+        (sLDn, sLUp) = RefOrd.getEndpointsOut sL
+        (sRDn, sRUp) = RefOrd.getEndpointsOut sR
+        sL = sineTaylorAt0 eff sampleCoeff x0L
+        sR = sineTaylorAt0 eff sampleCoeff x0R
         (x0L, x0R) = RefOrd.getEndpointsOut x0
-        sineViaEndpoints =
-            RefOrd.fromEndpointsOut (sLDn, sRUp)
-            where
-            (sLDn, sLUp) = RefOrd.getEndpointsOut sL
-            (sRDn, sRUp) = RefOrd.getEndpointsOut sR
-            sL = sineTaylorAt0 eff sampleCoeff x0L
-            sR = sineTaylorAt0 eff sampleCoeff x0R
 
-    cosineNear0 x0
-        | x0IsThin = cosineTaylorAt0 eff sampleCoeff x0
+    cosineViaEndpointsNear0 x0
         | (x0 <=? z) == Just True = cosineViaEndpointsDecreasing
         | (z <=? x0) == Just True = cosineViaEndpointsIncreasing
         | (z |>=? x0) == Just True = cosineViaEndpointsContainsZero
         | otherwise = cosineViaEndpointsGeneral
         where
         z = zero x0
-        x0IsThin = 
-            (x0L ==? x0R) == Just True
         (x0L, x0R) = RefOrd.getEndpointsOut x0
         cosineViaEndpointsIncreasing = cosineViaEndpoints True
         cosineViaEndpointsDecreasing = cosineViaEndpoints False
@@ -266,7 +268,10 @@ sineCosineIntervalLikeOut isSine eff sampleCoeff x =
     Taylor expansion of @sin(x)@, assuming @x@ is within  @[-pi/2, pi/2]@. 
 -}
 sineTaylorAt0 ::
-    (ArithInOut.RoundedReal real,
+    (ArithInOut.RoundedAdd real,
+     ArithInOut.RoundedMultiply real,
+     ArithInOut.RoundedPowerToNonnegInt real,
+     HasOne real,
      ArithInOut.RoundedReal coeff,
      ArithInOut.Convertible real coeff,
      ArithInOut.RoundedMixedAdd real coeff,
@@ -283,7 +288,10 @@ sineTaylorAt0 = sineCosineTaylorAt0 True
     Taylor expansion of @cos(x)@, assuming @x@ is within  @[-pi/2, pi/2]@. 
 -}
 cosineTaylorAt0 ::
-    (ArithInOut.RoundedReal real,
+    (ArithInOut.RoundedAdd real,
+     ArithInOut.RoundedMultiply real,
+     ArithInOut.RoundedPowerToNonnegInt real,
+     HasOne real,
      ArithInOut.RoundedReal coeff,
      ArithInOut.Convertible real coeff,
      ArithInOut.RoundedMixedAdd real coeff,
@@ -297,7 +305,10 @@ cosineTaylorAt0 ::
 cosineTaylorAt0 = sineCosineTaylorAt0 False 
 
 sineCosineTaylorAt0 ::
-    (ArithInOut.RoundedReal real,
+    (ArithInOut.RoundedAdd real,
+     ArithInOut.RoundedMultiply real,
+     ArithInOut.RoundedPowerToNonnegInt real,
+     HasOne real,
      ArithInOut.RoundedReal coeff,
      ArithInOut.Convertible real coeff,
      ArithInOut.RoundedMixedAdd real coeff,
@@ -306,7 +317,7 @@ sineCosineTaylorAt0 ::
      =>
      Bool {-^ True -> sine; False -> cosine -} ->
      SineCosineThinEffortIndicator real coeff ->
-     coeff {-^ sample coefficient of the type to use in the Taylor expansion -} -> 
+     coeff {-^ sample coefficient of the type to use in the Taylor expansion -} ->
      real {-^ @x@ -} -> 
      real {-^ @sin(x)@ or @cos(x)@ -}
 sineCosineTaylorAt0 isSine eff sampleCoeff x = 
@@ -353,7 +364,9 @@ sineCosineTaylorAt0 isSine eff sampleCoeff x =
     Recursively evaluate a portion of a sine or cosine Taylor expansion.
 -}
 sincosTaylorAux ::
-     (ArithInOut.RoundedReal real,
+     (ArithInOut.RoundedAdd real,
+      ArithInOut.RoundedMultiply real,
+      HasOne real,
       ArithInOut.RoundedReal coeff,
       ArithInOut.RoundedMixedAdd real coeff,
       ArithInOut.RoundedMixedMultiply real coeff
