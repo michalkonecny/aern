@@ -136,6 +136,20 @@ instance
     p1 * p2 = ArithInOut.multOut p1 p2
     
     
+instance 
+    (ArithInOut.RoundedReal cf, Num cf,
+     HasSampleFromContext cf,
+     HasSampleFromContext var,
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Arbitrary cf,
+     Show var, Ord var, Show cf,
+     cf ~ Interval e,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    Fractional (IntPoly var cf)
+    where
+    p1 / p2 = ArithInOut.divOut p1 p2
     
 
         

@@ -36,6 +36,12 @@ import qualified
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.SineCosine
 
+import qualified 
+       Numeric.AERN.RealArithmetic.NumericOrderRounding
+       as ArithUpDn
+
+import Numeric.AERN.RealArithmetic.NumericOrderRounding.ElementaryFromFieldOps.Sqrt
+
 import Numeric.AERN.RealArithmetic.ExactOps
 
 --import Numeric.AERN.RealArithmetic.Interval ()
@@ -87,30 +93,20 @@ instance
         where
         sampleCf = getSampleDomValue p
        
---instance
---    (Ord var, Show var, Show cf,
---     HasConsistency cf,
---     ArithInOut.RoundedReal cf,
---     RefOrd.IntervalLike cf,
---     ArithInOut.RoundedSpecialConst cf)
---    =>
---    ArithInOut.RoundedSpecialConst (IntPoly var cf)
---    where
---    piOutEff eff sampleP =
---        newConstFnFromSample sampleP $ ArithInOut.piOutEff eff sampleCf
---        where
---        sampleCf = getSampleDomValue sampleP 
---    piInEff eff sampleP = 
---        newConstFnFromSample sampleP $ ArithInOut.piInEff eff sampleCf
---        where
---        sampleCf = getSampleDomValue sampleP 
---    eOutEff eff sampleP =
---        newConstFnFromSample sampleP $ ArithInOut.eOutEff eff sampleCf
---        where
---        sampleCf = getSampleDomValue sampleP 
---    eInEff eff sampleP = 
---        newConstFnFromSample sampleP $ ArithInOut.eInEff eff sampleCf
---        where
---        sampleCf = getSampleDomValue sampleP 
-    
+instance
+    (Ord var, Show var,
+     cf ~ Interval e,
+     real ~ IntPoly var cf,
+     ArithUpDn.RoundedReal real,
+     ArithInOut.RoundedReal cf,
+     HasAntiConsistency cf,
+     Show cf,  Show (SizeLimits cf))
+    =>
+    ArithInOut.RoundedSquareRootEffort (IntPoly var cf)
+    where
+    type SqrtEffortIndicator (IntPoly var cf) = 
+        SqrtThinEffortIndicator (IntPoly var cf)
+    sqrtDefaultEffort sampleP =
+        sqrtThinDefaultEffort sampleP 5
 
+       
