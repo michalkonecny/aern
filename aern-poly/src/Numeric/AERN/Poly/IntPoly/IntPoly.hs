@@ -449,9 +449,9 @@ instance
         fromEndpointsCheck (cf1, cf2) =
             case isConsistentEff effCons res of
                 Just True -> res
-                _ -> 
-                    error $ 
-                        "aern-poly: fromEndpointsInEff: cannot establish that coefficient is consistent: " ++ show res 
+                _ -> cf1 -- arbitrary pick
+--                    error $ 
+--                        "aern-poly: fromEndpointsInEff: cannot establish that coefficient is consistent: " ++ show res 
             where
             res = RefOrd.fromEndpointsOutEff eff (cf1, cf2)
             effCons = consistencyDefaultEffort res
