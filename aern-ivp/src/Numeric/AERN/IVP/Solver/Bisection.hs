@@ -783,7 +783,7 @@ bisectionInfoEvalFn effDom evalFn bisectionInfo bisectionDom domG =
         auxLeft = aux (dL, dM) left domL
         auxRight = 
             case maybeRight of 
-                Nothing -> []
+                Nothing -> [[]]
                 Just right-> aux (dM, dR) right domR
         domL = 
             dom <\/> (dL </\> dM)
