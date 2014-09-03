@@ -98,7 +98,13 @@ evalAtPointIn ::
 evalAtPointIn dombox f =
     evalAtPointInEff (evaluationDefaultEffort f) dombox f
     
-    
+getRangeOut :: 
+        CanEvaluate f => 
+        f {-^ function @f@ -} -> 
+        (Domain f) {-^ approximated range of @f@ over its whole domain -}
+getRangeOut f =
+    evalAtPointOut (getDomainBox f) f
+
 -- TODO: move the following 3 functions to another module
 evalSamplesAlongEdgesEff :: 
     (ArithInOut.RoundedReal (Domain f), 
