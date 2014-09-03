@@ -573,6 +573,8 @@ class
 class (HasOne t, RoundedDivideEffort t) => RoundedDivide t where
     divInEff :: DivEffortIndicator t -> t -> t -> t
     divOutEff :: DivEffortIndicator t -> t -> t -> t
+--    divAssumePositiveOutEff :: DivEffortIndicator t -> t -> t -> t
+--    divAssumePositiveInEff :: DivEffortIndicator t -> t -> t -> t
     recipInEff :: DivEffortIndicator t -> t -> t
     recipOutEff :: DivEffortIndicator t -> t -> t
     recipInEff eff a = divInEff eff (one a) a
@@ -593,6 +595,25 @@ divOut a = divOutEff (divDefaultEffort a) a
 -- | Outward rounded division with default effort
 (</>) :: (RoundedDivide t) => t -> t -> t
 (</>) = divOut
+
+{-
+-- | Inward rounded division assuming positive argument, with default effort
+divAssumePositiveIn :: (RoundedDivide t) => t -> t -> t
+divAssumePositiveIn a = divAssumePositiveInEff (divDefaultEffort a) a
+
+(>/+<) :: (RoundedDivide t) => t -> t -> t
+(>/+<) = divAssumePositiveIn
+
+-- | Outward rounded division assuming positive argument, with default effort
+divAssumePositiveOut :: (RoundedDivide t) => t -> t -> t
+divAssumePositiveOut a = divAssumePositiveOutEff (divDefaultEffort a) a
+
+(</+>) :: (RoundedDivide t) => t -> t -> t
+(</+>) = divAssumePositiveOut
+
+(/+) :: (RoundedDivide t) => t -> t -> t
+(/+) = (</+>)
+-}
 
 recipIn :: (RoundedDivide t) => t -> t
 recipIn a = recipInEff (divDefaultEffort a) a
