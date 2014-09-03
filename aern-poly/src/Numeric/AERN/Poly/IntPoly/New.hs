@@ -315,13 +315,20 @@ instance
      RefOrd.IntervalLike cf) => 
     (HasProjections (IntPoly var cf))
     where
-    newProjection limits varDoms var =
-        IntPoly cfg $ mkProjTerms cfg var vars domsLE
+    newProjection limits varDoms var 
+        | isExact domOfVar == Just True =
+            IntPoly cfg $ mkConstTerms domOfVar vars
+        | otherwise = 
+            IntPoly cfg $ mkProjTerms cfg var vars domsLE
         where
         domsLE = ipolycfg_domsLE cfg
         cfg = cfgAdjustDomains vars domains $ defaultIntPolyCfg sampleCF limits
         (sampleCF : _)  = domains
         (vars, domains) = unzip varDoms
+        domOfVar = 
+            case lookup var varDoms of
+                Just v -> v
+                _ -> error "newProjection called with a variable that is not present in the domain." 
         
 mkProjTerms :: 
     (Eq var, Show var, Show cf, HasOne cf, 
