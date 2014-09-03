@@ -44,7 +44,7 @@ main =
 
 {------
 
-Results for various choices of params: 
+Results over [4,6.3504]^6 for various choices of params: 
 
 "(6,20,1,100) -> [_0.15211827195519825,2.21712006899124^]"
 (0.79 secs, 733925428 bytes)
@@ -55,9 +55,20 @@ Results for various choices of params:
 "(10,1000,1,200) -> [_0.18368029513801096,2.112064768342252^]"
 (6.76 secs, 6307827848 bytes)
 
+
+
+Results over [4, 6.3504]^3 x [6.3504, 8] x [4, 6.3504]^2 for various choices of params: 
+
+"(6,20,1,100) -> [_7.528559837267282e-2,1.9364386211716682^]"
+(0.34 secs, 346256664 bytes)
+
+"(6,100,1,100) -> [_8.771971942510443e-2,1.7822440874987577^]"
+(2.42 secs, 2533208868 bytes)
+
+
 ------}
 
-params@(maxdeg, maxsize, recipdeg, evalsplitsize) = (6, 20, 1, 100) 
+params@(maxdeg, maxsize, recipdeg, evalsplitsize) = (6, 100, 1, 200) 
 
 result =
     show params 
@@ -164,7 +175,8 @@ varDoms =
         ("x1", 4 </\> (6.3504)),
         ("x2", 4 </\> (6.3504)),
         ("x3", 4 </\> (6.3504)),
-        ("x4", 4 </\> (6.3504)),
+--        ("x4", 4 </\> (6.3504)),
+        ("x4", (6.3504) </\> 8),
         ("x5", 4 </\> (6.3504)),
         ("x6", 4 </\> (6.3504))
     ] 
