@@ -20,6 +20,7 @@ import Numeric.AERN.IVP.Specification.Hybrid
 
 import Numeric.AERN.RmToRn.Domain
 import Numeric.AERN.RmToRn.New
+import Numeric.AERN.RmToRn.Evaluation
 
 import qualified 
        Numeric.AERN.RealArithmetic.RefinementOrderRounding 
@@ -45,16 +46,19 @@ import Numeric.AERN.Basics.Consistency
 
 import qualified Data.Map as Map
 
-import Numeric.AERN.Misc.Debug
-_ = unsafePrint -- stop the unused warning
+import Debug.Trace
+_ = trace -- stop the unused warning
 
 ivpByNameMap ::
     (Var f ~ String,
      HasConstFns f,
+     CanEvaluate f,
      RefOrd.RoundedLattice f,
      Neg f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
+     ArithInOut.RoundedPowerToNonnegInt f,
+     ArithInOut.RoundedDivide f,
      ArithInOut.RoundedMixedAdd f Double,
      ArithInOut.RoundedMixedMultiply f Double,
      ArithInOut.RoundedMixedDivide f Double,
@@ -62,6 +66,7 @@ ivpByNameMap ::
      HasConsistency (Domain f),
      RefOrd.IntervalLike (Domain f),
      ArithInOut.RoundedSquareRoot (Domain f),
+     Show f,
      Show (Domain f)
     )
     =>
@@ -84,6 +89,7 @@ ivpByNameMap sampleFn =
         ("bouncingBallEnergyRiseFall", ivpBouncingBallRiseFallEnergy sampleFn),
         ("bouncingBallAir", ivpBouncingBallAir sampleFn),
         ("bouncingBallAirEnergy", ivpBouncingBallAirEnergy sampleFn),
+        ("bouncingBallNewtonianGravityEnergy", ivpBouncingBallNewtonianGravityEnergy sampleFn),
         ("bouncingBallCubicDrag", ivpBouncingBallCubicDrag sampleFn),
         ("bouncingBallCubicDragEnergy", ivpBouncingBallCubicDragEnergy sampleFn),
         ("bouncingBallCircle", ivpBouncingBallCircle sampleFn),
@@ -107,10 +113,13 @@ ivpByNameMap sampleFn =
 ivpByName :: 
     (Var f ~ String,
      HasConstFns f,
+     CanEvaluate f,
      RefOrd.RoundedLattice f,
      Neg f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
+     ArithInOut.RoundedPowerToNonnegInt f,
+     ArithInOut.RoundedDivide f,
      ArithInOut.RoundedMixedAdd f Double,
      ArithInOut.RoundedMixedMultiply f Double,
      ArithInOut.RoundedMixedDivide f Double,
@@ -118,6 +127,7 @@ ivpByName ::
      HasConsistency (Domain f),
      RefOrd.IntervalLike (Domain f),
      ArithInOut.RoundedSquareRoot (Domain f),
+     Show f,
      Show (Domain f)
     )
     => 
@@ -136,10 +146,13 @@ ivpByName name endTimeDbl sampleFn =
 ivpByNameReportError ::
     (Var f ~ String,
      HasConstFns f,
+     CanEvaluate f,
      RefOrd.RoundedLattice f,
      Neg f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
+     ArithInOut.RoundedPowerToNonnegInt f,
+     ArithInOut.RoundedDivide f,
      ArithInOut.RoundedMixedAdd f Double,
      ArithInOut.RoundedMixedMultiply f Double,
      ArithInOut.RoundedMixedDivide f Double,
@@ -147,6 +160,7 @@ ivpByNameReportError ::
      HasConsistency (Domain f),
      RefOrd.IntervalLike (Domain f),
      ArithInOut.RoundedSquareRoot (Domain f),
+     Show f,
      Show (Domain f)
     )
     => 
@@ -166,10 +180,13 @@ ivpByNameReportError ivpName endTimeDbl samplePoly =
 ivpNames :: 
     (Var f ~ String,
      HasConstFns f,
+     CanEvaluate f,
      RefOrd.RoundedLattice f,
      Neg f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
+     ArithInOut.RoundedPowerToNonnegInt f,
+     ArithInOut.RoundedDivide f,
      ArithInOut.RoundedMixedAdd f Double,
      ArithInOut.RoundedMixedMultiply f Double,
      ArithInOut.RoundedMixedDivide f Double,
@@ -177,6 +194,7 @@ ivpNames ::
      HasConsistency (Domain f),
      RefOrd.IntervalLike (Domain f),
      ArithInOut.RoundedSquareRoot (Domain f),
+     Show f,
      Show (Domain f)
     )
     =>
@@ -1458,6 +1476,138 @@ ivpBouncingBallAirEnergy (sampleFn :: f) =
     toD = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
+{-
+
+    Minimal system spec:
+    
+    x' = v
+    v' = -5000/(20+x)^2
+    
+    if 
+    
+    Extended with energy:
+    
+    r = v^2 + 500 - 10000/(20+x)
+    r' = 0
+    
+    
+-}
+ivpBouncingBallNewtonianGravityEnergy :: 
+    (Var f ~ String,
+     HasConstFns f,
+     Neg f,
+     CanEvaluate f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedMultiply f,
+     ArithInOut.RoundedPowerToNonnegInt f,
+     ArithInOut.RoundedDivide f,
+     ArithInOut.RoundedMixedAdd f Double,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     HasConsistency (Domain f),
+     ArithInOut.RoundedSquareRoot (Domain f),
+     Show f,
+     Show (Domain f)
+    )
+    => 
+    f -> 
+    HybridIVP f
+ivpBouncingBallNewtonianGravityEnergy (sampleFn :: f) =
+    ivp
+    where
+    energyWith x v = 
+        z </\> 
+        (v <*> v <+> (toD 500) <+> (toD (-10000)) </> ((toD 20) <+> x))
+        -- r = v^2 + 500 - 10000/(20+x)
+        -- r' = 2v(-5000/(20+x)^2) + 10000 v/(20+x)^2 = 0
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x","v","r"],
+            hybsys_modeFields = Map.fromList [(modeMove, odeMove)],
+            hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
+            hybsys_eventSpecification = eventSpecMap
+        }
+    modeMove = HybSysMode "move"
+    odeMove :: [f] -> [f]
+    odeMove [x,v,r] = 
+--        trace (
+--           "odeMove:"
+--           ++ "\n  Dom(x) = " ++ (show (toAscList $ getDomainBox x))
+--           ++ "\n  x =  " ++ (show x)
+--           ++ "\n      Ran(x) <- " ++ (show (getRangeOut x))
+--           ++ "\n  v = " ++ (show v)
+--           ++ "\n      Ran(v) <- " ++ (show (getRangeOut v))
+----           ++ "\n  Ran(r) <- " ++ (show r) -- (getRangeOut r))
+--        ) $
+        [v, 
+         newConstFnFromSample x (toD $ -5000) </> (((20 :: Double) |<+> x) <^> 2),
+         newConstFnFromSample r (toD 0)]
+    invariantMove [x,v,r] =
+        do
+        -- x >= 0:
+        xNN <- makeNonneg x
+        -- r >= 0:
+        rNN <- makeNonneg r
+        -- r = v^2 + 500 - 10000/(20+x) --->
+        -- v = sqrt(r - 500 + 10000/(20+x)):
+        vSqr1 <- makeNonneg $ rNN <+> (toD (-500)) <+> ((toD 10000) </> ((toD 20) <+> xNN))
+        let v1 = ArithInOut.sqrtOut vSqr1
+        vNew <- 
+            case (v >=? z) of
+                Just True -> isect v v1
+                Just False -> isect v (neg v1)
+                _ -> isect v (neg v1 </\> v1)
+
+        -- r = v^2 + 500 - 10000/(20+x) --->
+        -- r - v^2 - 500 =  -10000/(20+x) --->
+        -- 20 + x =  -10000/(r - v^2 - 500) --->
+        -- x = -20 +10000/(v^2 + 500 - r)
+        vSqr2 <- makeNonneg $ vNew <*> vNew
+        let x2 = (toD (-20)) <+> ((toD 10000)  </> (vSqr2 <-> rNN <+> (toD 500))) 
+        xNew <- isect xNN x2
+        return [xNew, vNew, rNN]
+    eventBounce = HybSysEventKind "bc"
+    pruneBounce _ [x,v,r] = 
+        do
+        _ <- isect z x
+        vNP <- makeNonpos v
+        return $ [z,vNP,r]
+    resetBounce [x,v,r] = 
+        [x, 
+         (-0.5 :: Double) |<*> v,
+         (0.25 :: Double) |<*> r]
+    eventSpecMap mode = 
+        Map.singleton
+            eventBounce (modeMove, resetBounce, [True, True, True], pruneBounce)
+    
+    ivp :: HybridIVP f
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = z,
+            hybivp_tEnd = z,
+            hybivp_initialStateEnclosure = 
+                Map.singleton modeMove initValues,
+            hybivp_maybeExactStateAtTEnd = Nothing
+        }
+    description =
+        "BB-NG+"
+--        "" ++ "if x = 0 && v <= 0 then post(v) = -v/2, post(r) = r/4 else x''= -10, r' = 0, r = v^2+20x, x >= 0, r >= 0)" 
+        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
+        ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
+        ++ ", r(" ++ show tStart ++ ") ∊ " ++ show initR
+    initValues@[initX, initX', initR] = [toD 5, toD 0, energyWith initX initX'] :: [Domain f]
+    tStart = hybivp_tStart ivp
+    z = toD 0
+    toD = dblToReal sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+
 ivpBouncingBallCubicDrag :: 
     (Var f ~ String,
      HasConstFns f,
@@ -1669,8 +1819,6 @@ ivpBouncingBallCircle (sampleFn :: f) =
     initS = toD 0
     initR = neg g <*> initX2
 
---    energyWith x1 _x2 v1 v2 = 
---        (v1 <*> v1 <+> v2 <*> v2 <+> (toD 2) <*> g <*> x1)
     system =
         HybridSystem
         {
@@ -1706,7 +1854,11 @@ ivpBouncingBallCircle (sampleFn :: f) =
                 Just True -> 
                     isect x2 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ dM1NN <+> one <-> (x1<^>2))
                 _ -> return x2
-        dNew <- isect (dM1NN <+> one) ((x1<^>2) <+> (x2<^>2)) 
+        dNew <- isect (dM1NN <+> one) ((x1<^>2) <+> (x2<^>2))
+        
+        -- s = x1*v1 + x2*v2
+                
+        -- r = v1^2 + v2^2 - x2*g
                 
         return [x1New,x2New,v1,v2,dNew,s,r]
     invariantMove _ = error "invariantMove: internal error"
