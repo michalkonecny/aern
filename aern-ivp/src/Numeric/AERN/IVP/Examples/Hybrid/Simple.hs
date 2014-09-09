@@ -1936,7 +1936,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
 
 
 {-|
-    A bouncing ball on a circle, as described in 
+    A bouncing ball on a circle, Example 1 from paper:
     http://www.bipedalrobotics.com/uploads/8/0/6/8/8068963/lyapunov_zeno_2012.pdf
 -}
 ivpBouncingBallCircle :: 
@@ -1959,11 +1959,17 @@ ivpBouncingBallCircle (sampleFn :: f) =
     where
     g = toD gD; gD = 1
     e = toD eD; eD = 0.5
-    initX1 = toD 0.2 -- Zeno with 0.191, non-Zeno with 0.192
+    initX1 = toD 0.15
+--    initX1 = toD 0.191 -- Zeno
+--    initX1 = toD 0.192 -- non-Zeno
+--    initX1 = toD 0.2 
+--    initX1 = toD 0.21 -- 4 bounces, OK with locate prec 21
+--    initX1 = toD 0.22 -- 4 bounces, OK with locate prec 18
+--    initX1 = toD 0.25 -- 3 bounces, OK with locate prec 16
     initX2 = toD 1.2
     initV1 = toD 0
     initV2 = toD 0
-    initD = toD 1.48 -- = 0.2^2 + 1.2^2 = 0.04 + 1.44
+    initD = (initX1<*>initX1) <+> (initX2<*>initX2)
     initS = toD 0
     initR = neg g <*> initX2
 
