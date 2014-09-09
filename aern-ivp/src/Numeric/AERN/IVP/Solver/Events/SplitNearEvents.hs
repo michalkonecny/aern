@@ -391,7 +391,11 @@ solveHybridIVP_SplitNearEvents
                     Just midState -> solveEventsFromState midState
                 where
                 solveEventsFromState midState =
-                    (finalState2, Just solvingInfo)
+                    case finalState2 of
+                        Just _ ->
+                            (finalState2, Just solvingInfo)
+                        _ -> 
+                            (Nothing, Nothing)
                     where
                     (finalState2, solvingInfo) = solveHybridNoSplitting (hybivpEventRegion midState) 
                 hybivpEventRegion midState =
