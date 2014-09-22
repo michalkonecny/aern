@@ -77,7 +77,7 @@ main =
     
     -- fire up the GUI:
     Gtk.mainGUI
-    
+  
 addPlotVar :: [[[Fn]]] -> [[(FV.GraphOrParamPlotFn Fn, String)]]
 addPlotVar fns =
     map (map addV) fns
@@ -116,6 +116,7 @@ functions =
         ("expmirror-exact-initval-flow", functionsExpMirror "evp"),
         ("expmirror-uncertain-initval-naive", functionsExpMirror "uv"),
         ("expmirror-uncertain-initval-flow", functionsExpMirror "uvp"),
+        ("vanderpol-exact-initval-EP", functionsVanDerPol "evEP"),
         ("vanderpol-exact-initval-naive", functionsVanDerPol "ev"),
         ("vanderpol-exact-initval-flow", functionsVanDerPol "evp"),
         ("vanderpol-uncertain-initval-naive", functionsVanDerPol "uv"),
@@ -444,6 +445,7 @@ functionsVanDerPol subname =
     where
     functionsVanDerPolSub =
         case subname of
+            "evEP" -> fnsVanDerPolEP initValuesVanDerPol_ev
             "ev" -> fnsVanDerPol False initValuesVanDerPol_ev
             "evp" -> fnsVanDerPol True initValuesVanDerPol_ev
             "uv" -> fnsVanDerPol False initValuesVanDerPol_uv
@@ -501,6 +503,45 @@ functionsVanDerPol subname =
             fnNames =
                 concat $ map (\nS -> ["y" ++ nS, "y'" ++ nS]) $ map show ([1..iters] :: [Int])
 
+    fnsVanDerPolEP initValues tEndDbl maxdeg maxsize otherArgs =
+        (functions2, fnmeta)
+        where
+        [itersS, bisectDepthS] = otherArgs
+        iters = read itersS
+        bisectDepth = read bisectDepthS
+
+        functions2 =
+            picardOnPiecewiseFn
+                fieldVanDerPol 
+                initValues
+                (partitionDom tDom bisectDepth)
+                initialWidening
+                (limitsDS maxdeg maxsize) 
+                iters
+            where
+            initialWidening = 0.2
+
+        tDom = constructCF 0 tEndDbl
+        tEnd = constructCF tEndDbl tEndDbl
+    
+        fnmeta = 
+            FV.simpleFnMetaData
+                sampleFn
+                (FV.Rectangle  2 (-2) 0 tEnd) -- initial plotting region
+                Nothing
+                1600 -- samplesPerUnit
+                tVar
+                segmentInfo
+            where
+            segmentInfo = 
+                [("iteration " ++ show i, functionInfos False) | i <- [1..iters-1]] ++
+                [("iteration " ++ show iters, functionInfos True)]
+                where
+                functionInfos visible =
+                    zip3 
+                        ["y", "y'"]
+                        [blue, green] -- styles 
+                        [visible, visible] -- show only the last iteration by default
     
 
 
@@ -534,8 +575,9 @@ picardStepwise
     foldl picardOnSegment ([],initValues) partition
     where
     picardOnSegment (resultsForPrevSegments, segmentInitValues) segment =
-        (resultsForPrevSegments ++ [map (\a -> [a]) $ concat enclosures], nextSegmentInitValues)
+        (resultsForPrevSegments ++ [resultThisSegment], nextSegmentInitValues)
         where
+        resultThisSegment = map (\a -> [a]) $ concat enclosures
         nextSegmentInitValues =
             intersectBoxes $ 
                 map (map evaluateAtEndpoint) $ 
