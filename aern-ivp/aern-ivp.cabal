@@ -28,7 +28,7 @@ Library
         stm >= 2.1.2.1,
         filepath >= 1.1.0.4,
         directory >= 1.0.1.1,
-        mtl >= 2.1 && < 2.2,
+        mtl >= 2.1,
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-realfn == 0.5.*,
