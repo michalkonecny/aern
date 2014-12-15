@@ -17,7 +17,7 @@ Description:    Support for interactive plotting of types from aern-poly.
     Includes several example plot executables.
 
 library
-  hs-source-dirs:  src
+  hs-source-dirs:  src demos
   ghc-options:     -Wall
   Build-Depends:   
         base >= 4.4,
@@ -33,9 +33,12 @@ library
         aern-interval == 0.5.*,
         aern-realfn == 0.5.*,
         aern-realfn-plot-gtk == 0.5.*,
-        aern-poly == 0.5.*
+        aern-poly == 0.5.*,
+        aern-double == 0.5.*
   exposed-modules: 
         Numeric.AERN.Poly.IntPoly.Plot
+  other-modules:
+        Quickstart, Quickstart1, Integrate
 
 executable plot
   hs-source-dirs:  demos
@@ -58,8 +61,6 @@ executable plot
         aern-realfn-plot-gtk == 0.5.*,
         aern-poly == 0.5.*,
         aern-poly-plot-gtk == 0.5.*
-  other-modules:
-    Quickstart, Quickstart1
 
 executable plotPicard
   hs-source-dirs:  demos
@@ -127,5 +128,3 @@ executable Inclusion
         aern-realfn-plot-gtk == 0.5.*,
         aern-poly == 0.5.*,
         aern-poly-plot-gtk == 0.5.*
-
-
