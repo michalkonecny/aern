@@ -87,8 +87,8 @@ plotSineCosine =
 --         )
         ]
     where
-    maxdeg = 500
-    taylorDeg = 19
+    maxdeg = 20
+    taylorDeg = 10
     
     sineX =
         sinOutEff effSinCos x
@@ -105,7 +105,7 @@ plotSineCosine =
     y = newProjection sizeLimits doms "y"
     doms = 
         [
-            ("x", Interval (0) 4)
+            ("x", Interval (0) 2)
             ,
             ("y", Interval (0) 1)
         ]
