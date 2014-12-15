@@ -27,7 +27,7 @@ main =
 -- compute the error function to within e accuracy
 erf :: R -> R -> R
 erf e x =
-  2/(sqrt pi) * riemann e (\t -> exp (-t^2)) (0 </\> x)
+  2/(sqrt piOut) * riemann e (\t -> exp (-t^2)) (0 </\> x)
 
 -- compute the integral of f over d to within e accuracy
 riemann :: R -> (R -> R) -> RI -> R
@@ -54,7 +54,7 @@ riemann' e f initWidth (d:ds) result
 -- erf using riemannInPlace
 erfInPlace :: R -> R -> R
 erfInPlace e x =
-  2/(sqrt pi) * riemannInPlace e (\t -> exp (-t^2)) (0 </\> x)
+  2/(sqrt piOut) * riemannInPlace e (\t -> exp (-t^2)) (0 </\> x)
 
 -- riemann using in-place accumulator
 riemannInPlace :: R -> (R -> R) -> RI -> R
