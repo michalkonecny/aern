@@ -2,40 +2,39 @@
 -}
 module Integrate where
 
--- Doubles as interval endpoints:
-import Numeric.AERN.RealArithmetic.Basis.Double ()
+-- interval-coefficient polynomials:
+import Numeric.AERN.Poly.IntPoly 
+    (IntPoly, IntPolySizeLimits(..), IntPolyEffort(..), defaultIntPolySizeLimits)
+--import Numeric.AERN.Poly.IntPoly.Interval () 
+--import Numeric.AERN.Poly.IntPoly.Plot ()
 
 -- intervals generic in the type of its endpoints:
 import Numeric.AERN.Basics.Interval 
     (Interval)
 
--- interval-coefficient polynomials:
-import Numeric.AERN.Poly.IntPoly 
-    (IntPoly, IntPolySizeLimits(..), IntPolyEffort(..), defaultIntPolySizeLimits)
-import Numeric.AERN.Poly.IntPoly.Interval () 
-import Numeric.AERN.Poly.IntPoly.Plot ()
-
+-- Doubles as interval endpoints:
+--import Numeric.AERN.RealArithmetic.Basis.Double ()
 
 -- abstract function processing operations:
 import Numeric.AERN.RmToRn 
-    (newConstFn, newProjection, primitiveFunctionOut, getDomainBox, evalAtPointOut, insertVar, lookupVar)
-import qualified 
-       Numeric.AERN.RmToRn.Plot.FnView 
-    as FV
+    (newProjection, primitiveFunctionOut, getDomainBox, evalAtPointOut, insertVar, lookupVar)
+--import qualified 
+--       Numeric.AERN.RmToRn.Plot.FnView 
+--    as FV
 
 -- abstract approximate real arithmetic operations:
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding
-    (piOut, 
-     sqrtOut, sqrtOutEff, sqrtDefaultEffort,  
-     expOut, expOutEff, expDefaultEffort)
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
-    ((|<*>))
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding
+--    (piOut, 
+--     sqrtOut, sqrtOutEff, sqrtDefaultEffort,  
+--     expOut, expOutEff, expDefaultEffort)
+--import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
+--    ((|<*>))
 
 -- ability to control the effort for elementary operations: 
-import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
-    (ExpThinEffortIndicator(..), SqrtThinEffortIndicator(..))
+--import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
+--    (ExpThinEffortIndicator(..), SqrtThinEffortIndicator(..))
 
-import Numeric.AERN.RealArithmetic.Measures (imprecisionOf, iterateUntilAccurate)
+import Numeric.AERN.RealArithmetic.Measures (iterateUntilAccurate)
 
 -- abstract approximate order operations:
 import Numeric.AERN.RefinementOrder 
