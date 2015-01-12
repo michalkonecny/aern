@@ -1,3 +1,4 @@
+-- currently bothballed, will probably be never needed
 module Main where
 
 import System.Environment

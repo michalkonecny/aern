@@ -24,10 +24,7 @@ import Test.QuickCheck.Gen
 import qualified Test.QuickCheck.Random as QCR
 import qualified System.Random as R
 
---runBenchmarksQ ::
---    [(Benchmark, q)] -> [(Double,q)]
---runBenchmarksQ
-
+-- The following 
 --criterionConfig name samples =
 --    defaultConfig 
 --    { 
