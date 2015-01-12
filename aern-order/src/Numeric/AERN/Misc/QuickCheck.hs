@@ -17,6 +17,7 @@ import qualified Data.List as List
 import Test.QuickCheck
 import Test.QuickCheck.Gen (unGen)
 import qualified System.Random as R
+import qualified Test.QuickCheck.Random as QCR
 
 sampleOfLength ::
     (Gen a) ->
@@ -24,7 +25,7 @@ sampleOfLength ::
     IO [a]
 sampleOfLength gen n =
     do
-    rnd0 <- R.newStdGen
+    rnd0 <- QCR.newQCGen
     return [(m r n) | (r,n) <- rnds rnd0 `zip` [0,2..2*n] ]
     where
     m = unGen gen
@@ -73,11 +74,12 @@ fixedRandSeq fixedRandSeqQuantityOfSize gen =
         newSeqPortion 
             =
             take (currQuantity - prevQuantity) $ 
-                map (\g -> unGen gen g size) randomGens
+                map (\g -> unGen gen g size) 
+                    randomGens
         currQuantity = fixedRandSeqQuantityOfSize size
     randomGens 
         = map snd $ drop 13 $ iterate (R.next . snd) (0,g)
-    g = R.mkStdGen 754657854089 -- no magic, just bashed at the keyboard at random
+    g = QCR.mkQCGen 754657854089 -- no magic, just bashed at the keyboard at random
 
 class ArbitraryWithParam t param
     where
