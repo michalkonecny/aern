@@ -168,7 +168,7 @@ instance
         Just gen = arbitraryTupleInAreaRelatedBy area [1::Int] []
 
 instance
-    (ArbitraryOrderedTuple t, a ~ Area t) 
+    (ArbitraryOrderedTuple t, a ~ Area t)
     => 
     ArbitraryWithParam (TwoUniformlyOrderedSingletons t) a 
     where

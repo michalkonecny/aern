@@ -21,23 +21,24 @@ import Control.DeepSeq
 import Criterion
 import Test.QuickCheck
 import Test.QuickCheck.Gen
-import System.Random
+import qualified Test.QuickCheck.Random as QCR
+import qualified System.Random as R
 
 --runBenchmarksQ ::
 --    [(Benchmark, q)] -> [(Double,q)]
 --runBenchmarksQ
 
-criterionConfig name samples =
-    defaultConfig 
-    { 
-        cfgSummaryFile = ljust $ name ++ ".csv", 
-        cfgSamples = ljust samples, 
-        cfgResamples = ljust 200, 
---        cfgPlotSameAxis = ljust True,
-        cfgPerformGC = ljust True
---        ,
---        cfgPlot = M.singleton KernelDensity (PDF 1024 780) 
-    }
+--criterionConfig name samples =
+--    defaultConfig 
+--    { 
+--        cfgSummaryFile = ljust $ name ++ ".csv", 
+--        cfgSamples = ljust samples, 
+--        cfgResamples = ljust 200, 
+----        cfgPlotSameAxis = ljust True,
+--        cfgPerformGC = ljust True
+----        ,
+----        cfgPlot = M.singleton KernelDensity (PDF 1024 780) 
+--    }
 
 mkBenchAreasSequences1 ::
     (RefOrd.ArbitraryOrderedTuple t, EffortIndicator ei, NFData t) =>
@@ -78,7 +79,7 @@ mkBenchSequence1 mkComment fnEff maybeArea n initEffort sample =
         map (\(g, size) -> unGen arbitraryInArea g size) $ zip gs sizes
         -- get a sample sequence (always the same!)
     gs = 
-        iterate (snd . next) $ mkStdGen 111111321
+        iterate (snd . R.next) $ QCR.mkQCGen 111111321
         -- sequence of random generators
     arbitraryInArea =
        case case maybeArea of
@@ -108,12 +109,12 @@ mkBenchSequence2 mkComment fnEff initEffort sample1 sample2 =
     inputs1 = 
         map (\(g, size) -> unGen arbitrary g size) $ zip gs1 sizes
     gs1 = 
-        iterate (snd . next) $ mkStdGen 1587346765
+        iterate (snd . R.next) $ QCR.mkQCGen 1587346765
     _ = sample2 : inputs2
     inputs2 = 
         map (\(g, size) -> unGen arbitrary g size) $ zip gs2 sizes
     gs2 = 
-        iterate (snd . next) $ mkStdGen 658246234
+        iterate (snd . R.next) $ QCR.mkQCGen 658246234
     sizes = 
         concat $ map (replicate 3) $ scanl1 (*) [2,2..] 
     efforts = 

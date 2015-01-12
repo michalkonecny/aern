@@ -197,12 +197,12 @@ instance
         [elem] <- gen
         return $ UniformlyOrderedSingleton elem
         where
-        Just gen = arbitraryTupleInAreaRelatedBy area [1] []
+        Just gen = arbitraryTupleInAreaRelatedBy area [1::Int] []
 
 instance
     (ArbitraryOrderedTuple t) 
     => 
-    Arbitrary (UniformlyOrderedPair t) 
+    Arbitrary (UniformlyOrderedPair t)
     where
     arbitrary =
         do
