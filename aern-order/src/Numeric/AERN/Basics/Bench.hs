@@ -19,8 +19,6 @@ import Numeric.AERN.Basics.Effort
 
 import Control.DeepSeq
 import Criterion
-import Criterion.Config
---import qualified Criterion.MultiMap as M
 import Test.QuickCheck
 import Test.QuickCheck.Gen
 import System.Random
