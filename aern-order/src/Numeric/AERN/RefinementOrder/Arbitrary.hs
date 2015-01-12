@@ -165,7 +165,7 @@ instance
         [elem] <- gen
         return $ UniformlyOrderedSingleton elem
         where
-        Just gen = arbitraryTupleInAreaRelatedBy area [1] []
+        Just gen = arbitraryTupleInAreaRelatedBy area [1::Int] []
 
 instance
     (ArbitraryOrderedTuple t, a ~ Area t) 
