@@ -23,8 +23,6 @@ module Numeric.AERN.RefinementOrder
     module Numeric.AERN.RefinementOrder.RoundedLattice,
     module Numeric.AERN.RefinementOrder.Extrema,
     module Numeric.AERN.RefinementOrder.IntervalLike,
-    module Numeric.AERN.RefinementOrder.InPlace.RoundedBasis, 
-    module Numeric.AERN.RefinementOrder.InPlace.RoundedLattice
 )
 where
 
@@ -34,5 +32,3 @@ import Numeric.AERN.RefinementOrder.RoundedBasis
 import Numeric.AERN.RefinementOrder.RoundedLattice
 import Numeric.AERN.RefinementOrder.Extrema
 import Numeric.AERN.RefinementOrder.IntervalLike
-import Numeric.AERN.RefinementOrder.InPlace.RoundedBasis
-import Numeric.AERN.RefinementOrder.InPlace.RoundedLattice

@@ -25,11 +25,11 @@ import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 
 import Numeric.AERN.Basics.Bench
-import Criterion.Main
+import Criterion.Main (defaultMain)
 import Criterion
 
 main =
-    defaultMainWith (criterionConfig "bench-Double" 20) (return ()) $
+    defaultMain -- With (criterionConfig "bench-Double" 20) $
         [
             ArithInOut.benchInOutExp ("DI", sampleDI) ArithInOut.benchExpAreasReal
         ]

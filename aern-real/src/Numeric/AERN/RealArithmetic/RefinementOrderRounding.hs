@@ -24,8 +24,7 @@ module Numeric.AERN.RealArithmetic.RefinementOrderRounding
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps,
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.SpecialConst,
     module Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary,
-    module Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace,
-    RoundedReal(..), RoundedRealInPlace,
+    RoundedReal(..),
     dblToReal, dbldblToReal
 )
 where
@@ -35,7 +34,6 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.SpecialConst
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
@@ -113,20 +111,7 @@ class
     rrEffortDoubleMixedField :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator t Double)
     rrEffortRationalMixedField :: t -> (RoundedRealEffortIndicator t) -> (MixedFieldOpsEffortIndicator t Rational)
 
-{-|
-   A mutable version of 'RoundedReal' with additional support for mutable ops.
--}
-class
-    (RoundedReal t,
-     NegInPlace t,
-     RoundedAbsInPlace t, 
-     RoundedFieldInPlace t,
-     RoundedMixedFieldInPlace t Int, 
-     RoundedMixedFieldInPlace t Integer, 
-     RoundedMixedFieldInPlace t Double, 
-     RoundedMixedFieldInPlace t Rational) => 
-    RoundedRealInPlace t
-    
+
 dbldblToReal ::
     (RoundedReal real) 
     =>

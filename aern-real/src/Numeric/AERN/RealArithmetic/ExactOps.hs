@@ -20,8 +20,6 @@ import Data.STRef
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
 
-import Numeric.AERN.Basics.Mutable
-
 import Data.Ratio
 
 class HasSampleFromContext t where
@@ -60,18 +58,6 @@ class HasInfinities t where
 class Neg t where
     neg :: t -> t
     
-class (CanBeMutable t) => NegInPlace t where
-    negInPlace :: OpMutable1 t s 
-
---        
---        -- default such as this one is very inefficient
---        -- but facilitates an API that works even for
---        -- types that do not have native in-place updates
---        do
---        a <- readMutable aM
---        let _ = [a,sample]
---        writeMutable rM (neg a)
-
 propNegFlip ::
     (Eq t, Neg t) =>
     t -> t -> Bool

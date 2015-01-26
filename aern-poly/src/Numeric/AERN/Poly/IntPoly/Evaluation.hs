@@ -179,28 +179,28 @@ valuesAreExact values =
     isCertainlyExact val = 
         isExact val == Just True 
     
-instance
-    (Ord var, Show var,
-     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
-     HasConsistency cf, 
-     Show cf, Show (SizeLimits cf))
-    =>
-    HasEvalOps (IntPoly var cf) cf
-    where
-    type EvalOpsEffortIndicator (IntPoly var cf) cf =
-        IntPolyEffort cf
-    evalOpsDefaultEffort _p@(IntPoly cfg _) _sampleCf = 
-        ipolycfg_effort cfg
---        (ArithInOut.roundedRealDefaultEffort sampleCf, Int1To10 depth)
+--instance
+--    (Ord var, Show var,
+--     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+--     HasConsistency cf, 
+--     Show cf, Show (SizeLimits cf))
+--    =>
+--    HasEvalOps (IntPoly var cf) cf
+--    where
+--    type EvalOpsEffortIndicator (IntPoly var cf) cf =
+--        IntPolyEffort cf
+--    evalOpsDefaultEffort _p@(IntPoly cfg _) _sampleCf = 
+--        ipolycfg_effort cfg
+----        (ArithInOut.roundedRealDefaultEffort sampleCf, Int1To10 depth)
+----        where
+----        depth = 1 + (maxDeg `div` 2)
+----        maxDeg = ipolycfg_maxdeg cfg
+--         
+--    evalOpsEff eff _sampleP sampleCf =
+--        coeffPolyEvalOpsOut effCf maxSplitSize sampleCf
 --        where
---        depth = 1 + (maxDeg `div` 2)
---        maxDeg = ipolycfg_maxdeg cfg
-         
-    evalOpsEff eff _sampleP sampleCf =
-        coeffPolyEvalOpsOut effCf maxSplitSize sampleCf
-        where
-        maxSplitSize = ipolyeff_evalMaxSplitSize eff
-        effCf = ipolyeff_cfRoundedRealEffort eff
+--        maxSplitSize = ipolyeff_evalMaxSplitSize eff
+--        effCf = ipolyeff_cfRoundedRealEffort eff
         
 
 data PolyEvalOps var cf val =

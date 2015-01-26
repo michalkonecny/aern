@@ -61,7 +61,7 @@ data MinmaxEffortIndicatorFromRingOps f t =
         minmaxFromRO_eff_roundedRealD :: ArithInOut.RoundedRealEffortIndicator (Domain f),
         minmaxFromRO_eff_getEndpointsD :: RefOrd.GetEndpointsEffortIndicator (Domain f),
         minmaxFromRO_eff_evalFT :: EvalOpsEffortIndicator f t,
-        minmaxFromRO_eff_evalFDF :: EvalOpsEffortIndicator f (Domain f),
+        minmaxFromRO_eff_evalFDF :: EvaluationEffortIndicator f,
         minmaxFromRO_eff_ringOpsF :: ArithInOut.RingOpsEffortIndicator f,
         minmaxFromRO_eff_mixmultFDF :: ArithInOut.MixedMultEffortIndicator f (Domain f),
         minmaxFromRO_eff_sizelimitsF :: SizeLimits f,
@@ -73,7 +73,7 @@ data MinmaxEffortIndicatorFromRingOps f t =
 --deriving instance
 --    (ArithUpDn.Convertible t (Domain f),
 --     ArithInOut.RoundedReal (Domain f),
---     HasEvalOps f t, HasEvalOps f (Domain f),
+--     HasEvalOps f t, CanEvaluate f,
 --     ArithInOut.RoundedRing t,
 --     ArithInOut.RoundedRing f,
 --     ArithInOut.RoundedMixedField f Int,
@@ -97,7 +97,7 @@ defaultMinmaxEffortIndicatorFromRingOps ::
      HasSizeLimits f,
      HasDomainBox f,
      HasEvalOps f t,
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      ArithInOut.RoundedRingEffort f,
      ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedMixedField t (Domain f),
@@ -114,7 +114,7 @@ defaultMinmaxEffortIndicatorFromRingOps sampleF sampleT =
         minmaxFromRO_eff_roundedRealD = ArithInOut.roundedRealDefaultEffort sampleDF,
         minmaxFromRO_eff_getEndpointsD = RefOrd.getEndpointsDefaultEffort sampleDF,
         minmaxFromRO_eff_evalFT = evalOpsDefaultEffort sampleF sampleT,
-        minmaxFromRO_eff_evalFDF = evalOpsDefaultEffort sampleF sampleDF,
+        minmaxFromRO_eff_evalFDF = evaluationDefaultEffort sampleF,
         minmaxFromRO_eff_ringOpsF = ArithInOut.ringOpsDefaultEffort sampleF,
         minmaxFromRO_eff_mixmultFDF = ArithInOut.mixedMultDefaultEffort sampleF sampleDF,
         minmaxFromRO_eff_sizelimitsF = getSizeLimits sampleF,
@@ -138,7 +138,7 @@ maxUpEffFromRingOps ::
      RefOrd.IntervalLike t,
      RefOrd.IntervalLike f,
      HasVarValue (VarBox f t) (Var f) t,
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
      HasProjections f, HasConstFns f, HasOne f, -- HasZero f,
      ArithInOut.RoundedRing f,
@@ -186,7 +186,7 @@ maxDnEffFromRingOps ::
      RefOrd.IntervalLike t,
      RefOrd.IntervalLike f,
      HasVarValue (VarBox f t) (Var f) t,
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
      HasProjections f, HasConstFns f, HasOne f, -- HasZero f,
      ArithInOut.RoundedRing f,
@@ -220,7 +220,7 @@ minUpEffFromRingOps ::
      RefOrd.IntervalLike t,
      RefOrd.IntervalLike f,
      HasVarValue (VarBox f t) (Var f) t,
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
      HasProjections f, HasConstFns f, HasOne f, -- HasZero f,
      ArithInOut.RoundedRing f,
@@ -248,7 +248,7 @@ minDnEffFromRingOps ::
      RefOrd.IntervalLike t,
      RefOrd.IntervalLike f,
      HasVarValue (VarBox f t) (Var f) t,
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
      HasProjections f, HasConstFns f, HasOne f, -- HasZero f,
      ArithInOut.RoundedRing f,
@@ -279,7 +279,7 @@ maxZeroDnUp ::
      RefOrd.IntervalLike f,
      RefOrd.IntervalLike t,
      HasVarValue (VarBox f t) (Var f) t,
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      HasVarValue (VarBox f (Domain f)) (Var f) (Domain f),
      HasProjections f, HasConstFns f, HasOne f, -- HasZero f,
      ArithInOut.RoundedRing f,
@@ -357,18 +357,18 @@ maxZeroDnUp
     maxCUp = 
         snd $ RefOrd.getEndpointsOut maxCUpPre
     (maxCUpPre, errUpUnit) = 
-        hillbaseApproxUp effCompDF effRingF effMultFDF effRealDF effEvalOpsDF x c degree
+        hillbaseApproxUp effCompDF effRingF effMultFDF effRealDF effEval x c degree
     maxCDn = 
         fst $ RefOrd.getEndpointsOut maxCDnPre
     maxCDnPre =
-        hillbaseApproxDn effGetEDF effCompDF effRingF effMultFDF effRealDF effEvalOpsDF x c dInit degree
+        hillbaseApproxDn effGetEDF effCompDF effRingF effMultFDF effRealDF effEval x c dInit degree
         where
         dInit = 
             (maxCUpAtC .<->. c)
                   .<*>| (2 :: Int)
 --                  .</>| (2 :: Int)
         maxCUpAtC =
-            evalOtherType (evalOpsEff effEvalOpsDF sampleF sampleDF) varC maxCUp
+            evalAtPointOutEff effEval varC maxCUp
         varC = fromAscList [(var, c)]
     c = 
         (neg aDn) .</>. aWidth
@@ -407,7 +407,7 @@ maxZeroDnUp
 
     (MinmaxEffortIndicatorFromRingOps 
         effTToDom effRealDF effGetEDF 
-        effEvalOpsT effEvalOpsDF 
+        effEvalOpsT effEval 
         effRingF effMultFDF _sizeLimits 
         _effRingT effFldTDF) = eff
 
@@ -418,19 +418,19 @@ hillbaseApproxUp ::
      ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      Show (Domain f), Show f)
     =>
     NumOrd.PartialCompareEffortIndicator (Domain f) -> 
     ArithInOut.RingOpsEffortIndicator f -> 
     ArithInOut.MixedMultEffortIndicator f (Domain f) -> 
     ArithInOut.RoundedRealEffortIndicator (Domain f) -> 
-    EvalOpsEffortIndicator f (Domain f) -> 
+    EvaluationEffortIndicator f -> 
     f {-^ the variable @x@ to use in the result uni-variate polynomial -} ->
     Domain f {-^ @c@ the only non-smooth point of the approximated piece-wise linear function -} ->
     Int {-^ @n@ Bernstein approximation degree -} ->
     (f, Domain f)
-hillbaseApproxUp effComp effRingF effMultFDF effRealDF effEvalOps x c n =
+hillbaseApproxUp effComp effRingF effMultFDF effRealDF effEval x c n =
 --    unsafePrintReturn ( "hillbaseApproxUp:"
 --        ++ "\n x = " ++ show x
 --        ++ "\n c = " ++ show c
@@ -445,7 +445,7 @@ hillbaseApproxUp effComp effRingF effMultFDF effRealDF effEvalOps x c n =
         valueAtC .<->. c
         where
         valueAtC =
-            evalOtherType (evalOpsEff effEvalOps sampleF sampleDF) varC result
+            evalAtPointOutEff effEval varC result
         varC = fromAscList [(var, c)]
     mkBT p =
 --        unsafePrint ( "mkBT:"
@@ -506,7 +506,7 @@ hillbaseApproxDn ::
      ArithInOut.RoundedMixedMultiply f (Domain f),
      ArithInOut.RoundedReal (Domain f),
      RefOrd.IntervalLike (Domain f),
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      Show (Domain f), Show f)
     =>
     RefOrd.GetEndpointsEffortIndicator (Domain f) -> 
@@ -514,13 +514,13 @@ hillbaseApproxDn ::
     ArithInOut.RingOpsEffortIndicator f -> 
     ArithInOut.MixedMultEffortIndicator f (Domain f) -> 
     ArithInOut.RoundedRealEffortIndicator (Domain f) ->
-    EvalOpsEffortIndicator f (Domain f) -> 
+    EvaluationEffortIndicator f -> 
     f {-^ the variable @x@ to use in the result uni-variate polynomial -} ->
     Domain f {-^ @c@ the only non-smooth point of the approximated piece-wise linear function -} ->
     Domain f {-^ @dInit@ initial value for the offset @d@ by which to translate the approximated fn down at point c -} ->
     Int {-^ @n@ Bernstein approximation degree -} ->
     f
-hillbaseApproxDn effGetE effComp effRingF effMultFDF effRealDF effEvalOps x c dInit n =
+hillbaseApproxDn effGetE effComp effRingF effMultFDF effRealDF effEval x c dInit n =
 --    unsafePrintReturn ( "hillbaseApproxDn:"
 --        ++ "\n x = " ++ show x
 --        ++ "\n c = " ++ show c
@@ -537,7 +537,7 @@ hillbaseApproxDn effGetE effComp effRingF effMultFDF effRealDF effEvalOps x c dI
         where
         (_, fnAtCRE) =
             RefOrd.getEndpointsOutEff effGetE fnAtC
-        fnAtC = evalOtherType (evalOpsEff effEvalOps sampleF sampleDF) varC fn
+        fnAtC = evalAtPointOutEff effEval varC fn
             where
             varC = fromAscList [(var, c)]
         fn = hillDnD d
@@ -553,7 +553,7 @@ hillbaseApproxDn effGetE effComp effRingF effMultFDF effRealDF effEvalOps x c dI
         where
         (fnAtCLE,_) =
             RefOrd.getEndpointsOutEff effGetE fnAtC
-        fnAtC = evalOtherType (evalOpsEff effEvalOps sampleF sampleDF) varC fn
+        fnAtC = evalAtPointOutEff effEval varC fn
             where
             varC = fromAscList [(var, c)]
         fn = hillDnD d

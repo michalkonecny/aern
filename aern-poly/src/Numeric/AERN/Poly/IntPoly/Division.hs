@@ -143,3 +143,71 @@ divOutEffUsingRecip effRecip@(effRingF, effRealD, _effFldFD) tauDegree f1 f2 =
 --    where
 --    f2Range = evalAtPointOutEff effEval (getDomainBox f2) f2 
 
+
+instance
+    (EffortIndicator (IntPolyEffort cf),
+     ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
+    =>
+    ArithInOut.RoundedMixedDivideEffort 
+        (IntPoly var cf) 
+        (IntPoly var cf) 
+    where
+    type MixedDivEffortIndicator 
+            (IntPoly var cf) 
+            (IntPoly var cf) = 
+        IntPolyEffort cf 
+    mixedDivDefaultEffort _ sample = 
+        ArithInOut.divDefaultEffort sample
+
+instance
+   (cf ~ Interval e, 
+    Ord var, Show var, Show cf, 
+    Show (Imprecision cf),
+    ArithInOut.RoundedReal cf,
+    NumOrd.PartialComparison (Imprecision cf),
+    HasAntiConsistency cf, 
+    Arbitrary cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
+    =>
+    ArithInOut.RoundedMixedDivide 
+        (IntPoly var cf)
+        (IntPoly var cf)
+    where
+    mixedDivOutEff = ArithInOut.divOutEff
+    mixedDivInEff = 
+        error "aern-poly: IntPoly does not support inwards-rounded mixed division" 
+        
+instance
+    (EffortIndicator (IntPolyEffort (Interval e)),
+     ArithInOut.RoundedReal (Interval e),
+     ArithInOut.RoundedMixedField (IntPoly var (Interval e)) (Interval e)) 
+    =>
+    ArithInOut.RoundedMixedFieldEffort 
+        (IntPoly var (Interval e))
+        (IntPoly var (Interval e))
+    where
+    type MixedFieldOpsEffortIndicator 
+        (IntPoly var (Interval e))
+        (IntPoly var (Interval e)) =
+        IntPolyEffort (Interval e)
+    mixedFieldOpsDefaultEffort (IntPoly cfg _) _sample = 
+        ipolycfg_effort cfg
+    mxfldEffortAdd _ _ eff = eff
+    mxfldEffortMult _ _ eff = eff 
+    mxfldEffortDiv _ _ eff = eff 
+
+instance 
+   (cf ~ Interval e, 
+    Ord var, Show var, Show cf, 
+    Show (Imprecision cf),
+    ArithInOut.RoundedReal cf,
+    NumOrd.PartialComparison (Imprecision cf),
+    HasAntiConsistency cf, 
+    Arbitrary cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
+    =>
+    ArithInOut.RoundedMixedField 
+        (IntPoly var cf)
+        (IntPoly var cf)
+        

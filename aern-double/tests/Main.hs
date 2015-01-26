@@ -16,8 +16,6 @@ import Numeric.AERN.RealArithmetic.Basis.Double
 import Numeric.AERN.RealArithmetic.Interval.Double
 import Numeric.AERN.RealArithmetic.Interval
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps
-import Numeric.AERN.RealArithmetic.Interval.Mutable
-import Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps
 import Numeric.AERN.Basics.Interval
 
 import Numeric.AERN.Basics.Consistency
@@ -42,7 +40,6 @@ testsDouble =
 --       NumOrd.testsArbitraryTuple ("Double", sampleD, NumOrd.compare),
        NumOrd.testsPartialComparison ("Double", sampleD) areaD,
        NumOrd.testsRoundedLatticeDistributive ("Double", sampleD) areaD,
-       NumOrd.testsRoundedLatticeInPlace ("Double", sampleD),
        testsDistance ("Double", sampleD),
        ArithUpDn.testsConvert ("Double", sampleD, "Integer", sampleI),
        ArithUpDn.testsConvert ("Integer", sampleI, "Double", sampleD),
@@ -55,13 +52,9 @@ testsDouble =
        ArithUpDn.testsUpDnMult ("Double", sampleD),
        ArithUpDn.testsUpDnIntPower ("Double", sampleD),
        ArithUpDn.testsUpDnDiv ("Double", sampleD),
-       ArithUpDn.testsUpDnFieldOpsInPlace ("Double", sampleD),
        ArithUpDn.testsUpDnMixedFieldOps ("Double", sampleD) ("Integer", sampleI),
        ArithUpDn.testsUpDnMixedFieldOps ("Double", sampleD) ("Rational", sampleR),
-       ArithUpDn.testsUpDnMixedFieldOps ("Double", sampleD) ("Double", sampleD),
-       ArithUpDn.testsUpDnMixedFieldOpsInPlace ("Double", sampleD) ("Integer", sampleI),
-       ArithUpDn.testsUpDnMixedFieldOpsInPlace ("Double", sampleD) ("Rational", sampleR),
-       ArithUpDn.testsUpDnMixedFieldOpsInPlace ("Double", sampleD) ("Double", sampleD)
+       ArithUpDn.testsUpDnMixedFieldOps ("Double", sampleD) ("Double", sampleD)
     ]
 
 testsDI =
@@ -69,12 +62,9 @@ testsDI =
        testsConsistency ("DI", sampleDI),
        NumOrd.testsPartialComparison ("DI", sampleDI) areaDI,
        NumOrd.testsRefinementRoundedLatticeDistributiveMonotone  ("DI", sampleDI) areaDI,
-       NumOrd.testsRefinementRoundedLatticeInPlace ("DI", sampleDI),
        RefOrd.testsPartialComparison  ("DI", sampleDI) areaDI, 
        RefOrd.testsRoundedBasis ("DI", sampleDI),
-       RefOrd.testsOuterInnerRoundedBasisInPlace ("DI", sampleDI),
        RefOrd.testsRoundedLatticeDistributive ("DI", sampleDI) areaDI,
-       RefOrd.testsOuterInnerRoundedLatticeInPlace ("DI", sampleDI),
        testsDistance ("DI", sampleDI),
        testsImprecision ("DI", sampleDI),
        ArithInOut.testsConvertNumOrd ("Integer", sampleI, "DI", sampleDI),
@@ -86,17 +76,11 @@ testsDI =
        ArithInOut.testsInOutMult ("DI", sampleDI) areaDI,
        ArithInOut.testsInOutIntPower ("DI", sampleDI) areaDI,
        ArithInOut.testsInOutDiv ("DI", sampleDI) areaDI,
-       ArithInOut.testsInOutFieldOpsInPlace ("DI", sampleDI),
        ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Integer", sampleI) areaDI,
        ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Rational", sampleR) areaDI,
        ArithInOut.testsInOutMixedFieldOps ("DI", sampleDI) ("Double", sampleD) areaDI,
-       ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Integer", sampleI),
-       ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Rational", sampleR),
-       ArithInOut.testsInOutMixedFieldOpsInPlace ("DI", sampleDI) ("Double", sampleD),
        ArithInOut.testsInOutExp ("DI", sampleDI),
-       ArithInOut.testsInOutExpInPlace ("DI", sampleDI),
-       ArithInOut.testsInOutSqrt ("DI", sampleDI) unPositiveDI,
-       ArithInOut.testsInOutSqrtInPlace ("DI", sampleDI) unPositiveDI
+       ArithInOut.testsInOutSqrt ("DI", sampleDI) unPositiveDI
     ]
 
 areaD = areaWhole sampleD

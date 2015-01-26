@@ -17,7 +17,6 @@
 module Numeric.AERN.RefinementOrder.RoundedBasis 
 where
 
-import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.Effort

@@ -70,23 +70,19 @@ Library
         aern-real == 0.5.*,
         aern-interval == 0.5.*
   Exposed-modules:
-    Numeric.AERN.DoubleBasis.Interval
-    Numeric.AERN.DoubleBasis.MInterval 
-    Numeric.AERN.DoubleBasis.RealApprox 
-    Numeric.AERN.DoubleBasis.MRealApprox 
-    Numeric.AERN.DoubleBasis.RealIntervalApprox
-    Numeric.AERN.DoubleBasis.MRealIntervalApprox 
-    Numeric.AERN.RealArithmetic.Basis.Double
+    Numeric.AERN.DoubleBasis.Interval,
+    Numeric.AERN.DoubleBasis.RealApprox,
+    Numeric.AERN.DoubleBasis.RealIntervalApprox,
+    Numeric.AERN.RealArithmetic.Basis.Double,
     Numeric.AERN.RealArithmetic.Interval.Double
 
   Other-modules:
-    Numeric.AERN.RealArithmetic.Basis.Double.Conversion
-    Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder
-    Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
-    Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps
-    Numeric.AERN.RealArithmetic.Basis.Double.Mutable
-    Numeric.AERN.RealArithmetic.Basis.Double.Measures
-    Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals
+    Numeric.AERN.RealArithmetic.Basis.Double.Conversion,
+    Numeric.AERN.RealArithmetic.Basis.Double.NumericOrder,
+    Numeric.AERN.RealArithmetic.Basis.Double.FieldOps,
+    Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps,
+    Numeric.AERN.RealArithmetic.Basis.Double.Measures,
+    Numeric.AERN.RealArithmetic.Basis.Double.ShowInternals,
     Numeric.AERN.RealArithmetic.Basis.Double.SpecialConst
 
 Executable testAERN-Real-Double

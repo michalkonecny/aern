@@ -261,9 +261,6 @@ minmaxUpDnEff = effIP { ipolyeff_minmaxBernsteinDegree = 10 }
 minmaxInOutEff :: IntPolyEffort CF
 minmaxInOutEff = effIP { ipolyeff_minmaxBernsteinDegree = 10 }
 
-evalOpsOutCf :: PolyEvalOps String CF CF
-evalOpsOutCf = evalOpsEff effIP x (0::CF)
-
 numCompare :: 
      NumOrd.PartialComparison t 
      =>

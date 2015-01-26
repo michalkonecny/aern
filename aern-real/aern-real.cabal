@@ -41,7 +41,7 @@ source-repository this
 
 
 Library
-  hs-source-dirs: src
+  hs-source-dirs: src concepts
   ghc-options:    -Wall
   Build-Depends:
         base >= 4.4,
@@ -59,29 +59,20 @@ Library
                   Numeric.AERN.RealArithmetic.Measures,
                   Numeric.AERN.RealArithmetic.NumericOrderRounding,
                   Numeric.AERN.RealArithmetic.NumericOrderRounding.Operators,
-                  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace,
-                  Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Operators,
-                  Numeric.AERN.RealArithmetic.NumericOrderRounding.ElementaryFromFieldOps.Sqrt
+                  Numeric.AERN.RealArithmetic.NumericOrderRounding.ElementaryFromFieldOps.Sqrt,
                   Numeric.AERN.RealArithmetic.RefinementOrderRounding,
-                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
-                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace,
-                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.Operators,
-                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
+                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators,
+                  Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation,
                   Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.SineCosine
   Other-modules:
+    BinaryOpsSimplified,
     Numeric.AERN.RealArithmetic.NumericOrderRounding.Conversion,
     Numeric.AERN.RealArithmetic.NumericOrderRounding.Elementary,
     Numeric.AERN.RealArithmetic.NumericOrderRounding.FieldOps,
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.Elementary,
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.FieldOps,
-    Numeric.AERN.RealArithmetic.NumericOrderRounding.InPlace.MixedFieldOps,
     Numeric.AERN.RealArithmetic.NumericOrderRounding.SpecialConst,
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.Conversion,
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.Elementary,
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.FieldOps,
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.Elementary,
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.FieldOps,
-    Numeric.AERN.RealArithmetic.RefinementOrderRounding.InPlace.MixedFieldOps,
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.MixedFieldOps,
     Numeric.AERN.RealArithmetic.RefinementOrderRounding.SpecialConst,
     Numeric.AERN.RealArithmetic.NumericOrderRounding.MixedFieldOps

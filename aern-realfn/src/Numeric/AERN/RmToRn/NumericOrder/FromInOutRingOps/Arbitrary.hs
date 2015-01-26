@@ -78,7 +78,7 @@ arbitraryInArea4FunFromRingOps ::
     (HasDomainBox fn,  HasConstFns fn, HasProjections fn, 
      ArithInOut.RoundedAdd fn,
      ArithInOut.RoundedMultiply fn,
-     HasEvalOps fn (Domain fn),
+     CanEvaluate fn,
      Show (Domain fn), IntervalLike (Domain fn),
      ArithInOut.RoundedReal (Domain fn),
      RefOrd.ArbitraryOrderedTuple (Domain fn),
@@ -88,7 +88,7 @@ arbitraryInArea4FunFromRingOps ::
     =>
     ((ArithInOut.RoundedRealEffortIndicator (Domain fn),
       GetEndpointsEffortIndicator (Domain fn),
-      EvalOpsEffortIndicator fn (Domain fn)
+      EvaluationEffortIndicator fn
      ),
      (ArithInOut.AddEffortIndicator fn,
       ArithInOut.MultEffortIndicator fn
@@ -105,14 +105,14 @@ arbitraryInArea4FunFromRingOps
         ((effDom, effGetEndptsDom, effEval), 
          (effAddFn, effMultFn), 
          (effAddFnDFn, effMultFnDFn))
-        fnSequence
+        fnSequence2
         fixedRandSeqQuantityOfSize
         area@(sampleFn, maybeRange)
     =
     arbitraryFnFromSequence
     where
     arbitraryFnFromSequence =
-        arbitraryFromSequence fnSequence 
+        arbitraryFromSequence fnSequence2
     arbitraryFromSequence seq 
         =
         sized $ \size ->
@@ -144,7 +144,7 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps ::
      HasDomainBox fn,  HasConstFns fn, HasProjections fn, 
      ArithInOut.RoundedAdd fn,
      ArithInOut.RoundedMultiply fn,
-     HasEvalOps fn (Domain fn),
+     CanEvaluate fn,
      Show (Domain fn), IntervalLike (Domain fn),
      ArithInOut.RoundedReal (Domain fn),
      RefOrd.ArbitraryOrderedTuple (Domain fn),
@@ -154,7 +154,7 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps ::
     =>
     ((ArithInOut.RoundedRealEffortIndicator (Domain fn),
       GetEndpointsEffortIndicator (Domain fn),
-      EvalOpsEffortIndicator fn (Domain fn)
+      EvaluationEffortIndicator fn
      ),
      (ArithInOut.AddEffortIndicator fn,
       ArithInOut.MultEffortIndicator fn
@@ -173,7 +173,7 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
         ((effDom, effGetEndptsDom, effEval), 
          (effAddFn, effMultFn), 
          (effAddFnDFn, effMultFnDFn))
-        fnSequence
+        (fnSequence2 :: [fn])
         fixedRandSeqQuantityOfSize
         area@(sampleFn, maybeRange)
         indices rels
@@ -187,7 +187,7 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
                 do
                 fn <- arbitraryFnFromSequence
                 return [fn]
-        ([i1,i2], [((i1a,i2a),[NC])]) ->
+        ([_i1,_i2], [((_i1a,_i2a),[NC])]) ->
             Just $
                 do
                 fn1 <- arbitraryFnFromSequence
@@ -204,7 +204,7 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
             ((effDom, effGetEndptsDom, effEval), 
              (effAddFn, effMultFn), 
              (effAddFnDFn, effMultFnDFn))
-            fnSequence fixedRandSeqQuantityOfSize area
+            fnSequence2 fixedRandSeqQuantityOfSize area
 
     (.</>.) = ArithInOut.divOutEff effDivDom
     (.<*>.) = ArithInOut.multOutEff effMulDom
@@ -220,20 +220,19 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
     effRefComp = ArithInOut.rrEffortRefComp sampleDom effDom
     effJoin = ArithInOut.rrEffortJoinMeet sampleDom effDom
     
+    ensureOverlap :: [fn] -> [fn]
     ensureOverlap fns@[fn1,fn2] = [fn1,fn2Shifted]
         where
         fn2Shifted = fn2 ~<+>. ((evalAtPt fn1) .<->. (evalAtPt fn2))
         pt = getSampleFromInsideDomainBox fn1 domainBox 
-        sampleDom = getSampleDomValue fn1
         domainBox = getDomainBox fn1
         evalAtPt fn =
-            evalOtherType (evalOpsEff effEval fn sampleDom) pt fn 
+            evalAtPointOutEff effEval pt fn 
     addBounds fn = (fn, lower, upper)
         where
         (lower, upper) = getEndpointsOutEff effGetEndptsDom range
-        range = evalOtherType (evalOpsEff effEval fn sampleDom) domainbox fn
+        range = evalAtPointOutEff effEval domainbox fn
         domainbox = getDomainBox fn
-        sampleDom = getSampleDomValue fn
     pickAndShiftGetSorted seed n list 
         | n < 1 = []
         | otherwise 
@@ -295,6 +294,13 @@ arbitraryTupleInAreaRelatedBy4FunFromRingOps
                 (_, (_,listR)) = last list
                 listWidth = listR .<->. listL 
 
+fnSequence ::
+    (HasConstFns a, HasProjections a, ArithInOut.RoundedMultiply a,
+     ArithInOut.RoundedMixedMultiply a (Domain a), HasOne (Domain a),
+     HasInfinities (Domain a), RefOrd.ArbitraryOrderedTuple (Domain a),
+     IntervalLike (Domain a), ArithInOut.RoundedAdd a) 
+     =>
+    (Int -> Int) -> a -> [a]
 fnSequence fixedRandSeqQuantityOfSize sampleFn = 
     fixedRandSeq fixedRandSeqQuantityOfSize $ 
         arbitraryFn (effAddFn, effMultFn, effMultFnDFn, effGetEndptsDom) sampleFn

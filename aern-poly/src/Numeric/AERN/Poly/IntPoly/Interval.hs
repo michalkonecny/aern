@@ -38,24 +38,21 @@ import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.RealArithmetic.Measures
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsImplicitEffort
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
---import Numeric.AERN.NumericOrder.OpsImplicitEffort
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.RealArithmetic.Interval (IntervalRealEffort(..), intrealeff_intordeff)
+import Numeric.AERN.RealArithmetic.Interval.MixedFieldOps (intervalMixedAddInEff, intervalMixedAddOutEff)
+
 import Numeric.AERN.RmToRn.Interval ()
 
 import Numeric.AERN.Basics.Consistency
---import Numeric.AERN.Basics.Effort
 
---import qualified Data.IntMap as IntMap
---import qualified Data.Map as Map
-
-import Test.QuickCheck
+import Test.QuickCheck (Arbitrary)
 
 import Numeric.AERN.Misc.Debug
+
 _ = unsafePrint
 
 instance

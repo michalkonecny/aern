@@ -28,7 +28,6 @@ import Numeric.AERN.Basics.PartialOrdering
 import Numeric.AERN.Basics.Interval.Arbitrary
 import Numeric.AERN.Basics.Interval.Basics
 import Numeric.AERN.Basics.Interval.Consistency ()
-import Numeric.AERN.Basics.Interval.Mutable
 
 import Numeric.AERN.Misc.List
 
@@ -123,39 +122,6 @@ instance
         where
         effMinmax = intordeff_eMinmax effort
 
-instance
-    (NumOrd.PartialComparison e, NumOrd.RoundedLatticeInPlace e) 
-    =>
-    (NumOrd.RefinementRoundedLatticeInPlace (Interval e))
-    where
-    minOutInPlaceEff effort 
-            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
-        do
-        NumOrd.minDnInPlaceEff effMinmax resLM l1M l2M
-        NumOrd.minUpInPlaceEff effMinmax resRM r1M r2M
-        where
-        effMinmax = intordeff_eMinmax effort
-    maxOutInPlaceEff effort 
-            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
-        do
-        NumOrd.maxDnInPlaceEff effMinmax resLM l1M l2M
-        NumOrd.maxUpInPlaceEff effMinmax resRM r1M r2M
-        where
-        effMinmax = intordeff_eMinmax effort
-    minInInPlaceEff effort 
-            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
-        do
-        NumOrd.minUpInPlaceEff effMinmax resLM l1M l2M
-        NumOrd.minDnInPlaceEff effMinmax resRM r1M r2M
-        where
-        effMinmax = intordeff_eMinmax effort
-    maxInInPlaceEff effort 
-            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
-        do
-        NumOrd.maxUpInPlaceEff effMinmax resLM l1M l2M
-        NumOrd.maxDnInPlaceEff effMinmax resRM r1M r2M
-        where
-        effMinmax = intordeff_eMinmax effort
 
 instance (NumOrd.HasLeast e) => (NumOrd.HasLeast (Interval e))
     where

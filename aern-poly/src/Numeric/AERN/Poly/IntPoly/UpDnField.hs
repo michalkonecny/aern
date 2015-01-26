@@ -310,6 +310,20 @@ instance
 {----- mixed addition up/dn via out -----}    
 
 instance
+    (EffortIndicator (IntPolyEffort (Interval e))) 
+    =>
+    ArithUpDn.RoundedMixedAddEffort 
+        (IntPoly var (Interval e)) 
+        (IntPoly var (Interval e)) 
+    where
+    type MixedAddEffortIndicator 
+            (IntPoly var (Interval e)) 
+            (IntPoly var (Interval e)) = 
+        IntPolyEffort (Interval e)
+    mixedAddDefaultEffort (IntPoly cfg _) _sampleOther = 
+        ipolycfg_effort cfg 
+
+instance
     (EffortIndicator (IntPolyEffort (Interval e)),
      ArithInOut.RoundedMixedAddEffort (Interval e) (Interval e)) 
     =>
@@ -369,6 +383,24 @@ instance
     mixedAddDefaultEffort (IntPoly cfg _) _sampleOther = 
         ipolycfg_effort cfg 
 
+instance
+    (EffortIndicator (IntPolyEffort (Interval e)), 
+     ArithInOut.RoundedReal (Interval e),
+     ArithInOut.RoundedAdd (IntPoly var (Interval e)))
+    =>
+    ArithUpDn.RoundedMixedAdd 
+        (IntPoly var (Interval e)) 
+        (IntPoly var (Interval e)) 
+    where
+    mixedAddUpEff eff p1 other =
+        snd $ 
+            polyGetEndpointsOutEff (ipolyeff_cfGetEndpointsEffort eff) $ 
+                ArithInOut.mixedAddOutEff eff p1 other
+    mixedAddDnEff eff p1 other =
+        fst $ 
+            polyGetEndpointsOutEff (ipolyeff_cfGetEndpointsEffort eff) $ 
+                ArithInOut.mixedAddOutEff eff p1 other
+    
 instance
     (ArithInOut.RoundedMixedAdd (Interval e) (Interval e),
      ArithInOut.RoundedReal (Interval e),
@@ -469,6 +501,20 @@ instance
 {----- mixed multiplication up/dn via out -----}    
 
 instance
+    (EffortIndicator (IntPolyEffort (Interval e)))
+    => 
+    ArithUpDn.RoundedMixedMultiplyEffort 
+        (IntPoly var (Interval e)) 
+        (IntPoly var (Interval e)) 
+    where
+    type MixedMultEffortIndicator 
+            (IntPoly var (Interval e)) 
+            (IntPoly var (Interval e)) = 
+        IntPolyEffort (Interval e)
+    mixedMultDefaultEffort (IntPoly cfg _) _sampleOther = 
+        ipolycfg_effort cfg 
+
+instance
     (ArithInOut.RoundedMixedMultiplyEffort (Interval e) (Interval e), 
      EffortIndicator (IntPolyEffort (Interval e)))
     => 
@@ -527,6 +573,24 @@ instance
     mixedMultDefaultEffort (IntPoly cfg _) _sampleOther = 
         ipolycfg_effort cfg 
 
+instance
+    (EffortIndicator (IntPolyEffort (Interval e)), 
+     ArithInOut.RoundedReal (Interval e),
+     ArithInOut.RoundedMultiply (IntPoly var (Interval e)))
+    =>
+    ArithUpDn.RoundedMixedMultiply 
+        (IntPoly var (Interval e)) 
+        (IntPoly var (Interval e)) 
+    where
+    mixedMultUpEff eff p1 other =
+        snd $ 
+            polyGetEndpointsOutEff (ipolyeff_cfGetEndpointsEffort eff) $ 
+                ArithInOut.mixedMultOutEff eff p1 other
+    mixedMultDnEff eff p1 other =
+        fst $ 
+            polyGetEndpointsOutEff (ipolyeff_cfGetEndpointsEffort eff) $ 
+                ArithInOut.mixedMultOutEff eff p1 other
+    
 instance
     (ArithInOut.RoundedMixedMultiply (Interval e) (Interval e),
      ArithInOut.RoundedReal (Interval e),
@@ -624,6 +688,37 @@ instance
             polyGetEndpointsOutEff (ipolyeff_cfGetEndpointsEffort eff) $ 
                 ArithInOut.mixedMultOutEff eff p1 other
 
+
+instance
+    (EffortIndicator (IntPolyEffort (Interval e)), 
+     ArithInOut.RoundedReal (Interval e))
+    => 
+    ArithUpDn.RoundedMixedRingEffort 
+        (IntPoly var (Interval e))
+        (IntPoly var (Interval e))
+    where
+    type MixedRingOpsEffortIndicator 
+            (IntPoly var (Interval e))
+            (IntPoly var (Interval e)) =
+        IntPolyEffort (Interval e)
+    mixedRingOpsDefaultEffort (IntPoly cfg _) _sampleOther = 
+        ipolycfg_effort cfg 
+    mxringEffortAdd _sampleP _sampleI eff = eff 
+    mxringEffortMult _sampleP _sampleI eff = eff 
+
+instance
+    (cf ~ Interval e,
+     ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedRing cf (Interval e),
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Arbitrary cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithUpDn.RoundedMixedRing 
+        (IntPoly var (Interval e))
+        (IntPoly var (Interval e))
 
 instance
     (Ord var,
@@ -754,6 +849,44 @@ instance
     ArithUpDn.RoundedMixedRing (IntPoly var cf) Double
 
 {----- mixed division up/dn via out -----}    
+
+instance
+    (EffortIndicator (IntPolyEffort (Interval e)),
+     ArithInOut.RoundedMixedDivideEffort (Interval e) (Interval e)) 
+    => 
+    ArithUpDn.RoundedMixedDivideEffort 
+        (IntPoly var (Interval e)) 
+        (IntPoly var (Interval e)) 
+    where
+    type MixedDivEffortIndicator 
+            (IntPoly var (Interval e)) 
+            (IntPoly var (Interval e)) = 
+        IntPolyEffort (Interval e)
+    mixedDivDefaultEffort (IntPoly cfg _) _sampleOther = 
+        ipolycfg_effort cfg 
+
+instance
+   (cf ~ Interval e, 
+    Ord var, Show var, Show cf, 
+    Show (Imprecision cf),
+    ArithInOut.RoundedReal cf,
+    NumOrd.PartialComparison (Imprecision cf),
+    HasAntiConsistency cf, 
+    Arbitrary cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
+    =>
+    ArithUpDn.RoundedMixedDivide 
+        (IntPoly var (Interval e))
+        (IntPoly var (Interval e))
+    where
+    mixedDivUpEff eff p1 other =
+        snd $ 
+            polyGetEndpointsOutEff (ipolyeff_cfGetEndpointsEffort eff) $ 
+                ArithInOut.mixedDivOutEff eff p1 other
+    mixedDivDnEff eff p1 other =
+        fst $ 
+            polyGetEndpointsOutEff (ipolyeff_cfGetEndpointsEffort eff) $ 
+                ArithInOut.mixedDivOutEff eff p1 other
 
 instance
     (EffortIndicator (IntPolyEffort (Interval e)),
@@ -917,6 +1050,39 @@ instance
     ArithUpDn.RoundedMixedFieldEffort (IntPoly var (Interval e)) (Interval e)
     where
     type MixedFieldOpsEffortIndicator (IntPoly var (Interval e)) (Interval e) =
+        IntPolyEffort (Interval e)
+    mixedFieldOpsDefaultEffort (IntPoly cfg _) _sampleOther = 
+        ipolycfg_effort cfg 
+    mxfldEffortAdd _sampleP _sampleI eff = eff 
+    mxfldEffortMult _sampleP _sampleI eff = eff 
+    mxfldEffortDiv _sampleP _sampleI eff = eff 
+
+instance
+   (cf ~ Interval e, 
+    Ord var, Show var, Show cf, 
+    Show (Imprecision cf),
+    ArithInOut.RoundedReal cf,
+    NumOrd.PartialComparison (Imprecision cf),
+    HasAntiConsistency cf, 
+    Arbitrary cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
+    =>
+    ArithUpDn.RoundedMixedField 
+        (IntPoly var (Interval e))
+        (IntPoly var (Interval e))
+
+instance
+    (Ord var,
+     ArithInOut.RoundedReal (Interval e),
+     ArithInOut.RoundedMixedFieldEffort (Interval e) (Interval e)) 
+    => 
+    ArithUpDn.RoundedMixedFieldEffort 
+        (IntPoly var (Interval e))
+        (IntPoly var (Interval e))
+    where
+    type MixedFieldOpsEffortIndicator 
+            (IntPoly var (Interval e))
+            (IntPoly var (Interval e)) =
         IntPolyEffort (Interval e)
     mixedFieldOpsDefaultEffort (IntPoly cfg _) _sampleOther = 
         ipolycfg_effort cfg 

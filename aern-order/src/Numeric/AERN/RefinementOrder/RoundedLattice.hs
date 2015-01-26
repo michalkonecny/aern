@@ -19,7 +19,6 @@ where
 
 import Numeric.AERN.Basics.Exception
 
-import Numeric.AERN.Basics.Mutable
 import Control.Monad.ST (ST)
 
 import Numeric.AERN.Basics.Arbitrary

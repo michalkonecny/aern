@@ -341,7 +341,33 @@ instance
     mixedMultInEff = 
         error "aern-poly: IntPoly does not support inwards-rounded mixed multiplication" 
 
-        
+instance
+    (EffortIndicator (IntPolyEffort (Interval e)), 
+     ArithInOut.RoundedReal (Interval e))
+    =>
+    ArithInOut.RoundedMixedMultiplyEffort 
+        (IntPoly var (Interval e)) 
+        (IntPoly var (Interval e)) 
+    where
+    type MixedMultEffortIndicator 
+            (IntPoly var (Interval e)) 
+            (IntPoly var (Interval e)) = 
+        IntPolyEffort (Interval e) 
+    mixedMultDefaultEffort _ sample = 
+        ArithInOut.addDefaultEffort sample
+
+instance
+    (EffortIndicator (IntPolyEffort (Interval e)), 
+     ArithInOut.RoundedReal (Interval e),
+     ArithInOut.RoundedMultiply (IntPoly var (Interval e)))
+    =>
+    ArithInOut.RoundedMixedMultiply 
+        (IntPoly var (Interval e))
+        (IntPoly var (Interval e))
+    where
+    mixedMultOutEff = ArithInOut.multOutEff
+    mixedMultInEff = 
+        error "aern-poly: IntPoly does not support inwards-rounded mixed multiplication" 
 
 instance
     (RefOrd.IntervalLike cf, 
@@ -486,6 +512,37 @@ instance
     =>
     ArithInOut.RoundedMixedRing (IntPoly var (Interval e)) (Interval e)
 
+instance
+    (EffortIndicator (IntPolyEffort (Interval e)), 
+     ArithInOut.RoundedReal (Interval e))
+    => 
+    ArithInOut.RoundedMixedRingEffort 
+        (IntPoly var (Interval e))
+        (IntPoly var (Interval e))
+    where
+    type MixedRingOpsEffortIndicator 
+            (IntPoly var (Interval e))
+            (IntPoly var (Interval e)) =
+        IntPolyEffort (Interval e)
+    mixedRingOpsDefaultEffort (IntPoly cfg _) _sample = 
+        ipolycfg_effort cfg
+    mxringEffortAdd _ _ eff = eff
+    mxringEffortMult _ _ eff = eff 
+
+instance 
+    (cf ~ Interval e,
+     ArithInOut.RoundedReal cf,
+     ArithInOut.RoundedMixedRing cf (Interval e),
+     HasAntiConsistency cf,
+     RefOrd.IntervalLike cf,
+     Arbitrary cf,
+     Show var, Ord var, Show cf,
+     NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithInOut.RoundedMixedRing 
+        (IntPoly var (Interval e))
+        (IntPoly var (Interval e))
+
 {-------------------------------}
 {----  division by a scalar ----}
 {-------------------------------}
@@ -578,6 +635,26 @@ instance
     mixedDivOutEff = mixedDivOutEffGeneric ArithInOut.rrEffortDoubleMixedField 0
     mixedDivInEff = mixedDivInEffGeneric ArithInOut.rrEffortDoubleMixedField 0
 
+mixedDivOutEffGeneric, mixedDivInEffGeneric :: 
+    (Ord var, Show cf, Show var, ArithInOut.RoundedReal cf,
+     RefOrd.IntervalLike cf, HasConsistency cf,
+     ArithInOut.RoundedMixedField cf t) 
+     =>
+    (cf -> ArithInOut.RoundedRealEffortIndicator cf -> ArithInOut.MixedFieldOpsEffortIndicator cf t)
+    -> t
+    -> IntPolyEffort cf
+    -> IntPoly var cf -> t -> IntPoly var cf
+mixedDivOutEffGeneric rrEffortMixedField sampleT eff (IntPoly cfg terms) a = 
+    IntPoly cfg $ scaleTerms (/|) a terms
+    where
+    (/|) = ArithInOut.mixedDivOutEff effMixedDiv
+    effMixedDiv = ArithInOut.mxfldEffortDiv sampleCf sampleT effMixedField
+    effMixedField = rrEffortMixedField sampleCf effCf
+    effCf = ipolyeff_cfRoundedRealEffort eff
+    sampleCf = ipolycfg_sample_cf cfg
+mixedDivInEffGeneric =
+    error "aern-poly: IntPoly does not support inwards-rounded mixed division" 
+        
 instance
     (EffortIndicator (IntPolyEffort (Interval e)))
     => 
@@ -606,26 +683,6 @@ instance
     mixedDivInEff =
         error "aern-poly: IntPoly does not support inwards-rounded mixed division" 
 
-mixedDivOutEffGeneric, mixedDivInEffGeneric :: 
-    (Ord var, Show cf, Show var, ArithInOut.RoundedReal cf,
-     RefOrd.IntervalLike cf, HasConsistency cf,
-     ArithInOut.RoundedMixedField cf t) 
-     =>
-    (cf -> ArithInOut.RoundedRealEffortIndicator cf -> ArithInOut.MixedFieldOpsEffortIndicator cf t)
-    -> t
-    -> IntPolyEffort cf
-    -> IntPoly var cf -> t -> IntPoly var cf
-mixedDivOutEffGeneric rrEffortMixedField sampleT eff (IntPoly cfg terms) a = 
-    IntPoly cfg $ scaleTerms (/|) a terms
-    where
-    (/|) = ArithInOut.mixedDivOutEff effMixedDiv
-    effMixedDiv = ArithInOut.mxfldEffortDiv sampleCf sampleT effMixedField
-    effMixedField = rrEffortMixedField sampleCf effCf
-    effCf = ipolyeff_cfRoundedRealEffort eff
-    sampleCf = ipolycfg_sample_cf cfg
-mixedDivInEffGeneric =
-    error "aern-poly: IntPoly does not support inwards-rounded mixed division" 
-        
         
 instance
     (EffortIndicator (IntPolyEffort cf),

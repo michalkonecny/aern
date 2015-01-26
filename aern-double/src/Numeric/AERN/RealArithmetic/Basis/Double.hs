@@ -23,7 +23,6 @@ import Numeric.AERN.RealArithmetic.Basis.Double.Conversion
 import Numeric.AERN.RealArithmetic.Basis.Double.FieldOps
 import Numeric.AERN.RealArithmetic.Basis.Double.MixedFieldOps
 import Numeric.AERN.RealArithmetic.Basis.Double.Measures
-import Numeric.AERN.RealArithmetic.Basis.Double.Mutable
 import Numeric.AERN.RealArithmetic.Basis.Double.SpecialConst
 
 import Numeric.AERN.RealArithmetic.NumericOrderRounding
@@ -57,5 +56,3 @@ instance RoundedReal Double where
     rrEffortIntegerMixedField _ _ = ()
     rrEffortDoubleMixedField _ _ = ()
     rrEffortRationalMixedField _ _ = ()
-    
-instance RoundedRealInPlace Double

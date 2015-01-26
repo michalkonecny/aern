@@ -260,3 +260,48 @@ instance RoundedMixedFieldEffort MPFR Double
 instance RoundedMixedField MPFR Double
 
 
+instance RoundedMixedAddEffort MPFR MPFR
+    where
+    type MixedAddEffortIndicator MPFR MPFR = ()
+    mixedAddDefaultEffort _ _ = ()
+instance RoundedMixedAdd MPFR MPFR
+    where
+    mixedAddUpEff = addUpEff
+    mixedAddDnEff = addDnEff
+
+instance RoundedMixedMultiplyEffort MPFR MPFR
+    where
+    type MixedMultEffortIndicator MPFR MPFR = ()
+    mixedMultDefaultEffort _ _ = () 
+instance RoundedMixedMultiply MPFR MPFR
+    where
+    mixedMultUpEff = multUpEff
+    mixedMultDnEff = multDnEff
+
+instance RoundedMixedDivideEffort MPFR MPFR
+    where
+    type MixedDivEffortIndicator MPFR MPFR = ()
+    mixedDivDefaultEffort _ _ = () 
+instance RoundedMixedDivide MPFR MPFR
+    where
+    mixedDivUpEff = divUpEff
+    mixedDivDnEff = divDnEff
+
+instance RoundedMixedRingEffort MPFR MPFR
+    where
+    type MixedRingOpsEffortIndicator MPFR MPFR = ()
+    mixedRingOpsDefaultEffort _ _ = ()
+    mxringEffortAdd _ _ _ = ()
+    mxringEffortMult _ _ _ = ()
+
+instance RoundedMixedRing MPFR MPFR
+
+instance RoundedMixedFieldEffort MPFR MPFR
+    where
+    type MixedFieldOpsEffortIndicator MPFR MPFR = ()
+    mixedFieldOpsDefaultEffort _ _ = ()
+    mxfldEffortAdd _ _ _ = ()
+    mxfldEffortMult _ _ _ = ()
+    mxfldEffortDiv _ _ _ = ()
+
+instance RoundedMixedField MPFR MPFR

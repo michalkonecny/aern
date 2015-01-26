@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
---{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-|
     Module      :  Numeric.AERN.RefinementOrderRounding.MixedFieldOps
     Description :  rounded basic arithmetic operations mixing 2 types
@@ -86,12 +86,11 @@ mixedAddOut a b = mixedAddOutEff (mixedAddDefaultEffort a b) a b
 (<+>|) :: (RoundedMixedAdd t tn) => t -> tn -> t
 (<+>|) = mixedAddOut
 
-{- 
-    The following makes sense but it quickly leads to overlapping instances.
-    In particular, there is a conflict with the instance for (Interval e) (Interval e2).
-    To avoid overlapping instances, the instances should be as concrete as possible. 
--} 
-
+--{- 
+--    The following would lead to overlapping instances, eg
+--    with "e (Interval e)" or "(Interval (IntPoly String (Interval e)) (Interval e)".
+---} 
+--
 --instance (RoundedAddEffort t) => (RoundedMixedAddEffort t t)
 --    where
 --    type MixedAddEffortIndicator t t = AddEffortIndicator t
@@ -191,11 +190,11 @@ mixedMultOut a b = mixedMultOutEff (mixedMultDefaultEffort a b) a b
 (<*>|) :: (RoundedMixedMultiply t tn) => t -> tn -> t
 (<*>|) = mixedMultOut
 
-{- 
-    The following makes sense but it quickly leads to overlapping instances.
-    To avoid overlapping instances, the instances should be as concrete as possible. 
--} 
-
+--{- 
+--    The following would lead to overlapping instances, eg
+--    with "e (Interval e)" or "(Interval (IntPoly String (Interval e)) (Interval e)".
+---} 
+--
 --instance (RoundedMultiplyEffort t) => (RoundedMixedMultiplyEffort t t)
 --    where
 --    type MixedMultEffortIndicator t t = MultEffortIndicator t
@@ -285,11 +284,11 @@ mixedDivOut a b = mixedDivOutEff (mixedDivDefaultEffort a b) a b
 (</>|) :: (RoundedMixedDivide t tn) => t -> tn -> t
 (</>|) = mixedDivOut
 
-{- 
-    The following makes sense but it quickly leads to overlapping instances.
-    To avoid overlapping instances, the instances should be as concrete as possible. 
--} 
-
+--{- 
+--    The following would lead to overlapping instances, eg
+--    with "e (Interval e)" or "(Interval (IntPoly String (Interval e)) (Interval e)".
+---} 
+--
 --instance (RoundedDivideEffort t) => (RoundedMixedDivideEffort t t)
 --    where
 --    type MixedDivEffortIndicator t t = DivEffortIndicator t
@@ -376,11 +375,11 @@ class
 class (RoundedMixedAdd t tn, RoundedMixedMultiply t tn, RoundedMixedRingEffort t tn) => 
     RoundedMixedRing t tn
 
-{- 
-    The following makes sense but it quickly leads to overlapping instances.
-    To avoid overlapping instances, the instances should be as concrete as possible. 
--} 
-
+--{- 
+--    The following would lead to overlapping instances, eg
+--    with "e (Interval e)" or "(Interval (IntPoly String (Interval e)) (Interval e)".
+---} 
+--
 --instance (RoundedRingEffort t) => (RoundedMixedRingEffort t t)
 --    where
 --    type MixedRingOpsEffortIndicator t t = RingOpsEffortIndicator t
@@ -406,11 +405,11 @@ class
 class (RoundedMixedRing t tn, RoundedMixedDivide t tn, RoundedMixedFieldEffort t tn) => 
     RoundedMixedField t tn
         
-{- 
-    The following makes sense but it quickly leads to overlapping instances.
-    To avoid overlapping instances, the instances should be as concrete as possible. 
--} 
-        
+--{- 
+--    The following would lead to overlapping instances, eg
+--    with "e (Interval e)" or "(Interval (IntPoly String (Interval e)) (Interval e)".
+---} 
+--        
 --instance (RoundedFieldEffort t) => (RoundedMixedFieldEffort t t)
 --    where
 --    type MixedFieldOpsEffortIndicator t t = FieldOpsEffortIndicator t

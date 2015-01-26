@@ -30,7 +30,8 @@ import qualified
 
 import qualified 
        Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
-       (RoundedReal, RoundedRealEffortIndicator(..), roundedRealDefaultEffort)
+       (RoundedReal, RoundedRealEffortIndicator(..), roundedRealDefaultEffort, 
+        RoundedMixedField, MixedFieldOpsEffortIndicator(..), mixedFieldOpsDefaultEffort)
 --import qualified 
 --       Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 --       (RoundedFieldEffort, FieldOpsEffortIndicator, fieldOpsDefaultEffort)
@@ -127,4 +128,78 @@ defaultIntervalRealEffort (Interval sampleE _) =
     }
 --    where
 --    sampleDist = distanceBetween sampleE sampleE
+    
+data IntervalRealMixedEffort e tn =
+    IntervalRealMixedEffort
+    {
+        intrealmxeff_eEffort :: IntervalRealEffort e
+    ,
+        intrealmxeff_mixedField :: ArithUpDn.MixedFieldOpsEffortIndicator e tn
+    ,
+        intrealmxeff_tnComp :: NumOrd.PartialCompareEffortIndicator tn
+    }
+
+defaultIntervalRealMixedEffort :: 
+   (ArithUpDn.RoundedReal e1,
+    ArithUpDn.RoundedMixedFieldEffort e1 e2,
+    NumOrd.PartialComparison e2) 
+   =>
+   Interval e1 -> e2 -> IntervalRealMixedEffort e1 e2
+defaultIntervalRealMixedEffort i@(Interval sampleE1 _) sampleE2 =
+    IntervalRealMixedEffort
+    {
+        intrealmxeff_eEffort = defaultIntervalRealEffort i
+    ,
+        intrealmxeff_mixedField = ArithUpDn.mixedFieldOpsDefaultEffort sampleE1 sampleE2
+    ,
+        intrealmxeff_tnComp = NumOrd.pCompareDefaultEffort sampleE2
+    }
+
+instance 
+    (
+        Arbitrary (ArithUpDn.RoundedRealEffortIndicator e),
+        Arbitrary (ArithUpDn.MixedFieldOpsEffortIndicator e tn),
+        Arbitrary (NumOrd.PartialCompareEffortIndicator tn)
+    )
+    =>
+    Arbitrary (IntervalRealMixedEffort e tn)
+    where
+    arbitrary =
+        IntervalRealMixedEffort <$> arbitrary <*> arbitrary <*> arbitrary -- <*> arbitrary
+        
+deriving instance
+    (
+        Show (ArithUpDn.RoundedRealEffortIndicator e),
+        Show (ArithUpDn.MixedFieldOpsEffortIndicator e tn),
+        Show (NumOrd.PartialCompareEffortIndicator tn)
+    )
+    =>
+    Show (IntervalRealMixedEffort e tn)
+
+instance
+    (
+        EffortIndicator (ArithUpDn.RoundedRealEffortIndicator e),
+        EffortIndicator (ArithUpDn.MixedFieldOpsEffortIndicator e tn),
+        EffortIndicator (NumOrd.PartialCompareEffortIndicator tn)
+    )
+    =>
+    EffortIndicator (IntervalRealMixedEffort e tn)
+    where
+    effortIncrementVariants (IntervalRealMixedEffort e1O e2O e3O) =
+        [IntervalRealMixedEffort e1 e2 e3 | 
+            (e1,e2,e3) <- effortIncrementVariants (e1O,e2O,e3O) ]
+    effortRepeatIncrement (IntervalRealMixedEffort i1 i2 i3, IntervalRealMixedEffort j1 j2 j3) = 
+        IntervalRealMixedEffort 
+            (effortRepeatIncrement (i1, j1)) 
+            (effortRepeatIncrement (i2, j2)) 
+            (effortRepeatIncrement (i3, j3)) 
+    effortIncrementSequence (IntervalRealMixedEffort e1O e2O e3O) =
+        [IntervalRealMixedEffort e1 e2 e3 | 
+            (e1,e2,e3) <- effortIncrementSequence (e1O,e2O,e3O) ]
+    effortCombine (IntervalRealMixedEffort i1 i2 i3) (IntervalRealMixedEffort j1 j2 j3) =
+        IntervalRealMixedEffort 
+            (effortCombine i1 j1) 
+            (effortCombine i2 j2) 
+            (effortCombine i3 j3) 
+
     

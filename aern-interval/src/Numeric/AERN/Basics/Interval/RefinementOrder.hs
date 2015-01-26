@@ -25,7 +25,6 @@ import Numeric.AERN.Basics.Arbitrary
 import Numeric.AERN.Basics.PartialOrdering
 
 import Numeric.AERN.Basics.Interval.Basics
-import Numeric.AERN.Basics.Interval.Mutable
 import Numeric.AERN.Basics.Interval.NumericOrder ()
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
@@ -39,8 +38,6 @@ import Numeric.AERN.RefinementOrder
                 PartialJoinEffortIndicator,
                 JoinMeetEffortIndicator
         )
-
-import Numeric.AERN.Basics.Mutable
 
 import Numeric.AERN.Misc.List
 
@@ -234,39 +231,6 @@ instance
             effortMinmax = intordeff_eMinmax effort
             effortComp = intordeff_eComp effort
 
-instance
-    (NumOrd.RoundedLatticeInPlace e, NumOrd.PartialComparison e) 
-    =>
-    (RefOrd.RoundedBasisInPlace (Interval e))
-    where
-    partialJoinOutInPlaceEff effort 
-            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
-        do
-        NumOrd.maxDnInPlaceEff effortMinmax resLM l1M l2M
-        NumOrd.minUpInPlaceEff effortMinmax resRM r1M r2M
-        l <- unsafeReadMutable resLM
-        r <- unsafeReadMutable resRM
-        let (<=?) = NumOrd.pLeqEff effortComp
-        case l <=? r of
-            Just True -> return True
-            _ -> return False
-        where
-        effortMinmax = intordeff_eMinmax effort
-        effortComp = intordeff_eComp effort
-    partialJoinInInPlaceEff effort 
-            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
-        do
-        NumOrd.maxUpInPlaceEff effortMinmax resLM l1M l2M
-        NumOrd.minDnInPlaceEff effortMinmax resRM r1M r2M
-        l <- unsafeReadMutable resLM
-        r <- unsafeReadMutable resRM
-        let (<=?) = NumOrd.pLeqEff effortComp
-        case l <=? r of
-            Just True -> return True
-            _ -> return False
-        where
-        effortMinmax = intordeff_eMinmax effort
-        effortComp = intordeff_eComp effort
 
 
 instance 
@@ -328,40 +292,6 @@ intervalApproxUnion ia1@(IntervalApprox o _) ia2 =
     where
     effort = RefOrd.joinmeetDefaultEffort o
 
-instance
-    (NumOrd.RoundedLattice e, NumOrd.RoundedLatticeInPlace e, 
-     NumOrd.PartialComparison e)
-    => 
-    (RefOrd.RoundedLatticeInPlace (Interval e))
-    where
-    joinOutInPlaceEff effort 
-            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
-        do
-        NumOrd.maxDnInPlaceEff effMinmax resLM l1M l2M
-        NumOrd.minUpInPlaceEff effMinmax resRM r1M r2M
-        where
-        effMinmax = intordeff_eMinmax effort
-    meetOutInPlaceEff effort 
-            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
-        do
-        NumOrd.minDnInPlaceEff effMinmax resLM l1M l2M
-        NumOrd.maxUpInPlaceEff effMinmax resRM r1M r2M
-        where
-        effMinmax = intordeff_eMinmax effort
-    joinInInPlaceEff effort 
-            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
-        do
-        NumOrd.maxUpInPlaceEff effMinmax resLM l1M l2M
-        NumOrd.minDnInPlaceEff effMinmax resRM r1M r2M
-        where
-        effMinmax = intordeff_eMinmax effort
-    meetInInPlaceEff effort 
-            (MInterval resLM resRM) (MInterval l1M r1M) (MInterval l2M r2M) =
-        do
-        NumOrd.minUpInPlaceEff effMinmax resLM l1M l2M
-        NumOrd.maxDnInPlaceEff effMinmax resRM r1M r2M
-        where
-        effMinmax = intordeff_eMinmax effort
 
 instance
     (NumOrd.AreaHasBoundsConstraints e)

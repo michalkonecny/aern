@@ -46,13 +46,13 @@ type PartialCompareEffortIndicatorFromRingOps f =
     (Int, -- number of samples to evaluate in the search for negative information
      ArithInOut.AddEffortIndicator f,
      NumOrd.PartialCompareEffortIndicator (Domain f),
-     EvalOpsEffortIndicator f (Domain f)) 
+     EvaluationEffortIndicator f) 
 
 pCompareFunFromRingOps ::
     (Show (Domain f),
      NumOrd.PartialComparison (Domain f),
      HasZero (Domain f),
-     HasEvalOps f (Domain f),
+     CanEvaluate f,
      RefOrd.IntervalLike (Domain f),
      ArithInOut.RoundedSubtr f) 
     =>
@@ -67,13 +67,12 @@ pCompareFunFromRingOps (n, effAdd, effCompDom, effEval) f1 f2 =
     sampleF = f1
     dombox = getDomainBox sampleF 
     sampleDom = getSampleDomValue sampleF
-    evalOps = evalOpsEff effEval sampleF sampleDom
-    
+
     infoRanges = compareOver dombox
     compareOver db =
         NumOrd.pCompareInFullEff effCompDom diffRange (zero sampleDom)
         where
-        diffRange = evalOtherType evalOps db diff
+        diffRange = evalAtPointOutEff effEval db diff
         diff = ArithInOut.subtrOutEff effAdd f1 f2
     addEQ pInfo
         | (pOrdInfEQ pInfo == Nothing) && neqD = pInfo { pOrdInfEQ = Just False }

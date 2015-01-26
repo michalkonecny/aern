@@ -177,5 +177,51 @@ instance RoundedMixedFieldEffort Double Rational
 
 instance RoundedMixedField Double Rational
 
+instance RoundedMixedAddEffort Double Double
+    where
+    type MixedAddEffortIndicator Double Double = ()
+    mixedAddDefaultEffort _ _ = ()
+instance RoundedMixedAdd Double Double
+    where
+    mixedAddUpEff = addUpEff
+    mixedAddDnEff = addDnEff
+
+instance RoundedMixedMultiplyEffort Double Double
+    where
+    type MixedMultEffortIndicator Double Double = ()
+    mixedMultDefaultEffort _ _ = () 
+instance RoundedMixedMultiply Double Double
+    where
+    mixedMultUpEff = multUpEff
+    mixedMultDnEff = multDnEff
+
+instance RoundedMixedDivideEffort Double Double
+    where
+    type MixedDivEffortIndicator Double Double = ()
+    mixedDivDefaultEffort _ _ = () 
+instance RoundedMixedDivide Double Double
+    where
+    mixedDivUpEff = divUpEff
+    mixedDivDnEff = divDnEff
+
+instance RoundedMixedRingEffort Double Double
+    where
+    type MixedRingOpsEffortIndicator Double Double = ()
+    mixedRingOpsDefaultEffort _ _ = ()
+    mxringEffortAdd _ _ _ = ()
+    mxringEffortMult _ _ _ = ()
+
+instance RoundedMixedRing Double Double
+
+instance RoundedMixedFieldEffort Double Double
+    where
+    type MixedFieldOpsEffortIndicator Double Double = ()
+    mixedFieldOpsDefaultEffort _ _ = ()
+    mxfldEffortAdd _ _ _ = ()
+    mxfldEffortMult _ _ _ = ()
+    mxfldEffortDiv _ _ _ = ()
+
+instance RoundedMixedField Double Double
+
 
 

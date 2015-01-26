@@ -14,7 +14,6 @@ module Main where
 import Numeric.AERN.RealArithmetic.Basis.MPFR
 import Numeric.AERN.RealArithmetic.Interval.MPFR
 import Numeric.AERN.RealArithmetic.Interval
-import Numeric.AERN.RealArithmetic.Interval.Mutable
 -- import Numeric.AERN.RealArithmetic.Interval.ElementaryDirect
 import Numeric.AERN.RealArithmetic.Interval.ElementaryFromBasis
 import Numeric.AERN.Basics.Interval
@@ -54,13 +53,9 @@ testsMPFR =
        ArithUpDn.testsUpDnMult ("MPFR", sampleM),
        ArithUpDn.testsUpDnIntPower ("MPFR", sampleM),
        ArithUpDn.testsUpDnDiv ("MPFR", sampleM),
-       ArithUpDn.testsUpDnFieldOpsInPlace ("MPFR", sampleM),
        ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Integer", sampleI),
        ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Rational", sampleR),
        ArithUpDn.testsUpDnMixedFieldOps ("MPFR", sampleM) ("Double", sampleD),
-       ArithUpDn.testsUpDnMixedFieldOpsInPlace ("MPFR", sampleM) ("Integer", sampleI),
-       ArithUpDn.testsUpDnMixedFieldOpsInPlace ("MPFR", sampleM) ("Rational", sampleR),
-       ArithUpDn.testsUpDnMixedFieldOpsInPlace ("MPFR", sampleM) ("Double", sampleD),
        ArithUpDn.testsUpDnExp ("MPFR", sampleM)
     ]
 
@@ -69,7 +64,6 @@ testsMI =
        testsConsistency ("MI", sampleMI),
        NumOrd.testsPartialComparison ("MI", sampleMI) areaMI,
        NumOrd.testsRefinementRoundedLatticeDistributiveMonotone ("MI", sampleMI) areaMI,
-       NumOrd.testsRefinementRoundedLatticeInPlace ("MI", sampleMI),
        RefOrd.testsPartialComparison  ("MI", sampleMI) areaMI, 
        RefOrd.testsRoundedBasis ("MI", sampleMI),
        RefOrd.testsRoundedLatticeDistributive ("MI", sampleMI) areaMI,
@@ -84,13 +78,9 @@ testsMI =
        ArithInOut.testsInOutMult ("MI", sampleMI) areaMI,
        ArithInOut.testsInOutIntPower ("MI", sampleMI) areaMI,
        ArithInOut.testsInOutDiv ("MI", sampleMI) areaMI,
-       ArithInOut.testsInOutFieldOpsInPlace ("MI", sampleMI),
        ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Integer", sampleI) areaMI,
        ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Rational", sampleR) areaMI,
-       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Double", sampleD) areaMI,
-       ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Integer", sampleI),
-       ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Rational", sampleR),
-       ArithInOut.testsInOutMixedFieldOpsInPlace ("MI", sampleMI) ("Double", sampleD)
+       ArithInOut.testsInOutMixedFieldOps ("MI", sampleMI) ("Double", sampleD) areaMI
 --       ,
 --       ArithInOut.testsInOutExp ("MI", sampleMI),
 --       ArithInOut.testsInOutSqrt ("MI", sampleMI) unPositiveMI

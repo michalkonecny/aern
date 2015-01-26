@@ -17,7 +17,6 @@ module Numeric.AERN.Basics.Interval
    module Numeric.AERN.Basics.Interval.Consistency,
    module Numeric.AERN.Basics.Interval.NumericOrder,
    module Numeric.AERN.Basics.Interval.RefinementOrder,
-   module Numeric.AERN.Basics.Interval.Mutable
 )
 where
 
@@ -25,5 +24,4 @@ import Numeric.AERN.Basics.Interval.Basics
 import Numeric.AERN.Basics.Interval.Consistency
 import Numeric.AERN.Basics.Interval.NumericOrder
 import Numeric.AERN.Basics.Interval.RefinementOrder
-import Numeric.AERN.Basics.Interval.Mutable
 

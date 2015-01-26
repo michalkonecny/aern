@@ -149,13 +149,10 @@ instance
         (IntPolyEffort (Interval e))
     convertDefaultEffort sampleP@(IntPoly _cfg _) sampleI = 
         (convertToDefaultEffortStandard sampleP sampleI)
-    convertOutEff eff _sampleI p = 
-        evalOtherType (evalOpsEff effEval sampleP sampleCf) varDoms p
+    convertOutEff eff _sampleI p =
+        evalAtPointOutEff eff varDoms p 
         where
         varDoms = getDomainBox p
-        sampleP = p
-        sampleCf = getSampleDomValue sampleP
-        effEval = eff
         
     convertInEff _eff = error "convertInEff not supported by IntPoly"
 
@@ -163,7 +160,7 @@ instance
 convertUpEffStandard, convertDnEffStandard ::
       (Ord var, Show cf, Show var, RefOrd.IntervalLike cf,
        ArithUpDn.Convertible cf t, ArithInOut.RoundedReal cf,
-       HasConsistency cf) 
+       HasAntiConsistency cf) 
        =>
       (cf -> ArithInOut.RoundedRealEffortIndicator cf -> ConvertEffortIndicator cf t) -> 
       IntPolyEffort cf -> t -> 
@@ -193,9 +190,9 @@ effStandardToGeneric _sampleT rrEffortToT eff _p@(IntPoly cfg _) =
     
 convertUpEffGeneric, convertDnEffGeneric :: 
       (Show (Domain f), RefOrd.IntervalLike (Domain f),
-       ArithUpDn.Convertible (Domain f) t, HasEvalOps f (Domain f)) 
+       ArithUpDn.Convertible (Domain f) t, CanEvaluate f) 
        =>
-      (EvalOpsEffortIndicator f (Domain f),
+      (EvaluationEffortIndicator f,
        RefOrd.GetEndpointsEffortIndicator (Domain f),
        ConvertEffortIndicator (Domain f) t)
       -> 
@@ -206,7 +203,8 @@ convertUpEffGeneric (effEval, effGetEndpts, effConv) sampleT p =
     ArithUpDn.convertUpEff effConv sampleT $ 
         snd $ RefOrd.getEndpointsOutEff effGetEndpts range
     where
-    range = evalOtherType (evalOpsEff effEval sampleP sampleCf) varDoms p
+    range =
+        evalAtPointOutEff effEval varDoms p 
     varDoms = getDomainBox p
     sampleP = p
     sampleCf = getSampleDomValue sampleP
@@ -214,7 +212,8 @@ convertDnEffGeneric (effEval, effGetEndpts, effConv) sampleT p =
     ArithUpDn.convertDnEff effConv sampleT $ 
         fst $ RefOrd.getEndpointsOutEff effGetEndpts range
     where
-    range = evalOtherType (evalOpsEff effEval sampleP sampleCf) varDoms p
+    range = 
+        evalAtPointOutEff effEval varDoms p 
     varDoms = getDomainBox p
     sampleP = p
     sampleCf = getSampleDomValue sampleP

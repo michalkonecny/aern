@@ -98,50 +98,50 @@ instance
     rrEffortFromRational (Interval l _) eff = ArithUpDn.rrEffortFromRational l  $ intrealeff_eRoundedReal eff
     rrEffortAbs (Interval l _) eff = intrealeff_intordeff l eff
     rrEffortField (Interval _ _) eff = eff 
-    rrEffortSelfMixedField (Interval l _) eff = 
-        (eff,
-         (ArithUpDn.rrEffortComp l effR,
-          ArithUpDn.rrEffortMinmax l effR,
-          effOrd
-         )
-        )
+    rrEffortSelfMixedField (Interval l _) eff = (effMixed, eff)
         where
-        effOrd = intrealeff_intordeff l eff
+        effMixed =
+            IntervalRealMixedEffort
+            {
+                intrealmxeff_eEffort = eff,
+                intrealmxeff_mixedField = ArithUpDn.rrEffortSelfMixedField l effR,
+                intrealmxeff_tnComp = ArithUpDn.rrEffortComp l effR
+            }
         effR = intrealeff_eRoundedReal eff
     rrEffortIntMixedField (Interval l _) eff =
-        (ArithUpDn.rrEffortIntMixedField l effR,
-         (ArithUpDn.rrEffortComp l effR,
-          ArithUpDn.rrEffortMinmax l effR,
-          ()
-         )
-        )
+        IntervalRealMixedEffort
+        {
+            intrealmxeff_eEffort = eff,
+            intrealmxeff_mixedField = ArithUpDn.rrEffortIntMixedField l effR,
+            intrealmxeff_tnComp = ()
+        }
         where
         effR = intrealeff_eRoundedReal eff
     rrEffortIntegerMixedField (Interval l _) eff =
-        (ArithUpDn.rrEffortIntegerMixedField l effR,
-         (ArithUpDn.rrEffortComp l effR,
-          ArithUpDn.rrEffortMinmax l effR,
-          ()
-         )
-        )
+        IntervalRealMixedEffort
+        {
+            intrealmxeff_eEffort = eff,
+            intrealmxeff_mixedField = ArithUpDn.rrEffortIntegerMixedField l effR,
+            intrealmxeff_tnComp = ()
+        }
         where
         effR = intrealeff_eRoundedReal eff
     rrEffortDoubleMixedField (Interval l _) eff =
-        (ArithUpDn.rrEffortDoubleMixedField l effR,
-         (ArithUpDn.rrEffortComp l effR,
-          ArithUpDn.rrEffortMinmax l effR,
-          ()
-         )
-        )
+        IntervalRealMixedEffort
+        {
+            intrealmxeff_eEffort = eff,
+            intrealmxeff_mixedField = ArithUpDn.rrEffortDoubleMixedField l effR,
+            intrealmxeff_tnComp = ()
+        }
         where
         effR = intrealeff_eRoundedReal eff
     rrEffortRationalMixedField (Interval l _) eff =
-        (ArithUpDn.rrEffortRationalMixedField l effR,
-         (ArithUpDn.rrEffortComp l effR,
-          ArithUpDn.rrEffortMinmax l effR,
-          ()
-         )
-        )
+        IntervalRealMixedEffort
+        {
+            intrealmxeff_eEffort = eff,
+            intrealmxeff_mixedField = ArithUpDn.rrEffortRationalMixedField l effR,
+            intrealmxeff_tnComp = ()
+        }
         where
         effR = intrealeff_eRoundedReal eff
 

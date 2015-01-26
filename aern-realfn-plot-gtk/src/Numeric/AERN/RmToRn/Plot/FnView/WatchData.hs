@@ -379,7 +379,7 @@ updateFnWidgets toDbl widgets dynWidgetsRef fnmeta state _fndataTVs stateTV =
             Gtk.tableAttachDefaults table fnLabel 1 2 nextRowNo nextRowNoPlus1
             Gtk.miscSetAlignment fnLabel 0 0.5
             -- add value label:
-            valLabel <- Gtk.labelNew Nothing
+            valLabel <- Gtk.labelNew (Nothing :: Maybe String)
             Gtk.tableAttachDefaults table valLabel 2 3 nextRowNo nextRowNoPlus1
             -- add a check button:
             showCheckButton <- Gtk.checkButtonNew

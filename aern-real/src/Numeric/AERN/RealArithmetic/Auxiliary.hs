@@ -17,7 +17,6 @@ module Numeric.AERN.RealArithmetic.Auxiliary where
 
 import Numeric.AERN.RealArithmetic.ExactOps
 import Numeric.AERN.Basics.Exception
-import Numeric.AERN.Basics.Mutable
 
 import Control.Exception
 import Control.Monad.ST
@@ -44,39 +43,4 @@ powerFromMult one mult x n
                     x `mult` (powHalf `mult` powHalf)
         where
         powHalf = p (n `div` 2)
-
-powerFromMultInPlace :: 
-    (HasOne t, CanBeMutable t) =>
-    (Mutable t s -> Mutable t s -> Mutable t s -> ST s ()) {-^ associative binary operation @*@ -} ->
-    (Mutable t s) {-^ where to put the resulting power @x^n@  -} ->
-    (Mutable t s) {-^ @x@ -} ->
-    Int {-^ @n@ positive -} ->
-    ST s ()
-powerFromMultInPlace mult rM xM n
-    -- beware rM and xM may alias!
-    | n < 0 = throw $ AERNException "powerFromMultInPlace does not support negative exponents"
-    | otherwise =
-        do
-        sample <- unsafeReadMutable xM
-        nrM <- cloneMutable xM -- a non-aliased variable for interim results
-        p sample nrM n -- nrM := x^n
-        assignMutable rM nrM -- rM := nr
-    where
-    p sample nrM n -- ensures nrM holds x^n
-        | n == 0 = writeMutable nrM (one sample)
-        | n == 1 = return () -- assuming nrM already contains x
-        | otherwise =
-            case even n of
-                True -> 
-                    do
-                    powHalf -- rM now holds x^(n/2)
-                    mult nrM nrM nrM -- square rM
-                False -> 
-                    do
-                    powHalf -- rM now holds x^(n-1/2)
-                    mult nrM nrM nrM -- square rM
-                    mult nrM nrM xM -- multiply by x one more time
-        where
-        rM = () -- avoid accidental use of rM from parent context
-        powHalf = p sample nrM (n `div` 2)
 

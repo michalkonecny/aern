@@ -53,7 +53,6 @@ Library
     Numeric.AERN.Basics.Interval.Arbitrary,
     Numeric.AERN.Basics.Interval.Basics,
     Numeric.AERN.Basics.Interval.Consistency,
-    Numeric.AERN.Basics.Interval.Mutable,
     Numeric.AERN.Basics.Interval.NumericOrder,
     Numeric.AERN.Basics.Interval.RefinementOrder,
     Numeric.AERN.RealArithmetic.Interval,
@@ -66,11 +65,6 @@ Library
     Numeric.AERN.RealArithmetic.Interval.Floating,
     Numeric.AERN.RealArithmetic.Interval.Measures,
     Numeric.AERN.RealArithmetic.Interval.MixedFieldOps,
-    Numeric.AERN.RealArithmetic.Interval.Mutable,
-    Numeric.AERN.RealArithmetic.Interval.Mutable.ElementaryFromFieldOps,
-    Numeric.AERN.RealArithmetic.Interval.Mutable.ExactOps,
-    Numeric.AERN.RealArithmetic.Interval.Mutable.FieldOps,
-    Numeric.AERN.RealArithmetic.Interval.Mutable.MixedFieldOps,
     Numeric.AERN.RealArithmetic.Interval.SpecialConst,
     Numeric.AERN.RealArithmetic.Interval.UpDnConversion
   ghc-options:    -Wall

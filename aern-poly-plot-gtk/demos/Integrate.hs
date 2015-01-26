@@ -5,7 +5,7 @@ module Integrate where
 -- interval-coefficient polynomials:
 import Numeric.AERN.Poly.IntPoly 
     (IntPoly, IntPolySizeLimits(..), IntPolyEffort(..), defaultIntPolySizeLimits)
---import Numeric.AERN.Poly.IntPoly.Interval () 
+import Numeric.AERN.Poly.IntPoly.Interval () 
 --import Numeric.AERN.Poly.IntPoly.Plot ()
 
 -- intervals generic in the type of its endpoints:
@@ -13,7 +13,7 @@ import Numeric.AERN.Basics.Interval
     (Interval)
 
 -- Doubles as interval endpoints:
---import Numeric.AERN.RealArithmetic.Basis.Double ()
+import Numeric.AERN.RealArithmetic.Basis.Double ()
 
 -- abstract function processing operations:
 import Numeric.AERN.RmToRn 

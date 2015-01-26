@@ -60,6 +60,7 @@ main =
         maxImprecision = 10^^(-digits) -- target result precision
         
     -- print the result of an attempt, printing sufficiently many digits, according to the digits parameter
+    reportAttempt :: Int -> (Precision, RealApprox, MI.MI) -> IO ()
     reportAttempt digits (prec, res, imprecision) =    
         putStrLn $ formatRes prec res 
         where

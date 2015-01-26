@@ -22,7 +22,6 @@ import Numeric.AERN.RealArithmetic.Measures
 import Numeric.AERN.Basics.Effort
 import Numeric.AERN.Basics.Consistency
 import Numeric.AERN.Basics.Laws.Utilities
-import Numeric.AERN.Basics.Mutable
 
 import Numeric.AERN.Misc.Bool
 import Numeric.AERN.Misc.Debug
@@ -521,69 +520,4 @@ equalRoundingUpDn
         (<=) = assumeTotal2 (<=?)
         (<=?) = pCompareEff effortRel
 
-roundedInPlace1ConsistentWithPure ::
-    (EffortIndicator eiRel, EffortIndicator eiOp,
-     Show eiOp, Show eiRel,
-     CanBeMutable t, Show t, HasLegalValues t) =>
-    String ->
-    (forall s. eiOp -> OpMutable1 t s) {-^ left hand side expression UP -} -> 
-    (forall s. eiOp -> OpMutable1 t s) {-^ left hand side expression DN -} -> 
-    (eiOp -> UnaryOp t) {-^ right hand side expression UP -} -> 
-    (eiOp -> UnaryOp t) {-^ right hand side expression DN -} -> 
-    (PRelEff eiRel t) -> 
-    (eiRel, eiOp) -> 
-    t ->
-    Bool
-roundedInPlace1ConsistentWithPure
-        contextDescription
-        opUpInPlaceEff opDnInPlaceEff opUpEff opDnEff 
-        pLeqEff initEffort
-        e
-        =
-    equalRoundingUpDn
-        ("in-place" ++ contextDescription ++ " consistent with pure")
-        expr1Up expr1Dn expr2Up expr2Dn 
-        pLeqEff initEffort
-    where
-    opUpEffViaInPlace = mutable1EffToPure (opUpInPlaceEff)
-    opDnEffViaInPlace = mutable1EffToPure (opDnInPlaceEff)
-    expr1Up eff = opUpEff eff e
-    expr1Dn eff = opDnEff eff e
-    expr2Up eff = opUpEffViaInPlace eff e
-    expr2Dn eff = opDnEffViaInPlace eff e
-
-roundedInPlace2ConsistentWithPure ::
-    (EffortIndicator eiRel, EffortIndicator eiOp,
-     Show eiOp, Show eiRel,
-     CanBeMutable t, Show t, HasLegalValues t) =>
-    String ->
-    (forall s. eiOp -> OpMutable2 t s) {-^ left hand side expression UP -} -> 
-    (forall s. eiOp -> OpMutable2 t s) {-^ left hand side expression DN -} -> 
-    (eiOp -> Op t) {-^ right hand side expression UP -} -> 
-    (eiOp -> Op t) {-^ right hand side expression DN -} -> 
-    (PRelEff eiRel t) -> 
-    (eiRel, eiOp) -> 
-    t -> t ->
-    Bool
-roundedInPlace2ConsistentWithPure
-        contextDescription
-        opUpInPlaceEff opDnInPlaceEff opUpEff opDnEff 
-        pLeqEff initEffort
-        e1 e2
-        =
-    equalRoundingUpDn
-        ("in-place" ++ contextDescription ++ " consistent with pure")
-        expr1Up expr1Dn expr2Up expr2Dn 
-        pLeqEff initEffort
-    where
-    opUpEffViaInPlace = mutable2EffToPure (opUpInPlaceEff)
-    opDnEffViaInPlace = mutable2EffToPure (opDnInPlaceEff)
-    expr1Up eff =
-        let (*^) = opUpEff eff in e1 *^ e2
-    expr1Dn eff =
-        let (*.) = opDnEff eff in e1 *. e2
-    expr2Up eff =
-        let (*^) = opUpEffViaInPlace eff in e1 *^ e2
-    expr2Dn eff =
-        let (*.) = opDnEffViaInPlace eff in e1 *. e2
 
