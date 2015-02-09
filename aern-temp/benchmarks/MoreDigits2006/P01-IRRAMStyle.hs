@@ -1,6 +1,8 @@
 {-|
     More Digits 2006 problem P01
     (http://rnc7.loria.fr/competition.html)
+    
+    Compute n decimal digits of c-root(a/b).
 -}
 module Main(main) where
 
@@ -21,13 +23,31 @@ improvePrec ratio p = ceiling $ (fromIntegral p) * ratio
 main :: IO ()
 main =
     do
-    print $ benchmark params_hard
+    let params = params_hard
+    putStrLn $ "Computing benchmark P01 from http://rnc7.loria.fr/competition.html:"
+    putStrLn $ show params
+    mapM_ printPrecResult $ benchmark params
+    where
+    printPrecResult (prec, _newtonIterWidths, result, resultWidth) =
+        do
+        putStrLn $ "prec = " ++ show (fromIntegral prec :: Int)
+        putStrLn $ "  result = " ++ show result
+        putStrLn $ "  |result| = " ++ show resultWidth
+--        putStrLn $ "  Newton iteration intermediate result widths:"
+--        mapM_ (\s -> putStrLn $ "        " ++ show s) _newtonIterWidths
 
 {-|
     Compute n digits of the expression c-th root of a/b.
 -}
 data Params =
-    Params { p_n :: Int, p_a :: Int, p_b :: Int, p_c :: Int }
+    Params 
+    { 
+        p_n :: Int, -- required number of digits
+        p_a :: Int, -- numerator of root arg
+        p_b :: Int, -- denominator of root arg
+        p_c :: Int -- base of root
+    }
+    deriving (Show)
 
 params_hard :: Params
 params_hard = Params { p_n = 209953, p_a = 1234567, p_b = 20000, p_c = 543219876 }
@@ -39,57 +59,63 @@ params_hard = Params { p_n = 209953, p_a = 1234567, p_b = 20000, p_c = 543219876
 --params_super_easy = Params { p_n = 1000, p_a = 2, p_b = 1, p_c = 2 }
 
 benchmark ::
-    Params -> (RealApprox, RealApprox, Precision)
-benchmark params
-   | a == 0 = (0, 0, 50 :: Precision)
+    Params -> [(Precision, [RealApprox], RealApprox, RealApprox)]
+benchmark (Params n a b c)
+   | a == 0 = [(50 :: Precision, [], 0, 0)]
         --since the benchmark takes only rational inputs, we don't have to use different algorithms
         --depending on whether or not the argument is small.
-   | otherwise = (result, MI.width result, finalPrecision)
+   | otherwise = tryPrecision lowPrec
    where
-   (Params n a b c) = params
-
-   x0 = forgetErrors (fromJust (bisectUntilClose (aLowPrec/bLowPrec) c))
+   -- First compute a rough estimate
+   -- that is in a region where Newton converges "fast":
+   it0 = forgetErrors (fromJust (bisectUntilClose (aLowPrec/bLowPrec) c))
    aLowPrec :: RealApprox
    aLowPrec = a MI.|<*> (MI.setPrecOut lowPrec 1)
    bLowPrec :: RealApprox
    bLowPrec = b MI.|<*> (MI.setPrecOut lowPrec 1)
-   (result, finalPrecision) = tryPrecision lowPrec
-   tryPrecision :: Precision -> (RealApprox, Precision)
+
+   -- Now apply Newton repeatedly with increasing precisions:
+   tryPrecision :: Precision -> [(Precision, [RealApprox], RealApprox, RealApprox)]
    tryPrecision prec
-      | goodEnough result2 = result2
-      | otherwise = tryPrecision (improvePrec 2 prec)
+      | goodEnough result2 = [resultTuple]
+      | otherwise = resultTuple : (tryPrecision (improvePrec 2 prec))
       where
-      result2 = (nthRootNewton (aReal/bReal) (MI.setPrecOut prec x0) c n, prec)
+      resultTuple = (prec, widths, result2, MI.width result2)
+      (result2, widths) = nthRootNewton c (aReal/bReal) (MI.setPrecOut prec it0)
       aReal :: RealApprox
       aReal =  a MI.|<*> (MI.setPrecOut prec 1)
       bReal :: RealApprox
       bReal = b MI.|<*> (MI.setPrecOut prec 1)
-      goodEnough (r,_) = isJust (maybeGoodEnough r) && fromJust (maybeGoodEnough r)
+      goodEnough r = isJust (maybeGoodEnough r) && fromJust (maybeGoodEnough r)
       maybeGoodEnough x = (MI.width x) MI.<? 1/((MI.setPrecOut prec 10)^(n))
 
-nthRootNewton :: RealApprox -> RealApprox -> Int -> Int -> RealApprox
-nthRootNewton x x0 n decimalDigits =
-  (lowerBound bounds) MI.</\> (upperBound bounds)
+nthRootNewton ::
+    Int {-^ n - the base of the root -} -> 
+    RealApprox {-^ x -} -> 
+    RealApprox {-^ itInit - initial guess -} -> 
+    (RealApprox, [RealApprox])
+nthRootNewton n x itInit =
+  ((lowerBound bounds) MI.</\> (upperBound bounds), iters)
   where
   lowerBound (it,delta) = it + delta -- delta is always negative
   upperBound (it,_delta) = it
-  bounds =
-     nthRootNewtonIt (iterationsFromDigits decimalDigits) x0
+  (bounds, iters) = nthRootNewtonIt [] itInit
+  nthRootNewtonIt :: [RealApprox] -> RealApprox -> ((RealApprox, RealApprox), [RealApprox])
+  nthRootNewtonIt prevWidths it
+     | not significantImprovement = ((it, delta), reverse prevWidths)
+     | otherwise = nthRootNewtonIt (width : prevWidths) nextIt
      where
-     -- TODO: try the following:
-     --   stop when the improvement with the last iteration was not at least by 50% width
-     iterationsFromDigits :: Int -> Int
-     iterationsFromDigits n2 =
-        ceiling ((logBase 2 (logBase 2 10)) + (logBase 2 (fromIntegral n2 :: Double)))
-  nthRootNewtonIt :: Int -> RealApprox -> (RealApprox, RealApprox)
-  nthRootNewtonIt k it
-     | k == 0 = (it,delta)
-     | otherwise = nthRootNewtonIt (k - 1) nextIt
-     where
+     significantImprovement = 
+--        length prevWidths < 10
+        case prevWidths of
+            prevWidth : _ -> (width MI.<? prevWidth) == Just True
+            _ -> True
      nextIt = forgetErrors (it + delta)
-     delta = 1/nReal * (x/(it^(n - 1)) - it)
-  nReal :: RealApprox
-  nReal = n MI.|<*> (MI.setPrecOut (MI.getPrec x) 1)
+     delta = 
+        1/nRA * (x/(it^(n - 1)) - it)
+        where
+        nRA = n MI.|<*> (MI.setPrecOut (MI.getPrec x) 1)
+     width = - delta
 
 
 -- TODO currently assumes that x >> 0.
