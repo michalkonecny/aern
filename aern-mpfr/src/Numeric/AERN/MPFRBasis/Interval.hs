@@ -186,7 +186,9 @@ module Numeric.AERN.MPFRBasis.Interval
 
     -- ** Access functions
     getEndpoints,fromEndpoints,
-    getPrec, M.Precision,
+    
+    -- ** Precision inspection and control
+    M.Precision, getPrec, setPrecOut,
 
     -- ** Base type
     Interval(..),
@@ -233,6 +235,8 @@ import qualified Data.Number.MPFR as M
 import Numeric.AERN.RealArithmetic.Interval.MPFR(width, bisect)
 
 import qualified Numeric.AERN.NumericOrder as NumOrd
+
+import Numeric.AERN.Basics.SizeLimits (changeSizeLimitsOut)
 
 import Test.QuickCheck
 
@@ -283,8 +287,11 @@ getPrec :: MI -> M.Precision
 getPrec x = precL `min` precR 
     where
     precL = M.getPrec l 
-    precR = M.getPrec r 
+    precR = M.getPrec r
     (l,r) = getEndpoints x
+
+setPrecOut :: M.Precision -> MI -> MI 
+setPrecOut = changeSizeLimitsOut
 
 fromDouble :: M.Precision -> Double -> MI
 fromDouble prec dbl = fromEndpoints (l,r)
