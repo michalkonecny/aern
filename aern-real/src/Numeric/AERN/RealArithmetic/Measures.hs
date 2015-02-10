@@ -180,10 +180,31 @@ iterateUntilAccurate ::
     =>
     eff {-^ @initEff@ the initial effort -} -> 
     Int {-^ @iterLimit@ maximum number of different efforts to try out -} -> 
-    Imprecision t {-^ @maxImprecision@ imprecision threshold for the result -} -> 
+    (Imprecision t) {-^ @maxImprecision@ imprecision threshold for the result -} -> 
     (eff -> t) {-^ the function to compute -} -> 
     [(eff,t,Imprecision t)] {-^ the efforts that were tried and the corresponding results -}
 iterateUntilAccurate initEff iterLimit maxImprecision fnEff =
+    iterateWithIncreasingPrecisionUntilOK initEff iterLimit resultOK fnEff
+    where
+    resultOK _result resultImprecision = 
+        (resultImprecision NumOrd.<=? maxImprecision) == Just True 
+{-|
+    A generic function that applies a given approximate function
+    repeatedly with increasing effort until the required accuracy
+    is reached.
+-}
+iterateWithIncreasingPrecisionUntilOK :: 
+    (HasImprecision t,
+    NumOrd.PartialComparison (Imprecision t),
+    Show (Imprecision t),
+    EffortIndicator eff) 
+    =>
+    eff {-^ @initEff@ the initial effort -} -> 
+    Int {-^ @iterLimit@ maximum number of different efforts to try out -} -> 
+    (t -> Imprecision t -> Bool) {-^ @isResultOK@ function to accept or reject an approximate result -} -> 
+    (eff -> t) {-^ the function to compute -} -> 
+    [(eff,t,Imprecision t)] {-^ the efforts that were tried and the corresponding results -}
+iterateWithIncreasingPrecisionUntilOK initEff iterLimit isResultOK fnEff =
     stopWhenAccurate $ 
         take iterLimit $ 
             map addImprecision $ zip efforts (map fnEff efforts)
@@ -197,8 +218,8 @@ iterateUntilAccurate initEff iterLimit maxImprecision fnEff =
         | accurateEnough = [(eff, result, resultImprecision)]
         | otherwise = (eff, result, resultImprecision) : (stopWhenAccurate rest)
         where
-        accurateEnough =
-            (maxImprecision NumOrd.>=? resultImprecision) == Just True
+        accurateEnough = isResultOK result resultImprecision
+--            (maxImprecision NumOrd.>=? resultImprecision) == Just True
          
 {-|
     A generic function that applies a given approximate function
