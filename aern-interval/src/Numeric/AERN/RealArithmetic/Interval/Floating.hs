@@ -173,6 +173,7 @@ instance
     Fractional (Interval e)
     where
     (/) = (</>)
+    recip x = (one x) </> x
     fromRational r = 
         result
         where
