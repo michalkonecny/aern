@@ -143,6 +143,34 @@ divOutEffUsingRecip effRecip@(effRingF, effRealD, _effFldFD) tauDegree f1 f2 =
 --    where
 --    f2Range = evalAtPointOutEff effEval (getDomainBox f2) f2 
 
+instance
+   (Ord var, Show var, Show cf, Show (Imprecision cf),
+    HasAntiConsistency cf, ArithInOut.RoundedReal cf,
+    RefOrd.IntervalLike cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf) 
+    => 
+    ArithInOut.RoundedFieldEffort (IntPoly var cf)
+    where
+    type FieldOpsEffortIndicator (IntPoly var cf) =
+        IntPolyEffort cf
+    fieldOpsDefaultEffort (IntPoly cfg _) = 
+        ipolycfg_effort cfg 
+    fldEffortAdd _ eff = eff 
+    fldEffortMult _ eff = eff
+    fldEffortPow _ eff = eff
+    fldEffortDiv _ eff = eff
+  
+instance 
+   (cf ~ (Interval e),
+    Ord var, Show var, Show cf,
+    HasAntiConsistency cf, ArithInOut.RoundedReal cf,
+    RefOrd.IntervalLike cf,
+    Arbitrary cf,
+    ArithInOut.RoundedMixedField (IntPoly var cf) cf, 
+    NumOrd.PartialComparison (Imprecision cf), Show (Imprecision cf))
+    =>
+    ArithInOut.RoundedField (IntPoly var cf)
+
 
 instance
     (EffortIndicator (IntPolyEffort cf),

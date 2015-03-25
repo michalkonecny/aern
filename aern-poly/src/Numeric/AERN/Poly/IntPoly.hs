@@ -100,6 +100,7 @@ instance
     rrEffortComp _ eff = eff
     rrEffortMinmax _ eff = eff
     rrEffortDistance _ eff = eff
+    rrEffortToSelf _sampleP _eff = ()
     rrEffortToInt _sampleP eff = eff
     rrEffortFromInt _sampleP eff = eff
     rrEffortToInteger _sampleP eff = eff
@@ -110,10 +111,57 @@ instance
     rrEffortFromRational _sampleP eff = eff
     rrEffortAbs _ eff = eff
     rrEffortField _ eff = eff
+    rrEffortSelfMixedField _ eff = eff
     rrEffortIntMixedField _sampleP eff = eff
     rrEffortIntegerMixedField _sampleP eff = eff
     rrEffortRationalMixedField _sampleP eff = eff
     rrEffortDoubleMixedField _sampleP eff = eff
+
+instance
+    (
+     ArithInOut.RoundedReal (Interval e),
+     NumOrd.PartialComparison (Imprecision (Interval e)),
+     ArithUpDn.Convertible Int (Interval e),
+     ArithUpDn.Convertible Integer (Interval e),
+     ArithUpDn.Convertible Rational (Interval e),
+     ArithUpDn.Convertible Double (Interval e),
+     ArithInOut.RoundedMixedField (Interval e) (Interval e),
+     ArithUpDn.Convertible (Interval e) (Interval e),
+     RefOrd.IntervalLike (Interval e),
+     HasAntiConsistency (Interval e),     
+     Arbitrary (Interval e),
+     GeneratableVariables var, Ord var, Show var,
+     Show (Interval e), Show (Imprecision (Interval e))
+    )
+    => 
+    ArithInOut.RoundedReal (IntPoly var (Interval e)) 
+    where
+    type RoundedRealEffortIndicator (IntPoly var (Interval e)) =
+        IntPolyEffort (Interval e)
+    roundedRealDefaultEffort (IntPoly cfg _) = ipolycfg_effort cfg
+    rrEffortNumComp _ eff = eff
+    rrEffortRefComp _ eff = eff
+    rrEffortMinmaxInOut _ eff = eff
+--    rrEffortPartialJoin _ eff = eff
+    rrEffortJoinMeet _ eff = eff
+    rrEffortDistance _ eff = eff
+    rrEffortToSelf _sampleP _eff = ()
+    rrEffortToInt _sampleP eff = eff
+    rrEffortFromInt _sampleP eff = eff
+    rrEffortToInteger _sampleP eff = eff
+    rrEffortFromInteger _sampleP eff = eff
+    rrEffortToDouble _sampleP eff = eff
+    rrEffortFromDouble _sampleP eff = eff
+    rrEffortToRational _sampleP eff = eff
+    rrEffortFromRational _sampleP eff = eff
+    rrEffortAbs _ eff = eff
+    rrEffortField _ eff = eff
+    rrEffortSelfMixedField _ eff = eff
+    rrEffortIntMixedField _sampleP eff = eff
+    rrEffortIntegerMixedField _sampleP eff = eff
+    rrEffortRationalMixedField _sampleP eff = eff
+    rrEffortDoubleMixedField _sampleP eff = eff
+
 
 instance 
     (ArithInOut.RoundedReal cf, Num cf,
