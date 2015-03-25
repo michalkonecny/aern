@@ -247,6 +247,21 @@ instance
     convertUpEff = convertUpDnEffStandardFrom snd ArithInOut.rrEffortFromInt
     convertDnEff = convertUpDnEffStandardFrom fst ArithInOut.rrEffortFromInt
 
+instance
+    (Ord var, Show var,
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+     HasAntiConsistency cf,
+     ArithUpDn.Convertible Int cf,
+     Show cf)
+    =>
+    ArithInOut.Convertible Int (IntPoly var cf)
+    where
+    type ConvertEffortIndicator Int (IntPoly var cf) =
+        IntPolyEffort cf
+    convertDefaultEffort = convertFromDefaultEffortStandard
+    convertInEff = convertInOutEffStandardFrom flipConsistency ArithInOut.rrEffortFromInt
+    convertOutEff = convertInOutEffStandardFrom id ArithInOut.rrEffortFromInt
+
 convertUpDnEffStandardFrom :: 
       (Ord var, Show var, Show cf, ArithInOut.RoundedReal cf,
        RefOrd.IntervalLike cf, HasConsistency cf,
@@ -273,6 +288,30 @@ convertUpDnEffStandardFrom pick rrEffortFrom eff sampleP@(IntPoly cfg _) n =
     effCf = ipolyeff_cfRoundedRealEffort eff
     sampleCf = ipolycfg_sample_cf cfg
 
+convertInOutEffStandardFrom :: 
+      (Ord var, Show var, Show cf, ArithInOut.RoundedReal cf,
+       RefOrd.IntervalLike cf, HasConsistency cf,
+       ArithInOut.Convertible t cf) 
+      =>
+      (cf -> cf) 
+      ->
+      (cf
+       -> ArithInOut.RoundedRealEffortIndicator cf
+       -> ArithInOut.ConvertEffortIndicator t cf
+      )
+      -> IntPolyEffort cf 
+      -> IntPoly var cf 
+      -> t 
+      -> (IntPoly var cf)
+convertInOutEffStandardFrom adjustConstCoeff rrEffortFrom eff sampleP@(IntPoly cfg _) n =
+    newConstFnFromSample sampleP $
+        adjustConstCoeff $
+            ArithInOut.convertOutEff effConv sampleCf n
+    where
+    effConv = rrEffortFrom sampleCf effCf
+    effCf = ipolyeff_cfRoundedRealEffort eff
+    sampleCf = ipolycfg_sample_cf cfg
+
 instance
     (Ord var, Show var,
      ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
@@ -288,6 +327,20 @@ instance
     convertUpEff = convertUpDnEffStandardFrom snd ArithInOut.rrEffortFromInteger
     convertDnEff = convertUpDnEffStandardFrom fst ArithInOut.rrEffortFromInteger
 
+instance
+    (Ord var, Show var,
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+     HasAntiConsistency cf,
+     ArithUpDn.Convertible Integer cf,
+     Show cf)
+    =>
+    ArithInOut.Convertible Integer (IntPoly var cf)
+    where
+    type ConvertEffortIndicator Integer (IntPoly var cf) =
+        IntPolyEffort cf
+    convertDefaultEffort = convertFromDefaultEffortStandard
+    convertInEff = convertInOutEffStandardFrom flipConsistency ArithInOut.rrEffortFromInteger
+    convertOutEff = convertInOutEffStandardFrom id ArithInOut.rrEffortFromInteger
 
 instance
     (Ord var, Show var,
@@ -304,6 +357,20 @@ instance
     convertUpEff = convertUpDnEffStandardFrom snd ArithInOut.rrEffortFromRational
     convertDnEff = convertUpDnEffStandardFrom fst ArithInOut.rrEffortFromRational
 
+instance
+    (Ord var, Show var,
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+     HasAntiConsistency cf,
+     ArithUpDn.Convertible Rational cf,
+     Show cf)
+    =>
+    ArithInOut.Convertible Rational (IntPoly var cf)
+    where
+    type ConvertEffortIndicator Rational (IntPoly var cf) =
+        IntPolyEffort cf
+    convertDefaultEffort = convertFromDefaultEffortStandard
+    convertInEff = convertInOutEffStandardFrom flipConsistency ArithInOut.rrEffortFromRational
+    convertOutEff = convertInOutEffStandardFrom id ArithInOut.rrEffortFromRational
 
 instance
     (Ord var, Show var,
@@ -319,3 +386,18 @@ instance
     convertDefaultEffort = convertFromDefaultEffortStandard
     convertUpEff = convertUpDnEffStandardFrom snd ArithInOut.rrEffortFromDouble
     convertDnEff = convertUpDnEffStandardFrom fst ArithInOut.rrEffortFromDouble
+
+instance
+    (Ord var, Show var,
+     ArithInOut.RoundedReal cf, RefOrd.IntervalLike cf,
+     HasAntiConsistency cf,
+     ArithUpDn.Convertible Double cf,
+     Show cf)
+    =>
+    ArithInOut.Convertible Double (IntPoly var cf)
+    where
+    type ConvertEffortIndicator Double (IntPoly var cf) =
+        IntPolyEffort cf
+    convertDefaultEffort = convertFromDefaultEffortStandard
+    convertInEff = convertInOutEffStandardFrom flipConsistency ArithInOut.rrEffortFromDouble
+    convertOutEff = convertInOutEffStandardFrom id ArithInOut.rrEffortFromDouble
