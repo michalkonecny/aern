@@ -42,8 +42,8 @@ type CF = Interval MPFR
 --type CF = Interval Double
 type Poly = IntPoly String CF
 type PI = Interval Poly
---type Fn = Poly 
-type Fn = PI
+type Fn = Poly 
+--type Fn = PI
 
 usage :: String
 usage = "Usage: LogisticMap <number of iterations> <result digits>"
