@@ -306,7 +306,7 @@ functionsExpMirror subname =
             functionInfos =
                 zip3 
                     fnNames
-                    (repeat blue) -- styles 
+                    (concat $ repeat [blue, green]) -- styles 
                     (reverse $ True : replicate (iters - 1) False) -- show only the last iteration by default
             fnNames =
                 map ("y" ++) $ map show ([1..iters] :: [Int])
@@ -551,7 +551,7 @@ functionsVanDerPol subname =
     the enclosures on the previous segment and taking their intersection.
 -}
 picardStepwise :: 
-    Bool -- ^ use classical Picard operator (this no explicit error margins, no checking of inclusion) 
+    Bool -- ^ use non-rigorous Picard operator (no explicit error margins, no checking of inclusion) 
     -> Bool -- ^ whether to parametrise the solving over uncertainty in initial values 
     -> ([Fn] -> [Fn]) -- ^ field
     -> [Var Fn] -- ^ variables
