@@ -42,6 +42,7 @@ type CF = Interval MPFR
 --type CF = Interval Double
 type Poly = IntPoly String CF
 type PI = Interval Poly
+--type Fn = Poly 
 type Fn = PI
 
 usage :: String
@@ -102,12 +103,13 @@ main =
         -- invoke an iRRAM-style procedure for automatic precision/effort incrementing 
         --    on the computation of iters-many iterations of the logistic map:
         iterateUntilAccurate initEff maxAttempts maxImprecision $ 
-            \ eff -> logisticMapIterateNTimes rArg (identityFunctionWithMaxdeg eff x0Domain) iters
+            \ eff -> logisticMapIterateNTimes rArg (identityFunctionWithMaxdeg (initMaxdeg, eff) x0Domain) iters
         where
-        initEff = (initMaxdeg, initPrec)  -- try with this maximum degree first
-            where
-            initMaxdeg = 3
-            initPrec = 50
+        --        initEff = (initMaxdeg, initPrec)
+        initEff = initPrec
+        --            initMaxdeg = 3
+        initMaxdeg = 2^iters
+        initPrec = 50
         maxAttempts = 100 -- try to increase precision 100 times before giving up
         maxImprecision = 10^^(-digits) -- target result precision
         
@@ -183,7 +185,7 @@ addPlotMetainfo fns =
 plot :: ([[Fn]], FV.FnMetaData Fn) -> IO ()
 plot (fns, fnmeta) =
     do
-    putStrLn $ "last fn  = " ++ show lastFn
+--    putStrLn $ "last fn  = " ++ show lastFn
     putStrLn $ "impresision of iterations = " ++ show (map imprecisionOf $ head fns)
     -- enable multithreaded GUI:
     _ <- Gtk.unsafeInitGUIForThreadedRTS
