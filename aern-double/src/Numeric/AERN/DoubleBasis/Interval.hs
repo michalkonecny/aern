@@ -187,56 +187,28 @@ module Numeric.AERN.DoubleBasis.Interval
 where
 
 import Numeric.AERN.Basics.Interval
-  (Interval(..))
+  (Interval(..),getEndpoints,fromEndpoints)
 
-import qualified Numeric.AERN.Basics.Interval as BI
-  (getEndpoints,fromEndpoints)
-
+import Numeric.AERN.NumericOrder 
+    hiding (least,greatest) 
 import qualified Numeric.AERN.NumericOrder as BNO
-  (least,greatest,minOut,maxOut,minIn,maxIn,
-   (==?),(<==>?),(</=>?),
-   (<?),(>?),(<=?),(>=?))
+    (least,greatest)
 
+import Numeric.AERN.RefinementOrder
+    hiding (bottom,top,(⊥),(⊤))
 import qualified Numeric.AERN.RefinementOrder as BRO
-  (bottom,top,(⊥),(⊤),
-   (|==?),(|<==>?),(|</=>?),
-   (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
-   (</\>),(<\/>),(<\/>?),(<⊓>),(<⊔>),(<⊔>?),
-   (>/\<),(>\/<),(>\/<?),(>⊓<),(>⊔<),(>⊔<?))
+    (bottom,top,(⊥),(⊤))
 
 import Numeric.AERN.RealArithmetic.Interval()
 
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding 
+  hiding (piOut,piIn,eOut,eIn)
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR 
-  (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..),
-   (<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
-   piOut,eOut,absOut,expOut,sqrtOut,
-   (>+<),(>-<),(>*<),(>/<),(|>+<),(>+<|),(|>*<),(>*<|),(>/<|),(>^<),
-   piIn,eIn,absIn,expIn,sqrtIn)
+  (piOut,piIn,eOut,eIn)
  
 import Numeric.AERN.RealArithmetic.Basis.Double()
 
-import Numeric.AERN.RealArithmetic.Interval.Double(width, bisect)
-
-import qualified Numeric.AERN.NumericOrder as NumOrd
-
-import Test.QuickCheck
-
-infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
-
-infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>?, ⊏?, ⊑?, ⊒?, ⊐?
-infixr 3 </\>, >/\<, <⊓>, >⊓< 
-infixr 2 <\/>?, <\/>, >\/<, <⊔>?, <⊔>, >⊔< 
-
-infixl 6 <+>, >+<, <->, >-<
-infixl 7 <*>, >*<
-infixl 8 <^>, >^<
-infixl 7 </>, >/<
-
-infixr 6 |<+>, |>+<
-infixl 6 <+>|, >+<|
-infixr 7 |<*>, |>*<
-infixl 7 <*>|, >*<|
-infixl 7 </>|, >/<|
+import Numeric.AERN.RealArithmetic.Interval.Double (width, bisect)
 
 -- | 
 -- Intervals with Double endpoints. 
@@ -252,67 +224,14 @@ infixl 7 </>|, >/<|
 -- \{ 'x' | 'l' '<=' 'x' and 'x' '<=' 'r' \}.
 type DI = Interval Double
 
--- | Given an argument interval 'i' 'getEndpoints' returns the endpoint pair 
---   ('leftEndpoint' 'i','rightEndpoint' 'i').
-getEndpoints :: DI -> (Double, Double)
-getEndpoints = BI.getEndpoints
-
--- | Constructs an interval from an endpoint pair.
-fromEndpoints :: (Double, Double) -> DI
-fromEndpoints = BI.fromEndpoints
-
 sampleDI :: DI
-sampleDI = Interval 0 0
+sampleDI = 0
 
 least :: DI
 least = BNO.least sampleDI
 
 greatest :: DI
 greatest = BNO.greatest sampleDI
-
--- | Partial equality
-(==?) :: DI -> DI -> Maybe Bool
-(==?) = (BNO.==?) 
-
--- | Partial `is comparable to`
-(<==>?) :: DI -> DI -> Maybe Bool
-(<==>?) = (BNO.<==>?)
-
--- | Partial `is not comparable to`
-(</=>?) :: DI -> DI -> Maybe Bool
-(</=>?) = (BNO.</=>?)
-
--- | Partial `strictly less than`
-(<?) :: DI -> DI -> Maybe Bool
-(<?) = (BNO.<?)
-
--- | Partial `strictly greater than`
-(>?) :: DI -> DI -> Maybe Bool
-(>?) = (BNO.>?)
-
--- | Partial `less than or equal to`
-(<=?) :: DI -> DI -> Maybe Bool
-(<=?) = (BNO.<=?)
-
--- | Partial `greater than or equal to`
-(>=?) :: DI -> DI -> Maybe Bool
-(>=?) = (BNO.>=?)
- 
--- | Outward rounded minimum
-minOut :: DI -> DI -> DI
-minOut = BNO.minOut
-
--- | Outward rounded maximum
-maxOut :: DI -> DI -> DI
-maxOut = BNO.maxOut
-
--- | Inward rounded minimum
-minIn :: DI -> DI -> DI
-minIn = BNO.minIn
-
--- | Inward rounded maximum
-maxIn :: DI -> DI -> DI
-maxIn = BNO.maxIn
 
 bottom :: DI
 bottom = BRO.bottom sampleDI
@@ -328,231 +247,18 @@ top = BRO.top sampleDI
 (⊤) :: DI
 (⊤) = (BRO.⊤) sampleDI
 
--- | Partial equality
-(|==?) :: DI -> DI -> Maybe Bool
-(|==?) = (BRO.|==?)
-
--- | Partial `is comparable to`
-(|<==>?) :: DI -> DI -> Maybe Bool
-(|<==>?) = (BRO.|<==>?)
-
--- | Partial `is not comparable to`
-(|</=>?) :: DI -> DI -> Maybe Bool
-(|</=>?) = (BRO.|</=>?)
-
--- | Partial `strictly below`
-(|<?) :: DI -> DI -> Maybe Bool
-(|<?) = (BRO.|<?)
-
--- | Partial `strictly above`
-(|>?) :: DI -> DI -> Maybe Bool
-(|>?) = (BRO.|>?)
-
--- | Partial `below or equal to`
-(|<=?) :: DI -> DI -> Maybe Bool
-(|<=?) = (BRO.|<=?)
-
--- | Partial `above or equal to`
-(|>=?) :: DI -> DI -> Maybe Bool
-(|>=?) = (BRO.|>=?)
-
-{-| Convenience Unicode notation for '|<?' -}
-(⊏?) :: DI -> DI -> Maybe Bool
-(⊏?) = (BRO.⊏?)
-
-{-| Convenience Unicode notation for '|<=?' -}
-(⊑?) :: DI -> DI -> Maybe Bool
-(⊑?) = (BRO.⊑?)
-
-{-| Convenience Unicode notation for '|>=?' -}
-(⊒?) :: DI -> DI -> Maybe Bool
-(⊒?) = (BRO.⊒?)
-
-{-| Convenience Unicode notation for '|>?' -}
-(⊐?) :: DI -> DI -> Maybe Bool 
-(⊐?) = (BRO.⊐?)
-
--- | Outward rounded meet
-(</\>) :: DI -> DI -> DI
-(</\>) = (BRO.</\>)
-
--- | Outward rounded join
-(<\/>) :: DI -> DI -> DI
-(<\/>) = (BRO.<\/>)
-
--- | Inward rounded meet
-(>/\<) :: DI -> DI -> DI
-(>/\<) = (BRO.>/\<)
-
--- | Inward rounded join
-(>\/<) :: DI -> DI -> DI
-(>\/<) = (BRO.>\/<)
-
-{-| Convenience Unicode notation for '</\>' -}
-(<⊓>) :: DI -> DI -> DI
-(<⊓>) = (BRO.<⊓>)
-
-{-| Convenience Unicode notation for '<\/>' -}
-(<⊔>) :: DI -> DI -> DI
-(<⊔>) = (BRO.<⊔>)
-
-{-| Convenience Unicode notation for '>/\<' -}
-(>⊓<) :: DI -> DI -> DI
-(>⊓<) = (BRO.>⊓<)
-
-{-| Convenience Unicode notation for '>\/<' -}
-(>⊔<) :: DI -> DI -> DI
-(>⊔<) = (BRO.>⊔<)
- 
--- | Partial outward rounded join
-(<\/>?) :: DI -> DI -> Maybe DI
-(<\/>?) = (BRO.<\/>?)
-
--- | Partial outward rounded join
-(>\/<?) :: DI -> DI -> Maybe DI
-(>\/<?) = (BRO.>\/<?)
-
-{-| Convenience Unicode notation for '<\/>?' -}
-(<⊔>?) :: DI -> DI -> Maybe DI 
-(<⊔>?) = (BRO.<⊔>?)
-
-{-| Convenience Unicode notation for '>\/<?' -}
-(>⊔<?) :: DI -> DI -> Maybe DI 
-(>⊔<?) = (BRO.>⊔<?)
-
--- | Outward rounded addition
-(<+>) :: DI -> DI -> DI
-(<+>) = (RAROR.<+>)
-
--- | Outward rounded subtraction
-(<->) :: DI -> DI -> DI
-(<->) = (RAROR.<->)
-
--- | Outward rounded multiplication
-(<*>) :: DI -> DI -> DI
-(<*>) = (RAROR.<*>)
-
--- | Outward rounded division
-(</>) :: DI -> DI -> DI
-(</>) = (RAROR.</>)
-
--- | Inward rounded addition
-(>+<) :: DI -> DI -> DI
-(>+<) = (RAROR.>+<)
-
--- | Inward rounded subtraction
-(>-<) :: DI -> DI -> DI
-(>-<) = (RAROR.>-<)
-
--- | Inward rounded multiplication
-(>*<) :: DI -> DI -> DI
-(>*<) = (RAROR.>*<)
-
--- | Inward rounded division
-(>/<) :: DI -> DI -> DI
-(>/<) = (RAROR.>/<)
-
--- | Outward rounded additive scalar left action
-(|<+>) :: RAROR.RoundedMixedAdd DI tn => tn -> DI -> DI
-(|<+>) = (RAROR.|<+>)
-
--- | Inward rounded additive scalar left action
-(|>+<) :: RAROR.RoundedMixedAdd DI tn => tn -> DI -> DI
-(|>+<) = (RAROR.|>+<)
-
--- | Outward rounded additive scalar right action
-(<+>|) :: RAROR.RoundedMixedAdd DI tn => DI -> tn -> DI
-(<+>|) = (RAROR.<+>|)
-
--- | Inward rounded additive scalar right action
-(>+<|) :: RAROR.RoundedMixedAdd DI tn => DI -> tn -> DI
-(>+<|) = (RAROR.>+<|)
-
--- | Outward rounded multiplicative scalar left action
-(|<*>) :: RAROR.RoundedMixedMultiply DI tn => tn -> DI -> DI
-(|<*>) = (RAROR.|<*>)
-
--- | Inward rounded multiplicative scalar left action
-(|>*<) :: RAROR.RoundedMixedMultiply DI tn => tn -> DI -> DI
-(|>*<) = (RAROR.|>*<)
-
--- | Outward rounded multiplicative scalar right action
-(<*>|) :: RAROR.RoundedMixedMultiply DI tn => DI -> tn -> DI
-(<*>|) = (RAROR.<*>|)
-
--- | Inward rounded multiplicative scalar right action
-(>*<|) :: RAROR.RoundedMixedMultiply DI tn => DI -> tn -> DI
-(>*<|) = (RAROR.>*<|)
-
--- | Outward rounded multiplicative scalar reciprocal right action
-(</>|) :: RAROR.RoundedMixedDivide DI tn => DI -> tn -> DI
-(</>|) = (RAROR.</>|)
-
--- | Inward rounded multiplicative scalar reciprocal right action
-(>/<|) :: RAROR.RoundedMixedDivide DI tn => DI -> tn -> DI  
-(>/<|) = (RAROR.>/<|)
-
--- | Outward rounded power
-(<^>) :: DI -> Int -> DI
-(<^>) = (RAROR.<^>)
-
--- | Inward rounded power
-(>^<) :: DI -> Int -> DI
-(>^<) = (RAROR.>^<)
-
 -- | Outward rounded pi
 piOut :: DI
-piOut = RAROR.piOut 0
+piOut = RAROR.piOut sampleDI
 
 -- | Outward rounded e
 eOut :: DI
-eOut = RAROR.eOut 0
+eOut = RAROR.eOut sampleDI
 
 -- | Inward rounded pi
 piIn :: DI
-piIn = RAROR.piIn 0
+piIn = RAROR.piIn sampleDI
 
 -- | Inward rounded e
 eIn :: DI
-eIn = RAROR.eIn 0
-
--- | Outward rounded absolute value
-absOut :: DI -> DI
-absOut = RAROR.absOut
-
--- | Outward rounded exponential
-expOut :: DI -> DI
-expOut = RAROR.expOut
-
--- | Outward rounded square root
-sqrtOut :: DI -> DI
-sqrtOut = RAROR.sqrtOut
-
--- | Inward rounded absolute value
-absIn :: DI -> DI
-absIn = RAROR.absIn
-
--- | Inward rounded exponential
-expIn :: DI -> DI
-expIn = RAROR.expIn
-
--- | Inward rounded square root
-sqrtIn :: DI -> DI
-sqrtIn = RAROR.sqrtIn
-
-newtype PositiveDI = PositiveDI { unPositiveDI :: DI }
-
-instance Show PositiveDI where
-    show (PositiveDI i) = show i
-
-instance Arbitrary PositiveDI
-    where
-    arbitrary =
-        do
-        NumOrd.UniformlyOrderedPair (l,h) <- arbitrary
-        return $ PositiveDI (Interval (pos l) (pos h))
-        where
-        pos e 
-            | e > 0 =  e
-            | e == 0 =  1
-            | otherwise = (-e) 
+eIn = RAROR.eIn sampleDI

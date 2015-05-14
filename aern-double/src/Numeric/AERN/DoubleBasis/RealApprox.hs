@@ -120,46 +120,36 @@ module Numeric.AERN.DoubleBasis.RealApprox
     -- *** Interval operations
     (<+>),(<->),(<*>),(</>),
 
-    -- *** Mixed type operations
+    -- *** Mixed type operations (eg for scaling by an integer)
     (|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
 
     -- ** Special constants 
     piOut,eOut,
     
     -- ** Elementary functions
-    absOut,expOut,sqrtOut,
+    absOut,expOut,sqrtOut,sinOut,cosOut
     
 )
 where
 
-import Numeric.AERN.Basics.Interval
-  (Interval(..))
+import Numeric.AERN.Basics.Interval 
+    (Interval)
 
-import qualified Numeric.AERN.NumericOrder as BNO
-  (least,greatest,
-   (==?),(<==>?),(</=>?),
-   (<?),(>?),(<=?),(>=?),
-   minOut,maxOut,minIn,maxIn)
+import Numeric.AERN.NumericOrder 
+    hiding (least,greatest)
+import qualified Numeric.AERN.NumericOrder as BNO 
+    (least,greatest)
 
-import qualified Numeric.AERN.RefinementOrder as BRO
-  (bottom,top,(⊥),(⊤),
-   (|==?),(|<==>?),(|</=>?),
-   (|<?),(|>?),(|<=?),(|>=?),(⊏?),(⊑?),(⊒?),(⊐?),
-   (</\>),(<\/>?),(<⊓>),(<⊔>?))
+import Numeric.AERN.RefinementOrder
+
+
+import Numeric.AERN.RealArithmetic.RefinementOrderRounding
+    hiding (piOut,eOut)
+import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
+    (piOut,eOut)
 
 import Numeric.AERN.RealArithmetic.Interval()
-
-import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
-  (RoundedMixedAdd(..),RoundedMixedMultiply(..),RoundedMixedDivide(..),
-   (<+>),(<->),(<*>),(</>),(|<+>),(<+>|),(|<*>),(<*>|),(</>|),(<^>),
-   piOut,eOut,absOut,expOut,sqrtOut
-  )
-
 import Numeric.AERN.RealArithmetic.Basis.Double()
-
-import qualified Numeric.AERN.NumericOrder as NumOrd
-
-import Test.QuickCheck
 
 -- | 
 -- Intervals with Double endpoints, presented as an abstract
@@ -169,7 +159,7 @@ import Test.QuickCheck
 type RealApprox = Interval Double
 
 sampleRealApprox :: RealApprox
-sampleRealApprox = Interval 0 0
+sampleRealApprox = 0
 
 least :: RealApprox
 least = BNO.least sampleRealApprox
@@ -177,215 +167,28 @@ least = BNO.least sampleRealApprox
 greatest :: RealApprox
 greatest = BNO.greatest sampleRealApprox
 
-infix 4 ==?, <==>?, </=>?, <?, <=?, >=?, >?
-
--- | Partial equality
-(==?) :: RealApprox -> RealApprox -> Maybe Bool
-(==?) = (BNO.==?) 
-
--- | Partial `is comparable to`
-(<==>?) :: RealApprox -> RealApprox -> Maybe Bool
-(<==>?) = (BNO.<==>?)
-
--- | Partial `is not comparable to`
-(</=>?) :: RealApprox -> RealApprox -> Maybe Bool
-(</=>?) = (BNO.</=>?)
-
--- | Partial `strictly less than`
-(<?) :: RealApprox -> RealApprox -> Maybe Bool
-(<?) = (BNO.<?)
-
--- | Partial `strictly greater than`
-(>?) :: RealApprox -> RealApprox -> Maybe Bool
-(>?) = (BNO.>?)
-
--- | Partial `less than or equal to`
-(<=?) :: RealApprox -> RealApprox -> Maybe Bool
-(<=?) = (BNO.<=?)
-
--- | Partial `greater than or equal to`
-(>=?) :: RealApprox -> RealApprox -> Maybe Bool
-(>=?) = (BNO.>=?)
- 
--- | Outward rounded minimum
-minOut :: RealApprox -> RealApprox -> RealApprox
-minOut = BNO.minOut
-
--- | Outward rounded maximum
-maxOut :: RealApprox -> RealApprox -> RealApprox
-maxOut = BNO.maxOut
-
--- | Inward rounded minimum
-minIn :: RealApprox -> RealApprox -> RealApprox
-minIn = BNO.minIn
-
--- | Inward rounded maximum
-maxIn :: RealApprox -> RealApprox -> RealApprox
-maxIn = BNO.maxIn
-
-bottom :: RealApprox
-bottom = BRO.bottom sampleRealApprox
-
-top :: RealApprox
-top = BRO.top sampleRealApprox
-
--- | Convenience Unicode notation for 'bottom'
-(⊥) :: RealApprox
-(⊥) = (BRO.⊥) sampleRealApprox
-
--- | Convenience Unicode notation for 'top'
-(⊤) :: RealApprox
-(⊤) = (BRO.⊤) sampleRealApprox
-
-infix 4 |==?, |<==>?, |</=>?, |<?, |<=?, |>=?, |>?, ⊏?, ⊑?, ⊒?, ⊐?
-infixr 3 </\>, <⊓> 
-infixr 2 <\/>?, <⊔>?
-
--- | Partial equality
-(|==?) :: RealApprox -> RealApprox -> Maybe Bool
-(|==?) = (BRO.|==?)
-
--- | Partial `is comparable to`
-(|<==>?) :: RealApprox -> RealApprox -> Maybe Bool
-(|<==>?) = (BRO.|<==>?)
-
--- | Partial `is not comparable to`
-(|</=>?) :: RealApprox -> RealApprox -> Maybe Bool
-(|</=>?) = (BRO.|</=>?)
-
--- | Partial `strictly below`
-(|<?) :: RealApprox -> RealApprox -> Maybe Bool
-(|<?) = (BRO.|<?)
-
--- | Partial `strictly above`
-(|>?) :: RealApprox -> RealApprox -> Maybe Bool
-(|>?) = (BRO.|>?)
-
--- | Partial `below or equal to`
-(|<=?) :: RealApprox -> RealApprox -> Maybe Bool
-(|<=?) = (BRO.|<=?)
-
--- | Partial `above or equal to`
-(|>=?) :: RealApprox -> RealApprox -> Maybe Bool
-(|>=?) = (BRO.|>=?)
-
-{-| Convenience Unicode notation for '|<?' -}
-(⊏?) :: RealApprox -> RealApprox -> Maybe Bool
-(⊏?) = (BRO.⊏?)
-
-{-| Convenience Unicode notation for '|<=?' -}
-(⊑?) :: RealApprox -> RealApprox -> Maybe Bool
-(⊑?) = (BRO.⊑?)
-
-{-| Convenience Unicode notation for '|>=?' -}
-(⊒?) :: RealApprox -> RealApprox -> Maybe Bool
-(⊒?) = (BRO.⊒?)
-
-{-| Convenience Unicode notation for '|>?' -}
-(⊐?) :: RealApprox -> RealApprox -> Maybe Bool 
-(⊐?) = (BRO.⊐?)
-
--- | Outward rounded meet
-(</\>) :: RealApprox -> RealApprox -> RealApprox
-(</\>) = (BRO.</\>)
-
-{-| Convenience Unicode notation for '</\>' -}
-(<⊓>) :: RealApprox -> RealApprox -> RealApprox
-(<⊓>) = (BRO.<⊓>)
-
--- | Partial outward rounded join
-(<\/>?) :: RealApprox -> RealApprox -> Maybe RealApprox
-(<\/>?) = (BRO.<\/>?)
-
-{-| Convenience Unicode notation for '<\/>?' -}
-(<⊔>?) :: RealApprox -> RealApprox -> Maybe RealApprox 
-(<⊔>?) = (BRO.<⊔>?)
-
-infixl 6 <+>, <->
-infixl 7 <*>
-infixl 8 <^>
-infixl 7 </>
-
-infixr 6 |<+>
-infixl 6 <+>|
-infixr 7 |<*>
-infixl 7 <*>|
-infixl 7 </>|
-
--- | Outward rounded addition
-(<+>) :: RealApprox -> RealApprox -> RealApprox
-(<+>) = (RAROR.<+>)
-
--- | Outward rounded subtraction
-(<->) :: RealApprox -> RealApprox -> RealApprox
-(<->) = (RAROR.<->)
-
--- | Outward rounded multiplication
-(<*>) :: RealApprox -> RealApprox -> RealApprox
-(<*>) = (RAROR.<*>)
-
--- | Outward rounded division
-(</>) :: RealApprox -> RealApprox -> RealApprox
-(</>) = (RAROR.</>)
-
--- | Outward rounded additive scalar left action
-(|<+>) :: RAROR.RoundedMixedAdd RealApprox tn => tn -> RealApprox -> RealApprox
-(|<+>) = (RAROR.|<+>)
-
--- | Outward rounded additive scalar right action
-(<+>|) :: RAROR.RoundedMixedAdd RealApprox tn => RealApprox -> tn -> RealApprox
-(<+>|) = (RAROR.<+>|)
-
--- | Outward rounded multiplicative scalar left action
-(|<*>) :: RAROR.RoundedMixedMultiply RealApprox tn => tn -> RealApprox -> RealApprox
-(|<*>) = (RAROR.|<*>)
-
--- | Outward rounded multiplicative scalar right action
-(<*>|) :: RAROR.RoundedMixedMultiply RealApprox tn => RealApprox -> tn -> RealApprox
-(<*>|) = (RAROR.<*>|)
-
--- | Outward rounded multiplicative scalar reciprocal right action
-(</>|) :: RAROR.RoundedMixedDivide RealApprox tn => RealApprox -> tn -> RealApprox
-(</>|) = (RAROR.</>|)
-
--- | Outward rounded power
-(<^>) :: RealApprox -> Int -> RealApprox
-(<^>) = (RAROR.<^>)
-
 -- | Outward rounded pi
 piOut :: RealApprox
-piOut = RAROR.piOut 0 
+piOut = RAROR.piOut sampleRealApprox
 
 -- | Outward rounded e
 eOut :: RealApprox
-eOut = RAROR.eOut 0
+eOut = RAROR.eOut sampleRealApprox
 
--- | Outward rounded absolute value
-absOut :: RealApprox -> RealApprox
-absOut = RAROR.absOut
-
--- | Outward rounded exponential
-expOut :: RealApprox -> RealApprox
-expOut = RAROR.expOut
-
--- | Outward rounded square root
-sqrtOut :: RealApprox -> RealApprox
-sqrtOut = RAROR.sqrtOut
-
-newtype PositiveRealApprox = 
-    PositiveRealApprox { unPositiveRealApprox :: RealApprox }
-
-instance Show PositiveRealApprox where
-    show (PositiveRealApprox i) = show i
-
-instance Arbitrary PositiveRealApprox
-    where
-    arbitrary =
-        do
-        NumOrd.UniformlyOrderedPair (l,h) <- arbitrary
-        return $ PositiveRealApprox (Interval (pos l) (pos h))
-        where
-        pos e 
-            | e > 0 =  e
-            | e == 0 =  1
-            | otherwise = (-e) 
+--newtype PositiveRealApprox = 
+--    PositiveRealApprox { unPositiveRealApprox :: RealApprox }
+--
+--instance Show PositiveRealApprox where
+--    show (PositiveRealApprox i) = show i
+--
+--instance Arbitrary PositiveRealApprox
+--    where
+--    arbitrary =
+--        do
+--        NumOrd.UniformlyOrderedPair (l,h) <- arbitrary
+--        return $ PositiveRealApprox (Interval (pos l) (pos h))
+--        where
+--        pos e 
+--            | e > 0 =  e
+--            | e == 0 =  1
+--            | otherwise = (-e) 

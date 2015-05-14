@@ -26,12 +26,8 @@ import qualified
 
 --import Numeric.AERN.Basics.Interval
 
-import Numeric.AERN.RealArithmetic.Basis.Double ()
-import qualified 
-       Numeric.AERN.DoubleBasis.Interval 
-       as CF
---import Numeric.AERN.RealArithmetic.Basis.MPFR
---import qualified Numeric.AERN.MPFRBasis.Interval as MI
+import Numeric.AERN.DoubleBasis.Interval (DI, width)
+--import Numeric.AERN.MPFRBasis.Interval (MI, width)
 
 --import qualified Numeric.AERN.RealArithmetic.NumericOrderRounding as ArithUpDn
 
@@ -47,8 +43,10 @@ import Numeric.AERN.RealArithmetic.ExactOps
 --import Numeric.AERN.NumericOrder.OpsDefaultEffort
 
 import qualified Numeric.AERN.RefinementOrder as RefOrd
---import Numeric.AERN.RefinementOrder.OpsDefaultEffort
+import Numeric.AERN.RefinementOrder.Operators
 
+import Numeric.AERN.NumericOrder (minOut)
+import Numeric.AERN.NumericOrder.Operators
 
 import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.ShowInternals
@@ -77,7 +75,7 @@ _ = unsafePrint -- stop the unused warning
 --import qualified Data.Map as Map
 --import qualified Data.List as List
 
-type CF = CF.DI
+type CF = DI
 
 type Fn = IntPoly String CF
 --type Fn = Interval (IntPoly String CF)
@@ -162,7 +160,7 @@ refinesVec vec1 vec2 =
     and $ zipWith refines vec1 vec2
 refines :: CF -> CF -> Bool
 refines a1 a2 = 
-    (a2 CF.|<=? a1) == Just True
+    (a2 |<=? a1) == Just True
     where
 --    tolerance = 2 ^^ (-50)
 
@@ -328,9 +326,9 @@ solveEventsPrintSteps ivp
         getError (valueIn, valueOut) =
             err
             where
-            err = snd $ RefOrd.getEndpointsOut $ wOut CF.<-> wIn
-            wOut = CF.width valueOut     
-            wIn = CF.width valueIn     
+            err = snd $ RefOrd.getEndpointsOut $ wOut <-> wIn
+            wOut = width valueOut
+            wIn = width valueIn     
     
     eventCount = case topLevelStrategy of
         TopLevelBisect -> eventCountBisect
@@ -343,16 +341,16 @@ solveEventsPrintSteps ivp
         where
         aux (BisectionNoSplit (_,_,modeEventInfoList)) 
             | null modeEventInfoList = error "solveEventsPrintSteps: BisectionNoSplit with empty modeEventInfoList" 
-            | otherwise = foldl1 (CF.</\>) $ map (eventInfoCountEvents 0 effCf . snd) modeEventInfoList
+            | otherwise = foldl1 (</\>) $ map (eventInfoCountEvents 0 effCf . snd) modeEventInfoList
         aux (BisectionSplit _ left Nothing) =
             aux left
         aux (BisectionSplit _ left (Just right)) =
-            (aux left) CF.<+> (aux right)
+            (aux left) <+> (aux right)
     (smallestSegSizeBisect, _) =
-        aux tStart (tEnd CF.<-> tStart) bisectionInfo
+        aux tStart (tEnd <-> tStart) bisectionInfo
         where
         aux tPrev tSmallestSoFar (BisectionNoSplit (tNow,_,_)) =
-            (CF.minOut tSmallestSoFar (tNow CF.<-> tPrev), tNow)
+            (minOut tSmallestSoFar (tNow <-> tPrev), tNow)
         aux tPrev tSmallestSoFar (BisectionSplit _ left Nothing) =
             aux tPrev tSmallestSoFar left
         aux tPrev tSmallestSoFar (BisectionSplit _ left (Just right)) =
@@ -360,25 +358,26 @@ solveEventsPrintSteps ivp
             where
             (tSmallestSoFarL, tPrevL) =
                 aux tPrev tSmallestSoFar left
+    eventCountLocate :: CF
     eventCountLocate =
         foldl (<+>) 0 $ map getSegmentEventCount segmentsInfo
         where
         getSegmentEventCount (_, Nothing, _) =  -- something failed on this segment 
-            0 CF.</\> (plusInfinity 0)
+            0 RefOrd.</\> (plusInfinity 0)
         getSegmentEventCount (_, Just _, modeMap) = 
-            foldl1 (CF.</\>) $ map getModeEventCount $ Map.elems modeMap
+            foldl1 (RefOrd.</\>) $ map getModeEventCount $ Map.elems modeMap
         getModeEventCount (_, _, Nothing) = 0 -- no events here
         getModeEventCount (_, _, Just (_, _, eventInfo)) = 
             eventInfoCountEvents 0 effCf eventInfo
     smallestSegSizeLocate =
-        aux tStart (tEnd CF.<-> tStart) segmentsInfo
+        aux tStart (tEnd <-> tStart) segmentsInfo
         where
         aux _tPrev tSmallestSoFar [] = tSmallestSoFar
         aux tPrev tSmallestSoFar ((tNow,_,_) : rest) =
             aux tNow tSmallestUpdated rest
             where
             tSmallestUpdated =
-                CF.minOut tSmallestSoFar (tNow CF.<-> tPrev)
+                minOut tSmallestSoFar (tNow <-> tPrev)
             
     showStepInfo (n, t) =
         "step " ++ show n ++ ": t = " ++ show t
