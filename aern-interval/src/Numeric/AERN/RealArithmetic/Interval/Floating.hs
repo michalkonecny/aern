@@ -221,7 +221,7 @@ instance
     =>
     Floating (Interval e)
     where
-    pi = error $ "AERN: Floating instance of Interval data type: for the pi constant use piOut or piIn with a sample value parameter to determine the precision from."
+    pi = error $ "AERN: Floating instance of Interval data type: for the pi constant use piOut or piIn.  Usually it is necessary to add a sample value parameter from which the precision will be determined."
     exp = ArithInOut.expOut
     sqrt = ArithInOut.sqrtOut
     sin = ArithInOut.sinOut
