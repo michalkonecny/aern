@@ -142,7 +142,10 @@ module Numeric.AERN.DoubleBasis.Interval
     piOut,eOut,
     
     -- ** Elementary functions
-    absOut,expOut,sqrtOut,
+    absOut,
+    sqrtOut, sqrtOutWithDegree,
+    expOut,expOutWithDegree,
+    sinOut, sinOutWithDegree, cosOut, cosOutWithDegree,
 
     -- * Inward rounded operations 
 
@@ -174,7 +177,10 @@ module Numeric.AERN.DoubleBasis.Interval
     piIn,eIn,
     
     -- ** Elementary functions
-    absIn,expIn,sqrtIn,
+    absIn,
+    sqrtIn, sqrtInWithDegree,
+    expIn,expInWithDegree,
+    sinIn, sinInWithDegree, cosIn, cosInWithDegree,
     
     -- * Low level facilities
     
@@ -199,7 +205,10 @@ import Numeric.AERN.RefinementOrder
 import qualified Numeric.AERN.RefinementOrder as BRO
     (bottom,top,(⊥),(⊤))
 
-import Numeric.AERN.RealArithmetic.Interval()
+import Numeric.AERN.RealArithmetic.Interval
+    (SqrtThinEffortIndicator(..),
+     ExpThinEffortIndicator(..), 
+     SineCosineThinEffortIndicator(..))
 
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding 
   hiding (piOut,piIn,eOut,eIn)
@@ -262,3 +271,83 @@ piIn = RAROR.piIn sampleDI
 -- | Inward rounded e
 eIn :: DI
 eIn = RAROR.eIn sampleDI
+
+-- | Outwards rounded square root with convenient effort regulation
+sqrtOutWithDegree :: Int -> DI -> DI
+sqrtOutWithDegree iters x =
+    sqrtOutEff eff x
+    where
+    eff = 
+        (sqrtDefaultEffort x)
+        {
+            sqrteff_newtonIters = iters
+        }
+
+-- | Inwards rounded square root with convenient effort regulation
+sqrtInWithDegree :: Int -> DI -> DI
+sqrtInWithDegree iters x =
+    sqrtInEff eff x
+    where
+    eff = 
+        (sqrtDefaultEffort x)
+        {
+            sqrteff_newtonIters = iters
+        }
+
+-- | Outwards rounded exponential with convenient effort regulation
+expOutWithDegree :: Int -> DI -> DI
+expOutWithDegree degree x =
+    expOutEff eff x
+    where
+    eff = 
+        (expDefaultEffort x)
+        {
+            expeff_taylorDeg = degree
+        }
+
+-- | Inwards rounded exponential with convenient effort regulation
+expInWithDegree :: Int -> DI -> DI
+expInWithDegree degree x =
+    expInEff eff x
+    where
+    eff = 
+        (expDefaultEffort x)
+        {
+            expeff_taylorDeg = degree
+        }
+
+-- | Outwards rounded sine with convenient effort regulation
+sinOutWithDegree :: Int -> DI -> DI
+sinOutWithDegree degree x =
+    sinOutEff eff x
+    where
+    eff = sincosDefaultEffortWithDegree x degree
+
+-- | Outwards rounded cosine with convenient effort regulation
+cosOutWithDegree :: Int -> DI -> DI
+cosOutWithDegree degree x =
+    cosOutEff eff x
+    where
+    eff = sincosDefaultEffortWithDegree x degree
+
+-- | Inwards rounded sine with convenient effort regulation
+sinInWithDegree :: Int -> DI -> DI
+sinInWithDegree degree x =
+    sinInEff eff x
+    where
+    eff = sincosDefaultEffortWithDegree x degree
+
+-- | Inwards rounded cosine with convenient effort regulation
+cosInWithDegree :: Int -> DI -> DI
+cosInWithDegree degree x =
+    cosInEff eff x
+    where
+    eff = sincosDefaultEffortWithDegree x degree
+
+sincosDefaultEffortWithDegree x degree =
+    (sincosDefaultEffort x)
+    {
+        sincoseff_taylorDeg = degree
+    }
+
+        

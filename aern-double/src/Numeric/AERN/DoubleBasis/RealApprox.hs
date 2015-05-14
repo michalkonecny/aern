@@ -127,7 +127,10 @@ module Numeric.AERN.DoubleBasis.RealApprox
     piOut,eOut,
     
     -- ** Elementary functions
-    absOut,expOut,sqrtOut,sinOut,cosOut
+    absOut,
+    sqrtOut, sqrtOutWithDegree,
+    expOut,expOutWithDegree,
+    sinOut, sinOutWithDegree, cosOut, cosOutWithDegree,
     
 )
 where
@@ -148,7 +151,11 @@ import Numeric.AERN.RealArithmetic.RefinementOrderRounding
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as RAROR
     (piOut,eOut)
 
-import Numeric.AERN.RealArithmetic.Interval()
+import Numeric.AERN.RealArithmetic.Interval
+    (SqrtThinEffortIndicator(..),
+     ExpThinEffortIndicator(..), 
+     SineCosineThinEffortIndicator(..))
+
 import Numeric.AERN.RealArithmetic.Basis.Double()
 
 -- | 
@@ -192,3 +199,83 @@ eOut = RAROR.eOut sampleRealApprox
 --            | e > 0 =  e
 --            | e == 0 =  1
 --            | otherwise = (-e) 
+
+-- | Outwards rounded square root with convenient effort regulation
+sqrtOutWithDegree :: Int -> RealApprox -> RealApprox
+sqrtOutWithDegree iters x =
+    sqrtOutEff eff x
+    where
+    eff = 
+        (sqrtDefaultEffort x)
+        {
+            sqrteff_newtonIters = iters
+        }
+
+-- | Inwards rounded square root with convenient effort regulation
+sqrtInWithDegree :: Int -> RealApprox -> RealApprox
+sqrtInWithDegree iters x =
+    sqrtInEff eff x
+    where
+    eff = 
+        (sqrtDefaultEffort x)
+        {
+            sqrteff_newtonIters = iters
+        }
+
+-- | Outwards rounded exponential with convenient effort regulation
+expOutWithDegree :: Int -> RealApprox -> RealApprox
+expOutWithDegree degree x =
+    expOutEff eff x
+    where
+    eff = 
+        (expDefaultEffort x)
+        {
+            expeff_taylorDeg = degree
+        }
+
+-- | Inwards rounded exponential with convenient effort regulation
+expInWithDegree :: Int -> RealApprox -> RealApprox
+expInWithDegree degree x =
+    expInEff eff x
+    where
+    eff = 
+        (expDefaultEffort x)
+        {
+            expeff_taylorDeg = degree
+        }
+
+-- | Outwards rounded sine with convenient effort regulation
+sinOutWithDegree :: Int -> RealApprox -> RealApprox
+sinOutWithDegree degree x =
+    sinOutEff eff x
+    where
+    eff = sincosDefaultEffortWithDegree x degree
+
+-- | Outwards rounded cosine with convenient effort regulation
+cosOutWithDegree :: Int -> RealApprox -> RealApprox
+cosOutWithDegree degree x =
+    cosOutEff eff x
+    where
+    eff = sincosDefaultEffortWithDegree x degree
+
+-- | Inwards rounded sine with convenient effort regulation
+sinInWithDegree :: Int -> RealApprox -> RealApprox
+sinInWithDegree degree x =
+    sinInEff eff x
+    where
+    eff = sincosDefaultEffortWithDegree x degree
+
+-- | Inwards rounded cosine with convenient effort regulation
+cosInWithDegree :: Int -> RealApprox -> RealApprox
+cosInWithDegree degree x =
+    cosInEff eff x
+    where
+    eff = sincosDefaultEffortWithDegree x degree
+
+sincosDefaultEffortWithDegree x degree =
+    (sincosDefaultEffort x)
+    {
+        sincoseff_taylorDeg = degree
+    }
+
+        
