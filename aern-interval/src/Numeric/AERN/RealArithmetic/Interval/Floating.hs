@@ -216,12 +216,16 @@ instance
      NumOrd.HasExtrema e,
      ArithUpDn.RoundedSpecialConst e,
      ArithInOut.RoundedExponentiation (Interval e),
-     ArithInOut.RoundedSquareRoot (Interval e)) =>
+     ArithInOut.RoundedSineCosine (Interval e),
+     ArithInOut.RoundedSquareRoot (Interval e)) 
+    =>
     Floating (Interval e)
     where
     pi = error $ "AERN: Floating instance of Interval data type: for the pi constant use piOut or piIn with a sample value parameter to determine the precision from."
     exp = ArithInOut.expOut
     sqrt = ArithInOut.sqrtOut
+    sin = ArithInOut.sinOut
+    cos = ArithInOut.cosOut
 
 instance
     (HasSampleFromContext e,
