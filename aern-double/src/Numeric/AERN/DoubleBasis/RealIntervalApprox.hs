@@ -148,7 +148,7 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     
     -- ** Elementary functions
     absOut,
-    sqrtOut, sqrtOutWithDegree,
+    sqrtOut, sqrtOutWithIters,
     expOut,expOutWithDegree,
     sinOut, sinOutWithDegree, cosOut, cosOutWithDegree,
 
@@ -183,7 +183,7 @@ module Numeric.AERN.DoubleBasis.RealIntervalApprox
     
     -- ** Elementary functions
     absIn,
-    sqrtIn, sqrtInWithDegree,
+    sqrtIn, sqrtInWithIters,
     expIn,expInWithDegree,
     sinIn, sinInWithDegree, cosIn, cosInWithDegree,
 )
@@ -270,8 +270,8 @@ eIn :: RealIntervalApprox
 eIn = RAROR.eIn sampleRealIntervalApprox
 
 -- | Outwards rounded square root with convenient effort regulation
-sqrtOutWithDegree :: Int -> RealIntervalApprox -> RealIntervalApprox
-sqrtOutWithDegree iters x =
+sqrtOutWithIters :: Int -> RealIntervalApprox -> RealIntervalApprox
+sqrtOutWithIters iters x =
     sqrtOutEff eff x
     where
     eff = 
@@ -281,8 +281,8 @@ sqrtOutWithDegree iters x =
         }
 
 -- | Inwards rounded square root with convenient effort regulation
-sqrtInWithDegree :: Int -> RealIntervalApprox -> RealIntervalApprox
-sqrtInWithDegree iters x =
+sqrtInWithIters :: Int -> RealIntervalApprox -> RealIntervalApprox
+sqrtInWithIters iters x =
     sqrtInEff eff x
     where
     eff = 

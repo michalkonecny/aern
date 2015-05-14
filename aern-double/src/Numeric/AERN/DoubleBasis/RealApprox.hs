@@ -128,7 +128,7 @@ module Numeric.AERN.DoubleBasis.RealApprox
     
     -- ** Elementary functions
     absOut,
-    sqrtOut, sqrtOutWithDegree,
+    sqrtOut, sqrtOutWithIters,
     expOut,expOutWithDegree,
     sinOut, sinOutWithDegree, cosOut, cosOutWithDegree,
     
@@ -201,8 +201,8 @@ eOut = RAROR.eOut sampleRealApprox
 --            | otherwise = (-e) 
 
 -- | Outwards rounded square root with convenient effort regulation
-sqrtOutWithDegree :: Int -> RealApprox -> RealApprox
-sqrtOutWithDegree iters x =
+sqrtOutWithIters :: Int -> RealApprox -> RealApprox
+sqrtOutWithIters iters x =
     sqrtOutEff eff x
     where
     eff = 

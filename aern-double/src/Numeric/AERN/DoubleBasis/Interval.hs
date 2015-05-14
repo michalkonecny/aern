@@ -143,7 +143,7 @@ module Numeric.AERN.DoubleBasis.Interval
     
     -- ** Elementary functions
     absOut,
-    sqrtOut, sqrtOutWithDegree,
+    sqrtOut, sqrtOutWithIters,
     expOut,expOutWithDegree,
     sinOut, sinOutWithDegree, cosOut, cosOutWithDegree,
 
@@ -178,7 +178,7 @@ module Numeric.AERN.DoubleBasis.Interval
     
     -- ** Elementary functions
     absIn,
-    sqrtIn, sqrtInWithDegree,
+    sqrtIn, sqrtInWithIters,
     expIn,expInWithDegree,
     sinIn, sinInWithDegree, cosIn, cosInWithDegree,
     
@@ -273,8 +273,8 @@ eIn :: DI
 eIn = RAROR.eIn sampleDI
 
 -- | Outwards rounded square root with convenient effort regulation
-sqrtOutWithDegree :: Int -> DI -> DI
-sqrtOutWithDegree iters x =
+sqrtOutWithIters :: Int -> DI -> DI
+sqrtOutWithIters iters x =
     sqrtOutEff eff x
     where
     eff = 
@@ -284,8 +284,8 @@ sqrtOutWithDegree iters x =
         }
 
 -- | Inwards rounded square root with convenient effort regulation
-sqrtInWithDegree :: Int -> DI -> DI
-sqrtInWithDegree iters x =
+sqrtInWithIters :: Int -> DI -> DI
+sqrtInWithIters iters x =
     sqrtInEff eff x
     where
     eff = 
