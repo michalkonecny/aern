@@ -189,17 +189,20 @@ solveEventsPrintSteps ivp
     putStrLn $ "solving: " ++ description
     putStrLn "-------------------------------------------------"
     putStrLn $ "top level strategy: " ++ show topLevelStrategy
+    putStrLn $ "  event location minimum step size = 2^{" ++ show (- locMaxDepth) ++ "}"
+    putStrLn $ "  event location maximum step size = 2^{" ++ show (- locMinDepth) ++ "}"
     putStrLn $ "basic step type: " ++ show basicStepType
-    putStrLn $ "event location minimum step size = 2^{" ++ show (- locMaxDepth) ++ "}"
-    putStrLn $ "event location maximum step size = 2^{" ++ show (- locMinDepth) ++ "}"
-    putStrLn $ "substSplitSizeLimit = " ++ show substSplitSizeLimit
-    putStrLn $ "maxdeg = " ++ show maxDeg
-    putStrLn $ "maxsize = " ++ show maxSize
-    putStrLn $ "delta = " ++ show delta
-    putStrLn $ "m = " ++ show m
-    putStrLn $ "ODE minimum step size = 2^{" ++ show (- odeMaxDepth) ++ "}"
-    putStrLn $ "ODE maximum step size = 2^{" ++ show (- odeMinDepth) ++ "}"
-    putStrLn $ "split improvement threshold = " ++ show splitImprovementThreshold
+    putStrLn $ "  maxNodes = " ++ show maxNodes
+    putStrLn $ "precision of function arithmetic:"
+    putStrLn $ "  maxdeg = " ++ show maxDeg
+    putStrLn $ "  maxsize = " ++ show maxSize
+    putStrLn $ "  substSplitSizeLimit = " ++ show substSplitSizeLimit
+    putStrLn $ "ODE solver parameters:"
+    putStrLn $ "  initial widening (delta) = " ++ show delta
+    putStrLn $ "  number of Picard iterations on each segment = " ++ show m
+    putStrLn $ "  ODE minimum step size = 2^{" ++ show (- odeMaxDepth) ++ "}"
+    putStrLn $ "  ODE maximum step size = 2^{" ++ show (- odeMinDepth) ++ "}"
+    putStrLn $ "  split improvement threshold = " ++ show splitImprovementThreshold
     case maybeExactResult of
         Just exactResult ->
             do
