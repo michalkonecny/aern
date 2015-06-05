@@ -8,9 +8,12 @@ import Numeric.AERN.IVP.Examples.Hybrid.Simple
 import Numeric.AERN.IVP.Specification.Hybrid
 --import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Solver.Bisection
-import Numeric.AERN.IVP.Solver.Events.EventTree
+import Numeric.AERN.IVP.Solver.Events.EventTree 
+    (EventInfo(..), eventInfoCountEvents)
 import Numeric.AERN.IVP.Solver.Events.Bisection
+    (solveHybridIVP_UsingPicardAndEventTree_Bisect)
 import Numeric.AERN.IVP.Solver.Events.SplitNearEvents
+    (solveHybridIVP_UsingPicardAndEventTree_SplitNearEvents)
 import Numeric.AERN.IVP.Plot.UsingFnView 
     (plotHybIVPBisectionEnclosures, plotHybIVPListEnclosures,
      IVPPlotArgs(..), readIVPPlotArgs, plotArgsHelpLines)
