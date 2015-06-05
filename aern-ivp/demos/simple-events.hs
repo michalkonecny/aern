@@ -235,6 +235,7 @@ solveEventsPrintSteps ivp
             putStrLn $ "error = " ++ show (getErrorState exactResult resultOut)
         _ -> return ()
     putStrLn $ "event count = " ++ show eventCount
+    putStrLn $ "event tree size maximum: " ++ show eventTreeSizeMax
     putStrLn $ "event tree sizes: " ++ show eventTreeSizes
     putStrLn "-------------------------------------------------"
 
@@ -340,6 +341,8 @@ solveEventsPrintSteps ivp
     eventCount = case topLevelStrategy of
         TopLevelBisect -> eventCountBisect
         TopLevelLocate -> eventCountLocate
+    eventTreeSizeMax =
+        foldr max 0 $ map (foldr max 0) $ eventTreeSizes
     eventTreeSizes = case topLevelStrategy of
         TopLevelBisect -> [] -- eventTreeSizesBisect -- TODO
         TopLevelLocate -> eventTreeSizesLocate
