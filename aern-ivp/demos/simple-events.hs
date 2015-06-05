@@ -9,7 +9,7 @@ import Numeric.AERN.IVP.Specification.Hybrid
 --import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Solver.Bisection
 import Numeric.AERN.IVP.Solver.Events.EventTree 
-    (EventInfo(..), eventInfoCountEvents)
+    (EventInfo(..), eventInfoCountEvents, eventInfoCountNodes)
 import Numeric.AERN.IVP.Solver.Events.Bisection
     (solveHybridIVP_UsingPicardAndEventTree_Bisect)
 import Numeric.AERN.IVP.Solver.Events.SplitNearEvents
@@ -235,6 +235,7 @@ solveEventsPrintSteps ivp
             putStrLn $ "error = " ++ show (getErrorState exactResult resultOut)
         _ -> return ()
     putStrLn $ "event count = " ++ show eventCount
+    putStrLn $ "event tree sizes: " ++ show eventTreeSizes
     putStrLn "-------------------------------------------------"
 
     case (maybePlotDimens, topLevelStrategy) of
@@ -339,6 +340,9 @@ solveEventsPrintSteps ivp
     eventCount = case topLevelStrategy of
         TopLevelBisect -> eventCountBisect
         TopLevelLocate -> eventCountLocate
+    eventTreeSizes = case topLevelStrategy of
+        TopLevelBisect -> [] -- eventTreeSizesBisect -- TODO
+        TopLevelLocate -> eventTreeSizesLocate
     smallestSegSize = case topLevelStrategy of
         TopLevelBisect -> smallestSegSizeBisect  
         TopLevelLocate -> smallestSegSizeLocate  
@@ -375,6 +379,18 @@ solveEventsPrintSteps ivp
         getModeEventCount (_, _, Nothing) = 0 -- no events here
         getModeEventCount (_, _, Just (_, _, eventInfo)) = 
             eventInfoCountEvents 0 effCf eventInfo
+    eventTreeSizesLocate :: [[Int]]
+    eventTreeSizesLocate =
+        map getEventTreeSize segmentsInfo
+        where
+        getEventTreeSize (_, Nothing, _) = -- something failed on this segment
+            [] 
+        getEventTreeSize (_, Just _, modeMap) = 
+            map getModeEventTreeSize $ Map.elems modeMap
+        getModeEventTreeSize (_, _, Nothing) =  -- no events here
+            0
+        getModeEventTreeSize (_, _, Just (_, _, eventInfo)) = 
+            eventInfoCountNodes eventInfo
     smallestSegSizeLocate =
         aux tStart (tEnd <-> tStart) segmentsInfo
         where
