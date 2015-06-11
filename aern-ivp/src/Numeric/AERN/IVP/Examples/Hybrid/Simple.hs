@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -55,6 +56,7 @@ ivpByNameMap ::
      CanEvaluate f,
      RefOrd.RoundedLattice f,
      Neg f,
+     ArithInOut.RoundedAbs f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
      ArithInOut.RoundedPowerToNonnegInt f,
@@ -88,8 +90,9 @@ ivpByNameMap sampleFn =
         ("bouncingBallRiseFall", ivpBouncingBallRiseFall sampleFn),
         ("bouncingBallEnergyRiseFall", ivpBouncingBallRiseFallEnergy sampleFn),
         ("bouncingBallDrag", ivpBouncingBallDrag sampleFn),
-        ("bouncingBallDragEnergy", ivpBouncingBallDragEnergy sampleFn),
-        ("bouncingBallDragNewtonianGravityEnergy", ivpBouncingBallDragNewtonGravityEnergy sampleFn),
+        ("bouncingBallDragPosNeg", ivpBouncingBallDragPosNeg sampleFn),
+        ("bouncingBallDragPosNegEnergy", ivpBouncingBallDragPosNegEnergy sampleFn),
+        ("bouncingBallDragPosNegNewtonianGravityEnergy", ivpBouncingBallDragPosNegNewtonGravityEnergy sampleFn),
         ("bouncingBallNewtonianGravityEnergy", ivpBouncingBallNewtonianGravityEnergy sampleFn),
         ("bouncingBallCubicDrag", ivpBouncingBallCubicDrag sampleFn),
         ("bouncingBallCubicDragEnergy", ivpBouncingBallCubicDragEnergy sampleFn),
@@ -117,6 +120,7 @@ ivpByName ::
      CanEvaluate f,
      RefOrd.RoundedLattice f,
      Neg f,
+     ArithInOut.RoundedAbs f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
      ArithInOut.RoundedPowerToNonnegInt f,
@@ -150,6 +154,7 @@ ivpByNameReportError ::
      CanEvaluate f,
      RefOrd.RoundedLattice f,
      Neg f,
+     ArithInOut.RoundedAbs f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
      ArithInOut.RoundedPowerToNonnegInt f,
@@ -184,6 +189,7 @@ ivpNames ::
      CanEvaluate f,
      RefOrd.RoundedLattice f,
      Neg f,
+     ArithInOut.RoundedAbs f,
      ArithInOut.RoundedSubtr f,
      ArithInOut.RoundedMultiply f,
      ArithInOut.RoundedPowerToNonnegInt f,
@@ -535,7 +541,7 @@ ivpDampenedPendulum (sampleFn :: f) =
         ++ ", v(" ++ show tStart ++ ") = " ++ show initV
     initValues@[initX, initV] = [toD 1, toD 0] :: [Domain f]
     tStart = hybivp_tStart ivp
-    z = toD 0
+--    z = toD 0
     toD = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
@@ -584,7 +590,7 @@ ivpBouncingBall (sampleFn :: f) =
         _ <- isect z x
         return [z, vNP]
         where
-        z = toD 0 
+--        z = toD 0 
         
     resetBounce [x,v] = 
         [x, (-0.5 :: Double) |<*> v]
@@ -758,7 +764,7 @@ ivpBouncingBallRiseFall (sampleFn :: f) =
         _ <- isect z x
         return [z, vNP]
         where
-        z = toD 0 
+--        z = toD 0 
         
     resetBounce [x,v] = 
         [x, (-0.5 :: Double) |<*> v]
@@ -834,7 +840,7 @@ ivpBouncingBallRiseFallEnergy (sampleFn :: f) =
         -- r >= 0:
         rNN <- makeNonneg r
         -- v >= 0:
-        vNN <- makeNonneg v
+--        vNN <- makeNonneg v
         -- v = sqrt(r - 2gx):
         vSqr1 <- makeNonneg $ rNN <-> ((toD 20) <*> xNN)
         let v1 = ArithInOut.sqrtOut vSqr1
@@ -851,7 +857,7 @@ ivpBouncingBallRiseFallEnergy (sampleFn :: f) =
         -- r >= 0:
         rNN <- makeNonneg r
         -- v <= 0:
-        vNP <- makeNonpos v
+--        vNP <- makeNonpos v
         -- v = sqrt(r - 2gx):
         vSqr1 <- makeNonneg $ rNN <-> ((toD 20) <*> xNN)
         let v1 = neg $ ArithInOut.sqrtOut vSqr1
@@ -980,7 +986,7 @@ ivpBouncingBallFloorRise (sampleFn :: f) =
         ++ ", y'(" ++ show tStart ++ ") = " ++ show initYV
     initValues@[initX, initXV, initY, initYV] = [toD 5, toD 0, toD 0, toD 0] :: [Domain f]
     tStart = hybivp_tStart ivp
-    z = toD 0
+--    z = toD 0
     toD = dblToReal sampleDom
     sampleDom = getSampleDomValue sampleFn
 
@@ -1012,7 +1018,7 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
             hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
             hybsys_eventSpecification = eventSpecMap
         }
-    initValues@[initX, initXV, initY, initYV, initYVV, initR] = 
+    initValues@[initX, initXV, initY, initYV, _initYVV, initR] = 
         [toD 5, toD 0, 
             toD 0, toD 1, toD 0, toD 101] -- linear rise
 --            toD 0, toD 1, toD floorRiseAccelD, toD $ 101] -- quadratic
@@ -1020,7 +1026,7 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
                     -- r = 2g(x-y) + (x'-y')^2
     modeMove = HybSysMode "move"
     odeMove :: [f] -> [f]
-    odeMove [x,xv,y,yv,yvv,r] =
+    odeMove [x,xv,_y,yv,yvv,r] =
         [xv, 
          newConstFnFromSample x (toD $ -10), 
          yv,
@@ -1036,7 +1042,7 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
 --    floorRiseAccelD = 1 :: Double 
 --    floorRiseAccelD = -0.375 :: Double 
 --    floorRiseAccelD = -2 :: Double 
-    floorRiseThirdD = -11 :: Double 
+--    floorRiseThirdD = -11 :: Double 
     invariantMove [x,xv,y,yv,yvv,r] = 
         do 
         -- x >= y:
@@ -1058,7 +1064,8 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
 
     eventSpecMap _mode =
         Map.singleton eventBounce $
-            (modeMove, resetBounce, [True, True, False, False, False, True], pruneBounce)
+--            (modeMove, resetBounce, [True, True, False, False, False, True], pruneBounce)
+            (modeMove, resetBounce, [True, True, True, True, True, True], pruneBounce)
     eventBounce = HybSysEventKind "bounce"
     pruneBounce _ [x,xv,y,yv,yvv,r] = 
         do  
@@ -1093,7 +1100,7 @@ ivpBouncingBallFloorRiseEnergy (sampleFn :: f) =
         ++ ", y'(" ++ show tStart ++ ") = " ++ show initYV
         ++ ", r(" ++ show tStart ++ ") = " ++ show initR
     tStart = hybivp_tStart ivp
-    z = toD 0
+--    z = toD 0
     toD = dblToReal sampleDom
     toDInterval l r = (toD l) </\> (toD r)
     sampleDom = getSampleDomValue sampleFn
@@ -1138,7 +1145,7 @@ ivpBouncingBallFloorDropEnergy (sampleFn :: f) =
     modeMove1 = HybSysMode "move1"
     modeMove2 = HybSysMode "move2"
     odeMove :: [f] -> [f]
-    odeMove [x,xv,y,t,r] =
+    odeMove [x,xv,_y,_t,r] =
         [xv, 
          newConstFnFromSample x (toD $ -10), 
          newConstFnFromSample x (toD $ 0), -- y'
@@ -1252,13 +1259,90 @@ ivpBouncingBallFloorDropEnergy (sampleFn :: f) =
         ++ ", t(" ++ show tStart ++ ") = " ++ show initTM
         ++ ", r(" ++ show tStart ++ ") = " ++ show initR
     tStart = hybivp_tStart ivp
-    z = toD 0
+--    z = toD 0
     toD = dblToReal sampleDom
     toDInterval l r = (toD l) </\> (toD r)
     sampleDom = getSampleDomValue sampleFn
 
-
 ivpBouncingBallDrag :: 
+    (Var f ~ String,
+     HasConstFns f,
+     Neg f,
+     ArithInOut.RoundedSubtr f,
+     ArithInOut.RoundedAbs f,
+     ArithInOut.RoundedMultiply f,
+     ArithInOut.RoundedMixedMultiply f Double,
+     ArithInOut.RoundedReal (Domain f),
+     HasConsistency (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     Show (Domain f)
+    )
+    => 
+    f -> 
+    HybridIVP f
+ivpBouncingBallDrag (sampleFn :: f) =
+    ivp
+    where
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x","v"],
+            hybsys_modeFields = Map.fromList [(modeMove, odeMove)],
+            hybsys_modeInvariants = Map.fromList [(modeMove, invariantMove)],
+            hybsys_eventSpecification = eventSpecMap
+        }
+    modeMove = HybSysMode "move"
+    odeMove :: [f] -> [f]
+    odeMove [x,v] = [v, newConstFnFromSample x (toD $ -10) <-> ((ArithInOut.absOut v) <*> v <*>| (0.1 :: Double))]
+--    invariantMove = id
+    invariantMove [x,v] = 
+        do 
+        xNN <- makeNonneg x 
+        return [xNN,v]
+
+    eventSpecMap _mode =
+        Map.singleton eventBounce $
+            (modeMove, resetBounce, [True, True], pruneBounce)
+    eventBounce = HybSysEventKind "bounce"
+    pruneBounce _ [x,v] = 
+        do  
+        vNP <- makeNonpos v
+        _ <- isect z x
+        return [z, vNP]
+        where
+        z = toD 0 
+        
+    resetBounce [x,v] = 
+        [x, (-0.5 :: Double) |<*> v]
+--        [newConstFnFromSample v 0, (0 :: Double) |<*> v]
+    
+    ivp :: HybridIVP f
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = toD 0,
+            hybivp_tEnd = toD 1,
+            hybivp_initialStateEnclosure = 
+                Map.singleton modeMove initValues,
+            hybivp_maybeExactStateAtTEnd = Nothing
+        }
+    description =
+        "BB"
+--        "if x = 0 && v <= 0 then post(v) = -0.5*pre(v) else x'' = -10" 
+        ++ "; x(" ++ show tStart ++ ") = " ++ show initX
+        ++ ", v(" ++ show tStart ++ ") = " ++ show initX'
+    initValues@[initX, initX'] = [toD 5, toD 0] :: [Domain f]
+    tStart = hybivp_tStart ivp
+--    z = toD 0
+    toD = dblToReal sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+
+
+ivpBouncingBallDragPosNeg :: 
     (Var f ~ String,
      HasConstFns f,
      Neg f,
@@ -1273,7 +1357,7 @@ ivpBouncingBallDrag ::
     => 
     f -> 
     HybridIVP f
-ivpBouncingBallDrag (sampleFn :: f) =
+ivpBouncingBallDragPosNeg (sampleFn :: f) =
     ivp
     where
     system =
@@ -1314,8 +1398,6 @@ ivpBouncingBallDrag (sampleFn :: f) =
         vNP <- makeNonpos v
         _ <- isect z x
         return [z, vNP]
-        where
-        z = toD 0 
         
     resetBounce [x,v] = 
         [x, (-0.5 :: Double) |<*> v]
@@ -1366,7 +1448,7 @@ ivpBouncingBallDrag (sampleFn :: f) =
     
 -}
 
-ivpBouncingBallDragEnergy :: 
+ivpBouncingBallDragPosNegEnergy :: 
     (Var f ~ String,
      HasConstFns f,
      Neg f,
@@ -1382,7 +1464,7 @@ ivpBouncingBallDragEnergy ::
     => 
     f -> 
     HybridIVP f
-ivpBouncingBallDragEnergy (sampleFn :: f) =
+ivpBouncingBallDragPosNegEnergy (sampleFn :: f) =
     ivp
     where
     energyWith x v = 
@@ -1399,12 +1481,12 @@ ivpBouncingBallDragEnergy (sampleFn :: f) =
     modeRise = HybSysMode "rise"
     modeFall = HybSysMode "fall"
     odeRise :: [f] -> [f]
-    odeRise [x,v,r] = 
+    odeRise [x,v,_r] = 
         [v, 
          newConstFnFromSample x (toD $ -10) <-> (v <*> v <*>| (0.1 :: Double)), 
          (v <*> v <*> v <*>| (-0.2 :: Double))]
     odeFall :: [f] -> [f]
-    odeFall [x,v,r] = 
+    odeFall [x,v,_r] = 
         [v, 
          newConstFnFromSample x (toD $ -10) <+> (v <*> v <*>| (0.1 :: Double)), 
          (v <*> v <*> v <*>| (0.2 :: Double))]
@@ -1493,7 +1575,7 @@ ivpBouncingBallDragEnergy (sampleFn :: f) =
        = - 0.2*|v|^3
 -}
 
-ivpBouncingBallDragNewtonGravityEnergy :: -- TODO 
+ivpBouncingBallDragPosNegNewtonGravityEnergy :: -- TODO 
     (Var f ~ String,
      HasConstFns f,
      Neg f,
@@ -1514,7 +1596,7 @@ ivpBouncingBallDragNewtonGravityEnergy :: -- TODO
     => 
     f -> 
     HybridIVP f
-ivpBouncingBallDragNewtonGravityEnergy (sampleFn :: f) =
+ivpBouncingBallDragPosNegNewtonGravityEnergy (sampleFn :: f) =
     ivp
     where
     energyWith x v = 
@@ -1531,12 +1613,12 @@ ivpBouncingBallDragNewtonGravityEnergy (sampleFn :: f) =
     modeRise = HybSysMode "rise"
     modeFall = HybSysMode "fall"
     odeRise :: [f] -> [f]
-    odeRise [x,v,r] = 
+    odeRise [x,v,_r] = 
         [v, 
          (newConstFnFromSample x (toD $ -5000) </> (((20 :: Double) |<+> x) <^> 2)) <-> (v <*> v <*>| (0.1 :: Double)),
          (v <*> v <*> v <*>| (-0.2 :: Double))]
     odeFall :: [f] -> [f]
-    odeFall [x,v,r] = 
+    odeFall [x,v,_r] = 
         [v, 
          (newConstFnFromSample x (toD $ -5000) </> (((20 :: Double) |<+> x) <^> 2)) <+> (v <*> v <*>| (0.1 :: Double)),
          (v <*> v <*> v <*>| (0.2 :: Double))]
@@ -1726,7 +1808,7 @@ ivpBouncingBallNewtonianGravityEnergy (sampleFn :: f) =
         [x, 
          (-0.5 :: Double) |<*> v,
          (0.25 :: Double) |<*> r]
-    eventSpecMap mode = 
+    eventSpecMap _mode = 
         Map.singleton
             eventBounce (modeMove, resetBounce, [True, True, True], pruneBounce)
     
@@ -1805,8 +1887,6 @@ ivpBouncingBallCubicDrag (sampleFn :: f) =
         vNP <- makeNonpos v
         _ <- isect z x
         return [z, vNP]
-        where
-        z = toD 0 
         
     resetBounce [x,v] = 
         [x, (-0.5 :: Double) |<*> v]
@@ -1872,7 +1952,7 @@ ivpBouncingBallCubicDragEnergy (sampleFn :: f) =
         }
     modeMove = HybSysMode "move"
     odeMove :: [f] -> [f]
-    odeMove [x,v,r] = 
+    odeMove [x,v,_r] = 
         [
             v, 
             newConstFnFromSample x (toD $ -10) <-> (v <*> v <*> v) </>| (1000 :: Double), 
@@ -1996,19 +2076,19 @@ ivpBouncingBallCircle (sampleFn :: f) =
     invariantMove [x1,x2,v1,v2,d,s,r] =
         do
         -- d >= 1:
-        dM1NN <- makeNonneg (d <-> one)
+        dM1NN <- makeNonneg (d <-> c1)
         -- d = x1^2 + x2^2
         x1New <- 
             case (x1 >? z) of
                 Just True -> 
-                    isect x1 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ dM1NN <+> one <-> (x2<^>2))
+                    isect x1 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ dM1NN <+> c1 <-> (x2<^>2))
                 _ -> return x1
         x2New <- 
             case (x2 >? z) of
                 Just True -> 
-                    isect x2 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ dM1NN <+> one <-> (x1<^>2))
+                    isect x2 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ dM1NN <+> c1 <-> (x1<^>2))
                 _ -> return x2
-        dNew <- isect (dM1NN <+> one) ((x1<^>2) <+> (x2<^>2))
+        dNew <- isect (dM1NN <+> c1) ((x1<^>2) <+> (x2<^>2))
         
         -- s = x1*v1 + x2*v2
                 
@@ -2019,11 +2099,11 @@ ivpBouncingBallCircle (sampleFn :: f) =
     eventBounce = HybSysEventKind "bc"
     pruneBounce _ [x1,x2,v1,v2,d,s,r] =
         do
-        _ <- isect z (d <-> one)
-        x1New <- isect x1 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ one <-> (x2<^>2))
-        x2New <- isect x2 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ one <-> (x1<^>2))
+        _ <- isect z (d <-> c1)
+        x1New <- isect x1 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ c1 <-> (x2<^>2))
+        x2New <- isect x2 $ ArithInOut.sqrtOut (NumOrd.maxOut z $ c1 <-> (x1<^>2))
         sNP <- makeNonpos s
-        return $ [x1New,x2New,v1,v2,one,sNP,r]
+        return $ [x1New,x2New,v1,v2,c1,sNP,r]
     pruneBounce _ _ = error "pruneBounce: internal error"
     resetBounce [x1,x2,v1,v2,d,s,r] = 
         [x1, 
@@ -2032,10 +2112,10 @@ ivpBouncingBallCircle (sampleFn :: f) =
          v2 <-> c <*> x2,
          d,
          (neg e) <*> s,
-         r <-> (s<^>2)<*>(one <-> e<^>2)
+         r <-> (s<^>2)<*>(c1 <-> e<^>2)
         ]
         where
-        c = (one <+> e) <*> s
+        c = (c1 <+> e) <*> s
     resetBounce _ = error "resetBounce: internal error"
     eventSpecMap _mode =
         Map.singleton eventBounce $
@@ -2067,7 +2147,7 @@ ivpBouncingBallCircle (sampleFn :: f) =
     initValues = [initX1, initX2, initV1, initV2, initD, initS, initR] 
     tStart = hybivp_tStart ivp
     z = toD 0
-    one = toD 1
+    c1 = toD 1
     toD = dblToReal sampleDom
 --    toDInterval l r = (toD l) </\> (toD r)
     sampleDom = getSampleDomValue sampleFn
