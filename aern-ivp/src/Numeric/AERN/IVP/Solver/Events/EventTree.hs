@@ -47,7 +47,7 @@ import Numeric.AERN.Basics.Consistency
 --import Data.Maybe (catMaybes)
 import qualified Data.Map as Map
 import qualified Data.Set as Set
---import qualified Data.List as List
+import qualified Data.List as List (intercalate)
 
 import Numeric.AERN.Misc.Debug
 _ = unsafePrint
@@ -577,7 +577,7 @@ showEventInfo prefix showState eventInfo =
             _ -> error ""
     showEvents [] = " []"
     showEvents events =
-        "\n" ++ (unlines $ map showEvent events)
+        "\n" ++ (List.intercalate "\n" $ map showEvent events)
     showEvent (eventKind, eventInfo2) =
         prefix ++ show eventKind ++ " ->\n" 
         ++ showEventInfo (prefix ++ "| ") showState eventInfo2

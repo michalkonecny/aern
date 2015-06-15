@@ -9,7 +9,7 @@ import Numeric.AERN.IVP.Specification.Hybrid
 --import Numeric.AERN.IVP.Specification.ODE
 import Numeric.AERN.IVP.Solver.Bisection
 import Numeric.AERN.IVP.Solver.Events.EventTree 
-    (EventInfo(..), eventInfoCountEvents, eventInfoCountNodes)
+    (EventInfo(..), eventInfoCountEvents, eventInfoCountNodes, showEventInfo)
 import Numeric.AERN.IVP.Solver.Events.Bisection
     (solveHybridIVP_UsingPicardAndEventTree_Bisect)
 import Numeric.AERN.IVP.Solver.Events.SplitNearEvents
@@ -49,7 +49,7 @@ import qualified Numeric.AERN.RefinementOrder as RefOrd
 import Numeric.AERN.RefinementOrder.Operators
 
 import Numeric.AERN.NumericOrder (minOut)
-import Numeric.AERN.NumericOrder.Operators
+--import Numeric.AERN.NumericOrder.Operators
 
 import Numeric.AERN.Basics.SizeLimits
 --import Numeric.AERN.Basics.ShowInternals
@@ -219,6 +219,11 @@ solveEventsPrintSteps ivp
             do
             _ <- printStepsInfoLocate (1:: Int) segmentsInfo
             return ()
+    if False then 
+            do 
+            putStrLn "----------  event tree details: -----------------"
+            printEventTrees 
+        else return ()
     putStrLn "----------  step summary: -----------------------"
     putStrLn $ "number of atomic segments = " ++ 
         case topLevelStrategy of
@@ -255,6 +260,33 @@ solveEventsPrintSteps ivp
 --    return (maybeEndState, segmentsInfo)
 --    return (maybeEndState, bisectionInfo)
     where
+    printEventTrees =
+        mapM_ printEventTreesOnSegment segmentsInfo
+        where
+        printEventTreesOnSegment (_t, Nothing, _modeMap) = return ()
+        printEventTreesOnSegment (t, Just _, modeMap) =
+            do
+            putStrLn $ "on segment ending at t = " ++ show t ++ ":"
+            mapM_ printTreeForMode $ Map.toList modeMap
+        printTreeForMode (HybSysMode mode2, (_, _, Nothing)) =
+            do
+            putStrLn $ "for mode = " ++ show mode2 ++ " no event information"
+        printTreeForMode (HybSysMode mode2, (_, _, Just (_, _, eventInfo))) =
+            do
+            putStrLn $ "for mode = " ++ show mode2
+            printTree eventInfo
+        printTree eventInfo =
+            do
+            putStrLn $ showEventInfo ":  " showState2 eventInfo
+            where
+            showState2 (_, fns) =
+                show $ getRangeVec fns
+            getRangeVec fnVec = 
+                map getRange fnVec
+            getRange fn =
+                evalAtPointOut (getDomainBox fn) fn
+            
+            
     maybeEndState = case topLevelStrategy of
         TopLevelBisect -> maybeEndStateBisect
         TopLevelLocate -> maybeEndStateLocate
@@ -628,4 +660,17 @@ makeSampleWithVarsDoms maxdeg maxsize vars doms =
         arity = length vars
         cf_limits = defaultSizeLimits sampleCf
      
+--segmentsInfo :: 
+--    [(CF, Maybe (HybridSystemUncertainState CF), 
+--        Map HybSysMode 
+--            (BisectionInfo 
+--                (Maybe ([Fn], [Fn]), (CF, Maybe [CF]))
+--                ((Maybe ([Fn], [Fn]), (CF, Maybe [CF])), Maybe CF), 
+--             Maybe (HybridSystemUncertainState CF), 
+--             Maybe (CF, Maybe (HybridSystemUncertainState CF), EventInfo Fn)
+--            )
+--     )
+--    ]
+--    
     
+        
