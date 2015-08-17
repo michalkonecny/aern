@@ -25,29 +25,38 @@ instance RF PolyReal where
     evalMI = evalMIPolyReal
     
 buildPolyReal :: (Rational, Rational) -> Expression -> PolyReal
-buildPolyReal (lRat, rRat) (ExprLit aRat) =
-    PolyReal polySeq
+buildPolyReal (lRat, rRat) expr = PolyReal $ aux expr
     where
-    aSeq = fromRationalWithIncreasingAccuracy aRat
-    lSeq = fromRationalWithIncreasingAccuracy lRat
-    rSeq = fromRationalWithIncreasingAccuracy rRat
-    polySeq n = newConstFn limits varDoms aMI
+    aux (ExprLit aRat) n =
+        newConstFn limits varDoms aMI
         where
         aMI = aSeq !! n
-        lMI = lSeq !! n
-        rMI = rSeq !! n
-        limits :: IntPolySizeLimits MI
+        aSeq = fromRationalWithIncreasingAccuracy aRat
+        (limits, varDoms) = buildLimitsVarDoms n (getPrec aMI) 
+    aux (ExprVar) n =
+        newProjection limits varDoms "x"
+        where
+        (limits, varDoms) = buildLimitsVarDoms n 100 
+
+    lSeq = fromRationalWithIncreasingAccuracy lRat
+    rSeq = fromRationalWithIncreasingAccuracy rRat
+
+    buildLimitsVarDoms :: Int -> Precision -> (IntPolySizeLimits MI, [(String, MI)]) 
+    buildLimitsVarDoms n coeffPrecision =
+        (limits, varDoms)
+        where
         limits =
             (defaultIntPolySizeLimits 0 coeffPrecision 1)
             {
                 ipolylimits_maxdeg = 10,
                 ipolylimits_maxsize = 11
             } 
-            where
-            coeffPrecision = getPrec aMI
         varDoms = zip vars doms
-        vars = ["x"]
-        doms = [RefOrd.fromEndpointsOut (lMI, rMI)]
+            where
+            vars = ["x"]
+            doms = [RefOrd.fromEndpointsOut (lMI, rMI)]
+            lMI = lSeq !! n
+            rMI = rSeq !! n
     
     
 evalMIPolyReal :: PolyReal -> MI -> MI
@@ -55,7 +64,7 @@ evalMIPolyReal (PolyReal polySeq) x =
     -- evaluate on successive polynomials until:
     --   - the precision of coefficient in the polynomials is higher than the precision of x
     --   - the accuracy of the result has not improved several times in a row (how many times?)   
-    undefined
+    undefined -- TODO
     
 fromRationalWithIncreasingAccuracy :: Rational -> [MI]
 fromRationalWithIncreasingAccuracy a =
