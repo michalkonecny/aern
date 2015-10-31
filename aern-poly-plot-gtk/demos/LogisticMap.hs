@@ -41,7 +41,7 @@ import System.Environment (getArgs)
 type CF = Interval MPFR
 --type CF = Interval Double
 type Poly = IntPoly String CF
-type PI = Interval Poly
+--type PI = Interval Poly
 type Fn = Poly 
 --type Fn = PI
 

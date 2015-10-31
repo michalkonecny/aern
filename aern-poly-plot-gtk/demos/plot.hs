@@ -13,7 +13,7 @@ import Numeric.AERN.RealArithmetic.Basis.Double ()
 
 import Numeric.AERN.Basics.Interval
 import Numeric.AERN.RealArithmetic.Interval ()
-import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps ()
+import Numeric.AERN.RealArithmetic.Interval.ElementaryFromFieldOps 
 
 import qualified Numeric.AERN.RealArithmetic.RefinementOrderRounding as ArithInOut
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding.Operators
@@ -328,7 +328,7 @@ fnDefsMult1 maxdeg _otherParams = (fns, fnmeta)
     doms = [constructCF 0 1]
 
 fnDefsExpMx2 :: Int -> [String] -> ([[Fn]], FV.FnMetaData Fn)
-fnDefsExpMx2 maxdeg _otherParams = (fns, fnmeta)
+fnDefsExpMx2 maxdeg otherParams = (fns, fnmeta)
     where
     fnmeta =
         (FV.defaultFnMetaData x)
@@ -375,7 +375,12 @@ fnDefsExpMx2 maxdeg _otherParams = (fns, fnmeta)
     vars = ["x"]
     doms = [constructCF (-1) 1]
     
-    effExp = ArithInOut.expDefaultEffort x
+    effExp =
+        (ArithInOut.expDefaultEffort x)
+        {
+            expeff_taylorDeg = read effExpS
+        }
+    effExpS : _ = otherParams
 
 constructCF :: Double -> Double -> CF
 constructCF l r =

@@ -38,7 +38,7 @@ library
   exposed-modules: 
         Numeric.AERN.Poly.IntPoly.Plot
   other-modules:
-        Quickstart, Quickstart1, Integrate
+        Quickstart, Quickstart1, Integrate, TestSineCosine
 
 executable plot
   hs-source-dirs:  demos
@@ -128,3 +128,4 @@ executable Inclusion
         aern-realfn-plot-gtk == 0.5.*,
         aern-poly == 0.5.*,
         aern-poly-plot-gtk == 0.5.*
+

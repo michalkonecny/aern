@@ -6,6 +6,8 @@ import Numeric.AERN.Poly.IntPoly (IntPoly(..), defaultIntPolySizeLimits, IntPoly
 import Numeric.AERN.Poly.IntPoly.Plot ()
 import Numeric.AERN.Basics.Interval 
     (Interval, IntervalApprox, intervalApproxIncludedIn, intervalApproxUnion)
+import Numeric.AERN.RealArithmetic.Interval
+        (ExpThinEffortIndicator(..))
 
 import Numeric.AERN.RmToRn 
         (getVarDoms, 
@@ -19,8 +21,6 @@ import Numeric.AERN.RealArithmetic.Basis.Double ()
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding 
     (RoundedReal, roundedRealDefaultEffort,
      expOutEff, expDefaultEffort)
-import Numeric.AERN.RealArithmetic.RefinementOrderRounding.ElementaryFromFieldOps.Exponentiation
-        (ExpThinEffortIndicator(..))
 
 import Numeric.AERN.RefinementOrder ((/\))
 
@@ -106,8 +106,11 @@ inclusionFunctions maxdeg expTaylorDeg = (fnGroups, fnmeta)
     where
     fnGroups = [[fn1, fn2]]
 
-    fn1Name = "0.2x + exp(x)"
-    fn1 = pmDelta * x + expOutEff effExp x
+    fn1Name = "+-0.2x + exp(x)"
+    fn1 = (pmDelta) * x + expOutEff effExp x
+    
+--    fn1Name = "+-0.8x + exp(x)"
+--    fn1 = (pmDelta + pmDelta + pmDelta + pmDelta) * x + expOutEff effExp x
     
     fn2Name = "(exp(x+-0.2))"
     fn2 = expOutEff effExp (x + pmDelta)
