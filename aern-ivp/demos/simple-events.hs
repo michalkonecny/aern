@@ -241,7 +241,7 @@ solveEventsPrintSteps ivp
         _ -> return ()
     putStrLn $ "event count = " ++ show eventCount
     putStrLn $ "event tree size maximum: " ++ show eventTreeSizeMax
-    putStrLn $ "event tree sizes: " ++ show eventTreeSizes
+--    putStrLn $ "event tree sizes: " ++ show eventTreeSizes
     putStrLn "-------------------------------------------------"
 
     case (maybePlotDimens, topLevelStrategy) of
