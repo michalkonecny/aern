@@ -3253,7 +3253,7 @@ ivpTwoTanksSum rD (sampleFn :: f) =
         let x1AboveLim = x1MlimNN <+> x1Limit 
         x2MlimNN <- makeNonneg (x2 <-> x2Limit)
         let x2AboveLim = x2MlimNN <+> x2Limit 
-        x12NN <- makeNonneg x12
+        x12NN <- makeNonneg x12 -- $ NumOrd.maxOut (zero x12) x12
         --
         x12mx2 <- makeNonneg $ x12NN <-> x2AboveLim
         x1New <- isect x1AboveLim x12mx2
@@ -3267,10 +3267,10 @@ ivpTwoTanksSum rD (sampleFn :: f) =
     eventSpecMap mode
         | mode == modeFill1 =
             Map.singleton event1To2 $
-                (modeFill2, id, [True, True, False], prune1To2)
+                (modeFill2, id, [True, True, True], prune1To2)
         | mode == modeFill2 =
             Map.singleton event2To1 $
-                (modeFill1, id, [True, True, False], prune2To1)
+                (modeFill1, id, [True, True, True], prune2To1)
 
     event1To2 = HybSysEventKind "1To2"
     event2To1 = HybSysEventKind "2To1"
