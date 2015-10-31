@@ -62,8 +62,10 @@ buildPolyReal (lRat, rRat) expr = PolyReal $ aux expr
 evalMIPolyReal :: PolyReal -> MI -> MI
 evalMIPolyReal (PolyReal polySeq) x =
     -- evaluate on successive polynomials until:
-    --   - the precision of coefficient in the polynomials is higher than the precision of x
-    --   - the accuracy of the result has not improved several times in a row (how many times?)   
+    --   - the accuracy of the result has not improved significantly several times in a row (how many times?)
+    --      - significant improvement = 
+    --           for non-exact x: improvement of at least 1% of width of x
+    --           for exact x: improvement of at least    
     undefined -- TODO
     
 fromRationalWithIncreasingAccuracy :: Rational -> [MI]

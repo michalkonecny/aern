@@ -45,7 +45,7 @@ zeroUsingTrisection fn lOrig rOrig n =
             where
             getPseudoSign :: MI -> Int
             getPseudoSign v =
-                case (v <? 0, 0 <? v) of
+                case (v <? 0, 0 <? v) of -- TODO fix MI comparison to allow mixed precisions
                     (Just True, _) -> 1
                     (_, Just True) -> -1
                     _ -> 0
