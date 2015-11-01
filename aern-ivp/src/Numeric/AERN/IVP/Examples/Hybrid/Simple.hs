@@ -110,7 +110,8 @@ ivpByNameMap sampleFn =
 --        ("twoBouncingBallsEnergyDrop", ivpTwoBouncingBallsEnergyDrop_AtTime 30 20 25 10 45 sampleFn),
 --    -- TODO: fix breakage at time 20
 --        ("bouncingSpring-4", ivpBouncingSpring_AtTime 4 sampleFn),
---        ("twoTanks", ivpTwoTanks_AfterZeno 0 sampleFn),
+        ("twoTanks", ivpTwoTanks 0 sampleFn),
+        ("twoTanksR", ivpTwoTanks 0.5 sampleFn),
         ("twoTanksSum", ivpTwoTanksSum 0 sampleFn),
         ("twoTanksSumR", ivpTwoTanksSum 0.5 sampleFn)
     ]
@@ -3196,6 +3197,113 @@ ivpBouncingBallCircle (sampleFn :: f) =
 --    tEnd = toD tEndDbl
 --    toD = dblToReal sampleDom
 --    sampleDom = getSampleDomValue sampleFn
+
+ivpTwoTanks :: 
+    (Var f ~ String,
+     HasConstFns f,
+     ArithInOut.RoundedReal (Domain f),
+     RefOrd.IntervalLike (Domain f),
+     HasConsistency (Domain f),
+     Show (Domain f)
+    )
+    => 
+    Double {-^ minimum level that triggers switch (>= 0) -} ->
+    f -> 
+    HybridIVP f
+ivpTwoTanks rD (sampleFn :: f) =
+    ivp
+    where
+    v1 = toD 2
+    v2 = toD 3
+    w = toD 4
+    r = toD rD
+    system =
+        HybridSystem
+        {
+            hybsys_componentNames = ["x1","x2"],
+            hybsys_modeFields = Map.fromList 
+                [(modeFill1, odeFill1), 
+                 (modeFill2, odeFill2)
+                ],
+            hybsys_modeInvariants = Map.fromList 
+                [(modeFill1, invariant), 
+                 (modeFill2, invariant)
+                ],
+            hybsys_eventSpecification = eventSpecMap
+        }
+    modeFill1 = HybSysMode "fill1"
+    modeFill2 = HybSysMode "fill2"
+    odeFill1 :: [f] -> [f]
+    odeFill1 [_x1,_x2] = 
+        [newConstFnFromSample _x1 (w <-> v1), 
+         newConstFnFromSample _x1 (neg v2)
+        ]
+    odeFill2 :: [f] -> [f]
+    odeFill2 [_x1,_x2] = 
+        [newConstFnFromSample _x1 (neg v1), 
+         newConstFnFromSample _x1 (w <-> v2)
+        ]
+    invariant [x1,x2] =
+        do
+        let x1Limit = NumOrd.minOut x2 r  
+        let x2Limit = NumOrd.minOut x1 r  
+        --
+        x1MlimNN <- makeNonneg (x1 <-> x1Limit)
+        let x1AboveLim = x1MlimNN <+> x1Limit 
+        x2MlimNN <- makeNonneg (x2 <-> x2Limit)
+        let x2AboveLim = x2MlimNN <+> x2Limit 
+        --
+        x1New <- isect x1AboveLim x1
+        x2New <- isect x2AboveLim x2
+        return [x1New, x2New]
+
+    eventSpecMap mode
+        | mode == modeFill1 =
+            Map.singleton event1To2 $
+                (modeFill2, id, [True, True], prune1To2)
+        | mode == modeFill2 =
+            Map.singleton event2To1 $
+                (modeFill1, id, [True, True], prune2To1)
+
+    event1To2 = HybSysEventKind "1To2"
+    event2To1 = HybSysEventKind "2To1"
+    prune1To2 _ [x1,x2] =
+        do
+        _ <- isect x2 r
+        return [x1, r]
+        
+    prune2To1 _ [x1,x2] =
+        do 
+        _ <- isect x1 r
+        return [r, x2]
+
+    ivp :: HybridIVP f
+    ivp =
+        HybridIVP
+        {
+            hybivp_description = description,
+            hybivp_system = system,
+            hybivp_tVar = "t",
+            hybivp_tStart = z,
+            hybivp_tEnd = z, -- will be overridden
+            hybivp_initialStateEnclosure = 
+                Map.singleton modeFill1 initValues,
+            hybivp_maybeExactStateAtTEnd =
+                Nothing 
+        }
+    description =
+        ""
+        ++ "2T-S"
+        ++ "\n ; x1(" ++ show tStart ++ ") = " ++ show initX1
+        ++    ", x2(" ++ show tStart ++ ") = " ++ show initX2
+    initValues@[initX1, initX2] = [toD 1,toD 1] :: [Domain f]
+    tStart = hybivp_tStart ivp
+    z = toD 0
+    toD = dblToReal sampleDom
+    sampleDom = getSampleDomValue sampleFn
+
+
+
 
 ivpTwoTanksSum :: 
     (Var f ~ String,
