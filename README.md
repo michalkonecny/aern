@@ -9,6 +9,7 @@ _Michal Konečný, Walid Taha, Ferenc A. Bartha, Jan Duracz, Adam Duracz, Aaron 
 published in "Nonlinear Analysis: Hybrid Systems" in 2015.
 
 [Instructions how to reproduce the plots in the paper](https://github.com/michalkonecny/aern/blob/nahs2015-plots/aern-ivp/demos/Enclosing_Zeno_plots-NAHS2015.txt)
+=============
 
 [AERN Homepage](http://michalkonecny.github.io/aern/_site/index.html)
 =============
