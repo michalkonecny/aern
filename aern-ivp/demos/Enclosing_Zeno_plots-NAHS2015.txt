@@ -4,7 +4,7 @@ This file describes how to reproduce the hybrid system enclosure plots in the jo
 by
 Michal Konečný, Walid Taha, Ferenc A. Bartha, Jan Duracz, Adam Duracz, Aaron D. Ames
 
-published in "Nonlinear Analysis: Hybrid Systems" in 2015
+published in "Nonlinear Analysis: Hybrid Systems" in 2015.
 
 The plots produced by the commands below are essentially the same as those in the paper. Nevertheless, there are minor differences due to changes made to the plotting code in the course of making revisions to the paper.
 
