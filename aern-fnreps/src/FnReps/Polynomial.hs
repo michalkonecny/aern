@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedLists #-}
+
 module FnReps.Polynomial where
 
 import Numeric.AERN.MPFRBasis.Interval
@@ -13,6 +15,7 @@ data UnaryChebSparse =
     {
         unaryChebSparse_terms :: HM.HashMap Int MI
     }
+    deriving (Show)
 
 instance Eq UnaryChebSparse where
     (==) = error "cannot compare UnaryChebSparse interval polynomials for equality, please use ==? instead of == etc."
@@ -28,9 +31,28 @@ instance Num UnaryChebSparse where
         UnaryChebSparse $ fmap negate terms 
     (UnaryChebSparse termsL) + (UnaryChebSparse termsR) =
         UnaryChebSparse $ HM.unionWith (+) termsL termsR
-    (UnaryChebSparse termsL) * (UnaryChebSparse termsR) =
+    p1 * p2 =
+        multiplyDirect_UnaryChebSparse p1 p2
         -- TODO: implement FTT-based method, see eg arxiv.org/pdf/1009.4597
-        undefined
         
-        
+multiplyDirect_UnaryChebSparse :: 
+    UnaryChebSparse -> UnaryChebSparse -> UnaryChebSparse
+multiplyDirect_UnaryChebSparse 
+    (UnaryChebSparse terms1) 
+    (UnaryChebSparse terms2) =
+    (UnaryChebSparse terms)
+    where
+    terms =
+        foldl addTerm HM.empty newTerms
+        where
+        addTerm prevTerms (i,a) = 
+            HM.insertWith (+) i a prevTerms 
+        newTerms =
+            concat
+            [   let c = a*b/2 in [(i+j, c), (abs (i-j), c)]
+                | 
+                (i,a) <- HM.toList terms1,
+                (j,b) <- HM.toList terms2
+            ]
+            
         

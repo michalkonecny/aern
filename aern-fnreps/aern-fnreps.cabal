@@ -40,8 +40,5 @@ executable fnreps
   hs-source-dirs:  src
   ghc-options:     -Wall -rtsopts
   main-is:         Main.hs
-  other-modules: 
-                 FnReps.FunctionAbstraction,
-                 FnReps.Polynomial
 
 
