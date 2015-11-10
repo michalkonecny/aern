@@ -15,7 +15,11 @@ data UnaryChebSparse =
     {
         unaryChebSparse_terms :: HM.HashMap Int MI
     }
-    deriving (Show)
+--    deriving (Show)
+
+instance Show UnaryChebSparse where
+    show (UnaryChebSparse terms) =
+        "(UnaryChebSparse " ++ show (HM.toList terms) ++ ")"  
 
 instance Eq UnaryChebSparse where
     (==) = error "cannot compare UnaryChebSparse interval polynomials for equality, please use ==? instead of == etc."
