@@ -23,12 +23,12 @@ instance
     RoundedSpecialConstEffort MPFR
     where
     type SpecialConstEffortIndicator MPFR = MPFRPrec
-    specialConstDefaultEffort _ = 100
+    specialConstDefaultEffort sample = getPrecision sample
 
 instance 
     RoundedSpecialConst MPFR
     where
     piUpEff prec _ = withPrec prec pi
-    piDnEff prec _ = negate $ withPrec prec (- pi)
+    piDnEff prec _ = negate $ withPrecRoundDown prec (- pi)
     eUpEff prec _ = withPrec prec (exp 1)
     eDnEff prec _ = 1 /. (withPrec prec (exp (-1)))

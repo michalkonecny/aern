@@ -31,7 +31,8 @@ module Numeric.AERN.RealArithmetic.Basis.MPFR.Basics
     defaultPrecision,
     getPrecision,
     samePrecision,
-    withPrec
+    withPrec,
+    withPrecRoundDown
 )
 where
 
@@ -61,6 +62,18 @@ withPrec (MPFRPrec p) computation
         error "MPFR precision has to be at least 2" 
     | otherwise = 
         R.reifyPrecision p (\(_ :: Proxy p) -> MPFR (computation :: R.Rounded R.TowardInf p))
+
+{-|
+    This should be needed very rarely, in cases such as to get a lower bound on pi.
+-}
+withPrecRoundDown :: MPFRPrec -> (forall p. (R.Precision p) => R.Rounded R.TowardNegInf p) -> MPFR
+withPrecRoundDown (MPFRPrec p) computation
+    | p < 2 =
+        error "MPFR precision has to be at least 2" 
+    | otherwise = 
+        R.reifyPrecision p 
+            (\(_ :: Proxy p) -> 
+                MPFR (unsafeCoerce (computation :: R.Rounded R.TowardNegInf p) :: R.Rounded R.TowardInf p))
 
 instance Arbitrary MPFRPrec where
     arbitrary =
