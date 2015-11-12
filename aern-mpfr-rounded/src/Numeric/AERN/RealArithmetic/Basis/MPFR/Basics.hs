@@ -56,8 +56,11 @@ newtype MPFRPrec = MPFRPrec Int
     deriving (Eq, Ord, Show, Enum, EffortIndicator, Num, Real, Integral)
 
 withPrec :: MPFRPrec -> (forall p. (R.Precision p) => R.Rounded R.TowardInf p) -> MPFR
-withPrec (MPFRPrec p) computation = 
-    R.reifyPrecision p (\(_ :: Proxy p) -> MPFR (computation :: R.Rounded R.TowardInf p))
+withPrec (MPFRPrec p) computation
+    | p < 2 =
+        error "MPFR precision has to be at least 2" 
+    | otherwise = 
+        R.reifyPrecision p (\(_ :: Proxy p) -> MPFR (computation :: R.Rounded R.TowardInf p))
 
 instance Arbitrary MPFRPrec where
     arbitrary =
