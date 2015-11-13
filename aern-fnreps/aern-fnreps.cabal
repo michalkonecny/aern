@@ -23,10 +23,13 @@ Library
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*,
-        aern-mpfr == 0.5.*,
+--        aern-mpfr-rounded == 0.5.*,
+        aern-double == 0.5.*,
         unordered-containers
   exposed-modules: FnReps.FunctionAbstraction
-  other-modules:    FnReps.Polynomial
+  other-modules:    
+                    FnReps.Polynomial.UnaryChebSparse,
+                    FnReps.Polynomial.UnaryChebSparse.DCTMultiplication
 
 executable fnreps
   Build-Depends:   
@@ -35,10 +38,11 @@ executable fnreps
         aern-order == 0.5.*,
         aern-real == 0.5.*,
         aern-interval == 0.5.*,
-        aern-mpfr == 0.5.*,
+        aern-mpfr-rounded == 0.5.*,
         unordered-containers
   hs-source-dirs:  src
   ghc-options:     -Wall -rtsopts
   main-is:         Main.hs
+  other-modules: FnReps.Polynomial.UnaryChebSparse.DCTMultiplication
 
 
