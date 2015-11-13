@@ -119,7 +119,11 @@ allBits n
     allBits_n_minus_1 = allBits (n - 1)
         
     
-{-| formula at the bottom of page 20; should be equivalent to tSDCT_III_reference, but it is not -}
+{-| 
+    The formula at the bottom of page 20, fixed by Eike. 
+    
+    This should be equivalent to tSDCT_III_reference.
+-}
 aux1 h =
     [htld j 
         | j <- [0..(cN1-1)]
@@ -145,7 +149,7 @@ aux1 h =
                 [
                     (h !! (cN2 + n))
                     *
-                    (cos ((((4*j + 1)*(cN2 + n)) |* rPi)/| cN))
+                    (cos ((((4*j + 1)*(n)) |* rPi)/| cN))
                     | n <- [1..(cN2 - 1)]
                 ]
             )
