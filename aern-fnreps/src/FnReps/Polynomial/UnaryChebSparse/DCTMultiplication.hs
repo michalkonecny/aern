@@ -87,11 +87,11 @@ tSDCT_III_nlogn h =
             hItau 0 = 
                 (hItau_minus_1 !! 0) 
                 + 
-                (minusOnePow bit_iTauMinus1) * (hItau_minus_1 !! (c_Ntau-1)) * gamma
+                (minusOnePow bit_iTauMinus1) * (hItau_minus_1 !! (c_Ntau_plus_1)) * gamma
             hItau n = 
                 (hItau_minus_1 !! n)
                 -
-                (hItau_minus_1 !! (c_Ntau - 1 - n))
+                (hItau_minus_1 !! (c_Ntau - n))
                 + 
                 (((2 :: Int) |* (minusOnePow bit_iTauMinus1)) * (hItau_minus_1 !! (c_Ntau_plus_1+n)) * gamma)
             gamma =
