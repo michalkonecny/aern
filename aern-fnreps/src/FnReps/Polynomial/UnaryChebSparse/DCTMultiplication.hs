@@ -24,6 +24,54 @@ multiplyDCT_terms =
     undefined
 
 {-|
+    DCT-III computed directly from its definition in
+    [BT97, page 18, display (6.2)].
+    
+    This is quite inefficient.  It is to be used only as a reference in tests.
+-}
+tDCT_III_reference :: 
+    [RA] {-^ g a vector of validated real numbers -} -> 
+    [RA] {-^ g~ a vector of validated real numbers -}
+tDCT_III_reference g =
+    [sum [ (eps cN1 k) * (g !! k) * cos ( (((2*j+1)*k) |* rPi) /| cN)
+            | k <- [0..(cN1-1)] 
+         ] 
+        | j <- [0..(cN1-1)]
+    ]
+    where
+    cN = cN1 * 2
+    cN1 = length g
+    rPi = piOut -- rSample
+--    (rSample : _) = g
+
+{-| An auxiliary family of constants, frequently used in Chebyshev-basis expansions. -}
+eps :: Int -> Int -> RA
+eps n k 
+    | k == 0 = 0.5
+    | k == n = 0.5
+    | otherwise = 1 
+
+{-|
+    DCT-III computed via SDCT-III.  The reduction is described on page 20. 
+    
+    Precondition: length g is a power of 2
+-}
+tDCT_III_nlogn :: 
+    [RA] {-^ g a vector of validated real numbers -} -> 
+    [RA] {-^ g~ a vector of validated real numbers -}
+tDCT_III_nlogn g =
+    h2g $ tSDCT_III_nlogn $ map g2h $ zip [0..] g 
+    where
+    g2h (i,gi) = (eps cN1 i) * gi
+    h2g h = map get_g [0..cN1-1]
+        where
+        get_g i  
+            | even i = h !! (i `div` 2)
+            | otherwise = h !! ((2*cN1 - i - 1) `div` 2)   
+    cN1 = length g
+
+
+{-|
     Simplified DCT-III computed directly from its definition in
     [BT97, page 20, display (6.3)].
     
