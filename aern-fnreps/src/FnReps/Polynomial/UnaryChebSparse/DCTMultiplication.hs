@@ -12,6 +12,7 @@ import Numeric.AERN.DoubleBasis.Interval
 import Numeric.AERN.RealArithmetic.RefinementOrderRounding ((/|), (|*))
 
 import qualified Data.HashMap.Strict as HM
+import Data.List (sortBy)
 
 --import Debug.Trace (trace)
 
@@ -63,7 +64,9 @@ tSDCT_III_nlogn ::
     [RA] {-^ h a vector of validated real numbers -} -> 
     [RA] {-^ h~ a vector of validated real numbers -}
 tSDCT_III_nlogn h =
-    map (\ (_,[a],_) -> a) $ splitUntilSingletons $ [(0, h, 1)]
+    map (\ (_,[a],_) -> a) $
+        sortBy (\ (i,_,_) (j,_,_) -> compare i j) $ 
+        splitUntilSingletons $ [(0, h, 1)]
     where
     splitUntilSingletons :: [(Int, [RA], Int)] -> [(Int, [RA], Int)]
     splitUntilSingletons groups
