@@ -5,18 +5,16 @@ module FnReps.Polynomial.UnaryChebSparse where
 import FnReps.Polynomial.UnaryChebSparse.DCTMultiplication
 
 --import Numeric.AERN.MPFRBasis.Interval
-import Numeric.AERN.DoubleBasis.Interval
+import Numeric.AERN.DoubleBasis.Interval ()
 
 import qualified Data.HashMap.Strict as HM
-
---type RA = DI
 
 {-|
     Unary polynomials over the domain [-1,1] with interval coefficients in the Chebyshev basis.
     The interval coefficients are supposed to have a very small width.
 -}
 data UnaryChebSparse = 
-    UnaryChebSparse 
+    UnaryChebSparse
     {
         unaryChebSparse_terms :: HM.HashMap Int RA
     }
@@ -40,36 +38,8 @@ instance Num UnaryChebSparse where
         UnaryChebSparse $ fmap negate terms 
     (UnaryChebSparse termsL) + (UnaryChebSparse termsR) =
         UnaryChebSparse $ HM.unionWith (+) termsL termsR
-    p1 * p2 =
-        multiplyDirect p1 p2
-        -- TODO: implement FTT-based method, see eg arxiv.org/pdf/1009.4597
+    (UnaryChebSparse terms1) * (UnaryChebSparse terms2) =
+        UnaryChebSparse $ multiplyDCT_terms terms1 terms2
         
-multiplyDirect :: 
-    UnaryChebSparse -> UnaryChebSparse -> UnaryChebSparse
-multiplyDirect 
-    (UnaryChebSparse terms1) 
-    (UnaryChebSparse terms2) =
-    (UnaryChebSparse terms)
-    where
-    terms =
-        foldl addTerm HM.empty newTerms
-        where
-        addTerm prevTerms (i,a) = 
-            HM.insertWith (+) i a prevTerms 
-        newTerms =
-            concat
-            [   let c = a*b/2 in [(i+j, c), (abs (i-j), c)]
-                | 
-                (i,a) <- HM.toList terms1,
-                (j,b) <- HM.toList terms2
-            ]
-            
-multiplyDCT ::
-    UnaryChebSparse -> UnaryChebSparse -> UnaryChebSparse
-multiplyDCT 
-    (UnaryChebSparse terms1) 
-    (UnaryChebSparse terms2) =
-    (UnaryChebSparse terms)
-    where
-    terms = multiplyDCT_terms terms1 terms2
+
 
