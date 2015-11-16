@@ -1,6 +1,11 @@
 {-|
     This module implements the fast polynomial multiplication algorithm presented in:
-    [BT97] http://dx.doi.org/10.1016/0024-3795(95)00696-6
+    [BT97] G. Baszenski and M. Tasche, 
+    “Fast polynomial multiplication and convolutions related to the discrete cosine transform,” 
+    Linear Algebra Appl., vol. 252, no. 1-3, pp. 1–25, Feb. 1997
+    http://dx.doi.org/10.1016/0024-3795(95)00696-6
+        
+    
 
 -}
 module FnReps.Polynomial.UnaryChebSparse.DCTMultiplication 
