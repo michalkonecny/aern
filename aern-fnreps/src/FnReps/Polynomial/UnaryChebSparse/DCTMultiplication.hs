@@ -26,6 +26,17 @@ import Debug.Trace (trace)
 --type RA = MI
 type RA = DI
 
+testDirect =
+    multiplyDirect_terms p1 p2
+    
+testDCT =
+    multiplyDCT_terms p1 p2
+    
+p1 :: HM.HashMap Int RA
+p1 = HM.fromList [(i,1) | i <- [0..500]]
+
+p2 :: HM.HashMap Int RA
+p2 = HM.fromList [(i,2) | i <- [0..500]]
 
 multiplyDirect_terms
      :: HM.HashMap Int RA -> HM.HashMap Int RA -> HM.HashMap Int RA
